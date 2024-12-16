@@ -291,7 +291,7 @@
 
    .. attribute:: utility
 
-      | :sl:`Get if the windos is an utility window (**read-only**)`
+      | :sl:`Get if the window is an utility window (**read-only**)`
       | :sg:`utility -> bool`
 
       ``True`` if the window doesn't appear in the task bar, ``False`` otherwise.
