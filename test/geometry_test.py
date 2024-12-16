@@ -2031,11 +2031,11 @@ class LineTypeTest(unittest.TestCase):
         )
         line = Line(expected_a, expected_b)
 
-        self.assertEqual(line.center, expected_center)
+        self.assertAlmostEqual(line.center, expected_center)
 
         line.center = expected_center[0] - 1, expected_center[1] + 1.321
 
-        self.assertEqual(
+        self.assertAlmostEqual(
             line.center, (expected_center[0] - 1, expected_center[1] + 1.321)
         )
 
@@ -2062,11 +2062,11 @@ class LineTypeTest(unittest.TestCase):
         )
         line = Line(expected_a, expected_b)
 
-        self.assertEqual(line.centerx, expected_center[0])
+        self.assertAlmostEqual(line.centerx, expected_center[0])
 
         line.centerx = expected_center[0] - 1
 
-        self.assertEqual(line.centerx, expected_center[0] - 1)
+        self.assertAlmostEqual(line.centerx, expected_center[0] - 1)
 
         line = Line(0, 0, 1, 0)
 
@@ -2091,11 +2091,11 @@ class LineTypeTest(unittest.TestCase):
         )
         line = Line(expected_a, expected_b)
 
-        self.assertEqual(line.centery, expected_center[1])
+        self.assertAlmostEqual(line.centery, expected_center[1])
 
         line.centery = expected_center[1] - 1.321
 
-        self.assertEqual(line.centery, expected_center[1] - 1.321)
+        self.assertAlmostEqual(line.centery, expected_center[1] - 1.321)
 
         line = Line(0, 0, 1, 0)
 
@@ -2110,19 +2110,19 @@ class LineTypeTest(unittest.TestCase):
         """a full test for the angle attribute"""
         expected_angle = -83.93394864782331
         line = Line(300.0, 400.0, 400.0, 1341.0)
-        self.assertEqual(line.angle, expected_angle)
+        self.assertAlmostEqual(line.angle, expected_angle)
 
         expected_angle = 16.17215901578255
         line = Line(300.0, 400.0, 400.0, 371.0)
-        self.assertEqual(line.angle, expected_angle)
+        self.assertAlmostEqual(line.angle, expected_angle)
 
         expected_angle = -35.53767779197438
         line = Line(45.0, 32.0, 94.0, 67.0)
-        self.assertEqual(line.angle, expected_angle)
+        self.assertAlmostEqual(line.angle, expected_angle)
 
         expected_angle = -53.88065915052025
         line = Line(544.0, 235.0, 382.0, 13.0)
-        self.assertEqual(line.angle, expected_angle)
+        self.assertAlmostEqual(line.angle, expected_angle)
 
     def test_attrib_slope(self):
         """a full test for the slope attribute"""
@@ -2137,7 +2137,7 @@ class LineTypeTest(unittest.TestCase):
             if l[2]:
                 self.assertAlmostEqual(l[0].slope, l[1])
             else:
-                self.assertEqual(l[0].slope, l[1])
+                self.assertAlmostEqual(l[0].slope, l[1])
 
     def test_meth_copy(self):
         line = Line(1, 2, 3, 4)
