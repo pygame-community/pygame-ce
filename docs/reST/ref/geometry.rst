@@ -615,9 +615,8 @@
          | :sl:`the coordinate of the middle point of the line`
          | :sg:`center -> (float, float)`
 
-         The center of the line. Calculated using the `((xa + xb) / 2, (ya + yb) / 2)` formula.
-         It can be reassigned to move the `Line`. If reassigned the `xa`, `ya`, `xb`, `yb`
-         attributes will be changed in order to produce a `Line` with matching center.
+         The center of the line. It's equivalent to `((ax + bx) / 2, (ay + by) / 2)`.
+         Reassigning it moves the `Line` to the new position with matching center.
 
          .. versionadded:: 2.5.3
 
@@ -628,11 +627,8 @@
          | :sl:`the x coordinate of the middle point of the line`
          | :sg:`centerx -> float`
 
-         The `x` coordinate of the center of the line, it's calculated using
-         the `((xa + xb) / 2)` formula. It can be reassigned to move the `Line`.
-         If reassigned the `xa` and `xb` attributes will be changed in order to
-         produce a `Line` with matching center. The `ya` and `yb` attributes will not
-         be affected.
+         The `x` coordinate of the line's center, calculated as :math:`(ax + bx) / 2`.
+         Reassigning it moves the `Line` to the new position with matching centerx.
 
          .. versionadded:: 2.5.3
 
@@ -643,11 +639,8 @@
          | :sl:`the y coordinate of the middle point of the line`
          | :sg:`centery -> float`
 
-         The `y` coordinate of the center of the `Line`, it's calculated using
-         the `((ya + yb) / 2)` formula. It can be reassigned to move the `Line`.
-         If reassigned the `ya` and `yb` attributes will be changed in order to
-         produce a `Line` with matching center. The `xa` and `xb` attributes will not
-         be affected.
+         The `y` coordinate of the line's center, calculated as :math:`(ay + by) / 2`.
+         Reassigning it moves the `Line` to the new position with matching centery.
 
          .. versionadded:: 2.5.3
 
@@ -658,10 +651,9 @@
          | :sl:`the angle of the line`
          | :sg:`angle -> float`
 
-         The angle of the line representing its orientation. Calculated using
-         the `atan2(yb - ya, xb - xa)` formula. This attribute is read-only, it cannot
-         be reassigned. To change the line's angle use the `rotate` method or change
-         its `a` or `b` attributes.
+         The angle of the line, representing its orientation.
+         It's equivalent to :math:`atan2(by - ay, bx - ax)`. This attribute is read-only and
+         can be changed by modifying the `a` or `b` attributes.
 
          .. versionadded:: 2.5.3
 
@@ -672,9 +664,8 @@
          | :sl:`the slope of the line`
          | :sg:`slope -> float`
 
-         The slope of the line. Calculated using the `(yb - ya) / (xb - xa)` formula.
-         This attribute is read-only, it cannot be reassigned. To change the line's slope
-         use the `rotate` method or change its `a` or `b` attributes.
+         The slope of the line. It's equivalent to :math:`(by - ay) / (bx - ax)`.
+         This attribute is read-only and can be changed by modifying the `a` or `b` attributes.
 
          .. versionadded:: 2.5.3
 
