@@ -407,9 +407,6 @@ endif
 
 # optional modules
 
-# TODO: support SDL3
-if sdl_api != 3
-
 if sdl_image_dep.found()
     imageext = py.extension_module(
         'imageext',
@@ -420,6 +417,9 @@ if sdl_image_dep.found()
         subdir: pg,
     )
 endif
+
+# TODO: support SDL3
+if sdl_api != 3
 
 if sdl_ttf_dep.found()
     font = py.extension_module(
