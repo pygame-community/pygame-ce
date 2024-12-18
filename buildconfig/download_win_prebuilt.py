@@ -86,8 +86,8 @@ def get_urls(x86=True, x64=True):
         '7a3b9ed85cfe735c7e106d98c4b6395a113e5d7e'
         ],
         [
-        'https://github.com/pygame-community/SDL_image/releases/download/2.8.2-pgce/SDL2_image-devel-2.8.2-VCpgce.zip',
-        '983484dd816abf25cdd5bce88ac69dbca1ea713a'
+        'https://github.com/pygame-community/SDL_image/releases/download/2.8.3-pgce/SDL2_image-devel-2.8.3-VCpgce.zip',
+        '71ad2b5aacbc934a39e390ad733421313dd5d059'
         ],
         [
         'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.22.0/SDL2_ttf-devel-2.22.0-VC.zip',
@@ -205,12 +205,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_image-devel-2.8.2-VCpgce/SDL2_image-2.8.2'
+                'SDL2_image-devel-2.8.3-VCpgce/SDL2_image-2.8.3'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_image-2.8.2'
+                'SDL2_image-2.8.3'
             )
         )
         copy(
