@@ -158,6 +158,9 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
    volume will remain set at the current level. If the ``volume`` argument
    is greater than ``1.0``, the volume will be set to ``1.0``.
 
+   .. note::
+      See :func:`mixer.Sound.set_volume()<pygame.mixer.Sound.set_volume>` for more information regarding how the value is stored internally
+
    .. ## pygame.mixer.music.set_volume ##
 
 .. function:: get_volume
@@ -167,6 +170,9 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
 
    Returns the current volume for the mixer. The value will be between ``0.0``
    and ``1.0``.
+
+   .. note::
+      See :func:`mixer.Sound.set_volume()<pygame.mixer.Sound.set_volume>` for more information regarding the returned value
 
    .. ## pygame.mixer.music.get_volume ##
 
