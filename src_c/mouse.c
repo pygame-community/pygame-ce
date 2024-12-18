@@ -65,7 +65,14 @@ mouse_set_pos(PyObject *self, PyObject *args)
 static PyObject *
 mouse_get_pos(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* SDL3 changed the mouse API to deal with float coordinates, for now we
+     * still truncate the result to int before returning to python side.
+     * This can be changed in a breaking release in the future if needed. */
+    float x, y;
+#else
     int x, y;
+#endif
     int desktop = 0;
 
     static char *kwids[] = {"desktop", NULL};
@@ -114,7 +121,14 @@ mouse_get_pos(PyObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 mouse_get_rel(PyObject *self, PyObject *_null)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* SDL3 changed the mouse API to deal with float coordinates, for now we
+     * still truncate the result to int before returning to python side.
+     * This can be changed in a breaking release in the future if needed. */
+    float x, y;
+#else
     int x, y;
+#endif
 
     VIDEO_INIT_CHECK();
 
@@ -224,6 +238,10 @@ mouse_set_visible(PyObject *self, PyObject *args)
 
     win = pg_GetDefaultWindow();
     if (win) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_SetWindowRelativeMouseMode(win,
+                                       SDL_GetWindowMouseGrab(win) && !toggle);
+#else
         int mode = SDL_GetWindowGrab(win);
         if ((mode == SDL_ENABLE) & !toggle) {
             SDL_SetRelativeMouseMode(1);
@@ -231,6 +249,7 @@ mouse_set_visible(PyObject *self, PyObject *args)
         else {
             SDL_SetRelativeMouseMode(0);
         }
+#endif
         window_flags = SDL_GetWindowFlags(win);
         if (!toggle && (window_flags & PG_WINDOW_FULLSCREEN_INCLUSIVE)) {
             SDL_SetHint(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, "0");
@@ -263,7 +282,13 @@ mouse_get_visible(PyObject *self, PyObject *_null)
 
     VIDEO_INIT_CHECK();
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_Window *win = pg_GetDefaultWindow();
+    result =
+        win ? (PG_CursorVisible() && !SDL_GetWindowRelativeMouseMode(win)) : 0;
+#else
     result = (PG_CursorVisible() && !SDL_GetRelativeMouseMode());
+#endif
 
     if (0 > result) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -527,7 +552,12 @@ mouse_get_cursor(PyObject *self, PyObject *_null)
 static PyObject *
 mouse_get_relative_mode(PyObject *self)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_Window *win = pg_GetDefaultWindow();
+    return PyBool_FromLong(win ? SDL_GetWindowRelativeMouseMode(win) : 0);
+#else
     return PyBool_FromLong(SDL_GetRelativeMouseMode());
+#endif
 }
 
 static PyObject *
@@ -537,9 +567,20 @@ mouse_set_relative_mode(PyObject *self, PyObject *arg)
     if (mode == -1) {
         return NULL;
     }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_Window *win = pg_GetDefaultWindow();
+    if (!win) {
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+    if (!SDL_SetWindowRelativeMouseMode(win, (bool)mode)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+#else
     if (SDL_SetRelativeMouseMode((SDL_bool)mode)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
+#endif
     Py_RETURN_NONE;
 }
 
