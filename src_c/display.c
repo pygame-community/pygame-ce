@@ -822,6 +822,10 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
     _DisplayState *state = DISPLAY_MOD_STATE(self);
     SDL_Window *win = pg_GetDefaultWindow();
+#if !SDL_VERSION_ATLEAST(2, 0, 22)
+    SDL_Window *dummy = NULL;
+    char dummy_id_str[64];
+#endif
     pgSurfaceObject *surface = pg_GetDefaultWindowSurface();
     SDL_Surface *surf = NULL;
     SDL_Surface *newownedsurf = NULL;
@@ -841,13 +845,14 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
     SDL_VERSION(&wm_info.version);
 
-    char *keywords[] = {"size", "flags", "depth", "display", "vsync", NULL};
+    char *keywords[] = {"size",  "flags", "depth", "display",
+                        "vsync", "hwnd",  NULL};
 
     scale_env = SDL_getenv("PYGAME_FORCE_SCALE");
     winid_env = SDL_getenv("SDL_WINDOWID");
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|Oiiii", keywords, &size,
-                                     &flags, &depth, &display, &vsync))
+    if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|OiiiiK", keywords, &size,
+                                     &flags, &depth, &display, &vsync, &hwnd))
         return NULL;
 
     if (hwnd == 0 && winid_env != NULL) {
@@ -1095,7 +1100,30 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
             if (!win) {
                 /*open window*/
                 if (hwnd != 0) {
-                    win = SDL_CreateWindowFrom((void *)hwnd);
+                    if (flags & PGS_OPENGL) {
+#if SDL_VERSION_ATLEAST(2, 0, 22)
+                        SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, "1");
+                        win = SDL_CreateWindowFrom((void *)hwnd);
+                        SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, "0");
+#else
+                        // Create window with SDL_CreateWindowFrom() and OpenGL
+                        // See https://gamedev.stackexchange.com/a/119903
+                        dummy = SDL_CreateWindow(
+                            "OpenGL Dummy", 0, 0, 1, 1,
+                            SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+                        sprintf(dummy_id_str, "%p", dummy);
+                        SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
+                                    dummy_id_str);
+
+                        win = SDL_CreateWindowFrom((void *)hwnd);
+
+                        SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
+                                    "");
+#endif
+                    }
+                    else {
+                        win = SDL_CreateWindowFrom((void *)hwnd);
+                    }
                 }
                 else {
                     win = SDL_CreateWindow(title, x, y, w_1, h_1, sdl_flags);
