@@ -9,9 +9,7 @@
 | :sl:`pygame module for loading and playing sounds`
 
 This module contains classes for loading Sound objects and controlling
-playback. The mixer module is optional and depends on SDL_mixer. Your program
-should test that :mod:`pygame.mixer` is available and initialized before using
-it.
+playback.
 
 The mixer module has a limited number of channels for playback of sounds.
 Usually programs tell pygame to start playing audio and it selects an available
@@ -30,9 +28,7 @@ streams the music from the files without loading music at once into memory.
 
 The mixer module must be initialized like other pygame modules, but it has some
 extra conditions. The ``pygame.mixer.init()`` function takes several optional
-arguments to control the playback rate and sample size. Pygame will default to
-reasonable values, but pygame cannot perform Sound resampling, so the mixer
-should be initialized to match the values of your audio resources.
+arguments to control the playback rate and sample size.
 
 ``NOTE``: For less laggy sound use a smaller buffer size. The default
 is set to reduce the chance of scratchy sounds on some computers. You can
@@ -91,7 +87,7 @@ The following file formats are supported
    the next nearest power of 2).
 
    The devicename parameter is the name of sound device to open for audio
-   playback.  Allowed device names will vary based on the host system.
+   playback. Allowed device names will vary based on the host system.
    If left as ``None`` then a sensible default will be chosen for you.
 
    Some platforms require the :mod:`pygame.mixer` module to be initialized
@@ -331,7 +327,7 @@ The following file formats are supported
    :rtype: tuple
 
    .. note::
-      The linked and compile version numbers should be the same.
+      The linked and compiled version numbers should be the same.
 
    .. versionaddedold:: 2.0.0
 
