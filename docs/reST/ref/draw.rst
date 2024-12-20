@@ -48,7 +48,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
    :type color: :data:`pygame.typing.ColorLike`
-   :param Rect rect: rectangle to draw, position and dimensions
+   :param Rect rect: rectangle to draw, position and dimensions.  Negative rect dimension
+      values are deprecated, and will raise an exception in a future versions on pygame-ce.
    :param int width: (optional) used for line thickness or to indicate that
       the rectangle is to be filled (not to be confused with the width value
       of the ``rect`` parameter)
@@ -91,6 +92,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
    .. versionchangedold:: 2.0.0.dev8 Added support for border radius.
+   .. versionchanged:: 2.5.3 Negative rect dimension values will raise a deprecation warning
 
    .. ## pygame.draw.rect ##
 
@@ -271,7 +273,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :type color: :data:`pygame.typing.ColorLike`
    :param Rect rect: rectangle to indicate the position and dimensions of the
       ellipse, the ellipse will be centered inside the rectangle and bounded
-      by it
+      by it. Negative rect dimension values are deprecated, and will raise an exception
+      in a future versions on pygame-ce.
    :param int width: (optional) used for line thickness or to indicate that
       the ellipse is to be filled (not to be confused with the width value
       of the ``rect`` parameter)
@@ -291,6 +294,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :rtype: Rect
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
+   .. versionchanged:: 2.5.3 Negative rect dimension values will raise a deprecation warning
 
    .. ## pygame.draw.ellipse ##
 
@@ -312,7 +316,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :type color: :data:`pygame.typing.ColorLike`
    :param Rect rect: rectangle to indicate the position and dimensions of the
       ellipse which the arc will be based on, the ellipse will be centered
-      inside the rectangle
+      inside the rectangle. Negative rect dimension values are deprecated,
+      and will raise an exception in a future versions on pygame-ce.
    :param float start_angle: start angle of the arc in radians
    :param float stop_angle: stop angle of the arc in
       radians
@@ -344,6 +349,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :rtype: Rect
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
+   .. versionchanged:: 2.5.3 Negative rect dimension values will raise a deprecation warning
 
    .. ## pygame.draw.arc ##
 
