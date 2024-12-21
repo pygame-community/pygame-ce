@@ -7,7 +7,7 @@ except NameError:
     pass
 import pygame
 from pygame.locals import *
-from pygame.pixelcopy import surface_to_array, map_array, array_to_surface, make_surface
+from pygame.pixelcopy import array_to_surface, make_surface, map_array, surface_to_array
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
@@ -377,7 +377,7 @@ class PixelCopyTestWithArrayNumpy(unittest.TestCase):
 
     def test_surface_to_array_2d(self):
         try:
-            from numpy import empty, dtype
+            from numpy import dtype, empty
         except ImportError:
             return
 
@@ -458,7 +458,7 @@ class PixelCopyTestWithArrayNumpy(unittest.TestCase):
 
     def test_surface_to_array_3d(self):
         try:
-            from numpy import empty, dtype
+            from numpy import dtype, empty
         except ImportError:
             return
 
@@ -534,7 +534,7 @@ class PixelCopyTestWithArrayNumpy(unittest.TestCase):
 
     def test_map_array(self):
         try:
-            from numpy import array, zeros, uint8, int32, all as np_all
+            from numpy import all as np_all, array, int32, uint8, zeros
         except ImportError:
             return
 
@@ -599,7 +599,7 @@ class PixelCopyTestWithArrayNewBuf(unittest.TestCase):
 
     class Array2D(buftools.Exporter):
         def __init__(self, initializer):
-            from ctypes import cast, POINTER, c_uint32
+            from ctypes import POINTER, c_uint32, cast
 
             Array2D = PixelCopyTestWithArrayNewBuf.Array2D
             super().__init__((3, 5), format="=I", strides=(20, 4))
@@ -615,7 +615,7 @@ class PixelCopyTestWithArrayNewBuf(unittest.TestCase):
 
     class Array3D(buftools.Exporter):
         def __init__(self, initializer):
-            from ctypes import cast, POINTER, c_uint8
+            from ctypes import POINTER, c_uint8, cast
 
             Array3D = PixelCopyTestWithArrayNewBuf.Array3D
             super().__init__((3, 5, 3), format="B", strides=(20, 4, 1))

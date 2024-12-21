@@ -96,6 +96,12 @@ exclude = [
   "setup.py",
 ]
 
+[tool.ruff.lint]
+select = ["I"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
 [tool.ruff.format]
 quote-style = "preserve"
 

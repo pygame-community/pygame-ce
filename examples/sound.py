@@ -11,6 +11,7 @@ Optional command line argument: audio file name
 
 import os
 import sys
+
 import pygame
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]

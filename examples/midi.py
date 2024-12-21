@@ -10,8 +10,8 @@ python -m pygame.examples.midi --input
 python -m pygame.examples.midi --input
 """
 
-import sys
 import os
+import sys
 
 import pygame
 import pygame.midi

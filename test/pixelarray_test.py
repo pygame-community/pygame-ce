@@ -15,7 +15,6 @@ except NameError:
 
 import pygame
 
-
 IS_PYPY = "PyPy" == platform.python_implementation()
 
 
