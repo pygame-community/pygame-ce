@@ -13,7 +13,7 @@ cd $TIFF
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     ./configure $PG_BASE_CONFIGURE_FLAGS --disable-lzma --disable-webp --disable-zstd
-elif [[ "$OSTYPE" == "darwin"* ]]; then
+else
     # Use CMake on macOS because arm64 builds fail with weird errors in ./configure
     cmake . $PG_BASE_CMAKE_FLAGS -Dlzma=OFF -Dwebp=OFF -Dzstd=OFF
 fi
