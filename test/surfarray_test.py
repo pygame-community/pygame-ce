@@ -13,6 +13,7 @@ from numpy import (
     rint,
     arange,
     __version__ as np_version,
+    array
 )
 
 import pygame
@@ -114,10 +115,10 @@ class SurfarrayModuleTest(unittest.TestCase):
 
     def _fill_array2d(self, arr, surf):
         palette = self.test_palette
-        arr[:5, :6] = surf.map_rgb(palette[1])
-        arr[5:, :6] = surf.map_rgb(palette[2])
-        arr[:5, 6:] = surf.map_rgb(palette[3])
-        arr[5:, 6:] = surf.map_rgb(palette[4])
+        arr[:5, :6] = array(surf.map_rgb(palette[1])).astype(int)
+        arr[5:, :6] = array(surf.map_rgb(palette[2])).astype(int)
+        arr[:5, 6:] = array(surf.map_rgb(palette[3])).astype(int)
+        arr[5:, 6:] = array(surf.map_rgb(palette[4])).astype(int)
 
     def _fill_array3d(self, arr):
         palette = self.test_palette
@@ -487,17 +488,19 @@ class SurfarrayModuleTest(unittest.TestCase):
 
     # this test should be removed soon, when the function is deleted
     def test_get_arraytype(self):
-        array_type = pygame.surfarray.get_arraytype()
+        with self.assertWarns(DeprecationWarning):
+            array_type = pygame.surfarray.get_arraytype()
 
-        self.assertEqual(array_type, "numpy", f"unknown array type {array_type}")
+            self.assertEqual(array_type, "numpy", f"unknown array type {array_type}")
 
     # this test should be removed soon, when the function is deleted
     def test_get_arraytypes(self):
-        arraytypes = pygame.surfarray.get_arraytypes()
-        self.assertIn("numpy", arraytypes)
+        with self.assertWarns(DeprecationWarning):
+            arraytypes = pygame.surfarray.get_arraytypes()
+            self.assertIn("numpy", arraytypes)
 
-        for atype in arraytypes:
-            self.assertEqual(atype, "numpy", f"unknown array type {atype}")
+            for atype in arraytypes:
+                self.assertEqual(atype, "numpy", f"unknown array type {atype}")
 
     def test_make_surface(self):
         # How does one properly test this with 2d arrays. It makes no sense
@@ -711,24 +714,23 @@ class SurfarrayModuleTest(unittest.TestCase):
         def do_use_arraytype(atype):
             pygame.surfarray.use_arraytype(atype)
 
-        pygame.surfarray.use_arraytype("numpy")
-        self.assertEqual(pygame.surfarray.get_arraytype(), "numpy")
-        self.assertRaises(ValueError, do_use_arraytype, "not an option")
+        with self.assertWarns(DeprecationWarning):
+            pygame.surfarray.use_arraytype("numpy")
+            self.assertEqual(pygame.surfarray.get_arraytype(), "numpy")
+            self.assertRaises(ValueError, do_use_arraytype, "not an option")
 
     def test_surf_lock(self):
         sf = pygame.Surface((5, 5), 0, 32)
-        for atype in pygame.surfarray.get_arraytypes():
-            pygame.surfarray.use_arraytype(atype)
 
-            ar = pygame.surfarray.pixels2d(sf)
-            self.assertTrue(sf.get_locked())
+        ar = pygame.surfarray.pixels2d(sf)
+        self.assertTrue(sf.get_locked())
 
-            sf.unlock()
-            self.assertTrue(sf.get_locked())
+        sf.unlock()
+        self.assertTrue(sf.get_locked())
 
-            del ar
-            self.assertFalse(sf.get_locked())
-            self.assertEqual(sf.get_locks(), ())
+        del ar
+        self.assertFalse(sf.get_locked())
+        self.assertEqual(sf.get_locks(), ())
 
 
 if __name__ == "__main__":
