@@ -13,7 +13,7 @@ from numpy import (
     rint,
     arange,
     __version__ as np_version,
-    array
+    array,
 )
 
 import pygame
