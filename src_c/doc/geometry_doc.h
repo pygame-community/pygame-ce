@@ -37,7 +37,7 @@
 #define DOC_LINE_A "a -> (float, float)\nthe first point of the line"
 #define DOC_LINE_B "b -> (float, float)\nthe second point of the line"
 #define DOC_LINE_LENGTH "length -> float\nthe length of the line"
-#define DOC_LINE_CENTER "center -> (float, float)\nthe coordinate of the middle point of the line"
+#define DOC_LINE_CENTER "center -> (float, float)\nthe coordinates of the middle point of the line"
 #define DOC_LINE_CENTERX "centerx -> float\nthe x coordinate of the middle point of the line"
 #define DOC_LINE_CENTERY "centery -> float\nthe y coordinate of the middle point of the line"
 #define DOC_LINE_ANGLE "angle -> float\nthe angle of the line"
