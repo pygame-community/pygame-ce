@@ -90,7 +90,7 @@ Michael Benfield, David Lau
 
 還有許多人提交了有用的想法，助力本計畫前進，使我們的生活變得更加輕鬆。感謝你們！
 
-感謝對文檔做成評論並將其添加到pygame.org wiki的人。
+非常感謝人們提出文件評論並添加到 pygame 文件和 pygame-ce 文檔
 
 感謝製作遊戲並把遊戲放到pygame.org網站供人學習與娛樂的人。
 
