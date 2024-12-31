@@ -1696,7 +1696,7 @@ def spritecollide(sprite, group, dokill, collided=None):
             if sprite_rect_collide(group_sprite.rect)
         ]
     if dokill:
-        for group_sprite in crashed:
+        for group_sprite in collided_sprites:
             group_sprite.kill()
     return collided_sprites
 
