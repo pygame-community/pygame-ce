@@ -101,7 +101,6 @@ Michael Benfield, David Lau
 依賴
 ------------
 
-**note:** This section translation is out of date (September 2023)
 
 pygame顯然依賴SDL和Python。此外pygame也嵌入了幾個較小的函式庫：font模組依賴SDL_ttf（SDL_ttf依賴freetype）；mixer模組（以及mixer.music模組）依賴SDL_mixer；image模組依賴SDL_image（SDL_image使用到libjpeg與libpng） ；transform模組內嵌了一個SDL_rotozoom來實現它的rotozoom函式；surfarray模組用到了Numpy中的多維數組。
 
@@ -110,9 +109,9 @@ pygame顯然依賴SDL和Python。此外pygame也嵌入了幾個較小的函式�
 
 
 +----------+------------------------+
-| CPython  | >= 3.8 （或 PyPy3）    |
+| CPython  | >= 3.9 （或 PyPy3）    |
 +----------+------------------------+
-| SDL      | >= 2.0.10              |
+| SDL      | >= 2.0.14              |
 +----------+------------------------+
 | SDL_mixer| >= 2.0.4               |
 +----------+------------------------+
