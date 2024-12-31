@@ -1875,7 +1875,11 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
             return -1;
         }
         Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        chunk = Mix_LoadWAV_IO(rw, 1);
+#else
         chunk = Mix_LoadWAV_RW(rw, 1);
+#endif
         Py_END_ALLOW_THREADS;
         if (chunk == NULL) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
