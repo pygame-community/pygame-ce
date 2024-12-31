@@ -165,7 +165,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
             mm256_dst = _mm256_hadd_epi16(mm256_dstA, mm256_dstB);
             mm256_dst =
                 _mm256_add_epi16(mm256_dst, _mm256_srli_epi32(mm256_dst, 16));
-            // Shuffle the gray value from ther first channel of each pixel
+            // Shuffle the gray value from the first channel of each pixel
             // into every channel of each pixel
             mm256_dst = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_gray);
 

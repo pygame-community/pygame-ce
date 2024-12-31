@@ -273,7 +273,6 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     Uint32 color;
     float pts[4];
     float pts_prev[4];
-    float *xlist, *ylist;
     float x, y;
     int l, t;
     int extra_px;
@@ -327,16 +326,12 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                      "points argument must contain 2 or more points");
     }
 
-    xlist = PyMem_New(float, length);
-    ylist = PyMem_New(float, length);
+    // Allocate bytes for the xlist and ylist at once to reduce allocations.
+    float *points_buf = PyMem_New(float, length * 2);
+    float *xlist = points_buf;
+    float *ylist = points_buf + length;
 
-    if (NULL == xlist || NULL == ylist) {
-        if (xlist) {
-            PyMem_Free(xlist);
-        }
-        if (ylist) {
-            PyMem_Free(ylist);
-        }
+    if (points_buf == NULL) {
         return RAISE(PyExc_MemoryError,
                      "cannot allocate memory to draw aalines");
     }
@@ -351,8 +346,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         Py_DECREF(item);
 
         if (!result) {
-            PyMem_Free(xlist);
-            PyMem_Free(ylist);
+            PyMem_Free(points_buf);
             return RAISE(PyExc_TypeError, "points must be number pairs");
         }
 
@@ -361,8 +355,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock(surfobj)) {
-        PyMem_Free(xlist);
-        PyMem_Free(ylist);
+        PyMem_Free(points_buf);
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
@@ -454,8 +447,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                     disable_endpoints, disable_endpoints, extra_px);
     }
 
-    PyMem_Free(xlist);
-    PyMem_Free(ylist);
+    PyMem_Free(points_buf);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -964,7 +956,6 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *points, *item = NULL;
     SDL_Surface *surf = NULL;
     Uint32 color;
-    int *xlist = NULL, *ylist = NULL;
     int width = 0; /* Default width. */
     int x, y, result, l, t;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
@@ -1015,16 +1006,12 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
                      "points argument must contain more than 2 points");
     }
 
-    xlist = PyMem_New(int, length);
-    ylist = PyMem_New(int, length);
+    // Allocate bytes for the xlist and ylist at once to reduce allocations.
+    int *points_buf = PyMem_New(int, length * 2);
+    int *xlist = points_buf;
+    int *ylist = points_buf + length;
 
-    if (NULL == xlist || NULL == ylist) {
-        if (xlist) {
-            PyMem_Free(xlist);
-        }
-        if (ylist) {
-            PyMem_Free(ylist);
-        }
+    if (points_buf == NULL) {
         return RAISE(PyExc_MemoryError,
                      "cannot allocate memory to draw polygon");
     }
@@ -1039,8 +1026,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
         Py_DECREF(item);
 
         if (!result) {
-            PyMem_Free(xlist);
-            PyMem_Free(ylist);
+            PyMem_Free(points_buf);
             return RAISE(PyExc_TypeError, "points must be number pairs");
         }
 
@@ -1049,8 +1035,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock(surfobj)) {
-        PyMem_Free(xlist);
-        PyMem_Free(ylist);
+        PyMem_Free(points_buf);
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
@@ -1060,8 +1045,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     else {
         draw_filltri(surf, xlist, ylist, color, drawn_area);
     }
-    PyMem_Free(xlist);
-    PyMem_Free(ylist);
+    PyMem_Free(points_buf);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");

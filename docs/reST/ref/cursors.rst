@@ -219,6 +219,7 @@ The following strings can be converted into cursor bitmaps with
       | :sg:`copy() -> Cursor`
 
       Returns a new Cursor object with the same data and hotspot as the original.
+
    .. ## pygame.cursors.Cursor.copy ##
 
 

@@ -32,7 +32,7 @@
    Both flags are only a request, and may not be possible for all displays and
    formats.
 
-   Advance users can combine a set of bitmasks with a depth value. The masks
+   Advanced users can combine a set of bitmasks with a depth value. The masks
    are a set of 4 integers representing which bits in a pixel will represent
    each color. Normal Surfaces should not require the masks argument.
 
@@ -205,7 +205,7 @@
       object and dest is its destination position on this Surface. It draws each source Surface
       fully (meaning that unlike `blit()` you cannot pass an "area" parameter to represent
       a smaller portion of the source Surface to draw) on this Surface with the same blending
-      mode specified by special_flags. The sequence must have at least one (source, dest) pair.
+      mode specified by special_flags.
 
       :param blit_sequence: a sequence of (source, dest)
       :param special_flags: the flag(s) representing the blend mode used for each surface.
@@ -316,16 +316,29 @@
 
    .. method:: scroll
 
-      | :sl:`shift the surface image in place`
-      | :sg:`scroll(dx=0, dy=0, /) -> None`
+      | :sl:`shift the Surface pixels in place`
+      | :sg:`scroll(dx=0, dy=0, scroll_flag=0, /) -> None`
 
-      Move the image by dx pixels right and dy pixels down. dx and dy may be
-      negative for left and up scrolls respectively. Areas of the surface that
-      are not overwritten retain their original pixel values. Scrolling is
-      contained by the Surface clip area. It is safe to have dx and dy values
-      that exceed the surface size.
+      Move the Surface by dx pixels right and dy pixels down. dx and dy may be
+      negative for left and up scrolls respectively.
+
+      Scrolling is contained by the Surface clip area. It is safe to have dx
+      and dy values that exceed the surface size.
+
+      The scroll flag can be:
+         * ``0`` (default): the pixels are shifted but previous pixels are
+           not modified.
+
+         * ``pygame.SCROLL_ERASE``: the space created by the shifting pixels
+           is filled with black or transparency.
+
+         * ``pygame.SCROLL_REPEAT``: the pixels that disappear out of the
+           surface or clip bounds are brought back on the opposite side
+           resulting in an infinitely scrolling and repeating surface.
 
       .. versionaddedold:: 1.9
+
+      .. versionchanged:: 2.5.3 Add repeating scroll and allow erasing pixels
 
       .. ## Surface.scroll ##
 

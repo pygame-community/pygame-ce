@@ -38,7 +38,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4.2.1
+      - uses: actions/checkout@v4.2.2
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -61,7 +61,7 @@ jobs:
         run: echo "VER=${GITHUB_REF_NAME#'release/'}" >> $GITHUB_OUTPUT
 
       - name: Generate release attestation
-        uses: actions/attest-build-provenance@v1.4.3
+        uses: actions/attest-build-provenance@v2.1.0
         with:
           subject-path: "pygame-wheels/*"
 

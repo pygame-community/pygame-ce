@@ -1,4 +1,5 @@
-from typing import Any, Generator, Iterable, Optional, Tuple, Union
+from collections.abc import Generator, Iterable
+from typing import Any, Optional, Union
 
 from pygame.color import Color
 from pygame.rect import Rect
@@ -34,7 +35,7 @@ def messagebox(
     info: bool = False,
     warn: bool = False,
     error: bool = False,
-    buttons: Tuple[str, ...] = ("OK",),
+    buttons: tuple[str, ...] = ("OK",),
     return_button: int = 0,
     escape_button: int = 0,
 ) -> int: ...
@@ -47,7 +48,7 @@ class Texture:
         static: bool = False,
         streaming: bool = False,
         target: bool = False,
-        scale_quality: Optional[int] =None
+        scale_quality: Optional[int] = None,
     ) -> None: ...
     @staticmethod
     def from_surface(renderer: Renderer, surface: Surface) -> Texture: ...
@@ -61,7 +62,6 @@ class Texture:
     def color(self) -> Color: ...
     @color.setter
     def color(self, value: ColorLike) -> None: ...
-
     def get_rect(self, **kwargs: Any) -> Rect: ...
     def draw(
         self,
@@ -176,5 +176,5 @@ class Renderer:
     ) -> Surface: ...
     @staticmethod
     def compose_custom_blend_mode(
-        color_mode: Tuple[int, int, int], alpha_mode: Tuple[int, int, int]
+        color_mode: tuple[int, int, int], alpha_mode: tuple[int, int, int]
     ) -> int: ...
