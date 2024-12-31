@@ -7,6 +7,7 @@ from typing import (
     Union,
     overload,
     Optional,
+    Tuple,
 )
 
 from pygame.typing import Point, RectLike, SequenceLike
