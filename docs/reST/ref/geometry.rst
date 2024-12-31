@@ -612,7 +612,7 @@
 
    .. attribute:: center
 
-         | :sl:`the coordinate of the middle point of the line`
+         | :sl:`the coordinates of the middle point of the line`
          | :sg:`center -> (float, float)`
 
          The center of the line. It's equivalent to `((ax + bx) / 2, (ay + by) / 2)`.
