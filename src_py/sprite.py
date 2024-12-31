@@ -1719,18 +1719,18 @@ def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
     that will be used to calculate the collision.
 
     """
-    crashed = {}
+    collided_sprites = {}
     # pull the collision function in as a local variable outside
     # the loop as this makes the loop run faster
     sprite_collide_func = spritecollide
     for group_a_sprite in groupa:
         collisions = sprite_collide_func(group_a_sprite, groupb, dokillb, collided)
         if collisions:
-            crashed[group_a_sprite] = collisions
+            collided_sprites[group_a_sprite] = collisions
     if dokilla:
-        for group_a_sprite in crashed:
+        for group_a_sprite in collided_sprites:
             group_a_sprite.kill()
-    return crashed
+    return collided_sprites
 
 
 def spritecollideany(sprite, group, collided=None):
