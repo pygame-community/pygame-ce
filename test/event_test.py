@@ -250,6 +250,13 @@ class EventModuleArgsTest(unittest.TestCase):
         self.assertRaises(TypeError, pygame.event.get, ["a", "b", "c"])
 
     def test_peek(self):
+        pygame.event.peek()
+        pygame.event.peek(None)
+        pygame.event.peek(None, True)
+
+        pygame.event.peek(pump=False)
+        pygame.event.peek(pump=True)
+        pygame.event.peek(eventtype=None)
         pygame.event.peek(eventtype=[pygame.KEYUP, pygame.KEYDOWN])
         pygame.event.peek(eventtype=pygame.USEREVENT, pump=False)
 
@@ -753,6 +760,11 @@ class EventModuleTest(unittest.TestCase):
     def test_peek__empty_queue(self):
         """Ensure peek() works correctly on an empty queue."""
         pygame.event.clear()
+
+        # Ensure all events can be checked.
+        peeked = pygame.event.peek()
+
+        self.assertFalse(peeked)
 
         # Ensure events can be checked individually.
         for event_type in EVENT_TYPES:
