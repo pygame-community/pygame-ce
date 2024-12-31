@@ -65,7 +65,6 @@ def collect_document_info(app, doctree):
 
 
 class CollectInfo(Visitor):
-
     """Records the information for a document"""
 
     desctypes = {
@@ -74,6 +73,7 @@ class CollectInfo(Visitor):
         "exception",
         "class",
         "attribute",
+        "property",
         "method",
         "staticmethod",
         "classmethod",
