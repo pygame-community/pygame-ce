@@ -2250,7 +2250,7 @@ pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
 
     static char *kwids[] = {"eventtype", "pump", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|p", kwids, &obj,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Op", kwids, &obj,
                                      &dopump))
         return NULL;
 
@@ -2260,13 +2260,13 @@ pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
 
     seq = _pg_eventtype_as_seq(obj, &len);
     if (!seq)
-        return NULL;
+        return Py_RETURN_FALSE;
 
     for (loop = 0; loop < len; loop++) {
         type = _pg_eventtype_from_seq(seq, loop);
         if (type == -1) {
             Py_DECREF(seq);
-            return NULL;
+            return Py_RETURN_FALSE;
         }
         res = PG_PEEP_EVENT(&event, 1, SDL_PEEKEVENT, type);
         if (res) {
