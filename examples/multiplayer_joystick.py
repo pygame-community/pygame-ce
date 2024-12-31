@@ -1,4 +1,5 @@
 import sys
+
 import pygame
 
 WIDTH, HEIGHT = 500, 500

@@ -6,8 +6,8 @@ A little "console" where you can write in text.
 Shows how to use the TEXTEDITING and TEXTINPUT events.
 """
 
-import sys
 import os
+import sys
 
 import pygame
 

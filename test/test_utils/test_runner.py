@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 if __name__ == "__main__":
     pkg_dir = os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
