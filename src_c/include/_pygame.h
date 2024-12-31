@@ -181,13 +181,13 @@ typedef struct pg_bufferinfo_s {
     (*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(base, 22))
 
 #define pg_EnvShouldBlendAlphaSDL2 \
-    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(base, 23))
+    (*(int (*)(void))PYGAMEAPI_GET_SLOT(base, 23))
 
 #define pg_GetDefaultConvertFormat \
-    (*(SDL_PixelFormat * (*)(void)) PYGAMEAPI_GET_SLOT(base, 27))
+    (*(PG_PixelFormatEnum(*)(void))PYGAMEAPI_GET_SLOT(base, 27))
 
 #define pg_SetDefaultConvertFormat \
-    (*(SDL_PixelFormat * (*)(Uint32)) PYGAMEAPI_GET_SLOT(base, 28))
+    (*(void (*)(Uint32))PYGAMEAPI_GET_SLOT(base, 28))
 
 #define import_pygame_base() IMPORT_PYGAME_MODULE(base)
 #endif /* ~PYGAMEAPI_BASE_INTERNAL */
@@ -466,8 +466,8 @@ typedef struct pgColorObject pgColorObject;
     (*(int (*)(PyObject *, Uint8 *, pgColorHandleFlags))PYGAMEAPI_GET_SLOT( \
         color, 2))
 
-#define pg_MappedColorFromObj                           \
-    (*(int (*)(PyObject *, SDL_PixelFormat *, Uint32 *, \
+#define pg_MappedColorFromObj                       \
+    (*(int (*)(PyObject *, SDL_Surface *, Uint32 *, \
                pgColorHandleFlags))PYGAMEAPI_GET_SLOT(color, 4))
 
 #define pgColor_AsArray(x) (((pgColorObject *)x)->data)
@@ -658,4 +658,33 @@ pg_tuple_couple_from_values_double(double val1, double val2)
     PyTuple_SET_ITEM(tuple, 1, tmp);
 
     return tuple;
+}
+
+static PG_INLINE PyObject *
+pg_PointList_FromArrayDouble(double const *array, int arr_length)
+{
+    if (arr_length % 2) {
+        return RAISE(PyExc_ValueError, "array length must be even");
+    }
+
+    int num_points = arr_length / 2;
+    PyObject *sequence = PyList_New(num_points);
+    if (!sequence) {
+        return NULL;
+    }
+
+    int i;
+    PyObject *point = NULL;
+    for (i = 0; i < num_points; i++) {
+        point =
+            pg_tuple_couple_from_values_double(array[i * 2], array[i * 2 + 1]);
+        if (!point) {
+            Py_DECREF(sequence);
+            return NULL;
+        }
+        PyList_SET_ITEM(sequence, i, point);
+        point = NULL;
+    }
+
+    return sequence;
 }

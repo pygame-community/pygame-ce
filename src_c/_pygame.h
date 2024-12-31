@@ -41,7 +41,11 @@
 #undef PYPY_VERSION
 #endif
 
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
+#endif
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 #define PG_ShowCursor SDL_ShowCursor
@@ -71,7 +75,9 @@
 #define PG_CreateSurface SDL_CreateSurface
 #define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
 #define PG_ConvertSurface SDL_ConvertSurface
-#define PG_ConvertSurfaceFormat SDL_ConvertSurfaceFormat
+#define PG_ConvertSurfaceFormat SDL_ConvertSurface
+
+#define PG_PixelFormatEnum SDL_PixelFormat
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
 
@@ -94,8 +100,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
     return 0;
 }
 
-#define PG_SURF_BitsPerPixel(surf) surf->format->bits_per_pixel
-#define PG_SURF_BytesPerPixel(surf) surf->format->bytes_per_pixel
+#define PG_SURF_BitsPerPixel(surf) SDL_BITSPERPIXEL(surf->format)
+#define PG_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
 
@@ -110,6 +116,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_FIND_VNUM_MAJOR(ver) SDL_VERSIONNUM_MAJOR(ver)
 #define PG_FIND_VNUM_MINOR(ver) SDL_VERSIONNUM_MINOR(ver)
 #define PG_FIND_VNUM_MICRO(ver) SDL_VERSIONNUM_MICRO(ver)
+
+#define PG_INIT_TIMER 0
 
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
@@ -134,11 +142,13 @@ PG_UnlockMutex(SDL_mutex *mutex)
 
 #define PG_CreateSurface(width, height, format) \
     SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, format)
-#define PG_CreateSurfaceFrom(pixels, width, height, pitch, format) \
+#define PG_CreateSurfaceFrom(width, height, format, pixels, pitch) \
     SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, 0, pitch, format)
 #define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
+
+#define PG_PixelFormatEnum SDL_PixelFormatEnum
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect)
@@ -176,47 +186,9 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_FIND_VNUM_MINOR(ver) ver.minor
 #define PG_FIND_VNUM_MICRO(ver) ver.patch
 
-#if SDL_VERSION_ATLEAST(2, 0, 14)
+#define PG_INIT_TIMER SDL_INIT_TIMER
+
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
-#else
-// vendored in until our lowest SDL version is 2.0.14
-typedef struct {
-    Uint8 *src;
-    int src_w, src_h;
-    int src_pitch;
-    int src_skip;
-    Uint8 *dst;
-    int dst_w, dst_h;
-    int dst_pitch;
-    int dst_skip;
-    SDL_PixelFormat *src_fmt;
-    SDL_PixelFormat *dst_fmt;
-    Uint8 *table;
-    int flags;
-    Uint32 colorkey;
-    Uint8 r, g, b, a;
-} SDL_InternalBlitInfo;
-
-struct SDL_BlitMap {
-    SDL_Surface *dst;
-    int identity;
-    SDL_blit blit;
-    void *data;
-    SDL_InternalBlitInfo info;
-
-    /* the version count matches the destination; mismatch indicates
-       an invalid mapping */
-    Uint32 dst_palette_version;
-    Uint32 src_palette_version;
-};
-#define SDL_COPY_RLE_DESIRED 0x00001000
-
-#define PG_SurfaceHasRLE(surface) \
-    (((surface) == NULL)          \
-         ? 0                      \
-         : ((surface)->map->info.flags & SDL_COPY_RLE_DESIRED))
-
-#endif
 
 #endif
 
@@ -272,6 +244,10 @@ typedef enum {
     SDL_ACTIVEEVENT = SDL_USEREVENT,
     SDL_VIDEORESIZE,
     SDL_VIDEOEXPOSE,
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* SDL_SYSWMEVENT removed in SDL3, define it here for compat */
+    SDL_SYSWMEVENT,
+#endif
 
     PGE_MIDIIN,
     PGE_MIDIOUT,
@@ -332,8 +308,10 @@ typedef enum {
     PGPOST_CONTROLLERTOUCHPADMOTION,
     PGPOST_CONTROLLERTOUCHPADUP,
     PGPOST_CONTROLLERSENSORUPDATE,
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     PGPOST_DOLLARGESTURE,
     PGPOST_DOLLARRECORD,
+#endif
     PGPOST_DROPFILE,
     PGPOST_DROPTEXT,
     PGPOST_DROPBEGIN,
@@ -358,7 +336,9 @@ typedef enum {
     PGPOST_MOUSEBUTTONDOWN,
     PGPOST_MOUSEBUTTONUP,
     PGPOST_MOUSEWHEEL,
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     PGPOST_MULTIGESTURE,
+#endif
     PGPOST_NOEVENT,
     PGPOST_QUIT,
     PGPOST_RENDER_TARGETS_RESET,
@@ -425,6 +405,12 @@ typedef enum {
     PGS_SRCALPHA = 0x00010000,
     PGS_PREALLOC = 0x01000000
 } PygameSurfaceFlags;
+
+typedef enum {
+    PGS_SCROLL_DEFAULT = 0x00000000,
+    PGS_SCROLL_REPEAT = 0x00000001,
+    PGS_SCROLL_ERASE = 0x00000004
+} PygameScrollSurfaceFlags;
 
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
 #define RAISERETURN(x, y, r)   \
@@ -536,6 +522,6 @@ typedef enum {
 #define PYGAMEAPI_BASE_NUMSLOTS 29
 #define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
-#define PYGAMEAPI_GEOMETRY_NUMSLOTS 1
+#define PYGAMEAPI_GEOMETRY_NUMSLOTS 2
 
 #endif /* _PYGAME_INTERNAL_H */

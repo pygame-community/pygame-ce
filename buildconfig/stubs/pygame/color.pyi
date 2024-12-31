@@ -1,15 +1,10 @@
-import sys
-from typing import Any, Dict, Iterator, SupportsIndex, Tuple, Union, overload
-from typing_extensions import deprecated # added in 3.13
+from collections.abc import Collection, Iterator
+from typing import Any, SupportsIndex, Union, overload
+from typing_extensions import deprecated  # added in 3.13
 
 from pygame.typing import ColorLike
 
-if sys.version_info >= (3, 9):
-    from collections.abc import Collection
-else:
-    from typing import Collection
-
-THECOLORS: Dict[str, Tuple[int, int, int, int]]
+THECOLORS: dict[str, tuple[int, int, int, int]]
 
 # Color confirms to the Collection ABC, since it also confirms to
 # Sized, Iterable and Container ABCs
@@ -18,11 +13,11 @@ class Color(Collection[int]):
     g: int
     b: int
     a: int
-    cmy: Tuple[float, float, float]
-    hsva: Tuple[float, float, float, float]
-    hsla: Tuple[float, float, float, float]
-    i1i2i3: Tuple[float, float, float]
-    normalized: Tuple[float, float, float, float]
+    cmy: tuple[float, float, float]
+    hsva: tuple[float, float, float, float]
+    hsla: tuple[float, float, float, float]
+    i1i2i3: tuple[float, float, float]
+    normalized: tuple[float, float, float, float]
     __hash__: None  # type: ignore
     __array_struct__: Any
     @overload
@@ -32,7 +27,7 @@ class Color(Collection[int]):
     @overload
     def __getitem__(self, i: SupportsIndex) -> int: ...
     @overload
-    def __getitem__(self, s: slice) -> Tuple[int, ...]: ...
+    def __getitem__(self, s: slice) -> tuple[int, ...]: ...
     def __setitem__(self, key: int, value: int) -> None: ...
     def __iter__(self) -> Iterator[int]: ...
     def __add__(self, other: Color) -> Color: ...
@@ -50,35 +45,35 @@ class Color(Collection[int]):
     def __setattr__(self, attr: str, value: Union[Color, tuple]) -> None: ...
     @overload
     @classmethod
-    def from_cmy(cls, object: Tuple[float, float, float], /) -> Color: ...
+    def from_cmy(cls, object: tuple[float, float, float], /) -> Color: ...
     @overload
     @classmethod
     def from_cmy(cls, c: float, m: float, y: float, /) -> Color: ...
     @overload
     @classmethod
-    def from_hsva(cls, object: Tuple[float, float, float, float], /) -> Color: ...
+    def from_hsva(cls, object: tuple[float, float, float, float], /) -> Color: ...
     @overload
     @classmethod
     def from_hsva(cls, h: float, s: float, v: float, a: float, /) -> Color: ...
     @overload
     @classmethod
-    def from_hsla(cls, object: Tuple[float, float, float, float], /) -> Color: ...
+    def from_hsla(cls, object: tuple[float, float, float, float], /) -> Color: ...
     @overload
     @classmethod
     def from_hsla(cls, h: float, s: float, l: float, a: float, /) -> Color: ...
     @overload
     @classmethod
-    def from_i1i2i3(cls, object: Tuple[float, float, float], /) -> Color: ...
+    def from_i1i2i3(cls, object: tuple[float, float, float], /) -> Color: ...
     @overload
     @classmethod
     def from_i1i2i3(cls, i1: float, i2: float, i3: float, /) -> Color: ...
     @overload
     @classmethod
-    def from_normalized(cls, object: Tuple[float, float, float, float], /) -> Color: ...
+    def from_normalized(cls, object: tuple[float, float, float, float], /) -> Color: ...
     @overload
     @classmethod
     def from_normalized(cls, r: float, g: float, b: float, a: float, /) -> Color: ...
-    def normalize(self) -> Tuple[float, float, float, float]: ...
+    def normalize(self) -> tuple[float, float, float, float]: ...
     def correct_gamma(self, gamma: float, /) -> Color: ...
     @deprecated("since 2.1.3. Use unpacking instead")
     def set_length(self, length: int, /) -> None: ...

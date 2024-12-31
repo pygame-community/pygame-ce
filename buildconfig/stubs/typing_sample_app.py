@@ -59,33 +59,28 @@ validator_PathLike(pathlib.Path("file.py"))
 validator_PathLike(MyPath())
 
 
-# validate Coordinate, IntCoordinate
-def validator_Coordinate(coordinate: typing.Coordinate) -> int:
+# validate Point, IntPoint
+def validator_Point(point: typing.Point) -> int:
     return 0
 
-def validator_IntCoordinate(coordinate: typing.IntCoordinate) -> int:
+def validator_IntPoint(point: typing.IntPoint) -> int:
     return 0
 
 # must pass
-validator_Coordinate((1, 2))
-validator_Coordinate([3, -4])
-validator_Coordinate((5, -6.5))
-validator_Coordinate((-6.7, 8.9))
-validator_Coordinate(pygame.Vector2())
+validator_Point((1, 2))
+validator_Point([3, -4])
+validator_Point((5, -6.5))
+validator_Point((-6.7, 8.9))
+validator_Point(pygame.Vector2())
 
-validator_IntCoordinate((3, 4))
-validator_IntCoordinate([-4, -3])
+validator_IntPoint((3, 4))
+validator_IntPoint([-4, -3])
 
-
-# validate RGBATuple, ColorLike
-def validator_RGBATuple(rgba: typing.RGBATuple) -> int:
-    return 0
 
 def validator_ColorLike(color: typing.ColorLike) -> int:
     return 0
 
 # must pass
-validator_RGBATuple((100, 200, 50, 20))
 validator_ColorLike("green")
 validator_ColorLike(1)
 validator_ColorLike((255, 255, 255, 30))

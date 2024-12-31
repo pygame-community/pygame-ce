@@ -267,4 +267,3 @@ def main(auto_config=False):
 if __name__ == "__main__":
     print("This is the configuration subscript for Emscripten.")
     print('Please run "config.py" for full configuration.')
-

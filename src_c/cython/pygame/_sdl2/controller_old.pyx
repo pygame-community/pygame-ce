@@ -10,7 +10,7 @@ cdef extern from "../pygame.h" nogil:
 
 cdef extern from "SDL.h" nogil:
     void SDL_free(void *mem)
-    int SDL_VERSION_ATLEAST(int major, int minor, int patch) 
+    int SDL_VERSION_ATLEAST(int major, int minor, int patch)
 
 import_pygame_joystick()
 
@@ -100,8 +100,8 @@ def name_forindex(index):
 
     return None
 
-# disable auto_pickle since it causes stubcheck error 
-@cython.auto_pickle(False) 
+# disable auto_pickle since it causes stubcheck error
+@cython.auto_pickle(False)
 cdef class Controller:
     _controllers = []
 
@@ -250,7 +250,7 @@ cdef class Controller:
         """
         _gamecontroller_init_check()
         self._CLOSEDCHECK()
-        
+
         duration = max(duration, 0)
         low = min(max(low_frequency, 0.0), 1.0)
         high = min(max(high_frequency, 0.0), 1.0)
