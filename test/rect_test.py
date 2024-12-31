@@ -76,14 +76,25 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(3, r.width)
         self.assertEqual(4, r.height)
 
-        self.assertEqual(2, r.centerx)
-        self.assertEqual(4, r.centery)
-        self.assertEqual((2, 4), r.center)
+        if isinstance(r, FRect):
+            self.assertEqual(2.5, r.centerx)
+            self.assertEqual(4, r.centery)
+            self.assertEqual((2.5, 4), r.center)
 
-        self.assertEqual((2, 2), r.midtop)
-        self.assertEqual((2, 6), r.midbottom)
-        self.assertEqual((1, 4), r.midleft)
-        self.assertEqual((4, 4), r.midright)
+            self.assertEqual((2.5, 2), r.midtop)
+            self.assertEqual((2.5, 6), r.midbottom)
+            self.assertEqual((1, 4), r.midleft)
+            self.assertEqual((4, 4), r.midright)
+
+        elif isinstance(r, Rect):
+            self.assertEqual(2, r.centerx)
+            self.assertEqual(4, r.centery)
+            self.assertEqual((2, 4), r.center)
+
+            self.assertEqual((2, 2), r.midtop)
+            self.assertEqual((2, 6), r.midbottom)
+            self.assertEqual((1, 4), r.midleft)
+            self.assertEqual((4, 4), r.midright)
 
     def testRepr(self):
         rect = Rect(12, 34, 56, 78)
