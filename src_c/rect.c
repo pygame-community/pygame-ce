@@ -688,8 +688,8 @@ static PyGetSetDef pg_frect_getsets[] = {
     {"size", (getter)pg_frect_getsize, (setter)pg_frect_setsize, NULL, NULL},
     {"center", (getter)pg_frect_getcenter, (setter)pg_frect_setcenter, NULL,
      NULL},
-    {"rel_center", (getter)pg_frect_getrelcenter,
-     (setter)pg_frect_setrelcenter, NULL, NULL},
+    {"relcenter", (getter)pg_frect_getrelcenter, (setter)pg_frect_setrelcenter,
+     NULL, NULL},
 
     {"__safe_for_unpickling__", (getter)pg_rect_getsafepickle, NULL, NULL,
      NULL},
@@ -732,7 +732,7 @@ static PyGetSetDef pg_rect_getsets[] = {
     {"size", (getter)pg_rect_getsize, (setter)pg_rect_setsize, NULL, NULL},
     {"center", (getter)pg_rect_getcenter, (setter)pg_rect_setcenter, NULL,
      NULL},
-    {"rel_center", (getter)pg_rect_getrelcenter, (setter)pg_rect_setrelcenter,
+    {"relcenter", (getter)pg_rect_getrelcenter, (setter)pg_rect_setrelcenter,
      NULL, NULL},
 
     {"__safe_for_unpickling__", (getter)pg_rect_getsafepickle, NULL, NULL,

@@ -512,34 +512,34 @@ class RectTypeTest(unittest.TestCase):
         with self.assertRaises(AttributeError):
             del r.center
 
-    def test_rel_center(self):
-        """Changing the rel_center attribute changes the rect's size and
+    def test_relcenter(self):
+        """Changing the relcenter attribute changes the rect's size and
         does not move the rect.
         """
         r = Rect(1, 2, 75, 45)
-        new_rel_center = (697, 345)
+        new_relcenter = (697, 345)
         old_topleft = (r.left, r.top)
         expected_size = (697 * 2, 345 * 2)
 
-        r.rel_center = new_rel_center
-        self.assertEqual(new_rel_center, r.rel_center)
+        r.relcenter = new_relcenter
+        self.assertEqual(new_relcenter, r.relcenter)
         self.assertEqual(old_topleft, r.topleft)
         self.assertEqual(expected_size, r.size)
 
-    def test_rel_center__invalid_value(self):
-        """Ensures the rel_center attribute handles invalid values correctly."""
+    def test_relcenter__invalid_value(self):
+        """Ensures the relcenter attribute handles invalid values correctly."""
         r = Rect(0, 0, 1, 1)
 
         for value in (None, [], "1", 1, (1,), [1, 2, 3]):
             with self.assertRaises(TypeError):
-                r.rel_center = value
+                r.relcenter = value
 
-    def test_rel_center__del(self):
+    def test_relcenter__del(self):
         """Ensures the center attribute can't be deleted."""
         r = Rect(0, 0, 1, 1)
 
         with self.assertRaises(AttributeError):
-            del r.rel_center
+            del r.relcenter
 
     def test_midleft(self):
         """Changing the midleft attribute moves the rect and does not change
@@ -819,9 +819,9 @@ class RectTypeTest(unittest.TestCase):
         and shrinks dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(-4, -6)
-        expected_new_rel_center = r.w // 2 - 2, r.h // 2 - 3
+        expected_new_relcenter = r.w // 2 - 2, r.h // 2 - 3
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left + 2, r2.left)
         self.assertEqual(r.top + 3, r2.top)
@@ -851,9 +851,9 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 6, 8)
         r2 = Rect(r)
         r2.inflate_ip(-4, -6)
-        expected_new_rel_center = r.w // 2 - 2, r.h // 2 - 3
+        expected_new_relcenter = r.w // 2 - 2, r.h // 2 - 3
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left + 2, r2.left)
         self.assertEqual(r.top + 3, r2.top)
@@ -866,9 +866,9 @@ class RectTypeTest(unittest.TestCase):
         """The scale method scales around the center of the rectangle"""
         r = Rect(2, 4, 6, 8)
         r2 = r.scale_by(2)
-        expected_new_rel_center = r.size
+        expected_new_relcenter = r.size
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left - 3, r2.left)
         self.assertEqual(r.top - 4, r2.top)
@@ -882,9 +882,9 @@ class RectTypeTest(unittest.TestCase):
         keyword arguments 'x' and 'y'"""
         r = Rect(2, 4, 6, 8)
         r2 = r.scale_by(x=2)
-        expected_new_rel_center = r.size
+        expected_new_relcenter = r.size
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left - 3, r2.left)
         self.assertEqual(r.top - 4, r2.top)
@@ -897,9 +897,9 @@ class RectTypeTest(unittest.TestCase):
         """The scale method scales around the center of the rectangle"""
         r = Rect(2, 4, 8, 8)
         r2 = r.scale_by(0.5)
-        expected_new_rel_center = r.w // 4, r.h // 4
+        expected_new_relcenter = r.w // 4, r.h // 4
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left + 2, r2.left)
         self.assertEqual(r.top + 2, r2.top)
@@ -915,9 +915,9 @@ class RectTypeTest(unittest.TestCase):
         # act
         r2 = r.scale_by(2, 4)
         # assert
-        expected_new_rel_center = r.w, r.h * 2
+        expected_new_relcenter = r.w, r.h * 2
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left - 3, r2.left)
         self.assertEqual(r.centery - r.h * 4 / 2, r2.top)
@@ -938,9 +938,9 @@ class RectTypeTest(unittest.TestCase):
         r3 = r.scale_by((2, 4))
         self.assertEqual(r2, r3)
         # assert
-        expected_new_rel_center = r.w, r.h * 2
+        expected_new_relcenter = r.w, r.h * 2
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left - 3, r2.left)
         self.assertEqual(r.centery - r.h * 4 / 2, r2.top)
@@ -959,9 +959,9 @@ class RectTypeTest(unittest.TestCase):
         # act
         r2 = r.scale_by(x=2, y=4)
         # assert
-        expected_new_rel_center = r.w, r.h * 2
+        expected_new_relcenter = r.w, r.h * 2
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left - 3, r2.left)
         self.assertEqual(r.centery - r.h * 4 / 2, r2.top)
@@ -977,9 +977,9 @@ class RectTypeTest(unittest.TestCase):
         # act
         r2 = r.scale_by(0.5, 0.25)
         # assert
-        expected_new_rel_center = r.w // 4, r.h // 8
+        expected_new_relcenter = r.w // 4, r.h // 8
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left + 2, r2.left)
         self.assertEqual(r.centery - r.h / 4 / 2, r2.top)
@@ -997,43 +997,43 @@ class RectTypeTest(unittest.TestCase):
         r.scale_by(0.00001)
 
         rx1 = r.scale_by(10, 1)
-        expected_new_rel_center = r.w * 5, r.h // 2
+        expected_new_relcenter = r.w * 5, r.h // 2
 
-        self.assertEqual(expected_new_rel_center, rx1.rel_center)
+        self.assertEqual(expected_new_relcenter, rx1.relcenter)
         self.assertEqual(r.centerx - r.w * 10 / 2, rx1.x)
         self.assertEqual(r.y, rx1.y)
         self.assertEqual(r.w * 10, rx1.w)
         self.assertEqual(r.h, rx1.h)
         rx2 = r.scale_by(-10, 1)
-        expected_new_rel_center = r.w * 5, r.h // 2
+        expected_new_relcenter = r.w * 5, r.h // 2
 
-        self.assertEqual(expected_new_rel_center, rx2.rel_center)
+        self.assertEqual(expected_new_relcenter, rx2.relcenter)
         self.assertEqual(rx1.x, rx2.x)
         self.assertEqual(rx1.y, rx2.y)
         self.assertEqual(rx1.w, rx2.w)
         self.assertEqual(rx1.h, rx2.h)
 
         ry1 = r.scale_by(1, 10)
-        expected_new_rel_center = r.w // 2, r.h * 5
+        expected_new_relcenter = r.w // 2, r.h * 5
 
-        self.assertEqual(expected_new_rel_center, ry1.rel_center)
+        self.assertEqual(expected_new_relcenter, ry1.relcenter)
         self.assertEqual(r.x, ry1.x)
         self.assertEqual(r.centery - r.h * 10 / 2, ry1.y)
         self.assertEqual(r.w, ry1.w)
         self.assertEqual(r.h * 10, ry1.h)
         ry2 = r.scale_by(1, -10)
-        expected_new_rel_center = r.w // 2, r.h * 5
+        expected_new_relcenter = r.w // 2, r.h * 5
 
-        self.assertEqual(expected_new_rel_center, ry2.rel_center)
+        self.assertEqual(expected_new_relcenter, ry2.relcenter)
         self.assertEqual(ry1.x, ry2.x)
         self.assertEqual(ry1.y, ry2.y)
         self.assertEqual(ry1.w, ry2.w)
         self.assertEqual(ry1.h, ry2.h)
 
         r1 = r.scale_by(10)
-        expected_new_rel_center = r.w * 5, r.h * 5
+        expected_new_relcenter = r.w * 5, r.h * 5
 
-        self.assertEqual(expected_new_rel_center, r1.rel_center)
+        self.assertEqual(expected_new_relcenter, r1.relcenter)
         self.assertEqual(r.centerx - r.w * 10 / 2, r1.x)
         self.assertEqual(r.centery - r.h * 10 / 2, r1.y)
         self.assertEqual(r.w * 10, r1.w)
@@ -1092,9 +1092,9 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 6, 8)
         r2 = Rect(r)
         r2.scale_by_ip(2)
-        expected_new_rel_center = r.w, r.h
+        expected_new_relcenter = r.w, r.h
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left - 3, r2.left)
         self.assertEqual(r.top - 4, r2.top)
@@ -1108,9 +1108,9 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 8, 8)
         r2 = Rect(r)
         r2.scale_by_ip(0.5)
-        expected_new_rel_center = r.w // 4, r.h // 4
+        expected_new_relcenter = r.w // 4, r.h // 4
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left + 2, r2.left)
         self.assertEqual(r.top + 2, r2.top)
@@ -1134,9 +1134,9 @@ class RectTypeTest(unittest.TestCase):
         r2.scale_by_ip(x=2, y=4)
 
         # assert
-        expected_new_rel_center = r.w, r.h * 2
+        expected_new_relcenter = r.w, r.h * 2
 
-        self.assertEqual(expected_new_rel_center, r2.rel_center)
+        self.assertEqual(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left - 3, r2.left)
         self.assertEqual(r.centery - r.h * 4 / 2, r2.top)
@@ -3076,9 +3076,9 @@ class FRectTypeTest(RectTypeTest):
 
         midx = r.left + r.width / 2
         midy = r.top + r.height / 2
-        expected_new_rel_center = r.w / 2, r.h / 2
+        expected_new_relcenter = r.w / 2, r.h / 2
 
-        self.assertEqual(expected_new_rel_center, r.rel_center)
+        self.assertEqual(expected_new_relcenter, r.relcenter)
         self.assertEqual(midx, r.centerx)
         self.assertEqual(midy, r.centery)
         self.assertEqual((r.centerx, r.centery), r.center)
@@ -3106,9 +3106,9 @@ class FRectTypeTest(RectTypeTest):
         """The scale method scales around the center of the rectangle"""
         r = FRect(2.1, 4, 6, 8.9)
         r2 = r.scale_by(2.3)
-        expected_new_rel_center = r.w * 1.15, r.h * 1.15
+        expected_new_relcenter = r.w * 1.15, r.h * 1.15
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r2.relcenter)
         self.assertSeqAlmostEqual5(r.center, r2.center)
         # ((w * scaling) - w) / 2 -> 3.9
         self.assertAlmostEqual5(r.left - 3.9, r2.left)
@@ -3123,9 +3123,9 @@ class FRectTypeTest(RectTypeTest):
         keyword arguments 'x' and 'y'"""
         r = FRect(2.1, 4, 6, 8.9)
         r2 = r.scale_by(x=2.3)
-        expected_new_rel_center = r.w * 1.15, r.h * 1.15
+        expected_new_relcenter = r.w * 1.15, r.h * 1.15
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r2.relcenter)
         self.assertSeqAlmostEqual5(r.center, r2.center)
         # ((w * scaling) - w) / 2 -> 3.9
         self.assertAlmostEqual5(r.left - 3.9, r2.left)
@@ -3139,9 +3139,9 @@ class FRectTypeTest(RectTypeTest):
         """The scale method scales around the center of the rectangle"""
         r = FRect(2.1, 4, 6, 8.9)
         r2 = r.scale_by(0.5)
-        expected_new_rel_center = r.w * 0.25, r.h * 0.25
+        expected_new_relcenter = r.w * 0.25, r.h * 0.25
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r2.relcenter)
         self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left + 1.5, r2.left)
         self.assertAlmostEqual5(r.top + 2.225, r2.top)
@@ -3157,9 +3157,9 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(2, 4)
         # assert
-        expected_new_rel_center = r.w, r.h * 2
+        expected_new_relcenter = r.w, r.h * 2
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r2.relcenter)
         self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
         self.assertAlmostEqual5(r.centery - r.h * 4 / 2, r2.top)
@@ -3180,9 +3180,9 @@ class FRectTypeTest(RectTypeTest):
         r3 = r.scale_by((2, 4))
         self.assertEqual(r2, r3)
         # assert
-        expected_new_rel_center = r.w, r.h * 2
+        expected_new_relcenter = r.w, r.h * 2
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r2.relcenter)
         self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
         self.assertAlmostEqual5(r.centery - r.h * 4 / 2, r2.top)
@@ -3201,9 +3201,9 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(x=2, y=4)
         # assert
-        expected_new_rel_center = r.w, r.h * 2
+        expected_new_relcenter = r.w, r.h * 2
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r2.relcenter)
         self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
         self.assertAlmostEqual5(r.centery - r.h * 4 / 2, r2.top)
@@ -3219,9 +3219,9 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(0.5, 0.25)
         # assert
-        expected_new_rel_center = r.w * 0.25, r.h * 0.125
+        expected_new_relcenter = r.w * 0.25, r.h * 0.125
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r2.relcenter)
         self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left + 1.5, r2.left)
         self.assertAlmostEqual5(r.centery - r.h / 4 / 2, r2.top)
@@ -3239,45 +3239,45 @@ class FRectTypeTest(RectTypeTest):
         r.scale_by(0.00001)
 
         rx1 = r.scale_by(10, 1)
-        expected_new_rel_center = r.w * 5, r.h * 0.5
+        expected_new_relcenter = r.w * 5, r.h * 0.5
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, rx1.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, rx1.relcenter)
         self.assertAlmostEqual5(r.centerx - r.w * 10 / 2, rx1.x)
         self.assertAlmostEqual5(r.y, rx1.y)
         self.assertAlmostEqual5(r.w * 10, rx1.w)
         self.assertAlmostEqual5(r.h, rx1.h)
 
         rx2 = r.scale_by(-10, 1)
-        expected_new_rel_center = r.w * 5, r.h * 0.5
+        expected_new_relcenter = r.w * 5, r.h * 0.5
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, rx2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, rx2.relcenter)
         self.assertAlmostEqual5(rx1.x, rx2.x)
         self.assertAlmostEqual5(rx1.y, rx2.y)
         self.assertAlmostEqual5(rx1.w, rx2.w)
         self.assertAlmostEqual5(rx1.h, rx2.h)
 
         ry1 = r.scale_by(1, 10)
-        expected_new_rel_center = r.w * 0.5, r.h * 5
+        expected_new_relcenter = r.w * 0.5, r.h * 5
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, ry1.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, ry1.relcenter)
         self.assertAlmostEqual5(r.x, ry1.x)
         self.assertAlmostEqual5(r.centery - r.h * 10 / 2, ry1.y)
         self.assertAlmostEqual5(r.w, ry1.w)
         self.assertAlmostEqual5(r.h * 10, ry1.h)
 
         ry2 = r.scale_by(1, -10)
-        expected_new_rel_center = r.w * 0.5, r.h * 5
+        expected_new_relcenter = r.w * 0.5, r.h * 5
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, ry2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, ry2.relcenter)
         self.assertAlmostEqual5(ry1.x, ry2.x)
         self.assertAlmostEqual5(ry1.y, ry2.y)
         self.assertAlmostEqual5(ry1.w, ry2.w)
         self.assertAlmostEqual5(ry1.h, ry2.h)
 
         r1 = r.scale_by(10)
-        expected_new_rel_center = r.w * 5, r.h * 5
+        expected_new_relcenter = r.w * 5, r.h * 5
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r1.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r1.relcenter)
         self.assertAlmostEqual5(r.centerx - r.w * 10 / 2, r1.x)
         self.assertAlmostEqual5(r.centery - r.h * 10 / 2, r1.y)
         self.assertAlmostEqual5(r.w * 10, r1.w)
@@ -3336,9 +3336,9 @@ class FRectTypeTest(RectTypeTest):
         r = FRect(2.1, 4, 6, 8.9)
         r2 = FRect(r)
         r2.scale_by_ip(2.3)
-        expected_new_rel_center = r.w * 1.15, r.h * 1.15
+        expected_new_relcenter = r.w * 1.15, r.h * 1.15
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r2.relcenter)
         self.assertSeqAlmostEqual5(r.center, r2.center)
         # ((w * scaling) - w) / 2 -> 3.9
         self.assertAlmostEqual5(r.left - 3.9, r2.left)
@@ -3353,9 +3353,9 @@ class FRectTypeTest(RectTypeTest):
         r = FRect(2.1, 4, 6, 8.9)
         r2 = FRect(r)
         r2.scale_by_ip(0.5)
-        expected_new_rel_center = r.w * 0.25, r.h * 0.25
+        expected_new_relcenter = r.w * 0.25, r.h * 0.25
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r2.relcenter)
         self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left + 1.5, r2.left)
         self.assertAlmostEqual5(r.top + 2.225, r2.top)
@@ -3379,9 +3379,9 @@ class FRectTypeTest(RectTypeTest):
         r2.scale_by_ip(x=2, y=4)
 
         # assert
-        expected_new_rel_center = r.w, r.h * 2.0
+        expected_new_relcenter = r.w, r.h * 2.0
 
-        self.assertSeqAlmostEqual5(expected_new_rel_center, r2.rel_center)
+        self.assertSeqAlmostEqual5(expected_new_relcenter, r2.relcenter)
         self.assertEqual(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
         self.assertAlmostEqual5(r.centery - r.h * 4 / 2, r2.top)
