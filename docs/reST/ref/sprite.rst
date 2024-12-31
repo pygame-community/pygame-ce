@@ -836,7 +836,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
    sprite from the group is returned.  On no collision None is returned.
 
    If you don't need all the features of the ``pygame.sprite.spritecollide()`` function, this
-   function will be a bit quicker..
+   function will be a bit quicker.
 
    The collided argument is a callback function used to calculate if two sprites are
    colliding. It should take two sprites as values and return a bool value
