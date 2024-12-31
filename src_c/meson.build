@@ -1,7 +1,5 @@
 # first the "required" modules
 
-# TODO: support SDL3
-if sdl_api != 3
 base = py.extension_module(
     'base',
     'base.c',
@@ -10,7 +8,6 @@ base = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 color = py.extension_module(
     'color',
@@ -21,8 +18,6 @@ color = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 constants = py.extension_module(
     'constants',
     'constants.c',
@@ -31,7 +26,6 @@ constants = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3
@@ -45,8 +39,6 @@ display = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
 event = py.extension_module(
     'event',
     'event.c',
@@ -55,7 +47,6 @@ event = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3
@@ -150,7 +141,6 @@ surface = py.extension_module(
 endif
 
 # TODO: support SDL3
-if sdl_api != 3
 surflock = py.extension_module(
     'surflock',
     'surflock.c',
@@ -159,10 +149,7 @@ surflock = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
-# TODO: support SDL3
-if sdl_api != 3
 time = py.extension_module(
     'time',
     'time.c',
@@ -171,7 +158,6 @@ time = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3
@@ -421,9 +407,6 @@ endif
 
 # optional modules
 
-# TODO: support SDL3
-if sdl_api != 3
-
 if sdl_image_dep.found()
     imageext = py.extension_module(
         'imageext',
@@ -434,6 +417,9 @@ if sdl_image_dep.found()
         subdir: pg,
     )
 endif
+
+# TODO: support SDL3
+if sdl_api != 3
 
 if sdl_ttf_dep.found()
     font = py.extension_module(

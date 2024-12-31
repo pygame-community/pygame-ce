@@ -12,7 +12,7 @@
 
    The Window class (formerly known as _sdl2.video.Window), is a newly
    published feature of pygame-ce 2.5.2. This class allows for programs
-   to drive multiple Windows on-screen at once, something not possible with
+   to drive multiple windows on-screen at once, something not possible with
    the :func:`pygame.display.set_mode` API. Not everything possible with
    :mod:`pygame.display` is possible yet in the Window API, but the new
    window class will continue to be developed, and we're excited to share
@@ -37,12 +37,12 @@
    :param bool keyboard_grabbed: Create a window with grabbed keyboard input.
    :param bool input_focus: Create a window with input focus.
    :param bool mouse_focus: Create a window with mouse focus.
-   :param bool foreign: Marks a window not created by SDL.
    :param bool allow_high_dpi: Create a window in high-DPI mode if supported.
    :param bool mouse_capture: Create a window that has the mouse captured
                               (unrelated to INPUT_GRABBED).
    :param bool always_on_top: Create a window that is always presented above
                               others.
+   :param bool utility: Create a window that doesn't appear in the task bar.
 
    Event behavior if one Window is created: When the close button is pressed,
    the ``QUIT`` event will be sent to the event queue.
@@ -59,10 +59,10 @@
              pygame.quit()
              raise SystemExit
 
-   Event behavior if multiple Windows are created: When the close button is
+   Event behavior if multiple ``Window``\ s are created: When the close button is
    pressed, a ``WINDOWCLOSE`` event is sent. You need to explicitly destroy
-   the window. Note that the event ``QUIT`` will only be sent if all Window
-   has been destroyed.
+   the window. Note that the event ``QUIT`` will only be sent if all
+   ``Window``\ s have been destroyed.
 
    .. code-block:: python
 
@@ -289,6 +289,16 @@
 
       .. versionadded:: 2.5.0
 
+   .. attribute:: utility
+
+      | :sl:`Get if the window is an utility window (**read-only**)`
+      | :sg:`utility -> bool`
+
+      ``True`` if the window doesn't appear in the task bar, ``False`` otherwise.
+      This only works for X11 and Windows, for other platforms, creating ``Window(utility=True)`` won't change anything.
+
+      .. versionadded:: 2.5.3
+
    .. classmethod:: from_display_module
 
       | :sl:`Create a Window object using window data from display module`
@@ -404,7 +414,10 @@
 
       :param bool input_only: if ``True``, the window will be given input focus
                               but may be completely obscured by other windows.
-                              Only supported on X11.
+                              Only supported on X11. This has been deprecated and
+                              may be removed in a future version.
+
+      .. deprecated:: 2.5.3 ``input_only`` argument
 
    .. method:: restore
 

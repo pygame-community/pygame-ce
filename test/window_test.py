@@ -290,6 +290,11 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(win.resizable)
         win.destroy()
 
+        # test utility
+        win = Window(utility=True)
+        self.assertTrue(win.utility)
+        win.destroy()
+
         # should raise a TypeError if keyword is random
         self.assertRaises(TypeError, lambda: Window(aaa=True))
         self.assertRaises(TypeError, lambda: Window(aaa=False))

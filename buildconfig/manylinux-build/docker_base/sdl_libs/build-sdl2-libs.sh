@@ -3,9 +3,9 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-SDL2_VER="2.30.8"
+SDL2_VER="2.30.10"
 SDL2="SDL2-$SDL2_VER"
-IMG2_VER="2.8.2"
+IMG2_VER="2.8.3"
 IMG2="SDL2_image-$IMG2_VER"
 TTF2_VER="2.22.0"
 TTF2="SDL2_ttf-$TTF2_VER"

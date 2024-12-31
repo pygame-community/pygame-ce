@@ -114,7 +114,7 @@ def get_backends():
     if sys.platform == "win32" and int(platform.win32_ver()[0].split(".")[0]) >= 8:
         possible_backends.append("_camera (MSMF)")
 
-    if "linux" in sys.platform:
+    if sys.platform == "linux":
         possible_backends.append("_camera (V4L2)")
 
     if "darwin" in sys.platform:

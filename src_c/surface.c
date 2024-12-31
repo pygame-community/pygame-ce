@@ -1582,27 +1582,21 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 static SDL_Surface *
 pg_DisplayFormat(SDL_Surface *surface)
 {
-    SDL_PixelFormat *default_format = pg_GetDefaultConvertFormat();
+    PG_PixelFormatEnum default_format = pg_GetDefaultConvertFormat();
     if (!default_format) {
         SDL_SetError(
             "No convert format has been set, try display.set_mode()"
             " or Window.get_surface().");
         return NULL;
     }
-    return PG_ConvertSurface(surface, default_format);
+    return PG_ConvertSurfaceFormat(surface, default_format);
 }
 
 static SDL_Surface *
 pg_DisplayFormatAlpha(SDL_Surface *surface)
 {
-    SDL_PixelFormat *dformat;
-    Uint32 pfe;
-    Uint32 amask = 0xff000000;
-    Uint32 rmask = 0x00ff0000;
-    Uint32 gmask = 0x0000ff00;
-    Uint32 bmask = 0x000000ff;
-
-    dformat = pg_GetDefaultConvertFormat();
+    PG_PixelFormatEnum pfe = SDL_PIXELFORMAT_ARGB8888;
+    PG_PixelFormatEnum dformat = pg_GetDefaultConvertFormat();
     if (!dformat) {
         SDL_SetError(
             "No convert format has been set, try display.set_mode()"
@@ -1610,37 +1604,31 @@ pg_DisplayFormatAlpha(SDL_Surface *surface)
         return NULL;
     }
 
-    switch (PG_FORMAT_BytesPerPixel(dformat)) {
-        case 2:
-            /* same behavior as SDL1 */
-            if ((dformat->Rmask == 0x1f) &&
-                (dformat->Bmask == 0xf800 || dformat->Bmask == 0x7c00)) {
-                rmask = 0xff;
-                bmask = 0xff0000;
-            }
+    switch (dformat) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        case SDL_PIXELFORMAT_XBGR1555:
+#else
+        case SDL_PIXELFORMAT_BGR555:
+#endif
+        case SDL_PIXELFORMAT_ABGR1555:
+        case SDL_PIXELFORMAT_BGR565:
+        case SDL_PIXELFORMAT_XBGR8888:
+        case SDL_PIXELFORMAT_ABGR8888:
+            pfe = SDL_PIXELFORMAT_ABGR8888;
             break;
-        case 3:
-        case 4:
-            /* keep the format if the high bits are free */
-            if ((dformat->Rmask == 0xff) && (dformat->Bmask == 0xff0000)) {
-                rmask = 0xff;
-                bmask = 0xff0000;
-            }
-            else if (dformat->Rmask == 0xff00 &&
-                     (dformat->Bmask == 0xff000000)) {
-                amask = 0x000000ff;
-                rmask = 0x0000ff00;
-                gmask = 0x00ff0000;
-                bmask = 0xff000000;
-            }
+
+        case SDL_PIXELFORMAT_BGRX8888:
+        case SDL_PIXELFORMAT_BGRA8888:
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        case SDL_PIXELFORMAT_BGR24:
+#else
+        case SDL_PIXELFORMAT_RGB24:
+#endif
+            pfe = SDL_PIXELFORMAT_BGRA8888;
             break;
-        default: /* ARGB8888 */
+
+        default:
             break;
-    }
-    pfe = SDL_MasksToPixelFormatEnum(32, rmask, gmask, bmask, amask);
-    if (pfe == SDL_PIXELFORMAT_UNKNOWN) {
-        SDL_SetError("unknown pixel format");
-        return NULL;
     }
     return PG_ConvertSurfaceFormat(surface, pfe);
 }

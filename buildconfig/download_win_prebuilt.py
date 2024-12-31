@@ -78,16 +78,20 @@ def get_urls(x86=True, x64=True):
     url_sha1 = []
     url_sha1.extend([
         [
-        'https://github.com/libsdl-org/SDL/releases/download/release-2.30.8/SDL2-devel-2.30.8-VC.zip',
-        '389a7575afaeccd3586a8105520cbec46b930dcb',
+        'https://github.com/libsdl-org/SDL/releases/download/release-2.30.10/SDL2-devel-2.30.10-VC.zip',
+        '42378fd090d547d03dca8c9df584ba8f38555809',
         ],
         [
-        'https://github.com/libsdl-org/SDL/releases/download/preview-3.1.3/SDL3-devel-3.1.3-VC.zip',
-        '8e4d7104193ba976406fe9968301de6f6b57f342'
+        'https://github.com/libsdl-org/SDL/releases/download/preview-3.1.6/SDL3-devel-3.1.6-VC.zip',
+        '7a3b9ed85cfe735c7e106d98c4b6395a113e5d7e'
         ],
         [
-        'https://github.com/pygame-community/SDL_image/releases/download/2.8.2-pgce/SDL2_image-devel-2.8.2-VCpgce.zip',
-        '983484dd816abf25cdd5bce88ac69dbca1ea713a'
+        'https://github.com/pygame-community/SDL_image/releases/download/2.8.3-pgce/SDL2_image-devel-2.8.3-VCpgce.zip',
+        '71ad2b5aacbc934a39e390ad733421313dd5d059'
+        ],
+        [
+        'https://github.com/libsdl-org/SDL_image/releases/download/preview-3.1.0/SDL3_image-devel-3.1.0-VC.zip',
+        '8538fea0cc4aabba2fc64db06196f1bb76a2785f'
         ],
         [
         'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.22.0/SDL2_ttf-devel-2.22.0-VC.zip',
@@ -205,14 +209,26 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_image-devel-2.8.2-VCpgce/SDL2_image-2.8.2'
+                'SDL2_image-devel-2.8.3-VCpgce/SDL2_image-2.8.3'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_image-2.8.2'
+                'SDL2_image-2.8.3'
             )
         )
+        copy(
+            os.path.join(
+                temp_dir,
+                'SDL3_image-devel-3.1.0-VC/SDL3_image-3.1.0'
+            ),
+            os.path.join(
+                move_to_dir,
+                prebuilt_dir,
+                'SDL3_image-3.1.0'
+            )
+        )
+
         copy(
             os.path.join(
                 temp_dir,
@@ -238,23 +254,23 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2-devel-2.30.8-VC/SDL2-2.30.8'
+                'SDL2-devel-2.30.10-VC/SDL2-2.30.10'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2-2.30.8'
+                'SDL2-2.30.10'
             )
         )
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3-devel-3.1.3-VC/SDL3-3.1.3'
+                'SDL3-devel-3.1.6-VC/SDL3-3.1.6'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3-3.1.3'
+                'SDL3-3.1.6'
             )
         )
 

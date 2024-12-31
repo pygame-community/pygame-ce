@@ -492,8 +492,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
    .. versionchanged:: 2.4.0 Removed deprecated 'blend' argument
-   .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
-   .. versionchanged:: 2.5.2 Added line width
+   .. versionchanged:: 2.5.0 ``blend`` argument re-added for backcompat, but will always raise a deprecation exception when used
+   .. versionchanged:: 2.5.3 Added line width
 
    .. ## pygame.draw.aaline ##
 
@@ -533,7 +533,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
    .. versionchanged:: 2.4.0 Removed deprecated ``blend`` argument
-   .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
+   .. versionchanged:: 2.5.0 ``blend`` argument re-added for backcompat, but will always raise a deprecation exception when used
 
    .. ## pygame.draw.aalines ##
 

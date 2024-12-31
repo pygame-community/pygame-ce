@@ -291,7 +291,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
    .. method:: draw
 
       | :sl:`blit the Sprite images`
-      | :sg:`draw(Surface) -> List[Rect]`
+      | :sg:`draw(Surface) -> list[Rect]`
 
       Draws the contained Sprites to the Surface argument. This uses the
       ``Sprite.image`` attribute for the source surface, and ``Sprite.rect``

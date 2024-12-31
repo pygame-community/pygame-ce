@@ -3562,7 +3562,7 @@ surf_average_color(PyObject *self, PyObject *args, PyObject *kwargs)
     return Py_BuildValue("(bbbb)", r, g, b, a);
 }
 
-static void
+static int
 box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
 {
     // Reference : https://blog.csdn.net/blogshinelee/article/details/80997324
@@ -3574,9 +3574,16 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     int dst_pitch = dst->pitch;
     int src_pitch = src->pitch;
     int i, x, y, color;
-    Uint32 *buf = malloc(dst_pitch * sizeof(Uint32));
-    Uint32 *sum_v = malloc(dst_pitch * sizeof(Uint32));
-    Uint32 *sum_h = malloc(nb * sizeof(Uint32));
+
+    // Allocate bytes for buf, sum_v, and sum_h at once to reduce allocations.
+    Uint32 *overall_buf = malloc(sizeof(Uint32) * (dst_pitch * 2 + nb));
+    Uint32 *buf = overall_buf;
+    Uint32 *sum_v = overall_buf + dst_pitch;
+    Uint32 *sum_h = overall_buf + dst_pitch * 2;
+
+    if (overall_buf == NULL) {
+        return -1;
+    }
 
     memset(sum_v, 0, dst_pitch * sizeof(Uint32));
     for (y = 0; y <= radius; y++) {  // y-pre
@@ -3641,12 +3648,11 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
         }
     }
 
-    free(buf);
-    free(sum_v);
-    free(sum_h);
+    free(overall_buf);
+    return 0;
 }
 
-static void
+static int
 gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
 {
     Uint8 *srcpx = (Uint8 *)src->pixels;
@@ -3657,10 +3663,18 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
     int src_pitch = src->pitch;
     int i, j, x, y, color;
     int kernel_radius = sigma * 2;
-    float *buf = malloc(dst_pitch * sizeof(float));
-    float *buf2 = malloc(dst_pitch * sizeof(float));
-    float *lut = malloc((kernel_radius + 1) * sizeof(float));
     float lut_sum = 0.0;
+
+    // Allocate bytes for buf, buf2, and lut at once to reduce allocations.
+    float *overall_buf =
+        malloc(sizeof(float) * (dst_pitch * 2 + kernel_radius + 1));
+    float *buf = overall_buf;
+    float *buf2 = overall_buf + dst_pitch;
+    float *lut = overall_buf + dst_pitch * 2;
+
+    if (overall_buf == NULL) {
+        return -1;
+    }
 
     for (i = 0; i <= kernel_radius; i++) {  // init gaussian lut
         // Gaussian function
@@ -3723,9 +3737,8 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
         }
     }
 
-    free(buf);
-    free(buf2);
-    free(lut);
+    free(overall_buf);
+    return 0;
 }
 
 static SDL_Surface *
@@ -3734,6 +3747,7 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
 {
     SDL_Surface *src = NULL;
     SDL_Surface *retsurf = NULL;
+    int result = 0;
 
     if (radius < 0) {
         return RAISE(PyExc_ValueError,
@@ -3793,16 +3807,23 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
     Py_BEGIN_ALLOW_THREADS;
 
     if (algorithm == 'b') {
-        box_blur(src, retsurf, radius, repeat);
+        result = box_blur(src, retsurf, radius, repeat);
     }
     else if (algorithm == 'g') {
-        gaussian_blur(src, retsurf, radius, repeat);
+        result = gaussian_blur(src, retsurf, radius, repeat);
     }
 
     Py_END_ALLOW_THREADS;
 
     pgSurface_Unlock(srcobj);
     SDL_UnlockSurface(retsurf);
+
+    // Routines only set error flag if memory allocation failed
+    // Setting Python exception here outside of Py_ THREADS block to be safe
+    if (result) {
+        PyErr_NoMemory();
+        return NULL;
+    }
 
     return retsurf;
 }
