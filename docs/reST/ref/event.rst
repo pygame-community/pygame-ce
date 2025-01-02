@@ -328,6 +328,8 @@ On Android, the following events can be generated
 
    .. versionchangedold:: 1.9.5 Added ``pump`` argument
 
+   .. versionchanged:: 2.5.3 no longer mistakenly returns an event when ``eventtype`` is None or not passed.
+
    .. ## pygame.event.peek ##
 
 .. function:: clear
@@ -491,7 +493,7 @@ On Android, the following events can be generated
 
       Read-only. The event type identifier. For user created event
       objects, this is the ``type`` argument passed to
-      :func:`pygame.event.Event()`.
+      :class:`pygame.event.Event()`.
 
       For example, some predefined event identifiers are ``QUIT`` and
       ``MOUSEMOTION``.

@@ -821,7 +821,7 @@ class EventModuleTest(unittest.TestCase):
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
-        'requires the SDL_VIDEODRIVER to be a non-null value',
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_set_grab__and_get_symmetric(self):
         """Ensure event grabbing can be enabled and disabled.
@@ -889,7 +889,7 @@ class EventModuleTest(unittest.TestCase):
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
-        'requires the SDL_VIDEODRIVER to be a non-null value',
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_get_grab(self):
         """Ensure get_grab() works as expected"""
