@@ -39,9 +39,9 @@ display = py.extension_module(
 )
 endif
 
-event = py.extension_module(
-    'event',
-    'event.c',
+_event = py.extension_module(
+    '_event',
+    '_event.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
     install: true,

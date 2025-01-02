@@ -118,7 +118,7 @@ class EventTypeTest(unittest.TestCase):
             self.assertIn(attr, d)
 
         # redundant type field as kwarg
-        self.assertRaises(ValueError, pygame.event.Event, 10, type=100)
+        self.assertRaises(TypeError, pygame.event.Event, 10, type=100)
 
     def test_as_str(self):
         # Bug reported on Pygame mailing list July 24, 2011:
@@ -250,13 +250,6 @@ class EventModuleArgsTest(unittest.TestCase):
         self.assertRaises(TypeError, pygame.event.get, ["a", "b", "c"])
 
     def test_peek(self):
-        pygame.event.peek()
-        pygame.event.peek(None)
-        pygame.event.peek(None, True)
-
-        pygame.event.peek(pump=False)
-        pygame.event.peek(pump=True)
-        pygame.event.peek(eventtype=None)
         pygame.event.peek(eventtype=[pygame.KEYUP, pygame.KEYDOWN])
         pygame.event.peek(eventtype=pygame.USEREVENT, pump=False)
 
@@ -293,6 +286,20 @@ class EventCustomTypeTest(unittest.TestCase):
         queue = pygame.event.get(atype)
         self.assertEqual(len(queue), 1)
         self.assertEqual(queue[0].type, atype)
+
+    def test_subclass(self):
+        class MyEvent(pygame.event.Event):
+            pass
+
+        self.assertEqual(MyEvent.type, pygame.event.custom_type() - 1)
+
+        event = MyEvent()
+        self.assertEqual(event.type, MyEvent.type)
+        self.assertIs(MyEvent, pygame.event.event_class(MyEvent.type))
+
+        d = {"arg": "val"}
+        event = MyEvent(d)
+        self.assertIs(event.dict, d)
 
     def test_custom_type__end_boundary(self):
         """Ensure custom_type() raises error when no more custom types.
@@ -484,6 +491,17 @@ class EventModuleTest(unittest.TestCase):
             e = pygame.event.poll()
             self.assertEqual(e.type, event.type)
             self.assertIs(e.dict, event.dict)
+
+    def test_post_same_object(self):
+        pygame.event.clear()
+
+        for ev_type in EVENT_TYPES:
+            event = pygame.event.Event(ev_type, EVENT_TEST_PARAMS[ev_type])
+            pygame.event.post(event)
+
+            self.assertIs(
+                pygame.event.get(ev_type)[0], event, race_condition_notification
+            )
 
     def test_post_blocked(self):
         """
@@ -761,11 +779,6 @@ class EventModuleTest(unittest.TestCase):
         """Ensure peek() works correctly on an empty queue."""
         pygame.event.clear()
 
-        # Ensure all events can be checked.
-        peeked = pygame.event.peek()
-
-        self.assertFalse(peeked)
-
         # Ensure events can be checked individually.
         for event_type in EVENT_TYPES:
             peeked = pygame.event.peek(event_type)
@@ -918,6 +931,25 @@ class EventModuleTest(unittest.TestCase):
         self.assertEqual(pygame.event.poll().type, e2.type)
         self.assertEqual(pygame.event.poll().type, e3.type)
         self.assertEqual(pygame.event.poll().type, pygame.NOEVENT)
+
+    def test_event_class(self):
+        for ev_type in EVENT_TYPES:
+            self.assertEqual(pygame.event.event_class(ev_type).type, ev_type)
+
+        classes = [
+            (pygame.KEYDOWN, pygame.event.KeyDown),
+            (pygame.KEYUP, pygame.event.KeyUp),
+            (pygame.NOEVENT, pygame.event.NoEvent),
+        ]
+
+        for ev_id, ev_cls in classes:
+            self.assertIs(ev_cls, pygame.event.event_class(ev_id))
+            self.assertEqual(ev_cls.type, ev_id)
+
+        for ev_id in EVENT_TYPES:
+            self.assertFalse(
+                getattr(pygame.event.event_class(ev_id), "_unknown", False)
+            )
 
 
 class EventModuleTestsWithTiming(unittest.TestCase):

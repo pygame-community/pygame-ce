@@ -317,8 +317,8 @@ On Android, the following events can be generated
 .. function:: peek
 
    | :sl:`test if event types are waiting on the queue`
-   | :sg:`peek(eventtype=None) -> bool`
-   | :sg:`peek(eventtype=None, pump=True) -> bool`
+   | :sg:`peek(eventtype) -> bool`
+   | :sg:`peek(eventtype, pump=True) -> bool`
 
    Returns ``True`` if there are any events of the given type waiting on the
    queue. If a sequence of event types is passed, this will return ``True`` if
@@ -463,6 +463,17 @@ On Android, the following events can be generated
 
    .. ## pygame.event.custom_type ##
 
+.. function:: event_class
+
+   | :sl:`returns related event class to event type`
+   | :sg:`event_class(type: int, /) -> type[Event]`
+
+   Returns an event class that is correlated with the given event type. If the class to a given event type is not found,
+   but the type is within the range of valid values for the event type, a new subclass will be created.
+
+   .. versionadded:: 2.6.0
+   .. ## pygame.event.event_class ##
+
 .. class:: Event
 
    | :sl:`pygame object for representing events`
@@ -477,6 +488,8 @@ On Android, the following events can be generated
 
    .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Event``
       alias.
+
+   .. versionchanged:: 2.6.0 This class can be subclassed to create user-defined event types.
 
    .. note::
       From version 2.1.3 ``EventType`` is an alias for ``Event``. Beforehand,
@@ -514,5 +527,89 @@ On Android, the following events can be generated
    .. versionaddedold:: 1.9.2 Mutable attributes.
 
    .. ## pygame.event.Event ##
+
+.. table:: List of Event subclasses available as aliases for event types importable as ``pygame.event.{Class name}``.
+   :widths: auto
+
+   =============================  =============================  ==========================
+   Class name                     Alias to                       Notes
+   =============================  =============================  ==========================
+   ``ActiveEvent``                ``ACTIVEEVENT``
+   ``AppTerminating``             ``APP_TERMINATING``
+   ``AppLowMemory``               ``APP_LOWMEMORY``
+   ``AppWillEnterBackground``     ``APP_WILLENTERBACKGROUND``
+   ``AppDidEnterBackground``      ``APP_DIDENTERBACKGROUND``
+   ``AppWillEnterForeground``     ``APP_WILLENTERFOREGROUND``
+   ``AppDidEnterForeground``      ``APP_DIDENTERFOREGROUND``
+   ``ClipboardUpdate``            ``CLIPBOARDUPDATE``
+   ``KeyDown``                    ``KEYDOWN``
+   ``KeyUp``                      ``KEYUP``
+   ``KeyMapChanged``              ``KEYMAPCHANGED``
+   ``LocaleChanged``              ``LOCALECHANGED``              Only for SDL 2.0.14+
+   ``MouseMotion``                ``MOUSEMOTION``
+   ``MouseButtonDown``            ``MOUSEBUTTONDOWN``
+   ``MouseButtonUp``              ``MOUSEBUTTONUP``
+   ``JoyAxisMotion``              ``JOYAXISMOTION``
+   ``JoyBallMotion``              ``JOYBALLMOTION``
+   ``JoyHatMotion``               ``JOYHATMOTION``
+   ``JoyButtonUp``                ``JOYBUTTONUP``
+   ``JoyButtonDown``              ``JOYBUTTONDOWN``
+   ``Quit``                       ``QUIT``
+   ``SysWMEvent``                 ``SYSWMEVENT``
+   ``VideoResize``                ``VIDEORESIZE``
+   ``VideoExpose``                ``VIDEOEXPOSE``
+   ``MidiIn``                     ``MIDIIN``
+   ``MidiOut``                    ``MIDIOUT``
+   ``NoEvent``                    ``NOEVENT``
+   ``FingerMotion``               ``FINGERMOTION``
+   ``FingerDown``                 ``FINGERDOWN``
+   ``FingerUp``                   ``FINGERUP``
+   ``MultiGesture``               ``MULTIGESTURE``
+   ``MouseWheel``                 ``MOUSEWHEEL``
+   ``TextInput``                  ``TEXTINPUT``
+   ``TextEditing``                ``TEXTEDITING``
+   ``DropFile``                   ``DROPFILE``
+   ``DropText``                   ``DROPTEXT``
+   ``DropBegin``                  ``DROPBEGIN``
+   ``DropComplete``               ``DROPCOMPLETE``
+   ``ControllerAxisMotion``       ``CONTROLLERAXISMOTION``
+   ``ControllerButtonDown``       ``CONTROLLERBUTTONDOWN``
+   ``ControllerButtonUp``         ``CONTROLLERBUTTONUP``
+   ``ControllerDeviceAdded``      ``CONTROLLERDEVICEADDED``
+   ``ControllerDeviceRemoved``    ``CONTROLLERDEVICEREMOVED``
+   ``ControllerDeviceMapped``     ``CONTROLLERDEVICEREMAPPED``
+   ``JoyDeviceAdded``             ``JOYDEVICEADDED``
+   ``JoyDeviceRemoved``           ``JOYDEVICEREMOVED``
+   ``ControllerTouchpadDown``     ``CONTROLLERTOUCHPADDOWN``     Only for SDL 2.0.14+
+   ``ControllerTouchpadMotion``   ``CONTROLLERTOUCHPADMOTION``   Only for SDL 2.0.14+
+   ``ControllerTouchpadUp``       ``CONTROLLERTOUCHPADUP``       Only for SDL 2.0.14+
+   ``ControllerSensorUpdate``     ``CONTROLLERSENSORUPDATE``     Only for SDL 2.0.14+
+   ``AudioDeviceAdded``           ``AUDIODEVICEADDED``
+   ``AudioDeviceRemoved``         ``AUDIODEVICEREMOVED``
+   ``RenderTargetsReset``         ``RENDER_TARGETS_RESET``
+   ``RenderDeviceReset``          ``RENDER_DEVICE_RESET``
+   ``WindowShown``                ``WINDOWSHOWN``
+   ``WindowHidden``               ``WINDOWHIDDEN``
+   ``WindowExposed``              ``WINDOWEXPOSED``
+   ``WindowMoved``                ``WINDOWMOVED``
+   ``WindowResized``              ``WINDOWRESIZED``
+   ``WindowSizeChanged``          ``WINDOWSIZECHANGED``
+   ``WindowMinimized``            ``WINDOWMINIMIZED``
+   ``WindowMaximized``            ``WINDOWMAXIMIZED``
+   ``WindowRestored``             ``WINDOWRESTORED``
+   ``WindowEnter``                ``WINDOWENTER``
+   ``WindowLeave``                ``WINDOWLEAVE``
+   ``WindowFocusGained``          ``WINDOWFOCUSGAINED``
+   ``WindowFocusLost``            ``WINDOWFOCUSLOST``
+   ``WindowClose``                ``WINDOWCLOSE``
+   ``WindowTakeFocus``            ``WINDOWTAKEFOCUS``
+   ``WindowHitTest``              ``WINDOWHITTEST``
+   ``WindowICCProfChanged``       ``WINDOWICCPROFCHANGED``
+   ``WindowDisplayChanged``       ``WINDOWDISPLAYCHANGED``
+   =============================  =============================  ==========================
+
+.. note::
+
+   While instantiating these subclasses, don't pass the ``type`` argument to ``{Class name}.__init__()``
 
 .. ## pygame.event ##

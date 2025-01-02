@@ -378,37 +378,43 @@ typedef struct {
 /*
  * EVENT module
  */
-typedef struct pgEventObject pgEventObject;
-
 #ifndef PYGAMEAPI_EVENT_INTERNAL
-#define pgEvent_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(event, 0))
-
-#define pgEvent_Check(x) ((x)->ob_type == &pgEvent_Type)
+#define pgEvent_GetType (*(PyObject * (*)(void)) PYGAMEAPI_GET_SLOT(_event, 0))
 
 #define pgEvent_New \
-    (*(PyObject * (*)(SDL_Event *)) PYGAMEAPI_GET_SLOT(event, 1))
+    (*(PyObject * (*)(SDL_Event *)) PYGAMEAPI_GET_SLOT(_event, 1))
 
 #define pg_post_event \
-    (*(int (*)(Uint32, PyObject *))PYGAMEAPI_GET_SLOT(event, 2))
+    (*(int (*)(int, PyObject *))PYGAMEAPI_GET_SLOT(_event, 2))
 
-#define pg_post_event_dictproxy \
-    (*(int (*)(Uint32, pgEventDictProxy *))PYGAMEAPI_GET_SLOT(event, 3))
+#define pg_post_event_steal \
+    (*(int (*)(int, PyObject *))PYGAMEAPI_GET_SLOT(_event, 3))
 
-#define pg_EnableKeyRepeat (*(int (*)(int, int))PYGAMEAPI_GET_SLOT(event, 4))
+#define pg_EnableKeyRepeat (*(int (*)(int, int))PYGAMEAPI_GET_SLOT(_event, 4))
 
-#define pg_GetKeyRepeat (*(void (*)(int *, int *))PYGAMEAPI_GET_SLOT(event, 5))
+#define pg_GetKeyRepeat \
+    (*(void (*)(int *, int *))PYGAMEAPI_GET_SLOT(_event, 5))
 
-#define pgEvent_GetKeyDownInfo (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 6))
+#define pgEvent_GetKeyDownInfo \
+    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(_event, 6))
 
-#define pgEvent_GetKeyUpInfo (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 7))
+#define pgEvent_GetKeyUpInfo (*(char *(*)(void))PYGAMEAPI_GET_SLOT(_event, 7))
 
 #define pgEvent_GetMouseButtonDownInfo \
-    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 8))
+    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(_event, 8))
 
 #define pgEvent_GetMouseButtonUpInfo \
-    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 9))
+    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(_event, 9))
 
-#define import_pygame_event() IMPORT_PYGAME_MODULE(event)
+#define pgEvent_Check (*(int (*)(PyObject *))PYGAMEAPI_GET_SLOT(_event, 10))
+
+#define pgEvent_FromTypeAndDict \
+    (*(PyObject * (*)(int, PyObject *)) PYGAMEAPI_GET_SLOT(_event, 11))
+
+#define pgEvent_GetEventType \
+    (*(int (*)(PyObject *))PYGAMEAPI_GET_SLOT(_event, 12))
+
+#define import_pygame_event() IMPORT_PYGAME_MODULE(_event)
 #endif
 
 /*
@@ -529,7 +535,7 @@ PYGAMEAPI_DEFINE_SLOTS(joystick);
 PYGAMEAPI_DEFINE_SLOTS(display);
 PYGAMEAPI_DEFINE_SLOTS(surface);
 PYGAMEAPI_DEFINE_SLOTS(surflock);
-PYGAMEAPI_DEFINE_SLOTS(event);
+PYGAMEAPI_DEFINE_SLOTS(_event);
 PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
@@ -543,7 +549,7 @@ PYGAMEAPI_EXTERN_SLOTS(joystick);
 PYGAMEAPI_EXTERN_SLOTS(display);
 PYGAMEAPI_EXTERN_SLOTS(surface);
 PYGAMEAPI_EXTERN_SLOTS(surflock);
-PYGAMEAPI_EXTERN_SLOTS(event);
+PYGAMEAPI_EXTERN_SLOTS(_event);
 PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);

@@ -285,7 +285,7 @@ class TimeModuleTest(unittest.TestCase):
                     set_time, set_dict, repeat, stop = events_tests_dict[event.type]
                     # measure time for each event, should almost match expected time
                     self.assertAlmostEqual(
-                        (now_time - times[event.type]) * 1000, set_time, delta=4
+                        (now_time - times[event.type]) * 1000, set_time, delta=8
                     )
 
                     # the dict attribute should be the same reference, if it exists

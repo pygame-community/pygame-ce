@@ -47,7 +47,7 @@ controller src_c/void.c
 controller_old src_c/void.c
 display src_c/void.c
 draw src_c/void.c
-event src_c/void.c
+_event src_c/void.c
 font src_c/void.c
 gfxdraw  src_c/void.c
 joystick src_c/void.c
