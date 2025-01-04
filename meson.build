@@ -112,7 +112,7 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
     sdl_ver = (sdl_api == 3) ? '3.1.6' : '2.30.10'
     sdl_image_ver = (sdl_api == 3) ? '3.1.0' : '2.8.3'
     sdl_mixer_ver = '2.8.0'
-    sdl_ttf_ver = '2.22.0'
+    sdl_ttf_ver = '2.24.0'
 
     dlls = []
 

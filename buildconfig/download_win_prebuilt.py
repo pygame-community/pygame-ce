@@ -94,8 +94,8 @@ def get_urls(x86=True, x64=True):
         '8538fea0cc4aabba2fc64db06196f1bb76a2785f'
         ],
         [
-        'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.22.0/SDL2_ttf-devel-2.22.0-VC.zip',
-        '2d4f131909af2985b5ebc5ed296d28628c87c243'
+        'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.24.0/SDL2_ttf-devel-2.24.0-VC.zip',
+        '2d18b9a4fc2ec0eee80de2a946b088d4e6efd0ee'
         ],
         [
         'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.0/SDL2_mixer-devel-2.8.0-VC.zip',
@@ -243,12 +243,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_ttf-devel-2.22.0-VC/SDL2_ttf-2.22.0'
+                'SDL2_ttf-devel-2.24.0-VC/SDL2_ttf-2.24.0'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_ttf-2.22.0'
+                'SDL2_ttf-2.24.0'
             )
         )
         copy(
