@@ -901,7 +901,6 @@ class FontTypeTest(unittest.TestCase):
                 ("get_descent", ()),
                 ("get_ascent", ()),
                 ("get_linesize", ()),
-                ("set_linesize", (2,)),
                 ("get_bold", ()),
                 ("set_bold", (True,)),
                 ("get_italic", ()),
@@ -919,6 +918,11 @@ class FontTypeTest(unittest.TestCase):
             skip_methods = set()
             version = pygame.font.get_sdl_ttf_version()
             if version >= (2, 0, 18):
+                if version >= (2, 24, 0):
+                    methods.append(("set_linesize", (2,)))
+                else:
+                    skip_methods.add("set_linesize")
+
                 methods.append(("get_point_size", ()))
                 methods.append(("set_point_size", (34,)))
             else:
