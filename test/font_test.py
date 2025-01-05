@@ -385,6 +385,24 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(isinstance(linesize, int))
         self.assertTrue(linesize > 0)
 
+    def test_set_linesize(self):
+        f = pygame_font.Font(None, 20)
+        linesize = f.get_linesize()
+
+        # check increasing linesize
+        f.set_linesize(linesize + 1)
+        self.assertEqual(f.get_linesize(), linesize + 1)
+
+        # check random linesize
+        expected_linesizes = [30, 1, 22, 34, 5, 10, 0]
+        for expected_size in expected_linesizes:
+            f.set_linesize(expected_size)
+            self.assertEqual(f.get_linesize(), expected_size)
+
+        # check invalid linesize
+        with self.assertRaises(ValueError):
+            f.set_linesize(-1)
+
     def test_metrics(self):
         # Ensure bytes decoding works correctly. Can only compare results
         # with unicode for now.
@@ -867,6 +885,7 @@ class FontTypeTest(unittest.TestCase):
                 ("get_height", ()),
                 ("get_italic", ()),
                 ("get_linesize", ()),
+                ("set_linesize", (2,)),
                 ("get_sized_descender", ()),
                 ("get_underline", ()),
                 ("metrics", ("any text",)),
@@ -882,6 +901,7 @@ class FontTypeTest(unittest.TestCase):
                 ("get_descent", ()),
                 ("get_ascent", ()),
                 ("get_linesize", ()),
+                ("set_linesize", (2,)),
                 ("get_bold", ()),
                 ("set_bold", (True,)),
                 ("get_italic", ()),
