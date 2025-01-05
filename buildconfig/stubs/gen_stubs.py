@@ -131,6 +131,8 @@ with open(init_file, "w") as f:
     f.write(misc_stubs)
 
     for mod, items in pygame_all_imports.items():
+        if mod == "pygame":
+            mod = "."
         if len(items) <= 4:
             # try to write imports in a single line if it can fit the line limit
             import_items = (f"{string} as {string}" for string in items)
