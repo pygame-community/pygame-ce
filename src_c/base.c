@@ -2316,6 +2316,7 @@ static PyMethodDef _base_methods[] = {
 // generated at runtime.
 // when building static make global accessible symbol directly.
 static PyObject *pgExc_SDLError;
+static PyObject *pgExc_PygameDebugWarning;
 #endif
 
 MODINIT_DEFINE(base)
@@ -2325,6 +2326,7 @@ MODINIT_DEFINE(base)
 #if !(defined(BUILD_STATIC) && defined(NO_PYGAME_C_API))
     // only pointer via C-api will be used, no need to keep global.
     PyObject *pgExc_SDLError;
+    PyObject *pgExc_PygameDebugWarning;
 #endif
     static void *c_api[PYGAMEAPI_BASE_NUMSLOTS];
 
@@ -2375,6 +2377,15 @@ MODINIT_DEFINE(base)
         goto error;
     }
 
+    /* create the exceptions */
+    pgExc_PygameDebugWarning =
+        PyErr_NewException("pygame.PygameDebugWarning", PyExc_Warning, NULL);
+    if (PyModule_AddObject(module, "PygameDebugWarning",
+                           pgExc_PygameDebugWarning)) {
+        Py_XDECREF(pgExc_PygameDebugWarning);
+        goto error;
+    }
+
     /* export the c api */
     c_api[0] = pgExc_SDLError;
     c_api[1] = pg_RegisterQuit;
@@ -2405,8 +2416,9 @@ MODINIT_DEFINE(base)
     c_api[26] = pg_TwoDoublesFromFastcallArgs;
     c_api[27] = pg_GetDefaultConvertFormat;
     c_api[28] = pg_SetDefaultConvertFormat;
+    c_api[29] = pgExc_PygameDebugWarning;
 
-#define FILLED_SLOTS 29
+#define FILLED_SLOTS 30
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch
