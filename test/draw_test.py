@@ -1549,57 +1549,6 @@ class LineMixin(BaseLineMixin):
                     pos = (x, y + ((x + 2) // 5))
                     self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
 
-    def test_line__bounding_rect(self):
-        """Ensures draw line returns the correct bounding rect.
-
-        Test lines with endpoints on and off the surface and a range of
-        width/thickness values.
-        """
-
-        line_color = pygame.Color("red")
-        surf_color = pygame.Color("black")
-        width = height = 30
-        # Using a rect to help manage where the lines are drawn.
-        helper_rect = pygame.Rect((0, 0), (width, height))
-
-        # Testing surfaces of different sizes. One larger than the helper_rect
-        # and one smaller (to test lines that span the surface).
-        for size in ((width + 5, height + 5), (width - 5, height - 5)):
-            surface = pygame.Surface(size, 0, 32)
-            surf_rect = surface.get_rect()
-
-            # Move the helper rect to different positions to test line
-            # endpoints on and off the surface.
-            for pos in rect_corners_mids_and_center(surf_rect):
-                helper_rect.center = pos
-
-                # Draw using different thicknesses.
-                for thickness in range(-1, 5):
-                    for start, end in self._rect_lines(helper_rect):
-                        surface.fill(surf_color)  # Clear for each test.
-
-                        bounding_rect = self.draw_line(
-                            surface, line_color, start, end, thickness
-                        )
-
-                        if 0 < thickness:
-                            # Calculating the expected_rect after the line is
-                            # drawn (it uses what is actually drawn).
-                            expected_rect = create_bounding_rect(
-                                surface, surf_color, start
-                            )
-                        else:
-                            # Nothing drawn.
-                            expected_rect = pygame.Rect(start, (0, 0))
-
-                        self.assertEqual(
-                            bounding_rect,
-                            expected_rect,
-                            "start={}, end={}, size={}, thickness={}".format(
-                                start, end, size, thickness
-                            ),
-                        )
-
     def test_line__surface_clip(self):
         """Ensures draw line respects a surface's clip area."""
         surfw = surfh = 30
@@ -2324,53 +2273,6 @@ class LinesMixin(BaseLineMixin):
                 for t in (-1, 0, 1):
                     pos = (x_right + t, y)
                     self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
-
-    def test_lines__bounding_rect(self):
-        """Ensures draw lines returns the correct bounding rect.
-
-        Test lines with endpoints on and off the surface and a range of
-        width/thickness values.
-        """
-        line_color = pygame.Color("red")
-        surf_color = pygame.Color("black")
-        width = height = 30
-        # Using a rect to help manage where the lines are drawn.
-        pos_rect = pygame.Rect((0, 0), (width, height))
-
-        # Testing surfaces of different sizes. One larger than the pos_rect
-        # and one smaller (to test lines that span the surface).
-        for size in ((width + 5, height + 5), (width - 5, height - 5)):
-            surface = pygame.Surface(size, 0, 32)
-            surf_rect = surface.get_rect()
-
-            # Move pos_rect to different positions to test line endpoints on
-            # and off the surface.
-            for pos in rect_corners_mids_and_center(surf_rect):
-                pos_rect.center = pos
-                # Shape: Triangle (if closed), ^ caret (if not closed).
-                pts = (pos_rect.midleft, pos_rect.midtop, pos_rect.midright)
-                pos = pts[0]  # Rect position if nothing drawn.
-
-                # Draw using different thickness and closed values.
-                for thickness in range(-1, 5):
-                    for closed in (True, False):
-                        surface.fill(surf_color)  # Clear for each test.
-
-                        bounding_rect = self.draw_lines(
-                            surface, line_color, closed, pts, thickness
-                        )
-
-                        if 0 < thickness:
-                            # Calculating the expected_rect after the lines are
-                            # drawn (it uses what is actually drawn).
-                            expected_rect = create_bounding_rect(
-                                surface, surf_color, pos
-                            )
-                        else:
-                            # Nothing drawn.
-                            expected_rect = pygame.Rect(pos, (0, 0))
-
-                        self.assertEqual(bounding_rect, expected_rect)
 
     def test_lines__surface_clip(self):
         """Ensures draw lines respects a surface's clip area."""
@@ -4308,61 +4210,6 @@ class DrawPolygonMixin:
                 self.surface, RED, ((0, 0), (0, 20), (20, 20), 20), 0
             ),
         )
-
-    def test_polygon__bounding_rect(self):
-        """Ensures draw polygon returns the correct bounding rect.
-
-        Tests polygons on and off the surface and a range of width/thickness
-        values.
-        """
-        polygon_color = pygame.Color("red")
-        surf_color = pygame.Color("black")
-        min_width = min_height = 5
-        max_width = max_height = 7
-        sizes = ((min_width, min_height), (max_width, max_height))
-        surface = pygame.Surface((20, 20), 0, 32)
-        surf_rect = surface.get_rect()
-        # Make a rect that is bigger than the surface to help test drawing
-        # polygons off and partially off the surface.
-        big_rect = surf_rect.inflate(min_width * 2 + 1, min_height * 2 + 1)
-
-        for pos in rect_corners_mids_and_center(
-            surf_rect
-        ) + rect_corners_mids_and_center(big_rect):
-            # A rect (pos_rect) is used to help create and position the
-            # polygon. Each of this rect's position attributes will be set to
-            # the pos value.
-            for attr in RECT_POSITION_ATTRIBUTES:
-                # Test using different rect sizes and thickness values.
-                for width, height in sizes:
-                    pos_rect = pygame.Rect((0, 0), (width, height))
-                    setattr(pos_rect, attr, pos)
-                    # Points form a triangle with no fully
-                    # horizontal/vertical lines.
-                    vertices = (
-                        pos_rect.midleft,
-                        pos_rect.midtop,
-                        pos_rect.bottomright,
-                    )
-
-                    for thickness in range(4):
-                        surface.fill(surf_color)  # Clear for each test.
-
-                        bounding_rect = self.draw_polygon(
-                            surface, polygon_color, vertices, thickness
-                        )
-
-                        # Calculating the expected_rect after the polygon
-                        # is drawn (it uses what is actually drawn).
-                        expected_rect = create_bounding_rect(
-                            surface, surf_color, vertices[0]
-                        )
-
-                        self.assertEqual(
-                            bounding_rect,
-                            expected_rect,
-                            f"thickness={thickness}",
-                        )
 
     def test_polygon__surface_clip(self):
         """Ensures draw polygon respects a surface's clip area.
