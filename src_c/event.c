@@ -1591,9 +1591,9 @@ static PyTypeObject pgEvent_Type;
 #define OFF(x) offsetof(pgEventObject, x)
 
 static PyMemberDef pg_event_members[] = {
-    {"__dict__", T_OBJECT, OFF(dict), READONLY},
-    {"type", T_INT, OFF(type), READONLY},
-    {"dict", T_OBJECT, OFF(dict), READONLY},
+    {"__dict__", T_OBJECT, OFF(dict), READONLY, DOC_EVENT_EVENT_DICT},
+    {"type", T_INT, OFF(type), READONLY, DOC_EVENT_EVENT_TYPE},
+    {"dict", T_OBJECT, OFF(dict), READONLY, DOC_EVENT_EVENT_DICT},
     {NULL} /* Sentinel */
 };
 
@@ -2262,7 +2262,7 @@ pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
         res = PG_PEEP_EVENT_ALL(&event, 1, SDL_PEEKEVENT);
         if (res < 0)
             return RAISE(pgExc_SDLError, SDL_GetError());
-        return pgEvent_New(res ? &event : NULL);
+        return PyBool_FromLong(res);
     }
     else {
         seq = _pg_eventtype_as_seq(obj, &len);
