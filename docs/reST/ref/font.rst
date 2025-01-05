@@ -511,6 +511,16 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.get_linesize ##
 
+   .. method:: set_linesize
+
+      | :sl:`set the line space of the font text`
+      | :sg:`set_linesize(linesize) -> int`
+
+        Set the height in pixels for a line of text with the font. When rendering
+        multiple lines of text this refers to the amount of space between lines.
+
+      .. ## Font.set_linesize ##
+
    .. method:: get_height
 
       | :sl:`get the height of the font`
