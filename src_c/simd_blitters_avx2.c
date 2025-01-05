@@ -192,6 +192,8 @@ pg_avx2_at_runtime_but_uncompiled()
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 {
@@ -269,6 +271,8 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
 {
@@ -335,6 +339,8 @@ alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 alphablit_alpha_avx2_argb_surf_alpha(SDL_BlitInfo *info)
 {
@@ -417,6 +423,8 @@ alphablit_alpha_avx2_argb_surf_alpha(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_rgba_mul_avx2(SDL_BlitInfo *info)
 {
@@ -535,6 +543,8 @@ blit_blend_rgba_mul_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_rgb_mul_avx2(SDL_BlitInfo *info)
 {
@@ -664,6 +674,8 @@ blit_blend_rgb_mul_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_rgba_add_avx2(SDL_BlitInfo *info)
 {
@@ -736,6 +748,8 @@ blit_blend_rgba_add_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_rgb_add_avx2(SDL_BlitInfo *info)
 {
@@ -816,6 +830,8 @@ blit_blend_rgb_add_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_rgba_sub_avx2(SDL_BlitInfo *info)
 {
@@ -888,6 +904,8 @@ blit_blend_rgba_sub_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_rgb_sub_avx2(SDL_BlitInfo *info)
 {
@@ -968,6 +986,8 @@ blit_blend_rgb_sub_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_rgba_max_avx2(SDL_BlitInfo *info)
 {
@@ -1040,6 +1060,8 @@ blit_blend_rgba_max_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_rgb_max_avx2(SDL_BlitInfo *info)
 {
@@ -1120,6 +1142,8 @@ blit_blend_rgb_max_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_rgba_min_avx2(SDL_BlitInfo *info)
 {
@@ -1192,6 +1216,8 @@ blit_blend_rgba_min_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_rgb_min_avx2(SDL_BlitInfo *info)
 {
@@ -1272,6 +1298,8 @@ blit_blend_rgb_min_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
 {
@@ -1560,6 +1588,8 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
 {
