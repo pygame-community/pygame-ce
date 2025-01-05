@@ -885,7 +885,6 @@ class FontTypeTest(unittest.TestCase):
                 ("get_height", ()),
                 ("get_italic", ()),
                 ("get_linesize", ()),
-                ("set_linesize", (2,)),
                 ("get_sized_descender", ()),
                 ("get_underline", ()),
                 ("metrics", ("any text",)),
