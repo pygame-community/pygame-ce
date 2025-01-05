@@ -289,15 +289,16 @@
 
       .. versionadded:: 2.5.0
 
-   .. attribute:: wm_info
+   .. attribute:: handle
 
-      | :sl:`Get information about the current windowing system`
-      | :sg:`wm_info -> dict`
+      | :sl:`Get the window handle provided by the window manager if supported otherwise 0`
+      | :sg:`handle -> int`
 
-      Creates a dictionary filled with string keys. The strings and values are
-      arbitrarily created by the system. Some systems may have no information and
-      an empty dictionary will be returned. Most platforms will return a "window"
-      key with the value set to the system id for the window.
+      Returns the window handle provided by the window manager as an integer. If the operating
+      system is not supported or the window manager hides the handle the sentinel ``0`` is returned.
+
+      The handle is generally available with Windows, X11 (Linux), Cocoa (MacOS), UIKit (iOS),
+      Android and Vivante while unavailable under Wayland and everything else.
 
       .. versionaddedold:: 2.5.3
 

@@ -784,129 +784,38 @@ window_get_opengl(pgWindowObject *self, void *v)
 }
 
 static PyObject *
-window_get_wm_info(pgWindowObject *self, void *v)
+window_get_handle(pgWindowObject *self, void *v)
 {
-    PyObject *dict;
-    PyObject *tmp;
-
-    dict = PyDict_New();
-    if (!dict)
-        return NULL;
-
     SDL_Window *win = self->_win;
+    size_t handle = 0;
 
 #if SDL_VERSION_ATLEAST(3, 1, 3)
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
-    tmp = PyLong_FromLongLong((long long)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL));
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLongLong((long long)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_WIN32_HDC_POINTER, NULL));
-    PyDict_SetItemString(dict, "hdc", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLongLong((long long)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, NULL));
-    PyDict_SetItemString(dict, "hinstance", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)SDL_GetPointerProperty(
+        props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 #endif
 #if defined(SDL_VIDEO_DRIVER_X11)
-    tmp = PyLong_FromLong((long)SDL_GetNumberProperty(
-        props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, NULL));
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong((long)SDL_GetNumberProperty(
-        props, SDL_PROP_WINDOW_X11_SCREEN_NUMBER, NULL));
-    PyDict_SetItemString(dict, "screen", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyCapsule_New(SDL_GetPointerProperty(
-                            props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL),
-                        "display", NULL);
-    PyDict_SetItemString(dict, "display", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)SDL_GetNumberProperty(
+        props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, NULL);
 #endif
 #if defined(SDL_VIDEO_DRIVER_COCOA)
-    tmp = PyCapsule_New(SDL_GetPointerProperty(
-                            props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL),
-                        "window", NULL);
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)SDL_GetPointerProperty(
+        props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
 #endif
 #if defined(SDL_VIDEO_DRIVER_UIKIT)
-    tmp = PyCapsule_New(SDL_GetPointerProperty(
-                            props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL),
-                        "window", NULL);
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong((long)SDL_GetNumberProperty(
-        props, SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER, NULL));
-    PyDict_SetItemString(dict, "framebuffer", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong((long)SDL_GetNumberProperty(
-        props, SDL_PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER, NULL));
-    PyDict_SetItemString(dict, "colorbuffer", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong((long)SDL_GetNumberProperty(
-        props, SDL_PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER, NULL));
-    PyDict_SetItemString(dict, "resolveFramebuffer", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)SDL_GetPointerProperty(
+        props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
 #endif
-#if defined(SDL_VIDEO_DRIVER_WAYLAND)
-    tmp = PyCapsule_New(SDL_GetPointerProperty(
-                            props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL),
-                        "display", NULL);
-    PyDict_SetItemString(dict, "display", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyCapsule_New(SDL_GetPointerProperty(
-                            props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL),
-                        "surface", NULL);
-    PyDict_SetItemString(dict, "surface", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyCapsule_New(
-        SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_VIEWPORT_POINTER,
-                               NULL),
-        "viewport", NULL);
-    PyDict_SetItemString(dict, "viewport", tmp);
-    Py_DECREF(tmp);
-#endif
+// wayland does not support window handle
 #if defined(SDL_VIDEO_DRIVER_ANDROID)
-    tmp = PyCapsule_New(SDL_GetPointerProperty(
-                            props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL),
-                        "window", NULL);
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong((long)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER, NULL));
-    PyDict_SetItemString(dict, "surface", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)SDL_GetPointerProperty(
+        props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
 #endif
 #if defined(SDL_VIDEO_DRIVER_VIVANTE)
-    tmp = PyLong_FromLong((long)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER, NULL));
-    PyDict_SetItemString(dict, "display", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong((long)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER, NULL));
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong((long)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_VIVANTE_SURFACE_POINTER, NULL));
-    PyDict_SetItemString(dict, "surface", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)SDL_GetPointerProperty(
+        props, SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER, NULL);
 #endif
 
 #else  // sdl 2
@@ -915,85 +824,32 @@ window_get_wm_info(pgWindowObject *self, void *v)
     SDL_VERSION(&(info.version))
 
     if (!SDL_GetWindowWMInfo(win, &info))
-        return dict;
+        return PyLong_FromLong(0);
 
-    (void)tmp;
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
-    tmp = PyLong_FromLongLong((long long)info.info.win.window);
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLongLong((long long)info.info.win.hdc);
-    PyDict_SetItemString(dict, "hdc", tmp);
-    Py_DECREF(tmp);
-    tmp = PyLong_FromLongLong((long long)info.info.win.hinstance);
-    PyDict_SetItemString(dict, "hinstance", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)info.info.win.window;
 #endif
 // WINRT window handle not supported in SDL3
 #if defined(SDL_VIDEO_DRIVER_X11)
-    tmp = PyLong_FromLong(info.info.x11.window);
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyCapsule_New(info.info.x11.display, "display", NULL);
-    PyDict_SetItemString(dict, "display", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)info.info.x11.window;
 #endif
 // DIRECTFB wm info not supported in SDL3
 #if defined(SDL_VIDEO_DRIVER_COCOA)
-    tmp = PyCapsule_New(info.info.cocoa.window, "window", NULL);
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)info.info.cocoa.window;
 #endif
 #if defined(SDL_VIDEO_DRIVER_UIKIT)
-    tmp = PyCapsule_New(info.info.uikit.window, "window", NULL);
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong(info.info.uikit.framebuffer);
-    PyDict_SetItemString(dict, "framebuffer", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong(info.info.uikit.colorbuffer);
-    PyDict_SetItemString(dict, "colorbuffer", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong(info.info.uikit.resolveFramebuffer);
-    PyDict_SetItemString(dict, "resolveFramebuffer", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)info.info.uikit.window;
 #endif
-#if defined(SDL_VIDEO_DRIVER_WAYLAND)
-    tmp = PyCapsule_New(info.info.wl.display, "display", NULL);
-    PyDict_SetItemString(dict, "display", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyCapsule_New(info.info.wl.surface, "surface", NULL);
-    PyDict_SetItemString(dict, "surface", tmp);
-    Py_DECREF(tmp);
-    // shell_surface deprecated in SDL3
-#endif
+// wayland does not support window handle
 #if defined(SDL_VIDEO_DRIVER_ANDROID)
-    tmp = PyCapsule_New(info.info.android.window, "window", NULL);
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong((long)info.info.android.surface);
-    PyDict_SetItemString(dict, "surface", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)info.info.android.window;
 #endif
 #if defined(SDL_VIDEO_DRIVER_VIVANTE)
-    tmp = PyLong_FromLong((long)info.info.vivante.display);
-    PyDict_SetItemString(dict, "display", tmp);
-    Py_DECREF(tmp);
-
-    tmp = PyLong_FromLong((long)info.info.vivante.window);
-    PyDict_SetItemString(dict, "window", tmp);
-    Py_DECREF(tmp);
+    handle = (size_t)info.info.vivante.window;
 #endif
 #endif  // sdl 3
 
-    return dict;
+    return PyLong_FromSize_t(handle);
 }
 
 static void
@@ -1412,7 +1268,7 @@ static PyGetSetDef _window_getset[] = {
      DOC_WINDOW_OPACITY, NULL},
     {"id", (getter)window_get_window_id, NULL, DOC_WINDOW_ID, NULL},
     {"opengl", (getter)window_get_opengl, NULL, DOC_WINDOW_OPENGL, NULL},
-    {"wm_info", (getter)window_get_wm_info, NULL, DOC_WINDOW_WMINFO, NULL},
+    {"handle", (getter)window_get_handle, NULL, DOC_WINDOW_HANDLE, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
