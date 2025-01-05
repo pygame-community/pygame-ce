@@ -385,6 +385,10 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(isinstance(linesize, int))
         self.assertTrue(linesize > 0)
 
+    @unittest.skipIf(
+        pygame.font.get_sdl_ttf_version() < (2, 24, 0),
+        "supported in SDL_ttf 2.24.0 onwards",
+    )
     def test_set_linesize(self):
         f = pygame_font.Font(None, 20)
         linesize = f.get_linesize()
@@ -917,17 +921,17 @@ class FontTypeTest(unittest.TestCase):
             skip_methods = set()
             version = pygame.font.get_sdl_ttf_version()
             if version >= (2, 0, 18):
-                if version >= (2, 24, 0):
-                    methods.append(("set_linesize", (2,)))
-                else:
-                    skip_methods.add("set_linesize")
-
                 methods.append(("get_point_size", ()))
                 methods.append(("set_point_size", (34,)))
             else:
                 skip_methods.add("get_point_size")
                 skip_methods.add("set_point_size")
                 skip_methods.add("point_size")
+
+            if version >= (2, 24, 0):
+                methods.append(("set_linesize", (2,)))
+            else:
+                skip_methods.add("set_linesize")
 
             if version < (2, 20, 0):
                 skip_methods.add("align")
