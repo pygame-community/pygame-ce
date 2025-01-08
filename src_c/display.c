@@ -2950,19 +2950,22 @@ pg_gl_get_proc(PyObject *self, PyObject *arg)
     if (!proc_name) {
         return NULL;
     }
-    unsigned long long proc_addr =
-        (unsigned long long)SDL_GL_GetProcAddress(proc_name);
+
+    void *proc_addr = SDL_GL_GetProcAddress(proc_name);
     if (!proc_addr) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    PyObject *proc_from_address_args = Py_BuildValue("(K)", proc_addr);
-    if (!proc_from_address_args) {
+    PyObject *proc_addr_obj = PyLong_FromVoidPtr(proc_addr);
+    if (!proc_addr_obj) {
         return NULL;
     }
     if (!pg_proc_from_address) {
         return RAISE(PyExc_TypeError, "'_proc_from_address' object is NULL");
     }
-    return PyObject_CallObject(pg_proc_from_address, proc_from_address_args);
+    PyObject *retv =
+        PyObject_CallFunction(pg_proc_from_address, "(O)", proc_addr_obj);
+    Py_DECREF(proc_addr_obj);
+    return retv;
 }
 
 static PyMethodDef _pg_display_methods[] = {
