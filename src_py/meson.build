@@ -4,6 +4,7 @@ python_sources = files(
     '_camera_opencv.py',
     '_data_classes.py',
     '_debug.py',
+    '_ffi.py',
     '_sprite.py',
     'camera.py',
     'colordict.py',

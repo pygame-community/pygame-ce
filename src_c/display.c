@@ -2938,6 +2938,33 @@ error:
     return NULL;
 }
 
+static PyObject *pg_proc_from_address = NULL;
+
+static PyObject *
+pg_gl_get_proc(PyObject *self, PyObject *arg)
+{
+    if (!PyUnicode_Check(arg)) {
+        return RAISE(PyExc_TypeError, "'proc_name' should be a string");
+    }
+    const char *proc_name = PyUnicode_AsUTF8(arg);
+    if (!proc_name) {
+        return NULL;
+    }
+    unsigned long long proc_addr =
+        (unsigned long long)SDL_GL_GetProcAddress(proc_name);
+    if (!proc_addr) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    PyObject *proc_from_address_args = Py_BuildValue("(K)", proc_addr);
+    if (!proc_from_address_args) {
+        return NULL;
+    }
+    if (!pg_proc_from_address) {
+        return RAISE(PyExc_TypeError, "'_proc_from_address' object is NULL");
+    }
+    return PyObject_CallObject(pg_proc_from_address, proc_from_address_args);
+}
+
 static PyMethodDef _pg_display_methods[] = {
     {"init", (PyCFunction)pg_display_init, METH_NOARGS, DOC_DISPLAY_INIT},
     {"quit", (PyCFunction)pg_display_quit, METH_NOARGS, DOC_DISPLAY_QUIT},
@@ -3015,6 +3042,7 @@ static PyMethodDef _pg_display_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_DISPLAY_SETALLOWSCREENSAVER},
     {"message_box", (PyCFunction)pg_message_box, METH_VARARGS | METH_KEYWORDS,
      DOC_DISPLAY_MESSAGEBOX},
+    {"gl_get_proc", (PyCFunction)pg_gl_get_proc, METH_O, "doc"},
     {NULL, NULL, 0, NULL}};
 
 #ifndef PYPY_VERSION
@@ -3064,6 +3092,19 @@ MODINIT_DEFINE(display)
     if (PyType_Ready(&pgVidInfo_Type) < 0) {
         return NULL;
     }
+
+    /* load _ffi module for display.get_gl_proc function */
+    PyObject *pg_ffi_module = PyImport_ImportModule("pygame._ffi");
+    if (!pg_ffi_module) {
+        return NULL;
+    }
+
+    pg_proc_from_address =
+        PyObject_GetAttrString(pg_ffi_module, "_proc_from_address");
+    if (!pg_proc_from_address) {
+        return NULL;
+    }
+    Py_DECREF(pg_ffi_module);
 
     /* create the module */
     module = PyModule_Create(&_module);
