@@ -2938,7 +2938,7 @@ error:
     return NULL;
 }
 
-static PyObject *pg_proc_from_address = NULL;
+static PyObject *pg_gl_proc_from_address = NULL;
 
 static PyObject *
 pg_gl_get_proc(PyObject *self, PyObject *arg)
@@ -2951,7 +2951,12 @@ pg_gl_get_proc(PyObject *self, PyObject *arg)
         return NULL;
     }
 
-    void *proc_addr = SDL_GL_GetProcAddress(proc_name);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_FunctionPointer proc_addr;
+#else
+    void *proc_addr;
+#endif
+    proc_addr = SDL_GL_GetProcAddress(proc_name);
     if (!proc_addr) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -2959,11 +2964,11 @@ pg_gl_get_proc(PyObject *self, PyObject *arg)
     if (!proc_addr_obj) {
         return NULL;
     }
-    if (!pg_proc_from_address) {
+    if (!pg_gl_proc_from_address) {
         return RAISE(PyExc_TypeError, "'_proc_from_address' object is NULL");
     }
     PyObject *retv =
-        PyObject_CallFunction(pg_proc_from_address, "(O)", proc_addr_obj);
+        PyObject_CallFunction(pg_gl_proc_from_address, "(O)", proc_addr_obj);
     Py_DECREF(proc_addr_obj);
     return retv;
 }
@@ -3102,9 +3107,9 @@ MODINIT_DEFINE(display)
         return NULL;
     }
 
-    pg_proc_from_address =
-        PyObject_GetAttrString(pg_ffi_module, "_proc_from_address");
-    if (!pg_proc_from_address) {
+    pg_gl_proc_from_address =
+        PyObject_GetAttrString(pg_ffi_module, "_gl_proc_from_address");
+    if (!pg_gl_proc_from_address) {
         return NULL;
     }
     Py_DECREF(pg_ffi_module);
