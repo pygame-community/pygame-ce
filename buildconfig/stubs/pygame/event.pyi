@@ -1,9 +1,37 @@
 from typing import Any, Optional, Union, final
+from typing_extensions import deprecated  # added in 3.13
 
 from pygame.typing import SequenceLike
 
 @final
 class Event:
+    # Event fields here duplicated below into EventType because Event is
+    # marked as final and can't be subclassed like the other xType aliases
+    # are to allow @deprecated.
+
+    @property
+    def type(self) -> int: ...
+    __dict__: dict[str, Any]
+    __hash__: None  # type: ignore
+    def __init__(
+        self, type: int, dict: dict[str, Any] = ..., **kwargs: Any
+    ) -> None: ...
+    def __getattribute__(self, name: str) -> Any: ...
+    def __setattr__(self, name: str, value: Any) -> None: ...
+    def __delattr__(self, name: str) -> None: ...
+    def __bool__(self) -> bool: ...
+
+    # this is at the bottom because mypy complains if this declaration comes
+    # before any uses of the dict[] typehinting because of the same naming
+    @property
+    def dict(self) -> dict[str, Any]: ...
+
+@final
+@deprecated("Use `Event` instead (this is an old alias)")
+class EventType:
+    # Duplicated Event fields here because it is marked as final and can't be
+    # subclassed like the other xType aliases are to allow @deprecated.
+
     @property
     def type(self) -> int: ...
     __dict__: dict[str, Any]
@@ -41,5 +69,3 @@ def set_grab(grab: bool, /) -> None: ...
 def get_grab() -> bool: ...
 def post(event: Event, /) -> bool: ...
 def custom_type() -> int: ...
-
-EventType = Event
