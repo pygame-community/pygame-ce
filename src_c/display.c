@@ -2938,7 +2938,7 @@ error:
     return NULL;
 }
 
-static PyObject *pg_gl_proc_from_address = NULL;
+static PyObject *ctypes_functype = NULL;
 
 static PyObject *
 pg_gl_get_proc(PyObject *self, PyObject *arg)
@@ -2958,17 +2958,45 @@ pg_gl_get_proc(PyObject *self, PyObject *arg)
 #endif
     proc_addr = SDL_GL_GetProcAddress(proc_name);
     if (!proc_addr) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        PyErr_Format(pgExc_SDLError, "Unable to get OpenGL function '%s'",
+                     proc_name);
+        return NULL;
     }
     PyObject *proc_addr_obj = PyLong_FromVoidPtr(proc_addr);
     if (!proc_addr_obj) {
         return NULL;
     }
-    if (!pg_gl_proc_from_address) {
-        return RAISE(PyExc_TypeError, "'_proc_from_address' object is NULL");
+
+    // load ctypes_functype if it's NULL
+    if (!ctypes_functype) {
+        PyObject *ctypes_module = PyImport_ImportModule("ctypes");
+        if (!ctypes_module) {
+            return NULL;
+        }
+
+        PyObject *ctypes_functype_factory;
+#if defined(_WIN32)
+        // gl proc need to be called with WINFUNCTYPE (stdcall) on win32
+        ctypes_functype_factory =
+            PyObject_GetAttrString(ctypes_module, "WINFUNCTYPE");
+#else
+        ctypes_functype_factory =
+            PyObject_GetAttrString(ctypes_module, "CFUNCTYPE");
+#endif
+        Py_DECREF(ctypes_module);
+        if (!ctypes_functype_factory) {
+            return NULL;
+        }
+
+        ctypes_functype =
+            PyObject_CallOneArg(ctypes_functype_factory, Py_None);
+        Py_DECREF(ctypes_functype_factory);
+        if (!ctypes_functype) {
+            return NULL;
+        }
     }
-    PyObject *retv =
-        PyObject_CallFunction(pg_gl_proc_from_address, "(O)", proc_addr_obj);
+
+    PyObject *retv = PyObject_CallOneArg(ctypes_functype, proc_addr_obj);
     Py_DECREF(proc_addr_obj);
     return retv;
 }
@@ -3100,19 +3128,6 @@ MODINIT_DEFINE(display)
     if (PyType_Ready(&pgVidInfo_Type) < 0) {
         return NULL;
     }
-
-    /* load _ffi module for display.get_gl_proc function */
-    PyObject *pg_ffi_module = PyImport_ImportModule("pygame._ffi");
-    if (!pg_ffi_module) {
-        return NULL;
-    }
-
-    pg_gl_proc_from_address =
-        PyObject_GetAttrString(pg_ffi_module, "_gl_proc_from_address");
-    if (!pg_gl_proc_from_address) {
-        return NULL;
-    }
-    Py_DECREF(pg_ffi_module);
 
     /* create the module */
     module = PyModule_Create(&_module);
