@@ -1,4 +1,5 @@
 from typing import Any, Optional, Union, overload
+from typing_extensions import deprecated  # added in 3.13
 
 import numpy
 
@@ -100,5 +101,8 @@ class Channel:
     def set_endevent(self, type: Union[int, Event] = 0, /) -> None: ...
     def get_endevent(self) -> int: ...
 
-SoundType = Sound
-ChannelType = Channel
+@deprecated("Use `Sound` instead (this is an old alias)")
+class SoundType(Sound): ...
+
+@deprecated("Use `Channel` instead (this is an old alias)")
+class ChannelType(Channel): ...
