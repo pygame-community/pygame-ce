@@ -8,6 +8,7 @@ from typing import (
     overload,
     Optional,
 )
+from typing_extensions import deprecated  # added in 3.13
 
 from pygame.typing import Point, RectLike, SequenceLike
 
@@ -276,5 +277,8 @@ class Rect(_GenericRect[int]):
 class FRect(_GenericRect[float]):
     ...
 
-RectType = Rect
-FRectType = FRect
+@deprecated("Use `Rect` instead (this is an old alias)")
+class RectType(Rect): ...
+
+@deprecated("Use `FRect` instead (this is an old alias)")
+class FRectType(FRect): ...
