@@ -319,8 +319,6 @@ geometry = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 window = py.extension_module(
     'window',
     'window.c',
@@ -329,7 +327,6 @@ window = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3
