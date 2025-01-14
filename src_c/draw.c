@@ -49,10 +49,11 @@ line_width_corners(float from_x, float from_y, float to_x, float to_y,
                    int width, float *x1, float *y1, float *x2, float *y2,
                    float *x3, float *y3, float *x4, float *y4);
 static void
-draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
-            float startx, float starty, float endx, float endy,
-            int *drawn_area, int disable_first_endpoint,
-            int disable_second_endpoint, int extra_pixel_for_aalines);
+draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+            PG_PixelFormat *surf_format, Uint32 color, float startx,
+            float starty, float endx, float endy, int *drawn_area,
+            int disable_first_endpoint, int disable_second_endpoint,
+            int extra_pixel_for_aalines);
 static void
 draw_arc(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x_center,
          int y_center, int radius1, int radius2, int width, double angle_start,
@@ -65,13 +66,14 @@ static void
 draw_circle_bresenham_thin(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
                            int y0, int radius, Uint32 color, int *drawn_area);
 static void
-draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
-                      int y0, int radius, int thickness, Uint32 color,
-                      int top_right, int top_left, int bottom_left,
-                      int bottom_right, int *drawn_area);
+draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                      PG_PixelFormat *surf_format, int x0, int y0, int radius,
+                      int thickness, Uint32 color, int top_right, int top_left,
+                      int bottom_left, int bottom_right, int *drawn_area);
 static void
-draw_circle_xiaolinwu_thin(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
-                           int y0, int radius, Uint32 color, int top_right,
+draw_circle_xiaolinwu_thin(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                           PG_PixelFormat *surf_format, int x0, int y0,
+                           int radius, Uint32 color, int top_right,
                            int top_left, int bottom_left, int bottom_right,
                            int *drawn_area);
 static void
@@ -162,6 +164,11 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
+    PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
+    if (surf_format == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (!pg_TwoFloatsFromObj(start, &startx, &starty)) {
@@ -186,14 +193,14 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
                            &y2, &x3, &y3, &x4, &y4);
         draw_line_width(surf, surf_clip_rect, color, (int)startx, (int)starty,
                         (int)endx, (int)endy, width, drawn_area);
-        draw_aaline(surf, surf_clip_rect, color, x1, y1, x2, y2, drawn_area, 0,
-                    0, 0);
-        draw_aaline(surf, surf_clip_rect, color, x3, y3, x4, y4, drawn_area, 0,
-                    0, 0);
+        draw_aaline(surf, surf_clip_rect, surf_format, color, x1, y1, x2, y2,
+                    drawn_area, 0, 0, 0);
+        draw_aaline(surf, surf_clip_rect, surf_format, color, x3, y3, x4, y4,
+                    drawn_area, 0, 0, 0);
     }
     else {
-        draw_aaline(surf, surf_clip_rect, color, startx, starty, endx, endy,
-                    drawn_area, 0, 0, 0);
+        draw_aaline(surf, surf_clip_rect, surf_format, color, startx, starty,
+                    endx, endy, drawn_area, 0, 0, 0);
     }
 
     if (!pgSurface_Unlock(surfobj)) {
@@ -340,6 +347,11 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
+    PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
+    if (surf_format == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (!PySequence_Check(points)) {
@@ -406,13 +418,14 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     disable_endpoints =
         !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
     if (closed) {
-        draw_aaline(surf, surf_clip_rect, color, pts[0], pts[1], pts[2],
-                    pts[3], drawn_area, disable_endpoints, disable_endpoints,
-                    extra_px);
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, disable_endpoints,
+                    disable_endpoints, extra_px);
     }
     else {
-        draw_aaline(surf, surf_clip_rect, color, pts[0], pts[1], pts[2],
-                    pts[3], drawn_area, 0, disable_endpoints, extra_px);
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, 0, disable_endpoints,
+                    extra_px);
     }
 
     for (loop = 2; loop < length - 1; ++loop) {
@@ -433,9 +446,9 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         pts_prev[1] = pts[1];
         pts_prev[2] = pts[2];
         pts_prev[3] = pts[3];
-        draw_aaline(surf, surf_clip_rect, color, pts[0], pts[1], pts[2],
-                    pts[3], drawn_area, disable_endpoints, disable_endpoints,
-                    extra_px);
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, disable_endpoints,
+                    disable_endpoints, extra_px);
     }
 
     /* Last line - if open, add endpoint pixels. */
@@ -454,13 +467,14 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     pts_prev[2] = pts[2];
     pts_prev[3] = pts[3];
     if (closed) {
-        draw_aaline(surf, surf_clip_rect, color, pts[0], pts[1], pts[2],
-                    pts[3], drawn_area, disable_endpoints, disable_endpoints,
-                    extra_px);
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, disable_endpoints,
+                    disable_endpoints, extra_px);
     }
     else {
-        draw_aaline(surf, surf_clip_rect, color, pts[0], pts[1], pts[2],
-                    pts[3], drawn_area, disable_endpoints, 0, extra_px);
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, disable_endpoints, 0,
+                    extra_px);
     }
 
     if (closed && length > 2) {
@@ -474,9 +488,9 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         extra_px = steep_prev != steep_curr;
         disable_endpoints =
             !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
-        draw_aaline(surf, surf_clip_rect, color, pts[0], pts[1], pts[2],
-                    pts[3], drawn_area, disable_endpoints, disable_endpoints,
-                    extra_px);
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, disable_endpoints,
+                    disable_endpoints, extra_px);
     }
 
     PyMem_Free(points_buf);
@@ -937,6 +951,11 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
+    PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
+    if (surf_format == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (radius < 1 || width < 0) {
@@ -963,33 +982,38 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
         if (!width || width == radius) {
             draw_circle_filled(surf, surf_clip_rect, posx, posy, radius - 1,
                                color, drawn_area);
-            draw_circle_xiaolinwu(surf, surf_clip_rect, posx, posy, radius, 2,
-                                  color, 1, 1, 1, 1, drawn_area);
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
+                                  posy, radius, 2, color, 1, 1, 1, 1,
+                                  drawn_area);
         }
         else if (width == 1) {
-            draw_circle_xiaolinwu_thin(surf, surf_clip_rect, posx, posy,
-                                       radius, color, 1, 1, 1, 1, drawn_area);
+            draw_circle_xiaolinwu_thin(surf, surf_clip_rect, surf_format, posx,
+                                       posy, radius, color, 1, 1, 1, 1,
+                                       drawn_area);
         }
         else {
-            draw_circle_xiaolinwu(surf, surf_clip_rect, posx, posy, radius,
-                                  width, color, 1, 1, 1, 1, drawn_area);
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
+                                  posy, radius, width, color, 1, 1, 1, 1,
+                                  drawn_area);
         }
     }
     else {
         if (!width || width == radius) {
-            draw_circle_xiaolinwu(surf, surf_clip_rect, posx, posy, radius,
-                                  radius, color, top_right, top_left,
-                                  bottom_left, bottom_right, drawn_area);
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
+                                  posy, radius, radius, color, top_right,
+                                  top_left, bottom_left, bottom_right,
+                                  drawn_area);
         }
         else if (width == 1) {
-            draw_circle_xiaolinwu_thin(surf, surf_clip_rect, posx, posy,
-                                       radius, color, top_right, top_left,
-                                       bottom_left, bottom_right, drawn_area);
+            draw_circle_xiaolinwu_thin(
+                surf, surf_clip_rect, surf_format, posx, posy, radius, color,
+                top_right, top_left, bottom_left, bottom_right, drawn_area);
         }
         else {
-            draw_circle_xiaolinwu(surf, surf_clip_rect, posx, posy, radius,
-                                  width, color, top_right, top_left,
-                                  bottom_left, bottom_right, drawn_area);
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
+                                  posy, radius, width, color, top_right,
+                                  top_left, bottom_left, bottom_right,
+                                  drawn_area);
         }
     }
 
@@ -1267,15 +1291,17 @@ compare_int(const void *a, const void *b)
 }
 
 static Uint32
-get_antialiased_color(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x, int y,
+get_antialiased_color(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                      PG_PixelFormat *surf_format, int x, int y,
                       Uint32 original_color, float brightness)
 {
     Uint8 color_part[4], background_color[4];
-    SDL_GetRGBA(original_color, surf->format, &color_part[0], &color_part[1],
-                &color_part[2], &color_part[3]);
     if (x < surf_clip_rect.x || x >= surf_clip_rect.x + surf_clip_rect.w ||
         y < surf_clip_rect.y || y >= surf_clip_rect.y + surf_clip_rect.h)
         return original_color;
+
+    PG_GetRGBA(original_color, surf_format, PG_GetSurfacePalette(surf),
+               &color_part[0], &color_part[1], &color_part[2], &color_part[3]);
 
     Uint32 pixel = 0;
     int bpp = PG_SURF_BytesPerPixel(surf);
@@ -1303,9 +1329,9 @@ get_antialiased_color(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x, int y,
             break;
     }
 
-    SDL_GetRGBA(pixel, surf->format, &background_color[0],
-                &background_color[1], &background_color[2],
-                &background_color[3]);
+    PG_GetRGBA(pixel, surf_format, PG_GetSurfacePalette(surf),
+               &background_color[0], &background_color[1],
+               &background_color[2], &background_color[3]);
 
     color_part[0] = (Uint8)(brightness * color_part[0] +
                             (1 - brightness) * background_color[0]);
@@ -1315,8 +1341,9 @@ get_antialiased_color(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x, int y,
                             (1 - brightness) * background_color[2]);
     color_part[3] = (Uint8)(brightness * color_part[3] +
                             (1 - brightness) * background_color[3]);
-    original_color = SDL_MapRGBA(surf->format, color_part[0], color_part[1],
-                                 color_part[2], color_part[3]);
+    original_color =
+        PG_MapRGBA(surf_format, PG_GetSurfacePalette(surf), color_part[0],
+                   color_part[1], color_part[2], color_part[3]);
     return original_color;
 }
 
@@ -1383,14 +1410,13 @@ clip_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int *x1, int *y1,
 static int
 set_at(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x, int y, Uint32 color)
 {
-    SDL_PixelFormat *format = surf->format;
     Uint8 *pixels = (Uint8 *)surf->pixels;
 
     if (x < surf_clip_rect.x || x >= surf_clip_rect.x + surf_clip_rect.w ||
         y < surf_clip_rect.y || y >= surf_clip_rect.y + surf_clip_rect.h)
         return 0;
 
-    switch (PG_FORMAT_BytesPerPixel(format)) {
+    switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
             *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
             break;
@@ -1420,10 +1446,11 @@ set_and_check_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x, int y,
 }
 
 static void
-draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
-            float from_x, float from_y, float to_x, float to_y,
-            int *drawn_area, int disable_first_endpoint,
-            int disable_second_endpoint, int extra_pixel_for_aalines)
+draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+            PG_PixelFormat *surf_format, Uint32 color, float from_x,
+            float from_y, float to_x, float to_y, int *drawn_area,
+            int disable_first_endpoint, int disable_second_endpoint,
+            int extra_pixel_for_aalines)
 {
     float gradient, dx, dy, intersect_y, brightness;
     int x, x_pixel_start, x_pixel_end;
@@ -1438,7 +1465,7 @@ draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
      * A line with length 0 is drawn as a single pixel at full brightness. */
     if (fabs(dx) < 0.0001 && fabs(dy) < 0.0001) {
         pixel_color = get_antialiased_color(
-            surf, surf_clip_rect, (int)floor(from_x + 0.5),
+            surf, surf_clip_rect, surf_format, (int)floor(from_x + 0.5),
             (int)floor(from_y + 0.5), color, 1);
         set_and_check_rect(surf, surf_clip_rect, (int)floor(from_x + 0.5),
                            (int)floor(from_y + 0.5), pixel_color, drawn_area);
@@ -1546,8 +1573,9 @@ draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
                 y = (int)y_endpoint;
             }
             if ((int)y_endpoint < y_endpoint) {
-                pixel_color = get_antialiased_color(surf, surf_clip_rect, x, y,
-                                                    color, brightness * x_gap);
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y, color, brightness * x_gap);
                 set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
                                    drawn_area);
             }
@@ -1558,8 +1586,9 @@ draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
                 y--;
             }
             brightness = 1 - brightness;
-            pixel_color = get_antialiased_color(surf, surf_clip_rect, x, y,
-                                                color, brightness * x_gap);
+            pixel_color =
+                get_antialiased_color(surf, surf_clip_rect, surf_format, x, y,
+                                      color, brightness * x_gap);
             set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
                                drawn_area);
             intersect_y += gradient;
@@ -1587,8 +1616,9 @@ draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
                 y = (int)y_endpoint;
             }
             if ((int)y_endpoint < y_endpoint) {
-                pixel_color = get_antialiased_color(surf, surf_clip_rect, x, y,
-                                                    color, brightness * x_gap);
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y, color, brightness * x_gap);
                 set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
                                    drawn_area);
             }
@@ -1599,8 +1629,9 @@ draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
                 y--;
             }
             brightness = 1 - brightness;
-            pixel_color = get_antialiased_color(surf, surf_clip_rect, x, y,
-                                                color, brightness * x_gap);
+            pixel_color =
+                get_antialiased_color(surf, surf_clip_rect, surf_format, x, y,
+                                      color, brightness * x_gap);
             set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
                                drawn_area);
         }
@@ -1611,28 +1642,32 @@ draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
         y = (int)intersect_y;
         if (steep) {
             brightness = 1 - intersect_y + y;
-            pixel_color = get_antialiased_color(surf, surf_clip_rect, y - 1, x,
-                                                color, brightness);
+            pixel_color =
+                get_antialiased_color(surf, surf_clip_rect, surf_format, y - 1,
+                                      x, color, brightness);
             set_and_check_rect(surf, surf_clip_rect, y - 1, x, pixel_color,
                                drawn_area);
             if (y < intersect_y) {
                 brightness = 1 - brightness;
-                pixel_color = get_antialiased_color(surf, surf_clip_rect, y, x,
-                                                    color, brightness);
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, y,
+                                          x, color, brightness);
                 set_and_check_rect(surf, surf_clip_rect, y, x, pixel_color,
                                    drawn_area);
             }
         }
         else {
             brightness = 1 - intersect_y + y;
-            pixel_color = get_antialiased_color(surf, surf_clip_rect, x, y - 1,
-                                                color, brightness);
+            pixel_color =
+                get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                      y - 1, color, brightness);
             set_and_check_rect(surf, surf_clip_rect, x, y - 1, pixel_color,
                                drawn_area);
             if (y < intersect_y) {
                 brightness = 1 - brightness;
-                pixel_color = get_antialiased_color(surf, surf_clip_rect, x, y,
-                                                    color, brightness);
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y, color, brightness);
                 set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
                                    drawn_area);
             }
@@ -2025,10 +2060,9 @@ check_pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
 static void
 unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color)
 {
-    SDL_PixelFormat *format = surf->format;
     Uint8 *pixels = (Uint8 *)surf->pixels;
 
-    switch (PG_FORMAT_BytesPerPixel(format)) {
+    switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
             *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
             break;
@@ -2711,50 +2745,51 @@ draw_circle_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
 }
 
 static void
-draw_eight_symetric_pixels(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
-                           int y0, Uint32 color, int x, int y, float opacity,
+draw_eight_symetric_pixels(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                           PG_PixelFormat *surf_format, int x0, int y0,
+                           Uint32 color, int x, int y, float opacity,
                            int top_right, int top_left, int bottom_left,
                            int bottom_right, int *drawn_area)
 {
     opacity = opacity / 255.0f;
     Uint32 pixel_color;
     if (top_right == 1) {
-        pixel_color = get_antialiased_color(surf, surf_clip_rect, x0 + x,
-                                            y0 - y, color, opacity);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 + x, y0 - y, color, opacity);
         set_and_check_rect(surf, surf_clip_rect, x0 + x, y0 - y, pixel_color,
                            drawn_area);
-        pixel_color = get_antialiased_color(surf, surf_clip_rect, x0 + y,
-                                            y0 - x, color, opacity);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 + y, y0 - x, color, opacity);
         set_and_check_rect(surf, surf_clip_rect, x0 + y, y0 - x, pixel_color,
                            drawn_area);
     }
     if (top_left == 1) {
-        pixel_color = get_antialiased_color(surf, surf_clip_rect, x0 - x,
-                                            y0 - y, color, opacity);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 - x, y0 - y, color, opacity);
         set_and_check_rect(surf, surf_clip_rect, x0 - x, y0 - y, pixel_color,
                            drawn_area);
-        pixel_color = get_antialiased_color(surf, surf_clip_rect, x0 - y,
-                                            y0 - x, color, opacity);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 - y, y0 - x, color, opacity);
         set_and_check_rect(surf, surf_clip_rect, x0 - y, y0 - x, pixel_color,
                            drawn_area);
     }
     if (bottom_left == 1) {
-        pixel_color = get_antialiased_color(surf, surf_clip_rect, x0 - x,
-                                            y0 + y, color, opacity);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 - x, y0 + y, color, opacity);
         set_and_check_rect(surf, surf_clip_rect, x0 - x, y0 + y, pixel_color,
                            drawn_area);
-        pixel_color = get_antialiased_color(surf, surf_clip_rect, x0 - y,
-                                            y0 + x, color, opacity);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 - y, y0 + x, color, opacity);
         set_and_check_rect(surf, surf_clip_rect, x0 - y, y0 + x, pixel_color,
                            drawn_area);
     }
     if (bottom_right == 1) {
-        pixel_color = get_antialiased_color(surf, surf_clip_rect, x0 + x,
-                                            y0 + y, color, opacity);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 + x, y0 + y, color, opacity);
         set_and_check_rect(surf, surf_clip_rect, x0 + x, y0 + y, pixel_color,
                            drawn_area);
-        pixel_color = get_antialiased_color(surf, surf_clip_rect, x0 + y,
-                                            y0 + x, color, opacity);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 + y, y0 + x, color, opacity);
         set_and_check_rect(surf, surf_clip_rect, x0 + y, y0 + x, pixel_color,
                            drawn_area);
     }
@@ -2765,10 +2800,10 @@ draw_eight_symetric_pixels(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
  * with additional line width parameter and quadrants option
  */
 static void
-draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
-                      int y0, int radius, int thickness, Uint32 color,
-                      int top_right, int top_left, int bottom_left,
-                      int bottom_right, int *drawn_area)
+draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                      PG_PixelFormat *surf_format, int x0, int y0, int radius,
+                      int thickness, Uint32 color, int top_right, int top_left,
+                      int bottom_left, int bottom_right, int *drawn_area)
 {
     for (int layer_radius = radius - thickness; layer_radius <= radius;
          layer_radius++) {
@@ -2784,14 +2819,14 @@ draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
                     --y;
                 }
                 prev_opacity = opacity;
-                draw_eight_symetric_pixels(surf, surf_clip_rect, x0, y0, color,
-                                           x, y, 255.0f, top_right, top_left,
-                                           bottom_left, bottom_right,
-                                           drawn_area);
-                draw_eight_symetric_pixels(surf, surf_clip_rect, x0, y0, color,
-                                           x, y - 1, (float)opacity, top_right,
-                                           top_left, bottom_left, bottom_right,
-                                           drawn_area);
+                draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format,
+                                           x0, y0, color, x, y, 255.0f,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                draw_eight_symetric_pixels(
+                    surf, surf_clip_rect, surf_format, x0, y0, color, x, y - 1,
+                    (float)opacity, top_right, top_left, bottom_left,
+                    bottom_right, drawn_area);
                 ++x;
             }
         }
@@ -2803,14 +2838,14 @@ draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
                     --y;
                 }
                 prev_opacity = opacity;
-                draw_eight_symetric_pixels(surf, surf_clip_rect, x0, y0, color,
-                                           x, y, 255.0f - (float)opacity,
+                draw_eight_symetric_pixels(
+                    surf, surf_clip_rect, surf_format, x0, y0, color, x, y,
+                    255.0f - (float)opacity, top_right, top_left, bottom_left,
+                    bottom_right, drawn_area);
+                draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format,
+                                           x0, y0, color, x, y - 1, 255.0f,
                                            top_right, top_left, bottom_left,
                                            bottom_right, drawn_area);
-                draw_eight_symetric_pixels(surf, surf_clip_rect, x0, y0, color,
-                                           x, y - 1, 255.0f, top_right,
-                                           top_left, bottom_left, bottom_right,
-                                           drawn_area);
                 ++x;
             }
         }
@@ -2822,14 +2857,14 @@ draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
                     --y;
                 }
                 prev_opacity = opacity;
-                draw_eight_symetric_pixels(surf, surf_clip_rect, x0, y0, color,
-                                           x, y, 255.0f, top_right, top_left,
-                                           bottom_left, bottom_right,
-                                           drawn_area);
-                draw_eight_symetric_pixels(surf, surf_clip_rect, x0, y0, color,
-                                           x, y - 1, 255.0f, top_right,
-                                           top_left, bottom_left, bottom_right,
-                                           drawn_area);
+                draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format,
+                                           x0, y0, color, x, y, 255.0f,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format,
+                                           x0, y0, color, x, y - 1, 255.0f,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
                 ++x;
             }
         }
@@ -2837,8 +2872,9 @@ draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
 }
 
 static void
-draw_circle_xiaolinwu_thin(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
-                           int y0, int radius, Uint32 color, int top_right,
+draw_circle_xiaolinwu_thin(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                           PG_PixelFormat *surf_format, int x0, int y0,
+                           int radius, Uint32 color, int top_right,
                            int top_left, int bottom_left, int bottom_right,
                            int *drawn_area)
 {
@@ -2853,12 +2889,14 @@ draw_circle_xiaolinwu_thin(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
             --y;
         }
         prev_opacity = opacity;
-        draw_eight_symetric_pixels(
-            surf, surf_clip_rect, x0, y0, color, x, y, 255.0f - (float)opacity,
-            top_right, top_left, bottom_left, bottom_right, drawn_area);
-        draw_eight_symetric_pixels(surf, surf_clip_rect, x0, y0, color, x,
-                                   y - 1, (float)opacity, top_right, top_left,
-                                   bottom_left, bottom_right, drawn_area);
+        draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format, x0, y0,
+                                   color, x, y, 255.0f - (float)opacity,
+                                   top_right, top_left, bottom_left,
+                                   bottom_right, drawn_area);
+        draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format, x0, y0,
+                                   color, x, y - 1, (float)opacity, top_right,
+                                   top_left, bottom_left, bottom_right,
+                                   drawn_area);
         ++x;
     }
 }
