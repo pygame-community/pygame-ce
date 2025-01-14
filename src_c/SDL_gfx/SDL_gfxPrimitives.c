@@ -4093,7 +4093,7 @@ ellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
                         result |= pixelColorNolock(dst, xmi, ypj, color);
                         result |= pixelColorNolock(dst, xpi, ypj, color);
                         result |= pixelColorNolock(dst, xmi, ymj, color);
-                        result |= pixelColor(dst, xpi, ymj, color);
+                        result |= pixelColorNolock(dst, xpi, ymj, color);
                     }
                     else {
                         result |= pixelColorNolock(dst, xmi, y, color);

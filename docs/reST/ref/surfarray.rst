@@ -30,7 +30,7 @@ specific pixel value of a color. Integer pixel values can only be used directly
 between surfaces with matching pixel layouts (see :class:`pygame.Surface`).
 
 All functions that refer to "array" will copy the surface information to a new
-numpy array. All functions that refer to "pixels" will directly reference the
+NumPy array. All functions that refer to "pixels" will directly reference the
 pixels from the surface and any changes performed to the array will make changes
 in the surface. As this last functions share memory with the surface, this one
 will be locked during the lifetime of the array.

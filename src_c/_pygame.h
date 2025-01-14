@@ -47,6 +47,8 @@
 #include <SDL.h>
 #endif
 
+#include "stdbool.h"
+
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 #define PG_ShowCursor SDL_ShowCursor
 #define PG_HideCursor SDL_HideCursor
@@ -119,6 +121,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
 
 #define PG_INIT_TIMER 0
 
+#define PG_GetSurfaceClipRect SDL_GetSurfaceClipRect
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -190,6 +194,12 @@ PG_UnlockMutex(SDL_mutex *mutex)
 
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
 
+static inline bool
+PG_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
+{
+    *rect = surface->clip_rect;
+    return true;
+}
 #endif
 
 /* DictProxy is useful for event posting with an arbitrary dict. Maintains
