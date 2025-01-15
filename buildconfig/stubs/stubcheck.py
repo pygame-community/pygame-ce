@@ -49,7 +49,7 @@ def stubs_check():
             continue
 
         cmd = " ".join(stubtest)
-        print(f"Using stubtest invokation: `{cmd}` (version: {version})")
+        print(f"Using stubtest invocation: `{cmd}` (version: {version})")
         prev_dir = os.getcwd()
         try:
             os.chdir(STUBS_BASE_DIR)

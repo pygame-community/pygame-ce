@@ -51,7 +51,7 @@ jobs:
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
-        uses: actions/cache@v4.1.2
+        uses: actions/cache@v4.2.0
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           # The hash of all files in buildconfig manylinux-build and macdependencies is
@@ -64,7 +64,7 @@ jobs:
         if: steps.macdep-cache.outputs.cache-hit != 'true'
         run: |
           export MAC_ARCH="${{ matrix.macarch }}"
-          brew install coreutils pkg-config
+          brew install coreutils
           cd buildconfig/macdependencies
           bash ./build_mac_deps.sh
 
@@ -104,7 +104,6 @@ jobs:
 
       # Setup macOS dependencies
       CIBW_BEFORE_ALL: |
-        brew install pkg-config
         cd buildconfig/macdependencies
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
         bash ./install_mac_deps.sh
@@ -119,14 +118,14 @@ jobs:
       - uses: actions/checkout@v4.2.2
 
       - name: pip cache
-        uses: actions/cache@v4.1.2
+        uses: actions/cache@v4.2.0
         with:
           path: ~/Library/Caches/pip  # This cache path is only right on mac
           key: pip-cache-${{ matrix.macarch }}-${{ matrix.os }}
 
       - name: Fetch Mac deps
         id: macdep-cache
-        uses: actions/cache@v4.1.2
+        uses: actions/cache@v4.2.0
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
@@ -135,10 +134,10 @@ jobs:
       - name: Install uv for speed
         uses: yezz123/setup-uv@v4
         with:
-          uv-version: "0.4.10"
+          uv-version: "0.5.4"
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.22.0
 
       - uses: actions/upload-artifact@v4
         with:

@@ -289,6 +289,12 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     if (input_only) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "The input_only kwarg has been deprecated and may be "
+                         "removed in a future version",
+                         1) == -1) {
+            return NULL;
+        }
         if (SDL_SetWindowInputFocus(self->_win)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
@@ -779,6 +785,13 @@ window_get_opengl(pgWindowObject *self, void *v)
     return PyBool_FromLong(hasGL);
 }
 
+static PyObject *
+window_get_utility(pgWindowObject *self, void *v)
+{
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
+                           SDL_WINDOW_UTILITY);
+}
+
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
@@ -822,7 +835,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     const char *_key_str;
     int _value_bool;
 
-    // ensure display is init at this point, diplay init automatically calls
+    // ensure display is init at this point, display init automatically calls
     // the window init in this module
     if (!pg_mod_autoinit(IMPPREFIX "display"))
         return -1;
@@ -923,6 +936,12 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     }
                 }
                 else if (!strcmp(_key_str, "foreign")) {
+                    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                                     "The foreign kwarg has been deprecated "
+                                     "and may be removed in a future version",
+                                     1) == -1) {
+                        return -1;
+                    }
                     if (_value_bool) {
                         flags |= SDL_WINDOW_FOREIGN;
                     }
@@ -943,6 +962,14 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                 else if (!strcmp(_key_str, "vulkan")) {
                     if (_value_bool)
                         flags |= SDL_WINDOW_VULKAN;
+                }
+                else if (!strcmp(_key_str, "utility")) {
+                    if (_value_bool) {
+                        flags |= SDL_WINDOW_UTILITY;
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+                        flags |= SDL_WINDOW_SKIP_TASKBAR;
+#endif
+                    }
                 }
                 else {
                     PyErr_Format(PyExc_TypeError,
@@ -1044,7 +1071,7 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
         return NULL;
     }
 
-    // ensure display is init at this point, diplay init automatically calls
+    // ensure display is init at this point, display init automatically calls
     // the window init in this module
     if (!pg_mod_autoinit(IMPPREFIX "display"))
         return NULL;
@@ -1195,6 +1222,7 @@ static PyGetSetDef _window_getset[] = {
      DOC_WINDOW_OPACITY, NULL},
     {"id", (getter)window_get_window_id, NULL, DOC_WINDOW_ID, NULL},
     {"opengl", (getter)window_get_opengl, NULL, DOC_WINDOW_OPENGL, NULL},
+    {"utility", (getter)window_get_utility, NULL, DOC_WINDOW_UTILITY, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 

@@ -251,6 +251,7 @@ required).
 
    | :sl:`Get a reference to the currently set display surface`
    | :sg:`get_surface() -> Surface`
+   | :sg:`get_surface() -> None`
 
    Return a reference to the currently set display Surface. If no display mode
    has been set this will return None.
@@ -272,7 +273,10 @@ required).
 .. function:: update
 
    | :sl:`Update all, or a portion, of the display. For non-OpenGL displays.`
-   | :sg:`update(rectangle=None, /) -> None`
+   | :sg:`update() -> None`
+   | :sg:`update(rectangle, /) -> None`
+   | :sg:`update(x, y, w, h, /) -> None`
+   | :sg:`update((x, y), (w, h), /) -> None`
    | :sg:`update(rectangle_iterable, /) -> None`
 
    For non OpenGL display Surfaces, this function is very similar to

@@ -26,7 +26,6 @@ pyproject_path = source_tree / "pyproject.toml"
 
 SDL3_ARGS = [
     "-Csetup-args=-Dsdl_api=3",
-    "-Csetup-args=-Dimage=disabled",
     "-Csetup-args=-Dmixer=disabled",
     "-Csetup-args=-Dfont=disabled",
 ]
@@ -196,9 +195,9 @@ class Dev:
             "build": get_build_deps(),
             "docs": get_build_deps(),
             "test": {"numpy"},
-            "lint": {"pylint==3.3.0", "numpy"},
-            "stubs": {"mypy==1.11.2", "numpy"},
-            "format": {"pre-commit==3.8.0"},
+            "lint": {"pylint==3.3.1", "numpy"},
+            "stubs": {"mypy==1.13.0", "numpy"},
+            "format": {"pre-commit==4.0.1"},
         }
         self.deps["all"] = set()
         for k in self.deps.values():

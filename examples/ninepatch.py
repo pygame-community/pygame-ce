@@ -44,7 +44,7 @@ def ninepatch_scale(
         )  # when alpha is False the flags become 0
 
     # aliases
-    ret_w, ret_h = size  # non-sequence argument catched by python
+    ret_w, ret_h = size  # non-sequence argument caught by python
     src_w, src_h = surface.size
     c = corner_size
     scale_func = pygame.transform.smoothscale if smooth else pygame.transform.scale
