@@ -3078,7 +3078,8 @@ static PyMethodDef _pg_display_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_DISPLAY_SETALLOWSCREENSAVER},
     {"message_box", (PyCFunction)pg_message_box, METH_VARARGS | METH_KEYWORDS,
      DOC_DISPLAY_MESSAGEBOX},
-    {"gl_get_proc", (PyCFunction)pg_gl_get_proc, METH_O, "doc"},
+    {"gl_get_proc", (PyCFunction)pg_gl_get_proc, METH_O,
+     DOC_DISPLAY_GLGETPROC},
     {NULL, NULL, 0, NULL}};
 
 #ifndef PYPY_VERSION
