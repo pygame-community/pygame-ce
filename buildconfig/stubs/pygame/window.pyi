@@ -18,7 +18,7 @@ class Window:
         **flags: bool
     ) -> None: ...
     @overload
-    def __init__(
+    def __init__( # type: ignore[overload-cannot-match]
         self,
         title: str = "pygame window",
         size: Point = (640, 480),
