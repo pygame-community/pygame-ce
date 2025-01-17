@@ -106,6 +106,7 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
+#define PG_SURF_FORMATENUM(surf) surf->format
 
 /* Mask to test if surface flags are in a fullscreen window. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN
@@ -173,6 +174,7 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SURF_BytesPerPixel(surf) surf->format->BytesPerPixel
 #define PG_FORMAT_BitsPerPixel(format) format->BitsPerPixel
 #define PG_FORMAT_BytesPerPixel(format) format->BytesPerPixel
+#define PG_SURF_FORMATENUM(surf) surf->format->format
 
 /* Mask to test if surface flags are in a fullscreen window.
  * SDL_WINDOW_FULLSCREEN_DESKTOP works here because it also contains

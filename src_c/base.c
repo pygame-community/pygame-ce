@@ -2172,11 +2172,7 @@ static PG_PixelFormatEnum
 pg_GetDefaultConvertFormat(void)
 {
     if (pg_default_screen) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-        return pg_default_screen->surf->format;
-#else
-        return pg_default_screen->surf->format->format;
-#endif
+        return PG_SURF_FORMATENUM(pg_default_screen->surf);
     }
     return pg_default_convert_format;
 }

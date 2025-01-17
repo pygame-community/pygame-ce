@@ -174,7 +174,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                                         &info);
                                 }
                                 else if (SDL_ISPIXELFORMAT_ALPHA(
-                                             dst->format->format) &&
+                                             PG_SURF_FORMATENUM(dst)) &&
                                          info.dst_blend !=
                                              SDL_BLENDMODE_NONE) {
                                     alphablit_alpha_avx2_argb_no_surf_alpha(
@@ -193,7 +193,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                                         &info);
                                 }
                                 else if (SDL_ISPIXELFORMAT_ALPHA(
-                                             dst->format->format) &&
+                                             PG_SURF_FORMATENUM(dst)) &&
                                          info.dst_blend !=
                                              SDL_BLENDMODE_NONE) {
                                     alphablit_alpha_sse2_argb_no_surf_alpha(
