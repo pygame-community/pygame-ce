@@ -81,9 +81,7 @@ class AutopgDocumenter(autoapi.documenters.AutoapiDocumenter):
         members = (
             member
             for member in members
-            if not member.object.obj.get("hide", False)
-            and not member.object.imported
-            and get_doc(self.env, member.object) != ""
+            if not member.object.imported and get_doc(self.env, member.object) != ""
         )
 
         return members_check_module, members
