@@ -153,8 +153,6 @@ time = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 joystick = py.extension_module(
     'joystick',
     'joystick.c',
@@ -163,7 +161,6 @@ joystick = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 
 # TODO: support SDL3
@@ -380,9 +377,6 @@ _camera = py.extension_module(
 endif
 
 # pygame.scrap
-
-# TODO: support SDL3
-if sdl_api != 3
 pg_scrap_link = [] # TODO: should this link logic be improved/made meson-ey?
 if plat == 'win'
     pg_scrap_link += ['-luser32', '-lgdi32']
@@ -397,7 +391,6 @@ scrap = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # optional modules
 
