@@ -26,6 +26,8 @@
 #ifndef _PYGAME_INTERNAL_H
 #define _PYGAME_INTERNAL_H
 
+#include <stdbool.h>
+
 #include "pgplatform.h"
 /*
     If PY_SSIZE_T_CLEAN is defined before including Python.h, length is a
@@ -80,6 +82,15 @@
 #define PG_ConvertSurfaceFormat SDL_ConvertSurface
 
 #define PG_PixelFormatEnum SDL_PixelFormat
+#define PG_PixelFormat const SDL_PixelFormatDetails
+#define PG_PixelFormatMut SDL_PixelFormatDetails
+#define PG_SurfaceFormatEnum(surf) (surf)->format
+#define PG_GetSurfaceFormat(surf) \
+    SDL_GetPixelFormatDetails(PG_SurfaceFormatEnum(surf))
+#define PG_GetSurfacePalette SDL_GetSurfacePalette
+#define PG_SurfaceMapRGBA(surf, r, g, b, a) \
+    SDL_MapSurfaceRGBA(surf, r, g, b, a)
+#define PG_GetSurfaceClipRect SDL_GetSurfaceClipRect
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
 
@@ -101,6 +112,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
     SDL_UnlockMutex(mutex);
     return 0;
 }
+
+#define PG_FillRect SDL_FillSurfaceRect
 
 #define PG_SURF_BitsPerPixel(surf) SDL_BITSPERPIXEL(surf->format)
 #define PG_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
@@ -153,6 +166,17 @@ PG_UnlockMutex(SDL_mutex *mutex)
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
 
 #define PG_PixelFormatEnum SDL_PixelFormatEnum
+#define PG_PixelFormat SDL_PixelFormat
+#define PG_PixelFormatMut SDL_PixelFormat
+#define PG_SurfaceFormatEnum(surf) (surf)->format->format
+#define PG_GetSurfaceFormat(surf) (surf)->format
+#define PG_GetSurfacePalette(surf) (surf)->format->palette
+#define PG_SurfaceMapRGBA(surf, r, g, b, a) \
+    SDL_MapRGBA(PG_GetSurfaceFormat(surf), r, g, b, a)
+#define PG_GetSurfaceClipRect(surf, rect) \
+    {                                     \
+        rect = &surf->clip_rect;          \
+    }
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect)
@@ -167,6 +191,12 @@ static inline int
 PG_UnlockMutex(SDL_mutex *mutex)
 {
     return SDL_UnlockMutex(mutex);
+}
+
+static inline bool
+PG_FillRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
+{
+    return SDL_FillRect(dst, rect, color) != -1;
 }
 
 #define PG_SURF_BitsPerPixel(surf) surf->format->BitsPerPixel
