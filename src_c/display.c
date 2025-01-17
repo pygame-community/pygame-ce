@@ -2938,6 +2938,69 @@ error:
     return NULL;
 }
 
+static PyObject *ctypes_functype = NULL;
+
+static PyObject *
+pg_gl_get_proc(PyObject *self, PyObject *arg)
+{
+    if (!PyUnicode_Check(arg)) {
+        return RAISE(PyExc_TypeError, "'proc_name' should be a string");
+    }
+    const char *proc_name = PyUnicode_AsUTF8(arg);
+    if (!proc_name) {
+        return NULL;
+    }
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_FunctionPointer proc_addr;
+#else
+    void *proc_addr;
+#endif
+    proc_addr = SDL_GL_GetProcAddress(proc_name);
+    if (!proc_addr) {
+        PyErr_Format(pgExc_SDLError, "Unable to get OpenGL function '%s'",
+                     proc_name);
+        return NULL;
+    }
+    PyObject *proc_addr_obj = PyLong_FromVoidPtr(proc_addr);
+    if (!proc_addr_obj) {
+        return NULL;
+    }
+
+    // load ctypes_functype if it's NULL
+    if (!ctypes_functype) {
+        PyObject *ctypes_module = PyImport_ImportModule("ctypes");
+        if (!ctypes_module) {
+            return NULL;
+        }
+
+        PyObject *ctypes_functype_factory;
+#if defined(_WIN32)
+        // gl proc need to be called with WINFUNCTYPE (stdcall) on win32
+        ctypes_functype_factory =
+            PyObject_GetAttrString(ctypes_module, "WINFUNCTYPE");
+#else
+        ctypes_functype_factory =
+            PyObject_GetAttrString(ctypes_module, "CFUNCTYPE");
+#endif
+        Py_DECREF(ctypes_module);
+        if (!ctypes_functype_factory) {
+            return NULL;
+        }
+
+        ctypes_functype =
+            PyObject_CallOneArg(ctypes_functype_factory, Py_None);
+        Py_DECREF(ctypes_functype_factory);
+        if (!ctypes_functype) {
+            return NULL;
+        }
+    }
+
+    PyObject *retv = PyObject_CallOneArg(ctypes_functype, proc_addr_obj);
+    Py_DECREF(proc_addr_obj);
+    return retv;
+}
+
 static PyMethodDef _pg_display_methods[] = {
     {"init", (PyCFunction)pg_display_init, METH_NOARGS, DOC_DISPLAY_INIT},
     {"quit", (PyCFunction)pg_display_quit, METH_NOARGS, DOC_DISPLAY_QUIT},
@@ -3015,6 +3078,8 @@ static PyMethodDef _pg_display_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_DISPLAY_SETALLOWSCREENSAVER},
     {"message_box", (PyCFunction)pg_message_box, METH_VARARGS | METH_KEYWORDS,
      DOC_DISPLAY_MESSAGEBOX},
+    {"gl_get_proc", (PyCFunction)pg_gl_get_proc, METH_O,
+     DOC_DISPLAY_GLGETPROC},
     {NULL, NULL, 0, NULL}};
 
 #ifndef PYPY_VERSION
