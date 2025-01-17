@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, overload
 from typing_extensions import deprecated # added in 3.13
 
 from pygame.typing import Point, RectLike
@@ -9,6 +9,7 @@ from pygame.surface import Surface
 def get_grabbed_window() -> Optional[Window]: ...
 
 class Window:
+    @overload
     def __init__(
         self,
         title: str = "pygame window",
@@ -16,6 +17,32 @@ class Window:
         position: Union[int, Point] = WINDOWPOS_UNDEFINED,
         **flags: bool
     ) -> None: ...
+    @overload
+    def __init__(
+        self,
+        title: str = "pygame window",
+        size: Point = (640, 480),
+        position: Union[int, Point] = WINDOWPOS_UNDEFINED,
+        *,
+        fullscreen: bool = ...,
+        fullscreen_desktop: bool = ...,
+        opengl: bool = ...,
+        vulkan: bool = ...,
+        hidden: bool = ...,
+        borderless: bool = ...,
+        resizable: bool = ...,
+        minimized: bool = ...,
+        maximized: bool = ...,
+        mouse_grabbed: bool = ...,
+        keyboard_grabbed: bool = ...,
+        input_focus: bool = ...,
+        mouse_focus: bool = ...,
+        allow_high_dpi: bool = ...,
+        mouse_capture: bool = ...,
+        always_on_top: bool = ...,
+        utility: bool = ...,
+    ):
+        ...
     def destroy(self) -> None: ...
     def set_windowed(self) -> None: ...
     def set_fullscreen(self, desktop: bool = False) -> None: ...
