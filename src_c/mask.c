@@ -2111,13 +2111,7 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
 static int
 check_surface_pixel_format(SDL_Surface *surf, SDL_Surface *check_surf)
 {
-    if ((PG_SURF_BytesPerPixel(surf) != PG_SURF_BytesPerPixel(check_surf)) ||
-        (PG_SURF_BitsPerPixel(surf) != PG_SURF_BitsPerPixel(check_surf)) ||
-        (surf->format->format != check_surf->format->format)) {
-        return 0;
-    }
-
-    return 1;
+    return PG_SURF_FORMATENUM(surf) == PG_SURF_FORMATENUM(check_surf);
 }
 
 /* Draws a mask on a surface.

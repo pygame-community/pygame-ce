@@ -109,7 +109,7 @@ surf_colorspace(PyObject *self, PyObject *arg)
     surf = pgSurface_AsSurface(surfobj);
 
     if (!surfobj2) {
-        newsurf = PG_CreateSurface(surf->w, surf->h, surf->format->format);
+        newsurf = PG_CreateSurface(surf->w, surf->h, PG_SURF_FORMATENUM(surf));
         if (!newsurf) {
             return NULL;
         }

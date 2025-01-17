@@ -1170,7 +1170,7 @@ make_surface(PyObject *self, PyObject *arg)
         pgBuffer_Release(&pg_view);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    if (SDL_ISPIXELFORMAT_INDEXED(surf->format->format)) {
+    if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         /* Give the surface something other than an all white palette.
          *          */
         if (SDL_SetPaletteColors(surf->format->palette, default_palette_colors,
