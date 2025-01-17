@@ -38,7 +38,7 @@ concurrency:
 jobs:
   build:
     name: ${{ matrix.arch }}
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     permissions:
       contents: read
       packages: write
@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        arch: [x86_64, i686]
+        arch: [x86_64, i686, aarch64]
 
     env:
       CIBW_ARCHS: ${{ matrix.arch }}
@@ -90,6 +90,8 @@ jobs:
         CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ghcr.io/${{ github.repository }}_x86_64:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
+        CIBW_MANYLINUX_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
+        CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
 
       uses: pypa/cibuildwheel@v2.22.0
 
