@@ -624,15 +624,8 @@ _parse_color_from_text(PyObject *str_obj, Uint8 *rgba)
                     break;
             }
         }
-        else {
-            goto found_color;
-        }
-    }
-    else {
-        goto found_color;
     }
 
-found_color:
     if (!pg_RGBAFromObjEx(color, rgba, PG_COLOR_HANDLE_RESTRICT_SEQ)) {
         PyErr_Format(PyExc_RuntimeError,
                      "internal pygame error - colordict is supposed to "
