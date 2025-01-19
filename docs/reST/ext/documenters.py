@@ -1,6 +1,7 @@
 import autoapi
 import autoapi.documenters
 from autoapi._objects import PythonClass
+import re
 
 
 def build_signatures(object):
@@ -45,6 +46,9 @@ def build_signatures(object):
             if ret in ("Optional", "Union"):
                 ret = "..."
 
+        # Shorten "pygame.module.X" types to "X"
+        ret = re.sub(r"pygame(.[a-zA-Z0-9_]+)+", lambda x: x.group(1)[1:], ret)
+
         yield f"| :sg:`{name}({arg_string}) -> {ret}`"
 
 
@@ -81,9 +85,7 @@ class AutopgDocumenter(autoapi.documenters.AutoapiDocumenter):
         members = (
             member
             for member in members
-            if not member.object.obj.get("hide", False)
-            and not member.object.imported
-            and get_doc(self.env, member.object) != ""
+            if not member.object.imported and get_doc(self.env, member.object) != ""
         )
 
         return members_check_module, members
