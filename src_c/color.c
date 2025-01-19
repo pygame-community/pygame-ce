@@ -620,8 +620,7 @@ _parse_color_from_text(PyObject *str_obj, Uint8 *rgba)
                 case TRISTATE_ERROR:
                     return -1;
                 default:
-                    goto success;
-                    break;
+                    return 0;
             }
         }
     }
@@ -634,7 +633,6 @@ _parse_color_from_text(PyObject *str_obj, Uint8 *rgba)
                      Py_TYPE(color)->tp_name);
         return -1;
     }
-success:
     return 0;
 }
 
