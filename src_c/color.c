@@ -598,29 +598,34 @@ _parse_color_from_text(PyObject *str_obj, Uint8 *rgba)
     /* We assume the caller handled this check for us. */
     assert(PyUnicode_Check(str_obj));
 
-    name1 = PyObject_CallMethod(str_obj, "replace", "(ss)", " ", "");
-    if (!name1) {
-        return -1;
-    }
-    name2 = PyObject_CallMethod(name1, "lower", NULL);
-    Py_DECREF(name1);
-    if (!name2) {
-        return -1;
-    }
-    color = PyDict_GetItem(_COLORDICT, name2);
-    Py_DECREF(name2);
+    color = PyDict_GetItem(_COLORDICT,
+                           str_obj);  // optimize for correct color names
     if (!color) {
-        switch (_hexcolor(str_obj, rgba)) {
-            case TRISTATE_FAIL:
-                PyErr_SetString(PyExc_ValueError, "invalid color name");
-                return -1;
-            case TRISTATE_ERROR:
-                return -1;
-            default:
-                break;
+        name1 = PyObject_CallMethod(str_obj, "replace", "(ss)", " ", "");
+        if (!name1) {
+            return -1;
+        }
+        name2 = PyObject_CallMethod(name1, "lower", NULL);
+        Py_DECREF(name1);
+        if (!name2) {
+            return -1;
+        }
+        color = PyDict_GetItem(_COLORDICT, name2);
+        Py_DECREF(name2);
+        if (!color) {
+            switch (_hexcolor(str_obj, rgba)) {
+                case TRISTATE_FAIL:
+                    PyErr_SetString(PyExc_ValueError, "invalid color name");
+                    return -1;
+                case TRISTATE_ERROR:
+                    return -1;
+                default:
+                    return 0;
+            }
         }
     }
-    else if (!pg_RGBAFromObjEx(color, rgba, PG_COLOR_HANDLE_RESTRICT_SEQ)) {
+
+    if (!pg_RGBAFromObjEx(color, rgba, PG_COLOR_HANDLE_RESTRICT_SEQ)) {
         PyErr_Format(PyExc_RuntimeError,
                      "internal pygame error - colordict is supposed to "
                      "only have tuple values, but there is an object of "
