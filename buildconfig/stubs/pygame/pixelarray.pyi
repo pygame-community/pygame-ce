@@ -1,8 +1,16 @@
+import sys
 from typing import Any, Union, overload
 
 from pygame.surface import Surface
 from pygame.color import Color
 from pygame.typing import SequenceLike
+
+# 'ellipsis' existed in typeshed pre 3.10, now we use EllipsisType which is
+# the modern standard library equivalent.
+if sys.version_info >= (3, 10):
+    from types import EllipsisType
+else:
+    EllipsisType = ellipsis
 
 _ColorLike = int | Color | tuple[int, int, int] | tuple[int, int, int, int]
 
@@ -32,7 +40,7 @@ class PixelArray:
     def __getitem__(self, indices: tuple[int, int]) -> int: ...
     # returns self
     @overload
-    def __getitem__(self, ell: ellipsis) -> PixelArray: ...
+    def __getitem__(self, ell: EllipsisType) -> PixelArray: ...
     def make_surface(self) -> Surface: ...
     def replace(
         self,

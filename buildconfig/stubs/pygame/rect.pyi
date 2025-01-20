@@ -16,6 +16,13 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
+# 'ellipsis' existed in typeshed pre 3.10, now we use EllipsisType which is
+# the modern standard library equivalent.
+if sys.version_info >= (3, 10):
+    from types import EllipsisType
+else:
+    EllipsisType = ellipsis
+
 _N = TypeVar("_N", int, float)
 _K = TypeVar("_K")
 _V = TypeVar("_V")
@@ -129,11 +136,13 @@ class _GenericRect(Collection[_N]):
     @overload
     def __getitem__(self, i: SupportsIndex) -> _N: ...
     @overload
-    def __getitem__(self, s: slice) -> list[_N]: ...
+    def __getitem__(self, s: Union[slice, EllipsisType]) -> list[_N]: ...
     @overload
     def __setitem__(self, key: int, value: float) -> None: ...
     @overload
-    def __setitem__(self, key: slice, value: Union[float, RectLike]) -> None: ...
+    def __setitem__(
+        self, key: Union[slice, EllipsisType], value: Union[float, RectLike]
+    ) -> None: ...
     def __copy__(self) -> Self: ...
     def copy(self) -> Self: ...
     @overload
