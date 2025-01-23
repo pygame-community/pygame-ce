@@ -104,8 +104,8 @@ pgBuffer_Release(pg_buffer *);
 static int
 pgObject_GetBuffer(PyObject *, pg_buffer *, int);
 static inline PyObject *
-pgObject_getRectHelper(PyObject *, PyObject *const *, Py_ssize_t,
-                       PyObject *, char *);
+pgObject_getRectHelper(PyObject *, PyObject *const *, Py_ssize_t, PyObject *,
+                       char *);
 static int
 pgGetArrayInterface(PyObject **, PyObject *);
 static int
@@ -1376,8 +1376,8 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
 }
 
 static inline PyObject *
-pgObject_getRectHelper(PyObject *rect, PyObject *const *args,
-                       Py_ssize_t nargs, PyObject *kwnames, char *type)
+pgObject_getRectHelper(PyObject *rect, PyObject *const *args, Py_ssize_t nargs,
+                       PyObject *kwnames, char *type)
 {
     if (nargs > 0) {
         Py_DECREF(rect);
