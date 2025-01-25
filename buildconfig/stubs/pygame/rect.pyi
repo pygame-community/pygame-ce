@@ -277,8 +277,8 @@ class Rect(_GenericRect[int]):
 class FRect(_GenericRect[float]):
     ...
 
-@deprecated("Use `Rect` instead (this is an old alias)")
+@deprecated("Use `Rect` instead (RectType is an old alias)")
 class RectType(Rect): ...
 
-@deprecated("Use `FRect` instead (this is an old alias)")
+@deprecated("Use `FRect` instead (FRectType is an old alias)")
 class FRectType(FRect): ...

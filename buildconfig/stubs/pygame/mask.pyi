@@ -55,5 +55,5 @@ class Mask:
         dest: Union[RectLike, Point] = (0, 0),
     ) -> Surface: ...
 
-@deprecated("Use `Mask` instead (this is an old alias)")
+@deprecated("Use `Mask` instead (MaskType is an old alias)")
 class MaskType(Mask): ...

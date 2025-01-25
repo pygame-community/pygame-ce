@@ -29,7 +29,7 @@ class Event(_GenericEvent):
     pass
 
 @final
-@deprecated("Use `Event` instead (this is an old alias)")
+@deprecated("Use `Event` instead (EventType is an old alias)")
 class EventType(_GenericEvent):
     pass
 
