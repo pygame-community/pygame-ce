@@ -134,7 +134,6 @@ surface = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
 surflock = py.extension_module(
     'surflock',
     'surflock.c',
