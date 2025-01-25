@@ -2621,32 +2621,6 @@ surf_get_height(PyObject *self, PyObject *_null)
     return PyLong_FromLong(surf->h);
 }
 
-static inline PyObject *
-_get_rect_helper(PyObject *rect, PyObject *const *args, Py_ssize_t nargs,
-                 PyObject *kwnames, char *type)
-{
-    if (nargs > 0) {
-        Py_DECREF(rect);
-        return PyErr_Format(PyExc_TypeError,
-                            "get_%s only accepts keyword arguments", type);
-    }
-
-    if (rect && kwnames) {
-        Py_ssize_t i, sequence_len;
-        PyObject **sequence_items;
-        sequence_items = PySequence_Fast_ITEMS(kwnames);
-        sequence_len = PyTuple_GET_SIZE(kwnames);
-
-        for (i = 0; i < sequence_len; ++i) {
-            if ((PyObject_SetAttr(rect, sequence_items[i], args[i]) == -1)) {
-                Py_DECREF(rect);
-                return NULL;
-            }
-        }
-    }
-    return rect;
-}
-
 static PyObject *
 surf_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
               PyObject *kwnames)
@@ -2656,7 +2630,7 @@ surf_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
 
     PyObject *rect = pgRect_New4(0, 0, surf->w, surf->h);
 
-    return _get_rect_helper(rect, args, nargs, kwnames, "rect");
+    return pgObject_getRectHelper(rect, args, nargs, kwnames, "rect");
 }
 
 static PyObject *
@@ -2668,7 +2642,7 @@ surf_get_frect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
 
     PyObject *rect = pgFRect_New4(0.f, 0.f, (float)surf->w, (float)surf->h);
 
-    return _get_rect_helper(rect, args, nargs, kwnames, "frect");
+    return pgObject_getRectHelper(rect, args, nargs, kwnames, "frect");
 }
 
 static PyObject *

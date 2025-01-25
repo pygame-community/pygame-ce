@@ -189,6 +189,10 @@ typedef struct pg_bufferinfo_s {
 #define pg_SetDefaultConvertFormat \
     (*(void (*)(Uint32))PYGAMEAPI_GET_SLOT(base, 28))
 
+#define pgObject_getRectHelper                                               \
+    (*(PyObject * (*)(PyObject *, PyObject *const *, Py_ssize_t, PyObject *, \
+                      char *)) PYGAMEAPI_GET_SLOT(base, 29))
+
 #define import_pygame_base() IMPORT_PYGAME_MODULE(base)
 #endif /* ~PYGAMEAPI_BASE_INTERNAL */
 

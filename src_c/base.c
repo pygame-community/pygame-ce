@@ -103,6 +103,9 @@ static void
 pgBuffer_Release(pg_buffer *);
 static int
 pgObject_GetBuffer(PyObject *, pg_buffer *, int);
+static inline PyObject *
+pgObject_getRectHelper(PyObject *, PyObject *const *, Py_ssize_t, PyObject *,
+                       char *);
 static int
 pgGetArrayInterface(PyObject **, PyObject *);
 static int
@@ -1372,6 +1375,32 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
     return 0;
 }
 
+static inline PyObject *
+pgObject_getRectHelper(PyObject *rect, PyObject *const *args, Py_ssize_t nargs,
+                       PyObject *kwnames, char *type)
+{
+    if (nargs > 0) {
+        Py_DECREF(rect);
+        return PyErr_Format(PyExc_TypeError,
+                            "get_%s only accepts keyword arguments", type);
+    }
+
+    if (rect && kwnames) {
+        Py_ssize_t i, sequence_len;
+        PyObject **sequence_items;
+        sequence_items = PySequence_Fast_ITEMS(kwnames);
+        sequence_len = PyTuple_GET_SIZE(kwnames);
+
+        for (i = 0; i < sequence_len; ++i) {
+            if ((PyObject_SetAttr(rect, sequence_items[i], args[i]) == -1)) {
+                Py_DECREF(rect);
+                return NULL;
+            }
+        }
+    }
+    return rect;
+}
+
 static void
 pgBuffer_Release(pg_buffer *pg_view_p)
 {
@@ -2401,8 +2430,9 @@ MODINIT_DEFINE(base)
     c_api[26] = pg_TwoDoublesFromFastcallArgs;
     c_api[27] = pg_GetDefaultConvertFormat;
     c_api[28] = pg_SetDefaultConvertFormat;
+    c_api[29] = pgObject_getRectHelper;
 
-#define FILLED_SLOTS 29
+#define FILLED_SLOTS 30
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch
