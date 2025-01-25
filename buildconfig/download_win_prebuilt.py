@@ -82,16 +82,16 @@ def get_urls(x86=True, x64=True):
         '163e3300a1450e6e7d4fff0d35b039c3eae44e79',
         ],
         [
-        'https://github.com/libsdl-org/SDL/releases/download/preview-3.1.8/SDL3-devel-3.1.8-VC.zip',
-        '6b17cd6414d8f42b43a6006ddb2b40fd4c3b7c7b'
+        'https://github.com/libsdl-org/SDL/releases/download/release-3.2.0/SDL3-devel-3.2.0-VC.zip',
+        'd382072cd045d74a802541bf8d0b13e21ffed740'
         ],
         [
         'https://github.com/pygame-community/SDL_image/releases/download/2.8.4-pgce/SDL2_image-devel-2.8.4-VCpgce.zip',
         'b9b4a5d44cab57901003255a1c1f98a42282762b'
         ],
         [
-        'https://github.com/libsdl-org/SDL_image/releases/download/preview-3.1.0/SDL3_image-devel-3.1.0-VC.zip',
-        '8538fea0cc4aabba2fc64db06196f1bb76a2785f'
+        'https://github.com/libsdl-org/SDL_image/releases/download/prerelease-3.1.1/SDL3_image-devel-3.1.1-VC.zip',
+        '01f751322e742bb9dd3121d5ef37214c0529cb7c'
         ],
         [
         'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.24.0/SDL2_ttf-devel-2.24.0-VC.zip',
@@ -220,12 +220,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3_image-devel-3.1.0-VC/SDL3_image-3.1.0'
+                'SDL3_image-devel-3.1.1-VC/SDL3_image-3.1.1'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3_image-3.1.0'
+                'SDL3_image-3.1.1'
             )
         )
 
@@ -265,12 +265,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3-devel-3.1.8-VC/SDL3-3.1.8'
+                'SDL3-devel-3.2.0-VC/SDL3-3.2.0'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3-3.1.8'
+                'SDL3-3.2.0'
             )
         )
 
