@@ -249,8 +249,6 @@ bufferproxy = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 pixelarray = py.extension_module(
     'pixelarray',
     'pixelarray.c',
@@ -259,7 +257,6 @@ pixelarray = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 math = py.extension_module(
     'math',
