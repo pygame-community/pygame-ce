@@ -131,7 +131,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
      * create a new surface with the array dimensions */
     if (!same_dims) {
         if (!(temp_surf = PG_CreateSurface((int)dim0, (int)dim1,
-                                           surf->format->format)))
+                                           PG_SURF_FORMATENUM(surf))))
             return RAISE(pgExc_SDLError, SDL_GetError());
     }
 

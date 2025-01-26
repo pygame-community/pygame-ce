@@ -49,10 +49,6 @@ struct _module_state {
 
 #define GETSTATE(m) ((struct _module_state *)PyModule_GetState(m))
 
-#ifdef SCALE_MMX_SUPPORT
-#include <SDL_cpuinfo.h>
-#endif /* SCALE_MMX_SUPPORT */
-
 void
 scale2x(SDL_Surface *src, SDL_Surface *dst);
 extern SDL_Surface *
@@ -97,7 +93,7 @@ _PgSurface_SrcAlpha(SDL_Surface *surf);
 static int
 _PgSurface_SrcAlpha(SDL_Surface *surf)
 {
-    if (SDL_ISPIXELFORMAT_ALPHA(surf->format->format)) {
+    if (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(surf))) {
         SDL_BlendMode mode;
         if (SDL_GetSurfaceBlendMode(surf, &mode) < 0) {
             return -1;
@@ -129,12 +125,12 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError, "unsupported Surface bit depth for transform"));
 
-    newsurf = PG_CreateSurface(width, height, surf->format->format);
+    newsurf = PG_CreateSurface(width, height, PG_SURF_FORMATENUM(surf));
     if (!newsurf)
         return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
 
     /* Copy palette, colorkey, etc info */
-    if (SDL_ISPIXELFORMAT_INDEXED(surf->format->format)) {
+    if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         if (SDL_SetPaletteColors(newsurf->format->palette,
                                  surf->format->palette->colors, 0,
                                  surf->format->palette->ncolors) != 0) {
@@ -451,7 +447,7 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
          * For example, RGBA and RGBX surfaces are compatible in this way. */
         if (retsurf->format->Amask != src->format->Amask) {
             modsurf = PG_CreateSurfaceFrom(retsurf->w, retsurf->h,
-                                           src->format->format,
+                                           PG_SURF_FORMATENUM(src),
                                            retsurf->pixels, retsurf->pitch);
         }
     }
@@ -2238,8 +2234,7 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
             "Destination surface must be the same size as source surface."));
     }
 
-    if (fmt->BytesPerPixel != newsurf->format->BytesPerPixel ||
-        fmt->format != newsurf->format->format) {
+    if (PG_SURF_FORMATENUM(src) != PG_SURF_FORMATENUM(newsurf)) {
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError,
             "Source and destination surfaces need the same format."));
@@ -2682,11 +2677,7 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
             PyExc_ValueError,
             "Destination surface must be the same size as source surface.");
     }
-    if (src->format->Rmask != dst->format->Rmask ||
-        src->format->Gmask != dst->format->Gmask ||
-        src->format->Bmask != dst->format->Bmask ||
-        src->format->Amask != dst->format->Amask ||
-        PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(dst)) {
+    if (PG_SURF_FORMATENUM(src) != PG_SURF_FORMATENUM(dst)) {
         return RAISE(PyExc_ValueError,
                      "Source and destination surfaces need the same format.");
     }

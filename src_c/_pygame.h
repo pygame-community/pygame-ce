@@ -106,6 +106,7 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
+#define PG_SURF_FORMATENUM(surf) surf->format
 
 /* Mask to test if surface flags are in a fullscreen window. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN
@@ -173,6 +174,7 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SURF_BytesPerPixel(surf) surf->format->BytesPerPixel
 #define PG_FORMAT_BitsPerPixel(format) format->BitsPerPixel
 #define PG_FORMAT_BytesPerPixel(format) format->BytesPerPixel
+#define PG_SURF_FORMATENUM(surf) surf->format->format
 
 /* Mask to test if surface flags are in a fullscreen window.
  * SDL_WINDOW_FULLSCREEN_DESKTOP works here because it also contains
@@ -529,7 +531,7 @@ typedef enum {
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
-#define PYGAMEAPI_BASE_NUMSLOTS 29
+#define PYGAMEAPI_BASE_NUMSLOTS 30
 #define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
 #define PYGAMEAPI_GEOMETRY_NUMSLOTS 2

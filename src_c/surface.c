@@ -686,7 +686,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         }
     }
 
-    if (SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
+    if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surface))) {
         /* Give the surface something other than an all white palette.
          *          */
         if (SDL_SetPaletteColors(surface->format->palette,
@@ -936,7 +936,7 @@ surf_unmap_rgb(PyObject *self, PyObject *arg)
     }
     SURF_INIT_CHECK(surf)
 
-    if (SDL_ISPIXELFORMAT_ALPHA(surf->format->format))
+    if (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(surf)))
         SDL_GetRGBA(col, surf->format, rgba, rgba + 1, rgba + 2, rgba + 3);
     else {
         SDL_GetRGB(col, surf->format, rgba, rgba + 1, rgba + 2);
@@ -1109,7 +1109,7 @@ surf_set_palette(PyObject *self, PyObject *seq)
 
     pal = surf->format->palette;
 
-    if (!SDL_ISPIXELFORMAT_INDEXED(surf->format->format))
+    if (!SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf)))
         return RAISE(pgExc_SDLError, "Surface colors are not indexed\n");
 
     if (!pal)
@@ -1164,7 +1164,7 @@ surf_set_palette_at(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    if (!SDL_ISPIXELFORMAT_INDEXED(surf->format->format))
+    if (!SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf)))
         return RAISE(pgExc_SDLError, "Surface colors are not indexed\n");
 
     pal = surf->format->palette;
@@ -1248,7 +1248,7 @@ surf_get_colorkey(pgSurfaceObject *self, PyObject *_null)
 
     SDL_GetColorKey(surf, &mapped_color);
 
-    if (SDL_ISPIXELFORMAT_ALPHA(surf->format->format))
+    if (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(surf)))
         SDL_GetRGBA(mapped_color, surf->format, &r, &g, &b, &a);
     else
         SDL_GetRGB(mapped_color, surf->format, &r, &g, &b);
@@ -1314,7 +1314,7 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
         sdlrect.h = 0;
         sdlrect.w = 0;
 
-        surface = PG_CreateSurface(1, 1, surf->format->format);
+        surface = PG_CreateSurface(1, 1, PG_SURF_FORMATENUM(surf));
 
         SDL_LowerBlit(surf, &sdlrect, surface, &sdlrect);
         SDL_FreeSurface(surface);
@@ -1411,7 +1411,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 
     if ((has_colorkey = SDL_HasColorKey(surf))) {
         SDL_GetColorKey(surf, &colorkey);
-        if (SDL_ISPIXELFORMAT_ALPHA(surf->format->format))
+        if (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(surf)))
             SDL_GetRGBA(colorkey, surf->format, &key_r, &key_g, &key_b,
                         &key_a);
         else
@@ -1535,7 +1535,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
             if (SDL_ISPIXELFORMAT_INDEXED(SDL_MasksToPixelFormatEnum(
                     PG_FORMAT_BitsPerPixel((&format)), format.Rmask,
                     format.Gmask, format.Bmask, format.Amask))) {
-                if (SDL_ISPIXELFORMAT_INDEXED(surf->format->format)) {
+                if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
                     SDL_SetPixelFormatPalette(&format, surf->format->palette);
                 }
                 else {
@@ -2621,32 +2621,6 @@ surf_get_height(PyObject *self, PyObject *_null)
     return PyLong_FromLong(surf->h);
 }
 
-static inline PyObject *
-_get_rect_helper(PyObject *rect, PyObject *const *args, Py_ssize_t nargs,
-                 PyObject *kwnames, char *type)
-{
-    if (nargs > 0) {
-        Py_DECREF(rect);
-        return PyErr_Format(PyExc_TypeError,
-                            "get_%s only accepts keyword arguments", type);
-    }
-
-    if (rect && kwnames) {
-        Py_ssize_t i, sequence_len;
-        PyObject **sequence_items;
-        sequence_items = PySequence_Fast_ITEMS(kwnames);
-        sequence_len = PyTuple_GET_SIZE(kwnames);
-
-        for (i = 0; i < sequence_len; ++i) {
-            if ((PyObject_SetAttr(rect, sequence_items[i], args[i]) == -1)) {
-                Py_DECREF(rect);
-                return NULL;
-            }
-        }
-    }
-    return rect;
-}
-
 static PyObject *
 surf_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
               PyObject *kwnames)
@@ -2656,7 +2630,7 @@ surf_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
 
     PyObject *rect = pgRect_New4(0, 0, surf->w, surf->h);
 
-    return _get_rect_helper(rect, args, nargs, kwnames, "rect");
+    return pgObject_getRectHelper(rect, args, nargs, kwnames, "rect");
 }
 
 static PyObject *
@@ -2668,7 +2642,7 @@ surf_get_frect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
 
     PyObject *rect = pgFRect_New4(0.f, 0.f, (float)surf->w, (float)surf->h);
 
-    return _get_rect_helper(rect, args, nargs, kwnames, "frect");
+    return pgObject_getRectHelper(rect, args, nargs, kwnames, "frect");
 }
 
 static PyObject *
@@ -2768,7 +2742,7 @@ surf_subsurface(PyObject *self, PyObject *args)
         return RAISE(pgExc_SDLError, SDL_GetError());
 
     /* copy the colormap if we need it */
-    if (SDL_ISPIXELFORMAT_INDEXED(surf->format->format) &&
+    if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf)) &&
         surf->format->palette) {
         SDL_Color *colors = surf->format->palette->colors;
         int ncolors = surf->format->palette->ncolors;
@@ -4011,7 +3985,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     }
     /* can't blit alpha to 8bit, crashes SDL */
     else if (PG_SURF_BytesPerPixel(dst) == 1 &&
-             (SDL_ISPIXELFORMAT_ALPHA(src->format->format) ||
+             (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(src)) ||
               ((SDL_GetSurfaceAlphaMod(src, &alpha) == 0 && alpha != 255)))) {
         /* Py_BEGIN_ALLOW_THREADS */
         if (PG_SURF_BytesPerPixel(src) == 1) {
@@ -4057,7 +4031,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
              (PG_SURF_BytesPerPixel(dst) == 4 ||
               PG_SURF_BytesPerPixel(dst) == 2) &&
              _PgSurface_SrcAlpha(src) &&
-             (SDL_ISPIXELFORMAT_ALPHA(src->format->format)) &&
+             (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(src))) &&
              !PG_SurfaceHasRLE(src) && !PG_SurfaceHasRLE(dst) &&
              !(src->flags & SDL_RLEACCEL) && !(dst->flags & SDL_RLEACCEL)) {
         /* If we have a 32bit source surface with per pixel alpha

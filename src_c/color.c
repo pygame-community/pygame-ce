@@ -484,20 +484,12 @@ _hextoint(char *hex, Uint8 *val)
 static tristate
 _hexcolor(PyObject *color, Uint8 rgba[])
 {
-    size_t len;
-    tristate rcode = TRISTATE_FAIL;
-    char *name;
-    PyObject *ascii = PyUnicode_AsASCIIString(color);
-    if (ascii == NULL) {
-        rcode = TRISTATE_ERROR;
-        goto Fail;
-    }
-    name = PyBytes_AsString(ascii);
+    Py_ssize_t len;
+    char *name = (char *)PyUnicode_AsUTF8AndSize(color, &len);
     if (name == NULL) {
-        goto Fail;
+        return TRISTATE_ERROR;
     }
 
-    len = strlen(name);
     /* hex colors can be
      * #RRGGBB
      * #RRGGBBAA
@@ -505,46 +497,40 @@ _hexcolor(PyObject *color, Uint8 rgba[])
      * 0xRRGGBBAA
      */
     if (len < 7) {
-        goto Fail;
+        return TRISTATE_FAIL;
     }
 
     if (name[0] == '#') {
         if (len != 7 && len != 9)
-            goto Fail;
+            return TRISTATE_FAIL;
         if (!_hextoint(name + 1, &rgba[0]))
-            goto Fail;
+            return TRISTATE_FAIL;
         if (!_hextoint(name + 3, &rgba[1]))
-            goto Fail;
+            return TRISTATE_FAIL;
         if (!_hextoint(name + 5, &rgba[2]))
-            goto Fail;
+            return TRISTATE_FAIL;
         rgba[3] = 255;
         if (len == 9 && !_hextoint(name + 7, &rgba[3])) {
-            goto Fail;
+            return TRISTATE_FAIL;
         }
-        goto Success;
+        return TRISTATE_SUCCESS;
     }
     else if (name[0] == '0' && name[1] == 'x') {
         if (len != 8 && len != 10)
-            goto Fail;
+            return TRISTATE_FAIL;
         if (!_hextoint(name + 2, &rgba[0]))
-            goto Fail;
+            return TRISTATE_FAIL;
         if (!_hextoint(name + 4, &rgba[1]))
-            goto Fail;
+            return TRISTATE_FAIL;
         if (!_hextoint(name + 6, &rgba[2]))
-            goto Fail;
+            return TRISTATE_FAIL;
         rgba[3] = 255;
         if (len == 10 && !_hextoint(name + 8, &rgba[3])) {
-            goto Fail;
+            return TRISTATE_FAIL;
         }
-        goto Success;
+        return TRISTATE_SUCCESS;
     }
-    goto Fail;
-
-Success:
-    rcode = TRISTATE_SUCCESS;
-Fail:
-    Py_XDECREF(ascii);
-    return rcode;
+    return TRISTATE_FAIL;
 }
 
 static int
@@ -598,29 +584,38 @@ _parse_color_from_text(PyObject *str_obj, Uint8 *rgba)
     /* We assume the caller handled this check for us. */
     assert(PyUnicode_Check(str_obj));
 
-    name1 = PyObject_CallMethod(str_obj, "replace", "(ss)", " ", "");
-    if (!name1) {
-        return -1;
-    }
-    name2 = PyObject_CallMethod(name1, "lower", NULL);
-    Py_DECREF(name1);
-    if (!name2) {
-        return -1;
-    }
-    color = PyDict_GetItem(_COLORDICT, name2);
-    Py_DECREF(name2);
+    color = PyDict_GetItem(_COLORDICT,
+                           str_obj);  // optimize for correct color names
     if (!color) {
         switch (_hexcolor(str_obj, rgba)) {
             case TRISTATE_FAIL:
-                PyErr_SetString(PyExc_ValueError, "invalid color name");
-                return -1;
+                /* Do re-handling of colordict path below */
+                break;
             case TRISTATE_ERROR:
+                /* Some python error raised, so forward it */
                 return -1;
             default:
-                break;
+                /* rgba is set, we are done here */
+                return 0;
+        }
+        name1 = PyObject_CallMethod(str_obj, "replace", "(ss)", " ", "");
+        if (!name1) {
+            return -1;
+        }
+        name2 = PyObject_CallMethod(name1, "lower", NULL);
+        Py_DECREF(name1);
+        if (!name2) {
+            return -1;
+        }
+        color = PyDict_GetItem(_COLORDICT, name2);
+        Py_DECREF(name2);
+        if (!color) {
+            PyErr_SetString(PyExc_ValueError, "invalid color name");
+            return -1;
         }
     }
-    else if (!pg_RGBAFromObjEx(color, rgba, PG_COLOR_HANDLE_RESTRICT_SEQ)) {
+
+    if (!pg_RGBAFromObjEx(color, rgba, PG_COLOR_HANDLE_RESTRICT_SEQ)) {
         PyErr_Format(PyExc_RuntimeError,
                      "internal pygame error - colordict is supposed to "
                      "only have tuple values, but there is an object of "
