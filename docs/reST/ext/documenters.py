@@ -41,6 +41,11 @@ def build_signatures(object):
         if arg_string:
             arg_string = arg_string[2:]
 
+        if object.obj["type"] == "property":
+            arg_string = ""
+        else:
+            arg_string = f"({arg_string})"
+
         if ret.count("[") > 2 or ret.count(",") > 3:
             ret = ret.split("[")[0]
             if ret in ("Optional", "Union"):
@@ -49,7 +54,7 @@ def build_signatures(object):
         # Shorten "pygame.module.X" types to "X"
         ret = re.sub(r"pygame(.[a-zA-Z0-9_]+)+", lambda x: x.group(1)[1:], ret)
 
-        yield f"| :sg:`{name}({arg_string}) -> {ret}`"
+        yield f"| :sg:`{name}{arg_string} -> {ret}`"
 
 
 def get_doc(env, obj):

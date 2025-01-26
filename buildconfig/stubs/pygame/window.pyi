@@ -292,7 +292,11 @@ class Window:
     def maximum_size(self, value: Point) -> None: ...
     @property
     def position(self) -> tuple[int, int]:
-        """Get or set the window position in screen coordinates."""
+        """Get or set the window position in screen coordinates.
+
+        The position may be a tuple of (x, y) coordiantes or ``WINDOWPOS_CENTERED`` or
+        ``WINDOWPOS_UNDEFINED``. The origin is the topleft of the main display.
+        """
 
     @position.setter
     def position(self, value: Union[int, Point]) -> None: ...
