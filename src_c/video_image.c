@@ -8,28 +8,19 @@
 
 static PyTypeObject pgImage_Type;
 
-static PyMethodDef image_methods[] = {
-    {NULL, NULL, 0, NULL}
-};
+static PyMethodDef image_methods[] = {{NULL, NULL, 0, NULL}};
 
-static PyGetSetDef image_getset[] = {
-    {NULL, 0, NULL, NULL, NULL}
-};
+static PyGetSetDef image_getset[] = {{NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgImage_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._image.Image",
     .tp_basicsize = sizeof(pgImageObject),
     //.tp_dealloc = (destructor)image_dealloc,
-    .tp_doc = DOC_SDL2_VIDEO_IMAGE,
-    .tp_methods = image_methods,
+    .tp_doc = DOC_SDL2_VIDEO_IMAGE, .tp_methods = image_methods,
     //.tp_init = (initproc)image_init,
-    .tp_new = PyType_GenericNew,
-    .tp_getset = image_getset
-};
+    .tp_new = PyType_GenericNew, .tp_getset = image_getset};
 
-static PyMethodDef _image_methods[] = {
-    {NULL, NULL, 0, NULL}
-};
+static PyMethodDef _image_methods[] = {{NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(_image)
 {
@@ -45,7 +36,7 @@ MODINIT_DEFINE(_image)
                                          NULL,
                                          NULL,
                                          NULL};
-    
+
     /* imported needed apis; Do this first so if there is an error
        the module is not loaded.
     */

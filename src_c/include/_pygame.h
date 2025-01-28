@@ -560,7 +560,7 @@ struct pgTextureObject {
 typedef struct {
     PyObject_HEAD pgTextureObject *texture;
     pgRectObject *srcrect;
-    pgColorObject* color;
+    pgColorObject *color;
     float angle;
     float alpha;
     SDL_Point origin;
@@ -570,8 +570,7 @@ typedef struct {
 } pgImageObject;
 #ifndef PYGAMEAPI_IMAGE_INTERNAL
 #define pgImage_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_image, 0))
-#define pgImage_Check(x) \
-    (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
+#define pgImage_Check(x) (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
 #define import_pygame_image() IMPORT_PYGAME_MODULE(_image)
 #endif
 
