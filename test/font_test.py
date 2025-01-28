@@ -390,6 +390,9 @@ class FontTypeTest(unittest.TestCase):
         "supported in SDL_ttf 2.24.0 onwards",
     )
     def test_set_linesize(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont thing
+
         f = pygame_font.Font(None, 20)
         linesize = f.get_linesize()
 
