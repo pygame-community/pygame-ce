@@ -1,9 +1,12 @@
 from typing import Any, Optional, Union, final
+from typing_extensions import deprecated  # added in 3.13
 
 from pygame.typing import SequenceLike
 
-@final
-class Event:
+class _GenericEvent:
+    # Just exists to avoid duplication of data for Event
+    # and (deprecated) EventType
+
     @property
     def type(self) -> int: ...
     __dict__: dict[str, Any]
@@ -20,6 +23,15 @@ class Event:
     # before any uses of the dict[] typehinting because of the same naming
     @property
     def dict(self) -> dict[str, Any]: ...
+
+@final
+class Event(_GenericEvent):
+    pass
+
+@final
+@deprecated("Use `Event` instead (EventType is an old alias)")
+class EventType(_GenericEvent):
+    pass
 
 _EventTypes = Union[int, SequenceLike[int]]
 
@@ -41,5 +53,3 @@ def set_grab(grab: bool, /) -> None: ...
 def get_grab() -> bool: ...
 def post(event: Event, /) -> bool: ...
 def custom_type() -> int: ...
-
-EventType = Event

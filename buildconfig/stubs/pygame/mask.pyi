@@ -1,4 +1,5 @@
 from typing import Any, Optional, Union
+from typing_extensions import deprecated  # added in 3.13
 
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -54,4 +55,5 @@ class Mask:
         dest: Union[RectLike, Point] = (0, 0),
     ) -> Surface: ...
 
-MaskType = Mask
+@deprecated("Use `Mask` instead (MaskType is an old alias)")
+class MaskType(Mask): ...
