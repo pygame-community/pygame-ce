@@ -20,7 +20,7 @@ static PyTypeObject pgImage_Type = {
     //.tp_init = (initproc)image_init,
     .tp_new = PyType_GenericNew, .tp_getset = image_getset};
 
-static PyMethodDef _image_methods[] = {{NULL, NULL, 0, NULL}};
+static PyMethodDef video_image_methods[] = {{NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(_image)
 {
@@ -31,7 +31,7 @@ MODINIT_DEFINE(_image)
                                          "_image",
                                          "docs_needed",
                                          -1,
-                                         _image_methods,
+                                         video_image_methods,
                                          NULL,
                                          NULL,
                                          NULL,
