@@ -318,6 +318,42 @@ window = py.extension_module(
 
 # TODO: support SDL3
 if sdl_api != 3
+_renderer = py.extension_module(
+    '_renderer',
+    'renderer.c',
+    c_args: warnings_error,
+    dependencies: pg_base_deps,
+    install: true,
+    subdir: pg,
+)
+endif
+
+# TODO: support SDL3
+if sdl_api != 3
+_texture = py.extension_module(
+    '_texture',
+    'texture.c',
+    c_args: warnings_error,
+    dependencies: pg_base_deps,
+    install: true,
+    subdir: pg,
+)
+endif
+
+# TODO: support SDL3
+if sdl_api != 3
+_image = py.extension_module(
+    '_image',
+    'video_image.c',
+    c_args: warnings_error,
+    dependencies: pg_base_deps,
+    install: true,
+    subdir: pg,
+)
+endif
+
+# TODO: support SDL3
+if sdl_api != 3
 gfxdraw = py.extension_module(
     'gfxdraw',
     ['gfxdraw.c', 'SDL_gfx/SDL_gfxPrimitives.c'],
