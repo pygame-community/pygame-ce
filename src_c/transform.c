@@ -410,6 +410,324 @@ rotate(SDL_Surface *src, SDL_Surface *dst, Uint32 bgcolor, double sangle,
     }
 }
 
+static PG_INLINE void
+_copy_pixel_to(int dst_x, int dst_y, int src_x, int src_y, Uint8 *dst_pixels,
+               Uint8 *src_pixels, int dst_pitch, int src_pitch,
+               SDL_PixelFormat *format)
+{
+    switch (format->BytesPerPixel) {
+        case 1:
+            *((Uint8 *)(dst_pixels + dst_y * dst_pitch) + dst_x) =
+                *((Uint8 *)(src_pixels + src_y * src_pitch) + src_x);
+            break;
+        case 2:
+            *((Uint16 *)(dst_pixels + dst_y * dst_pitch) + dst_x) =
+                *((Uint16 *)(src_pixels + src_y * src_pitch) + src_x);
+            break;
+        case 3:;
+            memcpy(((Uint8 *)(dst_pixels + dst_y * dst_pitch) + dst_x),
+                   ((Uint8 *)(src_pixels + src_y * src_pitch) + src_x),
+                   3 * sizeof(Uint8));
+            break;
+        default: /* case 4: */
+            *((Uint32 *)(dst_pixels + dst_y * dst_pitch) + dst_x) =
+                *((Uint32 *)(src_pixels + src_y * src_pitch) + src_x);
+            break;
+    }
+}
+
+static void
+skew(SDL_Surface *src, SDL_Surface *new_surf, SDL_Point *dst)
+{
+    int dx1, dy1, x1, x2, y1, y2, err1, e1, sx1, sx2, sy1, sy2, length1,
+        length2, rev;
+    float end_x, end_y, dx2, dy2, err2, e2, max_length1, max_length2;
+    SDL_Point start, end, smallstart, smallend;
+    float scale_x, scale_y, end_scale;
+
+    if (sqrt(pow(dst[2].y - dst[1].y, 2) + pow(dst[2].x - dst[1].x, 2)) >=
+        sqrt(pow(dst[3].y - dst[0].y, 2) + pow(dst[3].x - dst[0].x, 2))) {
+        start = dst[1];
+        end = dst[2];
+        smallstart = dst[0];
+        smallend = dst[3];
+        rev = 1;
+    }
+    else {
+        start = dst[0];
+        end = dst[3];
+        smallstart = dst[1];
+        smallend = dst[2];
+        rev = 0;
+    }
+
+    Uint8 *src_pixels = (Uint8 *)src->pixels;
+    Uint8 *dst_pixels = (Uint8 *)new_surf->pixels;
+
+    // End line drawing (so it doesn't draw over already drawn parts of the
+    // image
+    x1 = smallstart.x;
+    y1 = smallstart.y;
+
+    dx1 = abs(smallend.x - smallstart.x);
+    dy1 = -abs(smallend.y - smallstart.y);
+    sx1 = smallend.x > smallstart.x ? 1 : -1;
+    sy1 = smallend.y > smallstart.y ? 1 : -1;
+    err1 = dx1 + dy1;
+    max_length1 = (float)(dx1 - dy1);
+    length1 = 0;
+    if (rev) {
+        scale_x = (float)((src->w - 1) - (src->w - 1));
+    }
+    else {
+        scale_x = (float)((src->w - 1));
+    }
+    while (1) {
+        if (length1 >= max_length1)
+            break;
+        scale_y = length1 / max_length1 * (src->h - 1);
+        _copy_pixel_to(x1, y1, (int)(scale_x), (int)(scale_y), dst_pixels,
+                       src_pixels, new_surf->pitch, src->pitch,
+                       new_surf->format);
+
+        e1 = err1 * 2;
+        if (e1 > dy1) {
+            err1 += dy1;
+            x1 += sx1;
+            length1 += 1;
+        }
+        if (e1 < dx1) {
+            err1 += dx1;
+            y1 += sy1;
+            length1 += 1;
+        }
+    }
+
+    x1 = start.x;
+    y1 = start.y;
+
+    dx1 = abs(end.x - start.x);
+    dy1 = -abs(end.y - start.y);
+    sx1 = end.x > start.x ? 1 : -1;
+    sy1 = end.y > start.y ? 1 : -1;
+    err1 = dx1 + dy1;
+    max_length1 = (float)(dx1 - dy1);
+    length1 = 0;
+
+    // First iteration for beginning point
+    x2 = x1;
+    y2 = y1;
+    end_scale = length1 / max_length1;
+    scale_y = end_scale * (src->h - 1);
+
+    end_x = (smallend.x - smallstart.x) * end_scale + smallstart.x;
+    end_y = (smallend.y - smallstart.y) * end_scale + smallstart.y;
+    dx2 = (float)fabs(end_x - x1);
+    dy2 = (float)-fabs(end_y - y1);
+    sx2 = end_x > x1 ? 1 : -1;
+    sy2 = end_y > y1 ? 1 : -1;
+    err2 = dx2 + dy2;
+    length2 = 0;
+    max_length2 = (float)floor(dx2 - dy2);
+    _copy_pixel_to(x2, y2, (int)(scale_x), (int)(scale_y), dst_pixels,
+                   src_pixels, new_surf->pitch, src->pitch, new_surf->format);
+    while (1) {
+        // Using Nearest neighbor
+        if (rev) {
+            scale_x =
+                (float)((src->w - 1) - (src->w - 1) * (length2 / max_length2));
+        }
+        else {
+            scale_x = (float)((src->w - 1) * (length2 / max_length2));
+        }
+
+        _copy_pixel_to(x2, y2, (int)(scale_x), (int)(scale_y), dst_pixels,
+                       src_pixels, new_surf->pitch, src->pitch,
+                       new_surf->format);
+
+        if (length2 >= max_length2) {
+            break;
+        }
+
+        e2 = err2 * 2;
+        if (e2 >= dy2) {
+            err2 += dy2;
+            x2 += sx2;
+            length2 += 1;
+        }
+        if (e2 <= dx2) {
+            err2 += dx2;
+            y2 += sy2;
+            length2 += 1;
+        }
+    }
+
+    while (1) {
+        if (rev) {
+            scale_x = (float)((src->w - 1));
+        }
+        else {
+            scale_x = 0;
+        }
+        _copy_pixel_to(x1, y1, (int)(scale_x), (int)(scale_y), dst_pixels,
+                       src_pixels, new_surf->pitch, src->pitch,
+                       new_surf->format);
+        if (length1 >= max_length1)
+            break;
+        e1 = err1 * 2;
+        if (e1 >= dy1) {
+            err1 += dy1;
+            x1 += sx1;
+            length1 += 1;
+            x2 = x1;
+            y2 = y1;
+            end_scale = length1 / max_length1;
+            scale_y = end_scale * (src->h - 1);
+
+            end_x = (smallend.x - smallstart.x) * end_scale + smallstart.x;
+            end_y = (smallend.y - smallstart.y) * end_scale + smallstart.y;
+            dx2 = (float)fabs(end_x - x1);
+            dy2 = (float)-fabs(end_y - y1);
+            sx2 = end_x > x1 ? 1 : -1;
+            sy2 = end_y > y1 ? 1 : -1;
+            err2 = dx2 + dy2;
+            length2 = 0;
+            max_length2 = (float)(round(dx2) + floor(-dy2));
+            if (max_length2 == 0)
+                max_length2 = 1;
+            while (1) {
+                // Using Nearest neighbor
+                e2 = err2 * 2;
+                if (e2 >= dy2) {
+                    err2 += dy2;
+                    x2 += sx2;
+                    length2 += 1;
+
+                    if (rev) {
+                        scale_x =
+                            (float)((src->w - 1) -
+                                    (src->w - 1) * (length2 / max_length2));
+                    }
+                    else {
+                        scale_x =
+                            (float)((src->w - 1) * (length2 / max_length2));
+                    }
+
+                    if (length1 < (max_length1 - 1) || e2 > dx2) {
+                        _copy_pixel_to(x2, y2, (int)(scale_x), (int)(scale_y),
+                                       dst_pixels, src_pixels, new_surf->pitch,
+                                       src->pitch, new_surf->format);
+                    }
+                }
+                if (length2 >= max_length2) {
+                    break;
+                }
+                if (e2 <= dx2) {
+                    err2 += dx2;
+                    y2 += sy2;
+                    length2 += 1;
+                    // extra assign for when y2 changes at the same time as x1
+                    // changes to prevent missing pixels
+                    if (rev) {
+                        scale_x =
+                            (float)((src->w - 1) -
+                                    (src->w - 1) * (length2 / max_length2));
+                    }
+                    else {
+                        scale_x =
+                            (float)((src->w - 1) * (length2 / max_length2));
+                    }
+                    _copy_pixel_to(x2, y2, (int)(scale_x), (int)(scale_y),
+                                   dst_pixels, src_pixels, new_surf->pitch,
+                                   src->pitch, new_surf->format);
+                }
+                if (length2 >= (max_length2)) {
+                    break;
+                }
+            }
+        }
+        if (length1 > max_length1)
+            break;
+        if (e1 <= dx1) {
+            if (rev) {
+                scale_x = (float)((src->w - 1));
+            }
+            else {
+                scale_x = 0;
+            }
+
+            err1 += dx1;
+            y1 += sy1;
+            length1 += 1;
+            x2 = x1;
+            y2 = y1;
+            end_scale = length1 / max_length1;
+            scale_y = end_scale * (src->h - 1);
+
+            end_x = (smallend.x - smallstart.x) * end_scale + smallstart.x;
+            end_y = (smallend.y - smallstart.y) * end_scale + smallstart.y;
+            dx2 = (float)fabs(end_x - x1);
+            dy2 = (float)-fabs(end_y - y1);
+            sx2 = end_x > x1 ? 1 : -1;
+            sy2 = end_y > y1 ? 1 : -1;
+            err2 = dx2 + dy2;
+            length2 = 0;
+            max_length2 = (float)(round(dx2) + floor(-dy2));
+            if (max_length2 == 0)
+                max_length2 = 1;
+            while (1) {
+                // Using Nearest neighbor
+
+                e2 = err2 * 2;
+                if (e2 >= dy2) {
+                    err2 += dy2;
+                    x2 += sx2;
+                    length2 += 1;
+                    if (rev) {
+                        scale_x =
+                            (float)((src->w - 1) -
+                                    (src->w - 1) * (length2 / max_length2));
+                    }
+                    else {
+                        scale_x =
+                            (float)((src->w - 1) * (length2 / max_length2));
+                    }
+                    if (length1 < (max_length1 - 1) || e2 > dx2) {
+                        _copy_pixel_to(x2, y2, (int)(scale_x), (int)(scale_y),
+                                       dst_pixels, src_pixels, new_surf->pitch,
+                                       src->pitch, new_surf->format);
+                    }
+                }
+                if (length2 >= max_length2) {
+                    break;
+                }
+                if (e2 <= dx2) {
+                    err2 += dx2;
+                    y2 += sy2;
+                    length2 += 1;
+                    // extra assign for when y2 changes at the same time as x1
+                    // changes to prevent missing pixels
+                    if (rev) {
+                        scale_x =
+                            (float)((src->w - 1) -
+                                    (src->w - 1) * (length2 / max_length2));
+                    }
+                    else {
+                        scale_x =
+                            (float)((src->w - 1) * (length2 / max_length2));
+                    }
+                    _copy_pixel_to(x2, y2, (int)(scale_x), (int)(scale_y),
+                                   dst_pixels, src_pixels, new_surf->pitch,
+                                   src->pitch, new_surf->format);
+                }
+                if (length2 >= max_length2) {
+                    break;
+                }
+            }
+        }
+    }
+}
+
 static SDL_Surface *
 scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
          int height)
@@ -710,6 +1028,166 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_UnlockSurface(newsurf);
 
     return (PyObject *)pgSurface_New(newsurf);
+}
+
+/* _color_from_obj gets a color from a python object.
+
+Returns 0 if ok, and sets color to the color.
+   -1 means error.
+   If color_obj is NULL, use rgba_default.
+   If rgba_default is NULL, do not use a default color, return -1.
+*/
+int
+_color_from_obj(PyObject *color_obj, SDL_Surface *surf, Uint8 rgba_default[4],
+                Uint32 *color)
+{
+    if (color_obj) {
+        if (!pg_MappedColorFromObj(color_obj, surf, color,
+                                   PG_COLOR_HANDLE_ALL)) {
+            return -1;
+        }
+    }
+    else {
+        if (!rgba_default)
+            return -1;
+        *color = SDL_MapRGBA(surf->format, rgba_default[0], rgba_default[1],
+                             rgba_default[2], rgba_default[3]);
+    }
+    return 0;
+}
+
+static PG_INLINE int
+_check_inside(SDL_Surface *surf, SDL_Point p)
+{
+    if (p.x >= 0 && p.x <= surf->w && p.y >= 0 && p.y <= surf->h)
+        return 1;
+    else
+        return 0;
+}
+
+static PyObject *
+surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *dest_surface = NULL;
+    PyObject *colorobj = NULL;
+    SDL_Surface *surf, *newsurf;
+    int adjust_size = 1;
+    int x1, y1, x2, y2, x3, y3, x4, y4;
+    int start = 0, width, top = 0, height;
+    int bounds_check = 1;
+    Uint32 bgcolor;
+    static char *keywords[] = {"surface",     "points",       "bg_color",
+                               "adjust_size", "dest_surface", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "O!((ii)(ii)(ii)(ii))|OpO!", keywords,
+            &pgSurface_Type, &surfobj, &x1, &y1, &x2, &y2, &x3, &y3, &x4, &y4,
+            &colorobj, &adjust_size, &pgSurface_Type, &dest_surface))
+        return NULL;
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
+    if ((x1 == x2 && y1 == y2) || (x1 == x3 && y1 == y3) ||
+        (x1 == x4 && y1 == y4) || (x2 == x3 && y2 == y3) ||
+        (x2 == x4 && y2 == y4) || (x3 == x4 && y3 == y4)) {
+        return RAISE(PyExc_ValueError, "all four points must be unique");
+    }
+
+    if (!dest_surface) {
+        if (adjust_size) {
+            start = MIN(MIN(x1, x2), MIN(x3, x4));
+            width = MAX(MAX(x1, x2), MAX(x3, x4)) - start + 1;
+            top = MIN(MIN(y1, y2), MIN(y3, y4));
+            height = MAX(MAX(y1, y2), MAX(y3, y4)) - top + 1;
+            newsurf = newsurf_fromsurf(surf, width, height);
+            bounds_check = 0;
+        }
+        else {
+            newsurf = newsurf_fromsurf(surf, surf->w, surf->h);
+        }
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dest_surface);
+    }
+    if (!newsurf)
+        return NULL;
+
+    if (surf->w < 1 || surf->h < 1) {
+        Py_INCREF(surfobj);
+        return (PyObject *)surfobj;
+    }
+
+    if (PG_SURF_BytesPerPixel(surf) != PG_SURF_BytesPerPixel(newsurf)) {
+        return RAISE(PyExc_ValueError,
+                     "source and destination formats need to be the same");
+    }
+
+    if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4)
+        return RAISE(PyExc_ValueError,
+                     "unsupported Surface bit depth for transform");
+
+    SDL_Point points[4] = {{x1 - start, y1 - top},
+                           {x2 - start, y2 - top},
+                           {x3 - start, y3 - top},
+                           {x4 - start, y4 - top}};
+    if (bounds_check && !(_check_inside(newsurf, points[0]) &&
+                          _check_inside(newsurf, points[1]) &&
+                          _check_inside(newsurf, points[2]) &&
+                          _check_inside(newsurf, points[3]))) {
+        return RAISE(PyExc_ValueError,
+                     "points are not within specified Surface");
+    }
+
+    SDL_LockSurface(newsurf);
+    SDL_LockSurface(surf);
+    pgSurface_Lock(surfobj);
+    if (colorobj == NULL || colorobj == Py_None) {
+        /* get the background color */
+        if (SDL_GetColorKey(surf, &bgcolor) != 0) {
+            switch (PG_SURF_BytesPerPixel(surf)) {
+                case 1:
+                    bgcolor = *(Uint8 *)surf->pixels;
+                    break;
+                case 2:
+                    bgcolor = *(Uint16 *)surf->pixels;
+                    break;
+                case 4:
+                    bgcolor = *(Uint32 *)surf->pixels;
+                    break;
+                default: /*case 3:*/
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+                    bgcolor = (((Uint8 *)surf->pixels)[0]) +
+                              (((Uint8 *)surf->pixels)[1] << 8) +
+                              (((Uint8 *)surf->pixels)[2] << 16);
+#else
+                    bgcolor = (((Uint8 *)surf->pixels)[2]) +
+                              (((Uint8 *)surf->pixels)[1] << 8) +
+                              (((Uint8 *)surf->pixels)[0] << 16);
+#endif
+            }
+            bgcolor &= ~surf->format->Amask;
+        }
+    }
+    else {
+        if (_color_from_obj(colorobj, surf, NULL, &bgcolor))
+            return RAISE(PyExc_TypeError, "invalid bg_color argument");
+    }
+
+    SDL_FillRect(newsurf, NULL, bgcolor);
+
+    Py_BEGIN_ALLOW_THREADS;
+    skew(surf, newsurf, points);
+    Py_END_ALLOW_THREADS;
+    pgSurface_Unlock(surfobj);
+    SDL_UnlockSurface(newsurf);
+    SDL_UnlockSurface(surf);
+    if (dest_surface) {
+        Py_INCREF(dest_surface);
+        return (PyObject *)dest_surface;
+    }
+    else
+        return (PyObject *)pgSurface_New(newsurf);
 }
 
 static PyObject *
@@ -1811,32 +2289,6 @@ get_threshold(SDL_Surface *dest_surf, SDL_Surface *surf,
         }
     }
     return similar;
-}
-
-/* _color_from_obj gets a color from a python object.
-
-Returns 0 if ok, and sets color to the color.
-   -1 means error.
-   If color_obj is NULL, use rgba_default.
-   If rgba_default is NULL, do not use a default color, return -1.
-*/
-int
-_color_from_obj(PyObject *color_obj, SDL_Surface *surf, Uint8 rgba_default[4],
-                Uint32 *color)
-{
-    if (color_obj) {
-        if (!pg_MappedColorFromObj(color_obj, surf, color,
-                                   PG_COLOR_HANDLE_ALL)) {
-            return -1;
-        }
-    }
-    else {
-        if (!rgba_default)
-            return -1;
-        *color = SDL_MapRGBA(surf->format, rgba_default[0], rgba_default[1],
-                             rgba_default[2], rgba_default[3]);
-    }
-    return 0;
 }
 
 static PyObject *
@@ -3992,6 +4444,8 @@ static PyMethodDef _transform_methods[] = {
      DOC_TRANSFORM_SCALEBY},
     {"rotate", (PyCFunction)surf_rotate, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_ROTATE},
+    {"skew", (PyCFunction)surf_skew, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_SKEW},
     {"flip", (PyCFunction)surf_flip, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_FLIP},
     {"rotozoom", (PyCFunction)surf_rotozoom, METH_VARARGS | METH_KEYWORDS,
