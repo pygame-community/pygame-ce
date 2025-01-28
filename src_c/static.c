@@ -8,6 +8,9 @@
 #define PYGAMEAPI_BASE_INTERNAL
 #define PYGAMEAPI_SURFACE_INTERNAL
 #define PYGAMEAPI_WINDOW_INTERNAL
+#define PYGAMEAPI_RENDERER_INTERNAL
+#define PYGAMEAPI_TEXTURE_INTERNAL
+#define PYGAMEAPI_IMAGE_INTERNAL
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) \
