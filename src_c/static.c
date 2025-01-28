@@ -187,6 +187,15 @@ PyInit_pixelarray(void);
 PyMODINIT_FUNC
 PyInit_window(void);
 
+PyMODINIT_FUNC
+PyInit__renderer(void);
+
+PyMODINIT_FUNC
+PyInit__image(void);
+
+PyMODINIT_FUNC
+PyInit__texture(void);
+
 // pygame_static module
 
 void
@@ -320,6 +329,9 @@ PyInit_pygame_static()
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
 
     load_submodule("pygame", PyInit_window(), "window");
+    load_submodule("pygame", PyInit__renderer(), "_renderer");
+    load_submodule("pygame", PyInit__texture(), "_texture");
+    load_submodule("pygame", PyInit__image(), "_image");
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
@@ -364,6 +376,9 @@ PyInit_pygame_static()
 #include "simd_blitters_sse2.c"
 
 #include "window.c"
+#include "renderer.c"
+#include "texture.c"
+#include "video_image.c"
 
 #undef pgVidInfo_Type
 #undef pgVidInfo_New

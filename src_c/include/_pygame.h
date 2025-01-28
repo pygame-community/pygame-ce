@@ -520,6 +520,61 @@ typedef struct {
 #define import_pygame_window() IMPORT_PYGAME_MODULE(window)
 #endif
 
+typedef struct pgTextureObject pgTextureObject;
+
+/*
+ * Renderer module
+ */
+typedef struct {
+    PyObject_HEAD SDL_Renderer *renderer;
+    pgWindowObject *window;
+    pgTextureObject *target;
+    SDL_bool _is_borrowed;
+} pgRendererObject;
+#ifndef PYGAMEAPI_RENDERER_INTERNAL
+#define pgRenderer_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_renderer, 0))
+#define pgRenderer_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgRenderer_Type))
+#define import_pygame_renderer() IMPORT_PYGAME_MODULE(_renderer)
+#endif
+
+/*
+ * Texture module
+ */
+struct pgTextureObject {
+    PyObject_HEAD SDL_Texture *texture;
+    pgRendererObject *renderer;
+    int width;
+    int height;
+};
+#ifndef PYGAMEAPI_TEXTURE_INTERNAL
+#define pgTexture_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_texture, 0))
+#define pgTexture_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgTexture_Type))
+#define import_pygame_texture() IMPORT_PYGAME_MODULE(_texture)
+#endif
+
+/*
+ * Image module
+ */
+typedef struct {
+    PyObject_HEAD pgTextureObject *texture;
+    pgRectObject *srcrect;
+    pgColorObject* color;
+    float angle;
+    float alpha;
+    SDL_Point origin;
+    SDL_bool flip_x;
+    SDL_bool flip_y;
+    SDL_BlendMode blend_mode;
+} pgImageObject;
+#ifndef PYGAMEAPI_IMAGE_INTERNAL
+#define pgImage_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_image, 0))
+#define pgImage_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
+#define import_pygame_image() IMPORT_PYGAME_MODULE(_image)
+#endif
+
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
 
 /*
@@ -539,6 +594,9 @@ PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
 PYGAMEAPI_DEFINE_SLOTS(window);
+PYGAMEAPI_DEFINE_SLOTS(_renderer);
+PYGAMEAPI_DEFINE_SLOTS(_texture);
+PYGAMEAPI_DEFINE_SLOTS(_image);
 PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
@@ -553,6 +611,9 @@ PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
 PYGAMEAPI_EXTERN_SLOTS(window);
+PYGAMEAPI_EXTERN_SLOTS(_renderer);
+PYGAMEAPI_EXTERN_SLOTS(_texture);
+PYGAMEAPI_EXTERN_SLOTS(_image);
 PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */
