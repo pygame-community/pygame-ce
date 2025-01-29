@@ -17,14 +17,11 @@ static PyGetSetDef renderer_getset[] = {{NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgRenderer_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Renderer",
-                                  .tp_basicsize = sizeof(pgRendererObject),
-                                  //.tp_dealloc = (destructor)renderer_dealloc,
-                                  .tp_doc = DOC_SDL2_VIDEO_RENDERER,
-                                  .tp_methods = renderer_methods,
-                                  //.tp_init = (initproc)renderer_init,
-                                  .tp_new = PyType_GenericNew,
-                                  .tp_getset = renderer_getset
-};
+    .tp_basicsize = sizeof(pgRendererObject),
+    //.tp_dealloc = (destructor)renderer_dealloc,
+    .tp_doc = DOC_SDL2_VIDEO_RENDERER, .tp_methods = renderer_methods,
+    //.tp_init = (initproc)renderer_init,
+    .tp_new = PyType_GenericNew, .tp_getset = renderer_getset};
 
 static PyMethodDef _renderer_methods[] = {{NULL, NULL, 0, NULL}};
 
