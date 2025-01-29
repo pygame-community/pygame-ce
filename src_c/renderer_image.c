@@ -17,5 +17,3 @@ static PyTypeObject pgImage_Type = {
     .tp_doc = DOC_SDL2_VIDEO_IMAGE, .tp_methods = image_methods,
     //.tp_init = (initproc)image_init,
     .tp_new = PyType_GenericNew, .tp_getset = image_getset};
-
-static PyMethodDef _image_methods[] = {{NULL, NULL, 0, NULL}};
