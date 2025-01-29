@@ -55,6 +55,14 @@ MODINIT_DEFINE(_renderer)
         return NULL;
     }
 
+    if (PyType_Ready(&pgTexture_Type) < 0) {
+        return NULL;
+    }
+
+    if (PyType_Ready(&pgImage_Type) < 0) {
+        return NULL;
+    }
+
     /* create the module */
     module = PyModule_Create(&_module);
     if (module == 0) {
