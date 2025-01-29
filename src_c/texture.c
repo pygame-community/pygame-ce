@@ -17,5 +17,3 @@ static PyTypeObject pgTexture_Type = {
     .tp_doc = DOC_SDL2_VIDEO_TEXTURE, .tp_methods = texture_methods,
     //.tp_init = (initproc)texture_init,
     .tp_new = PyType_GenericNew, .tp_getset = texture_getset};
-
-static PyMethodDef _texture_methods[] = {{NULL, NULL, 0, NULL}};
