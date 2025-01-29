@@ -6,6 +6,9 @@
 
 #include "doc/sdl2_video_doc.h"
 
+#include "texture.c"
+#include "renderer_image.c"
+
 static PyTypeObject pgRenderer_Type;
 
 static PyMethodDef renderer_methods[] = {{NULL, NULL, 0, NULL}};
@@ -14,11 +17,14 @@ static PyGetSetDef renderer_getset[] = {{NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgRenderer_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Renderer",
-    .tp_basicsize = sizeof(pgRendererObject),
-    //.tp_dealloc = (destructor)renderer_dealloc,
-    .tp_doc = DOC_SDL2_VIDEO_RENDERER, .tp_methods = renderer_methods,
-    //.tp_init = (initproc)renderer_init,
-    .tp_new = PyType_GenericNew, .tp_getset = renderer_getset};
+                                  .tp_basicsize = sizeof(pgRendererObject),
+                                  //.tp_dealloc = (destructor)renderer_dealloc,
+                                  .tp_doc = DOC_SDL2_VIDEO_RENDERER,
+                                  .tp_methods = renderer_methods,
+                                  //.tp_init = (initproc)renderer_init,
+                                  .tp_new = PyType_GenericNew,
+                                  .tp_getset = renderer_getset
+};
 
 static PyMethodDef _renderer_methods[] = {{NULL, NULL, 0, NULL}};
 
@@ -62,7 +68,23 @@ MODINIT_DEFINE(_renderer)
         return NULL;
     }
 
+    Py_INCREF(&pgTexture_Type);
+    if (PyModule_AddObject(module, "Texture", (PyObject *)&pgTexture_Type)) {
+        Py_DECREF(&pgTexture_Type);
+        Py_DECREF(module);
+        return NULL;
+    }
+
+    Py_INCREF(&pgImage_Type);
+    if (PyModule_AddObject(module, "Image", (PyObject *)&pgImage_Type)) {
+        Py_DECREF(&pgImage_Type);
+        Py_DECREF(module);
+        return NULL;
+    }
+
     c_api[0] = &pgRenderer_Type;
+    c_api[1] = &pgTexture_Type;
+    c_api[2] = &pgImage_Type;
     apiobj = encapsulate_api(c_api, "_renderer");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);

@@ -9,8 +9,6 @@
 #define PYGAMEAPI_SURFACE_INTERNAL
 #define PYGAMEAPI_WINDOW_INTERNAL
 #define PYGAMEAPI_RENDERER_INTERNAL
-#define PYGAMEAPI_TEXTURE_INTERNAL
-#define PYGAMEAPI_IMAGE_INTERNAL
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) \
@@ -193,12 +191,6 @@ PyInit_window(void);
 PyMODINIT_FUNC
 PyInit__renderer(void);
 
-PyMODINIT_FUNC
-PyInit__image(void);
-
-PyMODINIT_FUNC
-PyInit__texture(void);
-
 // pygame_static module
 
 void
@@ -333,8 +325,6 @@ PyInit_pygame_static()
 
     load_submodule("pygame", PyInit_window(), "window");
     load_submodule("pygame", PyInit__renderer(), "_renderer");
-    load_submodule("pygame", PyInit__texture(), "_texture");
-    load_submodule("pygame", PyInit__image(), "_image");
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
@@ -380,8 +370,6 @@ PyInit_pygame_static()
 
 #include "window.c"
 #include "renderer.c"
-#include "texture.c"
-#include "video_image.c"
 
 #undef pgVidInfo_Type
 #undef pgVidInfo_New
