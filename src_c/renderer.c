@@ -6,7 +6,6 @@
 
 #include "doc/sdl2_video_doc.h"
 
-/* Declarations */
 static PyTypeObject pgRenderer_Type;
 
 static PyTypeObject pgTexture_Type;
