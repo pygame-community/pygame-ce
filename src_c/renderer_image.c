@@ -4,6 +4,14 @@
 
 #include "doc/sdl2_video_doc.h"
 
+#define pgImage_Check(x) (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
+
+static void
+image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
+{
+    ;  // TODO MightyJosip Implement with Image class
+}
+
 static PyTypeObject pgImage_Type;
 
 static PyMethodDef image_methods[] = {{NULL, NULL, 0, NULL}};
