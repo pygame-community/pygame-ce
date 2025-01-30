@@ -561,7 +561,7 @@ typedef struct {
     (PyObject_IsInstance((x), (PyObject *)&pgTexture_Type))
 #define pgImage_Check(x) (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
 #define import_pygame_renderer() IMPORT_PYGAME_MODULE(_renderer)
-#endif
+#endif /* PYGAMEAPI_RENDERER_INTERNAL */
 
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
 
