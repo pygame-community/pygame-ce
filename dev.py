@@ -446,7 +446,7 @@ class Dev:
             pprint("pip version is too old or unknown, attempting pip upgrade")
             pip_install(self.py, ["-U", "pip"])
 
-        deps = self.deps.get(self.args["command"])
+        deps = self.deps.get(self.args["command"], set())
         ignored_deps = self.args["ignore_dep"]
         deps_filtered = deps.copy()
         if ignored_deps:
@@ -456,7 +456,7 @@ class Dev:
                         deps_filtered.remove(constr)
                         break
 
-        if deps:
+        if deps_filtered:
             pprint("Installing dependencies")
             pip_install(self.py, list(deps_filtered))
 
