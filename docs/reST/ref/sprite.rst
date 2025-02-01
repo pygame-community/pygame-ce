@@ -354,7 +354,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
       Draws all the Sprites to the surface, the same as ``Group.draw()``. This
       method also returns a list of Rectangular areas on the screen that have
       been changed. The returned changes include areas of the screen that have
-      been affected by previous ``Group.clear()`` calls. ``special_flags`` is 
+      been affected by previous ``Group.clear()`` calls. ``special_flags`` is
       passed to ``Surface.blit()``. ``bgsurf`` is unused in this method but
       ``LayeredDirty.draw()`` uses it.
 

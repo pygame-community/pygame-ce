@@ -568,11 +568,18 @@ class AbstractGroup:
         sprites = self.sprites()
         if hasattr(surface, "blits"):
             self.spritedict.update(
-                zip(sprites, surface.blits((spr.image, spr.rect, None, special_flags) for spr in sprites))
+                zip(
+                    sprites,
+                    surface.blits(
+                        (spr.image, spr.rect, None, special_flags) for spr in sprites
+                    ),
+                )
             )
         else:
             for spr in sprites:
-                self.spritedict[spr] = surface.blit(spr.image, spr.rect, None, special_flags)
+                self.spritedict[spr] = surface.blit(
+                    spr.image, spr.rect, None, special_flags
+                )
         self.lostsprites = []
         dirty = self.lostsprites
 
@@ -1184,7 +1191,12 @@ class LayeredDirty(LayeredUpdates):
 
             # 2. draw
             self._draw_dirty_internal(
-                local_old_rect, rect_type, local_sprites, surf_blit_func, local_update, special_flags
+                local_old_rect,
+                rect_type,
+                local_sprites,
+                surf_blit_func,
+                local_update,
+                special_flags,
             )
             local_ret = list(local_update)
         else:  # flip, full screen mode
@@ -1217,7 +1229,9 @@ class LayeredDirty(LayeredUpdates):
         return local_ret
 
     @staticmethod
-    def _draw_dirty_internal(_old_rect, _rect, _sprites, _surf_blit, _update, _special_flags):
+    def _draw_dirty_internal(
+        _old_rect, _rect, _sprites, _surf_blit, _update, _special_flags
+    ):
         for spr in _sprites:
             flags = spr.blendmode if _special_flags is None else _special_flags
             if spr.dirty < 1 and spr.visible:
