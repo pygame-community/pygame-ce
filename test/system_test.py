@@ -119,11 +119,14 @@ class SystemModuleTest(unittest.TestCase):
                 1,
             )
 
-    @unittest.skipIf(SDL < (3, 2, 0))
     def test_get_theme(self):
-        theme = pygame.system.get_theme()
-        self.assertIsInstance(theme, str)
-        self.assertIn(theme, ["light", "dark", "unknown"])
+        if SDL >= (3, 2, 0):
+            theme = pygame.system.get_theme()
+            self.assertIsInstance(theme, str)
+            self.assertIn(theme, ["light", "dark", "unknown"])
+        else:
+            with self.assertRaises(pygame.error):
+                pygame.system.get_theme()
 
 
 if __name__ == "__main__":
