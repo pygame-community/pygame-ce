@@ -18,7 +18,7 @@ jobs:
     uses: ./.github/workflows/build-ubuntu-sdist.yml
 
   draft-release:
-    needs: [manylinux-aarch64, manylinux, macos, windows, sdist]
+    needs: [manylinux, macos, windows, sdist]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
