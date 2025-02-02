@@ -101,6 +101,31 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. ## pygame.transform.rotozoom ##
 
+.. function:: skew
+
+   | :sl:`skew an image to specified points`
+   | :sg:`skew(surface, points, bg_color=None, adjust_size=True, dest_surface=None)`
+
+   This maps an image to a new surface warping the image so that its corners
+   match the provided points in a clockwise order: top left, top right, bottom
+   right, bottom left. Provided points represent the pixel coordinates of the
+   new corners of the image, they must be unique and can be positive or negative
+   provided they fit in the new surface.
+
+   When no 'dest_surface' is provided, the 'adjust_size' option will set the
+   size of the resulting surface to be the smallest surface the points are
+   capable of fitting in, if false it will use the original size of the
+   provided surface.
+
+   If 'bg_color' is not provided then it will select a color to use based on
+   the surface. If the image has pixel alphas, the padded area will be
+   transparent. Otherwise pygame will pick a color that matches the Surface
+   colorkey or the top left pixel value.
+
+   .. versionadded:: 2.5.3
+
+   .. ## pygame.transform.skew ##
+
 .. function:: scale2x
 
    | :sl:`specialized image doubler`
