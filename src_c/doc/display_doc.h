@@ -15,6 +15,7 @@
 #define DOC_DISPLAY_MODEOK "mode_ok(size, flags=0, depth=0, display=0) -> depth\nPick the best color depth for a display mode"
 #define DOC_DISPLAY_GLGETATTRIBUTE "gl_get_attribute(flag, /) -> value\nGet the value for an OpenGL flag for the current display"
 #define DOC_DISPLAY_GLSETATTRIBUTE "gl_set_attribute(flag, value, /) -> None\nRequest an OpenGL display attribute for the display mode"
+#define DOC_DISPLAY_GLGETPROC "gl_get_proc(proc_name) -> ctypes._FuncPointer\nGet an OpenGL function by name"
 #define DOC_DISPLAY_GETACTIVE "get_active() -> bool\nReturns True when the display is active on the screen"
 #define DOC_DISPLAY_ICONIFY "iconify() -> bool\nIconify the display surface"
 #define DOC_DISPLAY_TOGGLEFULLSCREEN "toggle_fullscreen() -> int\nSwitch between fullscreen and windowed displays"
