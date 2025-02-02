@@ -54,7 +54,7 @@ pygame_ce = 'pygame.__briefcase.pygame_ce:PygameCEGuiBootstrap'
 [build-system]
 requires = [
   "meson-python<=0.17.1",
-  "meson<=1.6.0",
+  "meson<=1.7.0",
   "ninja<=1.12.1",
   "cython<=3.0.11",
   "sphinx<=8.1.3",
