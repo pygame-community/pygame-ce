@@ -130,6 +130,8 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
     return SDL_GetPixelFormatDetails(surf->format);
 }
 
+#define PG_GetSurfacePalette SDL_GetSurfacePalette
+
 #define PG_GetRGBA SDL_GetRGBA
 #define PG_GetRGB SDL_GetRGB
 #define PG_MapRGBA SDL_MapRGBA
@@ -223,6 +225,12 @@ static inline PG_PixelFormat *
 PG_GetSurfaceFormat(SDL_Surface *surf)
 {
     return surf->format;
+}
+
+static inline SDL_Palette *
+PG_GetSurfacePalette(SDL_Surface *surf)
+{
+    return surf->format->palette;
 }
 
 // NOTE:
