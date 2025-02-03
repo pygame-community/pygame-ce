@@ -6,14 +6,20 @@
 
 #include "doc/sdl2_video_doc.h"
 
-#include "texture.c"
-#include "renderer_image.c"
-
+/* Declarations */
 static PyTypeObject pgRenderer_Type;
 
 static PyTypeObject pgTexture_Type;
 
 static PyTypeObject pgImage_Type;
+
+#define pgRenderer_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgRenderer_Type))
+
+#define pgTexture_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgTexture_Type))
+
+#define pgImage_Check(x) (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
 
 #define RENDERER_ERROR_CHECK(x)                       \
     if (x < 0) {                                      \
@@ -26,6 +32,13 @@ static PyTypeObject pgImage_Type;
         return -1;                             \
     }
 
+static void
+texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest);
+
+static void
+image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest);
+
+/* Renderer implementation */
 static PyObject *
 from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
 {
@@ -663,6 +676,21 @@ renderer_dealloc(pgRendererObject *self, PyObject *_null)
     Py_TYPE(self)->tp_free(self);
 }
 
+/* Texture implementation */
+static void
+texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
+{
+    ;  // TODO MightyJosip Implement with Texture class
+}
+
+/* Image implementation */
+static void
+image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
+{
+    ;  // TODO MightyJosip Implement with Image class
+}
+
+/* Module definition */
 static PyMethodDef renderer_methods[] = {
     {"draw_point", (PyCFunction)renderer_draw_point,
      METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_DRAWPOINT},
@@ -726,10 +754,12 @@ static PyGetSetDef image_getset[] = {{NULL, 0, NULL, NULL, NULL}};
 static PyTypeObject pgRenderer_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Renderer",
     .tp_basicsize = sizeof(pgRendererObject),
-    //.tp_dealloc = (destructor)renderer_dealloc,
-    .tp_doc = DOC_SDL2_VIDEO_RENDERER, .tp_methods = renderer_methods,
-    //.tp_init = (initproc)renderer_init,
-    .tp_new = PyType_GenericNew, .tp_getset = renderer_getset};
+    .tp_dealloc = (destructor)renderer_dealloc,
+    .tp_doc = DOC_SDL2_VIDEO_RENDERER,
+    .tp_methods = renderer_methods,
+    .tp_init = (initproc)renderer_init,
+    .tp_new = PyType_GenericNew,
+    .tp_getset = renderer_getset};
 
 static PyTypeObject pgTexture_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Texture",
