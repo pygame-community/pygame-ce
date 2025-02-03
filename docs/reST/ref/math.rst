@@ -237,6 +237,11 @@ Multiple coordinates can be set using slices or swizzling
       Returns a new vector that has ``length`` equal to ``1`` and the same
       direction as self.
 
+      .. versionchanged:: 2.5.2 It is now possible to use ``normalize`` on a zero-vector.
+
+      .. note::
+         Before pygame-ce 2.5.2, attempting to normalize a zero vector would always raise a ``ValueError``
+
       .. ## Vector2.normalize ##
 
    .. method:: normalize_ip
@@ -246,6 +251,11 @@ Multiple coordinates can be set using slices or swizzling
 
       Normalizes the vector so that it has ``length`` equal to ``1``.
       The direction of the vector is not changed.
+
+      .. versionchanged:: 2.5.2 It is now possible to use ``normalize_ip`` on a zero-vector.
+
+      .. note::
+         Before pygame-ce 2.5.2, attempting to normalize a zero vector would always raise a ``ValueError``
 
       .. ## Vector2.normalize_ip ##
 
