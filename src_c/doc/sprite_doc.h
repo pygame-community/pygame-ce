@@ -38,7 +38,7 @@
 #define DOC_SPRITE_LAYEREDUPDATES_GETSPRITESFROMLAYER "get_sprites_from_layer(layer) -> sprites\nreturns all sprites from a layer, ordered by how they where added"
 #define DOC_SPRITE_LAYEREDUPDATES_SWITCHLAYER "switch_layer(layer1_nr, layer2_nr) -> None\nswitches the sprites from layer1 to layer2"
 #define DOC_SPRITE_LAYEREDDIRTY "LayeredDirty(*sprites, **kwargs) -> LayeredDirty\nLayeredDirty group is for DirtySprite objects.  Subclasses LayeredUpdates."
-#define DOC_SPRITE_LAYEREDDIRTY_DRAW "draw(surface, bgsurf=None, special_flags=0) -> Rect_list\ndraw all sprites in the right order onto the passed surface."
+#define DOC_SPRITE_LAYEREDDIRTY_DRAW "draw(surface, bgsurf=None, special_flags=None) -> Rect_list\ndraw all sprites in the right order onto the passed surface."
 #define DOC_SPRITE_LAYEREDDIRTY_CLEAR "clear(surface, bgd) -> None\nused to set background"
 #define DOC_SPRITE_LAYEREDDIRTY_REPAINTRECT "repaint_rect(screen_rect) -> None\nrepaints the given area"
 #define DOC_SPRITE_LAYEREDDIRTY_SETCLIP "set_clip(screen_rect=None) -> None\nclip the area where to draw. Just pass None (default) to reset the clip"

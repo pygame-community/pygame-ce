@@ -301,6 +301,8 @@ Sprites are not thread safe. So lock them yourself if using threads.
 
       The Group keeps sprites in the order they were added, they will be drawn in this order.
 
+      .. versionchanged:: 2.5.4 Added the ``bgsurf`` and ``special_flags`` arguments
+
       .. ## Group.draw ##
 
    .. method:: clear
@@ -363,6 +365,8 @@ Sprites are not thread safe. So lock them yourself if using threads.
       updating is usually only helpful on destinations with non-animating
       backgrounds.
 
+      .. versionchanged:: 2.5.4 Added the ``bgsurf`` and ``special_flags`` arguments
+
       .. ## RenderUpdates.draw ##
 
    .. ## pygame.sprite.RenderUpdates ##
@@ -408,6 +412,8 @@ Sprites are not thread safe. So lock them yourself if using threads.
 
       | :sl:`draw all sprites in the right order onto the passed surface.`
       | :sg:`draw(surface, bgsurf=None, special_flags=0) -> Rect_list`
+
+      .. versionchanged:: 2.5.4 Added the ``bgsurf`` and ``special_flags`` arguments
 
       .. ## LayeredUpdates.draw ##
 
@@ -555,11 +561,13 @@ Sprites are not thread safe. So lock them yourself if using threads.
    .. method:: draw
 
       | :sl:`draw all sprites in the right order onto the passed surface.`
-      | :sg:`draw(surface, bgsurf=None, special_flags=0) -> Rect_list`
+      | :sg:`draw(surface, bgsurf=None, special_flags=None) -> Rect_list`
 
       You can pass the background too. If a background is already set, then the
       bgsurf argument has no effect. ``special_flags`` is passed to
       ``Surface.blit()``.
+
+      .. versionchanged:: 2.5.4 Added the ``special_flags`` argument, renamed ``bgd`` to ``bgsurf``
 
       .. ## LayeredDirty.draw ##
 
