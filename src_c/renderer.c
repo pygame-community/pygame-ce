@@ -6,14 +6,23 @@
 
 #include "doc/sdl2_video_doc.h"
 
-#include "texture.c"
-#include "renderer_image.c"
-
 static PyTypeObject pgRenderer_Type;
+
+static PyTypeObject pgTexture_Type;
+
+static PyTypeObject pgImage_Type;
 
 static PyMethodDef renderer_methods[] = {{NULL, NULL, 0, NULL}};
 
 static PyGetSetDef renderer_getset[] = {{NULL, 0, NULL, NULL, NULL}};
+
+static PyMethodDef texture_methods[] = {{NULL, NULL, 0, NULL}};
+
+static PyGetSetDef texture_getset[] = {{NULL, 0, NULL, NULL, NULL}};
+
+static PyMethodDef image_methods[] = {{NULL, NULL, 0, NULL}};
+
+static PyGetSetDef image_getset[] = {{NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgRenderer_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Renderer",
@@ -22,6 +31,22 @@ static PyTypeObject pgRenderer_Type = {
     .tp_doc = DOC_SDL2_VIDEO_RENDERER, .tp_methods = renderer_methods,
     //.tp_init = (initproc)renderer_init,
     .tp_new = PyType_GenericNew, .tp_getset = renderer_getset};
+
+static PyTypeObject pgTexture_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Texture",
+    .tp_basicsize = sizeof(pgTextureObject),
+    //.tp_dealloc = (destructor)texture_dealloc,
+    .tp_doc = DOC_SDL2_VIDEO_TEXTURE, .tp_methods = texture_methods,
+    //.tp_init = (initproc)texture_init,
+    .tp_new = PyType_GenericNew, .tp_getset = texture_getset};
+
+static PyTypeObject pgImage_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Image",
+    .tp_basicsize = sizeof(pgImageObject),
+    //.tp_dealloc = (destructor)image_dealloc,
+    .tp_doc = DOC_SDL2_VIDEO_IMAGE, .tp_methods = image_methods,
+    //.tp_init = (initproc)image_init,
+    .tp_new = PyType_GenericNew, .tp_getset = image_getset};
 
 static PyMethodDef _renderer_methods[] = {{NULL, NULL, 0, NULL}};
 
