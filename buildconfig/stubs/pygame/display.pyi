@@ -289,9 +289,9 @@ def flip() -> None:
 @overload
 def update() -> None: ...
 @overload
-def update(
-    rectangle: Optional[Union[RectLike, Iterable[Optional[RectLike]]]], /
-) -> None: ...
+def update(rectangle: Optional[RectLike], /) -> None: ...
+@overload
+def update(rectangles: Iterable[Optional[RectLike]], /) -> None: ...
 @overload
 def update(x: float, y: float, w: float, h: float, /) -> None: ...
 @overload
@@ -333,7 +333,7 @@ def get_driver() -> str:
     initialized. This returns the internal name used for the display backend.
     This can be used to provide limited information about what display
     capabilities might be accelerated. See the ``SDL_VIDEODRIVER`` flags in
-    ``pygame.display.set_mode()`` to see some of the common options.
+    ``pygame.display.init()`` to see some of the common options.
     """
 
 def Info() -> _VidInfo:
@@ -612,7 +612,7 @@ def toggle_fullscreen() -> int:
     """
 
 @deprecated("since 2.1.4. Removed in SDL3")
-def set_gamma(red: float, green: float = ..., blue: float = ..., /) -> int:
+def set_gamma(red: float, green: float = ..., blue: float = ..., /) -> bool:
     """Change the hardware gamma ramps.
 
     DEPRECATED: This functionality will go away in SDL3.
@@ -631,7 +631,7 @@ def set_gamma(red: float, green: float = ..., blue: float = ..., /) -> int:
 @deprecated("since 2.1.4. Removed in SDL3")
 def set_gamma_ramp(
     red: SequenceLike[int], green: SequenceLike[int], blue: SequenceLike[int], /
-) -> int:
+) -> bool:
     """Change the hardware gamma ramps with a custom lookup.
 
     DEPRECATED: This functionality will go away in SDL3.
@@ -825,7 +825,7 @@ def message_box(
     :param str title: A title string.
     :param str message: A message string. If this parameter is set to ``None``, the message will be the title.
     :param str message_type: Set the type of message_box, could be ``"info"``, ``"warn"`` or ``"error"``.
-    :param Window parent_window: The parent window of the message box.
+    :param pygame.Window parent_window: The parent window of the message box.
     :param tuple buttons: An optional sequence of button name strings to show to the user.
     :param int return_button: Button index to use if the return key is hit, ``0`` by default.
     :param int escape_button: Button index to use if the escape key is hit, ``None`` for no button linked by default.

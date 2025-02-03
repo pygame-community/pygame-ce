@@ -294,7 +294,7 @@ class Window:
     def position(self) -> tuple[int, int]:
         """Get or set the window position in screen coordinates.
 
-        The position may be a tuple of (x, y) coordiantes or ``WINDOWPOS_CENTERED`` or
+        The position may be a tuple of (x, y) coordinates or ``WINDOWPOS_CENTERED`` or
         ``WINDOWPOS_UNDEFINED``. The origin is the topleft of the main display.
         """
 
