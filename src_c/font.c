@@ -135,9 +135,14 @@ static PyObject *
 fontmodule_init(PyObject *self, PyObject *_null)
 {
     if (!font_initialized) {
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+        if (!TTF_Init())
+#else
         if (TTF_Init())
+#endif
+        {
             return RAISE(pgExc_SDLError, SDL_GetError());
-
+        }
         font_initialized = 1;
     }
     Py_RETURN_NONE;
@@ -727,7 +732,7 @@ font_size(PyObject *self, PyObject *text)
         }
         string = PyBytes_AS_STRING(bytes);
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
-        ecode = TTF_GetStringSize(font, string, 0, &w, &h);
+        ecode = TTF_GetStringSize(font, string, 0, &w, &h) ? 0 : -1;
 #else
         ecode = TTF_SizeUTF8(font, string, &w, &h);
 #endif
@@ -739,7 +744,7 @@ font_size(PyObject *self, PyObject *text)
     else if (PyBytes_Check(text)) {
         string = PyBytes_AS_STRING(text);
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
-        if (TTF_GetStringSize(font, string, 0, &w, &h))
+        if (!TTF_GetStringSize(font, string, 0, &w, &h))
 #else
         if (TTF_SizeText(font, string, &w, &h))
 #endif
@@ -956,8 +961,8 @@ font_metrics(PyObject *self, PyObject *textobj)
  */
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
         if (!surrogate && /* conditional and */
-            !TTF_GetGlyphMetrics(font, (Uint16)ch, &minx, &maxx, &miny, &maxy,
-                                 &advance)) {
+            TTF_GetGlyphMetrics(font, (Uint16)ch, &minx, &maxx, &miny, &maxy,
+                                &advance)) {
 #else
         if (!surrogate && /* conditional and */
             !TTF_GlyphMetrics(font, (Uint16)ch, &minx, &maxx, &miny, &maxy,
@@ -1105,8 +1110,12 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
                          " to https://github.com/pygame-community/pygame-ce");
         }
     }
-
-    if (TTF_SetFontDirection(font, dir)) {
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    if (!TTF_SetFontDirection(font, dir))
+#else
+    if (TTF_SetFontDirection(font, dir))
+#endif
+    {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
