@@ -403,9 +403,6 @@ if sdl_image_dep.found()
     )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
-
 if sdl_ttf_dep.found()
     font = py.extension_module(
         'font',
@@ -416,6 +413,9 @@ if sdl_ttf_dep.found()
         subdir: pg,
     )
 endif
+
+# TODO: support SDL3
+if sdl_api != 3
 
 if sdl_mixer_dep.found()
     mixer = py.extension_module(

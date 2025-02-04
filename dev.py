@@ -27,7 +27,6 @@ pyproject_path = source_tree / "pyproject.toml"
 SDL3_ARGS = [
     "-Csetup-args=-Dsdl_api=3",
     "-Csetup-args=-Dmixer=disabled",
-    "-Csetup-args=-Dfont=disabled",
 ]
 COVERAGE_ARGS = ["-Csetup-args=-Dcoverage=true"]
 
