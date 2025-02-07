@@ -1,5 +1,5 @@
 from collections.abc import Collection, Iterator
-from typing import Any, SupportsIndex, Union, overload
+from typing import Any, ClassVar, SupportsIndex, Union, overload
 from typing_extensions import deprecated  # added in 3.13
 
 from pygame.typing import ColorLike
@@ -18,7 +18,7 @@ class Color(Collection[int]):
     hsla: tuple[float, float, float, float]
     i1i2i3: tuple[float, float, float]
     normalized: tuple[float, float, float, float]
-    __hash__: None  # type: ignore
+    __hash__: ClassVar[None]  # type: ignore[assignment]
     __array_struct__: Any
     @overload
     def __init__(self, r: int, g: int, b: int, a: int = 255) -> None: ...

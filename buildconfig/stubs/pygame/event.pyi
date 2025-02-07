@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union, final
+from typing import Any, ClassVar, Optional, Union, final
 from typing_extensions import deprecated  # added in 3.13
 
 from pygame.typing import SequenceLike
@@ -10,7 +10,7 @@ class _GenericEvent:
     @property
     def type(self) -> int: ...
     __dict__: dict[str, Any]
-    __hash__: None  # type: ignore
+    __hash__: ClassVar[None]  # type: ignore[assignment]
     def __init__(
         self, type: int, dict: dict[str, Any] = ..., **kwargs: Any
     ) -> None: ...
