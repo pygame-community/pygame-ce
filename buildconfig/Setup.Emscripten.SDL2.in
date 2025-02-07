@@ -64,6 +64,7 @@ rect src_c/void.c
 rwobject src_c/void.c
 system src_c/void.c
 window src_c/void.c
+_renderer src_c/void.c
 geometry src_c/void.c
 
 #_sdl2.controller src_c/_sdl2/controller.c $(SDL) $(DEBUG) -Isrc_c
