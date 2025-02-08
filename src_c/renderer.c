@@ -1600,6 +1600,7 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
     PyObject *texture_or_imageobj, *srcrectobj = Py_None;
     pgTextureObject *textureprt;
     SDL_Rect *rect, temp, old_srcrect;
+    SDL_BlendMode blend_mode;
     Uint8 rgba[4] = {255, 255, 255, 255};
     char *keywords[] = {"texture_or_image", "srcrect", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", keywords,
@@ -1636,7 +1637,9 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
         rect->y += old_srcrect.y;
         self->srcrect = (pgRectObject *)pgRect_New(rect);
     }
+    RENDERER_PROPERTY_ERROR_CHECK(SDL_GetTextureBlendMode(self->texture->texture, &blend_mode));
     self->angle = 0;
+    self->blend_mode = blend_mode;
     self->origin.x = 0;
     self->origin.y = 0;
     self->has_origin = SDL_FALSE;
