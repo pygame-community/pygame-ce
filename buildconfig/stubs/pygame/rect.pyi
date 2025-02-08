@@ -122,7 +122,8 @@ class _GenericRect(Collection[_N]):
     @h.setter
     def h(self, value: float) -> None: ...
     __hash__: ClassVar[None]  # type: ignore[assignment]
-    __safe_for_unpickling__: Literal[True]
+    @property
+    def __safe_for_unpickling__(self) -> Literal[True]: ...
     @overload
     def __init__(
         self, left: float, top: float, width: float, height: float

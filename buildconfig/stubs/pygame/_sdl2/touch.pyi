@@ -1,6 +1,5 @@
 from typing import TypedDict, Optional
 
-# dict at runtime, this only exist for benefit of the typechecker
 class _FingerDict(TypedDict):
     id: int
     x: float

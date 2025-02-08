@@ -6,11 +6,11 @@ from pygame.surface import Surface
 
 from pygame.typing import FileLike, IntPoint, Point
 
-_BufferStyle = Union[BufferProxy, bytes, bytearray, memoryview]
+_BufferLike = Union[BufferProxy, bytes, bytearray, memoryview]
+_from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]
 _to_bytes_format = Literal[
     "P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR", "RGBA_PREMULT", "ARGB_PREMULT"
 ]
-_from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]
 _from_bytes_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR"]
 
 def load(file: FileLike, namehint: str = "") -> Surface: ...
@@ -47,7 +47,7 @@ def frombytes(
     pitch: int = -1,
 ) -> Surface: ...
 def frombuffer(
-    bytes: _BufferStyle,
+    buffer: _BufferLike,
     size: IntPoint,
     format: _from_buffer_format,
     pitch: int = -1,

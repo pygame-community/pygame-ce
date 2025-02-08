@@ -19,7 +19,8 @@ class Color(Collection[int]):
     i1i2i3: tuple[float, float, float]
     normalized: tuple[float, float, float, float]
     __hash__: ClassVar[None]  # type: ignore[assignment]
-    __array_struct__: Any
+    @property
+    def __array_struct__(self) -> Any: ...
     @overload
     def __init__(self, r: int, g: int, b: int, a: int = 255) -> None: ...
     @overload
