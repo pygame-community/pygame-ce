@@ -1620,6 +1620,7 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
     self->texture = textureprt;
+    Py_INCREF(self->texture);
     if (Py_IsNone(srcrectobj)) {
         self->srcrect = (pgRectObject *)pgRect_New(&temp);
     }
