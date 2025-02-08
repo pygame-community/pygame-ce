@@ -83,6 +83,19 @@ set_texture_alpha_helper(SDL_Texture *texture, Uint8 alpha)
     return 0;
 }
 
+static inline SDL_FRect *
+parse_dest_rect(pgTextureObject *texture, PyObject *dstrectobj, SDL_FRect *tmp)
+{
+    SDL_FRect *dstrectptr = NULL;
+    if (!(dstrectptr = pgFRect_FromObject(dstrectobj, tmp))) {
+        if (pg_TwoFloatsFromObj(dstrectobj, &dstrectptr->x, &dstrectptr->y)) {
+            dstrectptr->w = (float)texture->width;
+            dstrectptr->h = (float)texture->height;
+        }
+    }
+    return dstrectptr;
+}
+
 /* Renderer implementation */
 static PyObject *
 from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
@@ -733,13 +746,8 @@ texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
         }
     }
     if (!Py_IsNone(dest)) {
-        if (!(dstrectptr = pgFRect_FromObject(dest, &dstrect))) {
-            if (!pg_TwoFloatsFromObj(dest, &dstrectptr->x, &dstrectptr->y)) {
-                RAISE(PyExc_ValueError,
-                      "dstrect must be a point, Rect, or None");
-            }
-            dstrectptr->w = (float)self->width;
-            dstrectptr->h = (float)self->height;
+        if (!(dstrectptr = parse_dest_rect(self, dest, &dstrect))) {
+            RAISE(PyExc_ValueError, "dstrect must be a point, Rect, or None");
         }
     }
     if (SDL_RenderCopyExF(self->renderer->renderer, self->texture, srcrectptr,
@@ -809,14 +817,9 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         }
     }
     if (!Py_IsNone(dstrectobj)) {
-        if (!(dstrectptr = pgFRect_FromObject(dstrectobj, &dstrect))) {
-            if (!pg_TwoFloatsFromObj(dstrectobj, &dstrectptr->x,
-                                     &dstrectptr->y)) {
-                return RAISE(PyExc_ValueError,
-                             "dstrect must be a point, Rect, or None");
-            }
-            dstrectptr->w = (float)self->width;
-            dstrectptr->h = (float)self->height;
+        if (!(dstrectptr = parse_dest_rect(self, dstrectobj, &dstrect))) {
+            return RAISE(PyExc_ValueError,
+                         "dstrect must be a point, Rect, or None");
         }
     }
     if (!Py_IsNone(originobj)) {
@@ -1310,7 +1313,8 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
     if (scale_quality != -1) {
-        RENDERER_PROPERTY_ERROR_CHECK(SDL_SetTextureScaleMode(self->texture, scale_quality) < 0);
+        RENDERER_PROPERTY_ERROR_CHECK(
+            SDL_SetTextureScaleMode(self->texture, scale_quality) < 0);
     }
     self->width = width;
     self->height = height;
@@ -1343,13 +1347,8 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
         srcrectptr = &self->srcrect->r;
     }
     if (!Py_IsNone(dest)) {
-        if (!(dstrectptr = pgFRect_FromObject(dest, &ftmp))) {
-            if (!pg_TwoFloatsFromObj(dest, &dstrectptr->x, &dstrectptr->y)) {
-                RAISE(PyExc_ValueError,
-                      "dstrect must be a point, Rect, or None");
-            }
-            dstrectptr->w = (float)self->texture->width;
-            dstrectptr->h = (float)self->texture->height;
+        if (!(dstrectptr = parse_dest_rect(self->texture, dest, &ftmp))) {
+            RAISE(PyExc_ValueError, "dstrect must be a point, Rect, or None");
         }
     }
     if (self->flip_x)
@@ -1396,14 +1395,9 @@ image_draw(pgImageObject *self, PyObject *args, PyObject *kwargs)
         srcrectptr = &self->srcrect->r;
     }
     if (!Py_IsNone(dstrectobj)) {
-        if (!(dstrectptr = pgFRect_FromObject(dstrectobj, &ftmp))) {
-            if (!pg_TwoFloatsFromObj(dstrectobj, &dstrectptr->x,
-                                     &dstrectptr->y)) {
-                return RAISE(PyExc_ValueError,
-                             "dstrect must be a point, Rect, or None");
-            }
-            dstrectptr->w = (float)self->texture->width;
-            dstrectptr->h = (float)self->texture->height;
+        if (!(dstrectptr =
+                  parse_dest_rect(self->texture, dstrectobj, &ftmp))) {
+            RAISE(PyExc_ValueError, "dstrect must be a point, Rect, or None");
         }
     }
     if (self->flip_x)
