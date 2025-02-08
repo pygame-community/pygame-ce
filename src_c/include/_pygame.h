@@ -545,7 +545,8 @@ typedef struct {
     pgColorObject *color;
     float angle;
     float alpha;
-    SDL_Point origin;
+    SDL_bool has_origin;
+    SDL_FPoint origin;
     SDL_bool flip_x;
     SDL_bool flip_y;
     SDL_BlendMode blend_mode;
