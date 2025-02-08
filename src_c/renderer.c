@@ -1286,7 +1286,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         }
         access = SDL_TEXTUREACCESS_STATIC;
     }
-    if (streaming) {
+    else if (streaming) {
         if (staticc || target) {
             RAISE(PyExc_ValueError,
                   "only one of static, streaming, or target can be true");
@@ -1294,7 +1294,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         }
         access = SDL_TEXTUREACCESS_STREAMING;
     }
-    if (target) {
+    else if (target) {
         if (staticc || streaming) {
             RAISE(PyExc_ValueError,
                   "only one of static, streaming, or target can be true");
@@ -1310,24 +1310,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
     if (scale_quality != -1) {
-#if SDL_VERSION_ATLEAST(2, 0, 12)
-        if (SDL_SetTextureScaleMode(self->texture, scale_quality) < 0) {
-            RAISE(pgExc_SDLError, SDL_GetError());
-            return -1;
-        }
-#else
-        switch (scale_quality) {
-            case 0:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-                break;
-            case 1:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-                break;
-            case 2:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
-                break;
-        }
-#endif
+        RENDERER_PROPERTY_ERROR_CHECK(SDL_SetTextureScaleMode(self->texture, scale_quality) < 0);
     }
     self->width = width;
     self->height = height;
