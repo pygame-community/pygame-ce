@@ -12,18 +12,25 @@ if sys.version_info >= (3, 10):
 else:
     EllipsisType = ellipsis
 
-_ColorLike = int | Color | tuple[int, int, int] | tuple[int, int, int, int]
+_PixelColor = Union[int, Color, tuple[int, int, int], tuple[int, int, int, int]]
 
 class PixelArray:
-    surface: Surface
-    itemsize: int
-    ndim: int
-    shape: tuple[int, ...]
-    strides: tuple[int, ...]
+    @property
+    def surface(self) -> Surface: ...
+    @property
+    def itemsize(self) -> int: ...
+    @property
+    def ndim(self) -> int: ...
+    @property
+    def shape(self) -> tuple[int, ...]: ...
+    @property
+    def strides(self) -> tuple[int, ...]: ...
     # possibly going to be deprecated/removed soon, in which case these
     # typestubs must be removed too
-    __array_interface__: dict[str, Any]
-    __array_struct__: Any
+    @property
+    def __array_interface__(self) -> dict[str, Any]: ...
+    @property
+    def __array_struct__(self) -> Any: ...
     def __init__(self, surface: Surface) -> None: ...
     def __enter__(self) -> PixelArray: ...
     def __exit__(self, *args, **kwargs) -> None: ...
@@ -44,14 +51,14 @@ class PixelArray:
     def make_surface(self) -> Surface: ...
     def replace(
         self,
-        color: _ColorLike,
-        repcolor: _ColorLike,
+        color: _PixelColor,
+        repcolor: _PixelColor,
         distance: float = 0,
         weights: SequenceLike[float] = (0.299, 0.587, 0.114),
     ) -> None: ...
     def extract(
         self,
-        color: _ColorLike,
+        color: _PixelColor,
         distance: float = 0,
         weights: SequenceLike[float] = (0.299, 0.587, 0.114),
     ) -> PixelArray: ...
@@ -62,4 +69,4 @@ class PixelArray:
         weights: SequenceLike[float] = (0.299, 0.587, 0.114),
     ) -> PixelArray: ...
     def transpose(self) -> PixelArray: ...
-    def close(self) -> PixelArray: ...
+    def close(self) -> None: ...

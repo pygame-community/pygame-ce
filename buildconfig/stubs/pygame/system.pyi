@@ -18,7 +18,6 @@ class _InstructionSets(TypedDict):
     LSX: bool
     LASX: bool
 
-# dict at runtime, TypedDict exists solely for the typechecking benefits
 class _Locale(TypedDict):
     language: str
     country: Optional[str]

@@ -1,6 +1,7 @@
 import sys
 from collections.abc import Callable, Collection, Iterator
 from typing import (
+    ClassVar,
     Literal,
     SupportsIndex,
     TypeVar,
@@ -120,8 +121,9 @@ class _GenericRect(Collection[_N]):
     def h(self) -> _N: ...
     @h.setter
     def h(self, value: float) -> None: ...
-    __hash__: None  # type: ignore
-    __safe_for_unpickling__: Literal[True]
+    __hash__: ClassVar[None]  # type: ignore[assignment]
+    @property
+    def __safe_for_unpickling__(self) -> Literal[True]: ...
     @overload
     def __init__(
         self, left: float, top: float, width: float, height: float

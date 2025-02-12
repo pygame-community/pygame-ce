@@ -41,7 +41,8 @@ _ViewKind = Literal[
 ]
 
 class Surface:
-    _pixels_address: int
+    @property
+    def _pixels_address(self) -> int: ...
     @property
     def width(self) -> int: ...
     @property

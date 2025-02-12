@@ -1,5 +1,5 @@
 from collections.abc import Collection, Iterator
-from typing import Any, SupportsIndex, Union, overload
+from typing import Any, ClassVar, SupportsIndex, Union, overload
 from typing_extensions import deprecated  # added in 3.13
 
 from pygame.typing import ColorLike
@@ -18,8 +18,9 @@ class Color(Collection[int]):
     hsla: tuple[float, float, float, float]
     i1i2i3: tuple[float, float, float]
     normalized: tuple[float, float, float, float]
-    __hash__: None  # type: ignore
-    __array_struct__: Any
+    __hash__: ClassVar[None]  # type: ignore[assignment]
+    @property
+    def __array_struct__(self) -> Any: ...
     @overload
     def __init__(self, r: int, g: int, b: int, a: int = 255) -> None: ...
     @overload
@@ -41,8 +42,8 @@ class Color(Collection[int]):
     def __index__(self) -> int: ...
     def __invert__(self) -> Color: ...
     def __contains__(self, other: int) -> bool: ...  # type: ignore[override]
-    def __getattribute__(self, attr: str) -> Union[Color, tuple[int, ...]]: ...
-    def __setattr__(self, attr: str, value: Union[Color, tuple[int, ...]]) -> None: ...
+    def __getattribute__(self, name: str) -> Union[Color, tuple[int, ...]]: ...
+    def __setattr__(self, name: str, value: Union[Color, tuple[int, ...]]) -> None: ...
     @overload
     @classmethod
     def from_cmy(cls, object: tuple[float, float, float], /) -> Color: ...
