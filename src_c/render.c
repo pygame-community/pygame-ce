@@ -1,4 +1,4 @@
-#define PYGAMEAPI_RENDERER_INTERNAL
+#define PYGAMEAPI_RENDER_INTERNAL
 
 #include "pygame.h"
 
@@ -25,7 +25,7 @@ static PyMethodDef image_methods[] = {{NULL, NULL, 0, NULL}};
 static PyGetSetDef image_getset[] = {{NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgRenderer_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Renderer",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._render.Renderer",
     .tp_basicsize = sizeof(pgRendererObject),
     //.tp_dealloc = (destructor)renderer_dealloc,
     .tp_doc = DOC_SDL2_VIDEO_RENDERER, .tp_methods = renderer_methods,
@@ -33,7 +33,7 @@ static PyTypeObject pgRenderer_Type = {
     .tp_new = PyType_GenericNew, .tp_getset = renderer_getset};
 
 static PyTypeObject pgTexture_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Texture",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._render.Texture",
     .tp_basicsize = sizeof(pgTextureObject),
     //.tp_dealloc = (destructor)texture_dealloc,
     .tp_doc = DOC_SDL2_VIDEO_TEXTURE, .tp_methods = texture_methods,
@@ -41,25 +41,25 @@ static PyTypeObject pgTexture_Type = {
     .tp_new = PyType_GenericNew, .tp_getset = texture_getset};
 
 static PyTypeObject pgImage_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Image",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._render.Image",
     .tp_basicsize = sizeof(pgImageObject),
     //.tp_dealloc = (destructor)image_dealloc,
     .tp_doc = DOC_SDL2_VIDEO_IMAGE, .tp_methods = image_methods,
     //.tp_init = (initproc)image_init,
     .tp_new = PyType_GenericNew, .tp_getset = image_getset};
 
-static PyMethodDef _renderer_methods[] = {{NULL, NULL, 0, NULL}};
+static PyMethodDef _render_methods[] = {{NULL, NULL, 0, NULL}};
 
-MODINIT_DEFINE(_renderer)
+MODINIT_DEFINE(_render)
 {
     PyObject *module, *apiobj;
-    static void *c_api[PYGAMEAPI_RENDERER_NUMSLOTS];
+    static void *c_api[PYGAMEAPI_RENDER_NUMSLOTS];
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
-                                         "_renderer",
+                                         "_render",
                                          "docs_needed",
                                          -1,
-                                         _renderer_methods,
+                                         _render_methods,
                                          NULL,
                                          NULL,
                                          NULL,
@@ -115,7 +115,7 @@ MODINIT_DEFINE(_renderer)
     c_api[0] = &pgRenderer_Type;
     c_api[1] = &pgTexture_Type;
     c_api[2] = &pgImage_Type;
-    apiobj = encapsulate_api(c_api, "_renderer");
+    apiobj = encapsulate_api(c_api, "_render");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);
         Py_DECREF(module);
