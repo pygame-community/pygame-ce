@@ -28,6 +28,9 @@
           wb * (b1 - b2) * (b1 - b2)) /                             \
      255.0)
 
+// TODO: once things are fully ported, consolidate PXM_GET_PIXELVALS
+// and PXM_GET_PIXELVALS_1 back into GET_PIXELVALS and GET_PIXELVALS_1
+// from surface.h
 #define PXM_GET_PIXELVALS(_sR, _sG, _sB, _sA, px, fmt, palette, ppa) \
     PG_GetRGBA(px, fmt, palette, &(_sR), &(_sG), &(_sB), &(_sA));    \
     if (!ppa) {                                                      \
