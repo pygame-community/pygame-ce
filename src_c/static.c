@@ -8,6 +8,7 @@
 #define PYGAMEAPI_BASE_INTERNAL
 #define PYGAMEAPI_SURFACE_INTERNAL
 #define PYGAMEAPI_WINDOW_INTERNAL
+#define PYGAMEAPI_RENDER_INTERNAL
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) \
@@ -187,6 +188,9 @@ PyInit_pixelarray(void);
 PyMODINIT_FUNC
 PyInit_window(void);
 
+PyMODINIT_FUNC
+PyInit__render(void);
+
 // pygame_static module
 
 void
@@ -320,6 +324,7 @@ PyInit_pygame_static()
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
 
     load_submodule("pygame", PyInit_window(), "window");
+    load_submodule("pygame", PyInit__render(), "_render");
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
@@ -364,6 +369,7 @@ PyInit_pygame_static()
 #include "simd_blitters_sse2.c"
 
 #include "window.c"
+#include "render.c"
 
 #undef pgVidInfo_Type
 #undef pgVidInfo_New
