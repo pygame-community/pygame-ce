@@ -291,17 +291,17 @@ Sprites are not thread safe. So lock them yourself if using threads.
    .. method:: draw
 
       | :sl:`blit the Sprite images`
-      | :sg:`draw(Surface, bgsurf=None, special_flags=0) -> list[Rect]`
+      | :sg:`draw(Surface, bgd=None, special_flags=0) -> list[Rect]`
 
       Draws the contained Sprites to the Surface argument. This uses the
       ``Sprite.image`` attribute for the source surface, and ``Sprite.rect``
       for the position. ``special_flags`` is passed to ``Surface.blit()``.
-      ``bgsurf`` is unused in this method but ``LayeredDirty.draw()`` uses
+      ``bgd`` is unused in this method but ``LayeredDirty.draw()`` uses
       it.
 
       The Group keeps sprites in the order they were added, they will be drawn in this order.
 
-      .. versionchanged:: 2.5.4 Added the ``bgsurf`` and ``special_flags`` arguments
+      .. versionchanged:: 2.5.4 Added the ``bgd`` and ``special_flags`` arguments
 
       .. ## Group.draw ##
 
@@ -351,13 +351,13 @@ Sprites are not thread safe. So lock them yourself if using threads.
    .. method:: draw
 
       | :sl:`blit the Sprite images and track changed areas`
-      | :sg:`draw(surface, bgsurf=None, special_flags=0) -> Rect_list`
+      | :sg:`draw(surface, bgd=None, special_flags=0) -> Rect_list`
 
       Draws all the Sprites to the surface, the same as ``Group.draw()``. This
       method also returns a list of Rectangular areas on the screen that have
       been changed. The returned changes include areas of the screen that have
       been affected by previous ``Group.clear()`` calls. ``special_flags`` is
-      passed to ``Surface.blit()``. ``bgsurf`` is unused in this method but
+      passed to ``Surface.blit()``. ``bgd`` is unused in this method but
       ``LayeredDirty.draw()`` uses it.
 
       The returned Rect list should be passed to ``pygame.display.update()``.
@@ -365,7 +365,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
       updating is usually only helpful on destinations with non-animating
       backgrounds.
 
-      .. versionchanged:: 2.5.4 Added the ``bgsurf`` and ``special_flags`` arguments
+      .. versionchanged:: 2.5.4 Added the ``bgd`` and ``special_flags`` arguments
 
       .. ## RenderUpdates.draw ##
 
@@ -411,9 +411,9 @@ Sprites are not thread safe. So lock them yourself if using threads.
    .. method:: draw
 
       | :sl:`draw all sprites in the right order onto the passed surface.`
-      | :sg:`draw(surface, bgsurf=None, special_flags=0) -> Rect_list`
+      | :sg:`draw(surface, bgd=None, special_flags=0) -> Rect_list`
 
-      .. versionchanged:: 2.5.4 Added the ``bgsurf`` and ``special_flags`` arguments
+      .. versionchanged:: 2.5.4 Added the ``bgd`` and ``special_flags`` arguments
 
       .. ## LayeredUpdates.draw ##
 
@@ -561,13 +561,13 @@ Sprites are not thread safe. So lock them yourself if using threads.
    .. method:: draw
 
       | :sl:`draw all sprites in the right order onto the passed surface.`
-      | :sg:`draw(surface, bgsurf=None, special_flags=None) -> Rect_list`
+      | :sg:`draw(surface, bgd=None, special_flags=None) -> Rect_list`
 
       You can pass the background too. If a background is already set, then the
-      bgsurf argument has no effect. ``special_flags`` is passed to
+      bgd argument has no effect. ``special_flags`` is passed to
       ``Surface.blit()``.
 
-      .. versionchanged:: 2.5.4 Added the ``special_flags`` argument, renamed ``bgd`` to ``bgsurf``
+      .. versionchanged:: 2.5.4 Added the ``special_flags`` argument
 
       .. ## LayeredDirty.draw ##
 

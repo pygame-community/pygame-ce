@@ -557,10 +557,10 @@ class AbstractGroup:
         for sprite in self.sprites():
             sprite.update(*args, **kwargs)
 
-    def draw(self, surface, bgsurf=None, special_flags=0):  # noqa pylint: disable=unused-argument; bgsurf arg used in LayeredDirty
+    def draw(self, surface, bgd=None, special_flags=0):  # noqa pylint: disable=unused-argument; bgd arg used in LayeredDirty
         """draw all sprites onto the surface
 
-        Group.draw(surface, bgsurf=None, special_flags=0): return Rect_list
+        Group.draw(surface, bgd=None, special_flags=0): return Rect_list
 
         Draws all of the member sprites onto the given surface.
 
@@ -694,7 +694,7 @@ class RenderUpdates(Group):
 
     """
 
-    def draw(self, surface, bgsurf=None, special_flags=0):
+    def draw(self, surface, bgd=None, special_flags=0):
         surface_blit = surface.blit
         dirty = self.lostsprites
         self.lostsprites = []
@@ -863,10 +863,10 @@ class LayeredUpdates(AbstractGroup):
         """
         return self._spritelist.copy()
 
-    def draw(self, surface, bgsurf=None, special_flags=0):
+    def draw(self, surface, bgd=None, special_flags=0):
         """draw all sprites in the right order onto the passed surface
 
-        LayeredUpdates.draw(surface, bgsurf=None, special_flags=0): return Rect_list
+        LayeredUpdates.draw(surface, bgd=None, special_flags=0): return Rect_list
 
         """
         spritedict = self.spritedict
@@ -1136,13 +1136,13 @@ class LayeredDirty(LayeredUpdates):
 
         LayeredUpdates.add_internal(self, sprite, layer)
 
-    def draw(self, surface, bgsurf=None, special_flags=None):
+    def draw(self, surface, bgd=None, special_flags=None):
         """draw all sprites in the right order onto the given surface
 
-        LayeredDirty.draw(surface, bgsurf=None, special_flags=0): return Rect_list
+        LayeredDirty.draw(surface, bgd=None, special_flags=0): return Rect_list
 
         You can pass the background too. If a self.bgd is already set to some
-        value that is not None, then the bgsurf argument has no effect.
+        value that is not None, then the bgd argument has no effect.
         Passing a value to special_flags will pass that value as the
         special_flags argument to all Surface.blit calls, overriding
         the sprite.blendmode attribute.
@@ -1160,8 +1160,8 @@ class LayeredDirty(LayeredUpdates):
         rect_type = Rect
 
         surf_blit_func = surface.blit
-        if bgsurf is not None:
-            self._bgd = bgsurf
+        if bgd is not None:
+            self._bgd = bgd
         local_bgd = self._bgd
 
         surface.set_clip(latest_clip)
