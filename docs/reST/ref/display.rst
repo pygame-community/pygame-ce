@@ -544,6 +544,13 @@ required).
 
    .. ## pygame.display.gl_set_attribute ##
 
+.. function:: gl_get_proc
+
+   | :sl:`Get an OpenGL function by name`
+   | :sg:`gl_get_proc(proc_name) -> ctypes._FuncPointer`
+
+   .. # pygame.display.gl_get_proc ##
+
 .. function:: get_active
 
    | :sl:`Returns True when the display is active on the screen`
