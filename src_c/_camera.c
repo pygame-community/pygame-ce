@@ -127,11 +127,16 @@ surf_colorspace(PyObject *self, PyObject *arg)
     if (PG_SURF_BitsPerPixel(surf) != PG_SURF_BitsPerPixel(newsurf))
         return RAISE(PyExc_ValueError, "Surfaces not the same depth");
 
+    PG_PixelFormat *src_fmt = PG_GetSurfaceFormat(surf);
+    if (!src_fmt) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     SDL_LockSurface(newsurf);
     pgSurface_Lock(surfobj);
 
     Py_BEGIN_ALLOW_THREADS;
-    colorspace(surf, newsurf, cspace);
+    colorspace(surf, src_fmt, newsurf, cspace);
     Py_END_ALLOW_THREADS;
 
     pgSurface_Unlock(surfobj);
@@ -473,23 +478,22 @@ camera_get_raw(pgCameraObject *self, PyObject *_null)
 /* converts from rgb Surface to yuv or hsv */
 /* TODO: Allow for conversion from yuv and hsv to all */
 void
-colorspace(SDL_Surface *src, SDL_Surface *dst, int cspace)
+colorspace(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *dst,
+           int cspace)
 {
     switch (cspace) {
         case YUV_OUT:
-            rgb_to_yuv(src->pixels, dst->pixels, src->h * src->w, 0,
-                       src->format);
+            rgb_to_yuv(src->pixels, dst->pixels, src->h * src->w, 0, src_fmt);
             break;
         case HSV_OUT:
-            rgb_to_hsv(src->pixels, dst->pixels, src->h * src->w, 0,
-                       src->format);
+            rgb_to_hsv(src->pixels, dst->pixels, src->h * src->w, 0, src_fmt);
             break;
     }
 }
 
 /* converts pretty directly if its already RGB24 */
 void
-rgb24_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
+rgb24_to_rgb(const void *src, void *dst, int length, PG_PixelFormat *format)
 {
     Uint8 *s = (Uint8 *)src;
     Uint8 *d8;
@@ -501,9 +505,9 @@ rgb24_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
 
     switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
@@ -551,7 +555,7 @@ rgb24_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
 /* slight variation on rgb24_to_rgb, just drops the 4th byte of each pixel,
  * changes the R, G, B ordering. */
 void
-bgr32_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
+bgr32_to_rgb(const void *src, void *dst, int length, PG_PixelFormat *format)
 {
     Uint8 *s = (Uint8 *)src;
     Uint8 *d8;
@@ -563,9 +567,9 @@ bgr32_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
 
     switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
@@ -616,7 +620,7 @@ bgr32_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
 /* converts packed rgb to packed hsv. formulas modified from wikipedia */
 void
 rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
-           SDL_PixelFormat *format)
+           PG_PixelFormat *format)
 {
     Uint8 *s8, *d8;
     Uint16 *s16, *d16;
@@ -633,9 +637,9 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
 
     /* you could stick the if statement inside the loop, but I'm sacrificing a
        a few hundred bytes for a little performance */
@@ -779,7 +783,7 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
    this has a full range of 0-255 for Y, not 16-235. Formulas from wikipedia */
 void
 rgb_to_yuv(const void *src, void *dst, int length, unsigned long source,
-           SDL_PixelFormat *format)
+           PG_PixelFormat *format)
 {
     Uint8 *s8, *d8;
     Uint16 *s16, *d16;
@@ -797,9 +801,9 @@ rgb_to_yuv(const void *src, void *dst, int length, unsigned long source,
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
 
     if (source == V4L2_PIX_FMT_RGB444 || source == V4L2_PIX_FMT_RGB24 ||
         source == V4L2_PIX_FMT_XBGR32) {
@@ -916,7 +920,7 @@ rgb_to_yuv(const void *src, void *dst, int length, unsigned long source,
 
 /* Converts from rgb444 (R444) to rgb24 (RGB3) */
 void
-rgb444_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
+rgb444_to_rgb(const void *src, void *dst, int length, PG_PixelFormat *format)
 {
     Uint8 *s, *d8;
     Uint16 *d16;
@@ -928,9 +932,9 @@ rgb444_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
 
     switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
@@ -980,7 +984,7 @@ rgb444_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
 /* colorspace conversion routine from libv4l. Licensed LGPL 2.1
    (C) 2008 Hans de Goede <j.w.r.degoede@hhs.nl> */
 void
-yuyv_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
+yuyv_to_rgb(const void *src, void *dst, int length, PG_PixelFormat *format)
 {
     Uint8 *s, *d8;
     Uint16 *d16;
@@ -992,9 +996,9 @@ yuyv_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
 
     d8 = (Uint8 *)dst;
     d16 = (Uint16 *)dst;
@@ -1059,7 +1063,7 @@ yuyv_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
 
 /* turn yuyv into packed yuv. */
 void
-yuyv_to_yuv(const void *src, void *dst, int length, SDL_PixelFormat *format)
+yuyv_to_yuv(const void *src, void *dst, int length, PG_PixelFormat *format)
 {
     Uint8 *s, *d8;
     Uint8 y1, u, y2, v;
@@ -1071,9 +1075,9 @@ yuyv_to_yuv(const void *src, void *dst, int length, SDL_PixelFormat *format)
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
     s = (Uint8 *)src;
 
     switch (PG_FORMAT_BytesPerPixel(format)) {
@@ -1133,7 +1137,7 @@ yuyv_to_yuv(const void *src, void *dst, int length, SDL_PixelFormat *format)
 
 /* cribbed from above, but modified for uyvy ordering */
 void
-uyvy_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
+uyvy_to_rgb(const void *src, void *dst, int length, PG_PixelFormat *format)
 {
     Uint8 *s, *d8;
     Uint16 *d16;
@@ -1145,9 +1149,9 @@ uyvy_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
 
     d8 = (Uint8 *)dst;
     d16 = (Uint16 *)dst;
@@ -1212,7 +1216,7 @@ uyvy_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
 }
 /* turn uyvy into packed yuv. */
 void
-uyvy_to_yuv(const void *src, void *dst, int length, SDL_PixelFormat *format)
+uyvy_to_yuv(const void *src, void *dst, int length, PG_PixelFormat *format)
 {
     Uint8 *s, *d8;
     Uint8 y1, u, y2, v;
@@ -1224,9 +1228,9 @@ uyvy_to_yuv(const void *src, void *dst, int length, SDL_PixelFormat *format)
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
     s = (Uint8 *)src;
 
     switch (PG_FORMAT_BytesPerPixel(format)) {
@@ -1312,7 +1316,7 @@ uyvy_to_yuv(const void *src, void *dst, int length, SDL_PixelFormat *format)
 /* TODO: Certainly not the most efficient way of doing this conversion. */
 void
 sbggr8_to_rgb(const void *src, void *dst, int width, int height,
-              SDL_PixelFormat *format)
+              PG_PixelFormat *format)
 {
     Uint8 *rawpt, *d8;
     Uint16 *d16;
@@ -1324,9 +1328,9 @@ sbggr8_to_rgb(const void *src, void *dst, int width, int height,
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
 
     d8 = (Uint8 *)dst;
     d16 = (Uint16 *)dst;
@@ -1432,7 +1436,7 @@ sbggr8_to_rgb(const void *src, void *dst, int width, int height,
  */
 void
 yuv420_to_rgb(const void *src, void *dst, int width, int height,
-              SDL_PixelFormat *format)
+              PG_PixelFormat *format)
 {
     int rshift, gshift, bshift, rloss, gloss, bloss, i, j, u1, v1, rg, y;
     const Uint8 *y1, *y2, *u, *v;
@@ -1443,9 +1447,9 @@ yuv420_to_rgb(const void *src, void *dst, int width, int height,
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
 
     /* see http://en.wikipedia.org/wiki/YUV for an explanation of YUV420 */
     y1 = (Uint8 *)src;
@@ -1632,7 +1636,7 @@ yuv420_to_rgb(const void *src, void *dst, int width, int height,
 /* turn yuv420 into packed yuv. */
 void
 yuv420_to_yuv(const void *src, void *dst, int width, int height,
-              SDL_PixelFormat *format)
+              PG_PixelFormat *format)
 {
     const Uint8 *y1, *y2, *u, *v;
     Uint8 *d8_1, *d8_2;
@@ -1643,9 +1647,9 @@ yuv420_to_yuv(const void *src, void *dst, int width, int height,
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
 
     d8_1 = (Uint8 *)dst;
     d8_2 = d8_1 + (PG_FORMAT_BytesPerPixel(format) == 3 ? width * 3 : 3);

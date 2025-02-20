@@ -339,9 +339,6 @@ subdir('_sdl2')
 endif
 
 # pygame._camera
-
-# TODO: support SDL3
-if sdl_api != 3
 pg_camera_sources = ['_camera.c']
 pg_camera_link = []
 if plat == 'win'
@@ -372,7 +369,6 @@ _camera = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # pygame.scrap
 
