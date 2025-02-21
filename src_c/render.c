@@ -493,8 +493,7 @@ renderer_set_draw_blend_mode(pgRendererObject *self, PyObject *arg,
                              void *closure)
 {
     if (!PyLong_Check(arg)) {
-        RAISE(PyExc_TypeError, "Draw blend mode must be int");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "Draw blend mode must be int", -1);
     }
     RENDERER_PROPERTY_ERROR_CHECK(
         SDL_SetRenderDrawBlendMode(self->renderer, (int)PyLong_AsLong(arg)))
@@ -514,8 +513,7 @@ renderer_set_logical_size(pgRendererObject *self, PyObject *arg, void *closure)
 {
     int w, h;
     if (!pg_TwoIntsFromObj(arg, &w, &h)) {
-        RAISE(PyExc_TypeError, "invalid logical size");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "invalid logical size", -1);
     }
     RENDERER_PROPERTY_ERROR_CHECK(
         SDL_RenderSetLogicalSize(self->renderer, w, h))
@@ -535,8 +533,7 @@ renderer_set_scale(pgRendererObject *self, PyObject *arg, void *closure)
 {
     float x, y;
     if (!pg_TwoFloatsFromObj(arg, &x, &y)) {
-        RAISE(PyExc_TypeError, "invalid scale");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "invalid scale", -1);
     }
     RENDERER_PROPERTY_ERROR_CHECK(SDL_RenderSetScale(self->renderer, x, y))
     return 0;
@@ -568,8 +565,8 @@ renderer_set_target(pgRendererObject *self, PyObject *arg, void *closure)
         return 0;
     }
     else {
-        RAISE(PyExc_TypeError, "target must be Texture object or None");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "target must be Texture object or None",
+                    -1);
     }
 }
 
