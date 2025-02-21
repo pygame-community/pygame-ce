@@ -25,10 +25,9 @@ static PyTypeObject pgImage_Type;
         return RAISE(pgExc_SDLError, SDL_GetError()); \
     }
 
-#define RENDERER_PROPERTY_ERROR_CHECK(x)       \
-    if (x < 0) {                               \
-        RAISE(pgExc_SDLError, SDL_GetError()); \
-        return -1;                             \
+#define RENDERER_PROPERTY_ERROR_CHECK(x)                 \
+    if (x < 0) {                                         \
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1); \
     }
 
 static void
