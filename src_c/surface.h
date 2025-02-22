@@ -78,21 +78,21 @@
         } break;                         \
     }
 
-#define GET_PIXELVALS(_sR, _sG, _sB, _sA, px, fmt, ppa)   \
-    SDL_GetRGBA(px, fmt, &(_sR), &(_sG), &(_sB), &(_sA)); \
-    if (!ppa) {                                           \
-        _sA = 255;                                        \
+#define GET_PIXELVALS(_sR, _sG, _sB, _sA, px, fmt, palette, ppa)  \
+    PG_GetRGBA(px, fmt, palette, &(_sR), &(_sG), &(_sB), &(_sA)); \
+    if (!ppa) {                                                   \
+        _sA = 255;                                                \
     }
 
-#define GET_PIXELVALS_1(sr, sg, sb, sa, _src, _fmt)   \
-    sr = _fmt->palette->colors[*((Uint8 *)(_src))].r; \
-    sg = _fmt->palette->colors[*((Uint8 *)(_src))].g; \
-    sb = _fmt->palette->colors[*((Uint8 *)(_src))].b; \
+#define GET_PIXELVALS_1(sr, sg, sb, sa, _src, _palette) \
+    sr = _palette->colors[*((Uint8 *)(_src))].r;        \
+    sg = _palette->colors[*((Uint8 *)(_src))].g;        \
+    sb = _palette->colors[*((Uint8 *)(_src))].b;        \
     sa = 255;
 
 /* For 1 byte palette pixels */
-#define SET_PIXELVAL(px, fmt, _dR, _dG, _dB, _dA) \
-    *(px) = (Uint8)SDL_MapRGBA(fmt, _dR, _dG, _dB, _dA)
+#define SET_PIXELVAL(px, fmt, palette, _dR, _dG, _dB, _dA) \
+    *(px) = (Uint8)PG_MapRGBA(fmt, palette, _dR, _dG, _dB, _dA)
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define SET_OFFSETS_24(or, og, ob, fmt)                         \

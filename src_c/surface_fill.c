@@ -110,7 +110,7 @@ surface_fill_blend_add(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, fmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, palette);
                         BLEND_ADD(tmp, cR, cG, cB, cA, sR, sG, sB, sA);
                         *pixels = PG_MapRGBA(fmt, palette, sR, sG, sB, sA);
                         pixels += bpp;
@@ -124,12 +124,13 @@ surface_fill_blend_add(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
         case 3: {
             size_t offsetR, offsetG, offsetB;
             SET_OFFSETS_24(offsetR, offsetG, offsetB, fmt);
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             while (height--) {
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_ADD(tmp, cR, cG, cB, cA, sR, sG, sB, sA);
                         pixels[offsetR] = sR;
                         pixels[offsetG] = sG;
@@ -143,7 +144,7 @@ surface_fill_blend_add(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             break;
         }
         default: {
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             /*
             printf ("Color: %d, %d, %d, %d, BPP is: %d\n", cR, cG, cB, cA,
             bpp);
@@ -152,7 +153,8 @@ surface_fill_blend_add(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_ADD(tmp, cR, cG, cB, cA, sR, sG, sB, sA);
                         CREATE_PIXEL(pixels, sR, sG, sB, sA, bpp, fmt);
                         pixels += bpp;
@@ -200,7 +202,7 @@ surface_fill_blend_sub(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, fmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, palette);
                         BLEND_SUB(tmp2, cR, cG, cB, cA, sR, sG, sB, sA);
                         *pixels = PG_MapRGBA(fmt, palette, sR, sG, sB, sA);
                         pixels += bpp;
@@ -214,12 +216,13 @@ surface_fill_blend_sub(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
         case 3: {
             size_t offsetR, offsetG, offsetB;
             SET_OFFSETS_24(offsetR, offsetG, offsetB, fmt);
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             while (height--) {
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_SUB(tmp2, cR, cG, cB, cA, sR, sG, sB, sA);
                         pixels[offsetR] = sR;
                         pixels[offsetG] = sG;
@@ -233,7 +236,7 @@ surface_fill_blend_sub(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             break;
         }
         default: {
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             /*
             printf ("Color: %d, %d, %d, %d, BPP is: %d\n", cR, cG, cB, cA,
             bpp);
@@ -242,7 +245,8 @@ surface_fill_blend_sub(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_SUB(tmp2, cR, cG, cB, cA, sR, sG, sB, sA);
                         CREATE_PIXEL(pixels, sR, sG, sB, sA, bpp, fmt);
                         pixels += bpp;
@@ -289,7 +293,7 @@ surface_fill_blend_mult(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, fmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, palette);
                         BLEND_MULT(cR, cG, cB, cA, sR, sG, sB, sA);
                         *pixels = PG_MapRGBA(fmt, palette, sR, sG, sB, sA);
                         pixels += bpp;
@@ -303,12 +307,13 @@ surface_fill_blend_mult(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
         case 3: {
             size_t offsetR, offsetG, offsetB;
             SET_OFFSETS_24(offsetR, offsetG, offsetB, fmt);
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             while (height--) {
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_MULT(cR, cG, cB, cA, sR, sG, sB, sA);
                         pixels[offsetR] = sR;
                         pixels[offsetG] = sG;
@@ -322,7 +327,7 @@ surface_fill_blend_mult(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             break;
         }
         default: {
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             /*
             printf ("Color: %d, %d, %d, %d, BPP is: %d\n", cR, cG, cB, cA,
             bpp);
@@ -331,7 +336,8 @@ surface_fill_blend_mult(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_MULT(cR, cG, cB, cA, sR, sG, sB, sA);
                         CREATE_PIXEL(pixels, sR, sG, sB, sA, bpp, fmt);
                         pixels += bpp;
@@ -378,7 +384,7 @@ surface_fill_blend_min(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, fmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, palette);
                         BLEND_MIN(cR, cG, cB, cA, sR, sG, sB, sA);
                         *pixels = PG_MapRGBA(fmt, palette, sR, sG, sB, sA);
                         pixels += bpp;
@@ -392,12 +398,13 @@ surface_fill_blend_min(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
         case 3: {
             size_t offsetR, offsetG, offsetB;
             SET_OFFSETS_24(offsetR, offsetG, offsetB, fmt);
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             while (height--) {
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_MIN(cR, cG, cB, cA, sR, sG, sB, sA);
                         pixels[offsetR] = sR;
                         pixels[offsetG] = sG;
@@ -411,7 +418,7 @@ surface_fill_blend_min(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             break;
         }
         default: {
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             /*
             printf ("Color: %d, %d, %d, %d, BPP is: %d\n", cR, cG, cB, cA,
             bpp);
@@ -420,7 +427,8 @@ surface_fill_blend_min(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_MIN(cR, cG, cB, cA, sR, sG, sB, sA);
                         CREATE_PIXEL(pixels, sR, sG, sB, sA, bpp, fmt);
                         pixels += bpp;
@@ -467,7 +475,7 @@ surface_fill_blend_max(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, fmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, palette);
                         BLEND_MAX(cR, cG, cB, cA, sR, sG, sB, sA);
                         *pixels = PG_MapRGBA(fmt, palette, sR, sG, sB, sA);
                         pixels += bpp;
@@ -481,12 +489,13 @@ surface_fill_blend_max(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
         case 3: {
             size_t offsetR, offsetG, offsetB;
             SET_OFFSETS_24(offsetR, offsetG, offsetB, fmt);
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             while (height--) {
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_MAX(cR, cG, cB, cA, sR, sG, sB, sA);
                         pixels[offsetR] = sR;
                         pixels[offsetG] = sG;
@@ -500,7 +509,7 @@ surface_fill_blend_max(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             break;
         }
         default: {
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             /*
             printf ("Color: %d, %d, %d, %d, BPP is: %d\n", cR, cG, cB, cA,
             bpp);
@@ -509,7 +518,8 @@ surface_fill_blend_max(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_MAX(cR, cG, cB, cA, sR, sG, sB, sA);
                         CREATE_PIXEL(pixels, sR, sG, sB, sA, bpp, fmt);
                         pixels += bpp;
@@ -563,7 +573,7 @@ surface_fill_blend_rgba_add(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, fmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, palette);
                         BLEND_RGBA_ADD(tmp, cR, cG, cB, cA, sR, sG, sB, sA);
                         *pixels = PG_MapRGBA(fmt, palette, sR, sG, sB, sA);
                         pixels += bpp;
@@ -575,7 +585,7 @@ surface_fill_blend_rgba_add(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             break;
         }
         default: {
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             /*
             printf ("Color: %d, %d, %d, %d, BPP is: %d\n", cR, cG, cB, cA,
             bpp);
@@ -584,7 +594,8 @@ surface_fill_blend_rgba_add(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_RGBA_ADD(tmp, cR, cG, cB, cA, sR, sG, sB, sA);
                         CREATE_PIXEL(pixels, sR, sG, sB, sA, bpp, fmt);
                         pixels += bpp;
@@ -636,7 +647,7 @@ surface_fill_blend_rgba_sub(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, fmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, palette);
                         BLEND_RGBA_SUB(tmp2, cR, cG, cB, cA, sR, sG, sB, sA);
                         *pixels = PG_MapRGBA(fmt, palette, sR, sG, sB, sA);
                         pixels += bpp;
@@ -648,7 +659,7 @@ surface_fill_blend_rgba_sub(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             break;
         }
         default: {
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             /*
             printf ("Color: %d, %d, %d, %d, BPP is: %d\n", cR, cG, cB, cA,
             bpp);
@@ -657,7 +668,8 @@ surface_fill_blend_rgba_sub(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_RGBA_SUB(tmp2, cR, cG, cB, cA, sR, sG, sB, sA);
                         CREATE_PIXEL(pixels, sR, sG, sB, sA, bpp, fmt);
                         pixels += bpp;
@@ -709,7 +721,7 @@ surface_fill_blend_rgba_mult(SDL_Surface *surface, SDL_Rect *rect,
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, fmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, palette);
                         BLEND_RGBA_MULT(cR, cG, cB, cA, sR, sG, sB, sA);
                         *pixels = PG_MapRGBA(fmt, palette, sR, sG, sB, sA);
                         pixels += bpp;
@@ -721,7 +733,7 @@ surface_fill_blend_rgba_mult(SDL_Surface *surface, SDL_Rect *rect,
             break;
         }
         default: {
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             /*
             printf ("Color: %d, %d, %d, %d, BPP is: %d\n", cR, cG, cB, cA,
             bpp);
@@ -730,7 +742,8 @@ surface_fill_blend_rgba_mult(SDL_Surface *surface, SDL_Rect *rect,
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_RGBA_MULT(cR, cG, cB, cA, sR, sG, sB, sA);
                         CREATE_PIXEL(pixels, sR, sG, sB, sA, bpp, fmt);
                         pixels += bpp;
@@ -781,7 +794,7 @@ surface_fill_blend_rgba_min(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, fmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, palette);
                         BLEND_RGBA_MIN(cR, cG, cB, cA, sR, sG, sB, sA);
                         *pixels = PG_MapRGBA(fmt, palette, sR, sG, sB, sA);
                         pixels += bpp;
@@ -793,7 +806,7 @@ surface_fill_blend_rgba_min(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             break;
         }
         default: {
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             /*
             printf ("Color: %d, %d, %d, %d, BPP is: %d\n", cR, cG, cB, cA,
             bpp);
@@ -802,7 +815,8 @@ surface_fill_blend_rgba_min(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_RGBA_MIN(cR, cG, cB, cA, sR, sG, sB, sA);
                         CREATE_PIXEL(pixels, sR, sG, sB, sA, bpp, fmt);
                         pixels += bpp;
@@ -853,7 +867,7 @@ surface_fill_blend_rgba_max(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, fmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, pixels, palette);
                         BLEND_RGBA_MAX(cR, cG, cB, cA, sR, sG, sB, sA);
                         *pixels = PG_MapRGBA(fmt, palette, sR, sG, sB, sA);
                         pixels += bpp;
@@ -865,7 +879,7 @@ surface_fill_blend_rgba_max(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
             break;
         }
         default: {
-            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, ppa);
+            GET_PIXELVALS(cR, cG, cB, cA, color, fmt, palette, ppa);
             /*
             printf ("Color: %d, %d, %d, %d, BPP is: %d\n", cR, cG, cB, cA,
             bpp);
@@ -874,7 +888,8 @@ surface_fill_blend_rgba_max(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, bpp, pixels);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, ppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, fmt, palette,
+                                      ppa);
                         BLEND_RGBA_MAX(cR, cG, cB, cA, sR, sG, sB, sA);
                         CREATE_PIXEL(pixels, sR, sG, sB, sA, bpp, fmt);
                         pixels += bpp;
