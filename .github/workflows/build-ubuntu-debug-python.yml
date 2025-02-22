@@ -85,7 +85,7 @@ jobs:
         pyenv install ${{ matrix.python }} --debug --keep
         pyenv global ${{ matrix.python }}-debug
         echo $(python -VV)
-        python dev.py build
+        python dev.py build --lax
 
     - name: Run tests
       env:
