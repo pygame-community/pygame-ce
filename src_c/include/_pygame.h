@@ -738,3 +738,29 @@ pg_PointList_FromArrayDouble(double const *array, int arr_length)
 
     return sequence;
 }
+
+#if PY_MINOR_VERSION >= 13
+static PyObject *__cached_exception = NULL;
+
+#define CACHE_EXCEPTION __cached_exception = PyErr_GetRaisedException();
+#define RESTORE_EXCEPTION                             \
+    {                                                 \
+        PyErr_SetRaisedException(__cached_exception); \
+        __cached_exception = NULL;                    \
+    }
+
+#else
+static PyObject *__cached_type = NULL;
+static PyObject *__cached_value = NULL;
+static PyObject *__cached_traceback = NULL;
+
+#define CACHE_EXCEPTION \
+    PyErr_Fetch(&__cached_type, &__cached_value, &__cached_traceback);
+#define RESTORE_EXCEPTION                                                 \
+    {                                                                     \
+        PyErr_Restore(__cached_type, __cached_value, __cached_traceback); \
+        __cached_type = NULL;                                             \
+        __cached_value = NULL;                                            \
+        __cached_traceback = NULL;                                        \
+    }
+#endif
