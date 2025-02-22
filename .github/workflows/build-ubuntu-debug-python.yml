@@ -19,10 +19,8 @@ on:
       - '*.rst'
       - '*.md'
       - '.github/workflows/*.yml'
-      # gcov/lcov only gets C coverage
-      - 'src_py/**'
       # re-include current file to not be excluded
-      - '!.github/workflows/build-ubuntu-coverage.yml'
+      - '!.github/workflows/build-ubuntu-debug-python.yml'
 
   pull_request:
     branches: main
@@ -47,7 +45,7 @@ jobs:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
         os: [ ubuntu-24.04 ]
-        python: [ 3.12.8 ]
+        python: [ 3.11.11, 3.12.8 ]
 
     env:
       # Pip now forces us to either make a venv or set this flag, so we will do
@@ -87,7 +85,7 @@ jobs:
         pyenv install ${{ matrix.python }} --debug --keep
         pyenv global ${{ matrix.python }}-debug
         echo $(python -VV)
-        python dev.py build --lax
+        python dev.py build
 
     - name: Run tests
       env:
