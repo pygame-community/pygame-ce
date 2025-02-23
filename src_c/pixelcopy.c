@@ -815,14 +815,8 @@ surface_to_array(PyObject *self, PyObject *args, PyObject *kwds)
     if (view_p->ndim == 2) {
         if (view_kind == VIEWKIND_RGB) {
             if (_copy_mapped(view_p, surf)) {
-                int error_occurred = (PyErr_Occurred() != NULL);
-                if (error_occurred) {
-                    CACHE_EXCEPTION
-                }
                 pgBuffer_Release(&pg_view);
                 pgSurface_Unlock(surfobj);
-                if (error_occurred)
-                    RESTORE_EXCEPTION
                 return 0;
             }
         }
@@ -1164,10 +1158,7 @@ fail:
     if (is_tar_alloc) {
         pgBuffer_Release(&tar_pg_view);
     }
-    CACHE_EXCEPTION
-    PyErr_Clear();
     pgSurface_Unlock(format_surf);
-    RESTORE_EXCEPTION
     return 0;
 }
 

@@ -131,13 +131,16 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
             }
             if (weakref_getref_result == 1) {
                 if (ref == lockobj) {
+                    CACHE_EXCEPTION
                     if (PySequence_DelItem(surf->locklist, len) == -1) {
                         Py_DECREF(ref);
+                        RESTORE_EXCEPTION
                         return 0;
                     }
                     else {
                         found = 1;
                     }
+                    RESTORE_EXCEPTION
                 }
                 Py_DECREF(ref);
             }
@@ -153,12 +156,14 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
                 noerror = 0;
             }
             else if (weakref_getref_result == 0) {
+                CACHE_EXCEPTION
                 if (PySequence_DelItem(surf->locklist, len) == -1) {
                     noerror = 0;
                 }
                 else {
                     found++;
                 }
+                RESTORE_EXCEPTION
             }
             else if (weakref_getref_result == 1) {
                 Py_DECREF(ref);
