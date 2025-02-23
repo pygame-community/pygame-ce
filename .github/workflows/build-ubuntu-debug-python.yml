@@ -85,7 +85,7 @@ jobs:
     - name: Build debug python and pygame-ce
       id: build
       run: |
-        pyenv install ${{ matrix.python }} --debug
+        pyenv install ${{ matrix.python }} --debug -v
         pyenv global ${{ matrix.python }}-debug
         python dev.py build --lax
 

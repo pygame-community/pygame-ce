@@ -54,9 +54,6 @@
 #include "pgplatform.h"
 #include <Python.h>
 
-static void
-shim_to_ignore_unused(void);
-
 /* version macros (defined since version 1.9.5) */
 #ifndef PG_MAJOR_VERSION
 #error PG_MAJOR_VERSION must be defined
@@ -623,9 +620,6 @@ PYGAMEAPI_EXTERN_SLOTS(geometry);
 static PG_INLINE PyObject *
 pg_tuple_couple_from_values_int(int val1, int val2)
 {
-    // I'm sorry for putting this here, but it just needs a place to go
-    shim_to_ignore_unused();
-
     /* This function turns two input integers into a python tuple object.
      * Currently, 5th November 2022, this is faster than using Py_BuildValue
      * to do the same thing.
@@ -744,47 +738,3 @@ pg_PointList_FromArrayDouble(double const *array, int arr_length)
 
     return sequence;
 }
-
-#if PY_MINOR_VERSION >= 13
-static PyObject *__cached_exception = NULL;
-
-// this thing only exists because of the unused values that erroneously get
-// spit out by the compiler
-static void
-shim_to_ignore_unused(void)
-{
-    (void)__cached_exception;
-}
-
-#define CACHE_EXCEPTION __cached_exception = PyErr_GetRaisedException();
-#define RESTORE_EXCEPTION                             \
-    {                                                 \
-        PyErr_SetRaisedException(__cached_exception); \
-        __cached_exception = NULL;                    \
-    }
-
-#else
-static PyObject *__cached_type = NULL;
-static PyObject *__cached_value = NULL;
-static PyObject *__cached_traceback = NULL;
-
-// this thing only exists because of the unused values that erroneously get
-// spit out by the compiler
-static void
-shim_to_ignore_unused(void)
-{
-    (void)__cached_type;
-    (void)__cached_value;
-    (void)__cached_traceback;
-}
-
-#define CACHE_EXCEPTION \
-    PyErr_Fetch(&__cached_type, &__cached_value, &__cached_traceback);
-#define RESTORE_EXCEPTION                                                 \
-    {                                                                     \
-        PyErr_Restore(__cached_type, __cached_value, __cached_traceback); \
-        __cached_type = NULL;                                             \
-        __cached_value = NULL;                                            \
-        __cached_traceback = NULL;                                        \
-    }
-#endif
