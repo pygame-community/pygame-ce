@@ -392,6 +392,9 @@ surface_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->weakreflist = NULL;
         self->dependency = NULL;
         self->locklist = NULL;
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+        memset(&(self->mutex), 0, sizeof(PyMutex));
+#endif
     }
     return (PyObject *)self;
 }
@@ -725,8 +728,9 @@ surf_get_at(PyObject *self, PyObject *position)
                      "position must be a sequence of two numbers");
     }
 
-    if (x < 0 || x >= surf->w || y < 0 || y >= surf->h)
+    if (x < 0 || x >= surf->w || y < 0 || y >= surf->h) {
         return RAISE(PyExc_IndexError, "pixel index out of range");
+    }
 
     PG_PixelFormat *format;
     SDL_Palette *palette;
@@ -735,11 +739,18 @@ surf_get_at(PyObject *self, PyObject *position)
     }
     int bpp = PG_FORMAT_BytesPerPixel(format);
 
-    if (bpp < 1 || bpp > 4)
+    if (bpp < 1 || bpp > 4) {
         return RAISE(PyExc_RuntimeError, "invalid color depth for surface");
+    }
 
-    if (!pgSurface_Lock((pgSurfaceObject *)self))
+    if (!pgSurface_Lock((pgSurfaceObject *)self)) {
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
+        PyErr_SetString(pgExc_SDLError, "Failed to lock surface");
         return NULL;
+    }
 
     pixels = (Uint8 *)surf->pixels;
 
@@ -769,8 +780,14 @@ surf_get_at(PyObject *self, PyObject *position)
                        rgba + 3);
             break;
     }
-    if (!pgSurface_Unlock((pgSurfaceObject *)self))
+    if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
+        PyErr_SetString(pgExc_SDLError, "Failed to unlock surface in get_at");
         return NULL;
+    }
 
     return pgColor_New(rgba);
 }
@@ -805,8 +822,9 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
     int bpp = PG_FORMAT_BytesPerPixel(format);
 
-    if (bpp < 1 || bpp > 4)
+    if (bpp < 1 || bpp > 4) {
         return RAISE(PyExc_RuntimeError, "invalid color depth for surface");
+    }
 
     SDL_Rect clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &clip_rect)) {
@@ -816,6 +834,7 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     if (x < clip_rect.x || x >= clip_rect.x + clip_rect.w || y < clip_rect.y ||
         y >= clip_rect.y + clip_rect.h) {
         /* out of clip area */
+
         Py_RETURN_NONE;
     }
 
@@ -823,8 +842,15 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         return NULL;
     }
 
-    if (!pgSurface_Lock((pgSurfaceObject *)self))
+    if (!pgSurface_Lock((pgSurfaceObject *)self)) {
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
+        PyErr_SetString(pgExc_SDLError, "Failed to lock surface");
+
         return NULL;
+    }
     pixels = (Uint8 *)surf->pixels;
 
     switch (bpp) {
@@ -859,8 +885,15 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
             break;
     }
 
-    if (!pgSurface_Unlock((pgSurfaceObject *)self))
+    if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
+        PyErr_SetString(pgExc_SDLError, "Failed to unlock surface in set_at");
+
         return NULL;
+    }
 
     Py_RETURN_NONE;
 }
@@ -4223,6 +4256,9 @@ MODINIT_DEFINE(surface)
     if (module == NULL) {
         return NULL;
     }
+
+    DISABLE_GIL_SINGLE_INITIALIZATION(module, _module.m_name)
+
     if (pg_warn_simd_at_runtime_but_uncompiled() < 0) {
         Py_DECREF(module);
         return NULL;
