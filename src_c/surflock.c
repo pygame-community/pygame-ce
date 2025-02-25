@@ -114,7 +114,7 @@ pgSurface_LockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
 static int
 pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
 {
-#if PY_MINOR_VERSION >= 12
+#if PY_VERSION_HEX >= 0x030C0000
     static PyObject *__cached_exception = NULL;
 #else
     static PyObject *__cached_exception_type = NULL;
@@ -141,7 +141,7 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
                 if (ref == lockobj) {
                     // Need to cache any currently set exceptions before
                     // calling PySequence_DelItem
-#if PY_MINOR_VERSION >= 12
+#if PY_VERSION_HEX >= 0x030C0000
                     __cached_exception = PyErr_GetRaisedException();
 #else
                     PyErr_Fetch(&__cached_exception_type,
@@ -153,7 +153,7 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
                         Py_DECREF(ref);
                         // Restore the previously set exception before
                         // returning
-#if PY_MINOR_VERSION >= 12
+#if PY_VERSION_HEX >= 0x030C0000
                         PyErr_SetRaisedException(__cached_exception);
                         __cached_exception = NULL;
 #else
@@ -170,7 +170,7 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
                         found = 1;
                     }
                     // Restore the previously set exception
-#if PY_MINOR_VERSION >= 12
+#if PY_VERSION_HEX >= 0x030C0000
                     PyErr_SetRaisedException(__cached_exception);
                     __cached_exception = NULL;
 #else
@@ -198,7 +198,7 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
             else if (weakref_getref_result == 0) {
                 // Need to cache any currently set exceptions before calling
                 // PySequence_DelItem
-#if PY_MINOR_VERSION >= 12
+#if PY_VERSION_HEX >= 0x030C0000
                 __cached_exception = PyErr_GetRaisedException();
 #else
                 PyErr_Fetch(&__cached_exception_type,
@@ -212,7 +212,7 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
                     found++;
                 }
                 // Restore the previously set exception
-#if PY_MINOR_VERSION >= 12
+#if PY_VERSION_HEX >= 0x030C0000
                 PyErr_SetRaisedException(__cached_exception);
                 __cached_exception = NULL;
 #else
