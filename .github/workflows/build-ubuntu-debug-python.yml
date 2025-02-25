@@ -87,7 +87,7 @@ jobs:
       uses: actions/cache@v4.2.1
       with:
         key: ${{ matrix.python }}
-        path: $PYENV_ROOT/versions/${{ matrix.python }}-debug/**
+        path: ~/.pyenv/versions/${{ matrix.python }}-debug/**
 
     - name: Build debug python
       id: build
