@@ -114,7 +114,7 @@ pgSurface_LockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
 static int
 pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
 {
-    CREATE_CACHE_VARIABLES
+    PG_DECLARE_EXCEPTION_SAVER
 
     pgSurfaceObject *surf = (pgSurfaceObject *)surfobj;
     int found = 0;
@@ -135,20 +135,20 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
                 if (ref == lockobj) {
                     // Need to cache any currently set exceptions before
                     // calling PySequence_DelItem
-                    CACHE_EXCEPTION
+                    PG_SAVE_EXCEPTION
 
                     if (PySequence_DelItem(surf->locklist, len) == -1) {
                         Py_DECREF(ref);
                         // Restore the previously set exception before
                         // returning
-                        RESTORE_EXCEPTION
+                        PG_UNSAVE_EXCEPTION
                         return 0;
                     }
                     else {
                         found = 1;
                     }
                     // Restore the previously set exception
-                    RESTORE_EXCEPTION
+                    PG_UNSAVE_EXCEPTION
                 }
                 Py_DECREF(ref);
             }
@@ -166,7 +166,7 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
             else if (weakref_getref_result == 0) {
                 // Need to cache any currently set exceptions before calling
                 // PySequence_DelItem
-                RESTORE_EXCEPTION
+                PG_SAVE_EXCEPTION
                 if (PySequence_DelItem(surf->locklist, len) == -1) {
                     noerror = 0;
                 }
@@ -174,7 +174,7 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
                     found++;
                 }
                 // Restore the previously set exception
-                RESTORE_EXCEPTION
+                PG_UNSAVE_EXCEPTION
             }
             else if (weakref_getref_result == 1) {
                 Py_DECREF(ref);
