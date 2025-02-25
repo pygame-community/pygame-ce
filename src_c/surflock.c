@@ -114,13 +114,7 @@ pgSurface_LockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
 static int
 pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
 {
-#if PY_VERSION_HEX >= 0x030C0000
-    static PyObject *__cached_exception = NULL;
-#else
-    static PyObject *__cached_exception_type = NULL;
-    static PyObject *__cached_exception_value = NULL;
-    static PyObject *__cached_exception_traceback = NULL;
-#endif
+    CREATE_CACHE_VARIABLES
 
     pgSurfaceObject *surf = (pgSurfaceObject *)surfobj;
     int found = 0;
@@ -141,46 +135,20 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
                 if (ref == lockobj) {
                     // Need to cache any currently set exceptions before
                     // calling PySequence_DelItem
-#if PY_VERSION_HEX >= 0x030C0000
-                    __cached_exception = PyErr_GetRaisedException();
-#else
-                    PyErr_Fetch(&__cached_exception_type,
-                                &__cached_exception_value,
-                                &__cached_exception_traceback);
-#endif
+                    CACHE_EXCEPTION
 
                     if (PySequence_DelItem(surf->locklist, len) == -1) {
                         Py_DECREF(ref);
                         // Restore the previously set exception before
                         // returning
-#if PY_VERSION_HEX >= 0x030C0000
-                        PyErr_SetRaisedException(__cached_exception);
-                        __cached_exception = NULL;
-#else
-                        PyErr_Restore(__cached_exception_type,
-                                      __cached_exception_value,
-                                      __cached_exception_traceback);
-                        __cached_exception_type = NULL;
-                        __cached_exception_value = NULL;
-                        __cached_exception_traceback = NULL;
-#endif
+                        RESTORE_EXCEPTION
                         return 0;
                     }
                     else {
                         found = 1;
                     }
                     // Restore the previously set exception
-#if PY_VERSION_HEX >= 0x030C0000
-                    PyErr_SetRaisedException(__cached_exception);
-                    __cached_exception = NULL;
-#else
-                    PyErr_Restore(__cached_exception_type,
-                                  __cached_exception_value,
-                                  __cached_exception_traceback);
-                    __cached_exception_type = NULL;
-                    __cached_exception_value = NULL;
-                    __cached_exception_traceback = NULL;
-#endif
+                    RESTORE_EXCEPTION
                 }
                 Py_DECREF(ref);
             }
@@ -198,13 +166,7 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
             else if (weakref_getref_result == 0) {
                 // Need to cache any currently set exceptions before calling
                 // PySequence_DelItem
-#if PY_VERSION_HEX >= 0x030C0000
-                __cached_exception = PyErr_GetRaisedException();
-#else
-                PyErr_Fetch(&__cached_exception_type,
-                            &__cached_exception_value,
-                            &__cached_exception_traceback);
-#endif
+                RESTORE_EXCEPTION
                 if (PySequence_DelItem(surf->locklist, len) == -1) {
                     noerror = 0;
                 }
@@ -212,17 +174,7 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
                     found++;
                 }
                 // Restore the previously set exception
-#if PY_VERSION_HEX >= 0x030C0000
-                PyErr_SetRaisedException(__cached_exception);
-                __cached_exception = NULL;
-#else
-                PyErr_Restore(__cached_exception_type,
-                              __cached_exception_value,
-                              __cached_exception_traceback);
-                __cached_exception_type = NULL;
-                __cached_exception_value = NULL;
-                __cached_exception_traceback = NULL;
-#endif
+                RESTORE_EXCEPTION
             }
             else if (weakref_getref_result == 1) {
                 Py_DECREF(ref);
