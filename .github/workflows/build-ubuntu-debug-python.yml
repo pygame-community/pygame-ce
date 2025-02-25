@@ -82,10 +82,21 @@ jobs:
         echo -e 'eval "$(pyenv init --path)"' >> ~/.bash_profile
         echo -e 'eval "$(pyenv init -)"' >> ~/.bash_profile
 
-    - name: Build debug python and pygame-ce
+    - name: Cache debug python build
+      id: cache-python
+      uses: actions/cache@v4.2.1
+      with:
+        key: ${{ matrix.python }}
+        path: $PYENV_ROOT/versions/${{ matrix.python }}-debug/**
+
+    - name: Build debug python
       id: build
+      if: steps.cache-python.outputs.cache-hit != 'true'
+      run: pyenv install ${{ matrix.python }} --debug -v
+
+    - name: Build pygame-ce
+      id: build-pygame-ce
       run: |
-        pyenv install ${{ matrix.python }} --debug -v
         pyenv global ${{ matrix.python }}-debug
         python dev.py build --lax
 
