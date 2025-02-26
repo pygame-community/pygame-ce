@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, final
 from typing_extensions import deprecated # added in 3.13
 
 from pygame.window import Window
@@ -8,11 +8,11 @@ from pygame.surface import Surface
 from pygame.typing import DrawableClass, RectLike, ColorLike, Point, IntPoint, SequenceLike
 
 
+@final
 class Renderer:
     def __init__(self, window: Window, index: int = -1, accelerated: int = -1, vsync: bool = False, target_texture: bool = False) -> None: ...
     def blit(self, source: Union["Texture", "Image", DrawableClass], dest: Optional[RectLike] = None, area: Optional[RectLike] = None, special_flags: int = 0) -> Rect: ...
     def clear(self) -> None: ...
-    def compose_custom_blend_mode(self, color_mode: SequenceLike[int], alpha_mode: SequenceLike[int]) -> int: ...
     def draw_line(self, p1: Point, p2: Point) -> None: ...
     def draw_point(self, point: Point) -> None: ...
     def draw_quad(self, p1: Point, p2: Point, p3: Point, p4: Point) -> None: ...
@@ -48,12 +48,16 @@ class Renderer:
     def target(self, value: "Texture") -> None: ...
 
     @classmethod
+    def compose_custom_blend_mode(cls, color_mode: SequenceLike[int], alpha_mode: SequenceLike[int]) -> int: ...
+    @classmethod
     def from_window(cls, window: Window) -> Renderer: ...
 
 
+@final
 class Texture:
     pass
 
 
+@final
 class Image:
     pass
