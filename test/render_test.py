@@ -14,6 +14,7 @@ class DrawableObject:
         self.area = area
         self.dest = dest
 
+
 class RendererTest(unittest.TestCase):
     def setUp(self):
         self.window = pygame.Window(size=(100, 100))
@@ -49,7 +50,9 @@ class RendererTest(unittest.TestCase):
         dest = pygame.Rect(10, 10, 20, 20)
         area = pygame.Rect(0, 0, 15, 15)
 
-        self.renderer.blit(texture, dest, area)  # TODO Assert after Texture implementation
+        self.renderer.blit(
+            texture, dest, area
+        )  # TODO Assert after Texture implementation
 
         self.renderer.blit(image, dest, area)  # TODO Assert after Image implementation
 
@@ -73,9 +76,13 @@ class RendererTest(unittest.TestCase):
         for x in range(-1, 2):
             for y in range(-1, 2):
                 if x or y:
-                    self.assertEqual(surf.get_at((10 + x, 10 + y)), pygame.Color(0, 0, 0, 255))
+                    self.assertEqual(
+                        surf.get_at((10 + x, 10 + y)), pygame.Color(0, 0, 0, 255)
+                    )
                 else:
-                    self.assertEqual(surf.get_at((10, 10)), pygame.Color(255, 255, 0, 255))
+                    self.assertEqual(
+                        surf.get_at((10, 10)), pygame.Color(255, 255, 0, 255)
+                    )
 
     def test_draw_line(self):
         self.renderer.draw_color = "YELLOW"
@@ -89,7 +96,17 @@ class RendererTest(unittest.TestCase):
         self.renderer.draw_color = "YELLOW"
         self.renderer.draw_triangle((10, 10), (10, 40), (40, 10))
         surf = self.renderer.to_surface()
-        test_points = ((10, 10), (20, 10), (30, 10), (40, 10), (10, 20), (30, 20), (10, 30), (20, 30), (10, 40))
+        test_points = (
+            (10, 10),
+            (20, 10),
+            (30, 10),
+            (40, 10),
+            (10, 20),
+            (30, 20),
+            (10, 30),
+            (20, 30),
+            (10, 40),
+        )
         for point in test_points:
             self.assertEqual(surf.get_at(point), pygame.Color(255, 255, 0, 255))
 
@@ -162,8 +179,21 @@ class RendererTest(unittest.TestCase):
         self.assertEqual(self.renderer.target, None)
 
     def test_compose_custom_blend_mode(self):
-        color_mode, alpha_mode = (pygame.BLENDFACTOR_SRC_COLOR, pygame.BLENDFACTOR_ONE_MINUS_DST_COLOR, pygame.BLENDOPERATION_MAXIMUM), (pygame.BLENDFACTOR_ONE_MINUS_SRC_ALPHA, pygame.BLENDFACTOR_DST_ALPHA, pygame.BLENDOPERATION_MINIMUM)
-        custom_blend_mode = self.renderer.compose_custom_blend_mode(color_mode, alpha_mode)
+        color_mode, alpha_mode = (
+            (
+                pygame.BLENDFACTOR_SRC_COLOR,
+                pygame.BLENDFACTOR_ONE_MINUS_DST_COLOR,
+                pygame.BLENDOPERATION_MAXIMUM,
+            ),
+            (
+                pygame.BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
+                pygame.BLENDFACTOR_DST_ALPHA,
+                pygame.BLENDOPERATION_MINIMUM,
+            ),
+        )
+        custom_blend_mode = self.renderer.compose_custom_blend_mode(
+            color_mode, alpha_mode
+        )
         self.assertEqual(custom_blend_mode, 157550645)
         self.renderer.draw_blend_mode = custom_blend_mode
         self.assertEqual(self.renderer.draw_blend_mode, custom_blend_mode)
