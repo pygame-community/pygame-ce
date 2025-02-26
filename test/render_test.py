@@ -178,6 +178,7 @@ class RendererTest(unittest.TestCase):
         self.renderer.target = None
         self.assertEqual(self.renderer.target, None)
 
+    @unittest.skip("Unable to create that blend_mode on all devices")
     def test_compose_custom_blend_mode(self):
         color_mode, alpha_mode = (
             (
