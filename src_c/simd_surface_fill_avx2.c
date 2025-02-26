@@ -1,31 +1,5 @@
 #include "simd_fill.h"
 
-#if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
-#include <immintrin.h>
-#endif /* defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H) */
-
-#define BAD_AVX2_FUNCTION_CALL                                               \
-    printf(                                                                  \
-        "Fatal Error: Attempted calling an AVX2 function when both compile " \
-        "time and runtime support is missing. If you are seeing this "       \
-        "message, you have stumbled across a pygame bug, please report it "  \
-        "to the devs!");                                                     \
-    PG_EXIT(1)
-
-/* helper function that does a runtime check for AVX2. It has the added
- * functionality of also returning 0 if compile time support is missing */
-int
-_pg_has_avx2()
-{
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
-    return SDL_HasAVX2();
-#else
-    return 0;
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
-}
-
 #define SETUP_AVX2_FILLER(COLOR_PROCESS_CODE)                                 \
     /* initialize surface data */                                             \
     int width = rect->w, height = rect->h;                                    \
@@ -139,20 +113,6 @@ _pg_has_avx2()
         return 0;                                                           \
     }
 
-#define INVALID_DEFS(NAME)                                                  \
-    int surface_fill_blend_##NAME##_avx2(SDL_Surface *surface,              \
-                                         SDL_Rect *rect, Uint32 color)      \
-    {                                                                       \
-        BAD_AVX2_FUNCTION_CALL;                                             \
-        return -1;                                                          \
-    }                                                                       \
-    int surface_fill_blend_rgba_##NAME##_avx2(SDL_Surface *surface,         \
-                                              SDL_Rect *rect, Uint32 color) \
-    {                                                                       \
-        BAD_AVX2_FUNCTION_CALL;                                             \
-        return -1;                                                          \
-    }
-
 #define ADD_CODE mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_color);
 #define SUB_CODE mm256_dst = _mm256_subs_epu8(mm256_dst, mm256_color);
 #define MIN_CODE mm256_dst = _mm256_min_epu8(mm256_dst, mm256_color);
@@ -164,18 +124,10 @@ _pg_has_avx2()
         shuff_dst = _mm256_srli_epi16(shuff_dst, 8);                      \
     }
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#ifdef PG_HAS_AVX2
 FILLERS(add, color &= ~amask;, ADD_CODE)
 FILLERS(sub, color &= ~amask;, SUB_CODE)
 FILLERS(min, color |= amask;, MIN_CODE)
 FILLERS(max, color &= ~amask;, MAX_CODE)
 FILLERS_SHUFF(mult, color |= amask;, MULT_CODE)
-#else
-INVALID_DEFS(add)
-INVALID_DEFS(sub)
-INVALID_DEFS(min)
-INVALID_DEFS(max)
-INVALID_DEFS(mult)
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
- !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_HAS_AVX2 */

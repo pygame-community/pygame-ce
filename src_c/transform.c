@@ -33,7 +33,6 @@
 #include <math.h>
 #include <string.h>
 
-#include "simd_shared.h"
 #include "simd_transform.h"
 #include "scale.h"
 
@@ -1255,8 +1254,8 @@ smoothscale_init(struct _module_state *st)
         return;
     }
 
-#if !defined(__EMSCRIPTEN__)
-#if PG_ENABLE_SSE_NEON
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_SSE2_OR_NEON
     if (SDL_HasSSE2()) {
         st->filter_type = "SSE2";
         st->filter_shrink_X = filter_shrink_X_SSE2;
@@ -1273,8 +1272,8 @@ smoothscale_init(struct _module_state *st)
         st->filter_expand_Y = filter_expand_Y_SSE2;
         return;
     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* !__EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
 #ifdef SCALE_MMX_SUPPORT
     if (SDL_HasSSE()) {
         st->filter_type = "SSE";
@@ -1655,8 +1654,8 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
                             "%s not supported on this machine", type);
     }
 #endif /* ~defined(SCALE_MMX_SUPPORT) */
-#if !defined(__EMSCRIPTEN__)
-#if PG_ENABLE_SSE_NEON
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_SSE2_OR_NEON
     else if (strcmp(type, "SSE2") == 0) {
         if (!SDL_HasSSE2()) {
             return RAISE(PyExc_ValueError,
@@ -1680,8 +1679,8 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
         st->filter_expand_X = filter_expand_X_SSE2;
         st->filter_expand_Y = filter_expand_Y_SSE2;
     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* !__EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
     else {
         return PyErr_Format(PyExc_ValueError, "Unknown backend type %s", type);
     }
@@ -2196,31 +2195,30 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
         return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
     }
 
-#if defined(__EMSCRIPTEN__)
-    grayscale_non_simd(src, src_format, newsurf, newsurf_format);
-#else  // !defined(__EMSCRIPTEN__)
+#ifndef PG_DISABLE_SIMD
     if (PG_FORMAT_BytesPerPixel(src_format) == 4 &&
         src_format->Rmask == newsurf_format->Rmask &&
         src_format->Gmask == newsurf_format->Gmask &&
         src_format->Bmask == newsurf_format->Bmask && (src->pitch % 4 == 0) &&
         (newsurf->pitch == (newsurf->w * 4))) {
-        if (pg_has_avx2()) {
+#ifdef PG_HAS_AVX2
+        if (PG_HAS_AVX2()) {
             grayscale_avx2(src, newsurf);
+            goto end;
         }
-#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
-        else if (pg_HasSSE_NEON()) {
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
+        if (PG_HAS_SSE2_OR_NEON()) {
             grayscale_sse2(src, newsurf);
+            goto end;
         }
-#endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
-        else {
-            grayscale_non_simd(src, src_format, newsurf, newsurf_format);
-        }
+#endif /* PG_HAS_SSE2_OR_NEON */
     }
-    else {
-        grayscale_non_simd(src, src_format, newsurf, newsurf_format);
-    }
-#endif  // !defined(__EMSCRIPTEN__)
+#endif /* PG_DISABLE_SIMD */
 
+    grayscale_non_simd(src, src_format, newsurf, newsurf_format);
+    goto end; /* Silence warning that the end label is not used. */
+end:
     SDL_UnlockSurface(newsurf);
 
     return newsurf;
@@ -4009,31 +4007,30 @@ invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
         return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
     }
 
-#if defined(__EMSCRIPTEN__)
-    invert_non_simd(src, src_format, newsurf, newsurf_format);
-#else  // !defined(__EMSCRIPTEN__)
+#ifndef PG_DISABLE_SIMD
     if (PG_FORMAT_BytesPerPixel(src_format) == 4 &&
         src_format->Rmask == newsurf_format->Rmask &&
         src_format->Gmask == newsurf_format->Gmask &&
         src_format->Bmask == newsurf_format->Bmask && (src->pitch % 4 == 0) &&
         (newsurf->pitch == (newsurf->w * 4))) {
-        if (pg_has_avx2()) {
+#ifdef PG_HAS_AVX2
+        if (PG_HAS_AVX2()) {
             invert_avx2(src, newsurf);
+            goto end;
         }
-#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
-        else if (pg_HasSSE_NEON()) {
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
+        if (PG_HAS_SSE2_OR_NEON()) {
             invert_sse2(src, newsurf);
+            goto end;
         }
-#endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
-        else {
-            invert_non_simd(src, src_format, newsurf, newsurf_format);
-        }
+#endif /* PG_HAS_SSE2_OR_NEON */
     }
-    else {
-        invert_non_simd(src, src_format, newsurf, newsurf_format);
-    }
-#endif  // !defined(__EMSCRIPTEN__)
+#endif  // PG_DISABLE_SIMD
 
+    invert_non_simd(src, src_format, newsurf, newsurf_format);
+    goto end; /* Silence warning that the end label is not used. */
+end:
     SDL_UnlockSurface(newsurf);
 
     return newsurf;

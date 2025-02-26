@@ -1,30 +1,5 @@
 #include "simd_fill.h"
 
-#if PG_ENABLE_ARM_NEON
-// sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
-#include "include/sse2neon.h"
-#endif /* PG_ENABLE_ARM_NEON */
-
-#define BAD_SSE2_FUNCTION_CALL                                               \
-    printf(                                                                  \
-        "Fatal Error: Attempted calling an SSE2 function when both compile " \
-        "time and runtime support is missing. If you are seeing this "       \
-        "message, you have stumbled across a pygame bug, please report it "  \
-        "to the devs!");                                                     \
-    PG_EXIT(1)
-
-int
-_pg_HasSSE_NEON()
-{
-#if defined(__SSE2__)
-    return SDL_HasSSE2();
-#elif PG_ENABLE_ARM_NEON
-    return SDL_HasNEON();
-#else
-    return 0;
-#endif
-}
-
 #define SETUP_SSE2_FILLER(COLOR_PROCESS_CODE)                                 \
     /* initialize surface data */                                             \
     int width = rect->w, height = rect->h;                                    \
@@ -130,20 +105,6 @@ _pg_HasSSE_NEON()
         return 0;                                                           \
     }
 
-#define INVALID_DEFS(NAME)                                                  \
-    int surface_fill_blend_##NAME##_sse2(SDL_Surface *surface,              \
-                                         SDL_Rect *rect, Uint32 color)      \
-    {                                                                       \
-        BAD_SSE2_FUNCTION_CALL;                                             \
-        return -1;                                                          \
-    }                                                                       \
-    int surface_fill_blend_rgba_##NAME##_sse2(SDL_Surface *surface,         \
-                                              SDL_Rect *rect, Uint32 color) \
-    {                                                                       \
-        BAD_SSE2_FUNCTION_CALL;                                             \
-        return -1;                                                          \
-    }
-
 #define ADD_CODE mm128_dst = _mm_adds_epu8(mm128_dst, mm128_color);
 #define SUB_CODE mm128_dst = _mm_subs_epu8(mm128_dst, mm128_color);
 #define MIN_CODE mm128_dst = _mm_min_epu8(mm128_dst, mm128_color);
@@ -155,16 +116,10 @@ _pg_HasSSE_NEON()
         shuff_dst = _mm_srli_epi16(shuff_dst, 8);                   \
     }
 
-#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+#ifdef PG_HAS_SSE2_OR_NEON
 FILLERS(add, color &= ~amask;, ADD_CODE)
 FILLERS(sub, color &= ~amask;, SUB_CODE)
 FILLERS(min, color |= amask;, MIN_CODE)
 FILLERS(max, color &= ~amask;, MAX_CODE)
 FILLERS_SHUFF(mult, color |= amask;, MULT_CODE)
-#else
-INVALID_DEFS(add)
-INVALID_DEFS(sub)
-INVALID_DEFS(min)
-INVALID_DEFS(max)
-INVALID_DEFS(mult)
-#endif /* defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON) */
+#endif /* PG_HAS_SSE2_OR_NEON */
