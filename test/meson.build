@@ -35,6 +35,7 @@ test_files = files(
     'pixelarray_test.py',
     'pixelcopy_test.py',
     'rect_test.py',
+    'render_test.py',
     'rwobject_test.py',
     'scrap_tags.py',
     'scrap_test.py',

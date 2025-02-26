@@ -324,7 +324,7 @@ static PyObject *
 compose_custom_blend_mode(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *color_mode, *alpha_mode;
-    float mode[6];
+    int mode[6];
     SDL_BlendMode blend_mode;
     static char *keywords[] = {"color_mode", "alpha_mode", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", keywords, &color_mode,
@@ -339,24 +339,18 @@ compose_custom_blend_mode(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_TypeError, "color_mode has to have 3 elements");
     if (PySequence_Size(alpha_mode) != 3)
         return RAISE(PyExc_TypeError, "alpha_mode has to have 3 elements");
-    if (!pg_FloatFromObjIndex(color_mode, 0, &mode[0]))
-        return RAISE(PyExc_TypeError,
-                     "color_mode first element must be float");
-    if (!pg_FloatFromObjIndex(color_mode, 1, &mode[1]))
-        return RAISE(PyExc_TypeError,
-                     "color_mode second element must be float");
-    if (!pg_FloatFromObjIndex(color_mode, 2, &mode[2]))
-        return RAISE(PyExc_TypeError,
-                     "color_mode third element must be float");
-    if (!pg_FloatFromObjIndex(alpha_mode, 0, &mode[3]))
-        return RAISE(PyExc_TypeError,
-                     "alpha_mode first element must be float");
-    if (!pg_FloatFromObjIndex(alpha_mode, 1, &mode[4]))
-        return RAISE(PyExc_TypeError,
-                     "alpha_mode second element must be float");
-    if (!pg_FloatFromObjIndex(alpha_mode, 2, &mode[5]))
-        return RAISE(PyExc_TypeError,
-                     "alpha_mode third element must be float");
+    if (!pg_IntFromObjIndex(color_mode, 0, &mode[0]))
+        return RAISE(PyExc_TypeError, "source color factor must be int");
+    if (!pg_IntFromObjIndex(color_mode, 1, &mode[1]))
+        return RAISE(PyExc_TypeError, "dest color factor must be int");
+    if (!pg_IntFromObjIndex(color_mode, 2, &mode[2]))
+        return RAISE(PyExc_TypeError, "color operation must be int");
+    if (!pg_IntFromObjIndex(alpha_mode, 0, &mode[3]))
+        return RAISE(PyExc_TypeError, "source alpha factor must be int");
+    if (!pg_IntFromObjIndex(alpha_mode, 1, &mode[4]))
+        return RAISE(PyExc_TypeError, "dest alpha factor must be int");
+    if (!pg_IntFromObjIndex(alpha_mode, 2, &mode[5]))
+        return RAISE(PyExc_TypeError, "alpha operation must be int");
     blend_mode = SDL_ComposeCustomBlendMode(mode[0], mode[1], mode[2], mode[3],
                                             mode[4], mode[5]);
     return PyLong_FromLong((long)blend_mode);
