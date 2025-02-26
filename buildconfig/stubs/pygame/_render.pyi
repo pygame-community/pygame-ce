@@ -1,11 +1,11 @@
-from typing import Optional, SequenceLike, Union
+from typing import Optional, Union
 from typing_extensions import deprecated # added in 3.13
 
 from pygame.window import Window
 from pygame.rect import Rect, FRect
 from pygame.color import Color
 from pygame.surface import Surface
-from pygame.typing import DrawableClass, RectLike, ColorLike, Point, IntPoint
+from pygame.typing import DrawableClass, RectLike, ColorLike, Point, IntPoint, SequenceLike
 
 
 class Renderer:
