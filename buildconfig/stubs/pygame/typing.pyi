@@ -65,7 +65,9 @@ RectLike = Union[
 
 class DrawableClass(Protocol):
     # Object that has the draw method that accepts area and dest arguments
-    def draw(self, area: Optional[RectLike] = None, dest: Optional[RectLike] = None): ...
+    def draw(
+        self, area: Optional[RectLike] = None, dest: Optional[RectLike] = None
+    ): ...
 
 
 # cleanup namespace
@@ -79,5 +81,5 @@ del (
     Union,
     TypeVar,
     Protocol,
-    Optional
+    Optional,
 )
