@@ -306,10 +306,9 @@ pg_mod_autoquit(const char *modname)
         return;
     }
 
-    funcobj = PyObject_GetAttrString(module, "_internal_mod_quit");
-
-    /* If we could not load _internal_mod_quit, load quit function */
-    if (!funcobj)
+    if (PyObject_HasAttrString(module, "_internal_mod_quit"))
+        funcobj = PyObject_GetAttrString(module, "_internal_mod_quit");
+    else
         funcobj = PyObject_GetAttrString(module, "quit");
 
     /* Silence errors */

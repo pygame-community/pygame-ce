@@ -114,6 +114,8 @@ pgSurface_LockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
 static int
 pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
 {
+    PG_DECLARE_EXCEPTION_SAVER
+
     pgSurfaceObject *surf = (pgSurfaceObject *)surfobj;
     int found = 0;
     int noerror = 1;
@@ -131,13 +133,22 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
             }
             if (weakref_getref_result == 1) {
                 if (ref == lockobj) {
+                    // Need to cache any currently set exceptions before
+                    // calling PySequence_DelItem
+                    PG_SAVE_EXCEPTION
+
                     if (PySequence_DelItem(surf->locklist, len) == -1) {
                         Py_DECREF(ref);
+                        // Restore the previously set exception before
+                        // returning
+                        PG_UNSAVE_EXCEPTION
                         return 0;
                     }
                     else {
                         found = 1;
                     }
+                    // Restore the previously set exception
+                    PG_UNSAVE_EXCEPTION
                 }
                 Py_DECREF(ref);
             }
@@ -153,12 +164,17 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
                 noerror = 0;
             }
             else if (weakref_getref_result == 0) {
+                // Need to cache any currently set exceptions before calling
+                // PySequence_DelItem
+                PG_SAVE_EXCEPTION
                 if (PySequence_DelItem(surf->locklist, len) == -1) {
                     noerror = 0;
                 }
                 else {
                     found++;
                 }
+                // Restore the previously set exception
+                PG_UNSAVE_EXCEPTION
             }
             else if (weakref_getref_result == 1) {
                 Py_DECREF(ref);
