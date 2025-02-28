@@ -1200,9 +1200,6 @@ chan_set_volume(PyObject *self, PyObject *args)
 {
     int channelnum = pgChannel_AsInt(self);
     float volume, stereovolume = -1.11f;
-#ifdef Py_DEBUG
-    int result;
-#endif
     Uint8 left, right;
     PyThreadState *_save;
 
@@ -1245,10 +1242,7 @@ chan_set_volume(PyObject *self, PyObject *args)
         volume = 1.0f;
     }
 
-#ifdef Py_DEBUG
-    result =
-#endif
-        Mix_Volume(channelnum, (int)(volume * 128));
+    Mix_Volume(channelnum, (int)(volume * 128));
     Py_RETURN_NONE;
 }
 
