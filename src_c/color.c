@@ -808,7 +808,19 @@ _color_lerp(pgColorObject *self, PyObject *args, PyObject *kw)
         return NULL;
     }
 
-    if (amt < 0 || amt > 1) {
+    // TOLERANCE to account for double precison floating point inaccuracy at
+    // the very limits, like if you're LERP'ing by 0.01. When you hit the end,
+    // something stupid like this might happen
+    /*  >>> value = 0
+        >>> offset = 0.01
+        >>> while value < 1:
+        ...     value += offset
+        ...
+        >>> print(value)
+        1.0000000000000007
+    */
+    static const double TOLERANCE = 1e-6;
+    if ((amt < -TOLERANCE) || (amt > (1.0 + TOLERANCE))) {
         return RAISE(PyExc_ValueError, "Argument 2 must be in range [0, 1]");
     }
 
