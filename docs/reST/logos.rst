@@ -48,7 +48,7 @@ August 29, 2021.
 
 .. container:: fullwidth
 
-  |  `upstream_logos.zip <_static/upstream_logos.zip>`_ - 699 KB
+  |  `upstream_logos.zip <_static/upstream_logos.zip>`_ - 314 KB
 
 There is a higher resolution layered photoshop image
 available `here <https://www.pygame.org/ftp/pygame_ce_logo.psd>`_. *(1.3 MB)*
