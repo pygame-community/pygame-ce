@@ -247,6 +247,24 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
     return PyObject_Call(PowerState_class, return_args, return_kwargs);
 }
 
+static PyObject *
+pg_system_get_theme(PyObject *self, PyObject *_null)
+{
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+    switch (SDL_GetSystemTheme()) {
+        case SDL_SYSTEM_THEME_LIGHT:
+            return PyUnicode_FromString("light");
+        case SDL_SYSTEM_THEME_DARK:
+            return PyUnicode_FromString("dark");
+        default:
+            return PyUnicode_FromString("unknown");
+    }
+#else
+    return RAISE(pgExc_SDLError,
+                 "'pygame.system.get_theme' requires SDL 3.2.0+");
+#endif
+}
+
 static PyMethodDef _system_methods[] = {
     {"get_cpu_instruction_sets", pg_system_get_cpu_instruction_sets,
      METH_NOARGS, DOC_SYSTEM_GETCPUINSTRUCTIONSETS},
@@ -258,6 +276,7 @@ static PyMethodDef _system_methods[] = {
      DOC_SYSTEM_GETPREFLOCALES},
     {"get_power_state", pg_system_get_power_state, METH_NOARGS,
      DOC_SYSTEM_GETPOWERSTATE},
+    {"get_theme", pg_system_get_theme, METH_NOARGS, DOC_SYSTEM_GETTHEME},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(system)

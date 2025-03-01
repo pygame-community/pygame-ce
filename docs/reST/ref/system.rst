@@ -192,3 +192,15 @@
    but not both.
 
    .. versionadded:: 2.4.0
+
+.. function:: get_theme
+
+    | :sl:`get the system theme`
+    | :sg:`get_theme() -> 'light' or 'dark' or 'unknown'`
+
+    Returns the system theme which could be ``"light"``, ``"dark"`` or ``"unknown"``.
+
+    This function requires SDL 3.2.0+. A :mod:`pygame.error` exception will be raised
+    otherwise.
+
+    .. versionadded:: ???
