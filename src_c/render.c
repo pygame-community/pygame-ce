@@ -94,8 +94,8 @@ renderer_draw_line(pgRendererObject *self, PyObject *args, PyObject *kwargs)
                                      &end)) {
         return NULL;
     }
-    PARSE_POINT(start, start_pos.x, start_pos.y, " p1 ")
-    PARSE_POINT(end, end_pos.x, end_pos.y, " p2 ")
+    PARSE_POINT(start, start_pos.x, start_pos.y, "p1 ")
+    PARSE_POINT(end, end_pos.x, end_pos.y, "p2 ")
     RENDERER_ERROR_CHECK(SDL_RenderDrawLineF(
         self->renderer, start_pos.x, start_pos.y, end_pos.x, end_pos.y))
     Py_RETURN_NONE;
@@ -144,9 +144,9 @@ renderer_draw_triangle(pgRendererObject *self, PyObject *args,
                                      &p3)) {
         return NULL;
     }
-    PARSE_POINT(p1, points[0].x, points[0].y, " p1 ")
-    PARSE_POINT(p2, points[1].x, points[1].y, " p2 ")
-    PARSE_POINT(p3, points[2].x, points[2].y, " p3 ")
+    PARSE_POINT(p1, points[0].x, points[0].y, "p1 ")
+    PARSE_POINT(p2, points[1].x, points[1].y, "p2 ")
+    PARSE_POINT(p3, points[2].x, points[2].y, "p3 ")
     points[3] = points[0];
     RENDERER_ERROR_CHECK(SDL_RenderDrawLinesF(self->renderer, points, 4))
     Py_RETURN_NONE;
@@ -164,9 +164,9 @@ renderer_fill_triangle(pgRendererObject *self, PyObject *args,
                                      &p3)) {
         return NULL;
     }
-    PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, " p1 ")
-    PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, " p2 ")
-    PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, " p3 ")
+    PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, "p1 ")
+    PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, "p2 ")
+    PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, "p3 ")
     RENDERER_ERROR_CHECK(SDL_GetRenderDrawColor(
         self->renderer, &vertices[0].color.r, &vertices[0].color.g,
         &vertices[0].color.b, &vertices[0].color.a))
@@ -191,10 +191,10 @@ renderer_draw_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
                                      &p3, &p4)) {
         return NULL;
     }
-    PARSE_POINT(p1, points[0].x, points[0].y, " p1 ")
-    PARSE_POINT(p2, points[1].x, points[1].y, " p2 ")
-    PARSE_POINT(p3, points[2].x, points[2].y, " p3 ")
-    PARSE_POINT(p4, points[3].x, points[3].y, " p4 ")
+    PARSE_POINT(p1, points[0].x, points[0].y, "p1 ")
+    PARSE_POINT(p2, points[1].x, points[1].y, "p2 ")
+    PARSE_POINT(p3, points[2].x, points[2].y, "p3 ")
+    PARSE_POINT(p4, points[3].x, points[3].y, "p4 ")
     points[4] = points[0];
     RENDERER_ERROR_CHECK(SDL_RenderDrawLinesF(self->renderer, points, 5))
     Py_RETURN_NONE;
@@ -205,28 +205,24 @@ renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 {
 #if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1, *p2, *p3, *p4;
-    SDL_Vertex vertices[6];
+    SDL_Vertex vertices[4];
     static char *keywords[] = {"p1", "p2", "p3", "p4", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOOO", keywords, &p1, &p2,
-                                     &p3, &p4)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOOO", keywords, &p1, &p2, &p3, &p4)) {
         return NULL;
     }
-    PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, " p1 ")
-    PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, " p2 ")
-    PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, " p3 ")
-    vertices[3].position = vertices[2].position;
-    PARSE_POINT(p4, vertices[4].position.x, vertices[4].position.y, " p4 ")
-    vertices[5].position = vertices[0].position;
+    PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, "p1 ")
+    PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, "p2 ")
+    PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, "p3 ")
+    PARSE_POINT(p4, vertices[3].position.x, vertices[3].position.y, "p4 ")
     RENDERER_ERROR_CHECK(SDL_GetRenderDrawColor(
         self->renderer, &vertices[0].color.r, &vertices[0].color.g,
         &vertices[0].color.b, &vertices[0].color.a))
-    vertices[1].color = vertices[0].color;
-    vertices[2].color = vertices[0].color;
-    vertices[3].color = vertices[0].color;
-    vertices[4].color = vertices[0].color;
-    vertices[5].color = vertices[0].color;
+    for (int i = 1; i < 4; i++) {
+        vertices[i].color = vertices[0].color;
+    }
+    const int indices[] = {0, 1, 2, 2, 3, 0};
     RENDERER_ERROR_CHECK(
-        SDL_RenderGeometry(self->renderer, NULL, vertices, 6, NULL, 0))
+        SDL_RenderGeometry(self->renderer, NULL, vertices, 4, indices, 6))
     Py_RETURN_NONE;
 #else
     RAISE(PyExc_TypeError, "fill_quad() requires SDL 2.0.18 or newer");
