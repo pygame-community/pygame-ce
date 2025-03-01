@@ -207,7 +207,8 @@ renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     PyObject *p1, *p2, *p3, *p4;
     SDL_Vertex vertices[4];
     static char *keywords[] = {"p1", "p2", "p3", "p4", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOOO", keywords, &p1, &p2, &p3, &p4)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOOO", keywords, &p1, &p2,
+                                     &p3, &p4)) {
         return NULL;
     }
     PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, "p1 ")
