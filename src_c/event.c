@@ -281,53 +281,6 @@ _pg_strip_utf8(const char *str, char *ret)
     }
 }
 
-static int
-_pg_put_event_unicode(SDL_Event *event, const char *uni)
-{
-    int i;
-    for (i = 0; i < MAX_SCAN_UNICODE; i++) {
-        if (!scanunicode[i].key) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-            scanunicode[i].key = event->key.scancode;
-#else
-            scanunicode[i].key = event->key.keysym.scancode;
-#endif
-            _pg_strip_utf8(uni, scanunicode[i].unicode);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-static PyObject *
-_pg_get_event_unicode(SDL_Event *event)
-{
-    /* We only deal with one byte here, but still declare an array to silence
-     * compiler warnings. The other 3 bytes are unused */
-    char c[4];
-    int i;
-    for (i = 0; i < MAX_SCAN_UNICODE; i++) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (scanunicode[i].key == event->key.scancode) {
-#else
-        if (scanunicode[i].key == event->key.keysym.scancode) {
-#endif
-            if (event->type == SDL_KEYUP) {
-                /* mark the position as free real estate for other
-                 * events to occupy. */
-                scanunicode[i].key = 0;
-            }
-            return PyUnicode_FromString(scanunicode[i].unicode);
-        }
-    }
-    /* fallback to function that determines unicode from the event.
-     * We try to get the unicode attribute, and store it in memory*/
-    *c = _pg_unicode_from_event(event);
-    if (_pg_put_event_unicode(event, c))
-        return _pg_get_event_unicode(event);
-    return PyUnicode_FromString("");
-}
-
 #define _PG_HANDLE_PROXIFY(name) \
     case SDL_##name:             \
     case PGPOST_##name:          \
@@ -448,6 +401,57 @@ static Uint32
 _pg_pgevent_deproxify(Uint32 type)
 {
     return _pg_pgevent_proxify_helper(type, 0);
+}
+
+static int
+_pg_put_event_unicode(SDL_Event *event, const char *uni)
+{
+    int i;
+    for (i = 0; i < MAX_SCAN_UNICODE; i++) {
+        if (!scanunicode[i].key) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            scanunicode[i].key = event->key.scancode;
+#else
+            printf("Populating %d\n", i);
+            scanunicode[i].key = event->key.keysym.scancode;
+#endif
+            _pg_strip_utf8(uni, scanunicode[i].unicode);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static PyObject *
+_pg_get_event_unicode(SDL_Event *event)
+{
+    /* We only deal with one byte here, but still declare an array to silence
+     * compiler warnings. The other 3 bytes are unused */
+    char c[4];
+    int i;
+    for (i = 0; i < MAX_SCAN_UNICODE; i++) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (scanunicode[i].key == event->key.scancode) {
+#else
+        if (scanunicode[i].key == event->key.keysym.scancode) {
+#endif
+            if ((event->type == SDL_KEYUP) ||
+                (PG_EventEnabled(_pg_pgevent_proxify(SDL_KEYUP)) ==
+                 SDL_FALSE)) {
+                /* mark the position as free real estate for other
+                 * events to occupy. */
+                printf("Clearing %d\n", i);
+                scanunicode[i].key = 0;
+            }
+            return PyUnicode_FromString(scanunicode[i].unicode);
+        }
+    }
+    /* fallback to function that determines unicode from the event.
+     * We try to get the unicode attribute, and store it in memory*/
+    *c = _pg_unicode_from_event(event);
+    if (_pg_put_event_unicode(event, c))
+        return _pg_get_event_unicode(event);
+    return PyUnicode_FromString("");
 }
 
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
