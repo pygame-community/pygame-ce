@@ -38,35 +38,31 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest);
 
 /* Renderer implementation */
 static PyObject *
-from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
+renderer_from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
 {
     PyObject *window;
     static char *keywords[] = {"window", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &window)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", keywords,
+                                     &pgWindow_Type, &window)) {
         return NULL;
     }
-    if (pgWindow_Check(window)) {
-        pgRendererObject *self =
-            (pgRendererObject *)(cls->tp_new(cls, NULL, NULL));
-        self->window = (pgWindowObject *)window;
-        if (self->window->_is_borrowed) {
-            self->_is_borrowed = SDL_TRUE;
-        }
-        else {
-            return RAISE(pgExc_SDLError,
-                         "Window is not created from display module");
-        }
-        self->renderer = SDL_GetRenderer(self->window->_win);
-        if (!self->renderer) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
-        }
-        self->target = NULL;
-        Py_INCREF(self);
-        return (PyObject *)self;
+    pgRendererObject *self =
+        (pgRendererObject *)(cls->tp_new(cls, NULL, NULL));
+    self->window = (pgWindowObject *)window;
+    if (self->window->_is_borrowed) {
+        self->_is_borrowed = SDL_TRUE;
     }
     else {
-        return RAISE(PyExc_TypeError, "Invalid window argument");
+        return RAISE(pgExc_SDLError,
+                     "Window is not created from display module");
     }
+    self->renderer = SDL_GetRenderer(self->window->_win);
+    if (!self->renderer) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    self->target = NULL;
+    Py_INCREF(self);
+    return (PyObject *)self;
 }
 
 static PyObject *
@@ -321,36 +317,17 @@ renderer_set_viewport(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
-compose_custom_blend_mode(PyObject *self, PyObject *args, PyObject *kwargs)
+renderer_compose_custom_blend_mode(PyObject *self, PyObject *args,
+                                   PyObject *kwargs)
 {
-    PyObject *color_mode, *alpha_mode;
     int mode[6];
     SDL_BlendMode blend_mode;
     static char *keywords[] = {"color_mode", "alpha_mode", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", keywords, &color_mode,
-                                     &alpha_mode)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "(iii)(iii)", keywords,
+                                     &mode[0], &mode[1], &mode[2], &mode[3],
+                                     &mode[4], &mode[5])) {
         return NULL;
     }
-    if (!PySequence_Check(color_mode))
-        return RAISE(PyExc_TypeError, "color_mode has to be sequence");
-    if (!PySequence_Check(alpha_mode))
-        return RAISE(PyExc_TypeError, "alpha_mode has to be sequence");
-    if (PySequence_Size(color_mode) != 3)
-        return RAISE(PyExc_TypeError, "color_mode has to have 3 elements");
-    if (PySequence_Size(alpha_mode) != 3)
-        return RAISE(PyExc_TypeError, "alpha_mode has to have 3 elements");
-    if (!pg_IntFromObjIndex(color_mode, 0, &mode[0]))
-        return RAISE(PyExc_TypeError, "source color factor must be int");
-    if (!pg_IntFromObjIndex(color_mode, 1, &mode[1]))
-        return RAISE(PyExc_TypeError, "dest color factor must be int");
-    if (!pg_IntFromObjIndex(color_mode, 2, &mode[2]))
-        return RAISE(PyExc_TypeError, "color operation must be int");
-    if (!pg_IntFromObjIndex(alpha_mode, 0, &mode[3]))
-        return RAISE(PyExc_TypeError, "source alpha factor must be int");
-    if (!pg_IntFromObjIndex(alpha_mode, 1, &mode[4]))
-        return RAISE(PyExc_TypeError, "dest alpha factor must be int");
-    if (!pg_IntFromObjIndex(alpha_mode, 2, &mode[5]))
-        return RAISE(PyExc_TypeError, "alpha operation must be int");
     blend_mode = SDL_ComposeCustomBlendMode(mode[0], mode[1], mode[2], mode[3],
                                             mode[4], mode[5]);
     return PyLong_FromLong((long)blend_mode);
@@ -429,20 +406,9 @@ renderer_blit(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     else if (pgImage_Check(sourceobj)) {
         image_renderer_draw((pgImageObject *)sourceobj, areaobj, destobj);
     }
-    else if (PyObject_HasAttrString(sourceobj, "draw")) {
-        PyObject *draw_method = PyObject_GetAttrString(sourceobj, "draw");
-        if (draw_method && PyCallable_Check(draw_method)) {
-            PyObject_CallMethodObjArgs(sourceobj, PyUnicode_FromString("draw"),
-                                       areaobj, destobj, NULL);
-            Py_DECREF(draw_method);
-        }
-        else {
-            return RAISE(PyExc_AttributeError, "source.draw is not callable");
-        }
-    }
     else {
-        return RAISE(PyExc_AttributeError,
-                     "source object doesn't have draw method");
+        PyObject_CallFunctionObjArgs(PyObject_GetAttrString(sourceobj, "draw"),
+                                     areaobj, destobj, NULL);
     }
 
     if (Py_IsNone(destobj)) {
@@ -577,9 +543,9 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 
     char *keywords[] = {"window", "index",          "accelerated",
                         "vsync",  "target_texture", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|iipp", keywords, &window,
-                                     &index, &accelerated, &vsync,
-                                     &target_texture)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|iipp", keywords,
+                                     &pgWindow_Type, &window, &index,
+                                     &accelerated, &vsync, &target_texture)) {
         return -1;
     }
     if (accelerated >= 0) {
@@ -653,10 +619,11 @@ static PyMethodDef renderer_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT},
     {"get_viewport", (PyCFunction)renderer_get_viewport, METH_NOARGS,
      DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT},
-    {"compose_custom_blend_mode", (PyCFunction)compose_custom_blend_mode,
+    {"compose_custom_blend_mode",
+     (PyCFunction)renderer_compose_custom_blend_mode,
      METH_VARARGS | METH_KEYWORDS | METH_CLASS,
      DOC_SDL2_VIDEO_RENDERER_COMPOSECUSTOMBLENDMODE},
-    {"from_window", (PyCFunction)from_window,
+    {"from_window", (PyCFunction)renderer_from_window,
      METH_CLASS | METH_VARARGS | METH_KEYWORDS,
      DOC_SDL2_VIDEO_GETGRABBEDWINDOW},
     {"to_surface", (PyCFunction)renderer_to_surface,
