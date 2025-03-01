@@ -52,7 +52,7 @@ def load_image(file):
         surface = pygame.image.load(file)
     except pygame.error:
         raise SystemExit(f'Could not load image "{file}" {pygame.get_error()}')
-    return surface.convert()
+    return surface.convert_alpha()
 
 
 def load_sound(file):
@@ -253,7 +253,7 @@ def main():
     img = load_image("explosion1.gif")
     Explosion.images = [img, pygame.transform.flip(img, True, True)]
     Alien.images = [load_image(im) for im in ("alien1.gif", "alien2.gif", "alien3.gif")]
-    Bomb.images = [load_image("bomb.gif")]
+    Bomb.images = [load_image("bomb.gif")]  # 1170->218
     Shot.images = [load_image("shot.gif")]
 
     # decorate the game window
