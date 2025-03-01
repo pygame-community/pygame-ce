@@ -45,6 +45,7 @@ class Texture:
         self,
         renderer: Renderer,
         size: Iterable[int],
+        depth: int = 0,
         static: bool = False,
         streaming: bool = False,
         target: bool = False,
