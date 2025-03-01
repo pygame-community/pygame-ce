@@ -15,7 +15,7 @@ __all__ = [
 from abc import abstractmethod
 from collections.abc import Callable
 from os import PathLike as _PathProtocol
-from typing import IO, Union, TypeVar, Protocol, Optional
+from typing import IO, Union, TypeVar, Protocol
 
 from pygame.color import Color
 from pygame.rect import Rect, FRect
@@ -63,13 +63,6 @@ RectLike = Union[
 ]
 
 
-class DrawableClass(Protocol):
-    # Object that has the draw method that accepts area and dest arguments
-    def draw(
-        self, area: Optional[RectLike] = None, dest: Optional[RectLike] = None
-    ): ...
-
-
 # cleanup namespace
 del (
     abstractmethod,
@@ -81,5 +74,4 @@ del (
     Union,
     TypeVar,
     Protocol,
-    Optional,
 )

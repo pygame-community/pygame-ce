@@ -30,6 +30,11 @@ static PyTypeObject pgImage_Type;
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1); \
     }
 
+#define PARSE_POINT(obj, x, y, name)                               \
+    if (!pg_TwoFloatsFromObj(obj, &x, &y)) {                       \
+        return RAISE(PyExc_TypeError, "invalid" #name "argument"); \
+    }
+
 static void
 texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest);
 
@@ -74,9 +79,7 @@ renderer_draw_point(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &point)) {
         return NULL;
     }
-    if (!pg_TwoFloatsFromObj(point, &pos.x, &pos.y)) {
-        return RAISE(PyExc_TypeError, "invalid point");
-    }
+    PARSE_POINT(point, pos.x, pos.y, "")
     RENDERER_ERROR_CHECK(SDL_RenderDrawPointF(self->renderer, pos.x, pos.y))
     Py_RETURN_NONE;
 }
@@ -91,12 +94,8 @@ renderer_draw_line(pgRendererObject *self, PyObject *args, PyObject *kwargs)
                                      &end)) {
         return NULL;
     }
-    if (!pg_TwoFloatsFromObj(start, &start_pos.x, &start_pos.y)) {
-        return RAISE(PyExc_TypeError, "invalid p1 argument");
-    }
-    if (!pg_TwoFloatsFromObj(end, &end_pos.x, &end_pos.y)) {
-        return RAISE(PyExc_TypeError, "invalid p2 argument");
-    }
+    PARSE_POINT(start, start_pos.x, start_pos.y, " p1 ")
+    PARSE_POINT(end, end_pos.x, end_pos.y, " p2 ")
     RENDERER_ERROR_CHECK(SDL_RenderDrawLineF(
         self->renderer, start_pos.x, start_pos.y, end_pos.x, end_pos.y))
     Py_RETURN_NONE;
@@ -145,15 +144,9 @@ renderer_draw_triangle(pgRendererObject *self, PyObject *args,
                                      &p3)) {
         return NULL;
     }
-    if (!pg_TwoFloatsFromObj(p1, &points[0].x, &points[0].y)) {
-        return RAISE(PyExc_TypeError, "invalid p1 argument");
-    }
-    if (!pg_TwoFloatsFromObj(p2, &points[1].x, &points[1].y)) {
-        return RAISE(PyExc_TypeError, "invalid p2 argument");
-    }
-    if (!pg_TwoFloatsFromObj(p3, &points[2].x, &points[2].y)) {
-        return RAISE(PyExc_TypeError, "invalid p3 argument");
-    }
+    PARSE_POINT(p1, points[0].x, points[0].y, " p1 ")
+    PARSE_POINT(p2, points[1].x, points[1].y, " p2 ")
+    PARSE_POINT(p3, points[2].x, points[2].y, " p3 ")
     points[3] = points[0];
     RENDERER_ERROR_CHECK(SDL_RenderDrawLinesF(self->renderer, points, 4))
     Py_RETURN_NONE;
@@ -166,29 +159,19 @@ renderer_fill_triangle(pgRendererObject *self, PyObject *args,
 #if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1, *p2, *p3;
     SDL_Vertex vertices[3];
-    SDL_Color color;
     static char *keywords[] = {"p1", "p2", "p3", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOO", keywords, &p1, &p2,
                                      &p3)) {
         return NULL;
     }
-    if (!pg_TwoFloatsFromObj(p1, &vertices[0].position.x,
-                             &vertices[0].position.y)) {
-        return RAISE(PyExc_TypeError, "invalid p1 argument");
-    }
-    if (!pg_TwoFloatsFromObj(p2, &vertices[1].position.x,
-                             &vertices[1].position.y)) {
-        return RAISE(PyExc_TypeError, "invalid p2 argument");
-    }
-    if (!pg_TwoFloatsFromObj(p3, &vertices[2].position.x,
-                             &vertices[2].position.y)) {
-        return RAISE(PyExc_TypeError, "invalid p3 argument");
-    }
-    RENDERER_ERROR_CHECK(SDL_GetRenderDrawColor(self->renderer, &color.r,
-                                                &color.g, &color.b, &color.a))
-    vertices[0].color = color;
-    vertices[1].color = color;
-    vertices[2].color = color;
+    PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, " p1 ")
+    PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, " p2 ")
+    PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, " p3 ")
+    RENDERER_ERROR_CHECK(SDL_GetRenderDrawColor(
+        self->renderer, &vertices[0].color.r, &vertices[0].color.g,
+        &vertices[0].color.b, &vertices[0].color.a))
+    vertices[1].color = vertices[0].color;
+    vertices[2].color = vertices[0].color;
     RENDERER_ERROR_CHECK(
         SDL_RenderGeometry(self->renderer, NULL, vertices, 3, NULL, 0))
     Py_RETURN_NONE;
@@ -208,18 +191,10 @@ renderer_draw_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
                                      &p3, &p4)) {
         return NULL;
     }
-    if (!pg_TwoFloatsFromObj(p1, &points[0].x, &points[0].y)) {
-        return RAISE(PyExc_TypeError, "invalid p1 argument");
-    }
-    if (!pg_TwoFloatsFromObj(p2, &points[1].x, &points[1].y)) {
-        return RAISE(PyExc_TypeError, "invalid p2 argument");
-    }
-    if (!pg_TwoFloatsFromObj(p3, &points[2].x, &points[2].y)) {
-        return RAISE(PyExc_TypeError, "invalid p3 argument");
-    }
-    if (!pg_TwoFloatsFromObj(p4, &points[3].x, &points[3].y)) {
-        return RAISE(PyExc_TypeError, "invalid p4 argument");
-    }
+    PARSE_POINT(p1, points[0].x, points[0].y, " p1 ")
+    PARSE_POINT(p2, points[1].x, points[1].y, " p2 ")
+    PARSE_POINT(p3, points[2].x, points[2].y, " p3 ")
+    PARSE_POINT(p4, points[3].x, points[3].y, " p4 ")
     points[4] = points[0];
     RENDERER_ERROR_CHECK(SDL_RenderDrawLinesF(self->renderer, points, 5))
     Py_RETURN_NONE;
@@ -231,39 +206,25 @@ renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 #if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1, *p2, *p3, *p4;
     SDL_Vertex vertices[6];
-    SDL_Color color;
     static char *keywords[] = {"p1", "p2", "p3", "p4", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOOO", keywords, &p1, &p2,
                                      &p3, &p4)) {
         return NULL;
     }
-    if (!pg_TwoFloatsFromObj(p1, &vertices[0].position.x,
-                             &vertices[0].position.y)) {
-        return RAISE(PyExc_TypeError, "invalid p1 argument");
-    }
-    if (!pg_TwoFloatsFromObj(p2, &vertices[1].position.x,
-                             &vertices[1].position.y)) {
-        return RAISE(PyExc_TypeError, "invalid p2 argument");
-    }
-    if (!pg_TwoFloatsFromObj(p3, &vertices[2].position.x,
-                             &vertices[2].position.y)) {
-        return RAISE(PyExc_TypeError, "invalid p3 argument");
-    }
-    if (!pg_TwoFloatsFromObj(p4, &vertices[4].position.x,
-                             &vertices[4].position.y)) {
-        return RAISE(PyExc_TypeError, "invalid p4 argument");
-    }
-    RENDERER_ERROR_CHECK(SDL_GetRenderDrawColor(self->renderer, &color.r,
-                                                &color.g, &color.b, &color.a))
-
+    PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, " p1 ")
+    PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, " p2 ")
+    PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, " p3 ")
     vertices[3].position = vertices[2].position;
+    PARSE_POINT(p4, vertices[4].position.x, vertices[4].position.y, " p4 ")
     vertices[5].position = vertices[0].position;
-    vertices[0].color = color;
-    vertices[1].color = color;
-    vertices[2].color = color;
-    vertices[3].color = color;
-    vertices[4].color = color;
-    vertices[5].color = color;
+    RENDERER_ERROR_CHECK(SDL_GetRenderDrawColor(
+        self->renderer, &vertices[0].color.r, &vertices[0].color.g,
+        &vertices[0].color.b, &vertices[0].color.a))
+    vertices[1].color = vertices[0].color;
+    vertices[2].color = vertices[0].color;
+    vertices[3].color = vertices[0].color;
+    vertices[4].color = vertices[0].color;
+    vertices[5].color = vertices[0].color;
     RENDERER_ERROR_CHECK(
         SDL_RenderGeometry(self->renderer, NULL, vertices, 6, NULL, 0))
     Py_RETURN_NONE;
@@ -298,10 +259,10 @@ renderer_get_viewport(pgRendererObject *self, PyObject *_null)
 static PyObject *
 renderer_set_viewport(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *rectobj = Py_None;
+    PyObject *rectobj;
     SDL_Rect *rect = NULL, temp;
     static char *keywords[] = {"area", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", keywords, &rectobj)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &rectobj)) {
         return NULL;
     }
     if (rectobj == Py_None) {
