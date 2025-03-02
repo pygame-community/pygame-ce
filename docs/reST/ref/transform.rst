@@ -361,7 +361,7 @@ Instead, always begin with the original image and scale to the desired size.)
    An optional destination surface can be passed which is faster than creating a new Surface. This destination
    surface must have the same dimensions (width, height) and same format as the source surface.
 
-   .. versionadded:: 2.5.2
+   .. versionadded:: 2.5.4
 
    .. ## pygame.transform.pixelate ##
 
