@@ -152,8 +152,6 @@ time = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 joystick = py.extension_module(
     'joystick',
     'joystick.c',
@@ -162,7 +160,6 @@ joystick = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 draw = py.extension_module(
     'draw',
