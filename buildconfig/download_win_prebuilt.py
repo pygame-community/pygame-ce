@@ -98,7 +98,7 @@ def get_urls(x86=True, x64=True):
         '2d18b9a4fc2ec0eee80de2a946b088d4e6efd0ee'
         ],
         [
-        'https://github.com/libsdl-org/SDL_ttf/releases/download/preview-3.2.0/SDL3_ttf-devel-3.2.0-VC.zip',
+        'https://github.com/libsdl-org/SDL_ttf/releases/download/release-3.2.0/SDL3_ttf-devel-3.2.0-VC.zip',
         '2883df767c9b8c910c10108242542ef36054a267'
         ],
         [
