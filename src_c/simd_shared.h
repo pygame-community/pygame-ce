@@ -10,8 +10,6 @@ int
 pg_neon_at_runtime_but_uncompiled();
 int
 pg_avx2_at_runtime_but_uncompiled();
-int
-pg_has_avx2();
 
 #if !defined(PG_ENABLE_ARM_NEON) && defined(__aarch64__)
 // arm64 has neon optimisations enabled by default, even when fpu=neon is not
@@ -33,31 +31,27 @@ pg_has_avx2();
 #endif
 #endif
 
-/* This defines PG_ENABLE_SSE_NEON as True if either SSE or NEON is available
- * at compile time. Since we do compile time translation of SSE2->NEON, they
- * have the same code paths, so this reduces code duplication of those paths.
- */
-#if defined(__SSE2__)
-#define PG_ENABLE_SSE_NEON 1
-#elif PG_ENABLE_ARM_NEON
-#define PG_ENABLE_SSE_NEON 1
-#else
-#define PG_ENABLE_SSE_NEON 0
-#endif
+#if defined(__EMSCRIPTEN__) || SDL_BYTEORDER != SDL_LIL_ENDIAN
+#define PG_SIMD_DISABLED 1
+#endif /* PG_SIMD_DISABLED */
 
-/* This returns True if either SSE2 or NEON is present at runtime.
- * Relevant because they use the same codepaths. Only the relevant runtime
- * SDL cpu feature check is compiled in.*/
-int
-pg_HasSSE_NEON()
-{
-#if defined(__SSE2__)
-    return SDL_HasSSE2();
+#ifndef PG_SIMD_DISABLED
+
+#ifdef __SSE2__
+#define PG_HAS_SSE2_OR_NEON SDL_HasSSE2
 #elif PG_ENABLE_ARM_NEON
-    return SDL_HasNEON();
-#else
-    return 0;
-#endif
-}
+// sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
+#include "include/sse2neon.h"
+#define PG_HAS_SSE2_OR_NEON SDL_HasNEON
+#endif /* PG_ENABLE_ARM_NEON */
+
+#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+    !defined(SDL_DISABLE_IMMINTRIN_H)
+#include <immintrin.h>
+#define PG_HAS_AVX2 SDL_HasAVX2
+#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+        * !defined(SDL_DISABLE_IMMINTRIN_H) */
+
+#endif /* PG_SIMD_DISABLED */
 
 #endif  // SIMD_SHARED_H

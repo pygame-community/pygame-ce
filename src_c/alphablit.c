@@ -24,7 +24,6 @@
 
 #define NO_PYGAME_C_API
 #include "_surface.h"
-#include "simd_shared.h"
 #include "simd_blitters.h"
 
 static void
@@ -57,6 +56,12 @@ blit_blend_rgba_max(SDL_BlitInfo *info);
 
 static void
 blit_blend_premultiplied(SDL_BlitInfo *info);
+void
+premul_surf_color_by_alpha_non_simd(SDL_Surface *src,
+                                    PG_PixelFormat *src_format,
+                                    SDL_Palette *src_palette, SDL_Surface *dst,
+                                    PG_PixelFormat *dst_format,
+                                    SDL_Palette *dst_palette);
 
 static int
 SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
@@ -164,8 +169,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case 0: {
                     if (info.src_blend != SDL_BLENDMODE_NONE &&
                         info.src->Amask) {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
                         if (PG_SURF_BytesPerPixel(src) == 4 &&
                             PG_SURF_BytesPerPixel(dst) == 4 &&
                             info.src->Rmask == info.dst->Rmask &&
@@ -174,7 +178,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                             /* If our source and destination are the same ARGB
                                32bit format we can use SSE2/NEON/AVX2 to speed
                                up the blend */
-                            if (pg_has_avx2() && (src != dst)) {
+#ifdef PG_HAS_AVX2
+                            if (PG_HAS_AVX2() && (src != dst)) {
                                 if (info.src_blanket_alpha != 255) {
                                     alphablit_alpha_avx2_argb_surf_alpha(
                                         &info);
@@ -192,8 +197,9 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                                 }
                                 break;
                             }
-#if PG_ENABLE_SSE_NEON
-                            if ((pg_HasSSE_NEON()) && (src != dst)) {
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
+                            if ((PG_HAS_SSE2_OR_NEON()) && (src != dst)) {
                                 if (info.src_blanket_alpha != 255) {
                                     alphablit_alpha_sse2_argb_surf_alpha(
                                         &info);
@@ -211,10 +217,9 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                                 }
                                 break;
                             }
-#endif /* PG_ENABLE_SSE_NEON */
+#endif /* PG_HAS_SSE2_OR_NEON */
                         }
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_SIMD_DISABLED */
                         alphablit_alpha(&info);
                     }
                     else if (info.src_has_colorkey) {
@@ -226,8 +231,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                     break;
                 }
                 case PYGAME_BLEND_ADD: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -235,11 +240,12 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         !(info.src->Amask != 0 && info.dst->Amask != 0 &&
                           info.src->Amask != info.dst->Amask) &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_rgb_add_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -247,19 +253,18 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         !(info.src->Amask != 0 && info.dst->Amask != 0 &&
                           info.src->Amask != info.dst->Amask) &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_rgb_add_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
                     blit_blend_add(&info);
                     break;
                 }
                 case PYGAME_BLEND_SUB: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -267,11 +272,12 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         !(info.src->Amask != 0 && info.dst->Amask != 0 &&
                           info.src->Amask != info.dst->Amask) &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_rgb_sub_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -279,19 +285,18 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         !(info.src->Amask != 0 && info.dst->Amask != 0 &&
                           info.src->Amask != info.dst->Amask) &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_rgb_sub_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
                     blit_blend_sub(&info);
                     break;
                 }
                 case PYGAME_BLEND_MULT: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -299,11 +304,12 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         !(info.src->Amask != 0 && info.dst->Amask != 0 &&
                           info.src->Amask != info.dst->Amask) &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_rgb_mul_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -311,19 +317,18 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         !(info.src->Amask != 0 && info.dst->Amask != 0 &&
                           info.src->Amask != info.dst->Amask) &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_rgb_mul_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
                     blit_blend_mul(&info);
                     break;
                 }
                 case PYGAME_BLEND_MIN: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -331,11 +336,12 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         !(info.src->Amask != 0 && info.dst->Amask != 0 &&
                           info.src->Amask != info.dst->Amask) &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_rgb_min_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -343,19 +349,18 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         !(info.src->Amask != 0 && info.dst->Amask != 0 &&
                           info.src->Amask != info.dst->Amask) &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_rgb_min_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
                     blit_blend_min(&info);
                     break;
                 }
                 case PYGAME_BLEND_MAX: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -363,11 +368,12 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         !(info.src->Amask != 0 && info.dst->Amask != 0 &&
                           info.src->Amask != info.dst->Amask) &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_rgb_max_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -375,181 +381,181 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         !(info.src->Amask != 0 && info.dst->Amask != 0 &&
                           info.src->Amask != info.dst->Amask) &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_rgb_max_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
                     blit_blend_max(&info);
                     break;
                 }
 
                 case PYGAME_BLEND_RGBA_ADD: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_rgba_add_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_rgba_add_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
                     blit_blend_rgba_add(&info);
                     break;
                 }
                 case PYGAME_BLEND_RGBA_SUB: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_rgba_sub_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_rgba_sub_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
                     blit_blend_rgba_sub(&info);
                     break;
                 }
                 case PYGAME_BLEND_RGBA_MULT: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_rgba_mul_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_rgba_mul_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
                     blit_blend_rgba_mul(&info);
                     break;
                 }
                 case PYGAME_BLEND_RGBA_MIN: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_rgba_min_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_rgba_min_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
                     blit_blend_rgba_min(&info);
                     break;
                 }
                 case PYGAME_BLEND_RGBA_MAX: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_rgba_max_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_rgba_max_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
                     blit_blend_rgba_max(&info);
                     break;
                 }
                 case PYGAME_BLEND_PREMULTIPLIED: {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#ifndef PG_SIMD_DISABLED
+#ifdef PG_HAS_AVX2
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
                         info.src->Gmask == info.dst->Gmask &&
                         info.src->Bmask == info.dst->Bmask &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_has_avx2() && (src != dst)) {
+                        PG_HAS_AVX2() && (src != dst)) {
                         blit_blend_premultiplied_avx2(&info);
                         break;
                     }
-#if PG_ENABLE_SSE_NEON
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
                         info.src->Rmask == info.dst->Rmask &&
@@ -557,13 +563,12 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         info.src->Bmask == info.dst->Bmask &&
                         info.src->Amask == 0xFF000000 &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
-                        pg_HasSSE_NEON() && (src != dst)) {
+                        PG_HAS_SSE2_OR_NEON() && (src != dst)) {
                         blit_blend_premultiplied_sse2(&info);
                         break;
                     }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
 
                     blit_blend_premultiplied(&info);
                     break;
@@ -2958,26 +2963,20 @@ premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst)
     if (src_blend == SDL_BLENDMODE_NONE && !(src_format->Amask != 0))
         return -1;
         // since we know dst is a copy of src we can simplify the normal checks
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-    if ((PG_SURF_BytesPerPixel(src) == 4) && pg_has_avx2()) {
+#ifndef PG_SIMD_DISABLED
+#if PG_HAS_AVX2
+    if ((PG_SURF_BytesPerPixel(src) == 4) && PG_HAS_AVX2()) {
         premul_surf_color_by_alpha_avx2(src, dst);
         return 0;
     }
-#if defined(__SSE2__)
-    if ((PG_SURF_BytesPerPixel(src) == 4) && SDL_HasSSE2()) {
+#endif /* PG_HAS_AVX2 */
+#ifdef PG_HAS_SSE2_OR_NEON
+    if ((PG_SURF_BytesPerPixel(src) == 4) && PG_HAS_SSE2_OR_NEON()) {
         premul_surf_color_by_alpha_sse2(src, dst);
         return 0;
     }
-#endif /* __SSE2__*/
-#if PG_ENABLE_ARM_NEON
-    if ((PG_SURF_BytesPerPixel(src) == 4) && SDL_HasNEON()) {
-        premul_surf_color_by_alpha_sse2(src, dst);
-        return 0;
-    }
-#endif /* PG_ENABLE_ARM_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
+#endif /* PG_HAS_SSE2_OR_NEON */
+#endif /* PG_SIMD_DISABLED */
     premul_surf_color_by_alpha_non_simd(src, src_format, src_palette, dst,
                                         dst_format, dst_palette);
     return 0;

@@ -1,24 +1,5 @@
 #include "simd_blitters.h"
 
-#if PG_ENABLE_ARM_NEON
-// sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
-#include "include/sse2neon.h"
-#endif /* PG_ENABLE_ARM_NEON */
-
-/* See if we are compiled 64 bit on GCC or MSVC */
-#if _WIN32 || _WIN64
-#if _WIN64
-#define ENV64BIT
-#endif
-#endif
-
-// Check GCC
-#if __GNUC__
-#if __x86_64__ || __ppc64__ || __aarch64__
-#define ENV64BIT
-#endif
-#endif
-
 /* This returns 1 when sse2 is available at runtime but support for it isn't
  * compiled in, 0 in all other cases */
 int
@@ -139,7 +120,7 @@ pg_neon_at_runtime_but_uncompiled()
         dstp = (Uint32 *)dstp128 + dstskip;               \
     }
 
-#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+#ifdef PG_HAS_SSE2_OR_NEON
 void
 alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
 {
@@ -959,4 +940,4 @@ blit_blend_rgba_max_sse2(SDL_BlitInfo *info)
     SETUP_SSE2_BLITTER
     RUN_SSE2_BLITTER({ mm128_dst = _mm_max_epu8(mm128_dst, mm128_src); })
 }
-#endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
+#endif /* PG_HAS_SSE2_OR_NEON */
