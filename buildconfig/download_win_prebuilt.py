@@ -82,8 +82,8 @@ def get_urls(x86=True, x64=True):
         '08737e7e813443e47b663be4d91f8a4d8de6916b',
         ],
         [
-        'https://github.com/libsdl-org/SDL/releases/download/release-3.2.4/SDL3-devel-3.2.4-VC.zip',
-        '3576077236c7a66bf98d4b3d180aa4743ad5ce2e'
+        'https://github.com/libsdl-org/SDL/releases/download/release-3.2.6/SDL3-devel-3.2.6-VC.zip',
+        'da39a3ee5e6b4b0d3255bfef95601890afd80709'
         ],
         [
         'https://github.com/pygame-community/SDL_image/releases/download/2.8.4-pgce/SDL2_image-devel-2.8.4-VCpgce.zip',
@@ -280,12 +280,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3-devel-3.2.4-VC/SDL3-3.2.4'
+                'SDL3-devel-3.2.6-VC/SDL3-3.2.6'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3-3.2.4'
+                'SDL3-3.2.6'
             )
         )
 
