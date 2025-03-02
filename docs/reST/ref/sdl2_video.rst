@@ -7,10 +7,10 @@
    :synopsis: Experimental pygame module for porting new SDL video systems
 
 .. warning::
-	This module isn't ready for prime time yet, it's still in development.
-        These docs are primarily meant to help the pygame developers and
-        super-early adopters who are in communication with the developers.
-        This API will change.
+   This module isn't ready for prime time yet, it's still in development.
+   These docs are primarily meant to help the pygame developers and
+   super-early adopters who are in communication with the developers.
+   This API will change.
 
 | :sl:`Experimental pygame module for porting new SDL video systems`
 
