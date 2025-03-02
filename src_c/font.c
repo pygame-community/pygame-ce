@@ -909,62 +909,54 @@ font_metrics(PyObject *self, PyObject *textobj)
 
     TTF_Font *font = PyFont_AsFont(self);
     PyObject *list;
-    Py_ssize_t length;
     Py_ssize_t i;
     int minx;
     int maxx;
     int miny;
     int maxy;
     int advance;
-    PyObject *obj;
     PyObject *listitem;
-    Uint16 *buffer;
-    Uint16 ch;
-    PyObject *temp;
-    int surrogate;
+    Py_UCS4 *buffer;
+    Py_UCS4 ch;
     if (!PgFont_GenerationCheck(self)) {
         return RAISE_FONT_QUIT_ERROR();
     }
 
     if (PyUnicode_Check(textobj)) {
-        obj = textobj;
-        Py_INCREF(obj);
+        Py_INCREF(textobj);
     }
     else if (PyBytes_Check(textobj)) {
-        obj = PyUnicode_FromEncodedObject(textobj, "UTF-8", NULL);
-        if (!obj) {
+        textobj = PyUnicode_FromEncodedObject(textobj, "UTF-8", NULL);
+        if (!textobj) {
             return NULL;
         }
     }
     else {
         return RAISE_TEXT_TYPE_ERROR();
     }
-    temp = PyUnicode_AsUTF16String(obj);
-    Py_DECREF(obj);
-    if (!temp)
+    buffer = PyUnicode_AsUCS4Copy(textobj);
+    Py_DECREF(textobj);
+    if (!buffer)
         return NULL;
-    obj = temp;
 
     list = PyList_New(0);
     if (!list) {
-        Py_DECREF(obj);
+        PyMem_Free(buffer);
         return NULL;
     }
-    buffer = (Uint16 *)PyBytes_AS_STRING(obj);
-    length = PyBytes_GET_SIZE(obj) / sizeof(Uint16);
-    for (i = 1 /* skip BOM */; i < length; i++) {
-        ch = buffer[i];
-        surrogate = Py_UNICODE_IS_SURROGATE(ch);
+    for (i = 0; (ch = buffer[i]); i++) {
         /* TODO:
          * TTF_GlyphMetrics() seems to return a value for any character,
          * using the default invalid character, if the char is not found.
          */
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
-        if (!surrogate && /* conditional and */
-            TTF_GetGlyphMetrics(font, (Uint16)ch, &minx, &maxx, &miny, &maxy,
+        if (TTF_GetGlyphMetrics(font, ch, &minx, &maxx, &miny, &maxy,
+                                &advance))
+#elif SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+        if (!TTF_GlyphMetrics32(font, ch, &minx, &maxx, &miny, &maxy,
                                 &advance))
 #else
-        if (!surrogate && /* conditional and */
+        if (ch <= 0xFFFF && /* conditional and */
             !TTF_GlyphMetrics(font, (Uint16)ch, &minx, &maxx, &miny, &maxy,
                               &advance))
 #endif
@@ -973,26 +965,24 @@ font_metrics(PyObject *self, PyObject *textobj)
                 Py_BuildValue("(iiiii)", minx, maxx, miny, maxy, advance);
             if (!listitem) {
                 Py_DECREF(list);
-                Py_DECREF(obj);
+                PyMem_Free(buffer);
                 return NULL;
             }
         }
         else {
-            /* Not UCS-2 or no matching metrics. */
+            /* Not UCS-2 (and old SDL) or no matching metrics. */
             Py_INCREF(Py_None);
             listitem = Py_None;
-            if (surrogate)
-                i++;
         }
         if (0 != PyList_Append(list, listitem)) {
             Py_DECREF(list);
             Py_DECREF(listitem);
-            Py_DECREF(obj);
+            PyMem_Free(buffer);
             return NULL; /* Exception already set. */
         }
         Py_DECREF(listitem);
     }
-    Py_DECREF(obj);
+    PyMem_Free(buffer);
     return list;
 }
 

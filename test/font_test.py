@@ -416,7 +416,13 @@ class FontTypeTest(unittest.TestCase):
         bm = f.metrics(u)
 
         self.assertEqual(len(bm), 1)
-        self.assertIsNone(bm[0])
+        if (
+            pygame.font.get_sdl_ttf_version() >= (2, 0, 18)
+            and pygame_font.__name__ != "pygame.ftfont"
+        ):
+            self.assertIsNotNone(bm[0])
+        else:
+            self.assertIsNone(bm[0])
 
         return  # unfinished
         # The documentation is useless here. How large a list?

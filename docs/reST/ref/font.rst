@@ -487,6 +487,9 @@ solves no longer exists, it will likely be removed in the future.
       advance), ...]. None is entered in the list for each unrecognized
       character.
 
+      .. versionchanged:: 2.5.4 This function now supports all unicode codepoints.
+         Previously, only a subset that was representable in UCS-2 was supported.
+
       .. ## Font.metrics ##
 
    .. method:: get_italic

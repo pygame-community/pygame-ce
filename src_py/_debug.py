@@ -76,6 +76,11 @@ def _get_platform_info():
     )
 
     ret += f"Python:\t\t\t{platform.python_implementation()} {sys.version}\n"
+    ret += (
+        f"GIL Enabled:\t\t{sys._is_gil_enabled()}\n"
+        if hasattr(sys, "_is_gil_enabled")
+        else "GIL Enabled:\t\tTrue\n"
+    )
     ret += f"pygame version:\t\t{ver}\n"
     return ret
 
