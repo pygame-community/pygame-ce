@@ -179,6 +179,7 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 #define PG_CreateSurfaceFrom(width, height, format, pixels, pitch) \
     SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, 0, pitch, format)
 #define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
+
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
 

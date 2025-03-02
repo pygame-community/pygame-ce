@@ -320,8 +320,60 @@ typedef struct {
     PyObject *weakreflist;
     PyObject *locklist;
     PyObject *dependency;
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+    PyMutex mutex;
+    unsigned int num_locks;
+    uint64_t locking_thread_id;
+#endif
 } pgSurfaceObject;
 #define pgSurface_AsSurface(x) (((pgSurfaceObject *)x)->surf)
+
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+#define LOCK_pgSurfaceObject(pgSurfacePtr)                          \
+    {                                                               \
+        pgSurfaceObject *surfObj = (pgSurfaceObject *)pgSurfacePtr; \
+        uint64_t thread_id = PyThreadState_Get()->id;               \
+        if (surfObj->num_locks) {                                   \
+            if (thread_id == surfObj->locking_thread_id) {          \
+                ++(surfObj->num_locks);                             \
+            }                                                       \
+            else {                                                  \
+                PyMutex_Lock(&surfObj->mutex);                      \
+                surfObj->num_locks = 1U;                            \
+                surfObj->locking_thread_id = thread_id;             \
+            }                                                       \
+        }                                                           \
+        else {                                                      \
+            PyMutex_Lock(&surfObj->mutex);                          \
+            surfObj->num_locks = 1U;                                \
+            surfObj->locking_thread_id = thread_id;                 \
+        }                                                           \
+    }
+#else
+#define LOCK_pgSurfaceObject(pgSurfacePtr)
+#endif
+
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+#define UNLOCK_pgSurfaceObject(pgSurfacePtr)                        \
+    {                                                               \
+        pgSurfaceObject *surfObj = (pgSurfaceObject *)pgSurfacePtr; \
+        uint64_t thread_id = PyThreadState_Get()->id;               \
+        if (surfObj->num_locks) {                                   \
+            if (thread_id == surfObj->locking_thread_id) {          \
+                if (surfObj->num_locks > 1U) {                      \
+                    --(surfObj->num_locks);                         \
+                }                                                   \
+                else {                                              \
+                    surfObj->locking_thread_id = 0U;                \
+                    surfObj->num_locks = 0U;                        \
+                    PyMutex_Unlock(&surfObj->mutex);                \
+                }                                                   \
+            }                                                       \
+        }                                                           \
+    }
+#else
+#define UNLOCK_pgSurfaceObject(pgSurfacePtr)
+#endif
 
 #ifndef PYGAMEAPI_SURFACE_INTERNAL
 #define pgSurface_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(surface, 0))
@@ -616,6 +668,18 @@ PYGAMEAPI_EXTERN_SLOTS(geometry);
             return RAISE(pgExc_SDLError, "Surface is not initialized"); \
         }                                                               \
     }
+
+#if Py_GIL_DISABLED
+#define DISABLE_GIL_SINGLE_INITIALIZATION(module, name)              \
+    if (PyUnstable_Module_SetGIL(module, Py_MOD_GIL_NOT_USED) < 0) { \
+        Py_DECREF(module);                                           \
+        return NULL;                                                 \
+    }                                                                \
+    printf("%s was compiled with GIL disabled\n", name);
+#else
+#define DISABLE_GIL_SINGLE_INITIALIZATION(module, name) \
+    printf("%s was compiled with GIL enabled\n", name);
+#endif
 
 static PG_INLINE PyObject *
 pg_tuple_couple_from_values_int(int val1, int val2)
