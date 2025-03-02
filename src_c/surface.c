@@ -53,10 +53,10 @@ typedef enum {
 } SurfViewKind;
 
 /* To avoid problems with non-const Py_buffer format field */
-static char FormatUint8[] = "B";
-static char FormatUint16[] = "=H";
-static char FormatUint24[] = "3x";
-static char FormatUint32[] = "=I";
+#define FormatUint8 "B"
+#define FormatUint16 "=H"
+#define FormatUint24 "3x"
+#define FormatUint32 "=I"
 
 typedef struct pg_bufferinternal_s {
     PyObject *consumer_ref; /* A weak reference to a bufferproxy object   */
