@@ -83,7 +83,7 @@ def get_urls(x86=True, x64=True):
         ],
         [
         'https://github.com/libsdl-org/SDL/releases/download/release-3.2.6/SDL3-devel-3.2.6-VC.zip',
-        'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+        'a36424427129f9ae133e59cfe070fc0b418d7fe0'
         ],
         [
         'https://github.com/pygame-community/SDL_image/releases/download/2.8.4-pgce/SDL2_image-devel-2.8.4-VCpgce.zip',
