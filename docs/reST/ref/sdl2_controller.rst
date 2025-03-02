@@ -19,11 +19,7 @@ always the leftmost button of the 4 buttons on the right.
 Controllers can generate the following events::
 
    CONTROLLERAXISMOTION, CONTROLLERBUTTONDOWN, CONTROLLERBUTTONUP,
-   CONTROLLERDEVICEREMAPPED, CONTROLLERDEVICEADDED, CONTROLLERDEVICEREMOVED
-
-Additionally if pygame is built with SDL 2.0.14 or higher the following events can also be generated
-(to get the version of sdl pygame is built with use :meth:`pygame.version.SDL`)::
-
+   CONTROLLERDEVICEREMAPPED, CONTROLLERDEVICEADDED, CONTROLLERDEVICEREMOVED,
    CONTROLLERTOUCHPADDOWN, CONTROLLERTOUCHPADMOTION, CONTROLLERTOUCHPADUP
 
 These events can be enabled/disabled by :meth:`pygame._sdl2.controller.set_eventstate`
@@ -274,7 +270,7 @@ events related to controllers.
       playing, then it will be overwritten.
 
       Returns True if the rumble was played successfully or False if the
-      controller does not support it or :meth:`pygame.version.SDL` is below 2.0.9.
+      controller does not support it.
 
       .. versionaddedold:: 2.0.2
 

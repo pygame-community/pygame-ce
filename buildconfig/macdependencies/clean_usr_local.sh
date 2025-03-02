@@ -15,6 +15,7 @@ ln -s /usr/bin/git /opt/homebrew/bin/git
 rm -rf /usr/local/lib/libtiff*
 rm -rf /usr/local/lib/libzstd*
 rm -rf /usr/local/lib/libwebp*
+rm -rf /usr/local/lib/libdeflate*
 rm -rf /usr/local/lib/libsndfile*
 rm -rf /usr/local/lib/glib*
 rm -rf /usr/local/lib/libglib*
@@ -27,6 +28,7 @@ rm -rf /usr/local/opt/freetype*
 
 rm -rf /usr/local/Cellar/libtiff /opt/homebrew/Cellar/libtiff
 rm -rf /usr/local/Cellar/libsndfile /opt/homebrew/Cellar/libsndfile
+rm -rf /usr/local/Cellar/libdeflate* /opt/homebrew/Cellar/libdeflate*
 rm -rf /usr/local/Cellar/glib /opt/homebrew/Cellar/glib
 rm -rf /usr/local/Cellar/brotli /opt/homebrew/Cellar/brotli
 rm -rf /usr/local/Cellar/pcre* /opt/homebrew/Cellar/pcre*

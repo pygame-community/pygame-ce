@@ -23,9 +23,12 @@
 #include <limits.h>
 #include <stdio.h>
 
-#include "SDL.h"
-
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
+#include <SDL.h>
 #include "SDL_syswm.h"
+#endif
 
 #include "pygame.h"
 

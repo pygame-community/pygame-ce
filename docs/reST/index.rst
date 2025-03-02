@@ -62,9 +62,6 @@ turn them to stable API in the future ^^.
 :doc:`ref/geometry`
   Pygame module for the Circle, Line, and Polygon objects.
 
-:doc:`ref/window`
-  Pygame object that handles a window.
-
 :doc:`ref/sdl2_controller`
   Pygame module to work with controllers.
 
@@ -243,6 +240,9 @@ Reference
 
 :doc:`ref/typing`
   Provide common typehints
+
+:doc:`ref/window`
+  Pygame object that handles a window.
 
 :doc:`pygame C API <c_api>`
   The C api shared amongst pygame extension modules.

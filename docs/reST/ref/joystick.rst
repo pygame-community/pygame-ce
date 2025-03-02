@@ -338,7 +338,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       playing, then it will be overwritten.
 
       Returns True if the rumble was played successfully or False if the
-      joystick does not support it or :meth:`pygame.version.SDL` is below 2.0.9.
+      joystick does not support it.
 
       .. versionaddedold:: 2.0.2
 

@@ -13,6 +13,13 @@ int
 pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
                             pgCircleBase *out);
 
+int
+pgLine_FromObject(PyObject *obj, pgLineBase *out);
+
+int
+pgLine_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
+                          pgLineBase *out);
+
 static inline int
 double_compare(double a, double b);
 

@@ -46,7 +46,15 @@
 
 #include "pgopengl.h"
 
+#ifdef PG_SDL3
+#include <SDL3_image/SDL_image.h>
+
+// SDL3_images uses SDL3 error reporting API
+#define IMG_GetError SDL_GetError
+#else
 #include <SDL_image.h>
+#endif
+
 #ifdef WIN32
 #define strcasecmp _stricmp
 #else
@@ -117,10 +125,18 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     SDL_UnlockMutex(_pg_img_mutex);
     */
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    surf = IMG_LoadTyped_IO(rw, 1, type);
+#else
     surf = IMG_LoadTyped_RW(rw, 1, type);
+#endif
     Py_END_ALLOW_THREADS;
-#else  /* ~WITH_THREAD */
+#else /* ~WITH_THREAD */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    surf = IMG_LoadTyped_IO(rw, 1, type);
+#else
     surf = IMG_LoadTyped_RW(rw, 1, type);
+#endif
 #endif /* ~WITH_THREAD */
 
     if (ext) {
@@ -166,7 +182,11 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    surf = IMG_LoadSizedSVG_IO(rw, width, height);
+#else
     surf = IMG_LoadSizedSVG_RW(rw, width, height);
+#endif
     SDL_RWclose(rw);
     Py_END_ALLOW_THREADS;
     if (surf == NULL) {
@@ -231,7 +251,11 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         char *ext = iext_find_extension(name);
         if (!strcasecmp(ext, "jpeg") || !strcasecmp(ext, "jpg")) {
             if (rw != NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = IMG_SaveJPG_IO(surf, rw, 0, JPEG_QUALITY);
+#else
                 result = IMG_SaveJPG_RW(surf, rw, 0, JPEG_QUALITY);
+#endif
             }
             else {
                 result = IMG_SaveJPG(surf, name, JPEG_QUALITY);
@@ -240,7 +264,11 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         else if (!strcasecmp(ext, "png")) {
             /*Py_BEGIN_ALLOW_THREADS; */
             if (rw != NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = IMG_SavePNG_IO(surf, rw, 0);
+#else
                 result = IMG_SavePNG_RW(surf, rw, 0);
+#endif
             }
             else {
                 result = IMG_SavePNG(surf, name);

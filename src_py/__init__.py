@@ -48,6 +48,7 @@ if os.name == "nt":
     except (FileNotFoundError, ValueError):
         pass
 
+    d = ""  # define variable here so that we can consistently delete it
     for d in dll_parents:
         # adding to PATH is the legacy way, os.add_dll_directory is the new
         # and recommended method. For extra safety we do both
@@ -55,7 +56,7 @@ if os.name == "nt":
         os.add_dll_directory(d)
 
     # cleanup namespace
-    del pygame_dir, dll_parents
+    del pygame_dir, dll_parents, d
 
 # when running under X11, always set the SDL window WM_CLASS to make the
 #   window managers correctly match the pygame window.

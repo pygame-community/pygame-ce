@@ -4,13 +4,14 @@ import platform
 import sys
 import traceback
 import importlib
-from typing import Tuple, Optional, Callable
+from collections.abc import Callable
+from typing import Optional
 from os import environ
 
 from pygame.version import ver
 from pygame.system import get_cpu_instruction_sets
 
-ImportResult = Tuple[str, bool, Optional[Callable]]
+ImportResult = tuple[str, bool, Optional[Callable]]
 
 
 def str_from_tuple(version_tuple):
@@ -75,6 +76,11 @@ def _get_platform_info():
     )
 
     ret += f"Python:\t\t\t{platform.python_implementation()} {sys.version}\n"
+    ret += (
+        f"GIL Enabled:\t\t{sys._is_gil_enabled()}\n"
+        if hasattr(sys, "_is_gil_enabled")
+        else "GIL Enabled:\t\tTrue\n"
+    )
     ret += f"pygame version:\t\t{ver}\n"
     return ret
 

@@ -1200,9 +1200,6 @@ chan_set_volume(PyObject *self, PyObject *args)
 {
     int channelnum = pgChannel_AsInt(self);
     float volume, stereovolume = -1.11f;
-#ifdef Py_DEBUG
-    int result;
-#endif
     Uint8 left, right;
     PyThreadState *_save;
 
@@ -1245,10 +1242,7 @@ chan_set_volume(PyObject *self, PyObject *args)
         volume = 1.0f;
     }
 
-#ifdef Py_DEBUG
-    result =
-#endif
-        Mix_Volume(channelnum, (int)(volume * 128));
+    Mix_Volume(channelnum, (int)(volume * 128));
     Py_RETURN_NONE;
 }
 
@@ -1875,7 +1869,11 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
             return -1;
         }
         Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        chunk = Mix_LoadWAV_IO(rw, 1);
+#else
         chunk = Mix_LoadWAV_RW(rw, 1);
+#endif
         Py_END_ALLOW_THREADS;
         if (chunk == NULL) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());

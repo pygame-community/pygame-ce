@@ -7121,9 +7121,73 @@ class DrawArcMixin:
             with self.assertRaises(TypeError):
                 bounds_rect = self.draw_arc(**kwargs)
 
-    def todo_test_arc(self):
+    def test_arc__correct_drawing(self):
         """Ensure draw arc works correctly."""
-        self.fail()
+        surfw, surfh = 500, 500
+        surface = pygame.Surface((surfw, surfh))
+        surface_color = pygame.Color("black")
+        surface.fill(surface_color)
+        arc_color = pygame.Color("white")
+        rectangles = [
+            pygame.Rect((200, 200), (300 + i, 200 + i)) for i in range(-100, 50, 30)
+        ]  # Test on different bounding rectangles
+        angle_pairs = [
+            (0, 2),
+            (0, 3.14),
+            (1, 4),
+            (2, 5.5),
+            (0, 6.28),
+        ]  # Test a variety of start and stop angles
+        widths = [
+            -10,
+            -5,
+            -1,
+            0,
+            1,
+            2,
+            5,
+            10,
+            20,
+            50,
+            100,
+        ]  # Test a wider range of stroke width
+
+        for rect in rectangles:
+            for start, stop in angle_pairs:
+                for width in widths:
+                    # A tolerance value that adapt to the width
+                    tolerance_radius = min(max(0, width // 10), 1)
+                    kwargs = {
+                        "surface": surface,
+                        "color": arc_color,
+                        "rect": rect,
+                        "start_angle": start,
+                        "stop_angle": stop,
+                        "width": width,
+                    }
+
+                    pygame.draw.arc(**kwargs)
+
+                    a, b = rect.width / 2, rect.height / 2
+                    number_of_valid_arc_points = 0
+                    number_of_invalid_arc_points = 0
+                    # Define a threshold for comparison
+                    eps = 0.01
+                    center_x = rect.centerx
+                    center_y = rect.centery
+
+            for x in range(surfw):
+                for y in range(surfh):
+                    # Check whether the point on the arc belongs to the ellipse defined by the bounding rectangle
+                    if (surface.get_at((x, y)) == arc_color) and abs(
+                        ((x - center_x) / a) ** 2 + ((y - center_y) / b) ** 2 - 1
+                    ) <= eps + tolerance_radius:
+                        number_of_valid_arc_points += 1
+                    elif surface.get_at((x, y)) == arc_color:
+                        number_of_invalid_arc_points += 1
+            surface.fill(surface_color)  # Clear for the next test
+
+            self.assertEqual(number_of_invalid_arc_points, 0)
 
     def test_arc__bounding_rect(self):
         """Ensures draw arc returns the correct bounding rect.

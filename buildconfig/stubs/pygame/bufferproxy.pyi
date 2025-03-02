@@ -1,15 +1,17 @@
-from typing import Any, Dict, overload
+from typing import Any
 
 class BufferProxy:
-    parent: Any
-    length: int
-    raw: bytes
+    @property
+    def parent(self) -> Any: ...
+    @property
+    def length(self) -> int: ...
+    @property
+    def raw(self) -> bytes: ...
     # possibly going to be deprecated/removed soon, in which case these
     # typestubs must be removed too
-    __array_interface__: Dict[str, Any]
-    __array_struct__: Any
-    @overload
-    def __init__(self) -> None: ...
-    @overload
-    def __init__(self, parent: Any) -> None: ...
+    @property
+    def __array_interface__(self) -> dict[str, Any]: ...
+    @property
+    def __array_struct__(self) -> Any: ...
+    def __init__(self, parent: Any) -> None: ...  # TODO: parent: TypedDict | Protocol
     def write(self, buffer: bytes, offset: int = 0) -> None: ...

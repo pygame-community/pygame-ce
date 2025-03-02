@@ -688,7 +688,7 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
             int h = event->window.data2;
             pgSurfaceObject *display_surface = pg_GetDefaultWindowSurface();
             SDL_Surface *surf =
-                PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
+                PG_CreateSurface(w, h, SDL_PIXELFORMAT_XRGB8888);
 
             SDL_FreeSurface(display_surface->surf);
             display_surface->surf = surf;
@@ -1156,7 +1156,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                 So we make a fake surface.
                 */
-                surf = PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
+                surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1265,7 +1265,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         pg_renderer, SDL_PIXELFORMAT_ARGB8888,
                         SDL_TEXTUREACCESS_STREAMING, w, h);
                 }
-                surf = PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
+                surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1571,7 +1571,7 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
         }
         /* use reasonable defaults (cf. SDL_video.c) */
         if (!mode.format)
-            mode.format = PG_PIXELFORMAT_XRGB8888;
+            mode.format = SDL_PIXELFORMAT_XRGB8888;
         if (!mode.w)
             mode.w = 640;
         if (!mode.h)
@@ -2803,9 +2803,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL;
     }
 
-#if SDL_VERSION_ATLEAST(2, 0, 12)
     msgbox_data.flags |= SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
-#endif
 
     if (parent_window == Py_None) {
         msgbox_data.window = NULL;
@@ -2896,12 +2894,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
 
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
         for (Py_ssize_t i = 0; i < num_buttons; i++) {
-#if SDL_VERSION_ATLEAST(2, 0, 12)
             PyObject *btn_name_obj = PySequence_GetItem(buttons, i);
-#else
-            PyObject *btn_name_obj =
-                PySequence_GetItem(buttons, num_buttons - i - 1);
-#endif
             if (!btn_name_obj)
                 goto error;
 
@@ -2916,11 +2909,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
                 goto error;
 
             buttons_data[i].text = btn_name;
-#if SDL_VERSION_ATLEAST(2, 0, 12)
             buttons_data[i].buttonid = (int)i;
-#else
-            buttons_data[i].buttonid = (int)(num_buttons - i - 1);
-#endif
             buttons_data[i].flags = 0;
             if (return_button_index == buttons_data[i].buttonid)
                 buttons_data[i].flags |=

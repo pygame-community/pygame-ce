@@ -275,7 +275,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    .. note:: Code that unpacked a get_cursor() call into
              ``size, hotspot, xormasks, andmasks`` will still work,
-	     assuming the call returns an old school type cursor.
+             assuming the call returns an old school type cursor.
 
    .. versionchangedold:: 2.0.1
 
