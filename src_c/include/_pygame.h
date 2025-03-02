@@ -322,20 +322,55 @@ typedef struct {
     PyObject *dependency;
 #if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
     PyMutex mutex;
+    unsigned int num_locks;
+    uint64_t locking_thread_id;
 #endif
 } pgSurfaceObject;
 #define pgSurface_AsSurface(x) (((pgSurfaceObject *)x)->surf)
 
 #if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
-#define LOCK_pgSurfaceObject(pgSurfacePtr) \
-    PyMutex_Lock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex));
+#define LOCK_pgSurfaceObject(pgSurfacePtr)                          \
+    {                                                               \
+        pgSurfaceObject *surfObj = (pgSurfaceObject *)pgSurfacePtr; \
+        uint64_t thread_id = PyThreadState_Get()->id;               \
+        if (surfObj->num_locks) {                                   \
+            if (thread_id == surfObj->locking_thread_id) {          \
+                ++(surfObj->num_locks);                             \
+            }                                                       \
+            else {                                                  \
+                PyMutex_Lock(&surfObj->mutex);                      \
+                surfObj->num_locks = 1U;                            \
+                surfObj->locking_thread_id = thread_id;             \
+            }                                                       \
+        }                                                           \
+        else {                                                      \
+            PyMutex_Lock(&surfObj->mutex);                          \
+            surfObj->num_locks = 1U;                                \
+            surfObj->locking_thread_id = thread_id;                 \
+        }                                                           \
+    }
 #else
 #define LOCK_pgSurfaceObject(pgSurfacePtr)
 #endif
 
 #if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
-#define UNLOCK_pgSurfaceObject(pgSurfacePtr) \
-    PyMutex_Unlock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex));
+#define UNLOCK_pgSurfaceObject(pgSurfacePtr)                        \
+    {                                                               \
+        pgSurfaceObject *surfObj = (pgSurfaceObject *)pgSurfacePtr; \
+        uint64_t thread_id = PyThreadState_Get()->id;               \
+        if (surfObj->num_locks) {                                   \
+            if (thread_id == surfObj->locking_thread_id) {          \
+                if (surfObj->num_locks > 1U) {                      \
+                    --(surfObj->num_locks);                         \
+                }                                                   \
+                else {                                              \
+                    surfObj->locking_thread_id = 0U;                \
+                    surfObj->num_locks = 0U;                        \
+                    PyMutex_Unlock(&surfObj->mutex);                \
+                }                                                   \
+            }                                                       \
+        }                                                           \
+    }
 #else
 #define UNLOCK_pgSurfaceObject(pgSurfacePtr)
 #endif

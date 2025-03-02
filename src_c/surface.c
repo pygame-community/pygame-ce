@@ -1471,7 +1471,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 
     SURF_INIT_CHECK(surf)
 
-    pgSurface_Prep(self);
+    pgSurface_Lock(self);
 
     if ((has_colorkey = SDL_HasColorKey(surf))) {
         SDL_GetColorKey(surf, &colorkey);
@@ -1513,6 +1513,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                             Amask = 0xFF << 24;
                             break;
                         default:
+                            pgSurface_Unlock(self);
                             return RAISE(PyExc_ValueError,
                                          "no standard masks exist for given "
                                          "bitdepth with alpha");
@@ -1548,6 +1549,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                             Bmask = 0xFF;
                             break;
                         default:
+                            pgSurface_Unlock(self);
                             return RAISE(PyExc_ValueError,
                                          "nonstandard bit depth given");
                     }
@@ -1565,7 +1567,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                     !pg_UintFromObjIndex(argobject, 1, &format.Gmask) ||
                     !pg_UintFromObjIndex(argobject, 2, &format.Bmask) ||
                     !pg_UintFromObjIndex(argobject, 3, &format.Amask)) {
-                    pgSurface_Unprep(self);
+                    pgSurface_Unlock(self);
                     return RAISE(PyExc_ValueError,
                                  "invalid color masks given");
                 }
@@ -1576,7 +1578,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                         break;
             }
             else {
-                pgSurface_Unprep(self);
+                pgSurface_Unlock(self);
                 return RAISE(
                     PyExc_ValueError,
                     "invalid argument specifying new format to convert to");
@@ -1611,7 +1613,9 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                     SDL_SetPixelFormatPalette(&format, palette);
                 }
             }
+            // pgSurface_Lock(self);
             newsurf = PG_ConvertSurface(surf, &format);
+            // pgSurface_Unlock(self);
             SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
             SDL_FreePalette(palette);
         }
@@ -1623,6 +1627,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     }
 
     if (newsurf == NULL) {
+        pgSurface_Unlock(self);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1630,12 +1635,13 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
         colorkey = SDL_MapRGBA(newsurf->format, key_r, key_g, key_b, key_a);
         if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            pgSurface_Unlock(self);
             SDL_FreeSurface(newsurf);
             return NULL;
         }
     }
 
-    pgSurface_Unprep(self);
+    pgSurface_Unlock(self);
 
     final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
     if (!final)
