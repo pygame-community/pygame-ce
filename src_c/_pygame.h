@@ -47,6 +47,8 @@
 #include <SDL.h>
 #endif
 
+#include "stdbool.h"
+
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 #define PG_ShowCursor SDL_ShowCursor
 #define PG_HideCursor SDL_HideCursor
@@ -104,6 +106,36 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
+#define PG_SURF_FORMATENUM(surf) surf->format
+
+#define PG_FORMAT_R_LOSS(format) (8 - format->Rbits)
+#define PG_FORMAT_G_LOSS(format) (8 - format->Gbits)
+#define PG_FORMAT_B_LOSS(format) (8 - format->Bbits)
+#define PG_FORMAT_A_LOSS(format) (8 - format->Abits)
+
+#define PG_PixelFormat const SDL_PixelFormatDetails
+
+static inline bool
+PG_GetSurfaceDetails(SDL_Surface *surf, PG_PixelFormat **format_p,
+                     SDL_Palette **palette_p)
+{
+    *palette_p = SDL_GetSurfacePalette(surf);
+    *format_p = SDL_GetPixelFormatDetails(surf->format);
+    return *format_p != NULL;
+}
+
+static inline PG_PixelFormat *
+PG_GetSurfaceFormat(SDL_Surface *surf)
+{
+    return SDL_GetPixelFormatDetails(surf->format);
+}
+
+#define PG_GetSurfacePalette SDL_GetSurfacePalette
+
+#define PG_GetRGBA SDL_GetRGBA
+#define PG_GetRGB SDL_GetRGB
+#define PG_MapRGBA SDL_MapRGBA
+#define PG_MapRGB SDL_MapRGB
 
 /* Mask to test if surface flags are in a fullscreen window. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN
@@ -118,6 +150,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_FIND_VNUM_MICRO(ver) SDL_VERSIONNUM_MICRO(ver)
 
 #define PG_INIT_TIMER 0
+
+#define PG_GetSurfaceClipRect SDL_GetSurfaceClipRect
 
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
@@ -169,6 +203,68 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SURF_BytesPerPixel(surf) surf->format->BytesPerPixel
 #define PG_FORMAT_BitsPerPixel(format) format->BitsPerPixel
 #define PG_FORMAT_BytesPerPixel(format) format->BytesPerPixel
+#define PG_SURF_FORMATENUM(surf) surf->format->format
+
+#define PG_FORMAT_R_LOSS(format) format->Rloss
+#define PG_FORMAT_G_LOSS(format) format->Gloss
+#define PG_FORMAT_B_LOSS(format) format->Bloss
+#define PG_FORMAT_A_LOSS(format) format->Aloss
+
+#define PG_PixelFormat SDL_PixelFormat
+
+static inline bool
+PG_GetSurfaceDetails(SDL_Surface *surf, PG_PixelFormat **format_p,
+                     SDL_Palette **palette_p)
+{
+    *format_p = surf->format;
+    *palette_p = surf->format->palette;
+    return true;
+}
+
+static inline PG_PixelFormat *
+PG_GetSurfaceFormat(SDL_Surface *surf)
+{
+    return surf->format;
+}
+
+static inline SDL_Palette *
+PG_GetSurfacePalette(SDL_Surface *surf)
+{
+    return surf->format->palette;
+}
+
+// NOTE:
+// palette is part of the format in SDL2, so these functions below have it
+// as a separate parameter to be consistent with the SDL3 signature.
+// They are ignoring the palette parameter, but not the palette data.
+
+static inline void
+PG_GetRGBA(Uint32 pixel, PG_PixelFormat *format, const SDL_Palette *palette,
+           Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
+{
+    SDL_GetRGBA(pixel, format, r, g, b, a);
+}
+
+static inline void
+PG_GetRGB(Uint32 pixel, PG_PixelFormat *format, const SDL_Palette *palette,
+          Uint8 *r, Uint8 *g, Uint8 *b)
+{
+    SDL_GetRGB(pixel, format, r, g, b);
+}
+
+static inline Uint32
+PG_MapRGBA(PG_PixelFormat *format, const SDL_Palette *palette, Uint8 r,
+           Uint8 g, Uint8 b, Uint8 a)
+{
+    return SDL_MapRGBA(format, r, g, b, a);
+}
+
+static inline Uint32
+PG_MapRGB(PG_PixelFormat *format, const SDL_Palette *palette, Uint8 r, Uint8 g,
+          Uint8 b)
+{
+    return SDL_MapRGB(format, r, g, b);
+}
 
 /* Mask to test if surface flags are in a fullscreen window.
  * SDL_WINDOW_FULLSCREEN_DESKTOP works here because it also contains
@@ -190,6 +286,12 @@ PG_UnlockMutex(SDL_mutex *mutex)
 
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
 
+static inline bool
+PG_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
+{
+    *rect = surface->clip_rect;
+    return true;
+}
 #endif
 
 /* DictProxy is useful for event posting with an arbitrary dict. Maintains
@@ -519,9 +621,10 @@ typedef enum {
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
-#define PYGAMEAPI_BASE_NUMSLOTS 29
+#define PYGAMEAPI_BASE_NUMSLOTS 30
 #define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
+#define PYGAMEAPI_RENDER_NUMSLOTS 3
 #define PYGAMEAPI_GEOMETRY_NUMSLOTS 2
 
 #endif /* _PYGAME_INTERNAL_H */

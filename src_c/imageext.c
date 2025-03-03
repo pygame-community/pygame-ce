@@ -46,7 +46,15 @@
 
 #include "pgopengl.h"
 
+#ifdef PG_SDL3
+#include <SDL3_image/SDL_image.h>
+
+// SDL3_images uses SDL3 error reporting API
+#define IMG_GetError SDL_GetError
+#else
 #include <SDL_image.h>
+#endif
+
 #ifdef WIN32
 #define strcasecmp _stricmp
 #else
@@ -93,8 +101,9 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
 
     rw = pgRWops_FromObject(obj, &ext);
-    if (rw == NULL) /* stop on NULL, error already set */
+    if (rw == NULL) { /* stop on NULL, error already set */
         return NULL;
+    }
 
     if (name) { /* override extension with namehint if given */
         type = iext_find_extension(name);
@@ -135,8 +144,9 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         free(ext);
     }
 
-    if (surf == NULL)
+    if (surf == NULL) {
         return RAISE(pgExc_SDLError, IMG_GetError());
+    }
 
     final = (PyObject *)pgSurface_New(surf);
     if (final == NULL) {

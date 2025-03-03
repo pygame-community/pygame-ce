@@ -125,12 +125,14 @@ Sint16FromObj(PyObject *item, Sint16 *val)
         PyObject *intobj;
         long tmp;
 
-        if (!(intobj = PyNumber_Long(item)))
+        if (!(intobj = PyNumber_Long(item))) {
             return 0;
+        }
         tmp = PyLong_AsLong(intobj);
         Py_DECREF(intobj);
-        if (tmp == -1 && PyErr_Occurred())
+        if (tmp == -1 && PyErr_Occurred()) {
             return 0;
+        }
         *val = (Sint16)tmp;
         return 1;
     }
@@ -159,8 +161,9 @@ _gfx_pixelcolor(PyObject *self, PyObject *args)
 
     ASSERT_VIDEO_INIT(NULL);
 
-    if (!PyArg_ParseTuple(args, "OhhO:pixel", &surface, &x, &y, &color))
+    if (!PyArg_ParseTuple(args, "OhhO:pixel", &surface, &x, &y, &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -185,8 +188,10 @@ _gfx_hlinecolor(PyObject *self, PyObject *args)
 
     ASSERT_VIDEO_INIT(NULL);
 
-    if (!PyArg_ParseTuple(args, "OhhhO:hline", &surface, &x1, &x2, &y, &color))
+    if (!PyArg_ParseTuple(args, "OhhhO:hline", &surface, &x1, &x2, &y,
+                          &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -212,8 +217,9 @@ _gfx_vlinecolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhO:vline", &surface, &x, &_y1, &y2,
-                          &color))
+                          &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -316,8 +322,9 @@ _gfx_linecolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhhO:line", &surface, &x1, &_y1, &x2, &y2,
-                          &color))
+                          &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -342,8 +349,10 @@ _gfx_circlecolor(PyObject *self, PyObject *args)
 
     ASSERT_VIDEO_INIT(NULL);
 
-    if (!PyArg_ParseTuple(args, "OhhhO:circle", &surface, &x, &y, &r, &color))
+    if (!PyArg_ParseTuple(args, "OhhhO:circle", &surface, &x, &y, &r,
+                          &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -369,8 +378,9 @@ _gfx_arccolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhhhO:arc", &surface, &x, &y, &r, &start,
-                          &end, &color))
+                          &end, &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -396,8 +406,9 @@ _gfx_aacirclecolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhO:aacircle", &surface, &x, &y, &r,
-                          &color))
+                          &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -423,8 +434,9 @@ _gfx_filledcirclecolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhO:filledcircle", &surface, &x, &y, &r,
-                          &color))
+                          &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -450,8 +462,9 @@ _gfx_ellipsecolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhhO:ellipse", &surface, &x, &y, &rx, &ry,
-                          &color))
+                          &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -477,8 +490,9 @@ _gfx_aaellipsecolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhhO:aaellipse", &surface, &x, &y, &rx, &ry,
-                          &color))
+                          &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -504,8 +518,9 @@ _gfx_filledellipsecolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhhO:filled_ellipse", &surface, &x, &y, &rx,
-                          &ry, &color))
+                          &ry, &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -531,8 +546,9 @@ _gfx_piecolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhhhO:pie", &surface, &x, &y, &r, &start,
-                          &end, &color))
+                          &end, &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -558,8 +574,9 @@ _gfx_trigoncolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhhhhO:trigon", &surface, &x1, &_y1, &x2,
-                          &y2, &x3, &y3, &color))
+                          &y2, &x3, &y3, &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -585,8 +602,9 @@ _gfx_aatrigoncolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhhhhO:aatrigon", &surface, &x1, &_y1, &x2,
-                          &y2, &x3, &y3, &color))
+                          &y2, &x3, &y3, &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -612,8 +630,9 @@ _gfx_filledtrigoncolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OhhhhhhO:filled_trigon", &surface, &x1, &_y1,
-                          &x2, &y2, &x3, &y3, &color))
+                          &x2, &y2, &x3, &y3, &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -640,8 +659,9 @@ _gfx_polygoncolor(PyObject *self, PyObject *args)
 
     ASSERT_VIDEO_INIT(NULL);
 
-    if (!PyArg_ParseTuple(args, "OOO:polygon", &surface, &points, &color))
+    if (!PyArg_ParseTuple(args, "OOO:polygon", &surface, &points, &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -662,10 +682,12 @@ _gfx_polygoncolor(PyObject *self, PyObject *args)
     vx = PyMem_New(Sint16, (size_t)count);
     vy = PyMem_New(Sint16, (size_t)count);
     if (!vx || !vy) {
-        if (vx)
+        if (vx) {
             PyMem_Free(vx);
-        if (vy)
+        }
+        if (vy) {
             PyMem_Free(vy);
+        }
         return NULL;
     }
 
@@ -713,8 +735,9 @@ _gfx_aapolygoncolor(PyObject *self, PyObject *args)
 
     ASSERT_VIDEO_INIT(NULL);
 
-    if (!PyArg_ParseTuple(args, "OOO:aapolygon", &surface, &points, &color))
+    if (!PyArg_ParseTuple(args, "OOO:aapolygon", &surface, &points, &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -735,10 +758,12 @@ _gfx_aapolygoncolor(PyObject *self, PyObject *args)
     vx = PyMem_New(Sint16, (size_t)count);
     vy = PyMem_New(Sint16, (size_t)count);
     if (!vx || !vy) {
-        if (vx)
+        if (vx) {
             PyMem_Free(vx);
-        if (vy)
+        }
+        if (vy) {
             PyMem_Free(vy);
+        }
         return NULL;
     }
 
@@ -787,8 +812,9 @@ _gfx_filledpolygoncolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OOO:filled_polygon", &surface, &points,
-                          &color))
+                          &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -809,10 +835,12 @@ _gfx_filledpolygoncolor(PyObject *self, PyObject *args)
     vx = PyMem_New(Sint16, (size_t)count);
     vy = PyMem_New(Sint16, (size_t)count);
     if (!vx || !vy) {
-        if (vx)
+        if (vx) {
             PyMem_Free(vx);
-        if (vy)
+        }
+        if (vy) {
             PyMem_Free(vy);
+        }
         return NULL;
     }
 
@@ -861,8 +889,9 @@ _gfx_texturedpolygon(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OOOhh:textured_polygon", &surface, &points,
-                          &texture, &tdx, &tdy))
+                          &texture, &tdx, &tdy)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -891,10 +920,12 @@ _gfx_texturedpolygon(PyObject *self, PyObject *args)
     vx = PyMem_New(Sint16, (size_t)count);
     vy = PyMem_New(Sint16, (size_t)count);
     if (!vx || !vy) {
-        if (vx)
+        if (vx) {
             PyMem_Free(vx);
-        if (vy)
+        }
+        if (vy) {
             PyMem_Free(vy);
+        }
         return NULL;
     }
 
@@ -942,8 +973,9 @@ _gfx_beziercolor(PyObject *self, PyObject *args)
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OOiO:bezier", &surface, &points, &steps,
-                          &color))
+                          &color)) {
         return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -969,10 +1001,12 @@ _gfx_beziercolor(PyObject *self, PyObject *args)
     vx = PyMem_New(Sint16, (size_t)count);
     vy = PyMem_New(Sint16, (size_t)count);
     if (!vx || !vy) {
-        if (vx)
+        if (vx) {
             PyMem_Free(vx);
-        if (vy)
+        }
+        if (vy) {
             PyMem_Free(vy);
+        }
         return RAISE(PyExc_MemoryError, "memory allocation failed");
     }
 

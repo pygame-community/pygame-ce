@@ -1,6 +1,6 @@
 [project]
 name = "pygame-ce"
-version = "2.5.3.dev1"
+version = "2.5.4.dev1"
 description = "Python Game Development"
 readme = "README.rst" # for long description
 requires-python = ">=3.9"
@@ -53,11 +53,12 @@ pygame_ce = 'pygame.__briefcase.pygame_ce:PygameCEGuiBootstrap'
 
 [build-system]
 requires = [
-  "meson-python<=0.16.0",
-  "meson<=1.5.1",
-  "ninja<=1.11.1.1",
+  "meson-python<=0.17.1",
+  "meson<=1.7.0",
+  "ninja<=1.12.1",
   "cython<=3.0.11",
-  "sphinx<=7.2.6",
+  "sphinx<=8.1.3",
+  "sphinx-autoapi<=3.3.2",
 ]
 build-backend = 'mesonpy'
 

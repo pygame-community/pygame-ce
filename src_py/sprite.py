@@ -370,6 +370,9 @@ class AbstractGroup:
 
     """
 
+    def __class_getitem__(cls, generic):
+        return types.GenericAlias(cls, generic)
+
     # protected identifier value to identify sprite groups, and avoid infinite recursion
     _spritegroup = True
 

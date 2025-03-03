@@ -1,5 +1,6 @@
 from collections.abc import Callable, Hashable, Iterable
 from typing import Literal, Optional, Union
+from typing_extensions import deprecated  # added in 3.13
 
 from pygame.surface import Surface
 
@@ -87,4 +88,5 @@ class Font:
     def get_point_size(self) -> int: ...
     def set_point_size(self, val: int, /) -> None: ...
 
-FontType = Font
+@deprecated("Use `Font` instead (FontType is an old alias)")
+class FontType(Font): ...

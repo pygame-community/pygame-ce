@@ -1,6 +1,7 @@
 from collections.abc import Collection, Iterator
 from typing import (
     Any,
+    ClassVar,
     Generic,
     Literal,
     SupportsIndex,
@@ -23,7 +24,7 @@ _TVec = TypeVar("_TVec", bound=_GenericVector)
 # Also used with _TVec generics
 class _GenericVector(Collection[float]):
     epsilon: float
-    __hash__: None  # type: ignore
+    __hash__: ClassVar[None]  # type: ignore[assignment]
     def __len__(self) -> int: ...
     @overload
     def __setitem__(self, key: int, value: float) -> None: ...
