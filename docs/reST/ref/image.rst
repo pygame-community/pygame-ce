@@ -138,7 +138,7 @@ following formats.
 .. function:: load_animation
 
    | :sl:`load an animation (GIF/WEBP) from a file (or file-like object)`
-   | :sg:`load_sized_svg(file, namehint="") -> list[tuple[Surface, int]]`
+   | :sg:`load_animation(file, namehint="") -> list[tuple[Surface, int]]`
 
    Load an animation (GIF/WEBP) from a file source. You can pass either a
    filename, a Python file-like object, or a pathlib.Path. If you pass a raw
@@ -155,7 +155,7 @@ following formats.
 
    .. versionadded:: 2.5.4
 
-   .. ## pygame.image.load_sized_svg ##
+   .. ## pygame.image.load_animation ##
 
 .. function:: save
 

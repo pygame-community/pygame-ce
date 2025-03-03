@@ -1894,7 +1894,7 @@ image_load_animation(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     return RAISE(PyExc_NotImplementedError,
-                 "Support for sized svg image loading was not compiled in.");
+                 "Support for animation loading was not compiled in.");
 }
 
 static PyMethodDef _image_methods[] = {
