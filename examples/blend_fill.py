@@ -37,8 +37,8 @@ def main():
     screen = pygame.display.set_mode((640, 480))
     screen.fill((100, 100, 100))
 
-    image = pygame.image.load(os.path.join(data_dir, "liquid.bmp")).convert()
-    blendimage = pygame.image.load(os.path.join(data_dir, "liquid.bmp")).convert()
+    image = pygame.image.load(os.path.join(data_dir, "liquid.webp")).convert()
+    blendimage = pygame.image.load(os.path.join(data_dir, "liquid.webp")).convert()
     screen.blit(image, (10, 10))
     screen.blit(blendimage, (200, 10))
 

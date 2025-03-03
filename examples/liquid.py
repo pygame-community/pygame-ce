@@ -26,7 +26,7 @@ def main():
     screen = pygame.display.set_mode((640, 480), pygame.DOUBLEBUF)
 
     # load image and quadruple
-    imagename = os.path.join(main_dir, "data", "liquid.bmp")
+    imagename = os.path.join(main_dir, "data", "liquid.webp")
     bitmap = pygame.image.load(imagename)
     bitmap = pygame.transform.scale2x(bitmap)
     bitmap = pygame.transform.scale2x(bitmap)

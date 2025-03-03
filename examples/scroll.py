@@ -97,7 +97,7 @@ def scroll_view(screen, image, direction, view_rect):
 
 def main(image_file=None):
     if image_file is None:
-        image_file = os.path.join(main_dir, "data", "arraydemo.bmp")
+        image_file = os.path.join(main_dir, "data", "arraydemo.webp")
     margin = 80
     view_size = (30, 20)
     zoom_view_size = (view_size[0] * zoom_factor, view_size[1] * zoom_factor)
