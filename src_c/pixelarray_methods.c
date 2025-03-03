@@ -28,21 +28,6 @@
           wb * (b1 - b2) * (b1 - b2)) /                             \
      255.0)
 
-// TODO: once things are fully ported, consolidate PXM_GET_PIXELVALS
-// and PXM_GET_PIXELVALS_1 back into GET_PIXELVALS and GET_PIXELVALS_1
-// from surface.h
-#define PXM_GET_PIXELVALS(_sR, _sG, _sB, _sA, px, fmt, palette, ppa) \
-    PG_GetRGBA(px, fmt, palette, &(_sR), &(_sG), &(_sB), &(_sA));    \
-    if (!ppa) {                                                      \
-        _sA = 255;                                                   \
-    }
-
-#define PXM_GET_PIXELVALS_1(sr, sg, sb, sa, _src, _palette) \
-    sr = _palette->colors[*((Uint8 *)(_src))].r;            \
-    sg = _palette->colors[*((Uint8 *)(_src))].g;            \
-    sb = _palette->colors[*((Uint8 *)(_src))].b;            \
-    sa = 255;
-
 #define WR_NTSC 0.299
 #define WG_NTSC 0.587
 #define WB_NTSC 0.114
@@ -146,14 +131,16 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
      * create a new surface with the array dimensions */
     if (!same_dims) {
         if (!(temp_surf = PG_CreateSurface((int)dim0, (int)dim1,
-                                           PG_SURF_FORMATENUM(surf))))
+                                           PG_SURF_FORMATENUM(surf)))) {
             return RAISE(pgExc_SDLError, SDL_GetError());
+        }
     }
 
     /* Ensure the new surface has the same format as the original */
     new_surf = PG_ConvertSurface(temp_surf, surf->format);
-    if (temp_surf != surf)
+    if (temp_surf != surf) {
         SDL_FreeSurface(temp_surf);
+    }
 
     if (!new_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -166,8 +153,9 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     }
 
     /* if the surf and array dims match just return a copy */
-    if (same_dims)
+    if (same_dims) {
         return (PyObject *)new_surface;
+    }
 
     /* Acquire a temporary lock. */
     if (SDL_MUSTLOCK(new_surf) == 0) {
@@ -422,7 +410,7 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                 for (x = 0; x < dim0; ++x) {
                     px_p = pixel_p;
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS_1(r2, g2, b2, a2, px_p, palette);
+                        GET_PIXELVALS_1(r2, g2, b2, a2, px_p, palette);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             *px_p = (Uint8)rcolor;
@@ -446,8 +434,8 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                 for (x = 0; x < dim0; ++x) {
                     px_p = (Uint16 *)pixel_p;
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS(r2, g2, b2, a2, (Uint32)*px_p,
-                                          format, palette, ppa);
+                        GET_PIXELVALS(r2, g2, b2, a2, (Uint32)*px_p, format,
+                                      palette, ppa);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             *px_p = (Uint16)rcolor;
@@ -482,8 +470,8 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                                ((Uint32)pixel_p[Goffset] << 8) +
                                ((Uint32)pixel_p[Boffset]));
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS(r2, g2, b2, a2, pxcolor, format,
-                                          palette, ppa);
+                        GET_PIXELVALS(r2, g2, b2, a2, pxcolor, format, palette,
+                                      ppa);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             pixel_p[Roffset] = (Uint8)(rcolor >> 16);
@@ -512,8 +500,8 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                 for (x = 0; x < dim0; ++x) {
                     px_p = (Uint32 *)pixel_p;
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS(r2, g2, b2, a2, *px_p, format,
-                                          palette, ppa);
+                        GET_PIXELVALS(r2, g2, b2, a2, *px_p, format, palette,
+                                      ppa);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             *px_p = rcolor;
@@ -632,7 +620,7 @@ _extract_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                 for (x = 0; x < dim0; ++x) {
                     px_p = pixel_p;
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS_1(r2, g2, b2, a2, px_p, palette);
+                        GET_PIXELVALS_1(r2, g2, b2, a2, px_p, palette);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             *px_p = (Uint8)white;
@@ -659,8 +647,8 @@ _extract_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                 for (x = 0; x < dim0; ++x) {
                     px_p = (Uint16 *)pixel_p;
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS(r2, g2, b2, a2, (Uint32)*px_p,
-                                          format, palette, ppa);
+                        GET_PIXELVALS(r2, g2, b2, a2, (Uint32)*px_p, format,
+                                      palette, ppa);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             *px_p = (Uint16)white;
@@ -704,8 +692,8 @@ _extract_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                                ((Uint32)pixel_p[Goffset] << 8) +
                                ((Uint32)pixel_p[Boffset]));
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS(r2, g2, b2, a2, pxcolor, format,
-                                          palette, ppa);
+                        GET_PIXELVALS(r2, g2, b2, a2, pxcolor, format, palette,
+                                      ppa);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             pixel_p[Roffset] = white_r;
@@ -744,8 +732,8 @@ _extract_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                 for (x = 0; x < dim0; ++x) {
                     px_p = (Uint32 *)pixel_p;
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS(r2, g2, b2, a2, *px_p, format,
-                                          palette, ppa);
+                        GET_PIXELVALS(r2, g2, b2, a2, *px_p, format, palette,
+                                      ppa);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             *px_p = white;
@@ -888,9 +876,9 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                     pixel_p = byte_p;
                     other_pixel_p = other_byte_p;
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS_1(r1, g1, b1, a1, pixel_p, palette);
-                        PXM_GET_PIXELVALS_1(r2, g2, b2, a2, other_pixel_p,
-                                            other_palette);
+                        GET_PIXELVALS_1(r1, g1, b1, a1, pixel_p, palette);
+                        GET_PIXELVALS_1(r2, g2, b2, a2, other_pixel_p,
+                                        other_palette);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             *pixel_p = (Uint8)white;
@@ -925,11 +913,10 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                     pixel_p = (Uint16 *)byte_p;
                     other_pixel_p = (Uint16 *)other_byte_p;
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS(r1, g1, b1, a1, (Uint32)*pixel_p,
-                                          format, palette, ppa);
-                        PXM_GET_PIXELVALS(r2, g2, b2, a2,
-                                          (Uint32)*other_pixel_p, other_format,
-                                          other_palette, other_ppa);
+                        GET_PIXELVALS(r1, g1, b1, a1, (Uint32)*pixel_p, format,
+                                      palette, ppa);
+                        GET_PIXELVALS(r2, g2, b2, a2, (Uint32)*other_pixel_p,
+                                      other_format, other_palette, other_ppa);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             *pixel_p = (Uint16)white;
@@ -1029,11 +1016,10 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
                     pixel_p = (Uint32 *)byte_p;
                     other_pixel_p = (Uint32 *)other_byte_p;
                     if (distance != 0.0) {
-                        PXM_GET_PIXELVALS(r1, g1, b1, a1, *pixel_p, format,
-                                          palette, ppa);
-                        PXM_GET_PIXELVALS(r2, g2, b2, a2, *other_pixel_p,
-                                          other_format, other_palette,
-                                          other_ppa);
+                        GET_PIXELVALS(r1, g1, b1, a1, *pixel_p, format,
+                                      palette, ppa);
+                        GET_PIXELVALS(r2, g2, b2, a2, *other_pixel_p,
+                                      other_format, other_palette, other_ppa);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
                             *pixel_p = white;

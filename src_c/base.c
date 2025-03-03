@@ -270,8 +270,9 @@ pg_mod_autoinit(const char *modname)
     int ret = 0;
 
     module = PyImport_ImportModule(modname);
-    if (!module)
+    if (!module) {
         return 0;
+    }
 
     funcobj = PyObject_GetAttrString(module, "_internal_mod_init");
 
@@ -306,15 +307,17 @@ pg_mod_autoquit(const char *modname)
         return;
     }
 
-    funcobj = PyObject_GetAttrString(module, "_internal_mod_quit");
-
-    /* If we could not load _internal_mod_quit, load quit function */
-    if (!funcobj)
+    if (PyObject_HasAttrString(module, "_internal_mod_quit")) {
+        funcobj = PyObject_GetAttrString(module, "_internal_mod_quit");
+    }
+    else {
         funcobj = PyObject_GetAttrString(module, "quit");
+    }
 
     /* Silence errors */
-    if (PyErr_Occurred())
+    if (PyErr_Occurred()) {
         PyErr_Clear();
+    }
 
     if (funcobj) {
         temp = PyObject_CallNoArgs(funcobj);
@@ -322,8 +325,9 @@ pg_mod_autoquit(const char *modname)
     }
 
     /* Silence errors */
-    if (PyErr_Occurred())
+    if (PyErr_Occurred()) {
         PyErr_Clear();
+    }
 
     Py_DECREF(module);
     Py_XDECREF(funcobj);
@@ -354,12 +358,14 @@ pg_init(PyObject *self, PyObject *_null)
 
     /* initialize all pygame modules */
     for (i = 0; modnames[i]; i++) {
-        if (pg_mod_autoinit(modnames[i]))
+        if (pg_mod_autoinit(modnames[i])) {
             success++;
+        }
         else {
             /* ImportError is neither counted as success nor failure */
-            if (!PyErr_ExceptionMatches(PyExc_ImportError))
+            if (!PyErr_ExceptionMatches(PyExc_ImportError)) {
                 fail++;
+            }
             PyErr_Clear();
         }
     }
@@ -451,10 +457,12 @@ _pg_quit(void)
 
             if (PyCallable_Check(quit)) {
                 temp = PyObject_CallNoArgs(quit);
-                if (temp)
+                if (temp) {
                     Py_DECREF(temp);
-                else
+                }
+                else {
                     PyErr_Clear();
+                }
             }
             else if (PyCapsule_CheckExact(quit)) {
                 void *ptr = PyCapsule_GetPointer(quit, "quit");
@@ -470,8 +478,9 @@ _pg_quit(void)
     }
 
     /* Because quit never errors */
-    if (PyErr_Occurred())
+    if (PyErr_Occurred()) {
         PyErr_Clear();
+    }
 
     pg_is_init = 0;
 
@@ -874,8 +883,9 @@ pg_set_error(PyObject *s, PyObject *args)
 {
     char *errstring = NULL;
 #if defined(PYPY_VERSION)
-    if (!PyArg_ParseTuple(args, "es", "UTF-8", &errstring))
+    if (!PyArg_ParseTuple(args, "es", "UTF-8", &errstring)) {
         return NULL;
+    }
 
     SDL_SetError("%s", errstring);
     PyMem_Free(errstring);

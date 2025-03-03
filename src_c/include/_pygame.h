@@ -690,8 +690,9 @@ pg_tuple_couple_from_values_double(double val1, double val2)
      * to do the same thing.
      */
     PyObject *tuple = PyTuple_New(2);
-    if (!tuple)
+    if (!tuple) {
         return NULL;
+    }
 
     PyObject *tmp = PyFloat_FromDouble(val1);
     if (!tmp) {
@@ -738,3 +739,33 @@ pg_PointList_FromArrayDouble(double const *array, int arr_length)
 
     return sequence;
 }
+
+#if PY_VERSION_HEX >= 0x030C0000
+
+#define PG_DECLARE_EXCEPTION_SAVER static PyObject *__cached_exception = NULL;
+
+#define PG_SAVE_EXCEPTION __cached_exception = PyErr_GetRaisedException();
+
+#define PG_UNSAVE_EXCEPTION                       \
+    PyErr_SetRaisedException(__cached_exception); \
+    __cached_exception = NULL;
+
+#else
+
+#define PG_DECLARE_EXCEPTION_SAVER                    \
+    static PyObject *__cached_exception_type = NULL;  \
+    static PyObject *__cached_exception_value = NULL; \
+    static PyObject *__cached_exception_traceback = NULL;
+
+#define PG_SAVE_EXCEPTION                                            \
+    PyErr_Fetch(&__cached_exception_type, &__cached_exception_value, \
+                &__cached_exception_traceback);
+
+#define PG_UNSAVE_EXCEPTION                                          \
+    PyErr_Restore(__cached_exception_type, __cached_exception_value, \
+                  __cached_exception_traceback);                     \
+    __cached_exception_type = NULL;                                  \
+    __cached_exception_value = NULL;                                 \
+    __cached_exception_traceback = NULL;
+
+#endif

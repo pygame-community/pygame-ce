@@ -169,8 +169,9 @@ mask_get_at(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *pos = NULL;
     static char *keywords[] = {"pos", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &pos))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &pos)) {
         return NULL;
+    }
 
     if (!pg_TwoIntsFromObj(pos, &x, &y)) {
         return RAISE(PyExc_TypeError, "pos must be two numbers");
@@ -196,8 +197,9 @@ mask_set_at(PyObject *self, PyObject *args, PyObject *kwargs)
     static char *keywords[] = {"pos", "value", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", keywords, &pos,
-                                     &value))
+                                     &value)) {
         return NULL;
+    }
 
     if (!pg_TwoIntsFromObj(pos, &x, &y)) {
         return RAISE(PyExc_TypeError, "pos must be two numbers");
@@ -231,8 +233,9 @@ mask_overlap(PyObject *self, PyObject *args, PyObject *kwargs)
     static char *keywords[] = {"other", "offset", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O", keywords,
-                                     &pgMask_Type, &maskobj, &offset))
+                                     &pgMask_Type, &maskobj, &offset)) {
         return NULL;
+    }
 
     othermask = pgMask_AsBitmap(maskobj);
 
@@ -560,8 +563,9 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
                 break;
             }
         }
-        if (bitmask_getbit(m, x, y))
+        if (bitmask_getbit(m, x, y)) {
             break;
+        }
     }
 
     /* covers the mask having zero pixels set or only the final pixel */
@@ -811,8 +815,9 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
             for (x = 0; x < surf->w; ++x, srcp += bpp) {
                 PG_GetRGBA(bpp == 1 ? *srcp : *((Uint16 *)srcp), surf_format,
                            surf_palette, &r, &g, &b, &a);
-                if (a > threshold)
+                if (a > threshold) {
                     bitmask_setbit(bitmask, x, y);
+                }
             }
             srcp += src_skip;
         }
@@ -836,8 +841,9 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
         x = 0;
         LOOP_UNROLLED4(
             {
-                if ((*srcp) > u_threshold)
+                if ((*srcp) > u_threshold) {
                     bitmask_setbit(bitmask, x, y);
+                }
                 srcp += bpp;
                 x++;
             },
@@ -1130,8 +1136,9 @@ mask_from_threshold(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(
             args, kwargs, "O!O|OO!i", keywords, &pgSurface_Type, &surfobj,
             &rgba_obj_color, &rgba_obj_threshold, &pgSurface_Type, &surfobj2,
-            &palette_colors))
+            &palette_colors)) {
         return NULL;
+    }
 
     surf = pgSurface_AsSurface(surfobj);
     if (surfobj2) {
@@ -1856,8 +1863,9 @@ largest_connected_comp(bitmask_t *input, bitmask_t *output, int ccx, int ccy)
 
     /* write out the final image */
     buf = image;
-    if (ccx >= 0)
+    if (ccx >= 0) {
         max = ufind[*(buf + ccy * w + ccx)];
+    }
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
             if (ufind[*buf] == max) {         /* if the label is the max one */
@@ -1884,8 +1892,9 @@ mask_connected_component(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *pos = NULL;
     static char *keywords[] = {"pos", NULL};
 
-    if (kwargs)
+    if (kwargs) {
         args_exist += PyDict_Size(kwargs);
+    }
 
     if (args_exist) {
         if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", keywords, &pos)) {

@@ -29,8 +29,9 @@ pg_line_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     pgLineObject *self = (pgLineObject *)type->tp_alloc(type, 0);
 
-    if (self != NULL)
+    if (self != NULL) {
         memset(&self->line, 0, sizeof(pgLineBase));
+    }
 
     return (PyObject *)self;
 }

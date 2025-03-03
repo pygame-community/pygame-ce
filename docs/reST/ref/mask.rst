@@ -535,8 +535,8 @@ to store which parts collide.
       component.
 
       :param int minimum: (optional) indicates the minimum number of bits (to
-	 filter out noise) per connected component (default is 0, which equates
- 	 to no minimum and is equivalent to setting it to 1, as a connected
+         filter out noise) per connected component (default is 0, which equates
+         to no minimum and is equivalent to setting it to 1, as a connected
          component must have at least 1 bit set)
 
       :returns: a list containing a :class:`Mask` object for each connected
