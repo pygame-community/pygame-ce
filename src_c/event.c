@@ -131,6 +131,11 @@ static char released_mouse_buttons[5] = {0};
     }
 #endif /* not on emscripten */
 
+static Uint32
+_pg_pgevent_proxify(Uint32 type);
+static Uint32
+_pg_pgevent_deproxify(Uint32 type);
+
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 static Uint32
 _pg_repeat_callback(void *param, SDL_TimerID timerID, Uint32 interval)
@@ -283,11 +288,28 @@ _pg_strip_utf8(const char *str, char *ret)
     }
 }
 
+/* Go over our cache, deleting entries with the same scancode */
+static void
+_pg_del_event_unicode(SDL_Event *event)
+{
+    for (int i = 0; i < MAX_SCAN_UNICODE; i++) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (scanunicode[i].key == event->key.scancode)
+#else
+        if (scanunicode[i].key == event->key.keysym.scancode)
+#endif
+        {
+            /* Mark as free real estate for other events to occupy */
+            scanunicode[i].key = 0;
+        }
+    }
+}
+
 static int
 _pg_put_event_unicode(SDL_Event *event, const char *uni)
 {
-    int i;
-    for (i = 0; i < MAX_SCAN_UNICODE; i++) {
+    _pg_del_event_unicode(event);
+    for (int i = 0; i < MAX_SCAN_UNICODE; i++) {
         if (!scanunicode[i].key) {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
             scanunicode[i].key = event->key.scancode;
@@ -304,17 +326,14 @@ _pg_put_event_unicode(SDL_Event *event, const char *uni)
 static PyObject *
 _pg_get_event_unicode(SDL_Event *event)
 {
-    /* We only deal with one byte here, but still declare an array to silence
-     * compiler warnings. The other 3 bytes are unused */
-    char c[4];
-    int i;
-    for (i = 0; i < MAX_SCAN_UNICODE; i++) {
+    for (int i = 0; i < MAX_SCAN_UNICODE; i++) {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
         if (scanunicode[i].key == event->key.scancode) {
 #else
         if (scanunicode[i].key == event->key.keysym.scancode) {
 #endif
-            if (event->type == SDL_KEYUP) {
+            if (event->type == SDL_KEYUP ||
+                PG_EventEnabled(_pg_pgevent_proxify(SDL_KEYUP)) == SDL_FALSE) {
                 /* mark the position as free real estate for other
                  * events to occupy. */
                 scanunicode[i].key = 0;
@@ -323,12 +342,10 @@ _pg_get_event_unicode(SDL_Event *event)
         }
     }
     /* fallback to function that determines unicode from the event.
-     * We try to get the unicode attribute, and store it in memory*/
-    *c = _pg_unicode_from_event(event);
-    if (_pg_put_event_unicode(event, c)) {
-        return _pg_get_event_unicode(event);
-    }
-    return PyUnicode_FromString("");
+     * We don't need to store this in our cache because this is entirely
+     * determined from the event fields, and therefore needs no other info. */
+    char fallback[] = {_pg_unicode_from_event(event), '\0'};
+    return PyUnicode_FromString(fallback);
 }
 
 #define _PG_HANDLE_PROXIFY(name) \
@@ -602,6 +619,10 @@ pg_event_filter(void *_, SDL_Event *event)
 
     else if (event->type == SDL_KEYUP) {
         PG_LOCK_EVFILTER_MUTEX
+        /* Actual keyup is blocked, so clear unneeded cache if it exists */
+        if (PG_EventEnabled(_pg_pgevent_proxify(SDL_KEYUP)) == SDL_FALSE) {
+            _pg_del_event_unicode(event);
+        }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
         released_keys[event->key.scancode] = 1;
         if (_pg_repeat_timer &&
