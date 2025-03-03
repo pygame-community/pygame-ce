@@ -131,14 +131,16 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
      * create a new surface with the array dimensions */
     if (!same_dims) {
         if (!(temp_surf = PG_CreateSurface((int)dim0, (int)dim1,
-                                           PG_SURF_FORMATENUM(surf))))
+                                           PG_SURF_FORMATENUM(surf)))) {
             return RAISE(pgExc_SDLError, SDL_GetError());
+        }
     }
 
     /* Ensure the new surface has the same format as the original */
     new_surf = PG_ConvertSurface(temp_surf, surf->format);
-    if (temp_surf != surf)
+    if (temp_surf != surf) {
         SDL_FreeSurface(temp_surf);
+    }
 
     if (!new_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -151,8 +153,9 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     }
 
     /* if the surf and array dims match just return a copy */
-    if (same_dims)
+    if (same_dims) {
         return (PyObject *)new_surface;
+    }
 
     /* Acquire a temporary lock. */
     if (SDL_MUSTLOCK(new_surf) == 0) {
