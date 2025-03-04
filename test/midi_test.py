@@ -1,6 +1,5 @@
 import unittest
 
-
 import pygame
 
 
@@ -439,7 +438,7 @@ class MidiModuleNonInteractiveTest(unittest.TestCase):
 
     def test_conversions(self):
         """of frequencies to midi note numbers and ansi note names."""
-        from pygame.midi import frequency_to_midi, midi_to_frequency, midi_to_ansi_note
+        from pygame.midi import frequency_to_midi, midi_to_ansi_note, midi_to_frequency
 
         self.assertEqual(frequency_to_midi(27.5), 21)
         self.assertEqual(frequency_to_midi(36.7), 26)

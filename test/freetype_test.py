@@ -1,11 +1,11 @@
-import os
-import io
-import unittest
 import ctypes
-import weakref
 import gc
+import io
+import os
 import pathlib
 import platform
+import unittest
+import weakref
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
@@ -16,7 +16,6 @@ except NameError:
     pass
 
 import pygame
-
 import pygame.freetype as ft
 
 FONTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "fonts")

@@ -1,9 +1,9 @@
-import unittest
 import os
 import platform
+import unittest
 import warnings
-import pygame
 
+import pygame
 
 DARWIN = "Darwin" in platform.platform()
 

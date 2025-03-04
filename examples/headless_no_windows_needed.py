@@ -15,6 +15,7 @@ eg.  -scale in.png out.png 50 50
 
 import os
 import sys
+
 import pygame
 
 # set SDL to use the NULL video driver,
