@@ -80,18 +80,22 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
     /* Lock the destination if it's in hardware */
     dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0)
+        if (SDL_LockSurface(dst) < 0) {
             okay = 0;
-        else
+        }
+        else {
             dst_locked = 1;
+        }
     }
     /* Lock the source if it's in hardware */
     src_locked = 0;
     if (SDL_MUSTLOCK(src)) {
-        if (SDL_LockSurface(src) < 0)
+        if (SDL_LockSurface(src) < 0) {
             okay = 0;
-        else
+        }
+        else {
             src_locked = 1;
+        }
     }
 
     /* Set up source and destination buffer pointers, and BLIT! */
@@ -578,10 +582,12 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
     }
 
     /* We need to unlock the surfaces if they're locked */
-    if (dst_locked)
+    if (dst_locked) {
         SDL_UnlockSurface(dst);
-    if (src_locked)
+    }
+    if (src_locked) {
         SDL_UnlockSurface(src);
+    }
     /* Blit is done! */
     return (okay ? 0 : -1);
 }
@@ -1039,8 +1045,9 @@ blit_blend_rgba_min(SDL_BlitInfo *info)
             LOOP_UNROLLED4(
                 {
                     REPEAT_4({
-                        if ((*src) < (*dst))
+                        if ((*src) < (*dst)) {
                             (*dst) = (*src);
+                        }
                         src += incr;
                         dst += incr;
                     });
@@ -1174,8 +1181,9 @@ blit_blend_rgba_max(SDL_BlitInfo *info)
             LOOP_UNROLLED4(
                 {
                     REPEAT_4({
-                        if ((*src) > (*dst))
+                        if ((*src) > (*dst)) {
                             (*dst) = (*src);
+                        }
                         src += incr;
                         dst += incr;
                     });
@@ -2871,8 +2879,9 @@ pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
             srcx = 0;
         }
         maxw = src->w - srcx;
-        if (maxw < w)
+        if (maxw < w) {
             w = maxw;
+        }
 
         srcy = srcrect->y;
         h = srcrect->h;
@@ -2882,8 +2891,9 @@ pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
             srcy = 0;
         }
         maxh = src->h - srcy;
-        if (maxh < h)
+        if (maxh < h) {
             h = maxh;
+        }
     }
     else {
         srcx = srcy = 0;
@@ -2906,8 +2916,9 @@ pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
             srcx += dx;
         }
         dx = dstrect->x + w - clip.x - clip.w;
-        if (dx > 0)
+        if (dx > 0) {
             w -= dx;
+        }
 
         dy = clip.y - dstrect->y;
         if (dy > 0) {
@@ -2916,8 +2927,9 @@ pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
             srcy += dy;
         }
         dy = dstrect->y + h - clip.y - clip.h;
-        if (dy > 0)
+        if (dy > 0) {
             h -= dy;
+        }
     }
 
     if (w > 0 && h > 0) {
@@ -2955,9 +2967,10 @@ premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst)
         return -2;  // signal SDL error to caller
     }
 
-    if (src_blend == SDL_BLENDMODE_NONE && !(src_format->Amask != 0))
+    if (src_blend == SDL_BLENDMODE_NONE && !(src_format->Amask != 0)) {
         return -1;
-        // since we know dst is a copy of src we can simplify the normal checks
+    }
+    // since we know dst is a copy of src we can simplify the normal checks
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     if ((PG_SURF_BytesPerPixel(src) == 4) && pg_has_avx2()) {

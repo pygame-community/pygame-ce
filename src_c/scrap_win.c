@@ -52,16 +52,21 @@ _convert_format(char *type)
 static UINT
 _convert_internal_type(char *type)
 {
-    if (strcmp(type, PYGAME_SCRAP_TEXT) == 0)
+    if (strcmp(type, PYGAME_SCRAP_TEXT) == 0) {
         return CF_TEXT;
-    if (strcmp(type, "text/plain;charset=utf-8") == 0)
+    }
+    if (strcmp(type, "text/plain;charset=utf-8") == 0) {
         return CF_UNICODETEXT;
-    if (strcmp(type, "image/tiff") == 0)
+    }
+    if (strcmp(type, "image/tiff") == 0) {
         return CF_TIFF;
-    if (strcmp(type, PYGAME_SCRAP_BMP) == 0)
+    }
+    if (strcmp(type, PYGAME_SCRAP_BMP) == 0) {
         return CF_DIB;
-    if (strcmp(type, "audio/wav") == 0)
+    }
+    if (strcmp(type, "audio/wav") == 0) {
         return CF_WAVE;
+    }
     return -1;
 }
 
@@ -105,8 +110,9 @@ _lookup_clipboard_format(UINT format, char *buf, int size)
             len = GetClipboardFormatName(format, buf, size);
             return len;
     }
-    if (len != 0)
+    if (len != 0) {
         memcpy(buf, cpy, len);
+    }
     return len;
 }
 
@@ -124,8 +130,9 @@ _create_dib_buffer(char *data, size_t *count)
     LPBITMAPINFOHEADER bihdr;
     char *buf;
 
-    if (!data)
+    if (!data) {
         return NULL;
+    }
     bihdr = (LPBITMAPINFOHEADER)data;
 
     /* Create the BMP header. */
@@ -145,8 +152,9 @@ _create_dib_buffer(char *data, size_t *count)
 
     /* Copy both to the buffer. */
     buf = malloc(sizeof(hdr) + (*count));
-    if (!buf)
+    if (!buf) {
         return NULL;
+    }
     memcpy(buf, &hdr, sizeof(hdr));
     memcpy(buf + sizeof(BITMAPFILEHEADER), data, *count);
 
@@ -181,8 +189,9 @@ pygame_scrap_init(void)
     }
 #endif
 
-    if (retval)
+    if (retval) {
         _scrapinitialized = 1;
+    }
 
     _format_MIME_PLAIN = RegisterClipboardFormat(PYGAME_SCRAP_TEXT);
     return retval;
@@ -211,24 +220,29 @@ pygame_scrap_put(char *type, Py_ssize_t srclen, char *src)
     }
 
     format = _convert_internal_type(type);
-    if (format == -1)
+    if (format == -1) {
         format = _convert_format(type);
+    }
 
-    if (!OpenClipboard(window_handle))
+    if (!OpenClipboard(window_handle)) {
         return 0; /* Could not open the clipboard. */
+    }
 
-    if (format == CF_DIB || format == CF_DIBV5)
+    if (format == CF_DIB || format == CF_DIBV5) {
         nulledlen -= sizeof(BITMAPFILEHEADER); /* We won't copy the header */
+    }
 
     hMem = GlobalAlloc((GMEM_MOVEABLE | GMEM_DDESHARE), nulledlen);
     if (hMem) {
         char *dst = GlobalLock(hMem);
         if (dst) {
             memset(dst, 0, nulledlen);
-            if (format == CF_DIB || format == CF_DIBV5)
+            if (format == CF_DIB || format == CF_DIBV5) {
                 memcpy(dst, src + sizeof(BITMAPFILEHEADER), nulledlen - 1);
-            else
+            }
+            else {
                 memcpy(dst, src, srclen);
+            }
         }
 
         GlobalUnlock(hMem);
@@ -260,11 +274,13 @@ pygame_scrap_get(char *type, size_t *count)
         return RAISE(pgExc_SDLError, "scrap system not initialized.");
     }
 
-    if (!pygame_scrap_lost())
+    if (!pygame_scrap_lost()) {
         return PyBytes_AsString(PyDict_GetItemString(_clipdata, type));
+    }
 
-    if (!OpenClipboard(window_handle))
+    if (!OpenClipboard(window_handle)) {
         return NULL;
+    }
 
     if (!IsClipboardFormatAvailable(format)) {
         /* The format was not found - was it a mapped type? */
@@ -335,8 +351,9 @@ pygame_scrap_get_types(void)
     char tmp[100] = {'\0'};
     int size = 0;
 
-    if (!OpenClipboard(window_handle))
+    if (!OpenClipboard(window_handle)) {
         return NULL;
+    }
 
     size = CountClipboardFormats();
     if (size == 0) {
@@ -348,8 +365,9 @@ pygame_scrap_get_types(void)
         format = EnumClipboardFormats(format);
         if (format == 0) {
             /* Something wicked happened. */
-            while (i > 0)
+            while (i > 0) {
                 free(types[i]);
+            }
             free(types);
             CloseClipboard();
             return NULL;
@@ -357,8 +375,9 @@ pygame_scrap_get_types(void)
 
         /* No predefined name, get the (truncated) name. */
         len = _lookup_clipboard_format(format, tmp, 100);
-        if (len == 0)
+        if (len == 0) {
             continue;
+        }
         count++;
 
         tmptypes = realloc(types, sizeof(char *) * (count + 1));

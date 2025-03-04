@@ -185,8 +185,9 @@ pg_time_autoinit(PyObject *self, PyObject *_null)
     /* allocate a mutex for timer data holding struct */
     if (!pg_timer_mutex) {
         pg_timer_mutex = SDL_CreateMutex();
-        if (!pg_timer_mutex)
+        if (!pg_timer_mutex) {
             return RAISE(pgExc_SDLError, SDL_GetError());
+        }
     }
 #endif
     Py_RETURN_NONE;
@@ -318,8 +319,9 @@ accurate_delay(Sint64 ticks)
     // loop
     Uint64 maximum_delay = (SDL_MAX_UINT64 >> 1);
 
-    if (ticks <= 0)
+    if (ticks <= 0) {
         return 0;
+    }
 
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
@@ -350,8 +352,9 @@ static PyObject *
 time_get_ticks(PyObject *self, PyObject *_null)
 {
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
-    if (!SDL_WasInit(SDL_INIT_TIMER))
+    if (!SDL_WasInit(SDL_INIT_TIMER)) {
         return PyLong_FromLong(0);
+    }
 #endif
     return PyLong_FromUnsignedLongLong(PG_GetTicks());
 }
@@ -360,16 +363,19 @@ static PyObject *
 time_delay(PyObject *self, PyObject *arg)
 {
     Sint64 ticks;
-    if (!PyLong_Check(arg))
+    if (!PyLong_Check(arg)) {
         return RAISE(PyExc_TypeError, "delay requires one integer argument");
+    }
 
     ticks = PyLong_AsLongLong(arg);
-    if (ticks < 0)
+    if (ticks < 0) {
         ticks = 0;
+    }
 
     ticks = accurate_delay(ticks);
-    if (ticks == -1)
+    if (ticks == -1) {
         return NULL;
+    }
     return PyLong_FromLongLong(ticks);
 }
 
@@ -377,8 +383,9 @@ static PyObject *
 time_wait(PyObject *self, PyObject *arg)
 {
     Sint64 ticks, start;
-    if (!PyLong_Check(arg))
+    if (!PyLong_Check(arg)) {
         return RAISE(PyExc_TypeError, "wait requires one integer argument");
+    }
 
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
@@ -389,8 +396,9 @@ time_wait(PyObject *self, PyObject *arg)
 #endif
 
     ticks = PyLong_AsLongLong(arg);
-    if (ticks < 0)
+    if (ticks < 0) {
         ticks = 0;
+    }
 
     start = PG_GetTicks();
     Py_BEGIN_ALLOW_THREADS;
@@ -419,8 +427,9 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
 #endif
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi|i", kwids, &obj, &ticks,
-                                     &loops))
+                                     &loops)) {
         return NULL;
+    }
 
     if (PyLong_Check(obj)) {
         ev_type = (int)PyLong_AsLong(obj);
@@ -443,8 +452,9 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
 #ifndef __EMSCRIPTEN__
-    if (!pg_timer_mutex)
+    if (!pg_timer_mutex) {
         return RAISE(pgExc_SDLError, "pygame is not initialized");
+    }
 #endif /* emscripten */
 
     /* release GIL because python GIL and pg_timer_mutex should not
@@ -527,8 +537,9 @@ clock_tick_base(pgClockObject *self, PyObject *arg, int use_accurate_delay)
     float framerate = 0.0f;
     Uint64 nowtime;
 
-    if (!PyArg_ParseTuple(arg, "|f", &framerate))
+    if (!PyArg_ParseTuple(arg, "|f", &framerate)) {
         return NULL;
+    }
 
     if (framerate) {
         Sint64 delay, endtime = (Sint64)((1.0f / framerate) * 1000.0f);
@@ -544,28 +555,32 @@ clock_tick_base(pgClockObject *self, PyObject *arg, int use_accurate_delay)
         }
 #endif
 
-        if (use_accurate_delay)
+        if (use_accurate_delay) {
             delay = accurate_delay(delay);
+        }
         else {
             // this uses sdls delay, which can be inaccurate.
-            if (delay < 0)
+            if (delay < 0) {
                 delay = 0;
+            }
 
             Py_BEGIN_ALLOW_THREADS;
             SDL_Delay((Uint32)delay);
             Py_END_ALLOW_THREADS;
         }
 
-        if (delay == -1)
+        if (delay == -1) {
             return NULL;
+        }
     }
 
     nowtime = PG_GetTicks();
     self->timepassed = nowtime - self->last_tick;
     self->fps_count += 1;
     self->last_tick = nowtime;
-    if (!framerate)
+    if (!framerate) {
         self->rawpassed = self->timepassed;
+    }
 
     if (!self->fps_tick) {
         self->fps_count = 0;

@@ -101,8 +101,9 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
 
     rw = pgRWops_FromObject(obj, &ext);
-    if (rw == NULL) /* stop on NULL, error already set */
+    if (rw == NULL) { /* stop on NULL, error already set */
         return NULL;
+    }
 
     if (name) { /* override extension with namehint if given */
         type = iext_find_extension(name);
@@ -143,8 +144,9 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         free(ext);
     }
 
-    if (surf == NULL)
+    if (surf == NULL) {
         return RAISE(pgExc_SDLError, IMG_GetError());
+    }
 
     final = (PyObject *)pgSurface_New(surf);
     if (final == NULL) {

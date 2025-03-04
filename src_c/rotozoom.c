@@ -517,8 +517,9 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
     /*
      * Sanity check
      */
-    if (src == NULL)
+    if (src == NULL) {
         return (NULL);
+    }
 
     /*
      * Determine if source surface is 32bit or 8bit

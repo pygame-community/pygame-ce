@@ -1183,8 +1183,9 @@ RectExport_unionIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     InnerRect *argrect, temp;
     PrimitiveType x, y, w, h;
 
-    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp)))
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
+    }
 
     x = MIN(self->r.x, argrect->x);
     y = MIN(self->r.y, argrect->y);
@@ -1783,8 +1784,9 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
     }
 
     ret = PyList_New(0);
-    if (!ret)
+    if (!ret) {
         return NULL;
+    }
 
     /* If the calling rect has 0 width or height, it cannot collide with
      * anything, hence return an empty list directly. */
@@ -1934,8 +1936,9 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     PyObject *subtup1, *subtup2;
     subtup1 = TupleFromTwoPrimitives(x1, y1);
-    if (!subtup1)
+    if (!subtup1) {
         return NULL;
+    }
 
     subtup2 = TupleFromTwoPrimitives(x2, y2);
     if (!subtup2) {
@@ -2012,22 +2015,28 @@ RectExport_clamp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     if (self->r.w >= argrect->w) {
         x = argrect->x + argrect->w / 2 - self->r.w / 2;
     }
-    else if (self->r.x < argrect->x)
+    else if (self->r.x < argrect->x) {
         x = argrect->x;
-    else if (self->r.x + self->r.w > argrect->x + argrect->w)
+    }
+    else if (self->r.x + self->r.w > argrect->x + argrect->w) {
         x = argrect->x + argrect->w - self->r.w;
-    else
+    }
+    else {
         x = self->r.x;
+    }
 
     if (self->r.h >= argrect->h) {
         y = argrect->y + argrect->h / 2 - self->r.h / 2;
     }
-    else if (self->r.y < argrect->y)
+    else if (self->r.y < argrect->y) {
         y = argrect->y;
-    else if (self->r.y + self->r.h > argrect->y + argrect->h)
+    }
+    else if (self->r.y + self->r.h > argrect->y + argrect->h) {
         y = argrect->y + argrect->h - self->r.h;
-    else
+    }
+    else {
         y = self->r.y;
+    }
 
     return RectExport_subtypeNew4(Py_TYPE(self), x, y, self->r.w, self->r.h);
 }
@@ -2069,22 +2078,28 @@ RectExport_clampIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     if (self->r.w >= argrect->w) {
         x = argrect->x + argrect->w / 2 - self->r.w / 2;
     }
-    else if (self->r.x < argrect->x)
+    else if (self->r.x < argrect->x) {
         x = argrect->x;
-    else if (self->r.x + self->r.w > argrect->x + argrect->w)
+    }
+    else if (self->r.x + self->r.w > argrect->x + argrect->w) {
         x = argrect->x + argrect->w - self->r.w;
-    else
+    }
+    else {
         x = self->r.x;
+    }
 
     if (self->r.h >= argrect->h) {
         y = argrect->y + argrect->h / 2 - self->r.h / 2;
     }
-    else if (self->r.y < argrect->y)
+    else if (self->r.y < argrect->y) {
         y = argrect->y;
-    else if (self->r.y + self->r.h > argrect->y + argrect->h)
+    }
+    else if (self->r.y + self->r.h > argrect->y + argrect->h) {
         y = argrect->y + argrect->h - self->r.h;
-    else
+    }
+    else {
         y = self->r.y;
+    }
 
     self->r.x = x;
     self->r.y = y;

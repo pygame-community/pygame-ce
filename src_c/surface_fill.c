@@ -40,36 +40,48 @@ surface_respect_clip_rect(SDL_Surface *surface, SDL_Rect *rect)
     /* Code here is nearly identical to rect_clip in rect.c */
 
     /* Left */
-    if ((A->x >= B->x) && (A->x < (B->x + B->w)))
+    if ((A->x >= B->x) && (A->x < (B->x + B->w))) {
         x = A->x;
-    else if ((B->x >= A->x) && (B->x < (A->x + A->w)))
+    }
+    else if ((B->x >= A->x) && (B->x < (A->x + A->w))) {
         x = B->x;
-    else
+    }
+    else {
         return;
+    }
 
     /* Right */
-    if (((A->x + A->w) > B->x) && ((A->x + A->w) <= (B->x + B->w)))
+    if (((A->x + A->w) > B->x) && ((A->x + A->w) <= (B->x + B->w))) {
         w = (A->x + A->w) - x;
-    else if (((B->x + B->w) > A->x) && ((B->x + B->w) <= (A->x + A->w)))
+    }
+    else if (((B->x + B->w) > A->x) && ((B->x + B->w) <= (A->x + A->w))) {
         w = (B->x + B->w) - x;
-    else
+    }
+    else {
         return;
+    }
 
     /* Top */
-    if ((A->y >= B->y) && (A->y < (B->y + B->h)))
+    if ((A->y >= B->y) && (A->y < (B->y + B->h))) {
         y = A->y;
-    else if ((B->y >= A->y) && (B->y < (A->y + A->h)))
+    }
+    else if ((B->y >= A->y) && (B->y < (A->y + A->h))) {
         y = B->y;
-    else
+    }
+    else {
         return;
+    }
 
     /* Bottom */
-    if (((A->y + A->h) > B->y) && ((A->y + A->h) <= (B->y + B->h)))
+    if (((A->y + A->h) > B->y) && ((A->y + A->h) <= (B->y + B->h))) {
         h = (A->y + A->h) - y;
-    else if (((B->y + B->h) > A->y) && ((B->y + B->h) <= (A->y + A->h)))
+    }
+    else if (((B->y + B->h) > A->y) && ((B->y + B->h) <= (A->y + A->h))) {
         h = (B->y + B->h) - y;
-    else
+    }
+    else {
         return;
+    }
 
     rect->x = x;
     rect->y = y;
@@ -915,8 +927,9 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 
     /* Lock the surface, if needed */
     if (SDL_MUSTLOCK(surface)) {
-        if (SDL_LockSurface(surface) < 0)
+        if (SDL_LockSurface(surface) < 0) {
             return -1;
+        }
         locked = 1;
     }
 

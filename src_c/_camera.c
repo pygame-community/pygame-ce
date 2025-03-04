@@ -93,8 +93,9 @@ surf_colorspace(PyObject *self, PyObject *arg)
 
     /*get all the arguments*/
     if (!PyArg_ParseTuple(arg, "O!s|O!", &pgSurface_Type, &surfobj, &color,
-                          &pgSurface_Type, &surfobj2))
+                          &pgSurface_Type, &surfobj2)) {
         return NULL;
+    }
 
     if (!strcmp(color, "YUV")) {
         cspace = YUV_OUT;
@@ -119,13 +120,15 @@ surf_colorspace(PyObject *self, PyObject *arg)
     }
 
     /* check to see if the size is the same. */
-    if (newsurf->w != surf->w || newsurf->h != surf->h)
+    if (newsurf->w != surf->w || newsurf->h != surf->h) {
         return RAISE(PyExc_ValueError,
                      "Surfaces not the same width and height.");
+    }
 
     /* check to see if the format of the surface is the same. */
-    if (PG_SURF_BitsPerPixel(surf) != PG_SURF_BitsPerPixel(newsurf))
+    if (PG_SURF_BitsPerPixel(surf) != PG_SURF_BitsPerPixel(newsurf)) {
         return RAISE(PyExc_ValueError, "Surfaces not the same depth");
+    }
 
     PG_PixelFormat *src_fmt = PG_GetSurfaceFormat(surf);
     if (!src_fmt) {
@@ -146,8 +149,9 @@ surf_colorspace(PyObject *self, PyObject *arg)
         Py_INCREF(surfobj2);
         return (PyObject *)surfobj2;
     }
-    else
+    else {
         return (PyObject *)pgSurface_New(newsurf);
+    }
 }
 
 /* list_cameras() - lists cameras available on the computer */
@@ -245,16 +249,20 @@ PyObject *
 camera_stop(pgCameraObject *self, PyObject *_null)
 {
 #if defined(__unix__)
-    if (v4l2_stop_capturing(self) == 0)
+    if (v4l2_stop_capturing(self) == 0) {
         return NULL;
-    if (v4l2_uninit_device(self) == 0)
+    }
+    if (v4l2_uninit_device(self) == 0) {
         return NULL;
-    if (v4l2_close_device(self) == 0)
+    }
+    if (v4l2_close_device(self) == 0) {
         return NULL;
+    }
 #elif defined(PYGAME_WINDOWS_CAMERA)
     if (self->open) { /* camera started */
-        if (!windows_close_device(self))
+        if (!windows_close_device(self)) {
             return NULL;
+        }
     }
 #endif
     Py_RETURN_NONE;
@@ -267,14 +275,17 @@ camera_get_controls(pgCameraObject *self, PyObject *_null)
 {
 #if defined(__unix__)
     int value;
-    if (v4l2_get_control(self->fd, V4L2_CID_HFLIP, &value))
+    if (v4l2_get_control(self->fd, V4L2_CID_HFLIP, &value)) {
         self->hflip = value;
+    }
 
-    if (v4l2_get_control(self->fd, V4L2_CID_VFLIP, &value))
+    if (v4l2_get_control(self->fd, V4L2_CID_VFLIP, &value)) {
         self->vflip = value;
+    }
 
-    if (v4l2_get_control(self->fd, V4L2_CID_BRIGHTNESS, &value))
+    if (v4l2_get_control(self->fd, V4L2_CID_BRIGHTNESS, &value)) {
         self->brightness = value;
+    }
 
     return Py_BuildValue("(NNN)", PyBool_FromLong(self->hflip),
                          PyBool_FromLong(self->vflip),
@@ -300,18 +311,22 @@ camera_set_controls(pgCameraObject *self, PyObject *arg, PyObject *kwds)
     brightness = self->brightness;
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|iii", kwids, &hflip, &vflip,
-                                     &brightness))
+                                     &brightness)) {
         return NULL;
+    }
 
     /* #if defined(__unix__)         */
-    if (v4l2_set_control(self->fd, V4L2_CID_HFLIP, hflip))
+    if (v4l2_set_control(self->fd, V4L2_CID_HFLIP, hflip)) {
         self->hflip = hflip;
+    }
 
-    if (v4l2_set_control(self->fd, V4L2_CID_VFLIP, vflip))
+    if (v4l2_set_control(self->fd, V4L2_CID_VFLIP, vflip)) {
         self->vflip = vflip;
+    }
 
-    if (v4l2_set_control(self->fd, V4L2_CID_BRIGHTNESS, brightness))
+    if (v4l2_set_control(self->fd, V4L2_CID_BRIGHTNESS, brightness)) {
         self->brightness = brightness;
+    }
 
     return Py_BuildValue("(NNN)", PyBool_FromLong(self->hflip),
                          PyBool_FromLong(self->vflip),
@@ -326,8 +341,9 @@ camera_set_controls(pgCameraObject *self, PyObject *arg, PyObject *kwds)
     brightness = -1;
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|iii", kwids, &hflip, &vflip,
-                                     &brightness))
+                                     &brightness)) {
         return NULL;
+    }
 
     self->hflip = hflip;
     self->vflip = vflip;
@@ -356,8 +372,9 @@ camera_query_image(pgCameraObject *self, PyObject *_null)
     return PyBool_FromLong(v4l2_query_buffer(self));
 #elif defined(PYGAME_WINDOWS_CAMERA)
     int ready;
-    if (!windows_frame_ready(self, &ready))
+    if (!windows_frame_ready(self, &ready)) {
         return NULL;
+    }
 
     return PyBool_FromLong(ready);
 #endif
@@ -374,8 +391,9 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
     pgSurfaceObject *surfobj = NULL;
     int ret, errno_code = 0;
 
-    if (!PyArg_ParseTuple(arg, "|O!", &pgSurface_Type, &surfobj))
+    if (!PyArg_ParseTuple(arg, "|O!", &pgSurface_Type, &surfobj)) {
         return NULL;
+    }
 
     if (!surfobj) {
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -390,8 +408,9 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
         surf = pgSurface_AsSurface(surfobj);
     }
 
-    if (!surf)
+    if (!surf) {
         return NULL;
+    }
 
     if (surf->w != self->width || surf->h != self->height) {
         return RAISE(PyExc_ValueError,
@@ -426,8 +445,9 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
     int width = self->width;
     int height = self->height;
 
-    if (!PyArg_ParseTuple(arg, "|O!", &pgSurface_Type, &surfobj))
+    if (!PyArg_ParseTuple(arg, "|O!", &pgSurface_Type, &surfobj)) {
         return NULL;
+    }
 
     if (!surfobj) {
         surf = PG_CreateSurface(width, height, SDL_PIXELFORMAT_XRGB8888);
@@ -436,16 +456,18 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
         surf = pgSurface_AsSurface(surfobj);
     }
 
-    if (!surf)
+    if (!surf) {
         return NULL;
+    }
 
     if (surf->w != self->width || surf->h != self->height) {
         return RAISE(PyExc_ValueError,
                      "Destination surface not the correct width or height.");
     }
 
-    if (!windows_read_frame(self, surf))
+    if (!windows_read_frame(self, surf)) {
         return NULL;
+    }
 
     if (surfobj) {
         Py_INCREF(surfobj);

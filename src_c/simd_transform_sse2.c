@@ -289,8 +289,9 @@ filter_expand_X_SSE2(Uint8 *srcpix, Uint8 *dstpix, int height, int srcpitch,
 
     /* Allocate memory for factors */
     xidx0 = malloc(dstwidth * 4);
-    if (xidx0 == 0)
+    if (xidx0 == 0) {
         return;
+    }
     // This algorithm uses two multipliers, xm0 and xm1. Each multiplier
     // gets 32 bits of space, so this gives 64 bits per dstwidth.
     xmult_combined = (int *)malloc(dstwidth * factorwidth);

@@ -277,8 +277,9 @@ _PGFT_GetTextRect(FreeTypeInstance *ft, pgFontObject *fontobj,
     FT_Fixed underline_size;
 
     font_text = _PGFT_LoadLayout(ft, fontobj, mode, text);
-    if (!font_text)
+    if (!font_text) {
         goto error;
+    }
     _PGFT_GetRenderMetrics(mode, font_text, &width, &height, &offset,
                            &underline_top, &underline_size);
     r->x = -(Sint16)FX6_TRUNC(FX6_FLOOR(offset.x));
@@ -473,8 +474,9 @@ RWops_read(FT_Stream stream, unsigned long offset, unsigned char *buffer,
     src = (SDL_RWops *)stream->descriptor.pointer;
     SDL_RWseek(src, (int)offset, SEEK_SET);
 
-    if (count == 0)
+    if (count == 0) {
         return 0;
+    }
 
     return (unsigned long)SDL_RWread(src, buffer, 1, (int)count);
 }
@@ -512,16 +514,18 @@ _PGFT_TryLoadFont_RWops(FreeTypeInstance *ft, pgFontObject *fontobj,
 SDL_RWops *
 _PGFT_GetRWops(pgFontObject *fontobj)
 {
-    if (fontobj->id.open_args.flags == FT_OPEN_STREAM)
+    if (fontobj->id.open_args.flags == FT_OPEN_STREAM) {
         return fontobj->id.open_args.stream->descriptor.pointer;
+    }
     return NULL;
 }
 
 void
 _PGFT_UnloadFont(FreeTypeInstance *ft, pgFontObject *fontobj)
 {
-    if (fontobj->id.open_args.flags == 0)
+    if (fontobj->id.open_args.flags == 0) {
         return;
+    }
 
     if (ft) {
         FTC_Manager_RemoveFaceID(ft->cache_manager,
@@ -600,17 +604,21 @@ error_cleanup:
 void
 _PGFT_Quit(FreeTypeInstance *ft)
 {
-    if (!ft)
+    if (!ft) {
         return;
+    }
 
-    if (--ft->ref_count != 0)
+    if (--ft->ref_count != 0) {
         return;
+    }
 
-    if (ft->cache_manager)
+    if (ft->cache_manager) {
         FTC_Manager_Done(ft->cache_manager);
+    }
 
-    if (ft->library)
+    if (ft->library) {
         FT_Done_FreeType(ft->library);
+    }
 
     _PGFT_free(ft);
 }
