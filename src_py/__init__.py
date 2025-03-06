@@ -30,16 +30,33 @@ import platform
 # Choose Windows display driver
 if os.name == "nt":
     pygame_dir = os.path.split(__file__)[0]
+    dll_parents = {pygame_dir}
+    try:
+        # For editable support, add some more folders where DLLs are available.
+        # This block only executes under an editable install. In a "normal"
+        # install, the json file will not be installed at the supplied path.
+        with open(
+            os.path.join(
+                os.path.dirname(pygame_dir), "buildconfig", "win_dll_dirs.json"
+            ),
+            encoding="utf-8",
+        ) as f:
+            import json
 
-    # pypy does not find the dlls, so we add package folder to PATH.
-    os.environ["PATH"] = os.environ["PATH"] + ";" + pygame_dir
+            dll_parents.update(json.load(f))
+            del json
+    except (FileNotFoundError, ValueError):
+        pass
 
-    # Windows store python does not find the dlls, so we run this
-    if sys.version_info > (3, 8):
-        os.add_dll_directory(pygame_dir)  # only available in 3.8+
+    d = ""  # define variable here so that we can consistently delete it
+    for d in dll_parents:
+        # adding to PATH is the legacy way, os.add_dll_directory is the new
+        # and recommended method. For extra safety we do both
+        os.environ["PATH"] = os.environ["PATH"] + ";" + d
+        os.add_dll_directory(d)
 
     # cleanup namespace
-    del pygame_dir
+    del pygame_dir, dll_parents, d
 
 # when running under X11, always set the SDL window WM_CLASS to make the
 #   window managers correctly match the pygame window.
@@ -197,10 +214,6 @@ try:
 except (ImportError, OSError):
     sprite = MissingModule("sprite", urgent=1)
 
-try:
-    import pygame.threads
-except (ImportError, OSError):
-    threads = MissingModule("threads", urgent=1)
 
 try:
     import pygame.pixelcopy
@@ -266,7 +279,7 @@ try:
 except (ImportError, OSError):
     font = MissingModule("font", urgent=0)
 
-# try and load pygame.mixer_music before mixer, for py2app...
+# try to load pygame.mixer_music before mixer, for py2app...
 try:
     import pygame.mixer_music
 
@@ -277,6 +290,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.mixer
+    from pygame.mixer import Sound
     from pygame.mixer import Channel
 except (ImportError, OSError):
     mixer = MissingModule("mixer", urgent=0)
@@ -315,10 +329,14 @@ try:
     from pygame.window import Window
 except (ImportError, OSError):
 
-    def Window(
-        title="pygame window", size=(640, 480), position=None, **kwargs
-    ):  # pylint: disable=unused-argument
+    def Window(title="pygame window", size=(640, 480), position=None, **kwargs):  # pylint: disable=unused-argument
         _attribute_undefined("pygame.Window")
+
+
+try:
+    import pygame.typing
+except (ImportError, OSError):
+    typing = MissingModule("typing", urgent=0)
 
 
 # there's also a couple "internal" modules not needed

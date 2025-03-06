@@ -15,9 +15,8 @@ tar xf ${GLIB}.tar
 cd $GLIB
 
 # a minimal glib install will do for us
-meson setup _build $PG_BASE_MESON_FLAGS -Dtests=false \
+meson setup _build $PG_BASE_MESON_FLAGS --force-fallback-for libpcre2-8 -Dtests=false \
     -Dselinux=disabled -Dlibmount=disabled -Ddtrace=false -Dsystemtap=false -Dnls=disabled
 
 meson compile -C _build
 meson install -C _build
-

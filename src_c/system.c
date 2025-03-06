@@ -35,20 +35,17 @@ pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
     INSERT_INSTRUCTIONSET_INFO("AVX2", SDL_HasAVX2);
     INSERT_INSTRUCTIONSET_INFO("AVX512F", SDL_HasAVX512F);
     INSERT_INSTRUCTIONSET_INFO("NEON", SDL_HasNEON);
-#if SDL_VERSION_ATLEAST(2, 0, 12)
     INSERT_INSTRUCTIONSET_INFO("ARMSIMD", SDL_HasARMSIMD);
-#else
-    if (PyDict_SetItemString(instruction_sets, "ARMSIMD", Py_False))
-        goto error;
-#endif
 #if SDL_VERSION_ATLEAST(2, 24, 0)
     INSERT_INSTRUCTIONSET_INFO("LSX", SDL_HasLSX);
     INSERT_INSTRUCTIONSET_INFO("LASX", SDL_HasLASX);
 #else
-    if (PyDict_SetItemString(instruction_sets, "LSX", Py_False))
+    if (PyDict_SetItemString(instruction_sets, "LSX", Py_False)) {
         goto error;
-    if (PyDict_SetItemString(instruction_sets, "LASX", Py_False))
+    }
+    if (PyDict_SetItemString(instruction_sets, "LASX", Py_False)) {
         goto error;
+    }
 #endif
 
 #undef INSERT_INSTRUCTIONSET_INFO
@@ -96,8 +93,24 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
         return NULL;
     }
 
-#if SDL_VERSION_ATLEAST(2, 0, 14)
+    // Sorry about the SDL3 gnarliness here, this was the best way I could
+    // think of to support SDL2/SDL3 at once. The approach is that each
+    // version is responsible for coming up with a list and a count,
+    // then the iteration over the list is shared (except for the indexing
+    // strategy, where SDL2/3 are different)
+
     PyObject *dict, *val = NULL;
+    int num_locales;
+    SDL_Locale *current_locale;
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_Locale **locales = SDL_GetPreferredLocales(&num_locales);
+    if (!locales) {
+        /* Return an empty list if SDL function does not return any useful
+         * information */
+        return ret_list;
+    }
+#else
     SDL_Locale *locales = SDL_GetPreferredLocales();
     if (!locales) {
         /* Return an empty list if SDL function does not return any useful
@@ -105,16 +118,27 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
         return ret_list;
     }
 
-    SDL_Locale *current_locale = locales;
-
+    num_locales = 0;
+    current_locale = locales;
     /* The array is terminated when the language attribute of the last struct
      * in the array is NULL */
     while (current_locale->language) {
+        num_locales++;
+        current_locale++;
+    }
+#endif
+
+    for (int i = 0; i < num_locales; i++) {
         dict = PyDict_New();
         if (!dict) {
             goto error;
         }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        current_locale = locales[i];
+#else
+        current_locale = locales + i;
+#endif
         val = PyUnicode_FromString(current_locale->language);
         if (!val) {
             goto error;
@@ -145,7 +169,6 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
             goto error;
         }
         Py_DECREF(dict);
-        current_locale++;
     }
 
     SDL_free(locales);
@@ -156,9 +179,6 @@ error:
     SDL_free(locales);
     Py_DECREF(ret_list);
     return NULL;
-#else
-    return ret_list;
-#endif
 }
 
 static PyObject *PowerState_class = NULL;
@@ -207,20 +227,22 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
         "battery_seconds", sec_py,
         "on_battery", PyBool_FromLong(on_battery),
         "no_battery", PyBool_FromLong(no_battery),
-        "charging", PyBool_FromLong(charging), 
+        "charging", PyBool_FromLong(charging),
         "charged", PyBool_FromLong(charged),
-        "plugged_in", PyBool_FromLong(!on_battery), 
+        "plugged_in", PyBool_FromLong(!on_battery),
         "has_battery", PyBool_FromLong(on_battery || !no_battery)
     );
     // clang-format on
 
-    if (!return_kwargs)
+    if (!return_kwargs) {
         return NULL;
+    }
 
     return_args = Py_BuildValue("()");
 
-    if (!return_args)
+    if (!return_args) {
         return NULL;
+    }
 
     if (!PowerState_class) {
         return RAISE(PyExc_SystemError, "PowerState class is not imported.");

@@ -1,4 +1,4 @@
-""" pygame.examples.go_over_there
+"""pygame.examples.go_over_there
 This simple tech demo is showcasing the use of Vector2.move_towards()
 using multiple circles to represent Vectors. Each circle will have a
 random position and speed once the demo starts.
@@ -9,6 +9,7 @@ Mouse Controls:
 Keyboard Controls:
 * Press R to restart the demo
 """
+
 import pygame
 import random
 
@@ -17,10 +18,6 @@ MAX_SPEED = 5
 MAX_BALLS = 1600
 SCREEN_SIZE = pygame.Vector2(1000, 600)
 CIRCLE_RADIUS = 5
-
-pygame.init()
-screen = pygame.display.set_mode(SCREEN_SIZE)
-clock = pygame.Clock()
 
 target_position = None
 balls = []
@@ -48,35 +45,47 @@ def reset():
         balls.append(b)
 
 
-reset()
-delta_time = 0
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+def main():
+    global target_position
+    global balls
 
-        if event.type == pygame.MOUSEBUTTONUP:
-            target_position = pygame.mouse.get_pos()
+    pygame.init()
+    screen = pygame.display.set_mode(SCREEN_SIZE)
+    clock = pygame.Clock()
 
-        if event.type == pygame.KEYUP:
-            if event.key == pygame.K_ESCAPE:
+    reset()
+    delta_time = 0
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 running = False
 
-            if event.key == pygame.K_r:
-                reset()
+            if event.type == pygame.MOUSEBUTTONUP:
+                target_position = pygame.mouse.get_pos()
 
-    screen.fill((31, 143, 65))
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
 
-    for o in balls:
-        if target_position is not None:
-            o.position.move_towards_ip(target_position, o.speed * delta_time)
-        pygame.draw.circle(screen, (118, 207, 145), o.position, CIRCLE_RADIUS)
+                if event.key == pygame.K_r:
+                    reset()
 
-    pygame.display.flip()
-    delta_time = clock.tick(60)
-    pygame.display.set_caption(
-        f"fps: {round(clock.get_fps(), 2)}, ball count: {len(balls)}"
-    )
+        screen.fill((31, 143, 65))
 
-pygame.quit()
+        for o in balls:
+            if target_position is not None:
+                o.position.move_towards_ip(target_position, o.speed * delta_time)
+            pygame.draw.circle(screen, (118, 207, 145), o.position, CIRCLE_RADIUS)
+
+        pygame.display.flip()
+        delta_time = clock.tick(60)
+        pygame.display.set_caption(
+            f"fps: {round(clock.get_fps(), 2)}, ball count: {len(balls)}"
+        )
+
+    pygame.quit()
+
+
+if __name__ == "__main__":
+    main()

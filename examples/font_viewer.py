@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.font_viewer
+"""pygame.examples.font_viewer
 Scroll through your system fonts from a list of surfaces or one huge buffer.
 
 This example exhibits:
@@ -22,6 +22,7 @@ Keyboard Controls:
 * Press up or down to scroll
 * Press escape to exit
 """
+
 import sys
 import os
 
@@ -71,11 +72,7 @@ class FontViewer:
             path = os.path.join(sys.argv[1], "")
         fonts = []
         if os.path.exists(path):
-            # this list comprehension could replace the following loop
-            # fonts = [f in os.listdir(path) if f.endswith('.ttf')]
-            for font in os.listdir(path):
-                if font.endswith(".ttf"):
-                    fonts.append(font)
+            fonts = [font for font in os.listdir(path) if font.endswith(".ttf")]
         return fonts or pygame.font.get_fonts(), path
 
     def render_fonts(self, text="A display of font &N"):
@@ -125,7 +122,7 @@ class FontViewer:
             line = text.replace("&N", name)
             try:
                 surf = font.render(
-                    line, 1, color, self.back_color, self.screen_size[0] - 20
+                    line, True, color, self.back_color, self.screen_size[0] - 20
                 )
             except pygame.error as e:
                 print(e)
@@ -284,5 +281,6 @@ class FontViewer:
         return True
 
 
-viewer = FontViewer()
-pygame.quit()
+if __name__ == "__main__":
+    viewer = FontViewer()
+    pygame.quit()

@@ -1,0 +1,42 @@
+# Controls whether pygame.image is built with extended image format support.
+# Enabled by default, disable explicitly if you don't want to compile with SDL_image.
+option('image', type: 'feature', value: 'enabled')
+
+# Controls whether pygame.mixer, pygame.mixer.music and pygame._sdl2.mixer are built.
+# Enabled by default, disable explicitly if you don't want to compile with SDL_mixer.
+option('mixer', type: 'feature', value: 'enabled')
+
+# Controls whether pygame.font is built using SDL_ttf.
+# Enabled by default, disable explicitly if you don't want to compile with SDL_ttf.
+# If this is disabled, and the freetype option is enabled, a pygame.font module will
+# be created based on the freetype module (ftfont)
+option('font', type: 'feature', value: 'enabled')
+
+# Controls whether pygame.freetype is built.
+# Enabled by default, disable explicitly if you don't want to compile with freetype2.
+option('freetype', type: 'feature', value: 'enabled')
+
+# Controls whether pygame.midi is built.
+# Enabled by default, disable explicitly if you don't want to compile with
+# portmidi/porttime.
+option('midi', type: 'feature', value: 'enabled')
+
+# Controls whether to make a "stripped" pygame install. Enabling this disables
+# the bundling of docs/examples/tests/stubs in the wheels.
+# The default behaviour is to bundle all of these.
+option('stripped', type: 'boolean', value: 'false')
+
+# Controls whether to compile with -Werror (or its msvc equivalent). The default
+# behaviour is to not do this by default
+option('error_on_warns', type: 'boolean', value: 'false')
+
+# Controls whether to error on build if generated docs are missing. Defaults to
+# false.
+option('error_docs_missing', type: 'boolean', value: 'false')
+
+# Controls whether to do a coverage build.
+# This argument must be used together with the editable install.
+option('coverage', type: 'boolean', value: false)
+
+# Controls whether to use SDL3 instead of SDL2. The default is to use SDL2
+option('sdl_api', type: 'integer', min: 2, max: 3, value: 2)

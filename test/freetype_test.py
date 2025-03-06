@@ -508,11 +508,11 @@ class FreeTypeFontTest(unittest.TestCase):
         # one code point or two.
         ufont = self._TEST_FONTS["mono"]
         rect_utf32 = ufont.get_rect("\U00013079", size=24)
-        rect_utf16 = ufont.get_rect("\uD80C\uDC79", size=24)
+        rect_utf16 = ufont.get_rect("\ud80c\udc79", size=24)
         self.assertEqual(rect_utf16, rect_utf32)
         ufont.ucs4 = True
         try:
-            rect_utf16 = ufont.get_rect("\uD80C\uDC79", size=24)
+            rect_utf16 = ufont.get_rect("\ud80c\udc79", size=24)
         finally:
             ufont.ucs4 = False
         self.assertNotEqual(rect_utf16, rect_utf32)
@@ -775,29 +775,29 @@ class FreeTypeFontTest(unittest.TestCase):
         ucs4 = font2.ucs4
         try:
             font2.ucs4 = False
-            rend1 = font2.render("\uD80C\uDC79", color, size=24)
+            rend1 = font2.render("\ud80c\udc79", color, size=24)
             rend2 = font2.render("\U00013079", color, size=24)
             self.assertEqual(rend1[1], rend2[1])
             font2.ucs4 = True
-            rend1 = font2.render("\uD80C\uDC79", color, size=24)
+            rend1 = font2.render("\ud80c\udc79", color, size=24)
             self.assertNotEqual(rend1[1], rend2[1])
         finally:
             font2.ucs4 = ucs4
 
         # malformed surrogate pairs
-        self.assertRaises(UnicodeEncodeError, font.render, "\uD80C", color, size=24)
-        self.assertRaises(UnicodeEncodeError, font.render, "\uDCA7", color, size=24)
+        self.assertRaises(UnicodeEncodeError, font.render, "\ud80c", color, size=24)
+        self.assertRaises(UnicodeEncodeError, font.render, "\udca7", color, size=24)
         self.assertRaises(
-            UnicodeEncodeError, font.render, "\uD7FF\uDCA7", color, size=24
+            UnicodeEncodeError, font.render, "\ud7ff\udca7", color, size=24
         )
         self.assertRaises(
-            UnicodeEncodeError, font.render, "\uDC00\uDCA7", color, size=24
+            UnicodeEncodeError, font.render, "\udc00\udca7", color, size=24
         )
         self.assertRaises(
-            UnicodeEncodeError, font.render, "\uD80C\uDBFF", color, size=24
+            UnicodeEncodeError, font.render, "\ud80c\udbff", color, size=24
         )
         self.assertRaises(
-            UnicodeEncodeError, font.render, "\uD80C\uE000", color, size=24
+            UnicodeEncodeError, font.render, "\ud80c\ue000", color, size=24
         )
 
         # raises exception when uninitialized
@@ -921,15 +921,17 @@ class FreeTypeFontTest(unittest.TestCase):
                 self.assertEqual(
                     surf.get_at(bottomleft),
                     fill_color,
-                    "Position: {}. Depth: {}."
-                    " fg_color: {}.".format(bottomleft, surf.get_bitsize(), fg_color),
+                    "Position: {}. Depth: {}. fg_color: {}.".format(
+                        bottomleft, surf.get_bitsize(), fg_color
+                    ),
                 )
                 bottomright = rrect.width - 1, rrect.height - 1
                 self.assertEqual(
                     surf.get_at(bottomright),
                     r_fg_color,
-                    "Position: {}. Depth: {}."
-                    " fg_color: {}.".format(bottomright, surf.get_bitsize(), fg_color),
+                    "Position: {}. Depth: {}. fg_color: {}.".format(
+                        bottomright, surf.get_bitsize(), fg_color
+                    ),
                 )
             for i, surf in enumerate(surfaces):
                 surf.fill(fill_color)
@@ -1764,6 +1766,10 @@ class FreeTypeTest(unittest.TestCase):
     def test_get_init(self):
         # Test if get_init() gets the init state.
         self.assertTrue(ft.get_init())
+
+    def test_was_init_deprecated(self):
+        with self.assertWarns(DeprecationWarning):
+            self.assertTrue(ft.was_init())
 
     def test_cache_size(self):
         DEFAULT_CACHE_SIZE = 64

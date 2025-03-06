@@ -1020,7 +1020,6 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(iterations, 5)
 
     def test_replace(self):
-        # print("replace start")
         for bpp in (8, 16, 24, 32):
             sf = pygame.Surface((10, 10), 0, bpp)
             sf.fill((255, 0, 0))
@@ -1041,10 +1040,8 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(ar[3][6], oval)
             self.assertEqual(ar[8][9], oval)
             self.assertEqual(ar[9][9], oval)
-        # print("replace end")
 
     def test_extract(self):
-        # print("extract start")
         for bpp in (8, 16, 24, 32):
             sf = pygame.Surface((10, 10), 0, bpp)
             sf.fill((0, 0, 255))
@@ -1070,7 +1067,6 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(newar[3][6], white)
             self.assertEqual(newar[8][9], black)
             self.assertEqual(newar[9][9], black)
-        # print("extract end")
 
     def test_2dslice_assignment(self):
         w = 2 * 5 * 8
@@ -1318,6 +1314,19 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
 
         weird_surface = pygame.Surface((0, 5))
         self.assertRaises(ValueError, lambda: pygame.PixelArray(weird_surface))
+
+    def test_assign_seq_to_single(self):
+        """
+        Regression test for https://github.com/pygame-community/pygame-ce/issues/2740
+        This usage should ValueError and not segfault (as list is to be interpreted as
+        pixel sequence, and not color)
+        """
+        test = pygame.PixelArray(pygame.Surface([800, 800]))
+        with self.assertRaises(ValueError):
+            test[400][400] = [255, 255, 0]
+
+        with self.assertRaises(ValueError):
+            test[400, 400] = [255, 255, 0]
 
 
 @unittest.skipIf(IS_PYPY, "pypy having issues")

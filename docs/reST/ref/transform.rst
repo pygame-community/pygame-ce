@@ -39,7 +39,7 @@ Instead, always begin with the original image and scale to the desired size.)
    | :sl:`resize to new resolution`
    | :sg:`scale(surface, size, dest_surface=None) -> Surface`
 
-   Resizes the Surface to a new size, given as (width, height). 
+   Resizes the Surface to a new size, given as (width, height).
    This is a fast scale operation that does not sample the results.
 
    An optional destination surface can be passed which is faster than creating a new
@@ -113,7 +113,7 @@ Instead, always begin with the original image and scale to the desired size.)
    This really only has an effect on simple images with solid colors. On
    photographic and antialiased images it will look like a regular unfiltered
    scale.
-   
+
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have double the dimensions
    (width * 2, height * 2) and same depth and format as the source Surface.
@@ -127,7 +127,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Uses one of two different algorithms for scaling each dimension of the input
    surface as required. For shrinkage, the output pixels are area averages of
-   the colors they cover. The size is a 2 number sequence for (width, height). 
+   the colors they cover. The size is a 2 number sequence for (width, height).
    This function only works for 24-bit or 32-bit surfaces. A ``ValueError`` will
    be thrown if the input surface bit depth is less than 24.
 
@@ -138,7 +138,7 @@ Instead, always begin with the original image and scale to the desired size.)
    .. versionaddedold:: 1.8
 
    .. versionchanged:: 2.4.0 now uses SSE2/NEON SIMD for acceleration on x86
-      and ARM machines, a performance improvement over previous MMX/SSE only 
+      and ARM machines, a performance improvement over previous MMX/SSE only
       supported on x86.
 
    .. ## pygame.transform.smoothscale ##
@@ -169,7 +169,7 @@ Instead, always begin with the original image and scale to the desired size.)
    | :sl:`return smoothscale filter version in use: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'`
    | :sg:`get_smoothscale_backend() -> string`
 
-   Shows whether or not smoothscale is using SIMD accleration.
+   Shows whether or not smoothscale is using SIMD acceleration.
    If no acceleration is available then "GENERIC" is returned. The level of
    acceleration possible is automatically determined at runtime.
 
@@ -245,6 +245,9 @@ Instead, always begin with the original image and scale to the desired size.)
    .. versionchanged:: 2.3.0
       Passing the calling surface as destination surface raises a ``ValueError``
 
+   .. versionchanged:: 2.5.0
+      A surface with either width or height equal to 0 won't raise a ``ValueError``
+
    .. ## pygame.transform.box_blur ##
 
 .. function:: gaussian_blur
@@ -266,10 +269,13 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. versionchanged:: 2.3.0
       Passing the calling surface as destination surface raises a ``ValueError``
-   
+
    .. versionchanged:: 2.3.1
-      Now the standard deviation of the Gaussian kernel is equal to the radius. 
+      Now the standard deviation of the Gaussian kernel is equal to the radius.
       Blur results will be slightly different.
+
+   .. versionchanged:: 2.5.0
+      A surface with either width or height equal to 0 won't raise a ``ValueError``
 
    .. ## pygame.transform.gaussian_blur ##
 
@@ -283,13 +289,13 @@ Instead, always begin with the original image and scale to the desired size.)
 
    palette_colors - if true we average the colors in palette, otherwise we
    average the pixel values. This is useful if the surface is actually
-   greyscale colors, and not palette colors.
+   grayscale colors, and not palette colors.
 
    Note, this function currently does not handle palette using surfaces
    correctly.
 
    An optional destination surface can be passed which is faster than creating a new
-   Surface. This destination surface must have the same dimensions (width, height) and 
+   Surface. This destination surface must have the same dimensions (width, height) and
    depth as the first passed source Surface.
 
    .. versionaddedold:: 1.8
@@ -300,11 +306,12 @@ Instead, always begin with the original image and scale to the desired size.)
 .. function:: average_color
 
    | :sl:`finds the average color of a surface`
-   | :sg:`average_color(surface, rect=None, consider_alpha=False) -> Color`
+   | :sg:`average_color(surface, rect=None, consider_alpha=False) -> tuple`
 
    Finds the average color of a Surface or a region of a surface specified by a
-   Rect, and returns it as a Color. If consider_alpha is set to True, then alpha is
-   taken into account (removing the black artifacts).
+   Rect, and returns it as a tuple of integers red, green, blue, and alpha.
+   If consider_alpha is set to True, then alpha is taken into account
+   (removing the black artifacts).
 
    .. versionaddedold:: 2.1.2 ``consider_alpha`` argument
 
@@ -335,13 +342,39 @@ Instead, always begin with the original image and scale to the desired size.)
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have the same dimensions (width, height) and
    depth as the source Surface.
-   
+
    .. versionadded:: 2.1.4
 
    .. versionchanged:: 2.4.0 Adjusted formula slightly to support performance optimisation. It may return very slightly
                        different pixels than before, but should run seven to eleven times faster on most systems.
 
    .. ## pygame.transform.grayscale ##
+
+.. function:: solid_overlay
+
+   | :sl:`replaces non transparent pixels with the provided color`
+   | :sg:`solid_overlay(surface, color, dest_surface=None, keep_alpha=False) -> Surface`
+
+   Returns a new version of the original surface with all non transparent pixels set to the color provided.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface.
+   This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
+
+   :param pygame.Surface surface: The target surface.
+
+   :param color: Color which all non transparent within the target surface must be set to.
+   :type color: :data:`pygame.typing.ColorLike`
+
+   :param dest_surface: Optional destination surface to which the changes will be applied.
+   :type dest_surface: pygame.Surface or None
+
+   :param bool keep_alpha: Optional parameter that controls whether to keep the surface alpha when replacing with the color.
+
+   .. versionadded:: 2.5.2
+
+   .. ## pygame.transform.solid_overlay ##
 
 .. function:: threshold
 
@@ -368,15 +401,17 @@ Instead, always begin with the original image and scale to the desired size.)
 
    :param pygame.Surface surf: Surface we are looking at.
 
-   :param pygame.Color search_color: Color we are searching for.
+   :param search_color: Color we are searching for.
+   :type color: :data:`pygame.typing.ColorLike`
 
-   :param pygame.Color threshold: Within this distance from search_color (or search_surf).
+   :param threshold: Within this distance from search_color (or search_surf).
      You can use a threshold of (r,g,b,a) where the r,g,b can have different
      thresholds. So you could use an r threshold of 40 and a blue threshold of 2
      if you like.
+   :type color: :data:`pygame.typing.ColorLike`
 
    :param set_color: Color we set in dest_surf.
-   :type set_color: pygame.Color or None
+   :type color: :data:`pygame.typing.ColorLike` or ``None``
 
    :param int set_behavior:
     - set_behavior=1 (default). Pixels in dest_surface will be changed to 'set_color'.
@@ -409,5 +444,40 @@ Instead, always begin with the original image and scale to the desired size.)
       Fixed a lot of bugs and added keyword arguments. Test your code.
 
    .. ## pygame.transform.threshold ##
+
+.. function:: hsl
+
+   | :sl:`Change the hue, saturation, and lightness of a surface.`
+   | :sg:`hsl(surface, hue, saturation, lightness, dest_surface=None) -> Surface`
+
+   This function allows you to modify the hue, saturation, and lightness of a given surface.
+
+   :param pygame.Surface surface: The surface to transform.
+
+   :param float hue: The amount to change the hue. Positive values rotate the hue clockwise,
+     while negative values rotate it counterclockwise. Value range: -360 to 360.
+
+   :param float saturation: The amount to change the saturation. Positive values increase saturation,
+     while negative values decrease it. Value range: -1 to 1.
+
+   :param float lightness: The amount to change the lightness. Positive values increase lightness,
+     while negative values decrease it. Value range: -1 to 1.
+
+   :param pygame.Surface dest_surface: An optional destination surface to store the transformed image.
+     If provided, it should have the same dimensions and depth as the source surface.
+
+   :returns: A new surface with the hue, saturation, and lightness transformed.
+
+   :Examples:
+
+   Apply a hue rotation of 30 degrees, increase saturation by 20%, and decrease lightness by 10% to a surface:
+
+   .. code-block:: python
+
+      new_surf = hsl(original_surf, 30, 0.2, -0.1)
+
+   .. versionadded:: 2.5.0
+
+   .. ## pygame.transform.hsl ##
 
 .. ## pygame.transform ##

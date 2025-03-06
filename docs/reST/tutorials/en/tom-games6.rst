@@ -28,19 +28,19 @@ after we've worked out the new position of the ball.
 
 ::
 
-  if not self.area.contains(newpos):
-  	tl = not self.area.collidepoint(newpos.topleft)
-  	tr = not self.area.collidepoint(newpos.topright)
-  	bl = not self.area.collidepoint(newpos.bottomleft)
-  	br = not self.area.collidepoint(newpos.bottomright)
-  	if tr and tl or (br and bl):
-  		angle = -angle
-  	if tl and bl:
-  		self.offcourt(player=2)
-  	if tr and br:
-  		self.offcourt(player=1)
+    if not self.area.contains(newpos):
+        tl = not self.area.collidepoint(newpos.topleft)
+        tr = not self.area.collidepoint(newpos.topright)
+        bl = not self.area.collidepoint(newpos.bottomleft)
+        br = not self.area.collidepoint(newpos.bottomright)
+        if tr and tl or (br and bl):
+            angle = -angle
+        if tl and bl:
+            self.offcourt(player=2)
+        if tr and br:
+            self.offcourt(player=1)
 
-  self.vector = (angle,z)
+    self.vector = (angle,z)
 
 Here we check to see if the ``area``
 contains the new position of the ball (it always should, so we needn't have an ``else`` clause,
@@ -274,8 +274,8 @@ like this::
       ball = Ball((0,0),(0.47,speed))
 
       # Initialise sprites
-      playersprites = pygame.sprite.RenderPlain((player1, player2))
-      ballsprite = pygame.sprite.RenderPlain(ball)
+      playersprites = pygame.sprite.Group((player1, player2))
+      ballsprite = pygame.sprite.Group(ball)
 
       # Blit everything to the screen
       screen.blit(background, (0, 0))

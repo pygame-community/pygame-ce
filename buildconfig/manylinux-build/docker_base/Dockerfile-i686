@@ -1,5 +1,6 @@
-FROM quay.io/pypa/manylinux2014_i686
-ENV MAKEFLAGS="-j 2"
+# pin version on image for CI stability
+FROM quay.io/pypa/manylinux2014_i686:2025.02.23-1
+ENV MAKEFLAGS="-j 4"
 ENV PG_DEP_PREFIX="/usr/local"
 
 # Set up repoforge
@@ -11,10 +12,11 @@ RUN rpm --import /tmp/RPM-GPG-KEY.dag.txt
 
 #RUN rpm -i /tmp/${RPMFORGE_FILE}
 
+# systemd is needed for udev (for SDL and pulse)
 # it's okay to install X11 and friends from outdated centos repos because newer
 # libs are dynamically loaded at runtime
 RUN linux32 yum install -y zlib-devel dbus-devel fontconfig xz systemd-devel \
-  mesa-libGLU-devel libcap-devel libxkbcommon-devel \
+  libcap-devel libxkbcommon-devel \
   libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXfixes-devel \
   libXi-devel libXScrnSaver-devel
 
@@ -38,11 +40,50 @@ ENV PG_BASE_MESON_FLAGS="--prefix=$PG_DEP_PREFIX \
 # remember to keep this updated when we drop 3.11 support
 ENV PATH="/opt/python/cp311-cp311/bin:$PATH"
 
+# libraries installed in dep prefix must be usable everywhere
+ENV LD_LIBRARY_PATH="$PG_DEP_PREFIX/lib:$LD_LIBRARY_PATH"
+
 ADD pkg-config /pkg-config_build/
 RUN ["linux32", "bash", "/pkg-config_build/build-pkg-config.sh"]
 
 ADD buildtools /buildtools/
 RUN ["linux32", "bash", "/buildtools/install.sh"]
+
+ADD libffi /libffi_build/
+RUN ["linux32", "bash", "/libffi_build/build-libffi.sh"]
+
+ADD libxml2 /libxml2_build/
+RUN ["linux32", "bash", "/libxml2_build/build-libxml2.sh"]
+
+ADD wayland /wayland_build/
+RUN ["linux32", "bash", "/wayland_build/build-wayland.sh"]
+
+ADD libdecor /libdecor_build/
+RUN ["linux32", "bash", "/libdecor_build/build-libdecor.sh"]
+
+ADD xorg/macros /xorg_build/macros/
+RUN ["linux32", "bash", "/xorg_build/macros/build-macros.sh"]
+
+ADD xorg/libpciaccess /xorg_build/libpciaccess/
+RUN ["linux32", "bash", "/xorg_build/libpciaccess/build-libpciaccess.sh"]
+
+ADD mesa/libdrm /mesa_build/libdrm/
+RUN ["linux32", "bash", "/mesa_build/libdrm/build-libdrm.sh"]
+
+ADD xorg/libxshmfence /xorg_build/libxshmfence/
+RUN ["linux32", "bash", "/xorg_build/libxshmfence/build-libxshmfence.sh"]
+
+ADD mesa/glslang /mesa_build/glslang/
+RUN ["linux32", "bash", "/mesa_build/glslang/build-glslang.sh"]
+
+ADD mesa/mako /mesa_build/mako/
+RUN ["linux32", "bash", "/mesa_build/mako/build-mako.sh"]
+
+ADD mesa/flex /mesa_build/flex/
+RUN ["linux32", "bash", "/mesa_build/flex/build-flex.sh"]
+
+ADD mesa/mesa /mesa_build/mesa/
+RUN ["linux32", "bash", "/mesa_build/mesa/build-mesa.sh"]
 
 #ADD zlib-ng /zlib-ng_build/
 #RUN ["linux32", "bash", "/zlib-ng_build/build-zlib-ng.sh"]
@@ -91,21 +132,27 @@ RUN ["linux32", "bash", "/sndfile_build/build-sndfile.sh"]
 ADD pulseaudio /pulseaudio_build/
 RUN ["linux32", "bash", "/pulseaudio_build/build-pulseaudio.sh"]
 
-ADD libmodplug /libmodplug_build/
-RUN ["linux32", "bash", "/libmodplug_build/build-libmodplug.sh"]
+ADD libpipewire /libpipewire_build/
+RUN ["linux32", "bash", "/libpipewire_build/build-libpipewire.sh"]
 
-ADD libffi /libffi_build/
-RUN ["bash", "/libffi_build/build-libffi.sh"]
+ADD libxmp /libxmp_build/
+RUN ["linux32", "bash", "/libxmp_build/build-libxmp.sh"]
 
 # explicit install not needed anymore
 # ADD gettext /gettext_build/
 # RUN ["bash", "/gettext_build/build-gettext.sh"]
 
 ADD glib /glib_build/
-RUN ["bash", "/glib_build/build-glib.sh"]
+RUN ["linux32", "bash", "/glib_build/build-glib.sh"]
 
 ADD fluidsynth /fluidsynth_build/
 RUN ["linux32", "bash", "/fluidsynth_build/build-fluidsynth.sh"]
+
+ADD wavpack /wavpack_build/
+RUN ["linux32", "bash", "/wavpack_build/build-wavpack.sh"]
+
+ADD libsamplerate /libsamplerate_build/
+RUN ["linux32", "bash", "/libsamplerate_build/build-libsamplerate.sh"]
 
 # Build and install SDL
 ADD sdl_libs /sdl_build/

@@ -126,32 +126,26 @@ static PyObject *
 pg_display_resource(char *filename)
 {
     PyObject *imagemodule = NULL;
-    PyObject *load_basicfunc = NULL;
     PyObject *pkgdatamodule = NULL;
-    PyObject *resourcefunc = NULL;
     PyObject *fresult = NULL;
     PyObject *result = NULL;
     PyObject *name = NULL;
 
     pkgdatamodule = PyImport_ImportModule(pkgdatamodule_name);
-    if (!pkgdatamodule)
+    if (!pkgdatamodule) {
         goto display_resource_end;
-
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, resourcefunc_name);
-    if (!resourcefunc)
-        goto display_resource_end;
+    }
 
     imagemodule = PyImport_ImportModule(imagemodule_name);
-    if (!imagemodule)
+    if (!imagemodule) {
         goto display_resource_end;
+    }
 
-    load_basicfunc = PyObject_GetAttrString(imagemodule, load_basicfunc_name);
-    if (!load_basicfunc)
+    fresult =
+        PyObject_CallMethod(pkgdatamodule, resourcefunc_name, "s", filename);
+    if (!fresult) {
         goto display_resource_end;
-
-    fresult = PyObject_CallFunction(resourcefunc, "s", filename);
-    if (!fresult)
-        goto display_resource_end;
+    }
 
     name = PyObject_GetAttrString(fresult, "name");
     if (name != NULL) {
@@ -166,15 +160,15 @@ pg_display_resource(char *filename)
         PyErr_Clear();
     }
 
-    result = PyObject_CallFunction(load_basicfunc, "O", fresult);
-    if (!result)
+    result =
+        PyObject_CallMethod(imagemodule, load_basicfunc_name, "O", fresult);
+    if (!result) {
         goto display_resource_end;
+    }
 
 display_resource_end:
     Py_XDECREF(pkgdatamodule);
-    Py_XDECREF(resourcefunc);
     Py_XDECREF(imagemodule);
-    Py_XDECREF(load_basicfunc);
     Py_XDECREF(fresult);
     Py_XDECREF(name);
     return result;
@@ -196,7 +190,7 @@ pg_display_quit(PyObject *self, PyObject *_null)
 
     pg_mod_autoquit(IMPPREFIX "event");
     pg_mod_autoquit(IMPPREFIX "time");
-    pg_mod_autoquit(IMPPREFIX "_window");
+    pg_mod_autoquit(IMPPREFIX "window");
 
     if (SDL_WasInit(SDL_INIT_VIDEO)) {
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -212,18 +206,21 @@ _pg_mac_display_init(void)
     int status;
 
     module = PyImport_ImportModule("pygame.macosx");
-    if (!module)
+    if (!module) {
         return 0;
+    }
 
     rval = PyObject_CallMethod(module, "Video_AutoInit", "");
     Py_DECREF(module);
-    if (!rval)
+    if (!rval) {
         return 0;
+    }
 
     status = PyObject_IsTrue(rval);
     Py_DECREF(rval);
-    if (status != 1)
+    if (status != 1) {
         return 0;
+    }
 #endif /* Mac */
     return 1;
 }
@@ -241,19 +238,24 @@ pg_display_init(PyObject *self, PyObject *_null)
         SDL_setenv("SDL_VIDEODRIVER", "windows", 1);
     }
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
-        if (!_pg_mac_display_init())
+        if (!_pg_mac_display_init()) {
             return NULL;
+        }
 
-        if (SDL_InitSubSystem(SDL_INIT_VIDEO))
+        if (SDL_InitSubSystem(SDL_INIT_VIDEO)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
+        }
     }
 
-    if (!pg_mod_autoinit(IMPPREFIX "time"))
+    if (!pg_mod_autoinit(IMPPREFIX "time")) {
         return NULL;
-    if (!pg_mod_autoinit(IMPPREFIX "event"))
+    }
+    if (!pg_mod_autoinit(IMPPREFIX "event")) {
         return NULL;
-    if (!pg_mod_autoinit(IMPPREFIX "window"))
+    }
+    if (!pg_mod_autoinit(IMPPREFIX "window")) {
         return NULL;
+    }
 
     Py_RETURN_NONE;
 }
@@ -284,55 +286,60 @@ pg_vidinfo_getattr(PyObject *self, char *name)
 {
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
 
-    int current_w = -1;
-    int current_h = -1;
-
-    SDL_version versioninfo;
-    SDL_VERSION(&versioninfo);
-
-    if (versioninfo.major > 1 ||
-        (versioninfo.minor >= 2 && versioninfo.patch >= 10)) {
-        current_w = info->current_w;
-        current_h = info->current_h;
-    }
-
-    if (!strcmp(name, "hw"))
+    if (!strcmp(name, "hw")) {
         return PyLong_FromLong(info->hw_available);
-    else if (!strcmp(name, "wm"))
+    }
+    else if (!strcmp(name, "wm")) {
         return PyLong_FromLong(info->wm_available);
-    else if (!strcmp(name, "blit_hw"))
+    }
+    else if (!strcmp(name, "blit_hw")) {
         return PyLong_FromLong(info->blit_hw);
-    else if (!strcmp(name, "blit_hw_CC"))
+    }
+    else if (!strcmp(name, "blit_hw_CC")) {
         return PyLong_FromLong(info->blit_hw_CC);
-    else if (!strcmp(name, "blit_hw_A"))
+    }
+    else if (!strcmp(name, "blit_hw_A")) {
         return PyLong_FromLong(info->blit_hw_A);
-    else if (!strcmp(name, "blit_sw"))
+    }
+    else if (!strcmp(name, "blit_sw")) {
         return PyLong_FromLong(info->blit_hw);
-    else if (!strcmp(name, "blit_sw_CC"))
+    }
+    else if (!strcmp(name, "blit_sw_CC")) {
         return PyLong_FromLong(info->blit_hw_CC);
-    else if (!strcmp(name, "blit_sw_A"))
+    }
+    else if (!strcmp(name, "blit_sw_A")) {
         return PyLong_FromLong(info->blit_hw_A);
-    else if (!strcmp(name, "blit_fill"))
+    }
+    else if (!strcmp(name, "blit_fill")) {
         return PyLong_FromLong(info->blit_fill);
-    else if (!strcmp(name, "video_mem"))
+    }
+    else if (!strcmp(name, "video_mem")) {
         return PyLong_FromLong(info->video_mem);
-    else if (!strcmp(name, "bitsize"))
-        return PyLong_FromLong(info->vfmt->BitsPerPixel);
-    else if (!strcmp(name, "bytesize"))
-        return PyLong_FromLong(info->vfmt->BytesPerPixel);
-    else if (!strcmp(name, "masks"))
+    }
+    else if (!strcmp(name, "bitsize")) {
+        return PyLong_FromLong(PG_FORMAT_BitsPerPixel(info->vfmt));
+    }
+    else if (!strcmp(name, "bytesize")) {
+        return PyLong_FromLong(PG_FORMAT_BytesPerPixel(info->vfmt));
+    }
+    else if (!strcmp(name, "masks")) {
         return Py_BuildValue("(iiii)", info->vfmt->Rmask, info->vfmt->Gmask,
                              info->vfmt->Bmask, info->vfmt->Amask);
-    else if (!strcmp(name, "shifts"))
+    }
+    else if (!strcmp(name, "shifts")) {
         return Py_BuildValue("(iiii)", info->vfmt->Rshift, info->vfmt->Gshift,
                              info->vfmt->Bshift, info->vfmt->Ashift);
-    else if (!strcmp(name, "losses"))
+    }
+    else if (!strcmp(name, "losses")) {
         return Py_BuildValue("(iiii)", info->vfmt->Rloss, info->vfmt->Gloss,
                              info->vfmt->Bloss, info->vfmt->Aloss);
-    else if (!strcmp(name, "current_h"))
-        return PyLong_FromLong(current_h);
-    else if (!strcmp(name, "current_w"))
-        return PyLong_FromLong(current_w);
+    }
+    else if (!strcmp(name, "current_h")) {
+        return PyLong_FromLong(info->current_h);
+    }
+    else if (!strcmp(name, "current_w")) {
+        return PyLong_FromLong(info->current_w);
+    }
     else if (!strcmp(name, "pixel_format")) {
         const char *pixel_format_name =
             SDL_GetPixelFormatName(info->vfmt->format);
@@ -348,21 +355,10 @@ pg_vidinfo_getattr(PyObject *self, char *name)
 PyObject *
 pg_vidinfo_str(PyObject *self)
 {
-    int current_w = -1;
-    int current_h = -1;
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
     const char *pixel_format_name = SDL_GetPixelFormatName(info->vfmt->format);
     if (!strncmp(pixel_format_name, "SDL_", 4)) {
         pixel_format_name += 4;
-    }
-
-    SDL_version versioninfo;
-    SDL_VERSION(&versioninfo);
-
-    if (versioninfo.major > 1 ||
-        (versioninfo.minor >= 2 && versioninfo.patch >= 10)) {
-        current_w = info->current_w;
-        current_h = info->current_h;
     }
 
     return PyUnicode_FromFormat(
@@ -378,12 +374,13 @@ pg_vidinfo_str(PyObject *self)
         ">",
         info->hw_available, info->wm_available, info->video_mem, info->blit_hw,
         info->blit_hw_CC, info->blit_hw_A, info->blit_sw, info->blit_sw_CC,
-        info->blit_sw_A, info->vfmt->BitsPerPixel, info->vfmt->BytesPerPixel,
-        info->vfmt->Rmask, info->vfmt->Gmask, info->vfmt->Bmask,
-        info->vfmt->Amask, info->vfmt->Rshift, info->vfmt->Gshift,
-        info->vfmt->Bshift, info->vfmt->Ashift, info->vfmt->Rloss,
-        info->vfmt->Gloss, info->vfmt->Bloss, info->vfmt->Aloss, current_w,
-        current_h, pixel_format_name);
+        info->blit_sw_A, PG_FORMAT_BitsPerPixel(info->vfmt),
+        PG_FORMAT_BytesPerPixel(info->vfmt), info->vfmt->Rmask,
+        info->vfmt->Gmask, info->vfmt->Bmask, info->vfmt->Amask,
+        info->vfmt->Rshift, info->vfmt->Gshift, info->vfmt->Bshift,
+        info->vfmt->Ashift, info->vfmt->Rloss, info->vfmt->Gloss,
+        info->vfmt->Bloss, info->vfmt->Aloss, info->current_w, info->current_h,
+        pixel_format_name);
 }
 
 static PyTypeObject pgVidInfo_Type = {
@@ -398,11 +395,13 @@ static PyObject *
 pgVidInfo_New(const pg_VideoInfo *i)
 {
     pgVidInfoObject *info;
-    if (!i)
+    if (!i) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     info = PyObject_New(pgVidInfoObject, &pgVidInfo_Type);
-    if (!info)
+    if (!info) {
         return NULL;
+    }
     info->info = *i;
     info->info.vfmt = &info->info.vfmt_data;
     return (PyObject *)info;
@@ -477,14 +476,17 @@ pg_get_wm_info(PyObject *self, PyObject *_null)
 
     SDL_VERSION(&(info.version))
     dict = PyDict_New();
-    if (!dict)
+    if (!dict) {
         return NULL;
+    }
 
     win = pg_GetDefaultWindow();
-    if (!win)
+    if (!win) {
         return dict;
-    if (!SDL_GetWindowWMInfo(win, &info))
+    }
+    if (!SDL_GetWindowWMInfo(win, &info)) {
         return dict;
+    }
 
     (void)tmp;
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
@@ -590,8 +592,9 @@ pg_get_driver(PyObject *self, PyObject *_null)
     const char *name = NULL;
     VIDEO_INIT_CHECK();
     name = SDL_GetCurrentVideoDriver();
-    if (!name)
+    if (!name) {
         Py_RETURN_NONE;
+    }
     return PyUnicode_FromString(name);
 }
 
@@ -603,8 +606,9 @@ pg_get_surface(PyObject *self, PyObject *_null)
 
     if (pg_renderer != NULL || state->using_gl) {
         pgSurfaceObject *surface = pg_GetDefaultWindowSurface();
-        if (!surface)
+        if (!surface) {
             Py_RETURN_NONE;
+        }
         Py_INCREF(surface);
         return (PyObject *)surface;
     }
@@ -617,8 +621,9 @@ pg_get_surface(PyObject *self, PyObject *_null)
         if (sdl_surface != old_surface->surf) {
             pgSurfaceObject *new_surface =
                 (pgSurfaceObject *)pgSurface_New2(sdl_surface, SDL_FALSE);
-            if (!new_surface)
+            if (!new_surface) {
                 return NULL;
+            }
             pg_SetDefaultWindowSurface(new_surface);
             Py_INCREF((PyObject *)new_surface);
             return (PyObject *)new_surface;
@@ -634,13 +639,16 @@ pg_gl_set_attribute(PyObject *self, PyObject *arg)
 {
     int flag, value, result;
     VIDEO_INIT_CHECK();
-    if (!PyArg_ParseTuple(arg, "ii", &flag, &value))
+    if (!PyArg_ParseTuple(arg, "ii", &flag, &value)) {
         return NULL;
-    if (flag == -1) /*an undefined/unsupported val, ignore*/
+    }
+    if (flag == -1) { /*an undefined/unsupported val, ignore*/
         Py_RETURN_NONE;
+    }
     result = SDL_GL_SetAttribute(flag, value);
-    if (result == -1)
+    if (result == -1) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     Py_RETURN_NONE;
 }
 
@@ -649,11 +657,13 @@ pg_gl_get_attribute(PyObject *self, PyObject *arg)
 {
     int flag, value, result;
     VIDEO_INIT_CHECK();
-    if (!PyArg_ParseTuple(arg, "i", &flag))
+    if (!PyArg_ParseTuple(arg, "i", &flag)) {
         return NULL;
+    }
     result = SDL_GL_GetAttribute(flag, &value);
-    if (result == -1)
+    if (result == -1) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     return PyLong_FromLong(value);
 }
 
@@ -704,15 +714,17 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     _DisplayState *state;
     SDL_Window *window;
 
-    if (event->type != SDL_WINDOWEVENT)
+    if (event->type != SDL_WINDOWEVENT) {
         return 0;
+    }
 
     pygame_window = pg_GetDefaultWindow();
     state = DISPLAY_MOD_STATE((PyObject *)userdata);
 
     window = SDL_GetWindowFromID(event->window.windowID);
-    if (window != pygame_window)
+    if (window != pygame_window) {
         return 0;
+    }
 
     if (state->unscaled_render && pg_renderer != NULL) {
         if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
@@ -720,7 +732,7 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
             int h = event->window.data2;
             pgSurfaceObject *display_surface = pg_GetDefaultWindowSurface();
             SDL_Surface *surf =
-                PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
+                PG_CreateSurface(w, h, SDL_PIXELFORMAT_XRGB8888);
 
             SDL_FreeSurface(display_surface->surf);
             display_surface->surf = surf;
@@ -859,7 +871,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     SDL_Surface *newownedsurf = NULL;
     int depth = 0;
     int flags = 0;
-    int w, h;
+    int w, h, w_actual, h_actual;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
     intptr_t hwnd = 0;
@@ -879,8 +891,9 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     winid_env = SDL_getenv("SDL_WINDOWID");
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|Oiiii", keywords, &size,
-                                     &flags, &depth, &display, &vsync))
+                                     &flags, &depth, &display, &vsync)) {
         return NULL;
+    }
 
     if (hwnd == 0 && winid_env != NULL) {
         hwnd = (intptr_t)SDL_strtoull(winid_env, NULL, 0);
@@ -895,21 +908,27 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     }
 
     if (size != NULL) {
-        if (!pg_TwoIntsFromObj(size, &w, &h))
+        if (!pg_TwoIntsFromObj(size, &w, &h)) {
             return RAISE(PyExc_TypeError, "size must be two numbers");
-        if (w < 0 || h < 0)
+        }
+        if (w < 0 || h < 0) {
             return RAISE(pgExc_SDLError,
                          "Cannot set negative sized display mode");
+        }
     }
     else {
         w = 0;
         h = 0;
     }
 
+    h_actual = h;
+    w_actual = w;
+
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
         /* note SDL works special like this too */
-        if (!pg_display_init(NULL, NULL))
+        if (!pg_display_init(NULL, NULL)) {
             return NULL;
+        }
     }
 
     if ((vsync == -1) && ((flags & PGS_OPENGL) == 0)) {
@@ -924,14 +943,16 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     if (state->scaled_gl) {
         if (PyErr_WarnEx(PyExc_FutureWarning,
                          "SCALED|OPENGL is experimental and subject to change",
-                         1) != 0)
+                         1) != 0) {
             return NULL;
+        }
     }
 
     if (!state->title) {
         state->title = malloc((strlen(DefaultTitle) + 1) * sizeof(char));
-        if (!state->title)
+        if (!state->title) {
             return PyErr_NoMemory();
+        }
         strcpy(state->title, DefaultTitle);
         title = state->title;
     }
@@ -984,34 +1005,42 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         }
 
         if (flags & PGS_SCALED) {
-            if (w == 0 || h == 0)
+            if (w == 0 || h == 0) {
                 return RAISE(pgExc_SDLError,
                              "Cannot set 0 sized SCALED display mode");
+            }
         }
 
-        if (flags & PGS_OPENGL)
+        if (flags & PGS_OPENGL) {
             sdl_flags |= SDL_WINDOW_OPENGL;
-        if (flags & PGS_NOFRAME)
+        }
+        if (flags & PGS_NOFRAME) {
             sdl_flags |= SDL_WINDOW_BORDERLESS;
+        }
         if (flags & PGS_RESIZABLE) {
             sdl_flags |= SDL_WINDOW_RESIZABLE;
-            if (state->auto_resize)
+            if (state->auto_resize) {
                 SDL_AddEventWatch(pg_ResizeEventWatch, self);
+            }
         }
-        if (flags & PGS_SHOWN)
+        if (flags & PGS_SHOWN) {
             sdl_flags |= SDL_WINDOW_SHOWN;
-        if (flags & PGS_HIDDEN)
+        }
+        if (flags & PGS_HIDDEN) {
             sdl_flags |= SDL_WINDOW_HIDDEN;
-        if (!(sdl_flags & SDL_WINDOW_HIDDEN))
+        }
+        if (!(sdl_flags & SDL_WINDOW_HIDDEN)) {
             sdl_flags |= SDL_WINDOW_SHOWN;
+        }
         if (flags & PGS_OPENGL) {
             /* Must be called before creating context */
             if (flags & PGS_DOUBLEBUF) {
                 flags &= ~PGS_DOUBLEBUF;
                 SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
             }
-            else
+            else {
                 SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
+            }
         }
 
 #pragma PG_WARN(Add mode stuff.)
@@ -1040,10 +1069,14 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         // if the program goes into fullscreen first the "saved
                         // x and y" are "undefined position" that should be
                         // interpreted as a cue to center the window
-                        if (x == (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(display))
+                        if (x ==
+                            (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(display)) {
                             x = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
-                        if (y == (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(display))
+                        }
+                        if (y ==
+                            (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(display)) {
                             y = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
+                        }
                     }
                     else {
                         int old_w, old_h;
@@ -1078,10 +1111,12 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 }
 
                 if (SDL_GetHintBoolean("SDL_HINT_RENDER_SCALE_QUALITY",
-                                       SDL_FALSE))
+                                       SDL_FALSE)) {
                     fractional_scaling = SDL_TRUE;
-                if (state->scaled_gl)
+                }
+                if (state->scaled_gl) {
                     fractional_scaling = SDL_TRUE;
+                }
 
                 if (fractional_scaling) {
                     float aspect_ratio = ((float)w) / (float)h;
@@ -1104,8 +1139,9 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                     scale = xscale < yscale ? xscale : yscale;
 
-                    if (scale < 1)
+                    if (scale < 1) {
                         scale = 1;
+                    }
 
                     w_1 = w * scale;
                     h_1 = h * scale;
@@ -1128,9 +1164,12 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 }
                 else {
                     win = SDL_CreateWindow(title, x, y, w_1, h_1, sdl_flags);
+                    w_actual = w_1;
+                    h_actual = h_1;
                 }
-                if (!win)
+                if (!win) {
                     return RAISE(pgExc_SDLError, SDL_GetError());
+                }
             }
             else {
                 /* set min size to (1,1) to erase any previously set min size
@@ -1159,10 +1198,12 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 SDL_SetWindowResizable(win, flags & PGS_RESIZABLE);
                 SDL_SetWindowBordered(win, (flags & PGS_NOFRAME) == 0);
 
-                if ((flags & PGS_SHOWN) || !(flags & PGS_HIDDEN))
+                if ((flags & PGS_SHOWN) || !(flags & PGS_HIDDEN)) {
                     SDL_ShowWindow(win);
-                else if (flags & PGS_HIDDEN)
+                }
+                else if (flags & PGS_HIDDEN) {
                     SDL_HideWindow(win);
+                }
 
                 SDL_SetWindowPosition(win, x, y);
 
@@ -1183,7 +1224,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                 So we make a fake surface.
                 */
-                surf = PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
+                surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1237,6 +1278,15 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     SDL_SetHintWithPriority(SDL_HINT_RENDER_SCALE_QUALITY,
                                             "nearest", SDL_HINT_DEFAULT);
 
+#if SDL_VERSION_ATLEAST(2, 28, 0)
+                    /* If the window has a surface associated with it already,
+                     * we need to destroy it (if possible) because now we are
+                     * associating a renderer with it. */
+                    if (SDL_HasWindowSurface(win)) {
+                        SDL_DestroyWindowSurface(win);
+                    }
+#endif
+
                     if (vsync) {
                         pg_renderer = SDL_CreateRenderer(
                             win, -1, SDL_RENDERER_PRESENTVSYNC);
@@ -1246,8 +1296,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     }
 
                     if (pg_renderer == NULL) {
-                        return RAISE(pgExc_SDLError,
-                                     "failed to create renderer");
+                        return RAISE(pgExc_SDLError, SDL_GetError());
                     }
 
                     if (flags & PGS_SCALED) {
@@ -1284,7 +1333,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         pg_renderer, SDL_PIXELFORMAT_ARGB8888,
                         SDL_TEXTUREACCESS_STREAMING, w, h);
                 }
-                surf = PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
+                surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1327,8 +1376,9 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
             Py_INCREF(surface);
         }
         if (!surface) {
-            if (newownedsurf)
+            if (newownedsurf) {
                 SDL_FreeSurface(newownedsurf);
+            }
             _display_state_cleanup(state);
             goto DESTROY_WINDOW;
         }
@@ -1340,40 +1390,24 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
         /* ensure window is always black after a set_mode call */
         SDL_FillRect(surf, NULL, SDL_MapRGB(surf->format, 0, 0, 0));
-        pg_flip_internal(state);
     }
 
     /*set the window icon*/
     if (!state->icon) {
         state->icon = pg_display_resource(icon_defaultname);
-        if (!state->icon)
+        if (!state->icon) {
             PyErr_Clear();
+        }
         else if (icon_colorkey != -1) {
             SDL_SetColorKey(pgSurface_AsSurface(state->icon), SDL_TRUE,
                             icon_colorkey);
         }
     }
-    if (state->icon)
+    if (state->icon) {
         SDL_SetWindowIcon(win, pgSurface_AsSurface(state->icon));
-
-    if (!SDL_GetWindowWMInfo(win, &wm_info)) {
-        // don't complain, might be null mode
-    }
-    else if (wm_info.subsystem == SDL_SYSWM_X11) {
-        char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");
-        char *wayland_display = SDL_getenv("WAYLAND_DISPLAY");
-        if (NULL != wayland_display ||
-            (NULL != xdg_session_type &&
-             SDL_strcmp(xdg_session_type, "wayland") == 0)) {
-            if (PyErr_WarnEx(PyExc_Warning,
-                             "PyGame seems to be running through X11 "
-                             "on top of wayland, instead of wayland directly",
-                             1) != 0)
-                return NULL;
-        }
     }
 
-    if (depth != 0 && surface->surf->format->BitsPerPixel != depth) {
+    if (depth != 0 && PG_SURF_BitsPerPixel(surface->surf) != depth) {
         if (PyErr_WarnEx(PyExc_DeprecationWarning,
                          "The depth argument is deprecated, and is ignored",
                          1)) {
@@ -1381,8 +1415,38 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         }
     }
 
-    /*probably won't do much, but can't hurt, and might help*/
+    /*
+     * Can potentially yield a window resize event that forcibly changes
+     * the window size. This would invalidate the current surface we store,
+     * which can cause us to segfault in the event that we reference that
+     * surface later. So we need to flip, which forces us to update that
+     * surface as needed.
+     */
     SDL_PumpEvents();
+    pg_flip_internal(state);
+
+    /*
+     * Tell user if their requested screen size is ignored
+     * OpenGL, SCALED, and FULLSCREEN mess with the screensize in
+     * such a way that it can, at least our internal stuff, can
+     * be respected enough that we don't need to issue a warning
+     */
+    if (!state->using_gl && ((flags & (PGS_SCALED | PGS_FULLSCREEN)) == 0) &&
+        !vsync) {
+        if (((surface->surf->w != w_actual) ||
+             (surface->surf->h != h_actual)) &&
+            ((surface->surf->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)) {
+            char buffer[150];
+            char *format_string =
+                "Requested window size was smaller than minimum supported "
+                "window size on platform. Using (%d, %d) instead.";
+            snprintf(buffer, sizeof(buffer), format_string, surface->surf->w,
+                     surface->surf->h);
+            if (PyErr_WarnEx(PyExc_RuntimeWarning, buffer, 1) != 0) {
+                return NULL;
+            }
+        }
+    }
 
     /*return the window's surface (screen)*/
     Py_INCREF(surface);
@@ -1390,10 +1454,12 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
 DESTROY_WINDOW:
 
-    if (win == pg_GetDefaultWindow())
+    if (win == pg_GetDefaultWindow()) {
         pg_SetDefaultWindow(NULL);
-    else if (win)
+    }
+    else if (win) {
         SDL_DestroyWindow(win);
+    }
     return NULL;
 }
 
@@ -1440,10 +1506,48 @@ pg_window_size(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     int w, h;
-    if (!win)
+    if (!win) {
         return RAISE(pgExc_SDLError, "No open window");
+    }
     SDL_GetWindowSize(win, &w, &h);
-    return Py_BuildValue("(ii)", w, h);
+    return pg_tuple_couple_from_values_int(w, h);
+}
+
+static PyObject *
+pg_get_window_position(PyObject *self, PyObject *_null)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+    int x, y = 0;
+    if (!win) {
+        return RAISE(pgExc_SDLError, "No open window");
+    }
+    SDL_GetWindowPosition(win, &x, &y);
+    return pg_tuple_couple_from_values_int(x, y);
+}
+
+static PyObject *
+pg_set_window_position(PyObject *self, PyObject *arg)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+    PyObject *pos = NULL;
+    int x, y = 0;
+
+    if (!PyArg_ParseTuple(arg, "O", &pos)) {
+        return NULL;
+    }
+
+    if (pos != NULL) {
+        if (!pg_TwoIntsFromObj(pos, &x, &y)) {
+            return RAISE(PyExc_TypeError, "position must be two numbers");
+        }
+    }
+
+    if (win) {
+        /* Will raise errors with SDL 3, deal with it during the porting */
+        SDL_SetWindowPosition(win, x, y);
+    }
+
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1486,13 +1590,15 @@ pg_mode_ok(PyObject *self, PyObject *args, PyObject *kwds)
             SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, 0);
     }
     if (!SDL_GetClosestDisplayMode(display_index, &desired, &closest)) {
-        if (flags & PGS_FULLSCREEN)
+        if (flags & PGS_FULLSCREEN) {
             return PyLong_FromLong((long)0);
+        }
         closest.format = desired.format;
     }
     if ((flags & PGS_FULLSCREEN) &&
-        (closest.w != desired.w || closest.h != desired.h))
+        (closest.w != desired.w || closest.h != desired.h)) {
         return PyLong_FromLong((long)0);
+    }
     return PyLong_FromLong(SDL_BITSPERPIXEL(closest.format));
 }
 
@@ -1526,17 +1632,20 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
 
     if (bpp == 0) {
         SDL_DisplayMode curmode;
-        if (SDL_GetCurrentDisplayMode(display_index, &curmode))
+        if (SDL_GetCurrentDisplayMode(display_index, &curmode)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
+        }
         bpp = SDL_BITSPERPIXEL(curmode.format);
     }
 
     nummodes = SDL_GetNumDisplayModes(display_index);
-    if (nummodes < 0)
+    if (nummodes < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 
-    if (!(list = PyList_New(0)))
+    if (!(list = PyList_New(0))) {
         return NULL;
+    }
 
     for (i = 0; i < nummodes; i++) {
         if (SDL_GetDisplayMode(display_index, i, &mode) < 0) {
@@ -1544,19 +1653,23 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
         /* use reasonable defaults (cf. SDL_video.c) */
-        if (!mode.format)
-            mode.format = PG_PIXELFORMAT_XRGB8888;
-        if (!mode.w)
+        if (!mode.format) {
+            mode.format = SDL_PIXELFORMAT_XRGB8888;
+        }
+        if (!mode.w) {
             mode.w = 640;
-        if (!mode.h)
+        }
+        if (!mode.h) {
             mode.h = 480;
-        if ((int)SDL_BITSPERPIXEL(mode.format) != bpp)
+        }
+        if ((int)SDL_BITSPERPIXEL(mode.format) != bpp) {
             continue;
+        }
         if (last_width == mode.w && last_height == mode.h &&
             last_width != -1) {
             continue;
         }
-        if (!(size = Py_BuildValue("(ii)", mode.w, mode.h))) {
+        if (!(size = pg_tuple_couple_from_values_int(mode.w, mode.h))) {
             Py_DECREF(list);
             return NULL;
         }
@@ -1640,8 +1753,9 @@ static PyObject *
 pg_num_displays(PyObject *self, PyObject *_null)
 {
     int ret = SDL_GetNumVideoDisplays();
-    if (ret < 0)
+    if (ret < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     return PyLong_FromLong(ret);
 }
 
@@ -1649,8 +1763,9 @@ pg_num_displays(PyObject *self, PyObject *_null)
 static SDL_Rect *
 pg_screencroprect(SDL_Rect *r, int w, int h, SDL_Rect *cur)
 {
-    if (r->x > w || r->y > h || (r->x + r->w) <= 0 || (r->y + r->h) <= 0)
+    if (r->x > w || r->y > h || (r->x + r->w) <= 0 || (r->y + r->h) <= 0) {
         return 0;
+    }
     else {
         int right = MIN(r->x + r->w, w);
         int bottom = MIN(r->y + r->h, h);
@@ -1672,16 +1787,18 @@ pg_update(PyObject *self, PyObject *arg)
 
     VIDEO_INIT_CHECK();
 
-    if (!win)
+    if (!win) {
         return RAISE(pgExc_SDLError, "Display mode not set");
+    }
 
     if (pg_renderer != NULL) {
         return pg_flip(self, NULL);
     }
     SDL_GetWindowSize(win, &wide, &high);
 
-    if (state->using_gl)
+    if (state->using_gl) {
         return RAISE(pgExc_SDLError, "Cannot update an OPENGL display");
+    }
 
     /*determine type of argument we got*/
     if (PyTuple_Size(arg) == 0) {
@@ -1698,35 +1815,55 @@ pg_update(PyObject *self, PyObject *arg)
     if (gr) {
         SDL_Rect sdlr;
 
-        if (pg_screencroprect(gr, wide, high, &sdlr))
+        if (pg_screencroprect(gr, wide, high, &sdlr)) {
             SDL_UpdateWindowSurfaceRects(win, &sdlr, 1);
+        }
     }
     else {
-        PyObject *seq;
-        PyObject *r;
-        Py_ssize_t loop, num;
+        PyObject *iterable, *single_arg, *r;
+        Py_ssize_t num;
         int count;
         SDL_Rect *rects;
-        if (PyTuple_Size(arg) != 1)
+        if (PyTuple_Size(arg) != 1) {
             return RAISE(
                 PyExc_ValueError,
-                "update requires a rectstyle or sequence of rectstyles");
-        seq = PyTuple_GET_ITEM(arg, 0);
-        if (!seq || !PySequence_Check(seq))
-            return RAISE(
-                PyExc_ValueError,
-                "update requires a rectstyle or sequence of rectstyles");
+                "update requires a rectstyle or an iterable of rectstyles");
+        }
 
-        num = PySequence_Length(seq);
+        single_arg = PyTuple_GET_ITEM(arg, 0);
+        num = PyObject_Size(single_arg);
+        if (num == -1) {
+            /* Either __len__ errored, or object doesn't have __len__.
+             * In this case we can assume a length arbitrarily, and keep
+             * scaling it as needed. */
+            PyErr_Clear();
+            num = 8;
+        }
+        iterable = PyObject_GetIter(single_arg);
+        if (!iterable) {
+            return RAISE(
+                PyExc_ValueError,
+                "update requires a rectstyle or an iterable of rectstyles");
+        }
+
         rects = PyMem_New(SDL_Rect, num);
-        if (!rects)
+        if (!rects) {
+            Py_DECREF(iterable);
             return NULL;
+        }
         count = 0;
-        for (loop = 0; loop < num; ++loop) {
-            SDL_Rect *cur_rect = (rects + count);
-
-            /*get rect from the sequence*/
-            r = PySequence_GetItem(seq, loop);
+        while (1) {
+            r = PyIter_Next(iterable);
+            if (!r) {
+                if (PyErr_Occurred()) {
+                    /* forward error */
+                    Py_DECREF(iterable);
+                    PyMem_Free((void *)rects);
+                    return NULL;
+                }
+                /* End of sequence, break loop */
+                break;
+            }
             if (r == Py_None) {
                 Py_DECREF(r);
                 continue;
@@ -1734,17 +1871,32 @@ pg_update(PyObject *self, PyObject *arg)
             gr = pgRect_FromObject(r, &temp);
             Py_XDECREF(r);
             if (!gr) {
-                PyMem_Free((char *)rects);
+                Py_DECREF(iterable);
+                PyMem_Free((void *)rects);
                 return RAISE(PyExc_ValueError,
                              "update_rects requires a single list of rects");
             }
 
-            if (gr->w < 1 && gr->h < 1)
+            if (gr->w < 1 && gr->h < 1) {
                 continue;
+            }
 
-            /*bail out if rect not onscreen*/
-            if (!pg_screencroprect(gr, wide, high, cur_rect))
+            if (count >= num) {
+                /* About to overstep boundary, need reallocing */
+                num *= 2;
+                SDL_Rect *new_rects = PyMem_Resize(rects, SDL_Rect, num);
+                if (!new_rects) {
+                    Py_DECREF(iterable);
+                    PyMem_Free((void *)rects);
+                    return NULL;
+                }
+                rects = new_rects;
+            }
+
+            /* bail out if rect not onscreen */
+            if (!pg_screencroprect(gr, wide, high, &rects[count])) {
                 continue;
+            }
 
             ++count;
         }
@@ -1755,7 +1907,8 @@ pg_update(PyObject *self, PyObject *arg)
             Py_END_ALLOW_THREADS;
         }
 
-        PyMem_Free((char *)rects);
+        Py_DECREF(iterable);
+        PyMem_Free((void *)rects);
     }
     Py_RETURN_NONE;
 }
@@ -1772,15 +1925,17 @@ pg_set_palette(PyObject *self, PyObject *args)
     Uint8 rgba[4];
 
     VIDEO_INIT_CHECK();
-    if (!PyArg_ParseTuple(args, "|O", &list))
+    if (!PyArg_ParseTuple(args, "|O", &list)) {
         return NULL;
-    if (!surface)
+    }
+    if (!surface) {
         return RAISE(pgExc_SDLError, "No display mode is set");
+    }
 
     Py_INCREF(surface);
     surf = pgSurface_AsSurface(surface);
     pal = surf->format->palette;
-    if (surf->format->BytesPerPixel != 1 || !pal) {
+    if (PG_SURF_BytesPerPixel(surf) != 1 || !pal) {
         Py_DECREF(surface);
         return RAISE(pgExc_SDLError, "Display mode is not colormapped");
     }
@@ -1869,15 +2024,18 @@ pg_set_gamma(PyObject *self, PyObject *arg)
     SDL_Window *win = pg_GetDefaultWindow();
     Uint16 *gamma_ramp;
 
-    if (!PyArg_ParseTuple(arg, "f|ff", &r, &g, &b))
+    if (!PyArg_ParseTuple(arg, "f|ff", &r, &g, &b)) {
         return NULL;
-    if (PyTuple_Size(arg) == 1)
+    }
+    if (PyTuple_Size(arg) == 1) {
         g = b = r;
+    }
     VIDEO_INIT_CHECK();
 
     gamma_ramp = (Uint16 *)malloc((3 * 256) * sizeof(Uint16));
-    if (!gamma_ramp)
+    if (!gamma_ramp) {
         return PyErr_NoMemory();
+    }
     SDL_CalculateGammaRamp(r, gamma_ramp);
     SDL_CalculateGammaRamp(g, gamma_ramp + 256);
     SDL_CalculateGammaRamp(b, gamma_ramp + 512);
@@ -1891,8 +2049,9 @@ pg_set_gamma(PyObject *self, PyObject *arg)
         }
     }
     if (gamma_ramp) {
-        if (state->gamma_ramp)
+        if (state->gamma_ramp) {
             free(state->gamma_ramp);
+        }
         state->gamma_ramp = gamma_ramp;
     }
     return PyBool_FromLong(result == 0);
@@ -1960,8 +2119,9 @@ pg_set_gamma_ramp(PyObject *self, PyObject *arg)
     Uint16 *gamma_ramp = (Uint16 *)malloc((3 * 256) * sizeof(Uint16));
     Uint16 *r, *g, *b;
     int result = 0;
-    if (!gamma_ramp)
+    if (!gamma_ramp) {
         return PyErr_NoMemory();
+    }
     r = gamma_ramp;
     g = gamma_ramp + 256;
     b = gamma_ramp + 512;
@@ -1981,8 +2141,9 @@ pg_set_gamma_ramp(PyObject *self, PyObject *arg)
         }
     }
     if (gamma_ramp) {
-        if (state->gamma_ramp)
+        if (state->gamma_ramp) {
             free(state->gamma_ramp);
+        }
         state->gamma_ramp = gamma_ramp;
     }
     return PyBool_FromLong(result == 0);
@@ -2001,19 +2162,22 @@ pg_set_caption(PyObject *self, PyObject *arg)
     __analysis_assume(title = "inited");
 #endif
 
-    if (!PyArg_ParseTuple(arg, "s|s", &title, &icontitle))
+    if (!PyArg_ParseTuple(arg, "s|s", &title, &icontitle)) {
         return NULL;
+    }
 
-    if (state->title)
+    if (state->title) {
         free(state->title);
+    }
 
     state->title = (char *)malloc((strlen(title) + 1) * sizeof(char));
     if (!state->title) {
         return PyErr_NoMemory();
     }
     strcpy(state->title, title);
-    if (win)
+    if (win) {
         SDL_SetWindowTitle(win, title);
+    }
 
     /* TODO: icon title? */
     Py_RETURN_NONE;
@@ -2047,14 +2211,16 @@ pg_set_icon(PyObject *self, PyObject *surface)
     }
 
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
-        if (!pg_display_init(NULL, NULL))
+        if (!pg_display_init(NULL, NULL)) {
             return NULL;
+        }
     }
     Py_INCREF(surface);
     Py_XDECREF(state->icon);
     state->icon = surface;
-    if (win)
+    if (win) {
         SDL_SetWindowIcon(win, pgSurface_AsSurface(surface));
+    }
     Py_RETURN_NONE;
 }
 
@@ -2063,8 +2229,9 @@ pg_iconify(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     VIDEO_INIT_CHECK();
-    if (!win)
+    if (!win) {
         return RAISE(pgExc_SDLError, "No open window");
+    }
     SDL_MinimizeWindow(win);
     return PyBool_FromLong(1);
 }
@@ -2116,7 +2283,7 @@ pg_get_desktop_screen_sizes(PyObject *self, PyObject *_null)
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
 
-        size_tuple = Py_BuildValue("(ii)", dm.w, dm.h);
+        size_tuple = pg_tuple_couple_from_values_int(dm.w, dm.h);
         if (!size_tuple) {
             Py_DECREF(result);
             return NULL;
@@ -2134,15 +2301,18 @@ pg_is_fullscreen(PyObject *self, PyObject *_null)
     int flags;
 
     VIDEO_INIT_CHECK();
-    if (!win)
+    if (!win) {
         return RAISE(pgExc_SDLError, "No open window");
+    }
 
     flags = SDL_GetWindowFlags(win) & SDL_WINDOW_FULLSCREEN_DESKTOP;
 
-    if (flags & SDL_WINDOW_FULLSCREEN)
+    if (flags & SDL_WINDOW_FULLSCREEN) {
         Py_RETURN_TRUE;
-    else
+    }
+    else {
         Py_RETURN_FALSE;
+    }
 }
 
 static PyObject *
@@ -2152,26 +2322,32 @@ pg_is_vsync(PyObject *self, PyObject *_null)
     _DisplayState *state = DISPLAY_STATE;
 
     VIDEO_INIT_CHECK();
-    if (!win)
+    if (!win) {
         return RAISE(pgExc_SDLError, "No open window");
+    }
 
     if (pg_renderer != NULL) {
         SDL_RendererInfo info;
 
-        if (SDL_GetRendererInfo(pg_renderer, &info) != 0)
+        if (SDL_GetRendererInfo(pg_renderer, &info) != 0) {
             return RAISE(pgExc_SDLError, SDL_GetError());
+        }
 
-        if (info.flags & SDL_RENDERER_PRESENTVSYNC)
+        if (info.flags & SDL_RENDERER_PRESENTVSYNC) {
             Py_RETURN_TRUE;
-        else
+        }
+        else {
             Py_RETURN_FALSE;
+        }
     }
 
     if (state->using_gl) {
-        if (SDL_GL_GetSwapInterval() != 0)
+        if (SDL_GL_GetSwapInterval() != 0) {
             Py_RETURN_TRUE;
-        else
+        }
+        else {
             Py_RETURN_FALSE;
+        }
     }
 
     Py_RETURN_FALSE;
@@ -2185,15 +2361,18 @@ pg_current_refresh_rate(PyObject *self, PyObject *_null)
     int display_index;
 
     VIDEO_INIT_CHECK();
-    if (!win)
+    if (!win) {
         return RAISE(pgExc_SDLError, "No open window");
+    }
 
     display_index = SDL_GetWindowDisplayIndex(win);
-    if (display_index < 0)
+    if (display_index < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 
-    if (SDL_GetCurrentDisplayMode(display_index, &mode) != 0)
+    if (SDL_GetCurrentDisplayMode(display_index, &mode) != 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 
     return PyLong_FromLong(mode.refresh_rate);
 }
@@ -2248,8 +2427,9 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
     SDL_RendererInfo r_info;
 
     VIDEO_INIT_CHECK();
-    if (!win)
+    if (!win) {
         return RAISE(pgExc_SDLError, "No open window");
+    }
 
     flags = SDL_GetWindowFlags(win);
 
@@ -2462,10 +2642,12 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
         // if the program goes into fullscreen first the "saved
         // x and y" are "undefined position" that should be
         // interpreted as a cue to center the window
-        if (x == (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display))
+        if (x == (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display)) {
             x = SDL_WINDOWPOS_CENTERED_DISPLAY(window_display);
-        if (y == (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display))
+        }
+        if (y == (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display)) {
             y = SDL_WINDOWPOS_CENTERED_DISPLAY(window_display);
+        }
 
         SDL_SetWindowResizable(win, flags & SDL_WINDOW_RESIZABLE);
 
@@ -2610,8 +2792,9 @@ pg_display_resize_event(PyObject *self, PyObject *event)
     GL_glViewport_Func p_glViewport = NULL;
 
     VIDEO_INIT_CHECK();
-    if (!win)
+    if (!win) {
         return RAISE(pgExc_SDLError, "No open window");
+    }
 
     flags = SDL_GetWindowFlags(win) &
             (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP);
@@ -2710,10 +2893,10 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
                                "parent_window", "buttons", "return_button",
                                "escape_button", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(
-            arg, kwargs, "s|OsO!OiO", keywords, &title, &message, &msgbox_type,
-            &pgWindow_Type, &parent_window, &buttons, &return_button_index,
-            &escape_button_index_obj)) {
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "s|OsOOiO", keywords, &title,
+                                     &message, &msgbox_type, &parent_window,
+                                     &buttons, &return_button_index,
+                                     &escape_button_index_obj)) {
         return NULL;
     }
 
@@ -2721,8 +2904,9 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
     SDL_bool escape_button_used = SDL_FALSE;
     if (escape_button_index_obj != Py_None) {
         escape_button_index = PyLong_AsLong(escape_button_index_obj);
-        if (escape_button_index == -1 && PyErr_Occurred())
+        if (escape_button_index == -1 && PyErr_Occurred()) {
             return NULL;
+        }
         escape_button_used = SDL_TRUE;
     }
 
@@ -2746,22 +2930,26 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL;
     }
 
-#if SDL_VERSION_ATLEAST(2, 0, 12)
     msgbox_data.flags |= SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
-#endif
 
-    if (parent_window == Py_None)
+    if (parent_window == Py_None) {
         msgbox_data.window = NULL;
-    else
+    }
+    else {
+        if (!pgWindow_Check(parent_window)) {
+            return RAISE(PyExc_TypeError, "'parent_window' must be a Window");
+        }
         msgbox_data.window = ((pgWindowObject *)parent_window)->_win;
+    }
 
     msgbox_data.colorScheme = NULL;  // use system color scheme settings
 
     msgbox_data.title = title;
     if (PyUnicode_Check(message)) {
         msgbox_data.message = PyUnicode_AsUTF8(message);
-        if (!msgbox_data.message)
+        if (!msgbox_data.message) {
             return NULL;
+        }
     }
     else if (message == Py_None) {
         msgbox_data.message = title;
@@ -2834,14 +3022,10 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
 
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
         for (Py_ssize_t i = 0; i < num_buttons; i++) {
-#if SDL_VERSION_ATLEAST(2, 0, 12)
             PyObject *btn_name_obj = PySequence_GetItem(buttons, i);
-#else
-            PyObject *btn_name_obj =
-                PySequence_GetItem(buttons, num_buttons - i - 1);
-#endif
-            if (!btn_name_obj)
+            if (!btn_name_obj) {
                 goto error;
+            }
 
             if (!PyUnicode_Check(btn_name_obj)) {
                 PyErr_SetString(PyExc_TypeError,
@@ -2850,23 +3034,22 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
             }
 
             const char *btn_name = PyUnicode_AsUTF8(btn_name_obj);
-            if (!btn_name)
+            if (!btn_name) {
                 goto error;
+            }
 
             buttons_data[i].text = btn_name;
-#if SDL_VERSION_ATLEAST(2, 0, 12)
             buttons_data[i].buttonid = (int)i;
-#else
-            buttons_data[i].buttonid = (int)(num_buttons - i - 1);
-#endif
             buttons_data[i].flags = 0;
-            if (return_button_index == buttons_data[i].buttonid)
+            if (return_button_index == buttons_data[i].buttonid) {
                 buttons_data[i].flags |=
                     SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+            }
             if (escape_button_used &&
-                escape_button_index == buttons_data[i].buttonid)
+                escape_button_index == buttons_data[i].buttonid) {
                 buttons_data[i].flags |=
                     SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+            }
         }
     }
 
@@ -2904,6 +3087,10 @@ static PyMethodDef _pg_display_methods[] = {
      DOC_DISPLAY_GETSURFACE},
     {"get_window_size", (PyCFunction)pg_window_size, METH_NOARGS,
      DOC_DISPLAY_GETWINDOWSIZE},
+    {"set_window_position", pg_set_window_position, METH_VARARGS,
+     DOC_DISPLAY_SETWINDOWPOSITION},
+    {"get_window_position", (PyCFunction)pg_get_window_position, METH_NOARGS,
+     DOC_DISPLAY_GETWINDOWPOSITION},
 
     {"set_mode", (PyCFunction)pg_set_mode, METH_VARARGS | METH_KEYWORDS,
      DOC_DISPLAY_SETMODE},

@@ -3,6 +3,7 @@
 
 #include "pygame.h"
 #include "pgcompat.h"
+#include <stddef.h>
 
 typedef struct {
     double x, y, r;
@@ -15,19 +16,25 @@ typedef struct {
 
 #define pgCircle_CAST(o) ((pgCircleObject *)(o))
 #define pgCircle_AsCircle(o) (pgCircle_CAST(o)->circle)
-#define pgCircle_GETX(self) (pgCircle_CAST(self)->circle.x)
-#define pgCircle_GETY(self) (pgCircle_CAST(self)->circle.y)
-#define pgCircle_GETR(self) (pgCircle_CAST(self)->circle.r)
 #define pgCircle_Check(o) ((o)->ob_type == &pgCircle_Type)
 
+typedef struct {
+    double ax, ay;
+    double bx, by;
+} pgLineBase;
+
+typedef struct {
+    PyObject_HEAD pgLineBase line;
+    PyObject *weakreflist;
+} pgLineObject;
+
+#define pgLine_CAST(o) ((pgLineObject *)(o))
+#define pgLine_AsLine(o) (pgLine_CAST(o)->line)
+#define pgLine_Check(o) ((o)->ob_type == &pgLine_Type)
+
 static PyTypeObject pgCircle_Type;
+static PyTypeObject pgLine_Type;
 
-static int
-pgCircle_FromObject(PyObject *obj, pgCircleBase *out);
-
-static int
-pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
-                            pgCircleBase *out);
 /* Constants */
 
 /* PI */
@@ -39,5 +46,17 @@ pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
 #ifndef M_TWOPI
 #define M_TWOPI 6.28318530717958647692
 #endif
+
+/* PI/180 */
+#ifndef M_PI_QUO_180
+#define M_PI_QUO_180 0.01745329251994329577
+#endif
+
+/* Converts degrees to radians */
+static inline double
+DEG_TO_RAD(double deg)
+{
+    return deg * M_PI_QUO_180;
+}
 
 #endif  // PYGAME_CE_GEOMETRY_H

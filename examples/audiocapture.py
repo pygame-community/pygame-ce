@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-""" pygame.examples.audiocapture
+"""pygame.examples.audiocapture
 
 A pygame 2 experiment.
 
 * record sound from a microphone
 * play back the recorded sound
 """
+
 import pygame
 import time
 
@@ -16,14 +17,6 @@ from pygame._sdl2 import (
     AUDIO_ALLOW_FORMAT_CHANGE,
 )
 from pygame._sdl2.mixer import set_post_mix
-
-
-pygame.mixer.pre_init(44100, 32, 2, 512)
-pygame.init()
-
-# init_subsystem(INIT_AUDIO)
-names = get_audio_device_names(True)
-print(names)
 
 sounds = []
 sound_chunks = []
@@ -48,31 +41,42 @@ def postmix_callback(postmix, audiomemoryview):
     print(postmix)
 
 
-set_post_mix(postmix_callback)
+def main():
+    pygame.mixer.pre_init(44100, 32, 2, 512)
+    pygame.init()
 
-audio = AudioDevice(
-    devicename=names[0],
-    iscapture=True,
-    frequency=44100,
-    audioformat=AUDIO_F32,
-    numchannels=2,
-    chunksize=512,
-    allowed_changes=AUDIO_ALLOW_FORMAT_CHANGE,
-    callback=callback,
-)
-# start recording.
-audio.pause(0)
+    # init_subsystem(INIT_AUDIO)
+    names = get_audio_device_names(True)
+    print(names)
 
-print(audio)
+    set_post_mix(postmix_callback)
 
-print(f"recording with '{names[0]}'")
-time.sleep(5)
+    audio = AudioDevice(
+        devicename=names[0],
+        iscapture=True,
+        frequency=44100,
+        audioformat=AUDIO_F32,
+        numchannels=2,
+        chunksize=512,
+        allowed_changes=AUDIO_ALLOW_FORMAT_CHANGE,
+        callback=callback,
+    )
+    # start recording.
+    audio.pause(0)
+
+    print(audio)
+
+    print(f"recording with '{names[0]}'")
+    time.sleep(5)
+
+    print("Turning data into a pygame.mixer.Sound")
+    sound = pygame.mixer.Sound(buffer=b"".join(sound_chunks))
+
+    print("playing back recorded sound")
+    sound.play()
+    time.sleep(5)
+    pygame.quit()
 
 
-print("Turning data into a pygame.mixer.Sound")
-sound = pygame.mixer.Sound(buffer=b"".join(sound_chunks))
-
-print("playing back recorded sound")
-sound.play()
-time.sleep(5)
-pygame.quit()
+if __name__ == "__main__":
+    main()

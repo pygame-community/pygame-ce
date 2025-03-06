@@ -39,9 +39,10 @@ static PyObject *
 init(PyObject *self, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
-        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK))
+        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
-        SDL_JoystickEventState(SDL_ENABLE);
+        }
+        PG_SetJoystickEventsEnabled(SDL_TRUE);
     }
     Py_RETURN_NONE;
 }
@@ -60,7 +61,7 @@ quit(PyObject *self, PyObject *_null)
     }
 
     if (SDL_WasInit(SDL_INIT_JOYSTICK)) {
-        SDL_JoystickEventState(SDL_ENABLE);
+        PG_SetJoystickEventsEnabled(SDL_TRUE);
         SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
     }
     Py_RETURN_NONE;
@@ -112,7 +113,17 @@ static PyObject *
 get_count(PyObject *self, PyObject *_null)
 {
     JOYSTICK_INIT_CHECK();
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int ret;
+    SDL_JoystickID *joysticks = SDL_GetJoysticks(&ret);
+    if (!joysticks) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    SDL_free(joysticks);
+    return PyLong_FromLong(ret);
+#else
     return PyLong_FromLong(SDL_NumJoysticks());
+#endif
 }
 
 static PyObject *
@@ -200,18 +211,53 @@ joy_get_guid(PyObject *self, PyObject *_null)
         guid = SDL_JoystickGetGUID(joy);
     }
     else {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        return RAISE(pgExc_SDLError, "Invalid/closed joystick object");
+#else
         guid = SDL_JoystickGetDeviceGUID(pgJoystick_AsID(self));
+#endif
     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_GUIDToString(guid, strguid, 33);
+#else
     SDL_JoystickGetGUIDString(guid, strguid, 33);
+#endif
 
     return PyUnicode_FromString(strguid);
 }
 
 const char *
-_pg_powerlevel_string(SDL_JoystickPowerLevel level)
+_pg_powerlevel_string(SDL_Joystick *joy)
 {
-    switch (level) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int percent = -1;
+    SDL_PowerState state = SDL_GetJoystickPowerInfo(joy, &percent);
+    if (state == SDL_POWERSTATE_ON_BATTERY) {
+        /* These percentages are based on SDL_JoystickCurrentPowerLevel defined
+         * in sdl2-compat */
+        if (percent > 70) {
+            return "full";
+        }
+        else if (percent > 20) {
+            return "medium";
+        }
+        else if (percent > 5) {
+            return "low";
+        }
+        else {
+            return "empty";
+        }
+    }
+    else if (state == SDL_POWERSTATE_UNKNOWN ||
+             state == SDL_POWERSTATE_ERROR) {
+        return "unknown";
+    }
+    else {
+        return "wired";
+    }
+#else
+    switch (SDL_JoystickCurrentPowerLevel(joy)) {
         case SDL_JOYSTICK_POWER_EMPTY:
             return "empty";
         case SDL_JOYSTICK_POWER_LOW:
@@ -227,12 +273,12 @@ _pg_powerlevel_string(SDL_JoystickPowerLevel level)
         default:
             return "unknown";
     }
+#endif
 }
 
 static PyObject *
 joy_get_power_level(PyObject *self, PyObject *_null)
 {
-    SDL_JoystickPowerLevel level;
     const char *leveltext;
     SDL_Joystick *joy = pgJoystick_AsSDL(self);
 
@@ -241,8 +287,7 @@ joy_get_power_level(PyObject *self, PyObject *_null)
         return RAISE(pgExc_SDLError, "Joystick not initialized");
     }
 
-    level = SDL_JoystickCurrentPowerLevel(joy);
-    leveltext = _pg_powerlevel_string(level);
+    leveltext = _pg_powerlevel_string(joy);
 
     return PyUnicode_FromString(leveltext);
 }
@@ -287,7 +332,11 @@ joy_rumble(pgJoystickObject *self, PyObject *args, PyObject *kwargs)
     low = (Uint32)(lowf * 0xFFFF);
     high = (Uint32)(highf * 0xFFFF);
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_JoystickRumble(joy, low, high, duration)) {
+#else
     if (SDL_JoystickRumble(joy, low, high, duration) == -1) {
+#endif
         Py_RETURN_FALSE;
     }
     Py_RETURN_TRUE;
@@ -421,7 +470,7 @@ joy_get_ball(PyObject *self, PyObject *args)
     }
 
     SDL_JoystickGetBall(joy, _index, &dx, &dy);
-    return Py_BuildValue("(ii)", dx, dy);
+    return pg_tuple_couple_from_values_int(dx, dy);
 }
 
 static PyObject *
@@ -479,7 +528,7 @@ joy_get_hat(PyObject *self, PyObject *args)
         px = -1;
     }
 
-    return Py_BuildValue("(ii)", px, py);
+    return pg_tuple_couple_from_values_int(px, py);
 }
 
 static PyMethodDef joy_methods[] = {
@@ -545,9 +594,13 @@ pgJoystick_New(int id)
     JOYSTICK_INIT_CHECK();
 
     /* Open the SDL device */
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    /* This check should be redundant because SDL_JoystickOpen already checks
+     * and errors if id is out of bounds on SDL3 */
     if (id >= SDL_NumJoysticks()) {
         return RAISE(pgExc_SDLError, "Invalid joystick device number");
     }
+#endif
     joy = SDL_JoystickOpen(id);
     if (!joy) {
         return RAISE(pgExc_SDLError, SDL_GetError());

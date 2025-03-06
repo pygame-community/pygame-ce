@@ -1,6 +1,8 @@
 #################################### IMPORTS ###################################
 
 
+import types
+import typing
 import unittest
 
 import pygame
@@ -526,7 +528,7 @@ class AbstractGroupTypeTest(unittest.TestCase):
 
         self.bg = pygame.Surface((20, 20))
         self.scr = pygame.Surface((20, 20))
-        self.scr.fill(pygame.Color("grey"))
+        self.scr.fill(pygame.Color("gray"))
 
     def test_has(self):
         "See if AbstractGroup.has() works as expected."
@@ -659,6 +661,16 @@ class AbstractGroupTypeTest(unittest.TestCase):
 
         self.assertEqual(test_sprite.sink, [1, 2, 3])
         self.assertEqual(test_sprite.sink_kwargs, {"foo": 4, "bar": 5})
+
+    def test_type_subscript(self):
+        try:
+            group_generic_alias = sprite.Group[sprite.Sprite]
+        except TypeError as e:
+            self.fail(e)
+
+        self.assertIsInstance(group_generic_alias, types.GenericAlias)
+        self.assertIs(typing.get_origin(group_generic_alias), sprite.Group)
+        self.assertEqual(typing.get_args(group_generic_alias), (sprite.Sprite,))
 
 
 ################################################################################
@@ -1340,7 +1352,6 @@ class SpriteTypeTest(SpriteBase, unittest.TestCase):
         sprite.Group,
         sprite.LayeredUpdates,
         sprite.RenderUpdates,
-        sprite.OrderedUpdates,
     ]
 
 
@@ -1351,7 +1362,6 @@ class DirtySpriteTypeTest(SpriteBase, unittest.TestCase):
         sprite.Group,
         sprite.LayeredUpdates,
         sprite.RenderUpdates,
-        sprite.OrderedUpdates,
         sprite.LayeredDirty,
     ]
 

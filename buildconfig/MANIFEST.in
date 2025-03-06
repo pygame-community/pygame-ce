@@ -5,10 +5,13 @@ recursive-include src_c *
 recursive-include examples *
 recursive-include test *
 
-recursive-exclude buildconfig/ci *
 recursive-exclude buildconfig/manylinux-build *
+recursive-exclude buildconfig/macdependencies *
+recursive-exclude buildconfig/stubs/.mypy_cache *
 
 include README.rst
+include meson_options.txt
+include meson.build
+include pyproject.toml
 
-exclude buildconfig/appveyor.yml
-exclude .travis.yml
+global-exclude *.pyc

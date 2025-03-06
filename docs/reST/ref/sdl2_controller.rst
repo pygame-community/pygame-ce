@@ -19,11 +19,7 @@ always the leftmost button of the 4 buttons on the right.
 Controllers can generate the following events::
 
    CONTROLLERAXISMOTION, CONTROLLERBUTTONDOWN, CONTROLLERBUTTONUP,
-   CONTROLLERDEVICEREMAPPED, CONTROLLERDEVICEADDED, CONTROLLERDEVICEREMOVED
-
-Additionally if pygame is built with SDL 2.0.14 or higher the following events can also be generated
-(to get the version of sdl pygame is built with use :meth:`pygame.version.SDL`)::
-
+   CONTROLLERDEVICEREMAPPED, CONTROLLERDEVICEADDED, CONTROLLERDEVICEREMOVED,
    CONTROLLERTOUCHPADDOWN, CONTROLLERTOUCHPADMOTION, CONTROLLERTOUCHPADUP
 
 These events can be enabled/disabled by :meth:`pygame._sdl2.controller.set_eventstate`
@@ -127,6 +123,14 @@ events related to controllers.
     ``pygame._sdl2.controller.from_joystick``. Controllers are
     initialized on creation.
 
+   .. method:: init
+
+      | :sl:`Initialize the Controller`
+      | :sg:`init() -> None`
+
+      Initialize a controller object. This should not be used much, since
+      Controllers are initialised on creation.
+
    .. method:: quit
 
       | :sl:`uninitialize the Controller`
@@ -222,14 +226,14 @@ events related to controllers.
 
       .. versionchangedold:: 2.0.2: Return type changed from ``str`` to ``dict``
 
-      .. ## Contorller.get_mapping ##
+      .. ## Controller.get_mapping ##
 
    .. method:: set_mapping
 
       | :sl:`Assign a mapping to the controller`
       | :sg:`set_mapping(mapping) -> int`
 
-      Rebind buttons, axes, triggers and dpads. The mapping should be a 
+      Rebind buttons, axes, triggers and dpads. The mapping should be a
       dict containing all buttons, hats and axes. The easiest way to get this
       is to use the dict returned by :meth:`Controller.get_mapping`. To edit
       this mapping assign a value to the original button. The value of the
@@ -252,7 +256,7 @@ events related to controllers.
       .. versionchangedold:: 2.0.2: Renamed from ``add_mapping`` to ``set_mapping``
       .. versionchangedold:: 2.0.2: Argument type changed from ``str`` to ``dict``
 
-      .. ## Contorller.set_mapping ##
+      .. ## Controller.set_mapping ##
 
    .. method:: rumble
 
@@ -266,11 +270,11 @@ events related to controllers.
       playing, then it will be overwritten.
 
       Returns True if the rumble was played successfully or False if the
-      controller does not support it or :meth:`pygame.version.SDL` is below 2.0.9.
+      controller does not support it.
 
       .. versionaddedold:: 2.0.2
 
-      .. ## Contorller.rumble ##
+      .. ## Controller.rumble ##
 
    .. method:: stop_rumble
 
@@ -282,6 +286,6 @@ events related to controllers.
 
       .. versionaddedold:: 2.0.2
 
-      .. ## Contorller.stop_rumble ##
+      .. ## Controller.stop_rumble ##
 
 .. ## pygame._sdl2.controller ##

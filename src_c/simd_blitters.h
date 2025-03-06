@@ -49,7 +49,11 @@ blit_blend_premultiplied_sse2(SDL_BlitInfo *info);
    generic like surface_ops*/
 
 void
-premul_surf_color_by_alpha_non_simd(SDL_Surface *src, SDL_Surface *dst);
+premul_surf_color_by_alpha_non_simd(SDL_Surface *src,
+                                    PG_PixelFormat *src_format,
+                                    SDL_Palette *src_palette, SDL_Surface *dst,
+                                    PG_PixelFormat *dst_format,
+                                    SDL_Palette *dst_palette);
 void
 premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst);
 
@@ -81,3 +85,5 @@ void
 blit_blend_rgb_min_avx2(SDL_BlitInfo *info);
 void
 blit_blend_premultiplied_avx2(SDL_BlitInfo *info);
+void
+premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst);

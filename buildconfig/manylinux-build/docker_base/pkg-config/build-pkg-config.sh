@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This file exists because pkg-config is too old on manylinux docker centos 
+# This file exists because pkg-config is too old on manylinux docker centos
 # images (the older version segfaults if it gets a cyclic dependency, like
 # freetype2+harfbuzz)
 
@@ -13,7 +13,7 @@ cd $(dirname `readlink -f "$0"`)
 COMPILED_PKGCONFIG_DIRS=$(pkg-config --variable pc_path pkg-config)
 
 # append path(s) where other installs put .pc files
-COMPILED_PKGCONFIG_DIRS="$PG_DEP_PREFIX/lib/pkgconfig:${COMPILED_PKGCONFIG_DIRS}"
+COMPILED_PKGCONFIG_DIRS="$PG_DEP_PREFIX/lib/pkgconfig:$PG_DEP_PREFIX/share/pkgconfig:${COMPILED_PKGCONFIG_DIRS}"
 
 PKGCONFIG=pkg-config-0.29.2
 

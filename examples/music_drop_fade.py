@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.music_drop_fade
+"""pygame.examples.music_drop_fade
 Fade in and play music from a list while observing several events
 
 Adds music files to a playlist whenever played by one of the following methods
@@ -16,7 +16,8 @@ Keyboard Controls:
 """
 
 import pygame
-import os, sys
+import os
+import sys
 
 VOLUME_CHANGE_AMOUNT = 0.02  # how fast should up and down arrows change the volume?
 SCREEN_SIZE = (640, 480)

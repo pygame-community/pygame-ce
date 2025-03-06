@@ -35,8 +35,7 @@ The basic Sprite class can draw the Sprites it contains to a Surface. The
 Group.draw() method requires that each Sprite have a Surface.image attribute
 and a Surface.rect. The Group.clear() method requires these same attributes
 and can be used to erase all the Sprites with background. There are also
-more advanced Groups: pygame.sprite.RenderUpdates() and
-pygame.sprite.OrderedUpdates().
+more advanced Groups: pygame.sprite.RenderUpdates().
 
 Lastly, this module contains several collision functions. These help find
 sprites inside multiple groups that have intersecting bounding rectangles.
@@ -85,6 +84,7 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specific ones that aren't quite so general but fit into common
 # specialized cases.
 
+import types
 from warnings import warn
 from typing import Optional
 
@@ -372,6 +372,9 @@ class AbstractGroup:
 
     """
 
+    def __class_getitem__(cls, generic):
+        return types.GenericAlias(cls, generic)
+
     # protected identifier value to identify sprite groups, and avoid infinite recursion
     _spritegroup = True
 
@@ -411,8 +414,7 @@ class AbstractGroup:
 
         :param sprite: The sprite we are removing.
         """
-        lost_rect = self.spritedict[sprite]
-        if lost_rect:
+        if lost_rect := self.spritedict[sprite]:
             self.lostsprites.append(lost_rect)
         del self.spritedict[sprite]
 
@@ -659,7 +661,7 @@ class RenderPlain(Group):
     def __init__(self, *sprites):
         super().__init__(*sprites)
         warn(
-            "This class will be removed in version 2.4.0",
+            "This class is deprecated and will be removed in a future version.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -669,7 +671,7 @@ class RenderClear(Group):
     def __init__(self, *sprites):
         super().__init__(*sprites)
         warn(
-            "This class will be removed in version 2.4.0",
+            "This class is deprecated and will be removed in a future version.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -711,14 +713,14 @@ class OrderedUpdates(RenderUpdates):
         warn(
             "OrderedUpdates is now just an alias to RenderUpdates, order of "
             "sprites is now maintained in all sprite Group classes. This "
-            "class will be removed in version 2.4.0",
+            "class is deprecated and will be removed in a future version.",
             DeprecationWarning,
             stacklevel=2,
         )
 
 
 class LayeredUpdates(AbstractGroup):
-    """LayeredUpdates Group handles layers, which are drawn like OrderedUpdates
+    """LayeredUpdates Group handles layers, which are drawn like RenderUpdates
 
     pygame.sprite.LayeredUpdates(*sprites, **kwargs): return LayeredUpdates
 
@@ -1127,9 +1129,7 @@ class LayeredDirty(LayeredUpdates):
 
         LayeredUpdates.add_internal(self, sprite, layer)
 
-    def draw(
-        self, surface, bgd=None
-    ):  # noqa pylint: disable=arguments-differ; unable to change public interface
+    def draw(self, surface, bgd=None):  # noqa pylint: disable=arguments-differ; unable to change public interface
         """draw all sprites in the right order onto the given surface
 
         LayeredDirty.draw(surface, bgd=None): return Rect_list

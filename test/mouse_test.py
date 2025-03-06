@@ -134,7 +134,7 @@ class MouseModuleTest(MouseTests):
             # Making sure the warnings are working properly
             self.assertEqual(len(w), 6)
             self.assertTrue(
-                all([issubclass(warn.category, DeprecationWarning) for warn in w])
+                all(issubclass(warn.category, DeprecationWarning) for warn in w)
             )
 
     @unittest.skipIf(
@@ -285,8 +285,35 @@ class MouseModuleTest(MouseTests):
         for value in buttons_pressed:
             self.assertIsInstance(value, bool)
 
+        desktop_pressed1 = pygame.mouse.get_pressed(desktop=True)
+        desktop_pressed2 = pygame.mouse.get_pressed(5, desktop=True)
+        desktop_pressed3 = pygame.mouse.get_pressed(3, True)
+        self.assertEqual(len(desktop_pressed1), 3)
+        self.assertEqual(len(desktop_pressed2), 5)
+        self.assertEqual(len(desktop_pressed3), 3)
+        for desktop_pressed in [desktop_pressed1, desktop_pressed2, desktop_pressed3]:
+            self.assertIsInstance(desktop_pressed, tuple)
+            for value in desktop_pressed:
+                self.assertIsInstance(value, bool)
+
         with self.assertRaises(ValueError):
             pygame.mouse.get_pressed(4)
+
+    def test_get_just_pressed(self):
+        mouse_buttons = pygame.mouse.get_just_pressed()
+        self.assertIsInstance(mouse_buttons, tuple)
+        self.assertEqual(len(mouse_buttons), 5)
+        for value in mouse_buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, False)
+
+    def test_get_just_released(self):
+        mouse_buttons = pygame.mouse.get_just_released()
+        self.assertIsInstance(mouse_buttons, tuple)
+        self.assertEqual(len(mouse_buttons), 5)
+        for value in mouse_buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, False)
 
     def test_get_pos(self):
         """Ensures get_pos returns the correct types."""
@@ -298,6 +325,16 @@ class MouseModuleTest(MouseTests):
         self.assertEqual(len(pos), expected_length)
         for value in pos:
             self.assertIsInstance(value, int)
+
+        desktop_pos1 = pygame.mouse.get_pos(True)
+        desktop_pos2 = pygame.mouse.get_pos(desktop=True)
+        self.assertEqual(desktop_pos1, desktop_pos2)
+
+        for desktop_pos in [desktop_pos1, desktop_pos2]:
+            self.assertIsInstance(desktop_pos, tuple)
+            self.assertEqual(len(desktop_pos), expected_length)
+            for value in desktop_pos:
+                self.assertIsInstance(value, int)
 
     def test_set_pos__invalid_pos(self):
         """Ensures set_pos handles invalid positions correctly."""

@@ -43,6 +43,24 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+/* Pretty good idea from Tom Duff :-). */
+#ifndef LOOP_UNROLLED4
+#define LOOP_UNROLLED4(code, n, width) \
+    n = (width + 3) / 4;               \
+    switch (width & 3) {               \
+        case 0:                        \
+            do {                       \
+                code;                  \
+                case 3:                \
+                    code;              \
+                case 2:                \
+                    code;              \
+                case 1:                \
+                    code;              \
+            } while (--n > 0);         \
+    }
+#endif
+
 /* Macro to create mask objects. This will call the type's tp_new and tp_init.
  * Params:
  *     w: width of mask
@@ -100,7 +118,7 @@ static PyObject *
 mask_get_size(PyObject *self, PyObject *_null)
 {
     bitmask_t *mask = pgMask_AsBitmap(self);
-    return Py_BuildValue("(ii)", mask->w, mask->h);
+    return pg_tuple_couple_from_values_int(mask->w, mask->h);
 }
 
 /* Creates a Rect object based on the given mask's size. The rect's
@@ -151,8 +169,9 @@ mask_get_at(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *pos = NULL;
     static char *keywords[] = {"pos", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &pos))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &pos)) {
         return NULL;
+    }
 
     if (!pg_TwoIntsFromObj(pos, &x, &y)) {
         return RAISE(PyExc_TypeError, "pos must be two numbers");
@@ -178,8 +197,9 @@ mask_set_at(PyObject *self, PyObject *args, PyObject *kwargs)
     static char *keywords[] = {"pos", "value", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", keywords, &pos,
-                                     &value))
+                                     &value)) {
         return NULL;
+    }
 
     if (!pg_TwoIntsFromObj(pos, &x, &y)) {
         return RAISE(PyExc_TypeError, "pos must be two numbers");
@@ -213,8 +233,9 @@ mask_overlap(PyObject *self, PyObject *args, PyObject *kwargs)
     static char *keywords[] = {"other", "offset", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O", keywords,
-                                     &pgMask_Type, &maskobj, &offset))
+                                     &pgMask_Type, &maskobj, &offset)) {
         return NULL;
+    }
 
     othermask = pgMask_AsBitmap(maskobj);
 
@@ -224,7 +245,7 @@ mask_overlap(PyObject *self, PyObject *args, PyObject *kwargs)
 
     val = bitmask_overlap_pos(mask, othermask, x, y, &xp, &yp);
     if (val) {
-        return Py_BuildValue("(ii)", xp, yp);
+        return pg_tuple_couple_from_values_int(xp, yp);
     }
     else {
         Py_INCREF(Py_None);
@@ -521,7 +542,7 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
             if (bitmask_getbit(m, x, y)) {
                 firstx = x;
                 firsty = y;
-                value = Py_BuildValue("(ii)", x - 1, y - 1);
+                value = pg_tuple_couple_from_values_int(x - 1, y - 1);
 
                 if (NULL == value) {
                     Py_DECREF(plist);
@@ -542,8 +563,9 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
                 break;
             }
         }
-        if (bitmask_getbit(m, x, y))
+        if (bitmask_getbit(m, x, y)) {
             break;
+        }
     }
 
     /* covers the mask having zero pixels set or only the final pixel */
@@ -562,7 +584,7 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
             e--;
             if (!e) {
                 e = every;
-                value = Py_BuildValue("(ii)", secx - 1, secy - 1);
+                value = pg_tuple_couple_from_values_int(secx - 1, secy - 1);
 
                 if (NULL == value) {
                     Py_DECREF(plist);
@@ -606,7 +628,8 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
                         break;
                     }
 
-                    value = Py_BuildValue("(ii)", nextx - 1, nexty - 1);
+                    value =
+                        pg_tuple_couple_from_values_int(nextx - 1, nexty - 1);
 
                     if (NULL == value) {
                         Py_DECREF(plist);
@@ -767,24 +790,66 @@ set_pixel_color(Uint8 *pixel, Uint8 bpp, Uint32 color)
  *     void
  */
 static void
-set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
+set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
+                   SDL_Palette *surf_palette, bitmask_t *bitmask,
+                   int threshold)
 {
-    SDL_PixelFormat *format = surf->format;
-    Uint8 bpp = format->BytesPerPixel;
-    Uint8 *pixel = NULL;
-    Uint8 rgba[4];
-    int x, y;
+    /* This function expects surf to be non-zero sized. */
+    const Uint8 bpp = PG_FORMAT_BytesPerPixel(surf_format);
+    int x, y, n;
+    Uint8 *srcp;
+    const int src_skip = surf->pitch - surf->w * bpp;
+
+    if (threshold >= 255) {
+        return;
+    }
+
+    if (threshold < 0 || !SDL_ISPIXELFORMAT_ALPHA(surf_format->format)) {
+        bitmask_fill(bitmask);
+        return;
+    }
+    else if (bpp < 3) {
+        Uint8 r, g, b, a;
+        srcp = (Uint8 *)surf->pixels;
+        for (y = 0; y < surf->h; ++y) {
+            for (x = 0; x < surf->w; ++x, srcp += bpp) {
+                PG_GetRGBA(bpp == 1 ? *srcp : *((Uint16 *)srcp), surf_format,
+                           surf_palette, &r, &g, &b, &a);
+                if (a > threshold) {
+                    bitmask_setbit(bitmask, x, y);
+                }
+            }
+            srcp += src_skip;
+        }
+        return;
+    }
+
+    /* With this strategy we avoid to get the rgb channels that we don't need
+     * and instead we just jump from alpha channel to alpha channel, comparing
+     * it with the threshold. */
+
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    const char _a_off = surf_format->Ashift >> 3;
+#else
+    const char _a_off = 3 - (surf_format->Ashift >> 3);
+#endif
+
+    srcp = (Uint8 *)surf->pixels + _a_off;
+    const Uint8 u_threshold = (Uint8)threshold;
 
     for (y = 0; y < surf->h; ++y) {
-        pixel = (Uint8 *)surf->pixels + y * surf->pitch;
+        x = 0;
+        LOOP_UNROLLED4(
+            {
+                if ((*srcp) > u_threshold) {
+                    bitmask_setbit(bitmask, x, y);
+                }
+                srcp += bpp;
+                x++;
+            },
+            n, surf->w);
 
-        for (x = 0; x < surf->w; ++x, pixel += bpp) {
-            SDL_GetRGBA(get_pixel_color(pixel, bpp), format, rgba, rgba + 1,
-                        rgba + 2, rgba + 3);
-            if (rgba[3] > threshold) {
-                bitmask_setbit(bitmask, x, y);
-            }
-        }
+        srcp += src_skip;
     }
 }
 
@@ -802,7 +867,7 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
 static void
 set_from_colorkey(SDL_Surface *surf, bitmask_t *bitmask, Uint32 colorkey)
 {
-    Uint8 bpp = surf->format->BytesPerPixel;
+    Uint8 bpp = PG_SURF_BytesPerPixel(surf);
     Uint8 *pixel = NULL;
     int x, y;
 
@@ -830,7 +895,6 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     pgMaskObject *maskobj = NULL;
     Uint32 colorkey;
     int threshold = 127; /* default value */
-    int use_thresh = 1;
     static char *keywords[] = {"surface", "threshold", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", keywords,
@@ -843,6 +907,13 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     if (surf->w < 0 || surf->h < 0) {
         return RAISE(PyExc_ValueError,
                      "cannot create mask with negative size");
+    }
+
+    PG_PixelFormat *surf_format;
+    SDL_Palette *surf_palette;
+
+    if (!PG_GetSurfaceDetails(surf, &surf_format, &surf_palette)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     maskobj = CREATE_MASK_OBJ(surf->w, surf->h, 0);
@@ -863,13 +934,13 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     Py_BEGIN_ALLOW_THREADS; /* Release the GIL. */
 
-    use_thresh = (SDL_GetColorKey(surf, &colorkey) == -1);
-
-    if (use_thresh) {
-        set_from_threshold(surf, maskobj->mask, threshold);
-    }
-    else {
+    if (SDL_HasColorKey(surf)) {
+        SDL_GetColorKey(surf, &colorkey);
         set_from_colorkey(surf, maskobj->mask, colorkey);
+    }
+    else {  // use threshold
+        set_from_threshold(surf, surf_format, surf_palette, maskobj->mask,
+                           threshold);
     }
 
     Py_END_ALLOW_THREADS; /* Obtain the GIL. */
@@ -887,61 +958,59 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 palette_colors - this only affects surfaces with a palette
     if true we look at the colors from the palette,
     otherwise we threshold the pixel values.  This is useful if
-    the surface is actually greyscale colors, and not palette colors.
+    the surface is actually grayscale colors, and not palette colors.
 
 */
 
 void
-bitmask_threshold(bitmask_t *m, SDL_Surface *surf, SDL_Surface *surf2,
-                  Uint32 color, Uint32 threshold, int palette_colors)
+bitmask_threshold(bitmask_t *m, SDL_Surface *surf, PG_PixelFormat *format,
+                  SDL_Palette *palette, SDL_Surface *surf2,
+                  PG_PixelFormat *format2, Uint32 color, Uint32 threshold,
+                  int palette_colors)
 {
     int x, y, rshift, gshift, bshift, rshift2, gshift2, bshift2;
     int rloss, gloss, bloss, rloss2, gloss2, bloss2;
     Uint8 *pixels, *pixels2;
-    SDL_PixelFormat *format, *format2;
     Uint32 the_color, the_color2, rmask, gmask, bmask, rmask2, gmask2, bmask2;
     Uint8 *pix;
     Uint8 r, g, b, a;
     Uint8 tr, tg, tb, ta;
     int bpp1, bpp2;
 
-    format = surf->format;
     rmask = format->Rmask;
     gmask = format->Gmask;
     bmask = format->Bmask;
     rshift = format->Rshift;
     gshift = format->Gshift;
     bshift = format->Bshift;
-    rloss = format->Rloss;
-    gloss = format->Gloss;
-    bloss = format->Bloss;
-    bpp1 = surf->format->BytesPerPixel;
+    rloss = PG_FORMAT_R_LOSS(format);
+    gloss = PG_FORMAT_G_LOSS(format);
+    bloss = PG_FORMAT_B_LOSS(format);
+    bpp1 = PG_FORMAT_BytesPerPixel(format);
 
     if (surf2) {
-        format2 = surf2->format;
         rmask2 = format2->Rmask;
         gmask2 = format2->Gmask;
         bmask2 = format2->Bmask;
         rshift2 = format2->Rshift;
         gshift2 = format2->Gshift;
         bshift2 = format2->Bshift;
-        rloss2 = format2->Rloss;
-        gloss2 = format2->Gloss;
-        bloss2 = format2->Bloss;
+        rloss2 = PG_FORMAT_R_LOSS(format);
+        gloss2 = PG_FORMAT_G_LOSS(format);
+        bloss2 = PG_FORMAT_B_LOSS(format);
         pixels2 = (Uint8 *)surf2->pixels;
-        bpp2 = surf->format->BytesPerPixel;
+        bpp2 = PG_FORMAT_BytesPerPixel(format2);
     }
     else { /* make gcc stop complaining */
         rmask2 = gmask2 = bmask2 = 0;
         rshift2 = gshift2 = bshift2 = 0;
         rloss2 = gloss2 = bloss2 = 0;
-        format2 = NULL;
         pixels2 = NULL;
         bpp2 = 0;
     }
 
-    SDL_GetRGBA(color, format, &r, &g, &b, &a);
-    SDL_GetRGBA(threshold, format, &tr, &tg, &tb, &ta);
+    PG_GetRGBA(color, format, palette, &r, &g, &b, &a);
+    PG_GetRGBA(threshold, format, palette, &tr, &tg, &tb, &ta);
 
     for (y = 0; y < surf->h; y++) {
         pixels = (Uint8 *)surf->pixels + y * surf->pitch;
@@ -1054,6 +1123,8 @@ mask_from_threshold(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurfaceObject *surfobj2 = NULL;
     pgMaskObject *maskobj = NULL;
     SDL_Surface *surf = NULL, *surf2 = NULL;
+    PG_PixelFormat *surf_format, *surf2_format = NULL;
+    SDL_Palette *surf_palette;
     PyObject *rgba_obj_color, *rgba_obj_threshold = NULL;
     Uint8 rgba_threshold[4] = {0, 0, 0, 255};
     Uint32 color;
@@ -1065,29 +1136,41 @@ mask_from_threshold(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(
             args, kwargs, "O!O|OO!i", keywords, &pgSurface_Type, &surfobj,
             &rgba_obj_color, &rgba_obj_threshold, &pgSurface_Type, &surfobj2,
-            &palette_colors))
+            &palette_colors)) {
         return NULL;
+    }
 
     surf = pgSurface_AsSurface(surfobj);
     if (surfobj2) {
         surf2 = pgSurface_AsSurface(surfobj2);
     }
 
-    if (!pg_MappedColorFromObj(rgba_obj_color, surf->format, &color,
-                               PG_COLOR_HANDLE_INT)) {
+    if (!PG_GetSurfaceDetails(surf, &surf_format, &surf_palette)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    if (surf2) {
+        surf2_format = PG_GetSurfaceFormat(surf2);
+        if (!surf2_format) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+
+    if (!pg_MappedColorFromObj(rgba_obj_color, surf, &color,
+                               PG_COLOR_HANDLE_ALL)) {
         return NULL;
     }
 
     if (rgba_obj_threshold) {
-        if (!pg_MappedColorFromObj(rgba_obj_threshold, surf->format,
-                                   &color_threshold, PG_COLOR_HANDLE_INT)) {
+        if (!pg_MappedColorFromObj(rgba_obj_threshold, surf, &color_threshold,
+                                   PG_COLOR_HANDLE_ALL)) {
             return NULL;
         }
     }
     else {
-        color_threshold =
-            SDL_MapRGBA(surf->format, rgba_threshold[0], rgba_threshold[1],
-                        rgba_threshold[2], rgba_threshold[3]);
+        color_threshold = PG_MapRGBA(surf_format, surf_palette,
+                                     rgba_threshold[0], rgba_threshold[1],
+                                     rgba_threshold[2], rgba_threshold[3]);
     }
 
     maskobj = CREATE_MASK_OBJ(surf->w, surf->h, 0);
@@ -1102,8 +1185,8 @@ mask_from_threshold(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     Py_BEGIN_ALLOW_THREADS;
-    bitmask_threshold(maskobj->mask, surf, surf2, color, color_threshold,
-                      palette_colors);
+    bitmask_threshold(maskobj->mask, surf, surf_format, surf_palette, surf2,
+                      surf2_format, color, color_threshold, palette_colors);
     Py_END_ALLOW_THREADS;
 
     pgSurface_Unlock(surfobj);
@@ -1285,7 +1368,8 @@ cc_label(bitmask_t *input, unsigned int *image, unsigned int *ufind,
             }
             buf++;
         }
-        /* last pixel of the row, if its not also the first pixel of the row */
+        /* last pixel of the row, if it's not also the first pixel of the row
+         */
         if (w > 1) {
             if (bitmask_getbit(input, x, y)) {
                 if (*(buf - w)) { /* b label */
@@ -1383,7 +1467,7 @@ get_bounding_rects(bitmask_t *input, int *num_bounding_boxes,
         if (ufind[x_uf] < x_uf) {             /* is it a union find root? */
             ufind[x_uf] = ufind[ufind[x_uf]]; /* relabel it to its root */
         }
-        else { /* its a root */
+        else { /* it's a root */
             relabel++;
             ufind[x_uf] = relabel; /* assign the lowest label available */
         }
@@ -1410,7 +1494,7 @@ get_bounding_rects(bitmask_t *input, int *num_bounding_boxes,
     }
 
     for (temp = 0; temp <= relabel; temp++) {
-        rects[temp].h = 0; /* so we know if its a new rect or not */
+        rects[temp].h = 0; /* so we know if it's a new rect or not */
     }
 
     /* find the bounding rect of each connected component */
@@ -1587,7 +1671,7 @@ get_connected_components(bitmask_t *mask, bitmask_t ***components, int min)
         if (ufind[x_uf] < x_uf) {             /* is it a union find root? */
             ufind[x_uf] = ufind[ufind[x_uf]]; /* relabel it to its root */
         }
-        else { /* its a root */
+        else { /* it's a root */
             if (largest[x_uf] >= min_cc) {
                 relabel++;
                 ufind[x_uf] = relabel; /* assign the lowest label available */
@@ -1779,8 +1863,9 @@ largest_connected_comp(bitmask_t *input, bitmask_t *output, int ccx, int ccy)
 
     /* write out the final image */
     buf = image;
-    if (ccx >= 0)
+    if (ccx >= 0) {
         max = ufind[*(buf + ccy * w + ccx)];
+    }
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
             if (ufind[*buf] == max) {         /* if the label is the max one */
@@ -1807,8 +1892,9 @@ mask_connected_component(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *pos = NULL;
     static char *keywords[] = {"pos", NULL};
 
-    if (kwargs)
+    if (kwargs) {
         args_exist += PyDict_Size(kwargs);
+    }
 
     if (args_exist) {
         if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", keywords, &pos)) {
@@ -1865,13 +1951,17 @@ extract_color(SDL_Surface *surf, PyObject *color_obj, Uint8 rgba_color[],
               Uint32 *color)
 {
     if (NULL == color_obj) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        *color = SDL_MapSurfaceRGBA(surf, rgba_color[0], rgba_color[1],
+                                    rgba_color[2], rgba_color[3]);
+#else
         *color = SDL_MapRGBA(surf->format, rgba_color[0], rgba_color[1],
                              rgba_color[2], rgba_color[3]);
+#endif
         return 1;
     }
 
-    return pg_MappedColorFromObj(color_obj, surf->format, color,
-                                 PG_COLOR_HANDLE_ALL);
+    return pg_MappedColorFromObj(color_obj, surf, color, PG_COLOR_HANDLE_ALL);
 }
 
 /* Draws a mask on a surface.
@@ -1929,7 +2019,7 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
         return;
     }
 
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     // clamp rect width and height to not stick out of the mask
     area_rect->w = MIN(area_rect->w, bitmask->w - area_rect->x);
@@ -2075,13 +2165,7 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
 static int
 check_surface_pixel_format(SDL_Surface *surf, SDL_Surface *check_surf)
 {
-    if ((surf->format->BytesPerPixel != check_surf->format->BytesPerPixel) ||
-        (surf->format->BitsPerPixel != check_surf->format->BitsPerPixel) ||
-        (surf->format->format != check_surf->format->format)) {
-        return 0;
-    }
-
-    return 1;
+    return PG_SURF_FORMATENUM(surf) == PG_SURF_FORMATENUM(check_surf);
 }
 
 /* Draws a mask on a surface.

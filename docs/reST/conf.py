@@ -10,21 +10,34 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys, os, pathlib
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('.'))
 
+import buildconfig.get_version as pg_ver
+
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest',
-              'sphinx.ext.coverage', 'ext.headers', 'ext.boilerplate',
-              'ext.customversion', 'ext.edit_on_github']
+extensions = ['autoapi.extension', 'ext.headers', 'ext.boilerplate',
+              'ext.customversion', 'ext.edit_on_github', 'ext.documenters']
 
+
+autoapi_dirs = [
+    pathlib.Path('.').resolve().parent.parent / 'buildconfig' / 'stubs' / 'pygame',
+    pathlib.Path('.').resolve().parent.parent / 'src_py',
+]
+
+autoapi_options = ['members', 'undoc-members']
+autoapi_ignore = ["*controller.py", "*_sdl2/window.py", "*freetype.py", "*ftfont.py", "*__pyinstaller*", "*__init__.py", "*__briefcase*"]
+autoapi_generate_api_docs = False
+autodoc_typehints = 'none'
+suppress_warnings = ['autoapi.python_import_resolution']
+autodoc_member_order = 'bysource'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -46,10 +59,10 @@ copyright = '2000-2022, pygame developers, 2023 pygame-ce developers'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-# The short X.Y version.
-version = '2.5.0'
+# The short X.Y.Z version.
+version = pg_ver.version_short
 # The full version, including alpha/beta/rc tags.
-release = '2.5.0.dev1'
+release = pg_ver.version
 
 # Format strings for the version directives
 versionadded_format = 'New in pygame-ce %s'
@@ -120,7 +133,7 @@ html_title = f"{project} v{version} documentation"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = '_static/pygame_tiny.png'
+html_logo = '_static/pygame_ce_tiny.webp'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32

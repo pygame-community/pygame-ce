@@ -4,6 +4,7 @@ A script to auto-generate locals.pyi, constants.pyi and __init__.pyi typestubs
 """
 
 import pathlib
+import shutil
 from typing import Any
 
 import pygame.constants
@@ -35,7 +36,6 @@ PG_AUTOIMPORT_SUBMODS = [
     "surfarray",
     "transform",
     "scrap",
-    "threads",
     "version",
     "base",
     "bufferproxy",
@@ -52,6 +52,7 @@ PG_AUTOIMPORT_SUBMODS = [
     "system",
     "geometry",
     "window",
+    "typing",
 ]
 
 # pygame classes that are autoimported into main namespace are kept in this dict
@@ -67,13 +68,13 @@ PG_AUTOIMPORT_CLASSES = {
     "_debug": ["print_debug_info"],
     "event": ["Event"],
     "font": ["Font"],
-    "mixer": ["Channel"],
+    "mixer": ["Sound", "Channel"],
     "time": ["Clock"],
     "joystick": ["Joystick"],
     "window": ["Window"],
     "base": ["__version__"],  # need an explicit import
     # uncomment below line if Circle is added to the base namespace later
-    # "geometry": ["Circle"], 
+    # "geometry": ["Circle"],
 }
 
 # pygame modules from which __init__.py does the equivalent of
@@ -130,9 +131,11 @@ with open(init_file, "w") as f:
     f.write(misc_stubs)
 
     for mod, items in pygame_all_imports.items():
+        if mod == "pygame":
+            mod = "."
         if len(items) <= 4:
             # try to write imports in a single line if it can fit the line limit
-            import_items = map(lambda string: f"{string} as {string}", items)
+            import_items = (f"{string} as {string}" for string in items)
             import_line = f"\nfrom {mod} import {', '.join(import_items)}"
             if len(import_line) <= 88:
                 f.write(import_line)
@@ -152,3 +155,8 @@ with open(locals_file, "w") as f:
     for element in get_all(pygame.locals):
         constant_type = getattr(pygame.locals, element).__class__.__name__
         f.write(f"{element}: {constant_type}\n")
+
+# copy typing.py to typing.pyi for type checkers
+typing_py_file = pathlib.Path(__file__).parent.parent.parent / "src_py" / "typing.py"
+typing_stub_file = pathlib.Path(__file__).parent / "pygame" / "typing.pyi"
+shutil.copyfile(typing_py_file, typing_stub_file)

@@ -35,6 +35,7 @@ _sdl2.audio src_c/_sdl2/audio.c $(SDL) $(DEBUG) -Isrc_c
 _sdl2.video src_c/_sdl2/video.c src_c/pgcompat.c $(SDL) $(DEBUG) -Isrc_c
 _sdl2.mixer src_c/_sdl2/mixer.c $(SDL) $(MIXER) $(DEBUG) -Isrc_c
 _sdl2.touch src_c/_sdl2/touch.c $(SDL) $(DEBUG) -Isrc_c
+_sdl2.controller src_c/_sdl2/controller.c $(SDL) $(DEBUG) -Isrc_c
 _sdl2.controller_old src_c/_sdl2/controller_old.c $(SDL) $(DEBUG) -Isrc_c
 
 GFX = src_c/SDL_gfx/SDL_gfxPrimitives.c
@@ -74,3 +75,4 @@ newbuffer src_c/newbuffer.c $(SDL) $(DEBUG)
 system src_c/system.c $(SDL) $(DEBUG)
 geometry src_c/geometry.c $(SDL) $(DEBUG)
 window src_c/window.c $(SDL) $(DEBUG)
+_render src_c/render.c $(SDL) $(DEBUG)

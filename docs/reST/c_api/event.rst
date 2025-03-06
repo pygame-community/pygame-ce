@@ -39,6 +39,26 @@ Header file: src_c/include/pygame.h
    If *event* is ``NULL`` then create an empty event object.
    On failure raise a Python exception and return ``NULL``.
 
+.. c:function:: char* pgEvent_GetKeyDownInfo(void)
+
+   Return an array of bools (using char) of length SDL_NUM_SCANCODES
+   with the most recent key presses.
+
+.. c:function:: char* pgEvent_GetKeyUpInfo(void)
+
+   Return an array of bools (using char) of length SDL_NUM_SCANCODES
+   with the most recent key releases.
+
+.. c:function:: char* pgEvent_GetMouseButtonDownInfo(void)
+
+   Return an array of bools (using char) of length 5
+   with the most recent button presses.
+
+.. c:function:: char* pgEvent_GetMouseButtonUpInfo(void)
+
+   Return an array of bools (using char) of length 5
+   with the most recent button releases.
+
 .. c:function:: int pg_post_event(Uint32 type, PyObject *dict)
 
    Posts a pygame event that is an ``SDL_USEREVENT`` on the SDL side. This

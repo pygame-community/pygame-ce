@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-""" pygame.examples.textinput
+"""pygame.examples.textinput
 
 A little "console" where you can write in text.
 
 Shows how to use the TEXTEDITING and TEXTINPUT events.
 """
-from typing import Tuple, List
+
 import sys
 import os
 
@@ -38,8 +38,8 @@ class TextInput:
     def __init__(
         self,
         prompt: str,
-        pos: Tuple[int, int],
-        screen_dimensions: Tuple[int, int],
+        pos: tuple[int, int],
+        screen_dimensions: tuple[int, int],
         print_event: bool,
         text_color="white",
         fps: int = 50,
@@ -76,7 +76,7 @@ class TextInput:
 
         print("Using font: " + self.font.name)
 
-    def update(self, events: List[pygame.Event]) -> None:
+    def update(self, events: list[pygame.Event]) -> None:
         """
         Updates the text input widget
         """

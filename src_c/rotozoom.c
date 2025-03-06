@@ -32,23 +32,6 @@ typedef struct tColorRGBA {
 #define M_PI 3.141592654
 #endif
 
-#if !SDL_VERSION_ATLEAST(2, 0, 14)
-// Remove this when our minimum version is 2.0.14 or larger
-SDL_bool
-PG_SurfaceHasRLE(SDL_Surface *surface)
-{
-    if (surface == NULL) {
-        return SDL_FALSE;
-    }
-
-    if (!(surface->map->info.flags & SDL_COPY_RLE_DESIRED)) {
-        return SDL_FALSE;
-    }
-
-    return SDL_TRUE;
-}
-#endif
-
 /*
 
  32bit Zoomer with optional anti-aliasing by bilinear interpolation.
@@ -534,14 +517,15 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
     /*
      * Sanity check
      */
-    if (src == NULL)
+    if (src == NULL) {
         return (NULL);
+    }
 
     /*
      * Determine if source surface is 32bit or 8bit
      */
-    is32bit = (src->format->BitsPerPixel == 32);
-    if ((is32bit) || (src->format->BitsPerPixel == 8)) {
+    is32bit = (PG_SURF_BitsPerPixel(src) == 32);
+    if ((is32bit) || (PG_SURF_BitsPerPixel(src) == 8)) {
         /*
          * Use source surface 'as is'
          */
@@ -601,8 +585,10 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
-        rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
-        if (SDL_GetColorKey(src, &colorkey) == 0) {
+        rz_dst =
+            PG_CreateSurface(dstwidth, dstheight, PG_SURF_FORMATENUM(rz_src));
+        if (SDL_HasColorKey(src)) {
+            SDL_GetColorKey(src, &colorkey);
             if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
@@ -659,8 +645,10 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
 
-        rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
-        if (SDL_GetColorKey(src, &colorkey) == 0) {
+        rz_dst =
+            PG_CreateSurface(dstwidth, dstheight, PG_SURF_FORMATENUM(rz_src));
+        if (SDL_HasColorKey(src)) {
+            SDL_GetColorKey(src, &colorkey);
             if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;

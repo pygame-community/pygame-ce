@@ -203,24 +203,9 @@ sprite module.
     it "forgets" about any previous sprites it had. Therefore it always contains
     only one or zero sprites.
 
-  :class:`RenderPlain <pygame.sprite.RenderPlain>`
-
-    This is a standard group derived from ``Group``. It has a draw() method
-    that draws all the sprites it contains to the screen (or any ``Surface``). For
-    this to work, it requires all sprites it contains to have a "image" and "rect"
-    attributes. It uses these to know what to blit, and where to blit it.
-
-  :class:`RenderClear <pygame.sprite.RenderClear>`
-
-    This is derived from the ``RenderPlain`` group, and adds a method named
-    ``clear()``. This will erase the previous position of all drawn sprites. It
-    uses a background image to fill in the areas where the sprite were. It is smart
-    enough to handle deleted sprites and properly clear them from the screen when
-    the ``clear()`` method is called.
-
   :class:`RenderUpdates <pygame.sprite.RenderUpdates>`
 
-    This group is inherited from ``RenderClear``, but changes the
+    This group is inherited from ``Group``, but changes the
     ``draw()`` method to also return a list of pygame ``Rects``,
     which represent all the areas on screen that have been changed.
     Generally you don't need to use this group, but it is included for
@@ -242,8 +227,8 @@ The Rendering Groups
 --------------------
 
 From above we can see there are three different rendering groups. We could
-probably just get away with the ``RenderPlain`` one. For a scrolling or stationary
-type game, you should probably go with the ``RenderPlain`` group here to manage
+probably just get away with the ``Group`` one. For a scrolling or stationary
+type game, you should probably go with the ``Group`` group here to manage
 your rendering.
 
 Also note that there's nothing stopping you from mixing and matching these
@@ -342,11 +327,11 @@ Looking at the current ``Sprite`` groups should be enough example on how to
 create your own.
 
 For example, here is the source code for a rendering ``Group`` that calls a
-``render()`` method for each sprite, instead of just blitting an "image"
+``draw()`` method for each sprite, instead of just blitting an "image"
 variable from it.  Since we want it to also handle updated areas, we will start
 with a copy of the original ``RenderUpdates`` group, here is the code::
 
-    class RenderUpdatesDraw(RenderClear):
+    class RenderUpdatesDraw(Group):
         """call sprite.draw(screen) to render sprites"""
         def draw(self, surface):
             dirty = self.lostsprites
@@ -389,4 +374,3 @@ both look similar, this is the most flexible way to "see" the difference.)
 You should go through the code for the sprite module. While the code is a bit
 "tuned", it's got enough comments to help you follow along.  There's even a
 TODO section in the source if you feel like contributing.
-

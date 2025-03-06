@@ -25,8 +25,7 @@ def random_mask(size=(100, 100)):
 
 def maskFromSurface(surface, threshold=127):
     mask = pygame.Mask(surface.get_size())
-    key = surface.get_colorkey()
-    if key:
+    if key := surface.get_colorkey():
         for y in range(surface.get_height()):
             for x in range(surface.get_width()):
                 if surface.get_at((x + 0.1, y + 0.1)) != key:
@@ -6379,21 +6378,19 @@ class MaskModuleTest(unittest.TestCase):
     def test_from_threshold(self):
         """Does mask.from_threshold() work correctly?"""
 
-        a = [16, 24, 32]
+        bpp = [16, 24, 32]
 
-        for i in a:
+        for i in bpp:
             surf = pygame.surface.Surface((70, 70), 0, i)
             surf.fill((100, 50, 200), (20, 20, 20, 20))
             mask = pygame.mask.from_threshold(
                 surf, (100, 50, 200, 255), (10, 10, 10, 255)
             )
 
-            rects = mask.get_bounding_rects()
-
             self.assertEqual(mask.count(), 400)
             self.assertEqual(mask.get_bounding_rects(), [pygame.Rect((20, 20, 20, 20))])
 
-        for i in a:
+        for i in bpp:
             surf = pygame.surface.Surface((70, 70), 0, i)
             surf2 = pygame.surface.Surface((70, 70), 0, i)
             surf.fill((100, 100, 100))
@@ -6409,6 +6406,10 @@ class MaskModuleTest(unittest.TestCase):
             self.assertIsInstance(mask, pygame.mask.Mask)
             self.assertEqual(mask.count(), 100)
             self.assertEqual(mask.get_bounding_rects(), [pygame.Rect((40, 40, 10, 10))])
+
+        for color in [(20, 20, 20), 10, "green", pygame.Color("blue")]:
+            surf = pygame.surface.Surface((10, 10))
+            pygame.mask.from_threshold(surf, color, color)
 
     def test_zero_size_from_surface(self):
         """Ensures from_surface can create masks from zero sized surfaces."""

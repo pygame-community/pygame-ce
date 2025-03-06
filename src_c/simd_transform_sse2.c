@@ -289,8 +289,9 @@ filter_expand_X_SSE2(Uint8 *srcpix, Uint8 *dstpix, int height, int srcpitch,
 
     /* Allocate memory for factors */
     xidx0 = malloc(dstwidth * 4);
-    if (xidx0 == 0)
+    if (xidx0 == 0) {
         return;
+    }
     // This algorithm uses two multipliers, xm0 and xm1. Each multiplier
     // gets 32 bits of space, so this gives 64 bits per dstwidth.
     xmult_combined = (int *)malloc(dstwidth * factorwidth);
@@ -355,7 +356,7 @@ filter_expand_Y_SSE2(Uint8 *srcpix, Uint8 *dstpix, int width, int srcpitch,
 {
     // This filter parallelizes math operations using SSE2, but it also runs
     // through each row 2 pixels at a time. The 2x pixels at a time strategy
-    // was a 23% performance improvment for Y-expand over 1x at a time.
+    // was a 23% performance improvement for Y-expand over 1x at a time.
 
     int x, y;
     __m128i src0, src1, dst, ymult0_mm, ymult1_mm;
@@ -433,7 +434,7 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
      * We also need to calculate a 'skip value' in case our surface's rows are
      * not contiguous in memory. For surfaces, a single row's worth of pixel
      * data is always contiguous (i.e. each pixel is next to each other).
-     * However, a surface's rows may be seperated from one another in memory,
+     * However, a surface's rows may be separated from one another in memory,
      * most commonly this happens with sub surfaces.
      * The vast majority of surfaces used in applications will probably also
      * have contiguous rows as that is what happens when you create a standard
@@ -610,4 +611,80 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
         srcp64 = (Uint64 *)srcp;
     }
 }
+
+void
+invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
+{
+    int s_row_skip = (src->pitch - src->w * 4) / 4;
+
+    // generate number of batches of pixels we need to loop through
+    int pixel_batch_length = src->w * src->h;
+    int num_batches = 1;
+    if (s_row_skip > 0) {
+        pixel_batch_length = src->w;
+        num_batches = src->h;
+    }
+    int remaining_pixels = pixel_batch_length % 4;
+    int perfect_4_pixels = pixel_batch_length / 4;
+
+    int perfect_4_pixels_batch_counter = perfect_4_pixels;
+    int remaining_pixels_batch_counter = remaining_pixels;
+
+    Uint32 *srcp = (Uint32 *)src->pixels;
+    Uint32 *dstp = (Uint32 *)newsurf->pixels;
+
+    __m128i mm_src, mm_dst, mm_alpha, mm_rgb_invert_mask, mm_alpha_mask;
+
+    __m128i *srcp128 = (__m128i *)src->pixels;
+    __m128i *dstp128 = (__m128i *)newsurf->pixels;
+
+    mm_rgb_invert_mask = _mm_set1_epi32(~src->format->Amask);
+    mm_alpha_mask = _mm_set1_epi32(src->format->Amask);
+
+    while (num_batches--) {
+        perfect_4_pixels_batch_counter = perfect_4_pixels;
+        remaining_pixels_batch_counter = remaining_pixels;
+        while (perfect_4_pixels_batch_counter--) {
+            mm_src = _mm_loadu_si128(srcp128);
+            /*mm_src = 0xAARRGGBBAARRGGBBAARRGGBBAARRGGBB*/
+
+            /* pull out the alpha */
+            mm_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
+
+            /* do the invert */
+            mm_dst = _mm_andnot_si128(mm_src, mm_rgb_invert_mask);
+
+            /* put the alpha back in*/
+            mm_dst = _mm_or_si128(mm_dst, mm_alpha);
+
+            _mm_storeu_si128(dstp128, mm_dst);
+            /*dstp = 0xAARRGGBBAARRGGBBAARRGGBBAARRGGBB*/
+            srcp128++;
+            dstp128++;
+        }
+        srcp = (Uint32 *)srcp128;
+        dstp = (Uint32 *)dstp128;
+        while (remaining_pixels_batch_counter--) {
+            mm_src = _mm_cvtsi32_si128(*srcp);
+            /*mm_src = 0x000000000000000000000000AARRGGBB*/
+
+            /* pull out the alpha */
+            mm_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
+
+            /* do the invert */
+            mm_dst = _mm_andnot_si128(mm_src, mm_rgb_invert_mask);
+
+            /* put the alpha back in*/
+            mm_dst = _mm_or_si128(mm_dst, mm_alpha);
+
+            *dstp = _mm_cvtsi128_si32(mm_dst);
+            /*dstp = 0xAARRGGBB*/
+            srcp++;
+            dstp++;
+        }
+        srcp += s_row_skip;
+        srcp128 = (__m128i *)srcp;
+    }
+}
+
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
