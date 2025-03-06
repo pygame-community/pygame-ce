@@ -84,6 +84,7 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specific ones that aren't quite so general but fit into common
 # specialized cases.
 
+import types
 from typing import Optional
 from warnings import warn
 
@@ -370,8 +371,7 @@ class AbstractGroup:
 
     """
 
-    def __class_getitem__(cls, generic):
-        return types.GenericAlias(cls, generic)
+    __class_getitem__ = classmethod(types.GenericAlias)
 
     # protected identifier value to identify sprite groups, and avoid infinite recursion
     _spritegroup = True
