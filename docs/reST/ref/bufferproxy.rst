@@ -57,8 +57,8 @@
       ``"before"`` : callable : (optional)
          Callback invoked when the :class:`BufferProxy` instance
          exports the buffer. The callback is given one argument, the
-	 ``"parent"`` object if given, otherwise ``None``.
-    The callback is useful for setting a lock on the parent.
+         ``"parent"`` object if given, otherwise ``None``.
+         The callback is useful for setting a lock on the parent.
 
       ``"after"`` : callable : (optional)
          Callback invoked when an exported buffer is released.
