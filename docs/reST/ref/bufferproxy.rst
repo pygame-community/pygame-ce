@@ -47,8 +47,8 @@
 
       ``"strides"`` : tuple : (optional)
          Array stride information as a tuple of integers. It is required
-	 only of non C-contiguous arrays. The tuple length must match
-	 that of ``"shape"``.
+         only of non C-contiguous arrays. The tuple length must match
+         that of ``"shape"``.
 
       ``"parent"`` : object : (optional)
          The exporting object. It can be used to keep the parent object

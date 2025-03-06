@@ -508,8 +508,9 @@ array_to_surface(PyObject *self, PyObject *arg)
         return RAISE(PyExc_ValueError, "must be a valid 2d or 3d array\n");
     }
 
-    if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4)
+    if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return RAISE(PyExc_ValueError, "unsupported bit depth for surface");
+    }
 
     stridex = view_p->strides[0];
     stridey = view_p->strides[1];
