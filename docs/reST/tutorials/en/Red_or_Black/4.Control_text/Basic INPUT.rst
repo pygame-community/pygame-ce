@@ -16,7 +16,7 @@ Basic INPUT
 Usually, we learn how to output something first (Think about Hello World!), learning how to input something is always second. Why? Because input is not the requirement for some program in contrast to output is the requirement for every program. (That’s definition of program. more than or same as 0 input, more than or same as 1 output.) However, every game needs input. That’s why we said “I like playing games”. Playing means moving your part of body (maybe your finger). Anyway, let’s add input logic to make this project into real game.
 
 
-.. image:: ../../../assets/Bagic-INPUT-sourcecode.png
+.. image:: ../../../assets/Bagic-INPUT-sourcecode.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -31,7 +31,7 @@ Usually, we learn how to output something first (Think about Hello World!), lear
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Bagic-INPUT-sourcecode.png")
+   ball = pygame.image.load("Bagic-INPUT-sourcecode.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -49,7 +49,7 @@ Usually, we learn how to output something first (Think about Hello World!), lear
        pygame.display.flip()
 
 
-.. image:: ../../../assets/Bagic-INPUT-resultscreen.png
+.. image:: ../../../assets/Bagic-INPUT-resultscreen.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -64,7 +64,7 @@ Usually, we learn how to output something first (Think about Hello World!), lear
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Bagic-INPUT-resultscreen.png")
+   ball = pygame.image.load("Bagic-INPUT-resultscreen.webp")
    ballrect = ball.get_rect()
 
    while True:
