@@ -690,8 +690,9 @@ pg_tuple_couple_from_values_double(double val1, double val2)
      * to do the same thing.
      */
     PyObject *tuple = PyTuple_New(2);
-    if (!tuple)
+    if (!tuple) {
         return NULL;
+    }
 
     PyObject *tmp = PyFloat_FromDouble(val1);
     if (!tmp) {
