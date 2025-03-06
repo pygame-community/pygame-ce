@@ -62,7 +62,7 @@ animation with 7 lines of code. Let's take a look at a friendlier
 version of that same thing. This should be simple enough to follow
 along, and a complete breakdown follows.
 
-.. image:: ../assets/intro_ball.gif
+.. image:: ../assets/intro_ball.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -77,7 +77,7 @@ along, and a complete breakdown follows.
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("intro_ball.gif")
+   ball = pygame.image.load("intro_ball.webp")
    ballrect = ball.get_rect()
 
    while True:
