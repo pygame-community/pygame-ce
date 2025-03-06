@@ -110,7 +110,7 @@ def main():
     font = pygame.Font(None, 30)
 
     main_dir = os.path.split(os.path.abspath(__file__))[0]
-    example_image = pygame.image.load(os.path.join(main_dir, "data", "frame.png"))
+    example_image = pygame.image.load(os.path.join(main_dir, "data", "frame.webp"))
 
     original_surface = pygame.Surface((100, 100), pygame.SRCALPHA)
     pygame.draw.rect(
