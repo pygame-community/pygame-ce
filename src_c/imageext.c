@@ -226,7 +226,7 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (name) { /* override extension with namehint if given */
-        type = (name[0] != '\0') ? iext_find_extension(name) : NULL;
+        type = (strlen(name) != 0) ? iext_find_extension(name) : NULL;
     }
     else { /* Otherwise type should be whatever ext is, even if ext is NULL */
         type = ext;

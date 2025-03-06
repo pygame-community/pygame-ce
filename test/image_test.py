@@ -1362,7 +1362,7 @@ class ImageModuleTest(unittest.TestCase):
 
     @unittest.skipIf(
         pygame.image.get_sdl_image_version() < (2, 6, 0),
-        "load_sized_svg requires SDL_image 2.6.0+",
+        "load_animation requires SDL_image 2.6.0+",
     )
     def test_load_animation(self):
         # test loading from a file
