@@ -30,7 +30,7 @@ repos:
     hooks:  # See pyproject.toml for configuration options.
       - id: ruff
         name: ruff-sort-imports
-        args: [--select, I, --fix]
+        args: [ --select, I, --fix ]
       - id: ruff-format  # Run the formatter
         types_or: [ python, pyi, jupyter ]
 
