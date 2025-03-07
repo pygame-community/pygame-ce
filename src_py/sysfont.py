@@ -470,8 +470,10 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                 break
 
         else:
-            font_verification_message = "Verify your font name input."
-            " Using the default font instead."
+            font_verification_message = (
+                "Verify your font name input. Using the default font instead."
+            )
+
             if len(name) > 1:
                 names = "', '".join(name)
                 warnings.warn(
