@@ -1,14 +1,13 @@
-from collections import OrderedDict
 import copy
 import platform
 import random
-import unittest
 import sys
+import unittest
+from collections import OrderedDict
 
 import pygame
 from pygame.locals import *
 from pygame.math import Vector2
-
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
@@ -3265,7 +3264,6 @@ class MaskTypeTest(unittest.TestCase):
 
             assertSurfaceFilled(self, to_surface, expected_color)
 
-    @unittest.expectedFailure
     def test_to_surface__valid_area_formats(self):
         """Ensures to_surface handles valid area formats correctly."""
         size = (3, 5)
@@ -3298,7 +3296,6 @@ class MaskTypeTest(unittest.TestCase):
             assertSurfaceFilled(self, to_surface, expected_color, area_rect)
             assertSurfaceFilledIgnoreArea(self, to_surface, surface_color, area_rect)
 
-    @unittest.expectedFailure
     def test_to_surface__invalid_area_formats(self):
         """Ensures to_surface handles invalid area formats correctly."""
         mask = pygame.mask.Mask((3, 5))
@@ -3314,10 +3311,9 @@ class MaskTypeTest(unittest.TestCase):
         )
 
         for area in invalid_areas:
-            with self.assertRaisesRegex(TypeError, "invalid area argument"):
-                unused_to_surface = mask.to_surface(area=area)
+            with self.assertRaisesRegex(TypeError, "invalid rectstyle argument"):
+                mask.to_surface(area=area)
 
-    @unittest.expectedFailure
     def test_to_surface__negative_sized_area_rect(self):
         """Ensures to_surface correctly handles negative sized area rects."""
         size = (3, 5)
@@ -3342,7 +3338,6 @@ class MaskTypeTest(unittest.TestCase):
             assertSurfaceFilled(self, to_surface, expected_color, area)
             assertSurfaceFilledIgnoreArea(self, to_surface, surface_color, area)
 
-    @unittest.expectedFailure
     def test_to_surface__zero_sized_area_rect(self):
         """Ensures to_surface correctly handles zero sized area rects."""
         size = (3, 5)
@@ -4579,8 +4574,6 @@ class MaskTypeTest(unittest.TestCase):
                         self, to_surface, surface_color, overlap_rect
                     )
 
-    @unittest.expectedFailure
-    @unittest.skipIf(IS_PYPY, "Segfaults on pypy")
     def test_to_surface__area_locations(self):
         """Ensures area rects can be different locations on/off the mask."""
         SIDE = 7
@@ -4591,10 +4584,10 @@ class MaskTypeTest(unittest.TestCase):
         default_unsetcolor = pygame.Color("black")
 
         directions = (
-            ((s, 0) for s in range(-SIDE, SIDE + 1)),  # left to right
-            ((0, s) for s in range(-SIDE, SIDE + 1)),  # top to bottom
-            ((s, s) for s in range(-SIDE, SIDE + 1)),  # topleft to bottomright diag
-            ((-s, s) for s in range(-SIDE, SIDE + 1)),  # topright to bottomleft diag
+            [(s, 0) for s in range(-SIDE, SIDE + 1)],  # left to right
+            [(0, s) for s in range(-SIDE, SIDE + 1)],  # top to bottom
+            [(s, s) for s in range(-SIDE, SIDE + 1)],  # topleft to bottomright diag
+            [(-s, s) for s in range(-SIDE, SIDE + 1)],  # topright to bottomleft diag
         )
 
         for fill in (True, False):
@@ -4617,7 +4610,6 @@ class MaskTypeTest(unittest.TestCase):
                         self, to_surface, surface_color, overlap_rect
                     )
 
-    @unittest.expectedFailure
     def test_to_surface__dest_and_area_locations(self):
         """Ensures dest/area values can be different locations on/off the
         surface/mask.
@@ -4671,7 +4663,6 @@ class MaskTypeTest(unittest.TestCase):
                             self, to_surface, surface_color, dest_overlap_rect
                         )
 
-    @unittest.expectedFailure
     def test_to_surface__area_sizes(self):
         """Ensures area rects can be different sizes."""
         SIDE = 7
@@ -5131,8 +5122,6 @@ class MaskTypeTest(unittest.TestCase):
                         self, to_surface, surface_color, mask_rect
                     )
 
-    @unittest.expectedFailure
-    @unittest.skipIf(IS_PYPY, "Segfaults on pypy")
     def test_to_surface__area_on_mask(self):
         """Ensures area values on the mask work correctly
         when using the defaults for setcolor and unsetcolor.
@@ -5156,16 +5145,18 @@ class MaskTypeTest(unittest.TestCase):
                 overlap_rect = mask_rect.clip(area_rect)
                 overlap_rect.topleft = (0, 0)
 
-                to_surface = mask.to_surface(surface, area=area_rect)
+                with self.subTest(
+                    pos=pos, area_rect=area_rect.copy(), overlap_rect=overlap_rect
+                ):
+                    to_surface = mask.to_surface(surface, area=area_rect)
 
-                self.assertIs(to_surface, surface)
-                self.assertEqual(to_surface.get_size(), size)
-                assertSurfaceFilled(self, to_surface, expected_color, overlap_rect)
-                assertSurfaceFilledIgnoreArea(
-                    self, to_surface, surface_color, overlap_rect
-                )
+                    self.assertIs(to_surface, surface)
+                    self.assertEqual(to_surface.get_size(), size)
+                    assertSurfaceFilled(self, to_surface, expected_color, overlap_rect)
+                    assertSurfaceFilledIgnoreArea(
+                        self, to_surface, surface_color, overlap_rect
+                    )
 
-    @unittest.expectedFailure
     def test_to_surface__area_on_mask_with_setsurface_unsetsurface(self):
         """Ensures area values on the mask work correctly
         when using setsurface and unsetsurface.
@@ -5222,8 +5213,6 @@ class MaskTypeTest(unittest.TestCase):
                         self, to_surface, surface_color, overlap_rect
                     )
 
-    @unittest.expectedFailure
-    @unittest.skipIf(IS_PYPY, "Segfaults on pypy")
     def test_to_surface__area_off_mask(self):
         """Ensures area values off the mask work correctly
         when using the defaults for setcolor and unsetcolor.
@@ -5259,8 +5248,6 @@ class MaskTypeTest(unittest.TestCase):
                     self, to_surface, surface_color, overlap_rect
                 )
 
-    @unittest.expectedFailure
-    @unittest.skipIf(IS_PYPY, "Segfaults on pypy")
     def test_to_surface__area_off_mask_with_setsurface_unsetsurface(self):
         """Ensures area values off the mask work correctly
         when using setsurface and unsetsurface.

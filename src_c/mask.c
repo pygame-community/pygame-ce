@@ -1985,9 +1985,8 @@ extract_color(SDL_Surface *surf, PyObject *color_obj, Uint8 rgba_color[],
  */
 static void
 draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
-                SDL_Rect *area_rect, int draw_setbits, int draw_unsetbits,
-                SDL_Surface *setsurf, SDL_Surface *unsetsurf, Uint32 *setcolor,
-                Uint32 *unsetcolor)
+                int draw_setbits, int draw_unsetbits, SDL_Surface *setsurf,
+                SDL_Surface *unsetsurf, Uint32 *setcolor, Uint32 *unsetcolor)
 {
     Uint8 *pixel = NULL;
     Uint8 bpp;
@@ -2003,15 +2002,6 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
         return;
     }
 
-    if (area_rect->x < 0) {
-        x_dest -= area_rect->x;
-        area_rect->w += area_rect->x;
-    }
-    if (area_rect->y < 0) {
-        y_dest -= area_rect->y;
-        area_rect->h += area_rect->y;
-    }
-
     /* There is also nothing to do when the destination position is such that
      * nothing will be drawn on the surface. */
     if ((x_dest >= surf->w) || (y_dest >= surf->h) || (-x_dest > bitmask->w) ||
@@ -2021,23 +2011,13 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
 
     bpp = PG_SURF_BytesPerPixel(surf);
 
-    // clamp rect width and height to not stick out of the mask
-    area_rect->w = MIN(area_rect->w, bitmask->w - area_rect->x);
-    area_rect->h = MIN(area_rect->h, bitmask->h - area_rect->y);
-
     xm_start = (x_dest < 0) ? -x_dest : 0;
-    if (area_rect->x > 0) {
-        xm_start += area_rect->x;
-    }
     x_start = (x_dest > 0) ? x_dest : 0;
-    x_end = MIN(MIN(surf->w, bitmask->w + x_dest), x_dest + area_rect->w);
+    x_end = MIN(surf->w, bitmask->w + x_dest);
 
     ym_start = (y_dest < 0) ? -y_dest : 0;
-    if (area_rect->y > 0) {
-        ym_start += area_rect->y;
-    }
     y_start = (y_dest > 0) ? y_dest : 0;
-    y_end = MIN(MIN(surf->h, bitmask->h + y_dest), y_dest + area_rect->h);
+    y_end = MIN(surf->h, bitmask->h + y_dest);
 
     if (NULL == setsurf && NULL == unsetsurf) {
         /* Draw just using color values. No surfaces. */
@@ -2181,7 +2161,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *destobj = NULL, *areaobj = NULL;
     SDL_Rect *area_rect, temp_rect;
     SDL_Surface *surf = NULL, *setsurf = NULL, *unsetsurf = NULL;
-    bitmask_t *bitmask = pgMask_AsBitmap(self);
+    bitmask_t *bitmask = pgMask_AsBitmap(self), *area_bitmask;
     Uint32 *setcolor_ptr = NULL, *unsetcolor_ptr = NULL;
     Uint32 setcolor, unsetcolor;
     int draw_setbits = 0, draw_unsetbits = 0;
@@ -2200,10 +2180,64 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL; /* Exception already set. */
     }
 
+    if (NULL != destobj) {
+        int tempx = 0, tempy = 0;
+
+        /* Destination coordinates can be extracted from:
+         * - lists/tuples with 2 items
+         * - Rect (or Rect like) objects (uses x, y values) */
+        if (pg_TwoIntsFromObj(destobj, &tempx, &tempy)) {
+            x_dest = tempx;
+            y_dest = tempy;
+        }
+        else {
+            SDL_Rect temp_rect;
+            SDL_Rect *dest_rect = pgRect_FromObject(destobj, &temp_rect);
+
+            if (NULL != dest_rect) {
+                x_dest = dest_rect->x;
+                y_dest = dest_rect->y;
+            }
+            else {
+                PyErr_SetString(PyExc_TypeError, "invalid dest argument");
+                goto to_surface_error;
+            }
+        }
+    }
+
+    if (areaobj && areaobj != Py_None) {
+        if (!(area_rect = pgRect_FromObject(areaobj, &temp_rect))) {
+            PyErr_SetString(PyExc_TypeError, "invalid rectstyle argument");
+            goto to_surface_error;
+        }
+    }
+    else {
+        temp_rect.x = temp_rect.y = 0;
+        temp_rect.w = bitmask->w;
+        temp_rect.h = bitmask->h;
+        area_rect = &temp_rect;
+    }
+
+    if (area_rect->x < 0) {
+        // x_dest -= area_rect->x;
+        area_rect->w += area_rect->x;
+        area_rect->x = 0;
+    }
+    if (area_rect->y < 0) {
+        // y_dest -= area_rect->y;
+        area_rect->h += area_rect->y;
+        area_rect->y = 0;
+    }
+
+    // clamp rect width and height to not stick out of the mask
+    area_rect->w = MAX(MIN(area_rect->w, bitmask->w - area_rect->x), 0);
+    area_rect->h = MAX(MIN(area_rect->h, bitmask->h - area_rect->y), 0);
+    // pgRect_Normalize(area_rect);
+
     if (Py_None == surfobj) {
-        surfobj =
-            PyObject_CallFunction((PyObject *)&pgSurface_Type, "(ii)ii",
-                                  bitmask->w, bitmask->h, PGS_SRCALPHA, 32);
+        surfobj = PyObject_CallFunction((PyObject *)&pgSurface_Type, "(ii)ii",
+                                        area_rect->w, area_rect->h,
+                                        PGS_SRCALPHA, 32);
 
         if (NULL == surfobj) {
             if (!PyErr_Occurred()) {
@@ -2287,44 +2321,6 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
         draw_unsetbits = 1;
     }
 
-    if (NULL != destobj) {
-        int tempx = 0, tempy = 0;
-
-        /* Destination coordinates can be extracted from:
-         * - lists/tuples with 2 items
-         * - Rect (or Rect like) objects (uses x, y values) */
-        if (pg_TwoIntsFromObj(destobj, &tempx, &tempy)) {
-            x_dest = tempx;
-            y_dest = tempy;
-        }
-        else {
-            SDL_Rect temp_rect;
-            SDL_Rect *dest_rect = pgRect_FromObject(destobj, &temp_rect);
-
-            if (NULL != dest_rect) {
-                x_dest = dest_rect->x;
-                y_dest = dest_rect->y;
-            }
-            else {
-                PyErr_SetString(PyExc_TypeError, "invalid dest argument");
-                goto to_surface_error;
-            }
-        }
-    }
-
-    if (areaobj && areaobj != Py_None) {
-        if (!(area_rect = pgRect_FromObject(areaobj, &temp_rect))) {
-            PyErr_SetString(PyExc_TypeError, "invalid rectstyle argument");
-            goto to_surface_error;
-        }
-    }
-    else {
-        temp_rect.x = temp_rect.y = 0;
-        temp_rect.w = bitmask->w;
-        temp_rect.h = bitmask->h;
-        area_rect = &temp_rect;
-    }
-
     if (!pgSurface_Lock((pgSurfaceObject *)surfobj)) {
         PyErr_SetString(PyExc_RuntimeError, "cannot lock surface");
         goto to_surface_error;
@@ -2345,13 +2341,41 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
         goto to_surface_error;
     }
 
+    if (areaobj) {
+        assert(area_rect->w >= 0 && area_rect->w >= 0);
+        area_bitmask = bitmask_create(area_rect->w, area_rect->h);
+        if (NULL == area_bitmask) {
+            PyErr_Format(PyExc_MemoryError, "failed to allocate memory for a mask");
+            return NULL;
+        }
+
+        bitmask_t *overlap_bitmask = bitmask_copy(area_bitmask);
+        if (NULL == overlap_bitmask) {
+            PyErr_SetString(PyExc_MemoryError, "failed to allocate memory for a mask");
+            return NULL;
+        }
+
+        bitmask_fill(overlap_bitmask);
+
+        bitmask_overlap_mask(bitmask, overlap_bitmask, area_bitmask,
+                             area_rect->x, area_rect->y);
+        bitmask_free(overlap_bitmask);
+    }
+    else {
+        area_bitmask = bitmask;
+    }
+
     Py_BEGIN_ALLOW_THREADS; /* Release the GIL. */
 
-    draw_to_surface(surf, bitmask, x_dest, y_dest, area_rect, draw_setbits,
+    draw_to_surface(surf, area_bitmask, x_dest, y_dest, draw_setbits,
                     draw_unsetbits, setsurf, unsetsurf, setcolor_ptr,
                     unsetcolor_ptr);
 
     Py_END_ALLOW_THREADS; /* Obtain the GIL. */
+
+    if (areaobj) {
+        bitmask_free(area_bitmask);
+    }
 
     if (NULL != unsetsurf &&
         !pgSurface_Unlock((pgSurfaceObject *)unsetsurfobj)) {
