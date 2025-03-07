@@ -237,10 +237,12 @@ static void
 _font_set_or_clear_style_flag(TTF_Font *font, int flag, int set_flag)
 {
     int style = TTF_GetFontStyle(font);
-    if (set_flag)
+    if (set_flag) {
         style |= flag;
-    else
+    }
+    else {
         style &= ~flag;
+    }
     TTF_SetFontStyle(font, style);
 }
 
@@ -936,8 +938,9 @@ font_metrics(PyObject *self, PyObject *textobj)
     }
     buffer = PyUnicode_AsUCS4Copy(textobj);
     Py_DECREF(textobj);
-    if (!buffer)
+    if (!buffer) {
         return NULL;
+    }
 
     list = PyList_New(0);
     if (!list) {
@@ -1184,8 +1187,9 @@ font_dealloc(PyFontObject *self)
         self->font = NULL;
     }
 
-    if (self->weakreflist)
+    if (self->weakreflist) {
         PyObject_ClearWeakRefs((PyObject *)self);
+    }
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -1263,8 +1267,9 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
         goto error;
     }
 
-    if (fontsize <= 1)
+    if (fontsize <= 1) {
         fontsize = 1;
+    }
 
     if (SDL_RWsize(rw) <= 0) {
         PyErr_Format(PyExc_ValueError,
@@ -1359,12 +1364,14 @@ PyFont_New(TTF_Font *font)
 {
     PyFontObject *fontobj;
 
-    if (!font)
+    if (!font) {
         return RAISE(PyExc_RuntimeError, "unable to load font.");
+    }
     fontobj = (PyFontObject *)PyFont_Type.tp_new(&PyFont_Type, NULL, NULL);
 
-    if (fontobj)
+    if (fontobj) {
         fontobj->font = font;
+    }
 
     return (PyObject *)fontobj;
 }
