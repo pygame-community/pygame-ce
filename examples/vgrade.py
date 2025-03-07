@@ -27,6 +27,7 @@ The code also demonstrates use of the timer events.
 """
 
 import os
+
 import pygame
 
 try:

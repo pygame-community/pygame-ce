@@ -1,6 +1,6 @@
 import unittest
-import pygame.constants
 
+import pygame.constants
 
 # K_* and KSCAN_* common names.
 K_AND_KSCAN_COMMON_NAMES = (
