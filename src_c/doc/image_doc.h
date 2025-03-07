@@ -2,6 +2,7 @@
 #define DOC_IMAGE "pygame module for image transfer"
 #define DOC_IMAGE_LOAD "load(file) -> Surface\nload(file, namehint="") -> Surface\nload new image from a file (or file-like object)"
 #define DOC_IMAGE_LOADSIZEDSVG "load_sized_svg(file, size) -> Surface\nload an SVG image from a file (or file-like object) with the given size"
+#define DOC_IMAGE_LOADANIMATION "load_animation(file, namehint="") -> list[tuple[Surface, int]]\nload an animation (GIF/WEBP) from a file (or file-like object)"
 #define DOC_IMAGE_SAVE "save(Surface, file) -> None\nsave(Surface, file, namehint="") -> None\nsave an image to file (or file-like object)"
 #define DOC_IMAGE_GETSDLIMAGEVERSION "get_sdl_image_version(linked=True) -> None\nget_sdl_image_version(linked=True) -> (major, minor, patch)\nget version number of the SDL_Image library being used"
 #define DOC_IMAGE_GETEXTENDED "get_extended() -> bool\ntest if extended image formats can be loaded"
