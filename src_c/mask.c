@@ -2169,6 +2169,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     int x_dest = 0, y_dest = 0; /* Default destination coordinates. */
     Uint8 dflt_setcolor[] = {255, 255, 255, 255}; /* Default set color. */
     Uint8 dflt_unsetcolor[] = {0, 0, 0, 255};     /* Default unset color. */
+    int create_area_bitmask = 0;
 
     static char *keywords[] = {"surface",  "setsurface", "unsetsurface",
                                "setcolor", "unsetcolor", "dest",
@@ -2210,6 +2211,28 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
             PyErr_SetString(PyExc_TypeError, "invalid rectstyle argument");
             goto to_surface_error;
         }
+
+        memcpy(&temp_rect, area_rect, sizeof(temp_rect));
+        area_rect = &temp_rect;
+
+        pgRect_Normalize(area_rect);
+
+        if (area_rect->x < 0) {
+            // x_dest -= area_rect->x;
+            area_rect->w += area_rect->x;
+            area_rect->x = 0;
+        }
+        if (area_rect->y < 0) {
+            // y_dest -= area_rect->y;
+            area_rect->h += area_rect->y;
+            area_rect->y = 0;
+        }
+    
+        // clamp rect width and height to not stick out of the mask
+        area_rect->w = MAX(MIN(area_rect->w, bitmask->w - area_rect->x), 0);
+        area_rect->h = MAX(MIN(area_rect->h, bitmask->h - area_rect->y), 0);
+
+        create_area_bitmask = area_rect->w > 0 && area_rect->h > 0;
     }
     else {
         temp_rect.x = temp_rect.y = 0;
@@ -2217,22 +2240,6 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
         temp_rect.h = bitmask->h;
         area_rect = &temp_rect;
     }
-
-    if (area_rect->x < 0) {
-        // x_dest -= area_rect->x;
-        area_rect->w += area_rect->x;
-        area_rect->x = 0;
-    }
-    if (area_rect->y < 0) {
-        // y_dest -= area_rect->y;
-        area_rect->h += area_rect->y;
-        area_rect->y = 0;
-    }
-
-    // clamp rect width and height to not stick out of the mask
-    area_rect->w = MAX(MIN(area_rect->w, bitmask->w - area_rect->x), 0);
-    area_rect->h = MAX(MIN(area_rect->h, bitmask->h - area_rect->y), 0);
-    // pgRect_Normalize(area_rect);
 
     if (Py_None == surfobj) {
         surfobj = PyObject_CallFunction((PyObject *)&pgSurface_Type, "(ii)ii",
@@ -2341,8 +2348,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
         goto to_surface_error;
     }
 
-    if (areaobj) {
-        assert(area_rect->w >= 0 && area_rect->w >= 0);
+    if (create_area_bitmask) {
         area_bitmask = bitmask_create(area_rect->w, area_rect->h);
         if (NULL == area_bitmask) {
             PyErr_Format(PyExc_MemoryError, "failed to allocate memory for a mask");
@@ -2359,6 +2365,35 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
         bitmask_overlap_mask(bitmask, overlap_bitmask, area_bitmask,
                              area_rect->x, area_rect->y);
+        
+        printf("%i,%i\n", area_rect->x, area_rect->y);
+        printf("%ix%i\n", bitmask->w, bitmask->h);
+        for (int y = 0; y < bitmask->h; ++y) {
+            for (int x = 0; x < bitmask->w; ++x) {
+                int bit_value = (bitmask->bits[y] >> x) & 1;
+                printf("%d  ", bit_value);
+            }
+            printf("\n");
+        }
+        printf("\n");
+        printf("overlap\n");
+        for (int y = 0; y < overlap_bitmask->h; ++y) {
+            for (int x = 0; x < overlap_bitmask->w; ++x) {
+                int bit_value = (overlap_bitmask->bits[y] >> x) & 1;
+                printf("%d  ", bit_value);
+            }
+            printf("\n");
+        }
+        printf("\n%ix%i\n", area_rect->w, area_rect->h);
+        for (int y = 0; y < area_bitmask->h; ++y) {
+            for (int x = 0; x < area_bitmask->w; ++x) {
+                int bit_value = (area_bitmask->bits[y] >> x) & 1;
+                printf("%d  ", bit_value);
+            }
+            printf("\n");
+        }
+        printf("\n");
+
         bitmask_free(overlap_bitmask);
     }
     else {
@@ -2373,7 +2408,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     Py_END_ALLOW_THREADS; /* Obtain the GIL. */
 
-    if (areaobj) {
+    if (create_area_bitmask) {
         bitmask_free(area_bitmask);
     }
 
