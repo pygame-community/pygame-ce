@@ -2017,6 +2017,128 @@ class LineTypeTest(unittest.TestCase):
         expected_length = 5.414794548272353
         self.assertAlmostEqual(line.length, expected_length)
 
+    def test_attrib_center(self):
+        """a full test for the center attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        expected_a = expected_x1, expected_y1
+        expected_b = expected_x2, expected_y2
+        expected_center = (
+            (expected_x1 + expected_x2) / 2,
+            (expected_y1 + expected_y2) / 2,
+        )
+        line = Line(expected_a, expected_b)
+
+        self.assertAlmostEqual(line.center, expected_center)
+
+        line.center = expected_center[0] - 1, expected_center[1] + 1.321
+
+        self.assertAlmostEqual(
+            line.center, (expected_center[0] - 1, expected_center[1] + 1.321)
+        )
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], 1, 1.2):
+            with self.assertRaises(TypeError):
+                line.center = value
+
+        with self.assertRaises(AttributeError):
+            del line.center
+
+    def test_attrib_centerx(self):
+        """a full test for the centerx attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        expected_a = expected_x1, expected_y1
+        expected_b = expected_x2, expected_y2
+        expected_center = (
+            (expected_x1 + expected_x2) / 2,
+            (expected_y1 + expected_y2) / 2,
+        )
+        line = Line(expected_a, expected_b)
+
+        self.assertAlmostEqual(line.centerx, expected_center[0])
+
+        line.centerx = expected_center[0] - 1
+
+        self.assertAlmostEqual(line.centerx, expected_center[0] - 1)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3]):
+            with self.assertRaises(TypeError):
+                line.centerx = value
+
+        with self.assertRaises(AttributeError):
+            del line.centerx
+
+    def test_attrib_centery(self):
+        """a full test for the centery attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        expected_a = expected_x1, expected_y1
+        expected_b = expected_x2, expected_y2
+        expected_center = (
+            (expected_x1 + expected_x2) / 2,
+            (expected_y1 + expected_y2) / 2,
+        )
+        line = Line(expected_a, expected_b)
+
+        self.assertAlmostEqual(line.centery, expected_center[1])
+
+        line.centery = expected_center[1] - 1.321
+
+        self.assertAlmostEqual(line.centery, expected_center[1] - 1.321)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3]):
+            with self.assertRaises(TypeError):
+                line.centery = value
+
+        with self.assertRaises(AttributeError):
+            del line.centery
+
+    def test_attrib_angle(self):
+        """a full test for the angle attribute"""
+        expected_angle = -83.93394864782331
+        line = Line(300.0, 400.0, 400.0, 1341.0)
+        self.assertAlmostEqual(line.angle, expected_angle)
+
+        expected_angle = 16.17215901578255
+        line = Line(300.0, 400.0, 400.0, 371.0)
+        self.assertAlmostEqual(line.angle, expected_angle)
+
+        expected_angle = -35.53767779197438
+        line = Line(45.0, 32.0, 94.0, 67.0)
+        self.assertAlmostEqual(line.angle, expected_angle)
+
+        expected_angle = -53.88065915052025
+        line = Line(544.0, 235.0, 382.0, 13.0)
+        self.assertAlmostEqual(line.angle, expected_angle)
+
+    def test_attrib_slope(self):
+        """a full test for the slope attribute"""
+        lines = [
+            [Line(2, 2, 4, 4), 1, False],
+            [Line(4.6, 2.3, 1.6, 7.3), -5 / 3, True],
+            [Line(2, 0, 2, 1), 0, False],
+            [Line(1.2, 3.2, 4.5, 3.2), 0, False],
+        ]
+
+        for l in lines:
+            if l[2]:
+                self.assertAlmostEqual(l[0].slope, l[1])
+            else:
+                self.assertAlmostEqual(l[0].slope, l[1])
+
     def test_meth_copy(self):
         line = Line(1, 2, 3, 4)
         # check 1 arg passed
