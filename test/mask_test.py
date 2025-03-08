@@ -2870,7 +2870,7 @@ class MaskTypeTest(unittest.TestCase):
             [{"dest": (1, 0), "area": (0, 0, 1, 2)}, [[black, white], [black, white]]],
             [{"dest": (0, 0), "area": (0, 0, 0, 0)}, [[black, black], [black, black]]],
             [{"dest": (1, 0), "area": (-1, 0, 1, 1)}, [[black, black], [black, black]]],
-            [{"dest": (0, 0), "area": (-1, 0, 2, 1)}, [[black, white], [black, black]]],
+            [{"dest": (0, 0), "area": (-1, 0, 2, 1)}, [[white, black], [black, black]]],
             [
                 {"dest": (1, 1), "area": (-2, -2, 1, 1)},
                 [[black, black], [black, black]],
@@ -2881,16 +2881,16 @@ class MaskTypeTest(unittest.TestCase):
             ],
             [
                 {"dest": (-1, 0), "area": (-1, 0, 2, 2)},
-                [[white, black], [white, black]],
+                [[black, black], [black, black]],
             ],
             [
                 {"dest": (0, -1), "area": (-1, 0, 3, 2)},
-                [[black, white], [black, black]],
+                [[white, white], [black, black]],
             ],
             [{"dest": (0, 0), "area": (2, 2, 2, 2)}, [[black, black], [black, black]]],
             [
                 {"dest": (-5, -5), "area": (-5, -5, 6, 6)},
-                [[white, black], [black, black]],
+                [[black, black], [black, black]],
             ],
             [
                 {"dest": (-5, -5), "area": (-5, -5, 1, 1)},
@@ -4550,12 +4550,12 @@ class MaskTypeTest(unittest.TestCase):
         default_setcolor = pygame.Color("white")
         default_unsetcolor = pygame.Color("black")
 
-        directions = (
-            ((s, 0) for s in range(-SIDE, SIDE + 1)),  # left to right
-            ((0, s) for s in range(-SIDE, SIDE + 1)),  # top to bottom
-            ((s, s) for s in range(-SIDE, SIDE + 1)),  # topleft to bottomright diag
-            ((-s, s) for s in range(-SIDE, SIDE + 1)),  # topright to bottomleft diag
-        )
+        directions = [
+            [(s, 0) for s in range(-SIDE, SIDE + 1)],  # left to right
+            [(0, s) for s in range(-SIDE, SIDE + 1)],  # top to bottom
+            [(s, s) for s in range(-SIDE, SIDE + 1)],  # topleft to bottomright diag
+            [(-s, s) for s in range(-SIDE, SIDE + 1)],  # topright to bottomleft diag
+        ]
 
         for fill in (True, False):
             mask = pygame.mask.Mask((SIDE, SIDE), fill=fill)
@@ -4583,12 +4583,12 @@ class MaskTypeTest(unittest.TestCase):
         default_setcolor = pygame.Color("white")
         default_unsetcolor = pygame.Color("black")
 
-        directions = (
+        directions = [
             [(s, 0) for s in range(-SIDE, SIDE + 1)],  # left to right
             [(0, s) for s in range(-SIDE, SIDE + 1)],  # top to bottom
             [(s, s) for s in range(-SIDE, SIDE + 1)],  # topleft to bottomright diag
             [(-s, s) for s in range(-SIDE, SIDE + 1)],  # topright to bottomleft diag
-        )
+        ]
 
         for fill in (True, False):
             mask = pygame.mask.Mask((SIDE, SIDE), fill=fill)
@@ -4623,16 +4623,16 @@ class MaskTypeTest(unittest.TestCase):
         default_setcolor = pygame.Color("white")
         default_unsetcolor = pygame.Color("black")
 
-        dest_directions = (
-            ((s, 0) for s in range(-SIDE, SIDE + 1)),  # left to right
-            ((0, s) for s in range(-SIDE, SIDE + 1)),  # top to bottom
-            ((s, s) for s in range(-SIDE, SIDE + 1)),  # topleft to bottomright diag
-            ((-s, s) for s in range(-SIDE, SIDE + 1)),  # topright to bottomleft diag
-        )
+        dest_directions = [
+            [(s, 0) for s in range(-SIDE, SIDE + 1)],  # left to right
+            [(0, s) for s in range(-SIDE, SIDE + 1)],  # top to bottom
+            [(s, s) for s in range(-SIDE, SIDE + 1)],  # topleft to bottomright diag
+            [(-s, s) for s in range(-SIDE, SIDE + 1)],  # topright to bottomleft diag
+        ]
 
         # Using only the topleft to bottomright diagonal to test the area (to
         # reduce the number of loop iterations).
-        area_positions = list(dest_directions[2])
+        area_positions = dest_directions[2]
 
         for fill in (True, False):
             mask = pygame.mask.Mask((SIDE, SIDE), fill=fill)
@@ -5145,17 +5145,14 @@ class MaskTypeTest(unittest.TestCase):
                 overlap_rect = mask_rect.clip(area_rect)
                 overlap_rect.topleft = (0, 0)
 
-                with self.subTest(
-                    pos=pos, area_rect=area_rect.copy(), overlap_rect=overlap_rect
-                ):
-                    to_surface = mask.to_surface(surface, area=area_rect)
+                to_surface = mask.to_surface(surface, area=area_rect)
 
-                    self.assertIs(to_surface, surface)
-                    self.assertEqual(to_surface.get_size(), size)
-                    assertSurfaceFilled(self, to_surface, expected_color, overlap_rect)
-                    assertSurfaceFilledIgnoreArea(
-                        self, to_surface, surface_color, overlap_rect
-                    )
+                self.assertIs(to_surface, surface)
+                self.assertEqual(to_surface.get_size(), size)
+                assertSurfaceFilled(self, to_surface, expected_color, overlap_rect)
+                assertSurfaceFilledIgnoreArea(
+                    self, to_surface, surface_color, overlap_rect
+                )
 
     def test_to_surface__area_on_mask_with_setsurface_unsetsurface(self):
         """Ensures area values on the mask work correctly

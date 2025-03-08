@@ -1985,7 +1985,8 @@ extract_color(SDL_Surface *surf, PyObject *color_obj, Uint8 rgba_color[],
  */
 static void
 draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
-                int draw_setbits, int draw_unsetbits, SDL_Surface *setsurf,
+                int x_area_offset, int y_area_offset, int draw_setbits,
+                int draw_unsetbits, SDL_Surface *setsurf,
                 SDL_Surface *unsetsurf, Uint32 *setcolor, Uint32 *unsetcolor)
 {
     Uint8 *pixel = NULL;
@@ -2050,10 +2051,12 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
 
         for (y = y_start, ym = ym_start; y < y_end; ++y, ++ym) {
             pixel = (Uint8 *)surf->pixels + y * surf->pitch + x_start * bpp;
-            setpixel = (Uint8 *)setsurf->pixels + ym * setsurf->pitch +
-                       xm_start * bpp;
-            unsetpixel = (Uint8 *)unsetsurf->pixels + ym * unsetsurf->pitch +
-                         xm_start * bpp;
+            setpixel = (Uint8 *)setsurf->pixels +
+                       (y_area_offset + ym) * setsurf->pitch +
+                       (x_area_offset + xm_start) * bpp;
+            unsetpixel = (Uint8 *)unsetsurf->pixels +
+                         (y_area_offset + ym) * unsetsurf->pitch +
+                         (x_area_offset + xm_start) * bpp;
 
             for (x = x_start, xm = xm_start; x < x_end;
                  ++x, ++xm, pixel += bpp, setpixel += bpp, unsetpixel += bpp) {
@@ -2084,13 +2087,15 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
                 draw_unsetbits && NULL != unsetsurf && unsetsurf->h > ym;
 
             if (use_setsurf) {
-                setpixel = (Uint8 *)setsurf->pixels + ym * setsurf->pitch +
-                           xm_start * bpp;
+                setpixel = (Uint8 *)setsurf->pixels +
+                           (y_area_offset + ym) * setsurf->pitch +
+                           (x_area_offset + xm_start) * bpp;
             }
 
             if (use_unsetsurf) {
                 unsetpixel = (Uint8 *)unsetsurf->pixels +
-                             ym * unsetsurf->pitch + xm_start * bpp;
+                             (y_area_offset + ym) * unsetsurf->pitch +
+                             (x_area_offset + xm_start) * bpp;
             }
 
             for (x = x_start, xm = xm_start; x < x_end;
@@ -2227,12 +2232,12 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
             area_rect->h += area_rect->y;
             area_rect->y = 0;
         }
-    
+
         // clamp rect width and height to not stick out of the mask
         area_rect->w = MAX(MIN(area_rect->w, bitmask->w - area_rect->x), 0);
         area_rect->h = MAX(MIN(area_rect->h, bitmask->h - area_rect->y), 0);
 
-        create_area_bitmask = area_rect->w > 0 && area_rect->h > 0;
+        create_area_bitmask = 1;
     }
     else {
         temp_rect.x = temp_rect.y = 0;
@@ -2351,50 +2356,12 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     if (create_area_bitmask) {
         area_bitmask = bitmask_create(area_rect->w, area_rect->h);
         if (NULL == area_bitmask) {
-            PyErr_Format(PyExc_MemoryError, "failed to allocate memory for a mask");
+            PyErr_Format(PyExc_MemoryError,
+                         "failed to allocate memory for a mask");
             return NULL;
         }
 
-        bitmask_t *overlap_bitmask = bitmask_copy(area_bitmask);
-        if (NULL == overlap_bitmask) {
-            PyErr_SetString(PyExc_MemoryError, "failed to allocate memory for a mask");
-            return NULL;
-        }
-
-        bitmask_fill(overlap_bitmask);
-
-        bitmask_overlap_mask(bitmask, overlap_bitmask, area_bitmask,
-                             area_rect->x, area_rect->y);
-        
-        printf("%i,%i\n", area_rect->x, area_rect->y);
-        printf("%ix%i\n", bitmask->w, bitmask->h);
-        for (int y = 0; y < bitmask->h; ++y) {
-            for (int x = 0; x < bitmask->w; ++x) {
-                int bit_value = (bitmask->bits[y] >> x) & 1;
-                printf("%d  ", bit_value);
-            }
-            printf("\n");
-        }
-        printf("\n");
-        printf("overlap\n");
-        for (int y = 0; y < overlap_bitmask->h; ++y) {
-            for (int x = 0; x < overlap_bitmask->w; ++x) {
-                int bit_value = (overlap_bitmask->bits[y] >> x) & 1;
-                printf("%d  ", bit_value);
-            }
-            printf("\n");
-        }
-        printf("\n%ix%i\n", area_rect->w, area_rect->h);
-        for (int y = 0; y < area_bitmask->h; ++y) {
-            for (int x = 0; x < area_bitmask->w; ++x) {
-                int bit_value = (area_bitmask->bits[y] >> x) & 1;
-                printf("%d  ", bit_value);
-            }
-            printf("\n");
-        }
-        printf("\n");
-
-        bitmask_free(overlap_bitmask);
+        bitmask_draw(area_bitmask, bitmask, -area_rect->x, -area_rect->y);
     }
     else {
         area_bitmask = bitmask;
@@ -2402,9 +2369,9 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     Py_BEGIN_ALLOW_THREADS; /* Release the GIL. */
 
-    draw_to_surface(surf, area_bitmask, x_dest, y_dest, draw_setbits,
-                    draw_unsetbits, setsurf, unsetsurf, setcolor_ptr,
-                    unsetcolor_ptr);
+    draw_to_surface(surf, area_bitmask, x_dest, y_dest, area_rect->x,
+                    area_rect->y, draw_setbits, draw_unsetbits, setsurf,
+                    unsetsurf, setcolor_ptr, unsetcolor_ptr);
 
     Py_END_ALLOW_THREADS; /* Obtain the GIL. */
 
