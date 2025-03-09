@@ -4282,21 +4282,16 @@ exec_surface(PyObject *module)
     static void *c_api[PYGAMEAPI_SURFACE_NUMSLOTS];
 
     if (pg_warn_simd_at_runtime_but_uncompiled() < 0) {
-        Py_DECREF(module);
         return -1;
     }
 
-    Py_INCREF(&pgSurface_Type);
     if (PyModule_AddObjectRef(module, "SurfaceType",
                               (PyObject *)&pgSurface_Type)) {
-        Py_DECREF(module);
         return -1;
     }
 
-    Py_INCREF(&pgSurface_Type);
     if (PyModule_AddObjectRef(module, "Surface",
                               (PyObject *)&pgSurface_Type)) {
-        Py_DECREF(module);
         return -1;
     }
 
@@ -4307,13 +4302,10 @@ exec_surface(PyObject *module)
     c_api[3] = pgSurface_SetSurface;
     apiobj = encapsulate_api(c_api, "surface");
     if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_DECREF(module);
         return -1;
     }
 
-    Py_XINCREF(pgSurface_Type.tp_dict);
     if (PyModule_AddObjectRef(module, "_dict", pgSurface_Type.tp_dict)) {
-        Py_DECREF(module);
         return -1;
     }
 
