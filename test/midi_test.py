@@ -209,7 +209,7 @@ class MidiOutputTest(unittest.TestCase):
             out.pitch_bend(-10001, 1)
         self.assertEqual(
             str(cm.exception),
-            "Pitch bend value must be between " "-8192 and +8191, not -10001.",
+            "Pitch bend value must be between -8192 and +8191, not -10001.",
         )
         with self.assertRaises(ValueError) as cm:
             out.pitch_bend(10665, 2)

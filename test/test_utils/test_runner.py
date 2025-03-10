@@ -56,7 +56,7 @@ opt_parser.add_option(
     "-s",
     "--usesubprocess",
     action="store_true",
-    help="run everything in a single process " " (default: use no subprocesses)",
+    help="run everything in a single process  (default: use no subprocesses)",
 )
 
 opt_parser.add_option(

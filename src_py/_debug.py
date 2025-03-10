@@ -143,27 +143,27 @@ def print_debug_info(filename=None):
 
     debug_str += (
         f"SDL versions:\t\tLinked: {str_from_tuple(get_sdl_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_version(linked = False))}\n"
+        f"Compiled: {str_from_tuple(get_sdl_version(linked=False))}\n"
     )
 
     debug_str += (
         f"SDL Mixer versions:\tLinked: {str_from_tuple(get_sdl_mixer_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_mixer_version(linked = False))}\n"
+        f"Compiled: {str_from_tuple(get_sdl_mixer_version(linked=False))}\n"
     )
 
     debug_str += (
         f"SDL Font versions:\tLinked: {str_from_tuple(get_sdl_ttf_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_ttf_version(linked = False))}\n"
+        f"Compiled: {str_from_tuple(get_sdl_ttf_version(linked=False))}\n"
     )
 
     debug_str += (
         f"SDL Image versions:\tLinked: {str_from_tuple(get_sdl_image_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_image_version(linked = False))}\n"
+        f"Compiled: {str_from_tuple(get_sdl_image_version(linked=False))}\n"
     )
 
     debug_str += (
         f"Freetype versions:\tLinked: {str_from_tuple(ft_version())}\t"
-        f"Compiled: {str_from_tuple(ft_version(linked = False))}\n\n"
+        f"Compiled: {str_from_tuple(ft_version(linked=False))}\n\n"
     )
 
     if display_init():

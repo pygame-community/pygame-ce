@@ -2430,7 +2430,7 @@ class Test(unittest.TestCase):
         self.assertEqual(map(list, pixels), map(list, flat))
 
     def testRGBtoRGBA(self):
-        "asRGBA8() on color type 2 source." ""
+        "asRGBA8() on color type 2 source."
         # Test for pygame-ce issue 41
         r = Reader(bytes=_pngsuite["basn2c08"])
         x, y, pixels, meta = r.asRGBA8()
@@ -2439,7 +2439,7 @@ class Test(unittest.TestCase):
         self.assertEqual(row9[0:8], [0xFF, 0xDF, 0xFF, 0xFF, 0xFF, 0xDE, 0xFF, 0xFF])
 
     def testLtoRGBA(self):
-        "asRGBA() on gray source." ""
+        "asRGBA() on gray source."
         # Test for pygame-ce issue 75
         r = Reader(bytes=_pngsuite["basi0g08"])
         x, y, pixels, meta = r.asRGBA()

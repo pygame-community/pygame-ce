@@ -122,7 +122,7 @@ class JoystickModuleTest(unittest.TestCase):
         try:
             count = pygame.joystick.get_count()
             self.assertGreaterEqual(
-                count, 0, ("joystick.get_count() must " "return a value >= 0")
+                count, 0, ("joystick.get_count() must return a value >= 0")
             )
         finally:
             pygame.joystick.quit()
