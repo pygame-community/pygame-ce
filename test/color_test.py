@@ -950,6 +950,31 @@ class ColorTypeTest(unittest.TestCase):
             self.assertTrue(0 <= b <= 1)
             self.assertTrue(0 <= a <= 1)
 
+    def test_hex_property(self):
+        color = pygame.Color(255, 0, 255, 0)
+        hex = color.hex
+        self.assertEqual(hex, "#ff00ff00")
+
+        for c in rgba_combos_Color_generator():
+            col_hex = c.hex
+            self.assertIsInstance(col_hex, str)
+            self.assertEqual(len(col_hex), 9)
+            self.assertEqual(col_hex[0], "#")
+            for char in col_hex:
+                self.assertIn(char, "#0123456789abcdef")
+            self.assertEqual(c, pygame.Color(col_hex))
+
+        with self.assertRaises(TypeError):
+            color.hex = 0xFFFFFFFF
+
+        for value in ["FFFFFFFF", "#FFzzFF00", "0x FFFFFF", "#FF"]:
+            with self.assertRaises(ValueError):
+                color.hex = value
+
+        for value in ["#FFFFFFFF", "#FFFFFF", "0xFFFFFFFF", "0xFFFFFF"]:
+            color.hex = value
+            self.assertEqual((color.r, color.g, color.b, color.a), (255, 255, 255, 255))
+
     def test_issue_284(self):
         """PyColor OverflowError on HSVA with hue value of 360
 
@@ -1007,6 +1032,9 @@ class ColorTypeTest(unittest.TestCase):
     def test_normalized__sanity_testing_converted_should_not_raise(self):
         self.colorspaces_converted_should_not_raise("normalized")
 
+    def test_hex__sanity_testing_converted_should_not_raise(self):
+        self.colorspaces_converted_should_not_raise("hex")
+
     ################################################################################
 
     def colorspaces_converted_should_equate_bar_rounding(self, prop):
@@ -1021,7 +1049,7 @@ class ColorTypeTest(unittest.TestCase):
                 self.assertTrue(abs(other.b - c.b) <= 1)
                 self.assertTrue(abs(other.g - c.g) <= 1)
                 # CMY and I1I2I3 do not care about the alpha
-                if not prop in ("cmy", "i1i2i3"):
+                if prop not in ("cmy", "i1i2i3"):
                     self.assertTrue(abs(other.a - c.a) <= 1)
 
             except ValueError:
@@ -1041,6 +1069,9 @@ class ColorTypeTest(unittest.TestCase):
 
     def test_normalized__sanity_testing_converted_should_equate_bar_rounding(self):
         self.colorspaces_converted_should_equate_bar_rounding("normalized")
+
+    def test_hex__sanity_testing_converted_should_equate_bar_rounding(self):
+        self.colorspaces_converted_should_equate_bar_rounding("hex")
 
     def test_colorspaces_deprecated_large_sequence(self):
         c = pygame.Color("black")

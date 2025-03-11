@@ -18,6 +18,7 @@ class Color(Collection[int]):
     hsla: tuple[float, float, float, float]
     i1i2i3: tuple[float, float, float]
     normalized: tuple[float, float, float, float]
+    hex: str
     __hash__: ClassVar[None]  # type: ignore[assignment]
     @property
     def __array_struct__(self) -> Any: ...

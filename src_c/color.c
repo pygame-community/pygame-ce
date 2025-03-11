@@ -156,6 +156,10 @@ _color_get_normalized(pgColorObject *, void *);
 static int
 _color_set_normalized(pgColorObject *, PyObject *, void *);
 static PyObject *
+_color_get_hex(pgColorObject *, void *);
+static int
+_color_set_hex(pgColorObject *, PyObject *, void *);
+static PyObject *
 _color_get_arraystruct(pgColorObject *, void *);
 
 /* Number protocol methods */
@@ -269,6 +273,8 @@ static PyGetSetDef _color_getsets[] = {
      NULL},
     {"normalized", (getter)_color_get_normalized,
      (setter)_color_set_normalized, DOC_COLOR_NORMALIZED, NULL},
+    {"hex", (getter)_color_get_hex, (setter)_color_set_hex, DOC_COLOR_HEX,
+     NULL},
     {"__array_struct__", (getter)_color_get_arraystruct, NULL,
      "array structure interface, read only", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
@@ -1540,6 +1546,33 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
     color->data[2] = (Uint8)round(frgba[2] * 255.0);
     color->data[3] = (Uint8)round(frgba[3] * 255.0);
 
+    return 0;
+}
+
+static PyObject *
+_color_get_hex(pgColorObject *color, void *closure)
+{
+    return PyUnicode_FromFormat("#%02x%02x%02x%02x", color->data[0],
+                                color->data[1], color->data[2],
+                                color->data[3]);
+}
+
+static int
+_color_set_hex(pgColorObject *color, PyObject *value, void *closure)
+{
+    if (!PyUnicode_Check(value)) {
+        PyErr_SetString(PyExc_TypeError, "hex color must be a string");
+        return -1;
+    }
+    switch (_hexcolor(value, color->data)) {
+        case TRISTATE_FAIL:
+            PyErr_SetString(PyExc_ValueError, "invalid hex string");
+            return -1;
+        case TRISTATE_ERROR:
+            return -1; /* forward python error */
+        default:
+            return 0;
+    }
     return 0;
 }
 
