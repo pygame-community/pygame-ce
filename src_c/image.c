@@ -49,6 +49,7 @@ static PyObject *extloadobj = NULL;
 static PyObject *extsaveobj = NULL;
 static PyObject *extverobj = NULL;
 static PyObject *ext_load_sized_svg = NULL;
+static PyObject *ext_load_animation = NULL;
 
 static inline void
 pad(char **data, int padding)
@@ -1885,6 +1886,17 @@ image_load_sized_svg(PyObject *self, PyObject *args, PyObject *kwargs)
                  "Support for sized svg image loading was not compiled in.");
 }
 
+static PyObject *
+image_load_animation(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    if (ext_load_animation) {
+        return PyObject_Call(ext_load_animation, args, kwargs);
+    }
+
+    return RAISE(PyExc_NotImplementedError,
+                 "Support for animation loading was not compiled in.");
+}
+
 static PyMethodDef _image_methods[] = {
     {"load_basic", (PyCFunction)image_load_basic, METH_O, DOC_IMAGE_LOADBASIC},
     {"load_extended", (PyCFunction)image_load_extended,
@@ -1893,6 +1905,8 @@ static PyMethodDef _image_methods[] = {
      DOC_IMAGE_LOAD},
     {"load_sized_svg", (PyCFunction)image_load_sized_svg,
      METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_LOADSIZEDSVG},
+    {"load_animation", (PyCFunction)image_load_animation,
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_LOADANIMATION},
 
     {"save_extended", (PyCFunction)image_save_extended,
      METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_SAVEEXTENDED},
@@ -1973,6 +1987,11 @@ MODINIT_DEFINE(image)
         if (!ext_load_sized_svg) {
             goto error;
         }
+        ext_load_animation =
+            PyObject_GetAttrString(extmodule, "_load_animation");
+        if (!ext_load_animation) {
+            goto error;
+        }
         Py_DECREF(extmodule);
     }
     else {
@@ -1986,6 +2005,7 @@ error:
     Py_XDECREF(extsaveobj);
     Py_XDECREF(extverobj);
     Py_XDECREF(ext_load_sized_svg);
+    Py_XDECREF(ext_load_animation);
     Py_DECREF(extmodule);
     Py_DECREF(module);
     return NULL;
