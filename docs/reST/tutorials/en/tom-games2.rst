@@ -20,7 +20,7 @@ For the sake of revision, and to ensure that you are familiar with the basic str
 a basic Pygame program, which will display no more than a window with some text in it, that should, by the end, look something like
 this (though of course the window decoration will probably be different on your system):
 
-.. image:: ../assets/tom_basic.png
+.. image:: ../assets/tom_basic.webp
 
 The full code for this example looks like this::
 
