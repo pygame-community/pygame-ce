@@ -966,6 +966,8 @@ class ColorTypeTest(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             color.hex = 0xFFFFFFFF
+        with self.assertRaises(AttributeError):
+            del color.hex
 
         for value in ["FFFFFFFF", "#FFzzFF00", "0x FFFFFF", "#FF"]:
             with self.assertRaises(ValueError):

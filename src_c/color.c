@@ -1560,10 +1560,13 @@ _color_get_hex(pgColorObject *color, void *closure)
 static int
 _color_set_hex(pgColorObject *color, PyObject *value, void *closure)
 {
+    DEL_ATTR_NOT_SUPPORTED_CHECK("hex", value);
+
     if (!PyUnicode_Check(value)) {
         PyErr_SetString(PyExc_TypeError, "hex color must be a string");
         return -1;
     }
+
     switch (_hexcolor(value, color->data)) {
         case TRISTATE_FAIL:
             PyErr_SetString(PyExc_ValueError, "invalid hex string");
