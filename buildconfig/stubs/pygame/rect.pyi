@@ -8,6 +8,7 @@ from typing import (
     Union,
     overload,
     Optional,
+    Tuple,
 )
 from typing_extensions import deprecated  # added in 3.13
 
@@ -93,6 +94,10 @@ class _GenericRect(Collection[_N]):
     def center(self) -> tuple[_N, _N]: ...
     @center.setter
     def center(self, value: Point) -> None: ...
+    @property
+    def relcenter(self) -> Tuple[_N, _N]: ...
+    @relcenter.setter
+    def relcenter(self, value: Point) -> None: ...
     @property
     def centerx(self) -> _N: ...
     @centerx.setter
