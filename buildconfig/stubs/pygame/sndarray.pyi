@@ -1,8 +1,6 @@
-from typing_extensions import deprecated # added in 3.13
-
 import numpy
-
 from pygame.mixer import Sound
+from typing_extensions import deprecated  # added in 3.13
 
 def array(sound: Sound) -> numpy.ndarray: ...
 def samples(sound: Sound) -> numpy.ndarray: ...
