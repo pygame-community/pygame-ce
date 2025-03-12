@@ -92,7 +92,7 @@ setup-args = [
 
 [tool.ruff]
 exclude = [
-  "buildconfig/",
+  "buildconfig/*.py",
   "docs/reST/",
   "setup.py",
 ]
