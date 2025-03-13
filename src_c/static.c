@@ -355,7 +355,7 @@ PyInit_pygame_static()
 
 #include "color.c"
 
-#undef pgBufproxy_New
+#undef pgBufferProxy_New
 
 #include "bufferproxy.c"
 
