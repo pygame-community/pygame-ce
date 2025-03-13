@@ -613,8 +613,10 @@ to store which parts collide.
       :param area: (optional) rectangular portion of the mask to draw. It can be a
          rect-like object (a Rect, a tuple or a list with 4 numbers or an object with a
          rect attribute, etc) or it can be None (the default) in which case it will use the
-         entire mask. Just like with Surface.blit, if the rect's topleft is negative
-         the final destination will be ``dest - rect.topleft``.
+         entire mask. If the given rect pertrudes outside the bounds of the mask (as returned
+         by :meth:`get_rect`), it will get clipped to fit those boundaries. If the final rect
+         is smaller than the mask and no destination ``surface`` is given, the returned surface
+         will have the same size as this final rect.
       :type area: Rect or rect-like object
 
       :returns: the ``surface`` parameter (or a newly created surface if no
