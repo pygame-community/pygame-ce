@@ -2905,6 +2905,234 @@ class MaskTypeTest(unittest.TestCase):
                 for x, value in enumerate(row):
                     self.assertEqual(surface.get_at((x, y)), value)
 
+    def create_surface_from_array(
+        self, size: tuple[int, int], array: list[list[pygame.Color]], *args, **kwargs
+    ) -> pygame.Surface:
+        assert (len(array), len(array[0])) == size
+
+        surface = pygame.Surface(size, *args, **kwargs)
+        for y, row in enumerate(array):
+            for x, color in enumerate(row):
+                surface.set_at((x, y), color)
+
+        return surface
+
+    def assert_surface_matches_array(
+        self, surface: pygame.Surface, array: list[list[pygame.Color]]
+    ) -> None:
+        assert (len(array), len(array[0])) == surface.get_size()
+
+        for y, row in enumerate(array):
+            for x, color in enumerate(row):
+                with self.subTest(x=x, y=y, color=color):
+                    self.assertEqual(color, surface.get_at((x, y)))
+
+    def test_to_surface__area_with_setsurface_create_new(self):
+        c_1 = pygame.Color("red")
+        c_2 = pygame.Color("green")
+        size = (4, 4)
+
+        mask = pygame.Mask(size, fill=True)
+
+        set_surface = self.create_surface_from_array(
+            size=size,
+            array=[
+                [c_1, c_1, c_2, c_2],
+                [c_1, c_1, c_2, c_2],
+                [c_1, c_1, c_1, c_1],
+                [c_1, c_1, c_1, c_1],
+            ],
+            flags=SRCALPHA,
+        )
+
+        area = pygame.Rect(0, 0, 2, 2)
+        expected_pixels = [
+            [c_1, c_1],
+            [c_1, c_1],
+        ]
+        surface = mask.to_surface(area=area, setsurface=set_surface)
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+        area = pygame.Rect(1, 1, 2, 2)
+        expected_pixels = [
+            [c_1, c_2],
+            [c_1, c_1],
+        ]
+        surface = mask.to_surface(area=area, setsurface=set_surface)
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+        area = pygame.Rect(2, 1, 2, 2)
+        expected_pixels = [
+            [c_2, c_2],
+            [c_1, c_1],
+        ]
+        surface = mask.to_surface(area=area, setsurface=set_surface)
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+    def test_to_surface__area_with_unsetsurface_create_new(self):
+        c_1 = pygame.Color("red")
+        c_2 = pygame.Color("green")
+        size = (4, 4)
+
+        mask = pygame.Mask(size, fill=False)
+
+        unset_surface = self.create_surface_from_array(
+            size=size,
+            array=[
+                [c_1, c_1, c_2, c_2],
+                [c_1, c_1, c_2, c_2],
+                [c_1, c_1, c_1, c_1],
+                [c_1, c_1, c_1, c_1],
+            ],
+            flags=SRCALPHA,
+        )
+
+        area = pygame.Rect(0, 0, 2, 2)
+        expected_pixels = [
+            [c_1, c_1],
+            [c_1, c_1],
+        ]
+        surface = mask.to_surface(area=area, unsetsurface=unset_surface)
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+        area = pygame.Rect(1, 1, 2, 2)
+        expected_pixels = [
+            [c_1, c_2],
+            [c_1, c_1],
+        ]
+        surface = mask.to_surface(area=area, unsetsurface=unset_surface)
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+        area = pygame.Rect(2, 1, 2, 2)
+        expected_pixels = [
+            [c_2, c_2],
+            [c_1, c_1],
+        ]
+        surface = mask.to_surface(area=area, unsetsurface=unset_surface)
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+    def test_to_surface__area_with_setsurface_to_destination(self):
+        c_1 = pygame.Color("red")
+        c_2 = pygame.Color("green")
+        c_3 = pygame.Color("blue")
+        size = (4, 4)
+
+        mask = pygame.Mask(size, fill=True)
+
+        set_surface = self.create_surface_from_array(
+            size=size,
+            array=[
+                [c_1, c_1, c_2, c_2],
+                [c_1, c_1, c_2, c_2],
+                [c_1, c_1, c_1, c_1],
+                [c_1, c_1, c_1, c_1],
+            ],
+        )
+
+        area = pygame.Rect(0, 0, 2, 2)
+        expected_pixels = [
+            [c_1, c_1, c_3, c_3],
+            [c_1, c_1, c_3, c_3],
+            [c_3, c_3, c_3, c_3],
+            [c_3, c_3, c_3, c_3],
+        ]
+        surface = pygame.Surface(size)
+        surface.fill(c_3)
+        surface = mask.to_surface(surface=surface, area=area, setsurface=set_surface)
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+        area = pygame.Rect(1, 1, 2, 2)
+        dest = (2, 0)
+        expected_pixels = [
+            [c_3, c_3, c_1, c_2],
+            [c_3, c_3, c_1, c_1],
+            [c_3, c_3, c_3, c_3],
+            [c_3, c_3, c_3, c_3],
+        ]
+        surface = pygame.Surface(size)
+        surface.fill(c_3)
+        surface = mask.to_surface(
+            surface=surface, dest=dest, area=area, setsurface=set_surface
+        )
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+        area = pygame.Rect(2, 1, 2, 2)
+        dest = (1, 1)
+        expected_pixels = [
+            [c_3, c_3, c_3, c_3],
+            [c_3, c_2, c_2, c_3],
+            [c_3, c_1, c_1, c_3],
+            [c_3, c_3, c_3, c_3],
+        ]
+        surface = pygame.Surface(size)
+        surface.fill(c_3)
+        surface = mask.to_surface(
+            surface=surface, dest=dest, area=area, setsurface=set_surface
+        )
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+    def test_to_surface__area_with_unsetsurface_to_destination(self):
+        c_1 = pygame.Color("red")
+        c_2 = pygame.Color("green")
+        c_3 = pygame.Color("blue")
+        size = (4, 4)
+
+        mask = pygame.Mask(size, fill=False)
+
+        unset_surface = self.create_surface_from_array(
+            size=size,
+            array=[
+                [c_1, c_1, c_2, c_2],
+                [c_1, c_1, c_2, c_2],
+                [c_1, c_1, c_1, c_1],
+                [c_1, c_1, c_1, c_1],
+            ],
+        )
+
+        area = pygame.Rect(0, 0, 2, 2)
+        expected_pixels = [
+            [c_1, c_1, c_3, c_3],
+            [c_1, c_1, c_3, c_3],
+            [c_3, c_3, c_3, c_3],
+            [c_3, c_3, c_3, c_3],
+        ]
+        surface = pygame.Surface(size)
+        surface.fill(c_3)
+        surface = mask.to_surface(
+            surface=surface, area=area, unsetsurface=unset_surface
+        )
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+        area = pygame.Rect(1, 1, 2, 2)
+        dest = (2, 0)
+        expected_pixels = [
+            [c_3, c_3, c_1, c_2],
+            [c_3, c_3, c_1, c_1],
+            [c_3, c_3, c_3, c_3],
+            [c_3, c_3, c_3, c_3],
+        ]
+        surface = pygame.Surface(size)
+        surface.fill(c_3)
+        surface = mask.to_surface(
+            surface=surface, dest=dest, area=area, unsetsurface=unset_surface
+        )
+        self.assert_surface_matches_array(surface, expected_pixels)
+
+        area = pygame.Rect(2, 1, 2, 2)
+        dest = (1, 1)
+        expected_pixels = [
+            [c_3, c_3, c_3, c_3],
+            [c_3, c_2, c_2, c_3],
+            [c_3, c_1, c_1, c_3],
+            [c_3, c_3, c_3, c_3],
+        ]
+        surface = pygame.Surface(size)
+        surface.fill(c_3)
+        surface = mask.to_surface(
+            surface=surface, dest=dest, area=area, unsetsurface=unset_surface
+        )
+        self.assert_surface_matches_array(surface, expected_pixels)
+
     def test_to_surface__area_default(self):
         """Ensures the default area is correct."""
         expected_color = pygame.Color("white")
