@@ -1,7 +1,7 @@
 draw = py.extension_module(
     'draw',
     'draw.c',
-    include_directories: include_directories('..'),
+    include_directories: '..',
     c_args: warnings_error,
     dependencies: pg_base_deps,
     install: true,
