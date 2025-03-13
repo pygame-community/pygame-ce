@@ -1,6 +1,7 @@
 import sys
 from collections.abc import Callable, Collection, Iterator
 from typing import (
+    ClassVar,
     Literal,
     SupportsIndex,
     TypeVar,
@@ -8,6 +9,7 @@ from typing import (
     overload,
     Optional,
 )
+from typing_extensions import deprecated  # added in 3.13
 
 from pygame.typing import Point, RectLike, SequenceLike
 
@@ -15,6 +17,13 @@ if sys.version_info >= (3, 11):
     from typing import Self
 else:
     from typing_extensions import Self
+
+# 'ellipsis' existed in typeshed pre 3.10, now we use EllipsisType which is
+# the modern standard library equivalent.
+if sys.version_info >= (3, 10):
+    from types import EllipsisType
+else:
+    EllipsisType = ellipsis
 
 _N = TypeVar("_N", int, float)
 _K = TypeVar("_K")
@@ -112,8 +121,9 @@ class _GenericRect(Collection[_N]):
     def h(self) -> _N: ...
     @h.setter
     def h(self, value: float) -> None: ...
-    __hash__: None  # type: ignore
-    __safe_for_unpickling__: Literal[True]
+    __hash__: ClassVar[None]  # type: ignore[assignment]
+    @property
+    def __safe_for_unpickling__(self) -> Literal[True]: ...
     @overload
     def __init__(
         self, left: float, top: float, width: float, height: float
@@ -129,11 +139,13 @@ class _GenericRect(Collection[_N]):
     @overload
     def __getitem__(self, i: SupportsIndex) -> _N: ...
     @overload
-    def __getitem__(self, s: slice) -> list[_N]: ...
+    def __getitem__(self, s: Union[slice, EllipsisType]) -> list[_N]: ...
     @overload
     def __setitem__(self, key: int, value: float) -> None: ...
     @overload
-    def __setitem__(self, key: slice, value: Union[float, RectLike]) -> None: ...
+    def __setitem__(
+        self, key: Union[slice, EllipsisType], value: Union[float, RectLike]
+    ) -> None: ...
     def __copy__(self) -> Self: ...
     def copy(self) -> Self: ...
     @overload
@@ -276,5 +288,8 @@ class Rect(_GenericRect[int]):
 class FRect(_GenericRect[float]):
     ...
 
-RectType = Rect
-FRectType = FRect
+@deprecated("Use `Rect` instead (RectType is an old alias)")
+class RectType(Rect): ...
+
+@deprecated("Use `FRect` instead (FRectType is an old alias)")
+class FRectType(FRect): ...

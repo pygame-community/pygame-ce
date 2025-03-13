@@ -189,6 +189,10 @@ typedef struct pg_bufferinfo_s {
 #define pg_SetDefaultConvertFormat \
     (*(void (*)(Uint32))PYGAMEAPI_GET_SLOT(base, 28))
 
+#define pgObject_getRectHelper                                               \
+    (*(PyObject * (*)(PyObject *, PyObject *const *, Py_ssize_t, PyObject *, \
+                      char *)) PYGAMEAPI_GET_SLOT(base, 29))
+
 #define import_pygame_base() IMPORT_PYGAME_MODULE(base)
 #endif /* ~PYGAMEAPI_BASE_INTERNAL */
 
@@ -516,6 +520,50 @@ typedef struct {
 #define import_pygame_window() IMPORT_PYGAME_MODULE(window)
 #endif
 
+typedef struct pgTextureObject pgTextureObject;
+
+/*
+ * Render module
+ */
+typedef struct {
+    PyObject_HEAD SDL_Renderer *renderer;
+    pgWindowObject *window;
+    pgTextureObject *target;
+    SDL_bool _is_borrowed;
+} pgRendererObject;
+
+struct pgTextureObject {
+    PyObject_HEAD SDL_Texture *texture;
+    pgRendererObject *renderer;
+    int width;
+    int height;
+};
+
+typedef struct {
+    PyObject_HEAD pgTextureObject *texture;
+    pgRectObject *srcrect;
+    pgColorObject *color;
+    float angle;
+    float alpha;
+    SDL_bool has_origin;
+    SDL_FPoint origin;
+    SDL_bool flip_x;
+    SDL_bool flip_y;
+    SDL_BlendMode blend_mode;
+} pgImageObject;
+
+#ifndef PYGAMEAPI_RENDER_INTERNAL
+#define pgRenderer_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_render, 0))
+#define pgTexture_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_render, 1))
+#define pgImage_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_render, 2))
+#define pgRenderer_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgRender_Type))
+#define pgTexture_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgTexture_Type))
+#define pgImage_Check(x) (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
+#define import_pygame_render() IMPORT_PYGAME_MODULE(_render)
+#endif
+
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
 
 /*
@@ -535,6 +583,7 @@ PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
 PYGAMEAPI_DEFINE_SLOTS(window);
+PYGAMEAPI_DEFINE_SLOTS(_render);
 PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
@@ -549,6 +598,7 @@ PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
 PYGAMEAPI_EXTERN_SLOTS(window);
+PYGAMEAPI_EXTERN_SLOTS(_render);
 PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */
@@ -640,8 +690,9 @@ pg_tuple_couple_from_values_double(double val1, double val2)
      * to do the same thing.
      */
     PyObject *tuple = PyTuple_New(2);
-    if (!tuple)
+    if (!tuple) {
         return NULL;
+    }
 
     PyObject *tmp = PyFloat_FromDouble(val1);
     if (!tmp) {
@@ -688,3 +739,33 @@ pg_PointList_FromArrayDouble(double const *array, int arr_length)
 
     return sequence;
 }
+
+#if PY_VERSION_HEX >= 0x030C0000
+
+#define PG_DECLARE_EXCEPTION_SAVER static PyObject *__cached_exception = NULL;
+
+#define PG_SAVE_EXCEPTION __cached_exception = PyErr_GetRaisedException();
+
+#define PG_UNSAVE_EXCEPTION                       \
+    PyErr_SetRaisedException(__cached_exception); \
+    __cached_exception = NULL;
+
+#else
+
+#define PG_DECLARE_EXCEPTION_SAVER                    \
+    static PyObject *__cached_exception_type = NULL;  \
+    static PyObject *__cached_exception_value = NULL; \
+    static PyObject *__cached_exception_traceback = NULL;
+
+#define PG_SAVE_EXCEPTION                                            \
+    PyErr_Fetch(&__cached_exception_type, &__cached_exception_value, \
+                &__cached_exception_traceback);
+
+#define PG_UNSAVE_EXCEPTION                                          \
+    PyErr_Restore(__cached_exception_type, __cached_exception_value, \
+                  __cached_exception_traceback);                     \
+    __cached_exception_type = NULL;                                  \
+    __cached_exception_value = NULL;                                 \
+    __cached_exception_traceback = NULL;
+
+#endif

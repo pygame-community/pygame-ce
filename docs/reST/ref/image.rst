@@ -135,6 +135,28 @@ following formats.
 
    .. ## pygame.image.load_sized_svg ##
 
+.. function:: load_animation
+
+   | :sl:`load an animation (GIF/WEBP) from a file (or file-like object)`
+   | :sg:`load_animation(file, namehint="") -> list[tuple[Surface, int]]`
+
+   Load an animation (GIF/WEBP) from a file source. You can pass either a
+   filename, a Python file-like object, or a pathlib.Path. If you pass a raw
+   file-like object, you may also want to pass the original filename as the
+   namehint argument so that the file extension can be used to infer the file
+   format.
+
+   This returns a list of tuples (corresponding to every frame of the animation),
+   where each tuple is a (surface, delay) pair for that frame.
+
+   This function requires SDL_image 2.6.0 or above. If pygame was compiled with
+   an older version, ``pygame.error`` will be raised when this function is
+   called.
+
+   .. versionadded:: 2.5.4
+
+   .. ## pygame.image.load_animation ##
+
 .. function:: save
 
    | :sl:`save an image to file (or file-like object)`

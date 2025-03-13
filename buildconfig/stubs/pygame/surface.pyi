@@ -41,7 +41,8 @@ _ViewKind = Literal[
 ]
 
 class Surface:
-    _pixels_address: int
+    @property
+    def _pixels_address(self) -> int: ...
     @property
     def width(self) -> int: ...
     @property
@@ -168,4 +169,5 @@ class Surface:
     def premul_alpha(self) -> Surface: ...
     def premul_alpha_ip(self) -> Surface: ...
 
-SurfaceType = Surface
+@deprecated("Use `Surface` instead (SurfaceType is an old alias)")
+class SurfaceType(Surface): ...
