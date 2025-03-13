@@ -63,7 +63,7 @@ surface src/simd_blitters_sse2.c src/simd_blitters_avx2.c src/surface.c src/alph
 surflock src/surflock.c $(SDL) $(DEBUG)
 time src/time.c $(SDL) $(DEBUG)
 joystick src/joystick.c $(SDL) $(DEBUG)
-draw src/draw.c $(SDL) $(DEBUG)
+draw src/draw/draw.c $(SDL) $(DEBUG)
 image src/image.c $(SDL) $(DEBUG)
 transform src/simd_transform_sse2.c src/simd_transform_avx2.c src/transform.c src/rotozoom.c src/scale2x.c src/scale_mmx.c $(SDL) $(DEBUG)
 mask src/mask.c src/bitmask.c $(SDL) $(DEBUG)

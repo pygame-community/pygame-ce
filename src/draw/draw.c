@@ -27,7 +27,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/draw_doc.h"
+#include "draw_doc.h"
 
 #include <math.h>
 

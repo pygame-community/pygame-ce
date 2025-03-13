@@ -747,7 +747,7 @@ get_pixel_color(Uint8 *pixel, Uint8 bpp)
  *     bpp: bytes per pixel
  *     color: color to set
  *
- * Ref: src/draw.c set_pixel_32()
+ * Ref: src/draw/draw.c set_pixel_32()
  */
 static void
 set_pixel_color(Uint8 *pixel, Uint8 bpp, Uint32 color)

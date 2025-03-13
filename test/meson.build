@@ -13,7 +13,6 @@ test_files = files(
     'debug_test.py',
     'display_test.py',
     'docs_test.py',
-    'draw_test.py',
     'event_test.py',
     'font_test.py',
     'freetype_test.py',

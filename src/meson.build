@@ -161,14 +161,7 @@ joystick = py.extension_module(
     subdir: pg,
 )
 
-draw = py.extension_module(
-    'draw',
-    'draw.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('draw')
 
 image = py.extension_module(
     'image',
