@@ -6,12 +6,12 @@
   API exported by pygame.event
 ********************************
 
-src_c/event.c
+src/event.c
 =============
 
 The extension module :py:mod:`pygame.event`.
 
-Header file: src_c/include/pygame.h
+Header file: src/include/pygame.h
 
 
 .. c:type:: pgEventObject

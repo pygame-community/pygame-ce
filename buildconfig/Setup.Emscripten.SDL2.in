@@ -15,64 +15,64 @@ DEBUG =
 
 # these can build alone and object files merged with ar
 
-_sdl2.sdl2 src_c/_sdl2/sdl2.c $(SDL) $(DEBUG) -Isrc_c
+_sdl2.sdl2 src/_sdl2/sdl2.c $(SDL) $(DEBUG) -Isrc
 
-_sdl2.audio src_c/_sdl2/audio.c $(SDL) $(DEBUG) -Isrc_c
+_sdl2.audio src/_sdl2/audio.c $(SDL) $(DEBUG) -Isrc
 
-pygame_sdl2_video src_c/_sdl2/video.c src_c/pgcompat.c $(SDL) $(DEBUG) -Isrc_c
-_sdl2.video = src_c/void.c
-
-
-_sdl2.mixer src_c/_sdl2/mixer.c $(SDL) $(MIXER) $(DEBUG) -Isrc_c
-
-constants src_c/constants.c $(SDL) $(DEBUG)
-mask src_c/bitmask.c
-math src_c/math.c $(SDL) $(DEBUG)
-
-#GFX = src_c/SDL_gfx/SDL_gfxBlitFunc.c src_c/SDL_gfx/SDL_gfxPrimitives.c
-GFX = src_c/SDL_gfx/SDL_gfxPrimitives.c
+pygame_sdl2_video src/_sdl2/video.c src/pgcompat.c $(SDL) $(DEBUG) -Isrc
+_sdl2.video = src/void.c
 
 
-static src_c/static.c $(SDL) $(FREETYPE) $(FONT) $(MIXER) $(IMAGE) $(PNG) $(JPEG) $(DEBUG)
+_sdl2.mixer src/_sdl2/mixer.c $(SDL) $(MIXER) $(DEBUG) -Isrc
+
+constants src/constants.c $(SDL) $(DEBUG)
+mask src/bitmask.c
+math src/math.c $(SDL) $(DEBUG)
+
+#GFX = src/SDL_gfx/SDL_gfxBlitFunc.c src/SDL_gfx/SDL_gfxPrimitives.c
+GFX = src/SDL_gfx/SDL_gfxPrimitives.c
+
+
+static src/static.c $(SDL) $(FREETYPE) $(FONT) $(MIXER) $(IMAGE) $(PNG) $(JPEG) $(DEBUG)
 
 # these should not be altered they already are in static.c merging file above
-time src_c/void.c
-_freetype src_c/void.c
-imageext src_c/void.c
-image src_c/void.c
-base src_c/void.c
-bufferproxy src_c/void.c
-color src_c/void.c
-controller src_c/void.c
-controller_old src_c/void.c
-display src_c/void.c
-draw src_c/void.c
-event src_c/void.c
-font src_c/void.c
-gfxdraw  src_c/void.c
-joystick src_c/void.c
-key src_c/void.c
-newbuffer  src_c/void.c
-mixer_music src_c/void.c
-mixer src_c/void.c
-mouse src_c/void.c
-pixelcopy src_c/void.c
-pixelarray src_c/void.c
-surface src_c/void.c
-surflock src_c/void.c
-rect src_c/void.c
-rwobject src_c/void.c
-system src_c/void.c
-window src_c/void.c
-_render src_c/void.c
-geometry src_c/void.c
+time src/void.c
+_freetype src/void.c
+imageext src/void.c
+image src/void.c
+base src/void.c
+bufferproxy src/void.c
+color src/void.c
+controller src/void.c
+controller_old src/void.c
+display src/void.c
+draw src/void.c
+event src/void.c
+font src/void.c
+gfxdraw  src/void.c
+joystick src/void.c
+key src/void.c
+newbuffer  src/void.c
+mixer_music src/void.c
+mixer src/void.c
+mouse src/void.c
+pixelcopy src/void.c
+pixelarray src/void.c
+surface src/void.c
+surflock src/void.c
+rect src/void.c
+rwobject src/void.c
+system src/void.c
+window src/void.c
+_render src/void.c
+geometry src/void.c
 
-#_sdl2.controller src_c/_sdl2/controller.c $(SDL) $(DEBUG) -Isrc_c
-_sdl2.controller src_c/void.c
-_sdl2.controller_old src_c/void.c
+#_sdl2.controller src/_sdl2/controller.c $(SDL) $(DEBUG) -Isrc
+_sdl2.controller src/void.c
+_sdl2.controller_old src/void.c
 
-#_sdl2.touch src_c/_sdl2/touch.c $(SDL) $(DEBUG) -Isrc_c
-_sdl2.touch src_c/void.c
+#_sdl2.touch src/_sdl2/touch.c $(SDL) $(DEBUG) -Isrc
+_sdl2.touch src/void.c
 
-#transform src_c/simd_transform_sse2.c src_c/simd_transform_avx2.c src_c/transform.c src_c/rotozoom.c src_c/scale2x.c src_c/scale_mmx.c src_c/simd_surface_fill_avx2.c src_c/simd_surface_fill_sse2.c $(SDL) $(DEBUG) -D_NO_MMX_FOR_X86_64
-transform src_c/void.c
+#transform src/simd_transform_sse2.c src/simd_transform_avx2.c src/transform.c src/rotozoom.c src/scale2x.c src/scale_mmx.c src/simd_surface_fill_avx2.c src/simd_surface_fill_sse2.c $(SDL) $(DEBUG) -D_NO_MMX_FOR_X86_64
+transform src/void.c

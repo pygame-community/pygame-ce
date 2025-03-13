@@ -1,7 +1,7 @@
 recursive-include buildconfig *
 recursive-include docs *
 recursive-include src_py *
-recursive-include src_c *
+recursive-include src *
 recursive-include examples *
 recursive-include test *
 

@@ -127,7 +127,7 @@ mask_get_size(PyObject *self, PyObject *_null)
  * Returns:
  *     Rect object or NULL to indicate a fail
  *
- * Ref: src_c/surface.c surf_get_rect()
+ * Ref: src/surface.c surf_get_rect()
  */
 static PyObject *
 mask_get_rect(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -747,7 +747,7 @@ get_pixel_color(Uint8 *pixel, Uint8 bpp)
  *     bpp: bytes per pixel
  *     color: color to set
  *
- * Ref: src_c/draw.c set_pixel_32()
+ * Ref: src/draw.c set_pixel_32()
  */
 static void
 set_pixel_color(Uint8 *pixel, Uint8 bpp, Uint32 color)

@@ -417,7 +417,7 @@ else
     endif
 endif
 
-subdir('src_c')
+subdir('src')
 subdir('src_py')
 
 if not get_option('stripped')

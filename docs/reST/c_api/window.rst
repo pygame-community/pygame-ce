@@ -6,12 +6,12 @@
   Class Window API exported by pygame.window
 ************************************************
 
-src_c/window.c
+src/window.c
 ===============
 
 This extension module defines Python type :py:class:`pygame.Window`.
 
-Header file: src_c/include/pygame.h
+Header file: src/include/pygame.h
 
 
 .. c:type:: pgWindowObject

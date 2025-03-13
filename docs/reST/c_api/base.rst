@@ -6,13 +6,13 @@
   High level API exported by pygame.base
 ******************************************
 
-src_c/base.c
+src/base.c
 ============
 
 This extension module defines general purpose routines for starting and stopping
 SDL as well as various conversion routines uses elsewhere in pygame.
 
-C header: src_c/include/pygame.h
+C header: src/include/pygame.h
 
 .. c:var:: PyObject* pgExc_SDLError
 

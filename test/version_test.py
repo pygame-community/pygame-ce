@@ -5,7 +5,7 @@ from importlib.metadata import version
 
 import pygame
 
-pg_header = os.path.join("src_c", "include", "_pygame.h")
+pg_header = os.path.join("src", "include", "_pygame.h")
 
 
 class VersionTest(unittest.TestCase):

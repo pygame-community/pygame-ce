@@ -6,12 +6,12 @@
     API exported by pygame.joystick
 ******************************************
 
-src_c/joystick.c
+src/joystick.c
 ================
 
 The extension module :py:mod:`pygame.joystick`.
 
-Header file: src_c/include/pygame.h
+Header file: src/include/pygame.h
 
 .. c:var:: PyTypeObject *pgJoystick_Type
 

@@ -6,12 +6,12 @@
   Class Color API exported by pygame.color
 ********************************************
 
-src_c/color.c
+src/color.c
 =============
 
 This extension module defines the Python type :py:class:`pygame.Color`.
 
-Header file: src_c/include/pygame.h
+Header file: src/include/pygame.h
 
 
 .. c:var:: PyTypeObject *pgColor_Type
