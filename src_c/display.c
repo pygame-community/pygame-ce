@@ -988,6 +988,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
            desktop resolution without breaking compatibility. */
             w = display_mode.w;
             h = display_mode.h;
+            w_actual = w; /* avoid warning false positives */
+            h_actual = h;
         }
 
         if (flags & PGS_FULLSCREEN) {
