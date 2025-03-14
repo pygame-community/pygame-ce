@@ -29,6 +29,8 @@
 
 #define PYGAMEAPI_BUFFERPROXY_INTERNAL
 
+#include <stddef.h>
+
 #include "pygame.h"
 
 #include "pgcompat.h"
