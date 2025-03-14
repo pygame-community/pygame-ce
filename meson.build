@@ -7,8 +7,9 @@ project(
     ).stdout().strip(),
     default_options: [
         # the warning level is set in code below, gives more flexibility there
-        'warning_level=0',
+        'warning_level=3',
     ],
+    meson_version: '>= 1.3.0'
 )
 
 defines = run_command(
@@ -387,7 +388,7 @@ warnings_temp_mask = []
 
 if cc.get_argument_syntax() == 'msvc'
     # base warnings on msvc
-    add_global_arguments(['/W3', '/wd4142', '/wd4996'], language: 'c')
+    add_global_arguments(['/wd4142', '/wd4996'], language: 'c')
 
     warnings_temp_mask += ['/wd6385', '/wd6386']
 
