@@ -926,58 +926,61 @@ window_get_handle(pgWindowObject *self, void *v)
     SDL_Window *win = self->_win;
     size_t handle = 0;
 
-#if SDL_VERSION_ATLEAST(3, 1, 3)
-    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+    const char *driver = SDL_GetCurrentVideoDriver();
+    if (driver == NULL) {
+        handle = 0;
+        return PyLong_FromSize_t(handle);
+    }
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS)
-    handle = (size_t)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
-#endif
-#if defined(SDL_VIDEO_DRIVER_X11)
-    handle = (size_t)SDL_GetNumberProperty(
-        props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, NULL);
-#endif
-#if defined(SDL_VIDEO_DRIVER_COCOA)
-    handle = (size_t)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
-#endif
-#if defined(SDL_VIDEO_DRIVER_UIKIT)
-    handle = (size_t)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
-#endif
-// wayland does not support window handle
-#if defined(SDL_VIDEO_DRIVER_ANDROID)
-    handle = (size_t)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
-#endif
-#if defined(SDL_VIDEO_DRIVER_VIVANTE)
-    handle = (size_t)SDL_GetPointerProperty(
-        props, SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER, NULL);
-#endif
+    SDL_PropertiesID props = SDL_GetWindowProperties(win);
+
+    if (!strcmp(driver, "windows")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "x11")) {
+        handle = (size_t)SDL_GetNumberProperty(
+            props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+    }
+    else if (!strcmp(driver, "cocoa")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "uikit")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "android")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "vivante")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER, NULL);
+    }
 
 #else  // sdl 2
     SDL_SysWMinfo info;
 
     SDL_VERSION(&(info.version))
 
-    if (!SDL_GetWindowWMInfo(win, &info))
+    if (!SDL_GetWindowWMInfo(win, &info)) {
         return PyLong_FromLong(0);
+    }
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
     handle = (size_t)info.info.win.window;
 #endif
-// WINRT window handle not supported in SDL3
 #if defined(SDL_VIDEO_DRIVER_X11)
     handle = (size_t)info.info.x11.window;
 #endif
-// DIRECTFB wm info not supported in SDL3
 #if defined(SDL_VIDEO_DRIVER_COCOA)
     handle = (size_t)info.info.cocoa.window;
 #endif
 #if defined(SDL_VIDEO_DRIVER_UIKIT)
     handle = (size_t)info.info.uikit.window;
 #endif
-// wayland does not support window handle
 #if defined(SDL_VIDEO_DRIVER_ANDROID)
     handle = (size_t)info.info.android.window;
 #endif
