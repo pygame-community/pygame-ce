@@ -619,14 +619,14 @@ class CircleTypeTest(unittest.TestCase):
 
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""
-        c_str = "<Circle((10.3, 3.2), 4.3)>"
+        c_str = "Circle((10.3, 3.2), 4.3)"
         circle = Circle((10.3, 3.2), 4.3)
         self.assertEqual(str(circle), c_str)
         self.assertEqual(circle.__str__(), c_str)
 
     def test__repr__(self):
         """Checks whether the __repr__ method works correctly."""
-        c_repr = "<Circle((10.3, 3.2), 4.3)>"
+        c_repr = "Circle((10.3, 3.2), 4.3)"
         circle = Circle((10.3, 3.2), 4.3)
         self.assertEqual(repr(circle), c_repr)
         self.assertEqual(circle.__repr__(), c_repr)
@@ -2203,14 +2203,14 @@ class LineTypeTest(unittest.TestCase):
 
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""
-        l_str = "<Line((10.1, 10.2), (4.3, 56.4))>"
+        l_str = "Line((10.1, 10.2), (4.3, 56.4))"
         line = Line(10.1, 10.2, 4.3, 56.4)
         self.assertEqual(str(line), l_str)
         self.assertEqual(line.__str__(), l_str)
 
     def test__repr__(self):
         """Checks whether the __repr__ method works correctly."""
-        l_repr = "<Line((10.1, 10.2), (4.3, 56.4))>"
+        l_repr = "Line((10.1, 10.2), (4.3, 56.4))"
         line = Line(10.1, 10.2, 4.3, 56.4)
         self.assertEqual(repr(line), l_repr)
         self.assertEqual(line.__repr__(), l_repr)

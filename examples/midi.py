@@ -583,7 +583,7 @@ def key_images():
     """
 
     my_dir = os.path.split(os.path.abspath(__file__))[0]
-    strip_file = os.path.join(my_dir, "data", "midikeys.png")
+    strip_file = os.path.join(my_dir, "data", "midikeys.webp")
     white_key_width = 42
     white_key_height = 160
     black_key_width = 22
