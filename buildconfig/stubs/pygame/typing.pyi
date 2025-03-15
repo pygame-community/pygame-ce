@@ -27,6 +27,7 @@ FileLike = Union[_PathLike, IO[bytes], IO[str]]
 
 _T_co = TypeVar("_T_co", covariant=True)
 
+
 class SequenceLike(Protocol[_T_co]):
     """
     Variant of the standard `Sequence` ABC that only requires `__getitem__` and `__len__`.
@@ -36,6 +37,7 @@ class SequenceLike(Protocol[_T_co]):
     def __getitem__(self, index: int, /) -> _T_co: ...
     @abstractmethod
     def __len__(self) -> int: ...
+
 
 # Modify typehints when it is possible to annotate sizes
 
@@ -47,15 +49,18 @@ IntPoint = SequenceLike[int]
 
 ColorLike = Union[Color, SequenceLike[int], str, int]
 
+
 class _HasRectAttribute(Protocol):
     # An object that has a rect attribute that is either a rect, or a function
     # that returns a rect conforms to the rect protocol
     @property
     def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]: ...
 
+
 RectLike = Union[
     Rect, FRect, SequenceLike[float], SequenceLike[Point], _HasRectAttribute
 ]
+
 
 # cleanup namespace
 del (
