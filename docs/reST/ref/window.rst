@@ -289,19 +289,6 @@
 
       .. versionadded:: 2.5.0
 
-   .. attribute:: handle
-
-      | :sl:`Get the window handle provided by the window manager if supported otherwise 0`
-      | :sg:`handle -> int`
-
-      Returns the window handle provided by the window manager as an integer. If the operating
-      system is not supported or the window manager hides the handle the sentinel ``0`` is returned.
-
-      The handle is generally available with Windows, X11 (Linux), Cocoa (MacOS), UIKit (iOS),
-      Android and Vivante while unavailable under Wayland and everything else.
-
-      .. versionaddedold:: 2.5.3
-
    .. attribute:: utility
 
       | :sl:`Get if the window is an utility window (**read-only**)`
