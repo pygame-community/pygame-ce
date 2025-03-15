@@ -23,8 +23,8 @@ Controls
 
 """
 
-import random
 import os
+import random
 
 # import basic pygame modules
 import pygame

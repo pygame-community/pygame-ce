@@ -3,9 +3,10 @@ import os.path
 import sys
 import unittest
 
+import pygame
+import pygame.image
+import pygame.pkgdata
 from pygame.tests.test_utils import example_path
-import pygame, pygame.image, pygame.pkgdata
-
 
 imageext = sys.modules["pygame.imageext"]
 

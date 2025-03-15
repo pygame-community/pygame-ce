@@ -1,15 +1,15 @@
 """Debug functionality that allows for more useful issue reporting"""
 
+import importlib
 import platform
 import sys
 import traceback
-import importlib
 from collections.abc import Callable
-from typing import Optional
 from os import environ
+from typing import Optional
 
-from pygame.version import ver
 from pygame.system import get_cpu_instruction_sets
+from pygame.version import ver
 
 ImportResult = tuple[str, bool, Optional[Callable]]
 
@@ -101,6 +101,7 @@ def print_debug_info(filename=None):
         # pylint: disable=unused-argument
         return (-1, -1, -1)
 
+    from pygame.base import get_sdl_version
     from pygame.display import (
         get_driver as get_display_driver,
         get_init as display_init,
@@ -109,7 +110,6 @@ def print_debug_info(filename=None):
         get_driver as get_mixer_driver,
         get_init as mixer_init,
     )
-    from pygame.base import get_sdl_version
 
     debug_str, *mixer = attempt_import(
         "pygame.mixer", "get_sdl_mixer_version", debug_str
@@ -143,27 +143,27 @@ def print_debug_info(filename=None):
 
     debug_str += (
         f"SDL versions:\t\tLinked: {str_from_tuple(get_sdl_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_version(linked = False))}\n"
+        f"Compiled: {str_from_tuple(get_sdl_version(linked=False))}\n"
     )
 
     debug_str += (
         f"SDL Mixer versions:\tLinked: {str_from_tuple(get_sdl_mixer_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_mixer_version(linked = False))}\n"
+        f"Compiled: {str_from_tuple(get_sdl_mixer_version(linked=False))}\n"
     )
 
     debug_str += (
         f"SDL Font versions:\tLinked: {str_from_tuple(get_sdl_ttf_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_ttf_version(linked = False))}\n"
+        f"Compiled: {str_from_tuple(get_sdl_ttf_version(linked=False))}\n"
     )
 
     debug_str += (
         f"SDL Image versions:\tLinked: {str_from_tuple(get_sdl_image_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_image_version(linked = False))}\n"
+        f"Compiled: {str_from_tuple(get_sdl_image_version(linked=False))}\n"
     )
 
     debug_str += (
         f"Freetype versions:\tLinked: {str_from_tuple(ft_version())}\t"
-        f"Compiled: {str_from_tuple(ft_version(linked = False))}\n\n"
+        f"Compiled: {str_from_tuple(ft_version(linked=False))}\n\n"
     )
 
     if display_init():

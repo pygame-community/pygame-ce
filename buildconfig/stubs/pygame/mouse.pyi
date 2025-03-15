@@ -1,19 +1,18 @@
 from typing import Literal, overload
-from typing_extensions import deprecated # added in 3.13
 
 from pygame.cursors import Cursor
 from pygame.surface import Surface
-
-from pygame.typing import Point, SequenceLike, IntPoint
+from pygame.typing import IntPoint, Point, SequenceLike
+from typing_extensions import deprecated  # added in 3.13
 
 @overload
 def get_pressed(
-    num_buttons: Literal[3] = 3,
-    desktop: bool = False) -> tuple[bool, bool, bool]: ...
+    num_buttons: Literal[3] = 3, desktop: bool = False
+) -> tuple[bool, bool, bool]: ...
 @overload
 def get_pressed(
-    num_buttons: Literal[5],
-    desktop: bool = False) -> tuple[bool, bool, bool, bool, bool]: ...
+    num_buttons: Literal[5], desktop: bool = False
+) -> tuple[bool, bool, bool, bool, bool]: ...
 def get_just_pressed() -> tuple[bool, bool, bool, bool, bool]: ...
 def get_just_released() -> tuple[bool, bool, bool, bool, bool]: ...
 def get_pos(desktop: bool = False) -> tuple[int, int]: ...

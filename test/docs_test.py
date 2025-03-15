@@ -6,7 +6,7 @@ import unittest
 
 class DocsIncludedTest(unittest.TestCase):
     def test_doc_import_works(self):
-        from pygame.docs import has_local_docs, PKG_DIR
+        from pygame.docs import PKG_DIR, has_local_docs
 
     @unittest.skipIf("CI" not in os.environ, "Docs not required for local builds")
     def test_docs_included(self):

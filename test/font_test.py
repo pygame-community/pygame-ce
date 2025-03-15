@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-import sys
-import os
 import io
-import unittest
+import os
 import pathlib
 import platform
+import sys
+import unittest
 
 import pygame
 from pygame import font as pygame_font  # So font can be replaced with ftfont

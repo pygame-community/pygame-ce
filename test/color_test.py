@@ -1087,8 +1087,9 @@ class ColorTypeTest(unittest.TestCase):
 
     @unittest.skipIf(IS_PYPY, "PyPy has no ctypes")
     def test_arraystruct(self):
-        import pygame.tests.test_utils.arrinter as ai
         import ctypes as ct
+
+        import pygame.tests.test_utils.arrinter as ai
 
         c_byte_p = ct.POINTER(ct.c_byte)
         c = pygame.Color(5, 7, 13, 23)
@@ -1108,8 +1109,9 @@ class ColorTypeTest(unittest.TestCase):
                 self.assertEqual(data[j], c[j])
 
     def test_newbuf(self):
+        from ctypes import POINTER, c_uint8, cast
+
         from pygame.tests.test_utils import buftools
-        from ctypes import cast, POINTER, c_uint8
 
         class ColorImporter(buftools.Importer):
             def __init__(self, color, flags):

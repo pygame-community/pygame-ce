@@ -1,15 +1,17 @@
 import array
 import binascii
+import glob
 import io
 import os
+import pathlib
 import tempfile
 import unittest
-import glob
-import pathlib
 from concurrent.futures import ThreadPoolExecutor
 
+import pygame
+import pygame.image
+import pygame.pkgdata
 from pygame.tests.test_utils import example_path, png, tostring
-import pygame, pygame.image, pygame.pkgdata
 
 sdl_image_svg_jpeg_save_bug = False
 _sdl_image_ver = pygame.image.get_sdl_image_version()

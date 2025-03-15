@@ -1,10 +1,9 @@
 from typing import Literal, Optional, Union
-from typing_extensions import deprecated # added in 3.13
 
 from pygame.bufferproxy import BufferProxy
 from pygame.surface import Surface
-
 from pygame.typing import FileLike, IntPoint, Point
+from typing_extensions import deprecated  # added in 3.13
 
 _BufferLike = Union[BufferProxy, bytes, bytearray, memoryview]
 _from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]

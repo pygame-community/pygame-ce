@@ -1,7 +1,7 @@
 from typing import Any, ClassVar, Optional, Union, final
-from typing_extensions import deprecated  # added in 3.13
 
 from pygame.typing import SequenceLike
+from typing_extensions import deprecated  # added in 3.13
 
 class _GenericEvent:
     # Just exists to avoid duplication of data for Event

@@ -1,4 +1,4 @@
-from typing import TypedDict, Optional
+from typing import Optional, TypedDict
 
 class _FingerDict(TypedDict):
     id: int

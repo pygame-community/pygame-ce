@@ -1,7 +1,7 @@
-from pygame.rect import Rect
-from pygame.surface import Surface
 from typing import overload
 
+from pygame.rect import Rect
+from pygame.surface import Surface
 from pygame.typing import ColorLike, Point, RectLike, SequenceLike
 
 def rect(

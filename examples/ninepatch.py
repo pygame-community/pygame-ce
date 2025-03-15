@@ -16,6 +16,7 @@ but usually you'd have a custom surface that needs intact corners.
 """
 
 import os
+
 import pygame
 
 SCREEN_SIZE = pygame.Vector2(600, 500)
