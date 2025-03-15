@@ -1440,10 +1440,10 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
             ((surface->surf->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)) {
             char buffer[150];
             char *format_string =
-                "Requested window size was smaller than minimum supported "
-                "window size on platform. Using (%d, %d) instead.";
-            snprintf(buffer, sizeof(buffer), format_string, surface->surf->w,
-                     surface->surf->h);
+                "Requested window was forcibly resized by the OS.\n\t"
+                "Requested window size: (%d, %d)\n\tNew window size: (%d, %d)";
+            snprintf(buffer, sizeof(buffer), format_string, w_actual, h_actual,
+                     surface->surf->w, surface->surf->h);
             if (PyErr_WarnEx(PyExc_RuntimeWarning, buffer, 1) != 0) {
                 return NULL;
             }
