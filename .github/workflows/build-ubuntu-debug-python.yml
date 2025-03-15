@@ -1,0 +1,109 @@
+# This workflow runs a build with a python version that has debug symbols
+# Update this workflow when our min/max python minor versions update
+# This workflow is necessary to ensure that we can build and run with
+# a debug python build without too much worrying about SIGABRT being thrown
+# IMPORTANT: binaries are not to be uploaded from this workflow!
+
+name: Ubuntu debug python
+defaults:
+  run:
+    shell: bash -leo pipefail {0}
+
+# Run CI only on changes to main branch, or any PR to main.
+# Do not run CI on any other branch. Also, skip any non-source changes
+# from running on CI
+on:
+  push:
+    branches: main
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '.gitignore'
+      - '*.rst'
+      - '*.md'
+      - '.github/workflows/*.yml'
+      # re-include current file to not be excluded
+      - '!.github/workflows/build-ubuntu-debug-python.yml'
+
+  pull_request:
+    branches: main
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '.gitignore'
+      - '*.rst'
+      - '*.md'
+      - '.github/workflows/*.yml'
+      # re-include current file to not be excluded
+      - '!.github/workflows/build-ubuntu-debug-python.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-ubuntu-debug-python
+  cancel-in-progress: true
+
+jobs:
+  debug_python:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        os: [ ubuntu-24.04 ]
+        # check our min python (minor) version and our max python (minor) version
+        python: [
+          3.9.21,
+          3.13.1
+        ]
+
+    env:
+      # Pip now forces us to either make a venv or set this flag, so we will do
+      # this
+      PIP_BREAK_SYSTEM_PACKAGES: 1
+      # We are using dependencies installed from apt
+      PG_DEPS_FROM_SYSTEM: 1
+
+    steps:
+    - uses: actions/checkout@v4.2.2
+
+    - name: Install pygame-ce deps
+      # https://github.com/actions/runner-images/issues/7192
+      # https://github.com/orgs/community/discussions/47863
+      run: |
+        sudo apt-get update --fix-missing
+
+        sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev -y
+
+    - name: Install pyenv
+      run: |
+        sudo apt install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+        curl https://pyenv.run | bash
+
+        echo -e 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile
+        echo -e 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+        echo -e 'eval "$(pyenv init --path)"' >> ~/.bash_profile
+        echo -e 'eval "$(pyenv init -)"' >> ~/.bash_profile
+
+    - name: Cache debug python build
+      id: cache-python
+      uses: actions/cache@v4.2.2
+      with:
+        key: ${{ matrix.python }}
+        path: ~/.pyenv/versions/${{ matrix.python }}-debug/**
+
+    - name: Build debug python
+      id: build
+      if: steps.cache-python.outputs.cache-hit != 'true'
+      run: pyenv install ${{ matrix.python }} --debug -v
+
+    - name: Build pygame-ce
+      id: build-pygame-ce
+      run: |
+        pyenv global ${{ matrix.python }}-debug
+        python dev.py build --lax
+
+    - name: Run tests
+      env:
+        SDL_VIDEODRIVER: "dummy"
+        SDL_AUDIODRIVER: "disk"
+      run: |
+        pyenv global ${{ matrix.python }}-debug
+        python -m pygame.tests -v --exclude opengl,music,timing --time_out 300

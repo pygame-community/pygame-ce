@@ -29,8 +29,9 @@ pg_line_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     pgLineObject *self = (pgLineObject *)type->tp_alloc(type, 0);
 
-    if (self != NULL)
+    if (self != NULL) {
         memset(&self->line, 0, sizeof(pgLineBase));
+    }
 
     return (PyObject *)self;
 }
@@ -260,8 +261,7 @@ pg_line_repr(pgLineObject *self)
         return NULL;
     }
 
-    result =
-        PyUnicode_FromFormat("<Line((%R, %R), (%R, %R))>", ax, ay, bx, by);
+    result = PyUnicode_FromFormat("Line((%R, %R), (%R, %R))", ax, ay, bx, by);
 
     Py_DECREF(ax);
     Py_DECREF(ay);

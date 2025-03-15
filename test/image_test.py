@@ -1360,6 +1360,37 @@ class ImageModuleTest(unittest.TestCase):
                     value_error_size,
                 )
 
+    @unittest.skipIf(
+        pygame.image.get_sdl_image_version() < (2, 6, 0),
+        "load_animation requires SDL_image 2.6.0+",
+    )
+    def test_load_animation(self):
+        # test loading from a file
+        SAMPLE_FRAMES = 10
+        SAMPLE_DELAY = 150
+        SAMPLE_SIZE = (312, 312)
+        gif_path = pathlib.Path(example_path("data/animated_sample.gif"))
+        for inp in (
+            (str(gif_path),),  # string path, no namehint
+            (gif_path,),  # pathlib.Path path, no namehint
+            (io.BytesIO(gif_path.read_bytes()),),  # file-like object, no namehint
+            (
+                io.BytesIO(gif_path.read_bytes()),
+                gif_path.name,
+            ),  # file-like object, with namehint
+        ):
+            with self.subTest(f"Test load_animation", inp=inp):
+                s = pygame.image.load_animation(*inp)
+                self.assertIsInstance(s, list)
+                self.assertEqual(len(s), SAMPLE_FRAMES)
+                for val in s:
+                    self.assertIsInstance(val, tuple)
+                    frame, delay = val
+                    self.assertIsInstance(frame, pygame.Surface)
+                    self.assertEqual(frame.size, SAMPLE_SIZE)
+                    self.assertIsInstance(delay, int)
+                    self.assertEqual(delay, SAMPLE_DELAY)
+
     def test_load_pathlib(self):
         """works loading using a Path argument."""
         path = pathlib.Path(example_path("data/asprite.bmp"))

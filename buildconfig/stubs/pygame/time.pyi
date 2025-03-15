@@ -1,8 +1,8 @@
 """Pygame module for monitoring time.
 
-Times in pygame are represented in milliseconds (1/1000 seconds). Most
-platforms have a limited time resolution of around 10 milliseconds. This
-resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
+Provides utilities for monitoring time, delaying time, and maintaining a
+constant frame rate.
+Times in pygame-ce are represented in milliseconds (1/1000 of a second).
 """
 
 from typing import Union, final
