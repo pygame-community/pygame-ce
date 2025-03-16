@@ -183,7 +183,6 @@ def get_extended() -> bool:
     but generally you will be able to load them all.
     """
 
-
 @deprecated("since 2.3.0. Use `pygame.image.tobytes` instead")
 def tostring(
     surface: Surface,
