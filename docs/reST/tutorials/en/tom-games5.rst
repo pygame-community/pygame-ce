@@ -68,7 +68,7 @@ with any attributes set back to their necessary values. Next, the way in which t
 ball, because here its movement is simple (up/down), but it relies on the user telling it to move, unlike the ball which just keeps
 moving in every frame. To make sense of how the bat moves, it is helpful to look at a quick diagram to show the sequence of events:
 
-.. image:: ../assets/tom_event-flowchart.png
+.. image:: ../assets/tom_event-flowchart.webp
 
 What happens here is that the person controlling the bat pushes down on the key that moves the bat up. For each iteration of the main
 game loop (for every frame), if the key is still held down, then the ``state`` attribute of that bat object will be set to
