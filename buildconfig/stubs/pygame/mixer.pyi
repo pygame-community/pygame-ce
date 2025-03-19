@@ -1,12 +1,11 @@
 from typing import Any, Optional, Union, overload
-from typing_extensions import deprecated  # added in 3.13
 
 import numpy
-
 from pygame.event import Event
+from pygame.typing import FileLike
+from typing_extensions import deprecated  # added in 3.13
 
 from . import mixer_music
-from pygame.typing import FileLike
 
 # export mixer_music as mixer.music
 music = mixer_music
@@ -73,7 +72,6 @@ class Sound:
     def get_num_channels(self) -> int: ...
     def get_length(self) -> float: ...
     def get_raw(self) -> bytes: ...
-
 
 class Channel:
     def __init__(self, id: int) -> None: ...

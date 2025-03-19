@@ -15,8 +15,8 @@ the triangle points. Or use the arrow keys. Close the window or press ESC
 to quit.
 """
 
-import sys
 import os
+import sys
 
 import pygame
 from pygame.transform import scale

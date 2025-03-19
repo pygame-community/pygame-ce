@@ -1,6 +1,7 @@
-from typing import Optional
-from typing_extensions import deprecated # added in 3.13
 from collections.abc import ByteString
+from typing import Optional
+
+from typing_extensions import deprecated  # added in 3.13
 
 @deprecated("since 2.2.0. Use the new API instead, which only requires display init")
 def init() -> None: ...

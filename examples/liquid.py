@@ -13,9 +13,10 @@ pygame to compare the results. I didn't bother porting the text and
 sound stuff, that's an easy enough challenge for the reader :]
 """
 
-import pygame
 import os
 from math import sin
+
+import pygame
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 

@@ -8,9 +8,9 @@ This example will show you:
 *How to make a simple button
 """
 
-import pygame
 import os
 
+import pygame
 
 # Create a system cursor
 

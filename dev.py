@@ -11,9 +11,9 @@ import os
 import re
 import subprocess
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import Any, Union
-from enum import Enum
 
 MOD_NAME = "pygame-ce"
 DIST_DIR = "dist"

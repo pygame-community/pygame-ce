@@ -7,6 +7,7 @@ Shows an interactive image scaler.
 
 import sys
 import time
+
 import pygame
 
 
@@ -137,7 +138,7 @@ if __name__ == "__main__":
         print(f"\nUsage: {sys.argv[0]} imagefile [-t] [-convert_alpha]")
         print("    imagefile       image filename (required)")
         print("    -t              run speed test")
-        print("    -convert_alpha  use convert_alpha() on the image's " "surface\n")
+        print("    -convert_alpha  use convert_alpha() on the image's surface\n")
     else:
         main(
             sys.argv[1],

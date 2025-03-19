@@ -1,10 +1,9 @@
 from collections.abc import Callable, Hashable, Iterable
 from typing import Literal, Optional, Union
-from typing_extensions import deprecated  # added in 3.13
 
 from pygame.surface import Surface
-
 from pygame.typing import ColorLike, FileLike
+from typing_extensions import deprecated  # added in 3.13
 
 # TODO: Figure out a way to type this attribute such that mypy knows it's not
 # always defined at runtime

@@ -52,21 +52,19 @@ required).
 """
 
 from collections.abc import Iterable
-from typing import Optional, Union, overload, Literal
-from typing_extensions import deprecated  # added in 3.13
-
-from pygame.constants import FULLSCREEN
-from pygame.surface import Surface
+from typing import Literal, Optional, Union, overload
 
 from pygame._sdl2 import Window
-
+from pygame.constants import FULLSCREEN
+from pygame.surface import Surface
 from pygame.typing import (
     ColorLike,
-    Point,
     IntPoint,
+    Point,
     RectLike,
     SequenceLike,
 )
+from typing_extensions import deprecated  # added in 3.13
 
 class _VidInfo:
     @property
