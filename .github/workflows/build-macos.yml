@@ -137,7 +137,7 @@ jobs:
           version: "0.5.26"
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.23.0
+        uses: pypa/cibuildwheel@v2.23.1
 
       - uses: actions/upload-artifact@v4
         with:
