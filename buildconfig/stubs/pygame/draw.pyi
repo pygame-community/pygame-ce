@@ -1,3 +1,5 @@
+from typing import Union
+
 from pygame.rect import Rect
 from pygame.surface import Surface
 from typing import overload
@@ -69,6 +71,15 @@ def line(
     start_pos: Point,
     end_pos: Point,
     width: int = 1,
+) -> Rect: ...
+def dashed_line(
+    surface: Surface,
+    color: ColorValue,
+    start_pos: Coordinate,
+    end_pos: Coordinate,
+    width: int = 1,
+    length: Union[int, Sequence[int]] = 10,
+    delay: int = 0,
 ) -> Rect: ...
 def lines(
     surface: Surface,

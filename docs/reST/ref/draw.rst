@@ -398,6 +398,69 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. ## pygame.draw.line ##
 
+.. function:: dashed_line
+
+   | :sl:`draw a straight dotted/dashed line`
+   | :sg:`dashed_line(surface, color, start_pos, end_pos) -> Rect`
+   | :sg:`dashed_line(surface, color, start_pos, end_pos, width=1, length=10, delay=0) -> Rect`
+
+   Draws a straight dashed line on the given surface. There are no endcaps. For thick
+   lines the ends are squared off.
+
+   :param Surface surface: surface to draw on
+   :param color: color to draw with, the alpha value is optional if using a
+      tuple ``(RGB[A])``
+   :type color: Color or int or tuple(int, int, int, [int])
+   :param start_pos: start position of the line, (x, y)
+   :type start_pos: tuple(int or float, int or float) or
+      list(int or float, int or float) or Vector2(int or float, int or float)
+   :param end_pos: end position of the line, (x, y)
+   :type end_pos: tuple(int or float, int or float) or
+      list(int or float, int or float) or Vector2(int or float, int or float)
+   :param int width: (optional) used for line thickness
+
+         | if width >= 1, used for line thickness (default is 1)
+         | if width < 1, nothing will be drawn
+         |
+
+         .. note::
+            When using ``width`` values ``> 1``, lines will grow as follows.
+
+            For odd ``width`` values, the thickness of each line grows with the
+            original line being in the center.
+
+            For even ``width`` values, the thickness of each line grows with the
+            original line being offset from the center (as there is no exact
+            center line drawn). As a result, lines with a slope < 1
+            (horizontal-ish) will have 1 more pixel of thickness below the
+            original line (in the y direction). Lines with a slope >= 1
+            (vertical-ish) will have 1 more pixel of thickness to the right of
+            the original line (in the x direction).
+
+   :param int | Sequence[int] length: (optional) used for dash length
+   
+      . note::
+         If ``int``
+            The dash length is tracked along the length of the line, and the gaps
+            between dashes will be the same size as the dashes of the line.
+         If ``Sequence[int]``
+            The dash length is the first element and the gap length is the second element.
+
+   :returns: a rect bounding the changed pixels, if nothing is drawn the
+      bounding rect's position will be the ``start_pos`` parameter value (float
+      values will be truncated) and its width and height will be 0
+   :rtype: Rect
+
+   :raises TypeError: if ``start_pos`` or ``end_pos`` is not a sequence of
+      two numbers
+   :raises ValueError: if ``length`` is not an ``int`` or a sequence of two ``int``
+   
+   :raises ValueError: if ``length`` is less than 1 or has elements less than 1
+
+   .. versionadded:: 2.4.0
+
+   .. ## pygame.draw.dashed_line ##
+
 .. function:: lines
 
    | :sl:`draw multiple contiguous straight line segments`
