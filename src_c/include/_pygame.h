@@ -453,6 +453,34 @@ typedef struct pgEventObject pgEventObject;
 #endif /* PYGAMEAPI_PIXELARRAY_INTERNAL */
 
 /*
+ * BufferProxy module
+ */
+typedef struct {
+    PyObject_HEAD PyObject *obj; /* Wrapped object (parent)     */
+    pg_buffer *pg_view_p;        /* For array interface export  */
+    getbufferproc get_buffer;    /* pg_buffer get callback      */
+    PyObject *dict;              /* Allow arbitrary attributes  */
+    PyObject *weakrefs;          /* Reference cycles can happen */
+} pgBufferProxyObject;
+
+#ifndef PYGAMEAPI_BUFFERPROXY_INTERNAL
+#define pgBufferProxy_Type \
+    (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(bufferproxy, 0))
+
+#define pgBufferProxy_Check(x) ((x)->ob_type == &pgBufferProxy_Type)
+#define pgBufferProxy_New                         \
+    (*(PyObject * (*)(PyObject *, getbufferproc)) \
+         PYGAMEAPI_GET_SLOT(bufferproxy, 1))
+
+#define pgBufferProxy_GetParent \
+    (*(PyObject * (*)(PyObject *)) PYGAMEAPI_GET_SLOT(bufferproxy, 2))
+#define pgBufferProxy_Trip \
+    (*(int (*)(PyObject *))PYGAMEAPI_GET_SLOT(bufferproxy, 3))
+
+#define import_pygame_bufferproxy() _IMPORT_PYGAME_MODULE(bufferproxy)
+#endif /* ~PYGAMEAPI_BUFFERPROXY_INTERNAL */
+
+/*
  * Color module
  */
 typedef struct pgColorObject pgColorObject;
@@ -580,6 +608,7 @@ PYGAMEAPI_DEFINE_SLOTS(surflock);
 PYGAMEAPI_DEFINE_SLOTS(event);
 PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
+PYGAMEAPI_DEFINE_SLOTS(bufferproxy);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
 PYGAMEAPI_DEFINE_SLOTS(window);
@@ -595,6 +624,7 @@ PYGAMEAPI_EXTERN_SLOTS(surflock);
 PYGAMEAPI_EXTERN_SLOTS(event);
 PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
+PYGAMEAPI_EXTERN_SLOTS(bufferproxy);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
 PYGAMEAPI_EXTERN_SLOTS(window);
