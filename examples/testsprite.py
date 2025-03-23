@@ -10,14 +10,12 @@ It is an abomination of ugly code, and mostly used for testing.
 See pygame.examples.aliens for some prettier code.
 """
 
-import sys
 import os
-
+import sys
 from random import randint
 from time import time
 
 import pygame
-
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "data")

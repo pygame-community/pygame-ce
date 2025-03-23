@@ -1,17 +1,16 @@
 from collections.abc import Iterable
 from typing import Any, Literal, Optional, Union, overload
-from typing_extensions import deprecated  # added in 3.13
 
 from pygame.bufferproxy import BufferProxy
 from pygame.color import Color
 from pygame.rect import FRect, Rect
-
 from pygame.typing import (
     ColorLike,
     Point,
     RectLike,
     SequenceLike,
 )
+from typing_extensions import deprecated  # added in 3.13
 
 _ViewKind = Literal[
     "0",
@@ -88,7 +87,8 @@ class Surface:
     def fblits(
         self,
         blit_SequenceLike: Iterable[tuple[Surface, Union[Point, RectLike]]],
-        special_flags: int = 0, /
+        special_flags: int = 0,
+        /,
     ) -> None: ...
     @overload
     def convert(self, surface: Surface, /) -> Surface: ...
@@ -105,9 +105,7 @@ class Surface:
         rect: Optional[RectLike] = None,
         special_flags: int = 0,
     ) -> Rect: ...
-    def scroll(
-        self, dx: int = 0, dy: int = 0, scroll_flag: int = 0, /
-    ) -> None: ...
+    def scroll(self, dx: int = 0, dy: int = 0, scroll_flag: int = 0, /) -> None: ...
     @overload
     def set_colorkey(self, color: ColorLike, flags: int = 0, /) -> None: ...
     @overload

@@ -23,8 +23,8 @@ Keyboard Controls:
 * Press escape to exit
 """
 
-import sys
 import os
+import sys
 
 import pygame
 

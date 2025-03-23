@@ -92,10 +92,17 @@ setup-args = [
 
 [tool.ruff]
 exclude = [
-  "buildconfig/",
+  "buildconfig/*.py",
+  "buildconfig/stubs/pygame/typing.pyi",
   "docs/reST/",
   "setup.py",
 ]
+
+[tool.ruff.lint]
+select = ["I"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
 
 [tool.ruff.format]
 quote-style = "preserve"

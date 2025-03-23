@@ -19,16 +19,15 @@
 # pete@shinners.org
 """sysfont, used in the font module to find system fonts"""
 
-import warnings
+import difflib
+import itertools
 import os
 import sys
-import itertools
-import difflib
+import warnings
 from os.path import basename, dirname, exists, join, splitext
 
-from pygame.font import Font
 from pygame import __file__ as pygame_main_file
-
+from pygame.font import Font
 
 OpenType_extensions = frozenset((".ttf", ".ttc", ".otf"))
 Sysfonts = {}
