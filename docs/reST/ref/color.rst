@@ -215,8 +215,8 @@
       | :sl:`Gets or sets the stringified hexadecimal representation of the Color.`
       | :sg:`hex -> str`
 
-      The strigified hexadecimal representation of the Color. The hexadecimal string
-      is formatted as ``"#rrggbbaa"`` where rr, gg, bb, and aa are 2 digits hex numbers
+      The stringified hexadecimal representation of the Color. The hexadecimal string
+      is formatted as ``"#rrggbbaa"`` where rr, gg, bb, and aa are two digit hex numbers
       in the range from 0x00 to 0xff.
 
       Setting this property means changing the color channels in place. Both lowercase
