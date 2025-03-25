@@ -977,7 +977,9 @@ class ColorTypeTest(unittest.TestCase):
         for value in ["#FFFFFFFF", "#FFFFFF", "0xFFFFFFFF", "0xFFFFFF"]:
             for v in [value, value.lower()]:
                 color.hex = v
-                self.assertEqual((color.r, color.g, color.b, color.a), (255, 255, 255, 255))
+                self.assertEqual(
+                    (color.r, color.g, color.b, color.a), (255, 255, 255, 255)
+                )
 
     def test_issue_284(self):
         """PyColor OverflowError on HSVA with hue value of 360
