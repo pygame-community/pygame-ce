@@ -16,7 +16,7 @@ Contact: rumia0601@gmail.com
 생각해보면, 우리는 무언가를 출력하는 방법을 먼저 배우고(“Hello World”를 생각해봐라) 무언가를 입력하는 방법은 나중에 배운다. 왜 그런가? 왜냐면 입력은 몇몇 프로그램에선 필수조건이 아니지만, 출력은 모든 프로그램에선 항상 필수조건이기 때문이다. (프로그램의 정의: 0개 이상의 입력, 1개 이상의 출력) 그러나, 모든 게임은 입력이 필요하다. 그것이 우리는 “나는 게임을 Play한다”라고 말하는 이유이다. Play라는 단어는 몸의 일부분(아마도 손가락)을 움직인다는 뜻이다. 어쨌든, 이 프로젝트가 진짜 게임이 되기 위해 입력 로직을 추가해보자.
 
 
-.. image:: ../../../assets/Bagic-INPUT-sourcecode.png
+.. image:: ../../../assets/Bagic-INPUT-sourcecode.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -31,7 +31,7 @@ Contact: rumia0601@gmail.com
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Bagic-INPUT-sourcecode.png")
+   ball = pygame.image.load("Bagic-INPUT-sourcecode.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -49,7 +49,7 @@ Contact: rumia0601@gmail.com
        pygame.display.flip()
 
 
-.. image:: ../../../assets/Bagic-INPUT-resultscreen.png
+.. image:: ../../../assets/Bagic-INPUT-resultscreen.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -64,7 +64,7 @@ Contact: rumia0601@gmail.com
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Bagic-INPUT-resultscreen.png")
+   ball = pygame.image.load("Bagic-INPUT-resultscreen.webp")
    ballrect = ball.get_rect()
 
    while True:
