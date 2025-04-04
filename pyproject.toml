@@ -59,6 +59,7 @@ requires = [
   "cython<=3.0.11",
   "sphinx<=8.1.3",
   "sphinx-autoapi<=3.3.2",
+  "pyproject-metadata!=0.9.1",
 ]
 build-backend = 'mesonpy'
 
