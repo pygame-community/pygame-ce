@@ -30,7 +30,6 @@
 #include "structmember.h"
 #include "pgcompat.h"
 #include "doc/surface_doc.h"
-#include "pgbufferproxy.h"
 
 /* stdint.h is missing from some versions of MSVC. */
 #ifdef _MSC_VER
@@ -3404,7 +3403,7 @@ surf_get_view(PyObject *self, PyObject *args)
 #endif
     }
     assert(get_buffer);
-    return pgBufproxy_New(self, get_buffer);
+    return pgBufferProxy_New(self, get_buffer);
 }
 
 static PyObject *
@@ -3415,9 +3414,9 @@ surf_get_buffer(PyObject *self, PyObject *_null)
 
     SURF_INIT_CHECK(surface)
 
-    proxy_obj = pgBufproxy_New(self, _get_buffer_0D);
+    proxy_obj = pgBufferProxy_New(self, _get_buffer_0D);
     if (proxy_obj) {
-        if (pgBufproxy_Trip(proxy_obj)) {
+        if (pgBufferProxy_Trip(proxy_obj)) {
             Py_DECREF(proxy_obj);
             proxy_obj = 0;
         }
