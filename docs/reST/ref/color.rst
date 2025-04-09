@@ -210,6 +210,23 @@
 
       .. ## Color.normalized ##
 
+   .. attribute:: hex
+
+      | :sl:`Gets or sets the stringified hexadecimal representation of the Color.`
+      | :sg:`hex -> str`
+
+      The stringified hexadecimal representation of the Color. The hexadecimal string
+      is formatted as ``"#rrggbbaa"`` where rr, gg, bb, and aa are two digit hex numbers
+      in the range from 0x00 to 0xff.
+
+      Setting this property means changing the color channels in place. Both lowercase
+      and uppercase letters are allowed, the alpha can be omitted (defaults to 0xff) and
+      the string can start with either ``#`` or ``0x``.
+
+      .. versionadded:: 2.5.4
+
+      .. ## Color.hex ##
+
    .. classmethod:: from_cmy
 
       | :sl:`Returns a Color object from a CMY representation`
