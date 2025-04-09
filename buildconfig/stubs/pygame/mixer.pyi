@@ -1,9 +1,11 @@
 from typing import Any, Optional, Union, overload
 
-import numpy
 from pygame.event import Event
 from pygame.typing import FileLike
-from typing_extensions import deprecated  # added in 3.13
+from typing_extensions import (
+    Buffer,  # collections.abc 3.12
+    deprecated,  # added in 3.13
+)
 
 from . import mixer_music
 
@@ -46,13 +48,7 @@ class Sound:
     @overload
     def __init__(self, file: FileLike) -> None: ...
     @overload
-    def __init__(
-        self, buffer: Any
-    ) -> None: ...  # Buffer protocol is still not implemented in typing
-    @overload
-    def __init__(
-        self, array: numpy.ndarray
-    ) -> None: ...  # Buffer protocol is still not implemented in typing
+    def __init__(self, buffer: Buffer) -> None: ...
     def play(
         self,
         loops: int = 0,

@@ -3,9 +3,11 @@ from typing import Literal, Optional, Union
 from pygame.bufferproxy import BufferProxy
 from pygame.surface import Surface
 from pygame.typing import FileLike, IntPoint, Point
-from typing_extensions import deprecated  # added in 3.13
+from typing_extensions import (
+    Buffer,  # collections.abc 3.12
+    deprecated,  # added in 3.13
+)
 
-_BufferLike = Union[BufferProxy, bytes, bytearray, memoryview]
 _from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]
 _to_bytes_format = Literal[
     "P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR", "RGBA_PREMULT", "ARGB_PREMULT"
@@ -47,7 +49,7 @@ def frombytes(
     pitch: int = -1,
 ) -> Surface: ...
 def frombuffer(
-    buffer: _BufferLike,
+    buffer: Buffer,
     size: IntPoint,
     format: _from_buffer_format,
     pitch: int = -1,
