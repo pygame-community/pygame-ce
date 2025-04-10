@@ -15,10 +15,9 @@ Instead, always begin with the original image and scale to the desired size.)
 .. versionchangedold:: 2.0.2 transform functions now support keyword arguments.
 """
 
-from typing import Optional, Union, Literal
+from typing import Literal, Optional, Union
 
 from pygame.surface import Surface
-
 from pygame.typing import ColorLike, Point, RectLike, SequenceLike
 
 def flip(surface: Surface, flip_x: bool, flip_y: bool) -> Surface:
@@ -209,7 +208,7 @@ def box_blur(
     surface: Surface,
     radius: int,
     repeat_edge_pixels: bool = True,
-    dest_surface: Optional[Surface] = None
+    dest_surface: Optional[Surface] = None,
 ) -> Surface:
     """Blur a surface using box blur.
 
@@ -235,7 +234,7 @@ def gaussian_blur(
     surface: Surface,
     radius: int,
     repeat_edge_pixels: bool = True,
-    dest_surface: Optional[Surface] = None
+    dest_surface: Optional[Surface] = None,
 ) -> Surface:
     """Blur a surface using gaussian blur.
 

@@ -1,4 +1,5 @@
 from typing import final
+
 from pygame.joystick import JoystickType
 
 def init() -> None: ...

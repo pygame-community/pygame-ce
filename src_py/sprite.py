@@ -85,14 +85,13 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specialized cases.
 
 import types
-from warnings import warn
 from typing import Optional
+from warnings import warn
 
 import pygame
-
+from pygame.mask import from_surface
 from pygame.rect import Rect
 from pygame.time import get_ticks
-from pygame.mask import from_surface
 
 
 class Sprite:
@@ -372,8 +371,7 @@ class AbstractGroup:
 
     """
 
-    def __class_getitem__(cls, generic):
-        return types.GenericAlias(cls, generic)
+    __class_getitem__ = classmethod(types.GenericAlias)
 
     # protected identifier value to identify sprite groups, and avoid infinite recursion
     _spritegroup = True

@@ -64,7 +64,7 @@ def main():
     surfdemo_show(striped, "striped")
 
     # rgbarray
-    imagename = os.path.join(main_dir, "data", "arraydemo.bmp")
+    imagename = os.path.join(main_dir, "data", "arraydemo.webp")
     imgsurface = pygame.image.load(imagename)
     rgbarray = surfarray.array3d(imgsurface)
     surfdemo_show(rgbarray, "rgbarray")

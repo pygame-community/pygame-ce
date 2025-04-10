@@ -28,10 +28,10 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
     See the :mod:`pygame.gfxdraw` module for alternative draw methods.
 """
 
-from pygame.rect import Rect
-from pygame.surface import Surface
 from typing import overload
 
+from pygame.rect import Rect
+from pygame.surface import Surface
 from pygame.typing import ColorLike, Point, RectLike, SequenceLike
 
 def rect(
@@ -219,7 +219,6 @@ def aacircle(
     radius: float,
     width: int = 0,
 ) -> Rect: ...
-
 @overload
 def aacircle(
     surface: Surface,
@@ -232,7 +231,6 @@ def aacircle(
     draw_bottom_left: bool = False,
     draw_bottom_right: bool = False,
 ) -> Rect: ...
-
 def aacircle(*args, **kwargs):
     """Draw an antialiased circle.
 
@@ -285,9 +283,7 @@ def aacircle(*args, **kwargs):
     .. versionadded:: 2.5.0
     """
 
-def ellipse(
-    surface: Surface, color: ColorLike, rect: RectLike, width: int = 0
-) -> Rect:
+def ellipse(surface: Surface, color: ColorLike, rect: RectLike, width: int = 0) -> Rect:
     """Draw an ellipse.
 
     Draws an ellipse on the given surface.

@@ -12,6 +12,7 @@ Keyboard Controls:
 """
 
 import os
+
 import pygame
 from pygame import K_1, K_2, K_3, K_4, K_5, K_6, K_7, K_8, K_9
 
@@ -37,8 +38,8 @@ def main():
     screen = pygame.display.set_mode((640, 480))
     screen.fill((100, 100, 100))
 
-    image = pygame.image.load(os.path.join(data_dir, "liquid.bmp")).convert()
-    blendimage = pygame.image.load(os.path.join(data_dir, "liquid.bmp")).convert()
+    image = pygame.image.load(os.path.join(data_dir, "liquid.webp")).convert()
+    blendimage = pygame.image.load(os.path.join(data_dir, "liquid.webp")).convert()
     screen.blit(image, (10, 10))
     screen.blit(blendimage, (200, 10))
 

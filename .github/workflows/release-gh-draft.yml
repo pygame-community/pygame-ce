@@ -18,7 +18,7 @@ jobs:
     uses: ./.github/workflows/build-ubuntu-sdist.yml
 
   draft-release:
-    needs: [manylinux-aarch64, manylinux, macos, windows, sdist]
+    needs: [manylinux, macos, windows, sdist]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -41,7 +41,7 @@ jobs:
         run: echo "VER=${GITHUB_REF_NAME#'release/'}" >> $GITHUB_OUTPUT
 
       - name: Generate release attestation
-        uses: actions/attest-build-provenance@v2.1.0
+        uses: actions/attest-build-provenance@v2.2.3
         with:
           subject-path: "pygame-wheels/*"
 

@@ -1,5 +1,6 @@
-import unittest, unittest.mock
 import io
+import unittest
+import unittest.mock
 
 import pygame
 

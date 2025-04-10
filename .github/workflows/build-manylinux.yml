@@ -55,7 +55,7 @@ jobs:
     - uses: actions/checkout@v4.2.2
 
     - name: Log in to the Container registry
-      uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+      uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -68,14 +68,14 @@ jobs:
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
-      uses: docker/metadata-action@369eb591f429131d6889c46b94e711f089e6ca96
+      uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804
       with:
         images: ghcr.io/${{ github.repository }}_${{ matrix.arch }}
         tags: type=raw,value=${{ hashFiles('buildconfig/manylinux-build/**') }}
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@67a2d409c0a876cbe6b11854e3e25193efe4e62d
+      uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
@@ -93,7 +93,7 @@ jobs:
         CIBW_MANYLINUX_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v2.22.0
+      uses: pypa/cibuildwheel@v2.23.2
 
     # We upload the generated files under github actions assets
     - name: Upload dist

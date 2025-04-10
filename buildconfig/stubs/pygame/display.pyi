@@ -52,40 +52,55 @@ required).
 """
 
 from collections.abc import Iterable
-from typing import Optional, Union, overload, Literal
-from typing_extensions import deprecated  # added in 3.13
-
-from pygame.constants import FULLSCREEN
-from pygame.surface import Surface
+from typing import Literal, Optional, Union, overload
 
 from pygame._sdl2 import Window
-
+from pygame.constants import FULLSCREEN
+from pygame.surface import Surface
 from pygame.typing import (
     ColorLike,
-    Point,
     IntPoint,
+    Point,
     RectLike,
     SequenceLike,
 )
+from typing_extensions import deprecated  # added in 3.13
 
 class _VidInfo:
-    hw: int
-    wm: int
-    video_mem: int
-    bitsize: int
-    bytesize: int
-    masks: tuple[int, int, int, int]
-    shifts: tuple[int, int, int, int]
-    losses: tuple[int, int, int, int]
-    blit_hw: int
-    blit_hw_CC: int
-    blit_hw_A: int
-    blit_sw: int
-    blit_sw_CC: int
-    blit_sw_A: int
-    current_h: int
-    current_w: int
-    pixel_format: str
+    @property
+    def hw(self) -> int: ...
+    @property
+    def wm(self) -> int: ...
+    @property
+    def video_mem(self) -> int: ...
+    @property
+    def bitsize(self) -> int: ...
+    @property
+    def bytesize(self) -> int: ...
+    @property
+    def masks(self) -> tuple[int, int, int, int]: ...
+    @property
+    def shifts(self) -> tuple[int, int, int, int]: ...
+    @property
+    def losses(self) -> tuple[int, int, int, int]: ...
+    @property
+    def blit_hw(self) -> int: ...
+    @property
+    def blit_hw_CC(self) -> int: ...
+    @property
+    def blit_hw_A(self) -> int: ...
+    @property
+    def blit_sw(self) -> int: ...
+    @property
+    def blit_sw_CC(self) -> int: ...
+    @property
+    def blit_sw_A(self) -> int: ...
+    @property
+    def current_h(self) -> int: ...
+    @property
+    def current_w(self) -> int: ...
+    @property
+    def pixel_format(self) -> str: ...
 
 def init() -> None:
     """Initialize the display module.

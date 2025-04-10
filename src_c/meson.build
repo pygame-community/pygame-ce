@@ -134,7 +134,6 @@ surface = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
 surflock = py.extension_module(
     'surflock',
     'surflock.c',
@@ -153,8 +152,6 @@ time = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 joystick = py.extension_module(
     'joystick',
     'joystick.c',
@@ -163,11 +160,7 @@ joystick = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
-
-# TODO: support SDL3
-if sdl_api != 3
 draw = py.extension_module(
     'draw',
     'draw.c',
@@ -176,7 +169,6 @@ draw = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 image = py.extension_module(
     'image',
@@ -231,8 +223,6 @@ transform = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
 mask = py.extension_module(
     'mask',
     ['mask.c', 'bitmask.c'],
@@ -241,7 +231,6 @@ mask = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 bufferproxy = py.extension_module(
     'bufferproxy',
@@ -252,8 +241,6 @@ bufferproxy = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 pixelarray = py.extension_module(
     'pixelarray',
     'pixelarray.c',
@@ -262,7 +249,6 @@ pixelarray = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 math = py.extension_module(
     'math',
@@ -273,8 +259,6 @@ math = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 pixelcopy = py.extension_module(
     'pixelcopy',
     'pixelcopy.c',
@@ -283,7 +267,6 @@ pixelcopy = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 newbuffer = py.extension_module(
     'newbuffer',
@@ -324,6 +307,18 @@ window = py.extension_module(
 
 # TODO: support SDL3
 if sdl_api != 3
+_render = py.extension_module(
+    '_render',
+    'render.c',
+    c_args: warnings_error,
+    dependencies: pg_base_deps,
+    install: true,
+    subdir: pg,
+)
+endif
+
+# TODO: support SDL3
+if sdl_api != 3
 gfxdraw = py.extension_module(
     'gfxdraw',
     ['gfxdraw.c', 'SDL_gfx/SDL_gfxPrimitives.c'],
@@ -341,9 +336,6 @@ subdir('_sdl2')
 endif
 
 # pygame._camera
-
-# TODO: support SDL3
-if sdl_api != 3
 pg_camera_sources = ['_camera.c']
 pg_camera_link = []
 if plat == 'win'
@@ -374,12 +366,8 @@ _camera = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # pygame.scrap
-
-# TODO: support SDL3
-if sdl_api != 3
 pg_scrap_link = [] # TODO: should this link logic be improved/made meson-ey?
 if plat == 'win'
     pg_scrap_link += ['-luser32', '-lgdi32']
@@ -394,7 +382,6 @@ scrap = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # optional modules
 
@@ -409,9 +396,6 @@ if sdl_image_dep.found()
     )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
-
 if sdl_ttf_dep.found()
     font = py.extension_module(
         'font',
@@ -422,6 +406,9 @@ if sdl_ttf_dep.found()
         subdir: pg,
     )
 endif
+
+# TODO: support SDL3
+if sdl_api != 3
 
 if sdl_mixer_dep.found()
     mixer = py.extension_module(

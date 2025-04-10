@@ -1,8 +1,8 @@
 """Pygame module for monitoring time.
 
-Times in pygame are represented in milliseconds (1/1000 seconds). Most
-platforms have a limited time resolution of around 10 milliseconds. This
-resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
+Provides utilities for monitoring time, delaying time, and maintaining a
+constant frame rate.
+Times in pygame-ce are represented in milliseconds (1/1000 of a second).
 """
 
 from typing import Union, final
@@ -73,7 +73,6 @@ def set_timer(event: Union[int, Event], millis: int, loops: int = 0) -> None:
     .. versionchangedold:: 2.0.1 event argument supports ``pygame.event.Event`` object
     .. versionaddedold:: 2.0.1 added loops argument to replace once argument
     """
-
 @final
 class Clock:
     """Create an object to help track time.

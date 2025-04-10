@@ -63,18 +63,17 @@ following formats.
 """
 
 from typing import Literal, Optional, Union
-from typing_extensions import deprecated # added in 3.13
 
 from pygame.bufferproxy import BufferProxy
 from pygame.surface import Surface
-
 from pygame.typing import FileLike, IntPoint, Point
+from typing_extensions import deprecated  # added in 3.13
 
-_BufferStyle = Union[BufferProxy, bytes, bytearray, memoryview]
+_BufferLike = Union[BufferProxy, bytes, bytearray, memoryview]
+_from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]
 _to_bytes_format = Literal[
     "P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR", "RGBA_PREMULT", "ARGB_PREMULT"
 ]
-_from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]
 _from_bytes_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR"]
 
 def load(file: FileLike, namehint: str = "") -> Surface:
@@ -135,6 +134,25 @@ def load_sized_svg(file: FileLike, size: Point) -> Surface:
     .. versionadded:: 2.4.0
     """
 
+def load_animation(file: FileLike, namehint: str = "") -> list[tuple[Surface, int]]:
+    """Load an animation (GIF/WEBP) from a file (or file-like object).
+
+    Load an animation (GIF/WEBP) from a file source. You can pass either a
+    filename, a Python file-like object, or a pathlib.Path. If you pass a raw
+    file-like object, you may also want to pass the original filename as the
+    namehint argument so that the file extension can be used to infer the file
+    format.
+
+    This returns a list of tuples (corresponding to every frame of the animation),
+    where each tuple is a (surface, delay) pair for that frame.
+
+    This function requires SDL_image 2.6.0 or above. If pygame was compiled with
+    an older version, ``pygame.error`` will be raised when this function is
+    called.
+
+    .. versionadded:: 2.5.4
+    """
+
 def save(surface: Surface, file: FileLike, namehint: str = "") -> None:
     """Save an image to file (or file-like object).
 
@@ -155,7 +173,7 @@ def save(surface: Surface, file: FileLike, namehint: str = "") -> None:
                         to save other formats than ``TGA`` to a file-like object.
                         Saving to a file-like object with JPEG is possible.
     .. versionchanged:: 2.2.0 Now supports keyword arguments.
-   """
+    """
 
 def get_sdl_image_version(linked: bool = True) -> Optional[tuple[int, int, int]]:
     """Get version number of the SDL_Image library being used.
@@ -302,7 +320,7 @@ def frombytes(
     """
 
 def frombuffer(
-    bytes: _BufferStyle,
+    buffer: _BufferLike,
     size: IntPoint,
     format: _from_buffer_format,
     pitch: int = -1,

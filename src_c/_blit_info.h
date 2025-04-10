@@ -13,8 +13,10 @@ typedef struct {
     Uint8 *d_pixels;
     int d_pxskip;
     int d_skip;
-    SDL_PixelFormat *src;
-    SDL_PixelFormat *dst;
+    PG_PixelFormat *src;
+    SDL_Palette *src_palette;
+    PG_PixelFormat *dst;
+    SDL_Palette *dst_palette;
     Uint8 src_blanket_alpha;
     int src_has_colorkey;
     Uint32 src_colorkey;
