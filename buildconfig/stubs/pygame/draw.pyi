@@ -231,7 +231,7 @@ def aacircle(
     draw_bottom_left: bool = False,
     draw_bottom_right: bool = False,
 ) -> Rect: ...
-def aacircle(*args, **kwargs):
+def aacircle(*args, **kwargs):  # type: ignore
     """Draw an antialiased circle.
 
     Draws an antialiased circle on the given surface.

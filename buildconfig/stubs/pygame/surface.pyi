@@ -290,7 +290,7 @@ class Surface:
     def convert(self, masks: ColorLike, flags: int = 0, /) -> Surface: ...
     @overload
     def convert(self) -> Surface: ...
-    def convert(self, *args):
+    def convert(self, *args):  # type: ignore
         """Change the pixel format of a surface.
 
         Creates a new copy of the Surface with the pixel format changed. The new
@@ -401,7 +401,7 @@ class Surface:
     def set_colorkey(self, color: ColorLike, flags: int = 0, /) -> None: ...
     @overload
     def set_colorkey(self, color: None, /) -> None: ...
-    def set_colorkey(self, *args):
+    def set_colorkey(self, *args):  # type: ignore
         """Set the transparent colorkey.
 
         Set the current color key for the Surface. When blitting this Surface
@@ -429,7 +429,7 @@ class Surface:
     def set_alpha(self, value: int, flags: int = 0, /) -> None: ...
     @overload
     def set_alpha(self, value: None, /) -> None: ...
-    def set_alpha(self, *args):
+    def set_alpha(self, *args):  # type: ignore
         """Set the alpha value for the full Surface.
 
         Set the current alpha value for the Surface. When blitting this Surface
@@ -679,7 +679,7 @@ class Surface:
     def subsurface(
         self, left: float, top: float, width: float, height: float, /
     ) -> Surface: ...
-    def subsurface(self, *args):
+    def subsurface(self, *args):  # type: ignore
         """Create a new surface that references its parent.
 
         Returns a new Surface that shares its pixels with its new parent. The new
