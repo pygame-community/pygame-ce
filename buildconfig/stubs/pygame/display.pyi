@@ -310,7 +310,8 @@ def update(rectangles: Iterable[Optional[RectLike]], /) -> None: ...
 @overload
 def update(x: float, y: float, w: float, h: float, /) -> None: ...
 @overload
-def update(xy: Point, wh: Point, /) -> None:
+def update(xy: Point, wh: Point, /) -> None: ...
+def update(*args):  # type: ignore
     """Update all, or a portion, of the display. For non-OpenGL displays.
 
     For non OpenGL display Surfaces, this function is very similar to
