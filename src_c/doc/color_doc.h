@@ -9,6 +9,7 @@
 #define DOC_COLOR_HSLA "hsla -> tuple\nGets or sets the HSLA representation of the Color."
 #define DOC_COLOR_I1I2I3 "i1i2i3 -> tuple\nGets or sets the I1I2I3 representation of the Color."
 #define DOC_COLOR_NORMALIZED "normalized -> tuple\nGets or sets the normalized representation of the Color."
+#define DOC_COLOR_HEX "hex -> str\nGets or sets the stringified hexadecimal representation of the Color."
 #define DOC_COLOR_FROMCMY "from_cmy(object, /) -> Color\nfrom_cmy(c, m, y, /) -> Color\nReturns a Color object from a CMY representation"
 #define DOC_COLOR_FROMHSVA "from_hsva(object, /) -> Color\nfrom_hsva(h, s, v, a, /) -> Color\nReturns a Color object from an HSVA representation"
 #define DOC_COLOR_FROMHSLA "from_hsla(object, /) -> Color\nfrom_hsla(h, s, l, a, /) -> Color\nReturns a Color object from an HSLA representation"
