@@ -184,7 +184,7 @@ typedef struct pg_bufferinfo_s {
     (*(int (*)(void))PYGAMEAPI_GET_SLOT(base, 23))
 
 #define pg_GetDefaultConvertFormat \
-    (*(PG_PixelFormatEnum(*)(void))PYGAMEAPI_GET_SLOT(base, 27))
+    (*(PG_PixelFormatEnum (*)(void))PYGAMEAPI_GET_SLOT(base, 27))
 
 #define pg_SetDefaultConvertFormat \
     (*(void (*)(Uint32))PYGAMEAPI_GET_SLOT(base, 28))
