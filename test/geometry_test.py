@@ -2213,12 +2213,11 @@ class LineTypeTest(unittest.TestCase):
 
         projected_point = line.project(test_clamp_point1, do_clamp=True)
         self.assertEqual(math.ceil(projected_point[0]), 100)
-        self.assertEqual(math.ceil (projected_point[1]), 100)
+        self.assertEqual(math.ceil(projected_point[1]), 100)
 
         projected_point = line.project(test_clamp_point2, do_clamp=True)
         self.assertEqual(math.ceil(projected_point[0]), 0)
         self.assertEqual(math.ceil(projected_point[1]), 0)
-
 
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""

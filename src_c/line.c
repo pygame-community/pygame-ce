@@ -344,7 +344,7 @@ static struct PyMethodDef pg_line_methods[] = {
     {"scale_ip", (PyCFunction)pg_line_scale_ip, METH_FASTCALL,
      DOC_LINE_SCALEIP},
     {"project", (PyCFunction)pg_line_project, METH_VARARGS | METH_KEYWORDS,
-     ""},
+     DOC_LINE_PROJECT},
     {NULL, NULL, 0, NULL}};
 
 static PyObject *
