@@ -740,3 +740,31 @@
          .. versionadded:: 2.5.3
 
       .. ## Line.flip_ab_ip ##
+
+   .. method:: project
+
+         | :sl:`projects the line onto the given line`
+         | :sg:`project(point, do_clamp=False) -> point`
+
+         Returns a new point(tuple[float, float]) that is projected onto the line like so
+
+         .. figure:: code_examples/project1.png
+            :alt: project method image
+
+            Example of what project method does if you input the green point you get back the yellow one.
+
+
+         .. figure:: code_examples/project2.png
+            :alt: project do_clamp=False image
+
+            Example of what the do_clamp argument does when it is False
+
+
+         .. figure:: code_examples/project1.png
+            :alt: project do_clamp=True image
+
+            Example of what the do_clamp argument does when it is True
+
+         .. versionadded:: 2.5.4
+
+      .. ## Line.project ##
