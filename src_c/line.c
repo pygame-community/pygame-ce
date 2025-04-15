@@ -201,15 +201,10 @@ _length_of_vector(double *vector)
 }
 
 static PyObject *
-_line_project_helper(pgLineBase *line, double *point, int do_clamp)
+_line_project_helper(pgLineBase *line, double *point, int clamp)
 {
     // this is a vector that goes from one point of the line to another
     double line_vector[2] = {line->bx - line->ax, line->by - line->ay};
-    double line_length = _length_of_vector(line_vector);
-
-    // this is a unit vector that points in the direction of the line
-    double normalized_line_vector[2] = {line_vector[0], line_vector[1]};
-    _normalize_vector(normalized_line_vector);
 
     // this is a vector that goes from the start of the line to the point we
     // are projecting onto the line
@@ -217,14 +212,17 @@ _line_project_helper(pgLineBase *line, double *point, int do_clamp)
                                                  point[1] - line->ay};
 
     double dot_product =
-        vector_from_line_start_to_point[0] * normalized_line_vector[0] +
-        vector_from_line_start_to_point[1] * normalized_line_vector[1];
+        (vector_from_line_start_to_point[0] * line_vector[0] +
+         vector_from_line_start_to_point[1] * line_vector[1]) /
+        (line_vector[0] * line_vector[0] + line_vector[1] * line_vector[1]);
 
-    double projection[2] = {dot_product * normalized_line_vector[0],
-                            dot_product * normalized_line_vector[1]};
+    double projection[2] = {dot_product * line_vector[0],
+                            dot_product * line_vector[1]};
 
-    if (do_clamp) {
-        if (dot_product > line_length) {
+    if (clamp) {
+        if (projection[0] * projection[0] + projection[1] * projection[1] >
+            line_vector[0] * line_vector[0] +
+                line_vector[1] * line_vector[1]) {
             projection[0] = line_vector[0];
             projection[1] = line_vector[1];
         }
@@ -237,10 +235,8 @@ _line_project_helper(pgLineBase *line, double *point, int do_clamp)
     double projected_point[2] = {line->ax + projection[0],
                                  line->ay + projection[1]};
 
-    PyObject *projected_tuple =
-        Py_BuildValue("(dd)", projected_point[0], projected_point[1]);
-
-    return projected_tuple;
+    return pg_tuple_couple_from_values_double(projected_point[0],
+                                              projected_point[1]);
 }
 
 static PyObject *
@@ -284,47 +280,26 @@ pg_line_scale_ip(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static PyObject *
-pg_line_project(pgLineObject *self, PyObject *args, PyObject *kwnames)
+pg_line_project(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs,
+                PyObject *kwnames)
 {
-    PyObject *point_obj = NULL;
-    int do_clamp = 0;
+    double point[2] = {0.f, 0.f};
+    int clamp = 0;
 
-    static char *kwlist[] = {"point", "do_clamp", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwnames, "O|p:project", kwlist,
-                                     &point_obj, &do_clamp)) {
-        return RAISE(
-            PyExc_TypeError,
-            "project requires a sequence(point) and an optional clamp flag");
+    if (nargs >= 1) {
+        if (!pg_TwoDoublesFromObj(args[0], &point[0], &point[1])) {
+            return RAISE(PyExc_TypeError,
+                         "project requires a sequence of two numbers");
+        }
     }
 
-    PyObject *item;
-    double point[2];
-
-    if (!PySequence_Check(point_obj) || PySequence_Size(point_obj) != 2) {
-        return RAISE(
-            PyExc_ValueError,
-            "project requires the point to be a sequence of 2 elements");
-    }
-
-    item = PySequence_GetItem(point_obj, 0);
-    point[0] = PyFloat_AsDouble(item);
-
-    PyObject *error_type;
-    if ((error_type = PyErr_Occurred())) {
-        return NULL;
-    }
-
-    item = PySequence_GetItem(point_obj, 1);
-    point[1] = PyFloat_AsDouble(item);
-
-    if ((error_type = PyErr_Occurred())) {
-        return NULL;
+    if (kwnames != NULL) {
+        clamp = PyObject_IsTrue(args[nargs]);
     }
 
     PyObject *projected_point;
     if (!(projected_point =
-              _line_project_helper(&pgLine_AsLine(self), point, do_clamp))) {
+              _line_project_helper(&pgLine_AsLine(self), point, clamp))) {
         return NULL;
     }
 
@@ -343,7 +318,7 @@ static struct PyMethodDef pg_line_methods[] = {
     {"scale", (PyCFunction)pg_line_scale, METH_FASTCALL, DOC_LINE_SCALE},
     {"scale_ip", (PyCFunction)pg_line_scale_ip, METH_FASTCALL,
      DOC_LINE_SCALEIP},
-    {"project", (PyCFunction)pg_line_project, METH_VARARGS | METH_KEYWORDS,
+    {"project", (PyCFunction)pg_line_project, METH_FASTCALL | METH_KEYWORDS,
      DOC_LINE_PROJECT},
     {NULL, NULL, 0, NULL}};
 
