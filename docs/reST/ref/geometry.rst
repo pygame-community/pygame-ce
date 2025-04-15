@@ -744,26 +744,22 @@
    .. method:: project
 
          | :sl:`projects the line onto the given line`
-         | :sg:`project(point, do_clamp=False) -> point`
+         | :sg:`project(point: tuple[float, float], clamp=False) -> tuple[float, float]`
 
-         Returns a new point(tuple[float, float]) that is projected onto the line like so
+         This method takes in a point and one boolean keyword argument clamp. It outputs an orthogonally projected point onto the line.
+         If clamp is True it makes sure that the outputted point will be on the line segment.
 
-         .. figure:: code_examples/project1.png
+
+         .. figure:: code_examples/project.png
             :alt: project method image
 
-            Example of what project method does if you input the green point you get back the yellow one.
+            Example of how it projects the point on to the line purplish point is the point we want to project and the blue point is what you would get as a result
 
 
-         .. figure:: code_examples/project2.png
-            :alt: project do_clamp=False image
-
-            Example of what the do_clamp argument does when it is False
-
-
-         .. figure:: code_examples/project1.png
+         .. figure:: code_examples/project_clamp.png
             :alt: project do_clamp=True image
 
-            Example of what the do_clamp argument does when it is True
+            Example of what the clamp argument changes if it is true it stays on the line segment
 
          .. versionadded:: 2.5.4
 
