@@ -2206,16 +2206,21 @@ class LineTypeTest(unittest.TestCase):
         test_point1 = (25, 75)
         test_clamp_point1 = (100, 300)
         test_clamp_point2 = (-50, -150)
+        test_clamp_point3 = (-200, -200)
 
         projected_point = line.project(test_point1)
         self.assertEqual(math.ceil(projected_point[0]), 50)
         self.assertEqual(math.ceil(projected_point[1]), 50)
 
-        projected_point = line.project(test_clamp_point1, do_clamp=True)
+        projected_point = line.project(test_clamp_point1, clamp=True)
         self.assertEqual(math.ceil(projected_point[0]), 100)
         self.assertEqual(math.ceil(projected_point[1]), 100)
 
-        projected_point = line.project(test_clamp_point2, do_clamp=True)
+        projected_point = line.project(test_clamp_point2, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = line.project(test_clamp_point3, clamp=True)
         self.assertEqual(math.ceil(projected_point[0]), 0)
         self.assertEqual(math.ceil(projected_point[1]), 0)
 
