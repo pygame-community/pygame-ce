@@ -220,15 +220,16 @@ _line_project_helper(pgLineBase *line, double *point, int clamp)
                             dot_product * line_vector[1]};
 
     if (clamp) {
-        if (projection[0] * projection[0] + projection[1] * projection[1] >
-            line_vector[0] * line_vector[0] +
-                line_vector[1] * line_vector[1]) {
-            projection[0] = line_vector[0];
-            projection[1] = line_vector[1];
-        }
-        else if (dot_product < 0) {
+        if (dot_product < 0) {
             projection[0] = 0;
             projection[1] = 0;
+        }
+        else if (projection[0] * projection[0] +
+                     projection[1] * projection[1] >
+                 line_vector[0] * line_vector[0] +
+                     line_vector[1] * line_vector[1]) {
+            projection[0] = line_vector[0];
+            projection[1] = line_vector[1];
         }
     }
 
