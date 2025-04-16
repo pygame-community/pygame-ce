@@ -758,9 +758,9 @@
 
 
          .. figure:: code_examples/project_clamp.png
-            :alt: project do_clamp=True image
+            :alt: project clamp argument image
 
-            Example of what the clamp argument changes if it is true it stays on the line segment
+            Example of what the clamp argument changes. If it is `True`, the point is bounded between the line segment ends.
 
          .. versionadded:: 2.5.4
 
