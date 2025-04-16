@@ -754,7 +754,7 @@
          .. figure:: code_examples/project.png
             :alt: project method image
 
-            Example of how it projects the point on to the line purplish point is the point we want to project and the blue point is what you would get as a result
+            Example of how it projects the point onto the line. The red point is the point we want to project and the blue point is what you would get as a result.
 
 
          .. figure:: code_examples/project_clamp.png
