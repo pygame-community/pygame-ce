@@ -747,7 +747,8 @@
          | :sg:`project(point: tuple[float, float], clamp=False) -> tuple[float, float]`
 
          This method takes in a point and one boolean keyword argument clamp. It outputs an orthogonally projected point onto the line.
-         If clamp is True it makes sure that the outputted point will be on the line segment.
+         If clamp is `True` it makes sure that the outputted point will be on the line segment (which might not be orthogonal), and if it is `False` (the default) then any point on the infinitely extended line may be outputted.
+         This method can be used to find the closest point on a line to the given point. The output is the unique point on the line or line segment that is the smallest distance away from the given point.
 
 
          .. figure:: code_examples/project.png
