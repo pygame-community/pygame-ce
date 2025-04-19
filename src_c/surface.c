@@ -4327,17 +4327,14 @@ MODINIT_DEFINE(surface)
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&pgSurface_Type);
-    if (PyModule_AddObject(module, "SurfaceType",
-                           (PyObject *)&pgSurface_Type)) {
-        Py_DECREF(&pgSurface_Type);
+    if (PyModule_AddObjectRef(module, "SurfaceType",
+                              (PyObject *)&pgSurface_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&pgSurface_Type);
-    if (PyModule_AddObject(module, "Surface", (PyObject *)&pgSurface_Type)) {
-        Py_DECREF(&pgSurface_Type);
+    if (PyModule_AddObjectRef(module, "Surface",
+                              (PyObject *)&pgSurface_Type)) {
         Py_DECREF(module);
         return NULL;
     }
@@ -4348,14 +4345,11 @@ MODINIT_DEFINE(surface)
     c_api[2] = pgSurface_Blit;
     c_api[3] = pgSurface_SetSurface;
     apiobj = encapsulate_api(c_api, "surface");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_XINCREF(pgSurface_Type.tp_dict);
-    if (PyModule_AddObject(module, "_dict", pgSurface_Type.tp_dict)) {
-        Py_XDECREF(pgSurface_Type.tp_dict);
+    if (PyModule_AddObjectRef(module, "_dict", pgSurface_Type.tp_dict)) {
         Py_DECREF(module);
         return NULL;
     }

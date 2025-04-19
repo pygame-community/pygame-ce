@@ -2578,15 +2578,12 @@ MODINIT_DEFINE(event)
         return NULL;
     }
 
-    Py_INCREF(&pgEvent_Type);
-    if (PyModule_AddObject(module, "EventType", (PyObject *)&pgEvent_Type)) {
-        Py_DECREF(&pgEvent_Type);
+    if (PyModule_AddObjectRef(module, "EventType",
+                              (PyObject *)&pgEvent_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&pgEvent_Type);
-    if (PyModule_AddObject(module, "Event", (PyObject *)&pgEvent_Type)) {
-        Py_DECREF(&pgEvent_Type);
+    if (PyModule_AddObjectRef(module, "Event", (PyObject *)&pgEvent_Type)) {
         Py_DECREF(module);
         return NULL;
     }
@@ -2605,8 +2602,7 @@ MODINIT_DEFINE(event)
     c_api[9] = pgEvent_GetMouseButtonUpInfo;
 
     apiobj = encapsulate_api(c_api, "event");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }

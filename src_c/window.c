@@ -1501,17 +1501,14 @@ MODINIT_DEFINE(window)
         return NULL;
     }
 
-    Py_INCREF(&pgWindow_Type);
-    if (PyModule_AddObject(module, "Window", (PyObject *)&pgWindow_Type)) {
-        Py_DECREF(&pgWindow_Type);
+    if (PyModule_AddObjectRef(module, "Window", (PyObject *)&pgWindow_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
     c_api[0] = &pgWindow_Type;
     apiobj = encapsulate_api(c_api, "window");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }

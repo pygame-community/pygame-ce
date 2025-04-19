@@ -40,16 +40,12 @@ MODINIT_DEFINE(geometry)
         return NULL;
     }
 
-    Py_INCREF(&pgCircle_Type);
-    if (PyModule_AddObject(module, "Circle", (PyObject *)&pgCircle_Type)) {
-        Py_DECREF(&pgCircle_Type);
+    if (PyModule_AddObjectRef(module, "Circle", (PyObject *)&pgCircle_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&pgLine_Type);
-    if (PyModule_AddObject(module, "Line", (PyObject *)&pgLine_Type)) {
-        Py_DECREF(&pgLine_Type);
+    if (PyModule_AddObjectRef(module, "Line", (PyObject *)&pgLine_Type)) {
         Py_DECREF(module);
         return NULL;
     }
@@ -57,8 +53,7 @@ MODINIT_DEFINE(geometry)
     c_api[0] = &pgCircle_Type;
     c_api[1] = &pgLine_Type;
     apiobj = encapsulate_api(c_api, "geometry");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }

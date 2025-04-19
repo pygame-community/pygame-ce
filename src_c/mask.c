@@ -2649,16 +2649,12 @@ MODINIT_DEFINE(mask)
     if (module == NULL) {
         return NULL;
     }
-    Py_INCREF(&pgMask_Type);
-    if (PyModule_AddObject(module, "MaskType", (PyObject *)&pgMask_Type)) {
-        Py_DECREF(&pgMask_Type);
+    if (PyModule_AddObjectRef(module, "MaskType", (PyObject *)&pgMask_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&pgMask_Type);
-    if (PyModule_AddObject(module, "Mask", (PyObject *)&pgMask_Type)) {
-        Py_DECREF(&pgMask_Type);
+    if (PyModule_AddObjectRef(module, "Mask", (PyObject *)&pgMask_Type)) {
         Py_DECREF(module);
         return NULL;
     }
@@ -2666,8 +2662,7 @@ MODINIT_DEFINE(mask)
     /* export the c api */
     c_api[0] = &pgMask_Type;
     apiobj = encapsulate_api(c_api, "mask");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }

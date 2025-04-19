@@ -68,8 +68,7 @@ Module_AddSsize_tConstant(PyObject *module, const char *name, Py_ssize_t value)
     if (!py_value) {
         return -1;
     }
-    if (PyModule_AddObject(module, name, py_value)) {
-        Py_DECREF(py_value);
+    if (PyModule_AddObjectRef(module, name, py_value)) {
         return -1;
     }
     return 0;
@@ -869,16 +868,13 @@ MODINIT_DEFINE(newbuffer)
         return NULL;
     }
 
-    Py_INCREF(&BufferMixin_Type);
-    if (PyModule_AddObject(module, "BufferMixin",
-                           (PyObject *)&BufferMixin_Type)) {
-        Py_DECREF(&BufferMixin_Type);
+    if (PyModule_AddObjectRef(module, "BufferMixin",
+                              (PyObject *)&BufferMixin_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&Py_buffer_Type);
-    if (PyModule_AddObject(module, "Py_buffer", (PyObject *)&Py_buffer_Type)) {
-        Py_DECREF(&Py_buffer_Type);
+    if (PyModule_AddObjectRef(module, "Py_buffer",
+                              (PyObject *)&Py_buffer_Type)) {
         Py_DECREF(module);
         return NULL;
     }

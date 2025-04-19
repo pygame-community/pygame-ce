@@ -2383,9 +2383,8 @@ MODINIT_DEFINE(_freetype)
     FREETYPE_MOD_STATE(module)->cache_size = 0;
     FREETYPE_MOD_STATE(module)->resolution = PGFT_DEFAULT_RESOLUTION;
 
-    Py_INCREF(&pgFont_Type);
-    if (PyModule_AddObject(module, FONT_TYPE_NAME, (PyObject *)&pgFont_Type)) {
-        Py_DECREF(&pgFont_Type);
+    if (PyModule_AddObjectRef(module, FONT_TYPE_NAME,
+                              (PyObject *)&pgFont_Type)) {
         Py_DECREF(module);
         return NULL;
     }
@@ -2416,8 +2415,7 @@ MODINIT_DEFINE(_freetype)
     c_api[1] = &pgFont_New;
 
     apiobj = encapsulate_api(c_api, "freetype");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }

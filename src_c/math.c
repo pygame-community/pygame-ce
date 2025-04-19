@@ -4573,31 +4573,15 @@ MODINIT_DEFINE(math)
     }
 
     /* add extension types to module */
-    Py_INCREF(&pgVector2_Type);
-    Py_INCREF(&pgVector3_Type);
-    Py_INCREF(&pgVectorIter_Type);
-    Py_INCREF(&pgVectorElementwiseProxy_Type);
-    if ((PyModule_AddObject(module, "Vector2", (PyObject *)&pgVector2_Type) !=
+    if ((PyModule_AddObjectRef(module, "Vector2",
+                               (PyObject *)&pgVector2_Type) < 0) ||
+        (PyModule_AddObjectRef(module, "Vector3",
+                               (PyObject *)&pgVector3_Type) < 0) ||
+        (PyModule_AddObjectRef(module, "VectorElementwiseProxy",
+                               (PyObject *)&pgVectorElementwiseProxy_Type) <
          0) ||
-        (PyModule_AddObject(module, "Vector3", (PyObject *)&pgVector3_Type) !=
-         0) ||
-        (PyModule_AddObject(module, "VectorElementwiseProxy",
-                            (PyObject *)&pgVectorElementwiseProxy_Type) !=
-         0) ||
-        (PyModule_AddObject(module, "VectorIterator",
-                            (PyObject *)&pgVectorIter_Type) != 0)) {
-        if (!PyObject_HasAttrString(module, "Vector2")) {
-            Py_DECREF(&pgVector2_Type);
-        }
-        if (!PyObject_HasAttrString(module, "Vector3")) {
-            Py_DECREF(&pgVector3_Type);
-        }
-        if (!PyObject_HasAttrString(module, "VectorElementwiseProxy")) {
-            Py_DECREF(&pgVectorElementwiseProxy_Type);
-        }
-        if (!PyObject_HasAttrString(module, "VectorIterator")) {
-            Py_DECREF(&pgVectorIter_Type);
-        }
+        (PyModule_AddObjectRef(module, "VectorIterator",
+                               (PyObject *)&pgVectorIter_Type) < 0)) {
         Py_DECREF(module);
         return NULL;
     }
@@ -4610,8 +4594,7 @@ MODINIT_DEFINE(math)
     c_api[3] = pgVectorCompatible_Check;
     */
     apiobj = encapsulate_api(c_api, "math");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }

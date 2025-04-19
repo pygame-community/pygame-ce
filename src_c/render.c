@@ -91,23 +91,19 @@ MODINIT_DEFINE(_render)
         return NULL;
     }
 
-    Py_INCREF(&pgRenderer_Type);
-    if (PyModule_AddObject(module, "Renderer", (PyObject *)&pgRenderer_Type)) {
-        Py_DECREF(&pgRenderer_Type);
+    if (PyModule_AddObjectRef(module, "Renderer",
+                              (PyObject *)&pgRenderer_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&pgTexture_Type);
-    if (PyModule_AddObject(module, "Texture", (PyObject *)&pgTexture_Type)) {
-        Py_DECREF(&pgTexture_Type);
+    if (PyModule_AddObjectRef(module, "Texture",
+                              (PyObject *)&pgTexture_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&pgImage_Type);
-    if (PyModule_AddObject(module, "Image", (PyObject *)&pgImage_Type)) {
-        Py_DECREF(&pgImage_Type);
+    if (PyModule_AddObjectRef(module, "Image", (PyObject *)&pgImage_Type)) {
         Py_DECREF(module);
         return NULL;
     }
@@ -116,8 +112,7 @@ MODINIT_DEFINE(_render)
     c_api[1] = &pgTexture_Type;
     c_api[2] = &pgImage_Type;
     apiobj = encapsulate_api(c_api, "_render");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }
