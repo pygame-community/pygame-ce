@@ -1,0 +1,31 @@
+name: Update External Files
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  update-external-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download external file
+        run: |
+          curl -sS -o src_c/include/pythoncapi_compat.h https://raw.githubusercontent.com/python/pythoncapi-compat/refs/heads/main/pythoncapi_compat.h
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update pythoncapi_compat.h"
+          title: "Update pythoncapi_compat.h"
+          body: "Automated update of pythoncapi_compat.h from source repository"
+          branch: "update/pythoncapi-compat"
+          base: main
+          delete-branch: true
+          maintainer-can-modify: true
