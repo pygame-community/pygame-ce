@@ -1444,6 +1444,7 @@ MODINIT_DEFINE(font)
     c_api[0] = &PyFont_Type;
     c_api[1] = PyFont_New;
     c_api[2] = &font_initialized;
+    apiobj = encapsulate_api(c_api, "font");
     if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
