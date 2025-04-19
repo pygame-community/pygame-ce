@@ -604,10 +604,8 @@ MODINIT_DEFINE(bufferproxy)
         return NULL;
     }
 
-    Py_INCREF(&pgBufferProxy_Type);
-    if (PyModule_AddObject(module, "BufferProxy",
-                           (PyObject *)&pgBufferProxy_Type)) {
-        Py_DECREF(&pgBufferProxy_Type);
+    if (PyModule_AddObjectRef(module, "BufferProxy",
+                              (PyObject *)&pgBufferProxy_Type)) {
         Py_DECREF(module);
         return NULL;
     }
@@ -619,8 +617,7 @@ MODINIT_DEFINE(bufferproxy)
     c_api[2] = pgBufferProxy_GetParent;
     c_api[3] = pgBufferProxy_Trip;
     apiobj = encapsulate_api(c_api, "bufferproxy");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }

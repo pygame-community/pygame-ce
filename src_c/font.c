@@ -1422,16 +1422,12 @@ MODINIT_DEFINE(font)
         return NULL;
     }
 
-    Py_INCREF(&PyFont_Type);
-    if (PyModule_AddObject(module, "FontType", (PyObject *)&PyFont_Type)) {
-        Py_DECREF(&PyFont_Type);
+    if (PyModule_AddObjectRef(module, "FontType", (PyObject *)&PyFont_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&PyFont_Type);
-    if (PyModule_AddObject(module, "Font", (PyObject *)&PyFont_Type)) {
-        Py_DECREF(&PyFont_Type);
+    if (PyModule_AddObjectRef(module, "Font", (PyObject *)&PyFont_Type)) {
         Py_DECREF(module);
         return NULL;
     }
@@ -1448,9 +1444,7 @@ MODINIT_DEFINE(font)
     c_api[0] = &PyFont_Type;
     c_api[1] = PyFont_New;
     c_api[2] = &font_initialized;
-    apiobj = encapsulate_api(c_api, "font");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }

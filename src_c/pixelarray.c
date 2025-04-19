@@ -1936,10 +1936,8 @@ MODINIT_DEFINE(pixelarray)
     if (!module) {
         return NULL;
     }
-    Py_INCREF(&pgPixelArray_Type);
-    if (PyModule_AddObject(module, "PixelArray",
-                           (PyObject *)&pgPixelArray_Type)) {
-        Py_DECREF((PyObject *)&pgPixelArray_Type);
+    if (PyModule_AddObjectRef(module, "PixelArray",
+                              (PyObject *)&pgPixelArray_Type)) {
         Py_DECREF(module);
         return NULL;
     }
@@ -1948,8 +1946,7 @@ MODINIT_DEFINE(pixelarray)
     c_api[0] = &pgPixelArray_Type;
     c_api[1] = pgPixelArray_New;
     apiobj = encapsulate_api(c_api, "pixelarray");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_DECREF(module);
         return NULL;
     }

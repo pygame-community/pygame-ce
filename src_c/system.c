@@ -302,8 +302,7 @@ MODINIT_DEFINE(system)
         return NULL;
     }
 
-    if (PyModule_AddObject(module, "PowerState", PowerState_class)) {
-        Py_DECREF(PowerState_class);
+    if (PyModule_AddObjectRef(module, "PowerState", PowerState_class)) {
         Py_DECREF(module);
         return NULL;
     }

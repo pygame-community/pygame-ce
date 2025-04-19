@@ -2485,15 +2485,10 @@ MODINIT_DEFINE(color)
         goto error;
     }
 
-    Py_INCREF(&pgColor_Type);
-    if (PyModule_AddObject(module, "Color", (PyObject *)&pgColor_Type)) {
-        Py_DECREF(&pgColor_Type);
+    if (PyModule_AddObjectRef(module, "Color", (PyObject *)&pgColor_Type)) {
         goto error;
     }
-    Py_INCREF(_COLORDICT);
-    if (PyModule_AddObject(module, "THECOLORS", _COLORDICT)) {
-        /* Yes, _COLORDICT is decref'd twice here and we want that */
-        Py_DECREF(_COLORDICT);
+    if (PyModule_AddObjectRef(module, "THECOLORS", _COLORDICT)) {
         goto error;
     }
 
@@ -2504,8 +2499,7 @@ MODINIT_DEFINE(color)
     c_api[4] = pg_MappedColorFromObj;
 
     apiobj = encapsulate_api(c_api, "color");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         goto error;
     }
     return module;
