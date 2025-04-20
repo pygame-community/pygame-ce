@@ -6,6 +6,11 @@ from collections.abc import Collection, Sequence
 import pygame.math
 from pygame.math import Vector2, Vector3
 
+try:
+    import numpy
+except ModuleNotFoundError:
+    numpy = None
+
 IS_PYPY = "PyPy" == platform.python_implementation()
 
 
@@ -252,6 +257,48 @@ class Vector2TypeTest(unittest.TestCase):
 
     def testConstructionVector2(self):
         v = Vector2(Vector2(1.2, 3.4))
+        self.assertEqual(v.x, 1.2)
+        self.assertEqual(v.y, 3.4)
+
+    def testConstructionNumericSequence(self):
+        class NumericSequence:
+            # PyFloat_AsDouble will use this to convert to a float
+            # so this is testing the implementation a bit
+            def __float__(self):
+                raise TypeError("Cannot convert to float")
+
+            def __getitem__(self, index):
+                return [1, 0][index]
+
+            def __len__(self):
+                return 2
+
+        v = Vector2(NumericSequence())
+        self.assertEqual(v.x, 1.0)
+        self.assertEqual(v.y, 0.0)
+
+    def testConstructionNumericNonFloat(self):
+        class NumericNonFloat:
+            # PyFloat_AsDouble will use this to convert to a float
+            # so this is testing the implementation a bit
+            def __float__(self):
+                raise TypeError("Cannot convert to float")
+
+        with self.assertRaises(TypeError):
+            Vector2(NumericNonFloat())
+
+        with self.assertRaises(TypeError):
+            Vector2(NumericNonFloat(), NumericNonFloat())
+
+        with self.assertRaises(TypeError):
+            Vector2(1.0, NumericNonFloat())
+
+    @unittest.skipIf(numpy is None, "numpy not available")
+    def testConstructionNumpyArray(self):
+        assert numpy is not None
+
+        arr = numpy.array([1.2, 3.4])
+        v = Vector2(arr)
         self.assertEqual(v.x, 1.2)
         self.assertEqual(v.y, 3.4)
 
@@ -1430,6 +1477,48 @@ class Vector3TypeTest(unittest.TestCase):
     def testConstructionMissing(self):
         self.assertRaises(ValueError, Vector3, 1, 2)
         self.assertRaises(ValueError, Vector3, x=1, y=2)
+
+    def testConstructionNumericSequence(self):
+        class NumericSequence:
+            # PyFloat_AsDouble will use this to convert to a float
+            # so this is testing the implementation a bit
+            def __float__(self):
+                raise TypeError("Cannot convert to float")
+
+            def __getitem__(self, index):
+                return [1, 0][index]
+
+            def __len__(self):
+                return 2
+
+        v = Vector2(NumericSequence())
+        self.assertEqual(v.x, 1.0)
+        self.assertEqual(v.y, 0.0)
+
+    def testConstructionNumericNonFloat(self):
+        class NumericNonFloat:
+            # PyFloat_AsDouble will use this to convert to a float
+            # so this is testing the implementation a bit
+            def __float__(self):
+                raise TypeError("Cannot convert to float")
+
+        with self.assertRaises(TypeError):
+            Vector2(NumericNonFloat())
+
+        with self.assertRaises(TypeError):
+            Vector2(NumericNonFloat(), NumericNonFloat())
+
+        with self.assertRaises(TypeError):
+            Vector2(1.0, NumericNonFloat())
+
+    @unittest.skipIf(numpy is None, "numpy not available")
+    def testConstructionNumpyArray(self):
+        assert numpy is not None
+
+        arr = numpy.array([1.2, 3.4])
+        v = Vector2(arr)
+        self.assertEqual(v.x, 1.2)
+        self.assertEqual(v.y, 3.4)
 
     def testAttributeAccess(self):
         tmp = self.v1.x
