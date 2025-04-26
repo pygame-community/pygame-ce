@@ -2,7 +2,6 @@
 test_files = files(
     '__init__.py',
     '__main__.py',
-    'base_test.py',
     'blit_test.py',
     'bufferproxy_test.py',
     'camera_test.py',

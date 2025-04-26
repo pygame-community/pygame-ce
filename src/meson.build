@@ -1,13 +1,6 @@
 # first the "required" modules
 
-base = py.extension_module(
-    'base',
-    'base.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('base')
 
 color = py.extension_module(
     'color',

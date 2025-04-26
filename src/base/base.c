@@ -25,7 +25,7 @@
 #include "pygame.h"
 
 #include <signal.h>
-#include "doc/pygame_doc.h"
+#include "pygame_doc.h"
 #include "pgarrinter.h"
 #include "pgcompat.h"
 
