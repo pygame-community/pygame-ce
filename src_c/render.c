@@ -32,7 +32,7 @@ static PyTypeObject pgImage_Type;
 
 #define PARSE_POINT(obj, x, y, name)                                 \
     if (!pg_TwoFloatsFromObj(obj, &x, &y)) {                         \
-        return RAISE(PyExc_TypeError, "invalid "##name " argument"); \
+        return RAISE(PyExc_TypeError, "invalid " #name " argument"); \
     }
 
 static void
@@ -79,7 +79,9 @@ renderer_draw_point(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &point)) {
         return NULL;
     }
-    PARSE_POINT(point, pos.x, pos.y, "\b")
+    if (!pg_TwoFloatsFromObj(point, &pos.x, &pos.y)) {
+        return RAISE(PyExc_TypeError, "invalid argument");
+    }
     RENDERER_ERROR_CHECK(SDL_RenderDrawPointF(self->renderer, pos.x, pos.y))
     Py_RETURN_NONE;
 }
