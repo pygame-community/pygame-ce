@@ -1,7 +1,6 @@
-from typing import Optional, Union, Literal
+from typing import Literal, Optional, Union
 
 from pygame.surface import Surface
-
 from pygame.typing import ColorLike, Point, RectLike, SequenceLike
 
 def flip(surface: Surface, flip_x: bool, flip_y: bool) -> Surface: ...
@@ -62,13 +61,13 @@ def box_blur(
     surface: Surface,
     radius: int,
     repeat_edge_pixels: bool = True,
-    dest_surface: Optional[Surface] = None
+    dest_surface: Optional[Surface] = None,
 ) -> Surface: ...
 def gaussian_blur(
     surface: Surface,
     radius: int,
     repeat_edge_pixels: bool = True,
-    dest_surface: Optional[Surface] = None
+    dest_surface: Optional[Surface] = None,
 ) -> Surface: ...
 def hsl(
     surface: Surface,

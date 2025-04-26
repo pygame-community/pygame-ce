@@ -73,7 +73,6 @@ def set_timer(event: Union[int, Event], millis: int, loops: int = 0) -> None:
     .. versionchangedold:: 2.0.1 event argument supports ``pygame.event.Event`` object
     .. versionaddedold:: 2.0.1 added loops argument to replace once argument
     """
-
 @final
 class Clock:
     """Create an object to help track time.

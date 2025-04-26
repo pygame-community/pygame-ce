@@ -33,7 +33,7 @@
 #define FX16_WIDE_FACTOR (FX16_ONE / 12)
 
 #define SLANT_FACTOR 0.22
-static FT_Matrix slant_matrix = {FX16_ONE, (FT_Fixed)(SLANT_FACTOR *FX16_ONE),
+static FT_Matrix slant_matrix = {FX16_ONE, (FT_Fixed)(SLANT_FACTOR * FX16_ONE),
                                  0, FX16_ONE};
 
 static FT_Matrix unit_matrix = {FX16_ONE, 0, 0, FX16_ONE};

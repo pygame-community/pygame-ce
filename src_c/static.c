@@ -7,6 +7,7 @@
 #define PYGAMEAPI_JOYSTICK_INTERNAL
 #define PYGAMEAPI_BASE_INTERNAL
 #define PYGAMEAPI_SURFACE_INTERNAL
+#define PYGAMEAPI_BUFFERPROXY_INTERNAL
 #define PYGAMEAPI_WINDOW_INTERNAL
 #define PYGAMEAPI_RENDER_INTERNAL
 
@@ -355,7 +356,7 @@ PyInit_pygame_static()
 
 #include "color.c"
 
-#undef pgBufproxy_New
+#undef pgBufferProxy_New
 
 #include "bufferproxy.c"
 
