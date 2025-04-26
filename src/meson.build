@@ -218,14 +218,7 @@ mask = py.extension_module(
     subdir: pg,
 )
 
-bufferproxy = py.extension_module(
-    'bufferproxy',
-    'bufferproxy.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('bufferproxy')
 
 pixelarray = py.extension_module(
     'pixelarray',

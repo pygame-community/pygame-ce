@@ -34,7 +34,7 @@
 #include "pygame.h"
 
 #include "pgcompat.h"
-#include "doc/bufferproxy_doc.h"
+#include "bufferproxy_doc.h"
 
 #ifdef NDEBUG
 #define PyBUF_PG_VIEW PyBUF_RECORDS
