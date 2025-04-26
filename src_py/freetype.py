@@ -1,25 +1,25 @@
 """Enhanced Pygame module for loading and rendering computer fonts"""
 
 from pygame._freetype import (
-    Font,
+    STYLE_DEFAULT,
     STYLE_NORMAL,
     STYLE_OBLIQUE,
     STYLE_STRONG,
     STYLE_UNDERLINE,
     STYLE_WIDE,
-    STYLE_DEFAULT,
-    init,
-    quit,
-    get_init,
-    was_init,
+    Font,
     get_cache_size,
     get_default_font,
     get_default_resolution,
     get_error,
+    get_init,
     get_version,
+    init,
+    quit,
     set_default_resolution,
+    was_init,
 )
-from pygame.sysfont import match_font, get_fonts, SysFont as _SysFont
+from pygame.sysfont import SysFont as _SysFont, get_fonts, match_font
 
 __all__ = [
     "Font",
