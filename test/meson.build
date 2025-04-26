@@ -3,7 +3,6 @@ test_files = files(
     '__init__.py',
     '__main__.py',
     'blit_test.py',
-    'camera_test.py',
     'color_test.py',
     'constants_test.py',
     'controller_test.py',
