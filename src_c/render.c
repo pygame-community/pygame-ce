@@ -112,7 +112,8 @@ MODINIT_DEFINE(_render)
     c_api[1] = &pgTexture_Type;
     c_api[2] = &pgImage_Type;
     apiobj = encapsulate_api(c_api, "_render");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
         Py_DECREF(module);
         return NULL;
     }

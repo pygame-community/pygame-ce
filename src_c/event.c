@@ -2602,7 +2602,8 @@ MODINIT_DEFINE(event)
     c_api[9] = pgEvent_GetMouseButtonUpInfo;
 
     apiobj = encapsulate_api(c_api, "event");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
         Py_DECREF(module);
         return NULL;
     }

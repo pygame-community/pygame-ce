@@ -2396,7 +2396,8 @@ MODINIT_DEFINE(base)
     /* create the exceptions */
     pgExc_SDLError =
         PyErr_NewException("pygame.error", PyExc_RuntimeError, NULL);
-    if (PyModule_AddObjectRef(module, "error", pgExc_SDLError)) {
+    if (PyModule_AddObject(module, "error", pgExc_SDLError)) {
+        Py_XDECREF(pgExc_SDLError);
         goto error;
     }
 
@@ -2446,7 +2447,8 @@ MODINIT_DEFINE(base)
 #endif
 
     apiobj = encapsulate_api(c_api, "base");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
         goto error;
     }
 
@@ -2460,7 +2462,8 @@ MODINIT_DEFINE(base)
     if (!version) {
         goto error;
     }
-    if (PyModule_AddObjectRef(module, "__version__", version)) {
+    if (PyModule_AddObject(module, "__version__", version)) {
+        Py_DECREF(version);
         goto error;
     }
 

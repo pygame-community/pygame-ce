@@ -2127,14 +2127,16 @@ MODINIT_DEFINE(mixer)
     c_api[3] = &pgChannel_Type;
     c_api[4] = pgChannel_New;
     apiobj = encapsulate_api(c_api, "mixer");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
         Py_DECREF(module);
         return NULL;
     }
 
     music = import_music();
     if (music) {
-        if (PyModule_AddObjectRef(module, "music", music)) {
+        if (PyModule_AddObject(module, "music", music)) {
+            Py_DECREF(music);
             Py_DECREF(module);
             return NULL;
         }

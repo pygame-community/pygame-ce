@@ -687,7 +687,8 @@ MODINIT_DEFINE(joystick)
     c_api[1] = pgJoystick_New;
     c_api[2] = pgJoystick_GetDeviceIndexByInstanceID;
     apiobj = encapsulate_api(c_api, "joystick");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
         Py_DECREF(module);
         return NULL;
     }

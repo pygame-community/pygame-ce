@@ -831,7 +831,8 @@ MODINIT_DEFINE(rect)
     c_api[8] = pgFRect_FromObject;
     c_api[9] = pgFRect_Normalize;
     apiobj = encapsulate_api(c_api, "rect");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
         Py_DECREF(module);
         return NULL;
     }

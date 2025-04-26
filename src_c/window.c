@@ -1508,7 +1508,8 @@ MODINIT_DEFINE(window)
 
     c_api[0] = &pgWindow_Type;
     apiobj = encapsulate_api(c_api, "window");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
         Py_DECREF(module);
         return NULL;
     }

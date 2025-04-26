@@ -874,7 +874,8 @@ MODINIT_DEFINE(rwobject)
     c_api[3] = pg_EncodeString;
     c_api[4] = pgRWops_FromFileObject;
     apiobj = encapsulate_api(c_api, "rwobject");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
         Py_DECREF(module);
         return NULL;
     }

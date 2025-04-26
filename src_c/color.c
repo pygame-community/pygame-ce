@@ -2499,7 +2499,8 @@ MODINIT_DEFINE(color)
     c_api[4] = pg_MappedColorFromObj;
 
     apiobj = encapsulate_api(c_api, "color");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
         goto error;
     }
     return module;

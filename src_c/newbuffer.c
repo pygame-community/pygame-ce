@@ -68,7 +68,8 @@ Module_AddSsize_tConstant(PyObject *module, const char *name, Py_ssize_t value)
     if (!py_value) {
         return -1;
     }
-    if (PyModule_AddObjectRef(module, name, py_value)) {
+    if (PyModule_AddObject(module, name, py_value)) {
+        Py_DECREF(py_value);
         return -1;
     }
     return 0;

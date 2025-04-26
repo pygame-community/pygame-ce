@@ -1946,7 +1946,8 @@ MODINIT_DEFINE(pixelarray)
     c_api[0] = &pgPixelArray_Type;
     c_api[1] = pgPixelArray_New;
     apiobj = encapsulate_api(c_api, "pixelarray");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
         Py_DECREF(module);
         return NULL;
     }
