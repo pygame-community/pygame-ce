@@ -30,9 +30,9 @@ static PyTypeObject pgImage_Type;
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1); \
     }
 
-#define PARSE_POINT(obj, x, y, name)                               \
-    if (!pg_TwoFloatsFromObj(obj, &x, &y)) {                       \
-        return RAISE(PyExc_TypeError, "invalid" #name "argument"); \
+#define PARSE_POINT(obj, x, y, name)                                 \
+    if (!pg_TwoFloatsFromObj(obj, &x, &y)) {                         \
+        return RAISE(PyExc_TypeError, "invalid "##name " argument"); \
     }
 
 static void
@@ -79,7 +79,7 @@ renderer_draw_point(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &point)) {
         return NULL;
     }
-    PARSE_POINT(point, pos.x, pos.y, "")
+    PARSE_POINT(point, pos.x, pos.y, "\b")
     RENDERER_ERROR_CHECK(SDL_RenderDrawPointF(self->renderer, pos.x, pos.y))
     Py_RETURN_NONE;
 }
@@ -94,8 +94,8 @@ renderer_draw_line(pgRendererObject *self, PyObject *args, PyObject *kwargs)
                                      &end)) {
         return NULL;
     }
-    PARSE_POINT(start, start_pos.x, start_pos.y, "p1 ")
-    PARSE_POINT(end, end_pos.x, end_pos.y, "p2 ")
+    PARSE_POINT(start, start_pos.x, start_pos.y, "p1")
+    PARSE_POINT(end, end_pos.x, end_pos.y, "p2")
     RENDERER_ERROR_CHECK(SDL_RenderDrawLineF(
         self->renderer, start_pos.x, start_pos.y, end_pos.x, end_pos.y))
     Py_RETURN_NONE;
@@ -144,9 +144,9 @@ renderer_draw_triangle(pgRendererObject *self, PyObject *args,
                                      &p3)) {
         return NULL;
     }
-    PARSE_POINT(p1, points[0].x, points[0].y, "p1 ")
-    PARSE_POINT(p2, points[1].x, points[1].y, "p2 ")
-    PARSE_POINT(p3, points[2].x, points[2].y, "p3 ")
+    PARSE_POINT(p1, points[0].x, points[0].y, "p1")
+    PARSE_POINT(p2, points[1].x, points[1].y, "p2")
+    PARSE_POINT(p3, points[2].x, points[2].y, "p3")
     points[3] = points[0];
     RENDERER_ERROR_CHECK(SDL_RenderDrawLinesF(self->renderer, points, 4))
     Py_RETURN_NONE;
@@ -164,9 +164,9 @@ renderer_fill_triangle(pgRendererObject *self, PyObject *args,
                                      &p3)) {
         return NULL;
     }
-    PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, "p1 ")
-    PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, "p2 ")
-    PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, "p3 ")
+    PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, "p1")
+    PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, "p2")
+    PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, "p3")
     RENDERER_ERROR_CHECK(SDL_GetRenderDrawColor(
         self->renderer, &vertices[0].color.r, &vertices[0].color.g,
         &vertices[0].color.b, &vertices[0].color.a))
@@ -191,10 +191,10 @@ renderer_draw_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
                                      &p3, &p4)) {
         return NULL;
     }
-    PARSE_POINT(p1, points[0].x, points[0].y, "p1 ")
-    PARSE_POINT(p2, points[1].x, points[1].y, "p2 ")
-    PARSE_POINT(p3, points[2].x, points[2].y, "p3 ")
-    PARSE_POINT(p4, points[3].x, points[3].y, "p4 ")
+    PARSE_POINT(p1, points[0].x, points[0].y, "p1")
+    PARSE_POINT(p2, points[1].x, points[1].y, "p2")
+    PARSE_POINT(p3, points[2].x, points[2].y, "p3")
+    PARSE_POINT(p4, points[3].x, points[3].y, "p4")
     points[4] = points[0];
     RENDERER_ERROR_CHECK(SDL_RenderDrawLinesF(self->renderer, points, 5))
     Py_RETURN_NONE;
@@ -211,10 +211,10 @@ renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
                                      &p3, &p4)) {
         return NULL;
     }
-    PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, "p1 ")
-    PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, "p2 ")
-    PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, "p3 ")
-    PARSE_POINT(p4, vertices[3].position.x, vertices[3].position.y, "p4 ")
+    PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, "p1")
+    PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, "p2")
+    PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, "p3")
+    PARSE_POINT(p4, vertices[3].position.x, vertices[3].position.y, "p4")
     RENDERER_ERROR_CHECK(SDL_GetRenderDrawColor(
         self->renderer, &vertices[0].color.r, &vertices[0].color.g,
         &vertices[0].color.b, &vertices[0].color.a))
@@ -365,8 +365,11 @@ renderer_blit(pgRendererObject *self, PyObject *args, PyObject *kwargs)
         image_renderer_draw((pgImageObject *)sourceobj, areaobj, destobj);
     }
     else {
-        PyObject_CallFunctionObjArgs(PyObject_GetAttrString(sourceobj, "draw"),
-                                     areaobj, destobj, NULL);
+        if (!PyObject_CallFunctionObjArgs(
+                PyObject_GetAttrString(sourceobj, "draw"), areaobj, destobj,
+                NULL)) {
+            return NULL;
+        }
     }
 
     if (Py_IsNone(destobj)) {
