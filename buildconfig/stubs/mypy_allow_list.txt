@@ -13,6 +13,9 @@ pygame\._sdl2\..*\.__pyx_.*__
 pygame\.examples.*
 pygame\.tests.*
 
+# TODO: Fix error with camera
+pygame\.camera
+
 # don't look for stubs for pyinstaller hook
 pygame\.__pyinstaller.*
 pygame\.__briefcase.*
