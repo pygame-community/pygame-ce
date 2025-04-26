@@ -1,6 +1,5 @@
 import os
 import unittest
-
 from importlib.metadata import version
 
 import pygame

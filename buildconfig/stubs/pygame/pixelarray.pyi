@@ -1,8 +1,8 @@
 import sys
 from typing import Any, Union, overload
 
-from pygame.surface import Surface
 from pygame.color import Color
+from pygame.surface import Surface
 from pygame.typing import SequenceLike
 
 # 'ellipsis' existed in typeshed pre 3.10, now we use EllipsisType which is
