@@ -178,14 +178,7 @@ newbuffer = py.extension_module(
 )
 
 # new/experimental/uncommon stuff, but built by default
-system = py.extension_module(
-    'system',
-    'system.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('system')
 
 subdir('geometry')
 

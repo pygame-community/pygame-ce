@@ -2,7 +2,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/system_doc.h"
+#include "system_doc.h"
 
 static PyObject *
 pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)

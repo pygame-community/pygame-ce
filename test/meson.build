@@ -36,7 +36,6 @@ test_files = files(
     'surfarray_test.py',
     'surflock_test.py',
     'sysfont_test.py',
-    'system_test.py',
     'time_test.py',
     'touch_test.py',
     'transform_test.py',
