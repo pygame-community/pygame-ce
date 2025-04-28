@@ -29,7 +29,7 @@
 #include "pgcompat.h"
 #include "pgopengl.h"
 
-#include "doc/display_doc.h"
+#include "display_doc.h"
 
 #include <SDL_syswm.h>
 

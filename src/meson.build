@@ -15,14 +15,7 @@ constants = py.extension_module(
 
 # TODO: support SDL3
 if sdl_api != 3
-display = py.extension_module(
-    'display',
-    'display.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('display')
 endif
 
 event = py.extension_module(

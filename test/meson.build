@@ -7,7 +7,6 @@ test_files = files(
     'controller_test.py',
     'cursors_test.py',
     'debug_test.py',
-    'display_test.py',
     'docs_test.py',
     'event_test.py',
     'font_test.py',
