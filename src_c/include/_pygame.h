@@ -360,12 +360,7 @@ typedef struct {
 #define pgSurface_UnlockBy \
     (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surface, 9))
 
-#define import_pygame_surface()        \
-    do {                               \
-        IMPORT_PYGAME_MODULE(surface); \
-        if (PyErr_Occurred() != NULL)  \
-            break;                     \
-    } while (0)
+#define import_pygame_surface() IMPORT_PYGAME_MODULE(surface)
 
 #define pgSurface_New(surface) pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) pgSurface_New2((surface), 0)
