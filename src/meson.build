@@ -208,14 +208,7 @@ system = py.extension_module(
     subdir: pg,
 )
 
-geometry = py.extension_module(
-    'geometry',
-    'geometry.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('geometry')
 
 window = py.extension_module(
     'window',

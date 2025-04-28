@@ -1,4 +1,4 @@
-#include "doc/geometry_doc.h"
+#include "geometry_doc.h"
 #include "geometry_common.h"
 
 static PyObject *

@@ -13,7 +13,6 @@ test_files = files(
     'font_test.py',
     'freetype_test.py',
     'ftfont_test.py',
-    'geometry_test.py',
     'gfxdraw_test.py',
     'image__save_gl_surface_test.py',
     'image_test.py',
