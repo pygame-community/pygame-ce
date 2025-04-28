@@ -97,8 +97,6 @@ PyInit_rect(void);
 PyMODINIT_FUNC
 PyInit_geometry(void);
 PyMODINIT_FUNC
-PyInit_surflock(void);
-PyMODINIT_FUNC
 PyInit_rwobject(void);
 PyMODINIT_FUNC
 PyInit_bufferproxy(void);
@@ -289,7 +287,6 @@ PyInit_pygame_static()
 
     load_submodule("pygame", PyInit_base(), "base");
     load_submodule("pygame", PyInit_constants(), "constants");
-    load_submodule("pygame", PyInit_surflock(), "surflock");
     load_submodule("pygame", PyInit_rwobject(), "rwobject");
     load_submodule("pygame", PyInit_pg_math(), "math");
     load_submodule("pygame", PyInit_display(), "display");
@@ -339,15 +336,6 @@ PyInit_pygame_static()
 #include "rect.c"
 #include "pgcompat_rect.c"
 
-#undef pgSurface_Lock
-#undef pgSurface_Unlock
-#undef pgSurface_LockBy
-#undef pgSurface_UnlockBy
-#undef pgSurface_Prep
-#undef pgSurface_Unprep
-
-#include "surflock.c"
-
 #undef pgColor_New
 #undef pgColor_NewLength
 #undef pg_RGBAFromObjEx
@@ -364,6 +352,12 @@ PyInit_pygame_static()
 #undef pgSurface_New
 #undef pgSurface_Type
 #undef pgSurface_SetSurface
+#undef pgSurface_Lock
+#undef pgSurface_Unlock
+#undef pgSurface_LockBy
+#undef pgSurface_UnlockBy
+#undef pgSurface_Prep
+#undef pgSurface_Unprep
 
 #include "surface.c"
 #include "simd_blitters_avx2.c"
