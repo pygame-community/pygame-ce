@@ -22,7 +22,6 @@ test_files = files(
     'mixer_test.py',
     'pixelarray_test.py',
     'pixelcopy_test.py',
-    'rwobject_test.py',
     'scrap_tags.py',
     'scrap_test.py',
     'sndarray_tags.py',

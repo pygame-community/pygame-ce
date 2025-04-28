@@ -16,14 +16,7 @@ subdir('mouse')
 
 subdir('rect')
 
-rwobject = py.extension_module(
-    'rwobject',
-    'rwobject.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('rwobject')
 
 subdir('surface')
 
