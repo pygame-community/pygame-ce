@@ -433,9 +433,9 @@ Instead, always begin with the original image and scale to the desired size.)
 
    :Examples:
 
-   See the threshold tests for an example: https://github.com/pygame-community/pygame-ce/blob/main/test/transform_test.py
+   See the threshold tests for an example: https://github.com/pygame-community/pygame-ce/blob/main/src/transform/transform_test.py
 
-   .. literalinclude:: ../../../test/transform_test.py
+   .. literalinclude:: ../../../src/transform/transform_test.py
       :pyobject: TransformModuleTest.test_threshold_dest_surf_not_change
 
 

@@ -38,7 +38,6 @@ test_files = files(
     'sysfont_test.py',
     'time_test.py',
     'touch_test.py',
-    'transform_test.py',
     'typing_test.py',
     'version_test.py',
     'video_test.py',
