@@ -24,14 +24,7 @@ subdir('surflock')
 
 subdir('time')
 
-joystick = py.extension_module(
-    'joystick',
-    'joystick.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('joystick')
 
 subdir('draw')
 
