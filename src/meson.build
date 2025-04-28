@@ -117,8 +117,6 @@ image = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 simd_transform_avx2 = static_library(
     'simd_transform_avx2',
     'simd_transform_avx2.c',
@@ -159,7 +157,6 @@ transform = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 mask = py.extension_module(
     'mask',
