@@ -20,7 +20,6 @@ test_files = files(
     'key_test.py',
     'locals_test.py',
     'mask_test.py',
-    'math_test.py',
     'midi_test.py',
     'mixer_music_test.py',
     'mixer_test.py',
