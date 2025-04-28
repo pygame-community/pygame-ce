@@ -20,7 +20,7 @@
 #ifndef _PYGAME_FREETYPE_PIXEL_H_
 #define _PYGAME_FREETYPE_PIXEL_H_
 
-#include "../surface.h"
+#include "../surface/surface.h"
 
 #define GET_RGB_VALS(pixel, fmt, r, g, b, a)                              \
     (r) = ((pixel) & (fmt)->Rmask) >> (fmt)->Rshift;                      \

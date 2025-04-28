@@ -37,7 +37,6 @@ test_files = files(
     'sndarray_tags.py',
     'sndarray_test.py',
     'sprite_test.py',
-    'surface_test.py',
     'surfarray_tags.py',
     'surfarray_test.py',
     'surflock_test.py',
