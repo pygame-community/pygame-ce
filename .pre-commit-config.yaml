@@ -41,7 +41,7 @@ repos:
         exclude: |
             (?x)^(
                 ^src/_sdl2/.*$
-                | ^src/doc/.*$
+                | ^src/.+/.*_doc.h
                 | docs/reST/_static/script.js
                 | docs/reST/_templates/header.h
                 | src/include/sse2neon.h
