@@ -12,14 +12,7 @@ subdir('event')
 
 subdir('key')
 
-mouse = py.extension_module(
-    'mouse',
-    'mouse.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('mouse')
 
 subdir('rect')
 

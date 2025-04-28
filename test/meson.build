@@ -20,7 +20,6 @@ test_files = files(
     'midi_test.py',
     'mixer_music_test.py',
     'mixer_test.py',
-    'mouse_test.py',
     'pixelarray_test.py',
     'pixelcopy_test.py',
     'rwobject_test.py',

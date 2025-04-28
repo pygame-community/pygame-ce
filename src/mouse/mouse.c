@@ -27,7 +27,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/mouse_doc.h"
+#include "mouse_doc.h"
 
 /* mouse module functions */
 static PyObject *

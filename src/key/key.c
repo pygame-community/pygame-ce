@@ -27,7 +27,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/key_doc.h"
+#include "key_doc.h"
 
 /* keyboard module functions */
 static PyObject *
