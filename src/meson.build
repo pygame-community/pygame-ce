@@ -4,14 +4,7 @@ subdir('base')
 
 subdir('color')
 
-constants = py.extension_module(
-    'constants',
-    'constants.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('constants')
 
 # TODO: support SDL3
 if sdl_api != 3

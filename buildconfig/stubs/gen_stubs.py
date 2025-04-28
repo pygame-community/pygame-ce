@@ -110,7 +110,7 @@ for k in PG_STAR_IMPORTS:
 misc_stubs = """"""
 
 # write constants.pyi file
-constants_file = pathlib.Path(__file__).parent / "pygame" / "constants.pyi"
+constants_file = pathlib.Path(__file__).parent.parent.parent / "src" / "constants" / "constants.pyi"
 with open(constants_file, "w") as f:
     # write the module docstring of this file in the generated file, so that
     # people know this file exists
