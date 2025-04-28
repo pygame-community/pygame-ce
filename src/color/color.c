@@ -39,7 +39,7 @@
 
 #define PYGAMEAPI_COLOR_INTERNAL
 
-#include "doc/color_doc.h"
+#include "color_doc.h"
 
 #include "pygame.h"
 
