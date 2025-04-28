@@ -33,7 +33,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/mask_doc.h"
+#include "mask_doc.h"
 
 #include "structmember.h"
 

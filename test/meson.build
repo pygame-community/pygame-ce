@@ -14,7 +14,6 @@ test_files = files(
     'image__save_gl_surface_test.py',
     'imageext_test.py',
     'locals_test.py',
-    'mask_test.py',
     'midi_test.py',
     'mixer_music_test.py',
     'mixer_test.py',

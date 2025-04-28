@@ -32,14 +32,7 @@ subdir('image')
 
 subdir('transform')
 
-mask = py.extension_module(
-    'mask',
-    ['mask.c', 'bitmask.c'],
-    c_args: warnings_error + warnings_temp_mask,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('mask')
 
 subdir('bufferproxy')
 
