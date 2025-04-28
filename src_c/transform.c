@@ -95,7 +95,12 @@ _PgSurface_SrcAlpha(SDL_Surface *surf)
 {
     if (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(surf))) {
         SDL_BlendMode mode;
-        if (SDL_GetSurfaceBlendMode(surf, &mode) < 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (!SDL_GetSurfaceBlendMode(surf, &mode))
+#else
+        if (SDL_GetSurfaceBlendMode(surf, &mode) < 0)
+#endif
+        {
             return -1;
         }
         if (mode == SDL_BLENDMODE_BLEND) {
@@ -1835,14 +1840,15 @@ _set_at_pixels(int x, int y, Uint8 *pixels, PG_PixelFormat *format,
 }
 
 static int
-get_threshold(SDL_Surface *dest_surf, SDL_Surface *surf,
-              Uint32 color_search_color, Uint32 color_threshold,
-              Uint32 color_set_color, int set_behavior,
-              SDL_Surface *search_surf, int inverse_set)
+get_threshold(SDL_Surface *dest_surf, PG_PixelFormat *dest_fmt,
+              SDL_Surface *surf, PG_PixelFormat *surf_fmt,
+              SDL_Palette *surf_palette, Uint32 color_search_color,
+              Uint32 color_threshold, Uint32 color_set_color, int set_behavior,
+              SDL_Surface *search_surf, PG_PixelFormat *search_surf_fmt,
+              SDL_Palette *search_surf_palette, int inverse_set)
 {
     int x, y, similar;
     Uint8 *pixels, *destpixels = NULL, *pixels2 = NULL;
-    SDL_PixelFormat *format;
     Uint32 the_color, the_color2, dest_set_color;
     Uint8 search_color_r, search_color_g, search_color_b;
     Uint8 surf_r, surf_g, surf_b;
@@ -1852,7 +1858,6 @@ get_threshold(SDL_Surface *dest_surf, SDL_Surface *surf,
     int within_threshold;
 
     similar = 0;
-    format = surf->format;
 
     if (set_behavior) {
         destpixels = (Uint8 *)dest_surf->pixels;
@@ -1861,10 +1866,10 @@ get_threshold(SDL_Surface *dest_surf, SDL_Surface *surf,
         pixels2 = (Uint8 *)search_surf->pixels;
     }
 
-    SDL_GetRGB(color_search_color, format, &search_color_r, &search_color_g,
-               &search_color_b);
-    SDL_GetRGB(color_threshold, format, &threshold_r, &threshold_g,
-               &threshold_b);
+    PG_GetRGB(color_search_color, surf_fmt, surf_palette, &search_color_r,
+              &search_color_g, &search_color_b);
+    PG_GetRGB(color_threshold, surf_fmt, surf_palette, &threshold_r,
+              &threshold_g, &threshold_b);
 
     for (y = 0; y < surf->h; y++) {
         pixels = (Uint8 *)surf->pixels + y * surf->pitch;
@@ -1875,14 +1880,15 @@ get_threshold(SDL_Surface *dest_surf, SDL_Surface *surf,
         for (x = 0; x < surf->w; x++) {
             pixels = _get_color_move_pixels(PG_SURF_BytesPerPixel(surf),
                                             pixels, &the_color);
-            SDL_GetRGB(the_color, surf->format, &surf_r, &surf_g, &surf_b);
+            PG_GetRGB(the_color, surf_fmt, surf_palette, &surf_r, &surf_g,
+                      &surf_b);
 
             if (search_surf) {
                 /* Get search_surf.color */
                 pixels2 = _get_color_move_pixels(
                     PG_SURF_BytesPerPixel(search_surf), pixels2, &the_color2);
-                SDL_GetRGB(the_color2, search_surf->format, &search_surf_r,
-                           &search_surf_g, &search_surf_b);
+                PG_GetRGB(the_color2, search_surf_fmt, search_surf_palette,
+                          &search_surf_r, &search_surf_g, &search_surf_b);
 
                 /* search_surf(the_color2) is within threshold of
                  * surf(the_color) */
@@ -1909,8 +1915,8 @@ get_threshold(SDL_Surface *dest_surf, SDL_Surface *surf,
             }
             if (set_behavior && ((within_threshold && inverse_set) ||
                                  (!within_threshold && !inverse_set))) {
-                _set_at_pixels(x, y, destpixels, dest_surf->format,
-                               dest_surf->pitch, dest_set_color);
+                _set_at_pixels(x, y, destpixels, dest_fmt, dest_surf->pitch,
+                               dest_set_color);
             }
         }
     }
@@ -2097,6 +2103,29 @@ surf_threshold(PyObject *self, PyObject *args, PyObject *kwds)
                      "surf and search_surf not the same size");
     }
 
+    PG_PixelFormat *dest_fmt = NULL;
+    if (dest_surf) {
+        dest_fmt = PG_GetSurfaceFormat(dest_surf);
+        if (dest_fmt == NULL) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+
+    PG_PixelFormat *surf_format;
+    SDL_Palette *surf_palette;
+    if (!PG_GetSurfaceDetails(surf, &surf_format, &surf_palette)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    PG_PixelFormat *search_surf_format = NULL;
+    SDL_Palette *search_surf_palette = NULL;
+    if (search_surf) {
+        if (!PG_GetSurfaceDetails(search_surf, &search_surf_format,
+                                  &search_surf_palette)) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+
     if (dest_surf) {
         pgSurface_Lock((pgSurfaceObject *)dest_surf_obj);
     }
@@ -2106,9 +2135,10 @@ surf_threshold(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
     Py_BEGIN_ALLOW_THREADS;
-    num_threshold_pixels =
-        get_threshold(dest_surf, surf, color_search_color, color_threshold,
-                      color_set_color, set_behavior, search_surf, inverse_set);
+    num_threshold_pixels = get_threshold(
+        dest_surf, dest_fmt, surf, surf_format, surf_palette,
+        color_search_color, color_threshold, color_set_color, set_behavior,
+        search_surf, search_surf_format, search_surf_palette, inverse_set);
     Py_END_ALLOW_THREADS;
 
     if (dest_surf) {
@@ -2292,11 +2322,11 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
         src_format->Bmask == newsurf_format->Bmask && (src->pitch % 4 == 0) &&
         (newsurf->pitch == (newsurf->w * 4))) {
         if (pg_has_avx2()) {
-            grayscale_avx2(src, newsurf);
+            grayscale_avx2(src, src_format, newsurf);
         }
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
         else if (pg_HasSSE_NEON()) {
-            grayscale_sse2(src, newsurf);
+            grayscale_sse2(src, src_format, newsurf);
         }
 #endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
         else {
@@ -2395,10 +2425,20 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
     int src_lock = SDL_MUSTLOCK(src);
     int dst_lock = src != newsurf && SDL_MUSTLOCK(newsurf);
 
-    if (src_lock && SDL_LockSurface(src) < 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (src_lock && !SDL_LockSurface(src))
+#else
+    if (src_lock && SDL_LockSurface(src) < 0)
+#endif
+    {
         return NULL;
     }
-    if (dst_lock && SDL_LockSurface(newsurf) < 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (dst_lock && !SDL_LockSurface(newsurf))
+#else
+    if (dst_lock && SDL_LockSurface(newsurf) < 0)
+#endif
+    {
         if (src_lock) {
             SDL_UnlockSurface(src);
         }
@@ -3156,7 +3196,8 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
 
     float div_inv;
 
-    SDL_PixelFormat *format, *destformat;
+    PG_PixelFormat *format, *destformat;
+    SDL_Palette *destpalette;
     Uint8 *pixels, *destpixels;
     Uint8 *pix;
     Uint8 *byte_buf;
@@ -3173,14 +3214,16 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
     width = surfaces[0]->w;
 
     destpixels = (Uint8 *)destsurf->pixels;
-    destformat = destsurf->format;
+    if (!PG_GetSurfaceDetails(destsurf, &destformat, &destpalette)) {
+        return -1;
+    }
 
     /* allocate an array to accumulate them all.
 
     If we're using 1 byte per pixel, then only need to average on that much.
     */
 
-    if ((PG_FORMAT_BytesPerPixel(destformat) == 1) && (destformat->palette) &&
+    if ((PG_FORMAT_BytesPerPixel(destformat) == 1) && destpalette &&
         (!palette_colors)) {
         num_elements = 1;
     }
@@ -3201,23 +3244,26 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
         surf = surfaces[surf_idx];
 
         pixels = (Uint8 *)surf->pixels;
-        format = surf->format;
+        format = PG_GetSurfaceFormat(surf);
+        if (!format) {
+            return -1;
+        }
         rmask = format->Rmask;
         gmask = format->Gmask;
         bmask = format->Bmask;
         rshift = format->Rshift;
         gshift = format->Gshift;
         bshift = format->Bshift;
-        rloss = format->Rloss;
-        gloss = format->Gloss;
-        bloss = format->Bloss;
+        rloss = PG_FORMAT_R_LOSS(format);
+        gloss = PG_FORMAT_G_LOSS(format);
+        bloss = PG_FORMAT_B_LOSS(format);
 
         the_idx = accumulate;
         /* If palette surface, we use a different code path... */
 
         if ((PG_FORMAT_BytesPerPixel(format) == 1 &&
              PG_FORMAT_BytesPerPixel(destformat) == 1) &&
-            (format->palette) && (destformat->palette) && (!palette_colors)) {
+            PG_GetSurfacePalette(surf) && (destpalette) && (!palette_colors)) {
             /*
             This is useful if the surface is actually grayscale colors,
             and not palette colors.
@@ -3274,10 +3320,10 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
     else if (num_elements == 3) {
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++) {
-                the_color =
-                    SDL_MapRGB(destformat, (Uint8)(*(the_idx)*div_inv + .5f),
-                               (Uint8)(*(the_idx + 1) * div_inv + .5f),
-                               (Uint8)(*(the_idx + 2) * div_inv + .5f));
+                the_color = PG_MapRGB(destformat, destpalette,
+                                      (Uint8)(*(the_idx)*div_inv + .5f),
+                                      (Uint8)(*(the_idx + 1) * div_inv + .5f),
+                                      (Uint8)(*(the_idx + 2) * div_inv + .5f));
 
                 /* TODO: should it take into consideration the output
                     shifts/masks/losses?  Or does SDL_MapRGB do that correctly?
@@ -4145,11 +4191,11 @@ invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
         src_format->Bmask == newsurf_format->Bmask && (src->pitch % 4 == 0) &&
         (newsurf->pitch == (newsurf->w * 4))) {
         if (pg_has_avx2()) {
-            invert_avx2(src, newsurf);
+            invert_avx2(src, src_format, newsurf);
         }
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
         else if (pg_HasSSE_NEON()) {
-            invert_sse2(src, newsurf);
+            invert_sse2(src, src_format, newsurf);
         }
 #endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
         else {

@@ -84,7 +84,7 @@
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
-    SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
+    SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
 
 /* Emulating SDL2 SDL_LockMutex API. In SDL3, it returns void. */
 static inline int
