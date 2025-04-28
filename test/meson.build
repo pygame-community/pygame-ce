@@ -12,7 +12,6 @@ test_files = files(
     'ftfont_test.py',
     'gfxdraw_test.py',
     'image__save_gl_surface_test.py',
-    'image_test.py',
     'imageext_test.py',
     'locals_test.py',
     'mask_test.py',

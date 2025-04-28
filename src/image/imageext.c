@@ -42,7 +42,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/image_doc.h"
+#include "image_doc.h"
 
 #include "pgopengl.h"
 

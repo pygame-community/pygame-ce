@@ -28,7 +28,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/image_doc.h"
+#include "image_doc.h"
 
 #if PG_COMPILE_SSE4_2
 #include <emmintrin.h>

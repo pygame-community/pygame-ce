@@ -28,14 +28,7 @@ subdir('joystick')
 
 subdir('draw')
 
-image = py.extension_module(
-    'image',
-    'image.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('image')
 
 subdir('transform')
 
@@ -140,18 +133,6 @@ scrap = py.extension_module(
 )
 
 # optional modules
-
-if sdl_image_dep.found()
-    imageext = py.extension_module(
-        'imageext',
-        'imageext.c',
-        c_args: warnings_error,
-        dependencies: pg_base_deps + sdl_image_dep,
-        install: true,
-        subdir: pg,
-    )
-endif
-
 if sdl_ttf_dep.found()
     font = py.extension_module(
         'font',
