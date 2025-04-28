@@ -52,14 +52,7 @@ mouse = py.extension_module(
     subdir: pg,
 )
 
-rect = py.extension_module(
-    'rect',
-    ['rect.c', 'pgcompat_rect.c'],
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('rect')
 
 rwobject = py.extension_module(
     'rwobject',

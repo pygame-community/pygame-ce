@@ -26,7 +26,7 @@
 #define PYGAMEAPI_RECT_INTERNAL
 #include "pygame.h"
 
-#include "doc/rect_doc.h"
+#include "rect_doc.h"
 
 #include "structmember.h"
 

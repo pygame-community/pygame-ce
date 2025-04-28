@@ -3,7 +3,7 @@
 
 from .sdl2 cimport *
 
-cdef extern from "pgcompat_rect.h" nogil:
+cdef extern from "rect/pgcompat_rect.h" nogil:
     ctypedef struct SDL_FRect:
         float x, y
         float w, h
