@@ -15,7 +15,6 @@ test_files = files(
     'image_test.py',
     'imageext_test.py',
     'joystick_test.py',
-    'key_test.py',
     'locals_test.py',
     'mask_test.py',
     'midi_test.py',

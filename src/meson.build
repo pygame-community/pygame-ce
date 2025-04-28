@@ -10,14 +10,7 @@ subdir('display')
 
 subdir('event')
 
-key = py.extension_module(
-    'key',
-    'key.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('key')
 
 mouse = py.extension_module(
     'mouse',
