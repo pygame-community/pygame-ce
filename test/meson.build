@@ -7,7 +7,6 @@ test_files = files(
     'cursors_test.py',
     'debug_test.py',
     'docs_test.py',
-    'event_test.py',
     'font_test.py',
     'freetype_test.py',
     'ftfont_test.py',

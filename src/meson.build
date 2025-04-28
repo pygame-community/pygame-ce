@@ -8,15 +8,7 @@ subdir('constants')
 
 subdir('display')
 
-
-event = py.extension_module(
-    'event',
-    'event.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('event')
 
 key = py.extension_module(
     'key',

@@ -29,7 +29,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/event_doc.h"
+#include "event_doc.h"
 
 #include "structmember.h"
 
