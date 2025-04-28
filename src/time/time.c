@@ -24,7 +24,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/time_doc.h"
+#include "time_doc.h"
 
 #define WORST_CLOCK_ACCURACY 12
 

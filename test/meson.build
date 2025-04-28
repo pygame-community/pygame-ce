@@ -30,7 +30,6 @@ test_files = files(
     'surfarray_tags.py',
     'surfarray_test.py',
     'sysfont_test.py',
-    'time_test.py',
     'touch_test.py',
     'typing_test.py',
     'version_test.py',

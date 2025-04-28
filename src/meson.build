@@ -22,14 +22,7 @@ subdir('surface')
 
 subdir('surflock')
 
-time = py.extension_module(
-    'time',
-    'time.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('time')
 
 joystick = py.extension_module(
     'joystick',
