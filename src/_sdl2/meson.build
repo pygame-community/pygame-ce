@@ -1,3 +1,5 @@
+# TODO: support SDL3
+if sdl_api != 3
 cython_base = '../cython/pygame/_sdl2'
 
 _sdl2_audio = py.extension_module(
@@ -65,3 +67,4 @@ _sdl2_controller = py.extension_module(
     install: true,
     subdir: pg / '_sdl2',
 )
+endif

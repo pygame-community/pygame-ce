@@ -6,10 +6,8 @@ subdir('color')
 
 subdir('constants')
 
-# TODO: support SDL3
-if sdl_api != 3
 subdir('display')
-endif
+
 
 event = py.extension_module(
     'event',
@@ -170,10 +168,7 @@ gfxdraw = py.extension_module(
 endif
 
 # pygame._sdl2
-# TODO: support SDL3
-if sdl_api != 3
 subdir('_sdl2')
-endif
 
 # pygame._camera
 subdir('camera')

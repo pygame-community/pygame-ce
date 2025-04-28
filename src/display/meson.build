@@ -1,3 +1,5 @@
+# TODO: support SDL3
+if sdl_api != 3
 display = py.extension_module(
     'display',
     'display.c',
@@ -9,3 +11,4 @@ display = py.extension_module(
 )
 install_data('display.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
 py.install_sources('display_test.py', subdir: pg / 'tests')
+endif
