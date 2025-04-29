@@ -7,5 +7,5 @@ _sdl2_controller = py.extension_module(
     subdir: pg / '_sdl2',
 )
 
-install_data('controller.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
+install_data('controller.pyi', install_dir: pg_dir / '_sdl2', install_tag: 'pg-tag')
 py.install_sources('controller_test.py', subdir: pg / 'tests')

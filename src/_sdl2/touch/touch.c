@@ -20,7 +20,7 @@
 #include "pygame.h"
 #include "pgcompat.h"
 
-#include "../doc/touch_doc.h"
+#include "touch_doc.h"
 
 static PyObject *
 pg_touch_num_devices(PyObject *self, PyObject *_null)

@@ -14,7 +14,8 @@ c_header_dir = os.path.join('src', 'doc')
 special_paths = {
     "music": os.path.join("src", "mixer"),
     "pygame": os.path.join("src", "base"),
-    "controller": os.path.join("src", "_sdl2", "controller")
+    "controller": os.path.join("src", "_sdl2", "controller"),
+    "touch": os.path.join("src", "_sdl2", "touch")
 }
 
 def move_doc_headers():

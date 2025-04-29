@@ -49,15 +49,7 @@ _sdl2_sdl2 = py.extension_module(
     subdir: pg / '_sdl2',
 )
 
-# This is not a cython file
-_sdl2_touch = py.extension_module(
-    'touch',
-    'touch.c',
-    dependencies: pg_base_deps,
-    include_directories: '../include',
-    install: true,
-    subdir: pg / '_sdl2',
-)
+subdir('touch')
 
 subdir('controller')
 
