@@ -74,6 +74,8 @@ subdir('scrap')
 # optional modules
 subdir('font')
 
+subdir('ftfont')
+
 subdir('mixer')
 
 subdir('_freetype')
