@@ -633,7 +633,6 @@ PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */
 
-
 /*  Use the end of this file for other cross module inline utility
  *  functions There seems to be no good reason to stick to macro only
  *  functions in Python 3.
