@@ -1,6 +1,5 @@
 #include "doc/geometry_doc.h"
 #include "geometry_common.h"
-#include "methodobject.h"
 
 static double
 pgLine_Length(pgLineBase *line)
