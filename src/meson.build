@@ -42,14 +42,7 @@ subdir('math')
 
 subdir('pixelcopy')
 
-newbuffer = py.extension_module(
-    'newbuffer',
-    'newbuffer.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('newbuffer')
 
 # new/experimental/uncommon stuff, but built by default
 subdir('system')
