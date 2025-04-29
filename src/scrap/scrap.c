@@ -34,7 +34,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/scrap_doc.h"
+#include "scrap_doc.h"
 
 #include "scrap.h"
 

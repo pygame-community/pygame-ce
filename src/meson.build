@@ -55,27 +55,11 @@ subdir('_render')
 
 subdir('gfxdraw')
 
-# pygame._sdl2
 subdir('_sdl2')
 
-# pygame._camera
 subdir('camera')
 
-# pygame.scrap
-pg_scrap_link = [] # TODO: should this link logic be improved/made meson-ey?
-if plat == 'win'
-    pg_scrap_link += ['-luser32', '-lgdi32']
-endif
-
-scrap = py.extension_module(
-    'scrap',
-    'scrap.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    link_args: pg_scrap_link,
-    install: true,
-    subdir: pg,
-)
+subdir('scrap')
 
 # optional modules
 if sdl_ttf_dep.found()
