@@ -108,7 +108,7 @@ typedef struct {
 #define pgFont_IS_ALIVE(o) (((pgFontObject *)(o))->_internals != 0)
 
 /* import public API */
-#include "include/pygame_freetype.h"
+#include "pygame_freetype.h"
 
 #define PYGAMEAPI_FREETYPE_NUMSLOTS 2
 

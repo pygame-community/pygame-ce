@@ -25,7 +25,7 @@
 
 #include "freetype/ft_wrap.h"
 
-#include "doc/freetype_doc.h"
+#include "freetype_doc.h"
 
 #define MODULE_NAME "_freetype"
 #define FONT_TYPE_NAME "Font"

@@ -21,7 +21,7 @@
 #define PYGAME_FREETYPE_H_
 
 #include "pgplatform.h"
-#include "pgimport.h"
+#include "../include/pgimport.h"
 #include "pgcompat.h"
 
 #ifndef PYGAME_FREETYPE_INTERNAL

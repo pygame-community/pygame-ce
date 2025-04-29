@@ -20,17 +20,16 @@ def move_doc_headers():
     for file in glob.glob(f'{c_header_dir}/*.h'):
         file_name = file.replace(c_header_dir + os.sep, '')
         module_name = file.replace('_doc.h', '').replace(c_header_dir + os.sep, '')
-        if module_name not in ['freetype']:
-            args = ['src', module_name]
-            if 'sdl2_' in module_name:
-                module_name = module_name.replace('sdl2_', '')
-                args.insert(1, 'sdl2')
-            path = special_paths[module_name] if module_name in special_paths else os.path.join(*args)
-            if os.path.exists(path):
-                os.replace(file, os.path.join(path, file_name))
-                print(f"Moved file {file_name} from {file} to {os.path.join(path, file_name)}")
-            else:
-                print(f"Skipping file {file} because there is no destination")
+        args = ['src', module_name]
+        if 'sdl2_' in module_name:
+            module_name = module_name.replace('sdl2_', '')
+            args.insert(1, 'sdl2')
+        path = special_paths[module_name] if module_name in special_paths else os.path.join(*args)
+        if os.path.exists(path):
+            os.replace(file, os.path.join(path, file_name))
+            print(f"Moved file {file_name} from {file} to {os.path.join(path, file_name)}")
+        else:
+            print(f"Skipping file {file} because there is no destination")
 
 def run():
     full_generation_flag = False

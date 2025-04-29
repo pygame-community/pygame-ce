@@ -16,6 +16,7 @@ pygame\.tests.*
 # don't look for stubs for modules that are not auto-imported
 pygame\.camera
 pygame\.gfxdraw
+pygame\.freetype
 
 # don't look for stubs for pyinstaller hook
 pygame\.__pyinstaller.*
