@@ -417,8 +417,7 @@ else
     endif
 endif
 
-subdir('src_c')
-subdir('src_py')
+subdir('src')
 
 if not get_option('stripped')
     # run make_docs and make docs
@@ -432,7 +431,6 @@ if not get_option('stripped')
         message(res.stderr().strip())
     endif
     subdir('docs')
-    subdir('test')
     subdir('buildconfig/stubs')
     install_subdir('examples', install_dir: pg_dir, install_tag: 'pg-tag')
     # TODO: install headers? not really important though

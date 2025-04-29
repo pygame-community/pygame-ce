@@ -28,8 +28,7 @@ extensions = ['autoapi.extension', 'ext.headers', 'ext.boilerplate',
 
 
 autoapi_dirs = [
-    pathlib.Path('.').resolve().parent.parent / 'buildconfig' / 'stubs' / 'pygame',
-    pathlib.Path('.').resolve().parent.parent / 'src_py',
+    pathlib.Path('.').resolve().parent.parent / 'src' / 'pygame',
 ]
 
 autoapi_options = ['members', 'undoc-members']

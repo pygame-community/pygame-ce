@@ -1,16 +1,16 @@
 name: cppcheck Static Analysis
 
-# Run cppcheck on src_c changes to main branch, or any PR to main.
+# Run cppcheck on src changes to main branch, or any PR to main.
 on:
   push:
     branches: main
     paths:
-      - 'src_c/**'
+      - 'src/**'
 
   pull_request:
     branches: main
     paths:
-      - 'src_c/**'
+      - 'src/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-cppcheck
@@ -34,8 +34,8 @@ jobs:
       - name: Run Static Checker
         # skip cppcheck on SDL_gfx, scrap, scale_mm* and ft_cache for now
         # suppress missingReturn and syntaxError because it gives many false positives
-        run: cppcheck src_c --enable=performance,portability,warning \
-          --suppress=*:src_c/freetype/ft_cache.c --suppress=*:src_c/scrap* \
-          --suppress=*:src_c/scale_mmx*.c --suppress=*:src_c/SDL_gfx/* \
+        run: cppcheck src --enable=performance,portability,warning \
+          --suppress=*:src/freetype/ft_cache.c --suppress=*:src/scrap* \
+          --suppress=*:src/scale_mmx*.c --suppress=*:src/SDL_gfx/* \
           --suppress=missingReturn --suppress=syntaxError -DWITH_THREAD -j $(nproc) \
           -DPG_MAJOR_VERSION -DPG_MINOR_VERSION -DPG_PATCH_VERSION -DPG_VERSION_TAG

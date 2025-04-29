@@ -22,6 +22,6 @@ pygame C API
    c_api/window.rst
 
 
-src_c/include/ contains header files for applications
-that use the pygame C API, while src_c/ contains
+src/include/ contains header files for applications
+that use the pygame C API, while src/ contains
 headers used by pygame internally.

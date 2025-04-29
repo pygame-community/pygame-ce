@@ -110,7 +110,7 @@ for k in PG_STAR_IMPORTS:
 misc_stubs = """"""
 
 # write constants.pyi file
-constants_file = pathlib.Path(__file__).parent / "pygame" / "constants.pyi"
+constants_file = pathlib.Path(__file__).parent.parent.parent / "src" / "constants" / "constants.pyi"
 with open(constants_file, "w") as f:
     # write the module docstring of this file in the generated file, so that
     # people know this file exists
@@ -123,7 +123,7 @@ with open(constants_file, "w") as f:
 
 
 # write __init__.pyi file
-init_file = pathlib.Path(__file__).parent / "pygame" / "__init__.pyi"
+init_file = pathlib.Path(__file__).parent.parent.parent / "src" / "pygame" / "__init__.pyi"
 with open(init_file, "w") as f:
     # write the module docstring of this file in the generated file, so that
     # people know this file exists
@@ -148,7 +148,7 @@ with open(init_file, "w") as f:
         f.write(")\n")
 
 # write locals.pyi file
-locals_file = pathlib.Path(__file__).parent / "pygame" / "locals.pyi"
+locals_file = pathlib.Path(__file__).parent.parent.parent / "src" / "locals" / "locals.pyi"
 with open(locals_file, "w") as f:
     f.write(info_header)
     f.write("\n")
@@ -158,6 +158,7 @@ with open(locals_file, "w") as f:
         f.write(f"{element}: {constant_type}\n")
 
 # copy typing.py to typing.pyi for type checkers
-typing_py_file = pathlib.Path(__file__).parent.parent.parent / "src_py" / "typing.py"
-typing_stub_file = pathlib.Path(__file__).parent / "pygame" / "typing.pyi"
+typing_dir = pathlib.Path(__file__).parent.parent.parent / "src" / "typing"
+typing_py_file = typing_dir / "typing.py"
+typing_stub_file = typing_dir / "typing.pyi"
 shutil.copyfile(typing_py_file, typing_stub_file)

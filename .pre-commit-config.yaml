@@ -40,11 +40,11 @@ repos:
       - id: clang-format
         exclude: |
             (?x)^(
-                ^src_c/_sdl2/.*$
-                | ^src_c/doc/.*$
+                ^src/_sdl2/.*$
+                | ^src/.+/.*_doc.h$
                 | docs/reST/_static/script.js
                 | docs/reST/_templates/header.h
-                | src_c/include/sse2neon.h
-                | src_c/include/pythoncapi_compat.h
-                | src_c/pypm.c
+                | src/include/sse2neon.h
+                | src/include/pythoncapi_compat.h
+                | src/pypm.c
             )$

@@ -6,7 +6,7 @@
   Class BufferProxy API exported by pygame.bufferproxy
 ********************************************************
 
-src_c/bufferproxy.c
+src/bufferproxy.c
 ===================
 
 This extension module defines Python type :py:class:`pygame.BufferProxy`.

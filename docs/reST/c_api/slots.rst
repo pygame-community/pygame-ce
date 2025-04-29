@@ -14,7 +14,7 @@ base.c has this exposing the pg_RGBAFromObj function to the `c_api` structure:
     c_api[12] = pg_RGBAFromObj;
 
 
-Then in src_c/include/_pygame.h there is an
+Then in src/include/_pygame.h there is an
 
     #define pg_RGBAFromObj.
 

@@ -5,13 +5,16 @@
 # cython files have this top level dunder
 pygame\._sdl2\..*\.__test__
 
-# cython classes have some special dunders for internal use, ignore that in
-# stubtest
-pygame\._sdl2\..*\.__pyx_.*__
-
 # don't look for stubs for examples or for tests
 pygame\.examples.*
 pygame\.tests.*
+
+# don't look for stubs for modules that are not auto-imported
+pygame\.camera
+pygame\.gfxdraw
+pygame\.freetype
+pygame\.midi
+pygame\._sdl2.*
 
 # don't look for stubs for pyinstaller hook
 pygame\.__pyinstaller.*
@@ -24,6 +27,5 @@ pygame\.macosx
 pygame\.newbuffer
 pygame\.pkgdata
 pygame\.pypm
-pygame\._sdl2\.mixer
 pygame\.sysfont.*
 pygame\.docs.*

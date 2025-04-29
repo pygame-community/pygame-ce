@@ -6,12 +6,12 @@
   Class Surface API exported by pygame.surface
 ************************************************
 
-src_c/surface.c
+src/surface.c
 ===============
 
 This extension module defines Python type :py:class:`pygame.Surface`.
 
-Header file: src_c/include/pygame.h
+Header file: src/include/pygame.h
 
 
 .. c:type:: pgSurfaceObject

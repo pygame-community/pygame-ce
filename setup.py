@@ -229,8 +229,8 @@ if compile_cython:
 
     import glob
 
-    pyx_files = glob.glob(os.path.join('src_c', 'cython', 'pygame', '*.pyx')) + \
-                glob.glob(os.path.join('src_c', 'cython', 'pygame', '**', '*.pyx'))
+    pyx_files = glob.glob(os.path.join('src', 'cython', 'pygame', '*.pyx')) + \
+                glob.glob(os.path.join('src', 'cython', 'pygame', '**', '*.pyx'))
 
     pyx_files, pyx_meta = create_extension_list(pyx_files, ctx=ctx)
     deps = create_dependency_tree(ctx)
@@ -241,7 +241,7 @@ if compile_cython:
         pyx_file = ext.sources[0]  # TODO: check all sources, extension
 
         c_file = os.path.splitext(pyx_file)[0].split(os.path.sep)
-        del c_file[1:3]  # output in src_c/
+        del c_file[1:3]  # output in src/
         c_file = os.path.sep.join(c_file) + '.c'
 
         # update outdated .c files
@@ -325,9 +325,9 @@ else:
     })
 
 # headers to install
-headers = glob.glob(os.path.join('src_c', '*.h'))
-headers.remove(os.path.join('src_c', 'scale.h'))
-headers.append(os.path.join('src_c', 'include'))
+headers = glob.glob(os.path.join('src', '*.h'))
+headers.remove(os.path.join('src', 'scale.h'))
+headers.append(os.path.join('src', 'include'))
 
 import distutils.command.install_headers
 
@@ -858,8 +858,8 @@ PACKAGEDATA = {
                     'pygame.tests': 'test',
                     'pygame.docs': 'docs',
                     'pygame.examples': 'examples',
-                    'pygame.__pyinstaller': 'src_py/__pyinstaller',
-                    'pygame.__briefcase': 'src_py/__briefcase'},
+                    'pygame.__pyinstaller': 'src/__pyinstaller',
+                    'pygame.__briefcase': 'src/__briefcase'},
     "headers": headers,
     "ext_modules": extensions,
     "data_files": data_files,
@@ -867,11 +867,11 @@ PACKAGEDATA = {
 }
 if STRIPPED:
     pygame_data_files = []
-    data_files = [('pygame', ["src_py/freesansbold.ttf",
-                              "src_py/pygame.ico",
-                              "src_py/pygame_icon.icns",
-                              "src_py/pygame_icon.bmp",
-                              "src_py/pygame_icon_mac.bmp"])]
+    data_files = [('pygame', ["src/resources/freesansbold.ttf",
+                              "src/resources/pygame.ico",
+                              "src/resources/pygame_icon.icns",
+                              "src/resources/pygame_icon.bmp",
+                              "src/resources/pygame_icon_mac.bmp"])]
 
     PACKAGEDATA = {
         "cmdclass": cmdclass,

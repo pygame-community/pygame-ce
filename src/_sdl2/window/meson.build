@@ -1,0 +1,1 @@
+py.install_sources('window.py', subdir: pg / '_sdl2')
