@@ -78,3 +78,5 @@ if portmidi_dep.found()
         subdir: pg,
     )
 endif
+
+subdir('__briefcase')
