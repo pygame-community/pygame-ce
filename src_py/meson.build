@@ -2,7 +2,6 @@
 python_sources = files(
     '__init__.py',
     '_data_classes.py',
-    '_debug.py',
     'colordict.py',
     'cursors.py',
     'freetype.py',

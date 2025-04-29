@@ -49,6 +49,8 @@ subdir('typing')
 subdir('sprite')
 
 # new/experimental/uncommon stuff, but built by default
+subdir('_debug')
+
 subdir('system')
 
 subdir('geometry')
