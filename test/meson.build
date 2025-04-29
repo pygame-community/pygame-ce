@@ -14,7 +14,6 @@ test_files = files(
     'midi_test.py',
     'sndarray_tags.py',
     'sndarray_test.py',
-    'sprite_test.py',
     'surfarray_tags.py',
     'surfarray_test.py',
     'sysfont_test.py',

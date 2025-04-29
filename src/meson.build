@@ -46,6 +46,8 @@ subdir('newbuffer')
 
 subdir('typing')
 
+subdir('sprite')
+
 # new/experimental/uncommon stuff, but built by default
 subdir('system')
 
