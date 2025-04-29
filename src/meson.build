@@ -73,6 +73,8 @@ subdir('camera')
 
 subdir('scrap')
 
+subdir('pkgdata')
+
 # optional modules
 subdir('font')
 
