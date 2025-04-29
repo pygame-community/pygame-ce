@@ -4,7 +4,6 @@ test_files = files(
     '__main__.py',
     'blit_test.py',
     'controller_test.py',
-    'cursors_test.py',
     'docs_test.py',
     'ftfont_test.py',
     'image__save_gl_surface_test.py',

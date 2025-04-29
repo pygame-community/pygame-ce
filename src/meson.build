@@ -48,6 +48,8 @@ subdir('typing')
 
 subdir('sprite')
 
+subdir('cursors')
+
 subdir('version')
 
 # new/experimental/uncommon stuff, but built by default
