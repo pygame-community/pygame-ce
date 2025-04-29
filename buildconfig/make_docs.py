@@ -17,7 +17,7 @@ special_paths = {
     "controller": os.path.join("src", "_sdl2", "controller"),
     "touch": os.path.join("src", "_sdl2", "touch"),
     "video": os.path.join("src", "_sdl2", "video"),
-    "freetype": os.path.join("src", "freetype")
+    "freetype": os.path.join("src", "_freetype")
 }
 
 def move_doc_headers():
