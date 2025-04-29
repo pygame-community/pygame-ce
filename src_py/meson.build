@@ -12,7 +12,6 @@ python_sources = files(
     'sndarray.py',
     'surfarray.py',
     'sysfont.py',
-    'version.py',
 )
 py.install_sources(python_sources, subdir: pg)
 
