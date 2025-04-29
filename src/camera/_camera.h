@@ -20,7 +20,7 @@
 #ifndef _CAMERA_H
 #define _CAMERA_H
 
-#include "pygame.h"
+#include "_pygame_internal.h"
 #include "camera.h"
 
 #endif
