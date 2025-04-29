@@ -772,6 +772,8 @@ class Surface:
         example would be ``mysurf.get_frect(center=(100.5, 100.5))`` to create a
         rectangle for the Surface centered at a given position. Size attributes
         such as ``size`` or ``w`` can also be applied to resize the FRect.
+
+        ..versionadded:: 2.3.0
         """
 
     def get_bitsize(self) -> int:

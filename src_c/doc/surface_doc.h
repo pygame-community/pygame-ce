@@ -50,6 +50,7 @@
 #define DOC_SURFACE_GETBOUNDINGRECT "get_bounding_rect(min_alpha=1) -> Rect\nFind the smallest rect containing data."
 #define DOC_SURFACE_GETVIEW "get_view(kind='2', /) -> BufferProxy\nReturn a buffer view of the Surface's pixels."
 #define DOC_SURFACE_GETBUFFER "get_buffer() -> BufferProxy\nAcquires a buffer object for the pixels of the Surface."
+#define DOC_SURFACE_PIXELSADDRESS "_pixels_address -> int\nPixel buffer address."
 #define DOC_SURFACE_PREMULALPHA "premul_alpha() -> Surface\nReturns a copy of the surface with the RGB channels pre-multiplied by the alpha channel."
 #define DOC_SURFACE_PREMULALPHAIP "premul_alpha_ip() -> Surface\nMultiplies the RGB channels by the surface alpha channel."
 #define DOC_SURFACE_WIDTH "width -> int\nSurface width in pixels (read-only)."
