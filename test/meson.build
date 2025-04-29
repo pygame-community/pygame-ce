@@ -3,7 +3,6 @@ test_files = files(
     '__init__.py',
     '__main__.py',
     'blit_test.py',
-    'controller_test.py',
     'docs_test.py',
     'image__save_gl_surface_test.py',
     'imageext_test.py',

@@ -3,7 +3,7 @@
 #include "pygame.h"
 #include "structmember.h"
 
-#include "../doc/sdl2_controller_doc.h"
+#include "sdl2_controller_doc.h"
 #define CONTROLLER_INIT_CHECK()                \
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER)) \
         return RAISE(pgExc_SDLError, "Controller system not initialized");

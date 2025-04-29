@@ -59,14 +59,8 @@ _sdl2_touch = py.extension_module(
     subdir: pg / '_sdl2',
 )
 
-_sdl2_controller = py.extension_module(
-    'controller',
-    'controller.c',
-    dependencies: pg_base_deps,
-    include_directories: '../include',
-    install: true,
-    subdir: pg / '_sdl2',
-)
+subdir('controller')
+
 endif
 
 subdir('window')
