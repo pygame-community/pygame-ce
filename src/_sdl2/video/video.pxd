@@ -1,7 +1,7 @@
 # cython: language_level=3str
 #
 
-from .sdl2 cimport *
+#from .sdl2 cimport *
 
 cdef extern from "../rect/pgcompat_rect.h" nogil:
     ctypedef struct SDL_FRect:
@@ -10,6 +10,10 @@ cdef extern from "../rect/pgcompat_rect.h" nogil:
 
 
 cdef extern from "SDL.h" nogil:
+    ctypedef unsigned char Uint8
+    ctypedef unsigned long Uint32
+    ctypedef int SDL_bool
+
     ctypedef struct SDL_Window
     ctypedef struct SDL_Texture
     ctypedef struct SDL_Renderer

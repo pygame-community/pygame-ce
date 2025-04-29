@@ -6,7 +6,6 @@ test_files = files(
     'docs_test.py',
     'image__save_gl_surface_test.py',
     'imageext_test.py',
-    'video_test.py',
 )
 
 py.install_sources(test_files, subdir: pg / 'tests')

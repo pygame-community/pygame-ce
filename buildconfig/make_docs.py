@@ -15,7 +15,8 @@ special_paths = {
     "music": os.path.join("src", "mixer"),
     "pygame": os.path.join("src", "base"),
     "controller": os.path.join("src", "_sdl2", "controller"),
-    "touch": os.path.join("src", "_sdl2", "touch")
+    "touch": os.path.join("src", "_sdl2", "touch"),
+    "video": os.path.join("src", "_sdl2", "video")
 }
 
 def move_doc_headers():

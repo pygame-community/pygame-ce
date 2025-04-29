@@ -11,14 +11,7 @@ _sdl2_audio = py.extension_module(
     subdir: pg / '_sdl2',
 )
 
-_sdl2_video = py.extension_module(
-    'video',
-    fs.is_file('video.c') ? 'video.c' : cython_base / 'video.pyx',
-    dependencies: pg_base_deps,
-    include_directories: '../include',
-    install: true,
-    subdir: pg / '_sdl2',
-)
+subdir('video')
 
 _sdl2_controller_old = py.extension_module(
     'controller_old',

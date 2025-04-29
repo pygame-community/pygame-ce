@@ -4,7 +4,7 @@
 
 #include "pgcompat.h"
 
-#include "../doc/sdl2_video_doc.h"
+#include "../_sdl2/video/sdl2_video_doc.h"
 
 static PyTypeObject pgRenderer_Type;
 
