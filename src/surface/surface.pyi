@@ -1,6 +1,8 @@
 from collections.abc import Iterable
 from typing import Any, Literal, Optional, Union, overload
 
+from typing_extensions import deprecated  # added in 3.13
+
 from pygame.bufferproxy import BufferProxy
 from pygame.color import Color
 from pygame.rect import FRect, Rect
@@ -10,7 +12,6 @@ from pygame.typing import (
     RectLike,
     SequenceLike,
 )
-from typing_extensions import deprecated  # added in 3.13
 
 _ViewKind = Literal[
     "0",

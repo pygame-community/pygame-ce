@@ -17,8 +17,9 @@ version 2. changes:
 import os
 import time
 
-import pygame
 from numpy import int16, int32, zeros
+
+import pygame
 
 # pygame.mixer.init(44100, -16, 0)
 pygame.mixer.init()

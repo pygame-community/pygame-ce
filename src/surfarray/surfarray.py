@@ -46,6 +46,7 @@ from numpy import (
     ndarray as numpy_ndarray,
     uint32 as numpy_uint32,
 )
+
 from pygame.pixelcopy import (
     array_to_surface,
     make_surface as pix_make_surface,

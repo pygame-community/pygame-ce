@@ -1,9 +1,10 @@
 from typing import Literal, overload
 
+from typing_extensions import deprecated  # added in 3.13
+
 from pygame.cursors import Cursor
 from pygame.surface import Surface
 from pygame.typing import IntPoint, Point, SequenceLike
-from typing_extensions import deprecated  # added in 3.13
 
 @overload
 def get_pressed(

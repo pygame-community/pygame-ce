@@ -10,11 +10,12 @@ from typing import (
     Union,
 )
 
+from typing_extensions import deprecated  # added in 3.13
+
 from pygame.mask import Mask
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.typing import Point, RectLike
-from typing_extensions import deprecated  # added in 3.13
 
 # non-generic Group, used in Sprite
 _Group = AbstractGroup[_SpriteSupportsGroup]

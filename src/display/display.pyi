@@ -54,6 +54,8 @@ required).
 from collections.abc import Iterable
 from typing import Literal, Optional, Union, overload
 
+from typing_extensions import deprecated  # added in 3.13
+
 from pygame._sdl2 import Window
 from pygame.constants import FULLSCREEN
 from pygame.surface import Surface
@@ -64,7 +66,6 @@ from pygame.typing import (
     RectLike,
     SequenceLike,
 )
-from typing_extensions import deprecated  # added in 3.13
 
 class _VidInfo:
     @property

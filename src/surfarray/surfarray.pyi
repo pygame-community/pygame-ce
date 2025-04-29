@@ -1,4 +1,5 @@
 import numpy
+from typing_extensions import deprecated  # added in 3.13
 
 # importing this way exports the functions in the typestubs
 from pygame.pixelcopy import (
@@ -6,7 +7,6 @@ from pygame.pixelcopy import (
     surface_to_array as surface_to_array,
 )
 from pygame.surface import Surface
-from typing_extensions import deprecated  # added in 3.13
 
 def array2d(surface: Surface) -> numpy.ndarray: ...
 def pixels2d(surface: Surface) -> numpy.ndarray: ...

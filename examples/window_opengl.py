@@ -6,8 +6,9 @@ Modified to use Window API instead of the display module
 Posted here with permission from https://github.com/szabolcsdombi given in the PGC discord server
 """
 
-import pygame
 import zengl
+
+import pygame
 
 
 def main():

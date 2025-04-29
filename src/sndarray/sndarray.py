@@ -40,6 +40,7 @@ if the sound sample type requests this.
 import warnings
 
 import numpy
+
 from pygame import mixer
 
 __all__ = [

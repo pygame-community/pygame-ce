@@ -30,6 +30,7 @@ data_dir = os.path.join(main_dir, "data")
 
 try:
     import numpy
+
     import pygame.surfarray
 except ImportError:
     print("no surfarray for you!  install numpy")

@@ -1,9 +1,10 @@
 from typing import Any, Optional, Union, overload
 
 import numpy
+from typing_extensions import deprecated  # added in 3.13
+
 from pygame.event import Event
 from pygame.typing import FileLike
-from typing_extensions import deprecated  # added in 3.13
 
 from . import mixer_music
 

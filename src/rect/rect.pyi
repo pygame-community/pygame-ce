@@ -10,8 +10,9 @@ from typing import (
     overload,
 )
 
-from pygame.typing import Point, RectLike, SequenceLike
 from typing_extensions import deprecated  # added in 3.13
+
+from pygame.typing import Point, RectLike, SequenceLike
 
 if sys.version_info >= (3, 11):
     from typing import Self
