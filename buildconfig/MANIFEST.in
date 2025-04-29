@@ -1,9 +1,7 @@
 recursive-include buildconfig *
 recursive-include docs *
-recursive-include src_py *
 recursive-include src *
 recursive-include examples *
-recursive-include test *
 
 recursive-exclude buildconfig/manylinux-build *
 recursive-exclude buildconfig/macdependencies *

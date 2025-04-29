@@ -418,7 +418,6 @@ else
 endif
 
 subdir('src')
-subdir('src_py')
 
 if not get_option('stripped')
     # run make_docs and make docs

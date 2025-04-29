@@ -123,7 +123,7 @@ with open(constants_file, "w") as f:
 
 
 # write __init__.pyi file
-init_file = pathlib.Path(__file__).parent / "pygame" / "__init__.pyi"
+init_file = pathlib.Path(__file__).parent.parent.parent / "src" / "pygame" / "__init__.pyi"
 with open(init_file, "w") as f:
     # write the module docstring of this file in the generated file, so that
     # people know this file exists

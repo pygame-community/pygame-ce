@@ -271,7 +271,7 @@ class Dev:
 
     def cmd_lint(self):
         pprint("Linting code (with pylint)")
-        cmd_run([self.py, "-m", "pylint", "src_py", "docs"])
+        cmd_run([self.py, "-m", "pylint", "docs"])
 
     def cmd_stubs(self):
         pprint("Generating and testing type stubs (with mypy)")

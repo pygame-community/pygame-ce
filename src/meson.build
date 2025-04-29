@@ -105,3 +105,6 @@ subdir('resources')
 subdir('__briefcase')
 
 subdir('__pyinstaller')
+
+# init
+subdir('pygame')
