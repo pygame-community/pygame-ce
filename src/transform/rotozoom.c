@@ -11,7 +11,7 @@
 
 */
 
-#include "pygame.h"
+#include "_pygame_internal.h"
 
 #include "math.h"
 
