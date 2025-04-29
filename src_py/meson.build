@@ -2,7 +2,6 @@
 python_sources = files(
     '__init__.py',
     'locals.py',
-    'sndarray.py',
     'surfarray.py',
     'sysfont.py',
 )

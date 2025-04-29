@@ -42,6 +42,8 @@ subdir('math')
 
 subdir('pixelcopy')
 
+subdir('sndarray')
+
 subdir('newbuffer')
 
 subdir('typing')
