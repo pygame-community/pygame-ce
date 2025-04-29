@@ -762,6 +762,8 @@
 
             Example of what the clamp argument changes. If it is `True`, the point is bounded between the line segment ends.
 
+            WARNING: This method has to have some length or the clamp parameter must be true for it to work and not throw a `ValueError`
+
          .. versionadded:: 2.5.4
 
       .. ## Line.project ##

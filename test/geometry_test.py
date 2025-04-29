@@ -2208,6 +2208,9 @@ class LineTypeTest(unittest.TestCase):
         test_clamp_point2 = (-50, -150)
         test_clamp_point3 = (-200, -200)
 
+        bad_line = Line(0, 0, 0, 0)
+        test_bad_line_point = (10, 10)
+
         projected_point = line.project(test_point1)
         self.assertEqual(math.ceil(projected_point[0]), 50)
         self.assertEqual(math.ceil(projected_point[1]), 50)
@@ -2223,6 +2226,14 @@ class LineTypeTest(unittest.TestCase):
         projected_point = line.project(test_clamp_point3, clamp=True)
         self.assertEqual(math.ceil(projected_point[0]), 0)
         self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = bad_line.project(test_bad_line_point, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        # testing if the method fails when it should
+        with self.assertRaises(ValueError):
+            bad_line.project(test_bad_line_point)
 
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""

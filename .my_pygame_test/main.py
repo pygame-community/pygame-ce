@@ -10,11 +10,10 @@ p = (1, 1)
 
 running = True
 while running:
-
     window.fill((255, 255, 255))
 
     pygame.draw.line(window, (255, 0, 0), l.a, l.b, 5)
-    
+
     pygame.draw.circle(window, (0, 255, 0), p, 5)
     pygame.draw.circle(window, (0, 255, 0), l.project(p, do_clamp=True), 5)
 
