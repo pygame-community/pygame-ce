@@ -36,14 +36,7 @@ subdir('mask')
 
 subdir('bufferproxy')
 
-pixelarray = py.extension_module(
-    'pixelarray',
-    'pixelarray.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('pixelarray')
 
 subdir('math')
 

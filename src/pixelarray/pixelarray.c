@@ -25,7 +25,7 @@
 #include "pgcompat.h"
 #include <stddef.h>
 
-#include "doc/pixelarray_doc.h"
+#include "pixelarray_doc.h"
 
 #include "surface/surface.h"
 #if !defined(BUILD_STATIC)
