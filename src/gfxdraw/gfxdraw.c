@@ -32,13 +32,13 @@
 
 #include "pygame.h"
 
-#include "doc/gfxdraw_doc.h"
+#include "gfxdraw_doc.h"
 
 #include "surface/surface.h"
 
 #include "pgcompat.h"
 
-#include "SDL_gfx/SDL_gfxPrimitives.h"
+#include "SDL_gfxPrimitives.h"
 
 static PyObject *
 _gfx_pixelcolor(PyObject *self, PyObject *args);

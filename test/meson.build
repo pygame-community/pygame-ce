@@ -10,7 +10,6 @@ test_files = files(
     'font_test.py',
     'freetype_test.py',
     'ftfont_test.py',
-    'gfxdraw_test.py',
     'image__save_gl_surface_test.py',
     'imageext_test.py',
     'locals_test.py',

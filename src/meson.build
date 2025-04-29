@@ -53,17 +53,7 @@ subdir('window')
 
 subdir('_render')
 
-# TODO: support SDL3
-if sdl_api != 3
-gfxdraw = py.extension_module(
-    'gfxdraw',
-    ['gfxdraw.c', 'SDL_gfx/SDL_gfxPrimitives.c'],
-    # c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
-endif
+subdir('gfxdraw')
 
 # pygame._sdl2
 subdir('_sdl2')
