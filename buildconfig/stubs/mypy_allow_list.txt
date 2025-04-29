@@ -18,6 +18,7 @@ pygame\.camera
 pygame\.gfxdraw
 pygame\.freetype
 pygame\.midi
+pygame\._sdl2.*
 
 # don't look for stubs for pyinstaller hook
 pygame\.__pyinstaller.*
@@ -30,6 +31,5 @@ pygame\.macosx
 pygame\.newbuffer
 pygame\.pkgdata
 pygame\.pypm
-pygame\._sdl2\.mixer
 pygame\.sysfont.*
 pygame\.docs.*
