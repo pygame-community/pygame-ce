@@ -17,6 +17,7 @@ if sdl_api != 3
             install: true,
             subdir: pg,
         )
+        py.install_sources('freetype.py', subdir: pg)
         install_data('freetype.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
         py.install_sources('freetype_test.py', subdir: pg / 'tests')
     endif

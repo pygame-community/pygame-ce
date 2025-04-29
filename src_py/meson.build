@@ -1,7 +1,6 @@
 # pure python sources
 python_sources = files(
     '__init__.py',
-    'freetype.py',
     'ftfont.py',
     'locals.py',
     'macosx.py',
