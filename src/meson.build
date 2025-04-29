@@ -66,7 +66,7 @@ subdir('font')
 
 subdir('mixer')
 
-subdir('freetype')
+subdir('_freetype')
 
 if portmidi_dep.found()
     pypm = py.extension_module(
