@@ -29,7 +29,6 @@ test_files = files(
     'typing_test.py',
     'version_test.py',
     'video_test.py',
-    'window_test.py',
 )
 
 py.install_sources(test_files, subdir: pg / 'tests')
