@@ -7,6 +7,7 @@ if sdl_api != 3
         install: true,
         subdir: pg / '_sdl2',
     )
+    install_data('sdl2.pyi', install_dir: pg_dir / '_sdl2', install_tag: 'pg-tag')
 endif
 
 py.install_sources('__init__.py', subdir: pg / '_sdl2')
