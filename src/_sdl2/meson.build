@@ -57,8 +57,4 @@ endif
 
 subdir('window')
 
-# pure python sources
-python_sources = files(
-    '__init__.py',
-)
-py.install_sources(python_sources, subdir: pg / '_sdl2')
+subdir('_sdl2')
