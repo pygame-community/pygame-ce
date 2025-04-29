@@ -17,7 +17,6 @@ test_files = files(
     'midi_test.py',
     'mixer_music_test.py',
     'mixer_test.py',
-    'pixelcopy_test.py',
     'scrap_tags.py',
     'scrap_test.py',
     'sndarray_tags.py',

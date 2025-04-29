@@ -26,7 +26,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/pixelcopy_doc.h"
+#include "pixelcopy_doc.h"
 
 typedef enum {
     PXC_VIEWKIND_RED,

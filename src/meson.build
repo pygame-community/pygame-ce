@@ -40,14 +40,7 @@ subdir('pixelarray')
 
 subdir('math')
 
-pixelcopy = py.extension_module(
-    'pixelcopy',
-    'pixelcopy.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+subdir('pixelcopy')
 
 newbuffer = py.extension_module(
     'newbuffer',
