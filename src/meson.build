@@ -42,6 +42,8 @@ subdir('math')
 
 subdir('pixelcopy')
 
+subdir('surfarray')
+
 subdir('sndarray')
 
 subdir('newbuffer')
