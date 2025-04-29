@@ -7,5 +7,6 @@ color = py.extension_module(
     install: true,
     subdir: pg,
 )
+py.install_sources('colordict.py', subdir: pg)
 install_data('color.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
 py.install_sources('color_test.py', subdir: pg / 'tests')
