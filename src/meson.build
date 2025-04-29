@@ -91,6 +91,8 @@ if portmidi_dep.found()
     )
 endif
 
+subdir('macosx')
+
 subdir('resources')
 
 subdir('__briefcase')
