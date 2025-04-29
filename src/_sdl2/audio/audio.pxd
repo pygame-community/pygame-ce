@@ -1,13 +1,17 @@
 # cython: language_level=3str
 #
 
-from .sdl2 cimport *
+from libc.string cimport memset
 
 cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_OpenAudioDevice
     # https://wiki.libsdl.org/SDL_CloseAudioDevice
     # https://wiki.libsdl.org/SDL_AudioSpec
     # https://wiki.libsdl.org/SDL_AudioFormat
+
+    ctypedef unsigned char Uint8
+    ctypedef unsigned short Uint16
+    ctypedef unsigned long Uint32
 
     ctypedef Uint32 SDL_AudioDeviceID
     ctypedef Uint16 SDL_AudioFormat

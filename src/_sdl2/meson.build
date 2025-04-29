@@ -2,14 +2,7 @@
 if sdl_api != 3
 cython_base = '../cython/pygame/_sdl2'
 
-_sdl2_audio = py.extension_module(
-    'audio',
-    fs.is_file('audio.c') ? 'audio.c' : cython_base / 'audio.pyx',
-    dependencies: pg_base_deps,
-    include_directories: '../include',
-    install: true,
-    subdir: pg / '_sdl2',
-)
+subdir('audio')
 
 subdir('video')
 

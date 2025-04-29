@@ -1,8 +1,6 @@
 # cython: language_level=3str
 #
 
-#from .sdl2 cimport *
-
 cdef extern from "../rect/pgcompat_rect.h" nogil:
     ctypedef struct SDL_FRect:
         float x, y
