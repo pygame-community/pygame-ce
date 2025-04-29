@@ -94,7 +94,7 @@ setup-args = [
 [tool.ruff]
 exclude = [
   "buildconfig/*.py",
-  "src/typing/typing.pyi",
+  "src/typing/*",
   "docs/reST/",
   "setup.py",
 ]
