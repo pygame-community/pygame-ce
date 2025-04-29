@@ -2,7 +2,7 @@
 
 #if PG_ENABLE_ARM_NEON
 // sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
-#include "sse2neon.h"
+#include "../include/sse2neon.h"
 #endif /* PG_ENABLE_ARM_NEON */
 
 #define BAD_SSE2_FUNCTION_CALL                                               \
