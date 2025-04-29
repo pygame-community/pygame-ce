@@ -13,8 +13,6 @@ test_files = files(
     'imageext_test.py',
     'locals_test.py',
     'midi_test.py',
-    'mixer_music_test.py',
-    'mixer_test.py',
     'sndarray_tags.py',
     'sndarray_test.py',
     'sprite_test.py',

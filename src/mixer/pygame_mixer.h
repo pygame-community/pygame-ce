@@ -43,7 +43,7 @@ typedef struct {
 #define pgSound_AsChunk(x) (((pgSoundObject *)x)->chunk)
 #define pgChannel_AsInt(x) (((pgChannelObject *)x)->chan)
 
-#include "pgimport.h"
+#include "../include/pgimport.h"
 
 #ifndef PYGAMEAPI_MIXER_INTERNAL
 

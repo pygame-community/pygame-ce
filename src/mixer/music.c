@@ -28,7 +28,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/music_doc.h"
+#include "music_doc.h"
 
 #include "mixer.h"
 

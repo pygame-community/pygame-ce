@@ -28,7 +28,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/mixer_doc.h"
+#include "mixer_doc.h"
 
 #include "mixer.h"
 

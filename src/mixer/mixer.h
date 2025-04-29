@@ -9,6 +9,6 @@
     return RAISE(pgExc_SDLError, "mixer not initialized")
 
 #define PYGAMEAPI_MIXER_NUMSLOTS 5
-#include "include/pygame_mixer.h"
+#include "pygame_mixer.h"
 
 #endif /* ~MIXER_INTERNAL_H */
