@@ -23,7 +23,7 @@
 
 #include "freetype.h"
 
-#include "freetype/ft_wrap.h"
+#include "ft_wrap.h"
 
 #include "freetype_doc.h"
 
