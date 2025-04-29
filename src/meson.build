@@ -44,6 +44,8 @@ subdir('pixelcopy')
 
 subdir('newbuffer')
 
+subdir('typing')
+
 # new/experimental/uncommon stuff, but built by default
 subdir('system')
 

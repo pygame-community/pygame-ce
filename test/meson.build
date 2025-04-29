@@ -19,7 +19,6 @@ test_files = files(
     'surfarray_test.py',
     'sysfont_test.py',
     'touch_test.py',
-    'typing_test.py',
     'version_test.py',
     'video_test.py',
 )
