@@ -6,14 +6,7 @@ subdir('audio')
 
 subdir('video')
 
-_sdl2_controller_old = py.extension_module(
-    'controller_old',
-    fs.is_file('controller_old.c') ? 'controller_old.c' : cython_base / 'controller_old.pyx',
-    dependencies: pg_base_deps,
-    include_directories: '../include',
-    install: true,
-    subdir: pg / '_sdl2',
-)
+subdir('controller_old')
 
 if sdl_mixer_dep.found()
     _sdl2_mixer = py.extension_module(

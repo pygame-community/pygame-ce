@@ -1,11 +1,16 @@
 # cython: language_level=3str
 #
 
-from .sdl2 cimport *
-
 #https://wiki.libsdl.org/CategoryGameController
 
 cdef extern from "SDL.h" nogil:
+    ctypedef unsigned char Uint8
+    ctypedef signed short Sint16
+    ctypedef unsigned short Uint16
+    ctypedef signed long Sint32
+    ctypedef unsigned long Uint32
+    ctypedef int SDL_bool
+
     ctypedef enum SDL_GameControllerAxis:
         SDL_CONTROLLER_AXIS_INVALID = -1,
         SDL_CONTROLLER_AXIS_LEFTX,

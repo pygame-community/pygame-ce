@@ -11,6 +11,11 @@ cdef extern from "pygame.h" nogil:
 cdef extern from "SDL.h" nogil:
     void SDL_free(void *mem)
     int SDL_VERSION_ATLEAST(int major, int minor, int patch)
+    int SDL_InitSubSystem(Uint32 flags)
+    void SDL_QuitSubSystem(Uint32 flags)
+    Uint32 SDL_WasInit(Uint32 flags)
+
+    cdef int _SDL_INIT_GAMECONTROLLER "SDL_INIT_GAMECONTROLLER"
 
 import_pygame_joystick()
 
