@@ -1,5 +1,7 @@
 #include "doc/geometry_doc.h"
 #include "geometry_common.h"
+#include "methodobject.h"
+#include "pytypedefs.h"
 
 static double
 pgLine_Length(pgLineBase *line)
@@ -179,27 +181,6 @@ _line_scale_helper(pgLineBase *line, double factor, double origin)
     return 1;
 }
 
-void
-_normalize_vector(double *vector)
-{
-    double length = sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
-    // check to see if the vector is zero
-    if (length == 0) {
-        vector[0] = 0;
-        vector[1] = 0;
-    }
-    else {
-        vector[0] /= length;
-        vector[1] /= length;
-    }
-}
-
-double
-_length_of_vector(double *vector)
-{
-    return sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
-}
-
 static PyObject *
 _line_project_helper(pgLineBase *line, double *point, int clamp)
 {
@@ -281,21 +262,25 @@ pg_line_scale_ip(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static PyObject *
-pg_line_project(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs,
-                PyObject *kwnames)
+pg_line_project(pgLineObject *self, PyObject *args, PyObject *kwnames)
 {
     double point[2] = {0.f, 0.f};
     int clamp = 0;
 
-    if (nargs >= 1) {
-        if (!pg_TwoDoublesFromObj(args[0], &point[0], &point[1])) {
-            return RAISE(PyExc_TypeError,
-                         "project requires a sequence of two numbers");
-        }
+    PyObject *point_obj = NULL;
+
+    static char *kwlist[] = {"point", "clamp", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwnames, "O|p:project", kwlist,
+                                     &point_obj, &clamp)) {
+        return RAISE(
+            PyExc_TypeError,
+            "project requires a sequence(point) and an optional clamp flag");
     }
 
-    if (kwnames != NULL) {
-        clamp = PyObject_IsTrue(args[nargs]);
+    if (!pg_TwoDoublesFromObj(point_obj, &point[0], &point[1])) {
+        return RAISE(PyExc_TypeError,
+                     "project requires a sequence of two numbers");
     }
 
     PyObject *projected_point;
@@ -319,7 +304,7 @@ static struct PyMethodDef pg_line_methods[] = {
     {"scale", (PyCFunction)pg_line_scale, METH_FASTCALL, DOC_LINE_SCALE},
     {"scale_ip", (PyCFunction)pg_line_scale_ip, METH_FASTCALL,
      DOC_LINE_SCALEIP},
-    {"project", (PyCFunction)pg_line_project, METH_FASTCALL | METH_KEYWORDS,
+    {"project", (PyCFunction)pg_line_project, METH_VARARGS | METH_KEYWORDS,
      DOC_LINE_PROJECT},
     {NULL, NULL, 0, NULL}};
 
