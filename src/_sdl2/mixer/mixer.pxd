@@ -1,7 +1,8 @@
 # cython: language_level=3str
 #
 
-from .sdl2 cimport *
+cdef extern from "SDL.h" nogil:
+    ctypedef unsigned char Uint8
 
 #https://www.libsdl.org/projects/SDL_mixer/docs/SDL_mixer.html#SEC79
 
