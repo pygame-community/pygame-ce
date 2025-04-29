@@ -25,13 +25,3 @@ py.install_sources(python_sources, subdir: pg)
 if not sdl_ttf_dep.found() and freetype_dep.found()
     py.install_sources('ftfont.py', subdir: pg, rename: 'font.py')
 endif
-
-data_files = files(
-    'freesansbold.ttf',
-    'pygame_icon.bmp',
-)
-if plat == 'mac'
-    data_files += 'pygame_icon_mac.bmp'
-endif
-
-install_data(data_files, install_dir: pg_dir, install_tag: 'pg-tag')

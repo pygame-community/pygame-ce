@@ -858,8 +858,8 @@ PACKAGEDATA = {
                     'pygame.tests': 'test',
                     'pygame.docs': 'docs',
                     'pygame.examples': 'examples',
-                    'pygame.__pyinstaller': 'src_py/__pyinstaller',
-                    'pygame.__briefcase': 'src_py/__briefcase'},
+                    'pygame.__pyinstaller': 'src/__pyinstaller',
+                    'pygame.__briefcase': 'src/__briefcase'},
     "headers": headers,
     "ext_modules": extensions,
     "data_files": data_files,
@@ -867,11 +867,11 @@ PACKAGEDATA = {
 }
 if STRIPPED:
     pygame_data_files = []
-    data_files = [('pygame', ["src_py/freesansbold.ttf",
-                              "src_py/pygame.ico",
-                              "src_py/pygame_icon.icns",
-                              "src_py/pygame_icon.bmp",
-                              "src_py/pygame_icon_mac.bmp"])]
+    data_files = [('pygame', ["src/resources/freesansbold.ttf",
+                              "src/resources/pygame.ico",
+                              "src/resources/pygame_icon.icns",
+                              "src/resources/pygame_icon.bmp",
+                              "src/resources/pygame_icon_mac.bmp"])]
 
     PACKAGEDATA = {
         "cmdclass": cmdclass,
