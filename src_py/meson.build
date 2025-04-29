@@ -2,7 +2,6 @@
 python_sources = files(
     '__init__.py',
     'locals.py',
-    'sysfont.py',
 )
 py.install_sources(python_sources, subdir: pg)
 

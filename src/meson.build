@@ -82,6 +82,8 @@ subdir('pkgdata')
 # optional modules
 subdir('font')
 
+subdir('sysfont')
+
 subdir('ftfont')
 
 subdir('mixer')
