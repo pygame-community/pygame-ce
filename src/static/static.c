@@ -346,7 +346,7 @@ PyInit_pygame_static()
 #undef pgSurface_Prep
 #undef pgSurface_Unprep
 
-#include "surflock.c"
+#include "surflock/surflock.c"
 
 #undef pgColor_New
 #undef pgColor_NewLength
@@ -386,7 +386,7 @@ PyInit_pygame_static()
 #undef pgRWops_FromFileObject
 #undef pgRWops_FromObject
 
-#include "rwobject.c"
+#include "rwobject/rwobject.c"
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
 #include "image.c"
@@ -414,7 +414,7 @@ PyInit_pygame_static()
 #include "system.c"
 #include "geometry.c"
 
-#include "_freetype.c"
+#include "freetype/freetype.c"
 #include "freetype/ft_wrap.c"
 #include "freetype/ft_render.c"
 #include "freetype/ft_render_cb.c"
@@ -434,7 +434,7 @@ PyInit_pygame_static()
 
 #include "surface_fill.c"
 #include "pixelarray.c"
-#include "pixelcopy.c"
+#include "pixelcopy/pixelcopy.c"
 #include "newbuffer.c"
 
 #include "_sdl2/controller.c"

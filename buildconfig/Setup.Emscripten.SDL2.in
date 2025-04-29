@@ -20,7 +20,7 @@ _sdl2.sdl2 src/_sdl2/sdl2.c $(SDL) $(DEBUG) -Isrc
 _sdl2.audio src/_sdl2/audio.c $(SDL) $(DEBUG) -Isrc
 
 pygame_sdl2_video src/_sdl2/video.c src/pgcompat.c $(SDL) $(DEBUG) -Isrc
-_sdl2.video = src/void.c
+_sdl2.video = src/static/void.c
 
 
 _sdl2.mixer src/_sdl2/mixer.c $(SDL) $(MIXER) $(DEBUG) -Isrc
@@ -33,46 +33,46 @@ math src/math.c $(SDL) $(DEBUG)
 GFX = src/SDL_gfx/SDL_gfxPrimitives.c
 
 
-static src/static.c $(SDL) $(FREETYPE) $(FONT) $(MIXER) $(IMAGE) $(PNG) $(JPEG) $(DEBUG)
+static src/static/static.c $(SDL) $(FREETYPE) $(FONT) $(MIXER) $(IMAGE) $(PNG) $(JPEG) $(DEBUG)
 
 # these should not be altered they already are in static.c merging file above
-time src/void.c
-_freetype src/void.c
-imageext src/void.c
-image src/void.c
-base src/void.c
-bufferproxy src/void.c
-color src/void.c
-controller src/void.c
-controller_old src/void.c
-display src/void.c
-draw src/void.c
-event src/void.c
-font src/void.c
-gfxdraw  src/void.c
-joystick src/void.c
-key src/void.c
-newbuffer  src/void.c
-mixer_music src/void.c
-mixer src/void.c
-mouse src/void.c
-pixelcopy src/void.c
-pixelarray src/void.c
-surface src/void.c
-surflock src/void.c
-rect src/void.c
-rwobject src/void.c
-system src/void.c
-window src/void.c
-_render src/void.c
-geometry src/void.c
+time src/static/void.c
+_freetype src/static/void.c
+imageext src/static/void.c
+image src/static/void.c
+base src/static/void.c
+bufferproxy src/static/void.c
+color src/static/void.c
+controller src/static/void.c
+controller_old src/static/void.c
+display src/static/void.c
+draw src/static/void.c
+event src/static/void.c
+font src/static/void.c
+gfxdraw  src/static/void.c
+joystick src/static/void.c
+key src/static/void.c
+newbuffer src/static/void.c
+mixer_music src/static/void.c
+mixer src/static/void.c
+mouse src/static/void.c
+pixelcopy src/static/void.c
+pixelarray src/static/void.c
+surface src/static/void.c
+surflock src/static/void.c
+rect src/static/void.c
+rwobject src/static/void.c
+system src/static/void.c
+window src/static/void.c
+_render src/static/void.c
+geometry src/static/void.c
 
 #_sdl2.controller src/_sdl2/controller.c $(SDL) $(DEBUG) -Isrc
-_sdl2.controller src/void.c
-_sdl2.controller_old src/void.c
+_sdl2.controller src/static/void.c
+_sdl2.controller_old src/static/void.c
 
 #_sdl2.touch src/_sdl2/touch.c $(SDL) $(DEBUG) -Isrc
-_sdl2.touch src/void.c
+_sdl2.touch src/static/void.c
 
 #transform src/simd_transform_sse2.c src/simd_transform_avx2.c src/transform.c src/rotozoom.c src/scale2x.c src/scale_mmx.c src/simd_surface_fill_avx2.c src/simd_surface_fill_sse2.c $(SDL) $(DEBUG) -D_NO_MMX_FOR_X86_64
-transform src/void.c
+transform src/static/void.c
