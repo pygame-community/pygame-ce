@@ -35,7 +35,7 @@ surface = py.extension_module(
         'alphablit.c',
         'surface_fill.c',
     ],
-    include_directories: '..',
+    include_directories: '../include',
     c_args: warnings_error,
     link_with: [
         simd_blitters_avx2,

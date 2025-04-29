@@ -31,7 +31,7 @@ endif
 transform = py.extension_module(
     'transform',
     transform_sources,
-    include_directories: '..',
+    include_directories: '../include',
     c_args: warnings_error,
     link_with: [simd_transform_avx2, simd_transform_sse2],
     objects: transform_objs,

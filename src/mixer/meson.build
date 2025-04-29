@@ -4,7 +4,7 @@ if sdl_api != 3
         mixer = py.extension_module(
             'mixer',
             'mixer.c',
-            include_directories: '..',
+            include_directories: '../include',
             c_args: warnings_error,
             dependencies: pg_base_deps + sdl_mixer_dep,
             install: true,
@@ -16,7 +16,7 @@ if sdl_api != 3
         mixer_music = py.extension_module(
             'mixer_music',
             'music.c',
-            include_directories: '..',
+            include_directories: '../include',
             c_args: warnings_error,
             dependencies: pg_base_deps + sdl_mixer_dep,
             install: true,

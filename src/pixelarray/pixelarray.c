@@ -27,7 +27,7 @@
 
 #include "pixelarray_doc.h"
 
-#include "surface/surface.h"
+#include "../surface/surface.h"
 #if !defined(BUILD_STATIC)
 static char FormatUint8[] = "B";
 static char FormatUint16[] = "=H";

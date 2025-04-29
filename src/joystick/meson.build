@@ -1,7 +1,7 @@
 joystick = py.extension_module(
     'joystick',
     'joystick.c',
-    include_directories: '..',
+    include_directories: '../include',
     c_args: warnings_error,
     dependencies: pg_base_deps,
     install: true,

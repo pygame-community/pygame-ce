@@ -33,7 +33,7 @@
 */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include "include/pythoncapi_compat.h"
+#include "pythoncapi_compat.h"
 
 /* Ensure PyPy-specific code is not in use when running on GraalPython (PR
  * #2580) */
@@ -606,7 +606,7 @@ typedef enum {
 /*
  * include public API
  */
-#include "include/_pygame.h"
+#include "_pygame.h"
 
 /* Slot counts.
  * Remember to keep these constants up to date.

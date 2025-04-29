@@ -1,7 +1,7 @@
 mask = py.extension_module(
     'mask',
     ['mask.c', 'bitmask.c'],
-    include_directories: '..',
+    include_directories: '../include',
     c_args: warnings_error + warnings_temp_mask,
     dependencies: pg_base_deps,
     install: true,

@@ -17,8 +17,8 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include "../pygame.h"
-#include "../pgcompat.h"
+#include "pygame.h"
+#include "pgcompat.h"
 
 #include "../doc/touch_doc.h"
 

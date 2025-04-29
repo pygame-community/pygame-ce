@@ -11,8 +11,6 @@
 
 */
 
-#include "_pygame.h"
-#define NO_PYGAME_C_API
 #include "pygame.h"
 
 #include "math.h"

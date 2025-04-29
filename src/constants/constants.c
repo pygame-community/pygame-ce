@@ -24,7 +24,7 @@
 
 #include "pgcompat.h"
 
-#include "scrap/scrap.h"
+#include "../scrap/scrap.h"
 
 /* macros used to create each constant */
 #define ADD_ERROR(x)                                      \

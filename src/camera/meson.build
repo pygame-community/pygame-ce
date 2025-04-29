@@ -27,7 +27,7 @@ python_sources = files(
 _camera = py.extension_module(
     '_camera',
     pg_camera_sources,
-    include_directories: '..',
+    include_directories: '../include',
     c_args: warnings_error,
     dependencies: pg_base_deps,
     link_args: pg_camera_link,

@@ -2,7 +2,7 @@ if sdl_ttf_dep.found()
     font = py.extension_module(
         'font',
         'font.c',
-        include_directories: '..',
+        include_directories: '../include',
         c_args: warnings_error,
         dependencies: pg_base_deps + sdl_ttf_dep,
         install: true,

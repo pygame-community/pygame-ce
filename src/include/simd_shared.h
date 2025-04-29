@@ -2,7 +2,7 @@
 #ifndef SIMD_SHARED_H
 #define SIMD_SHARED_H
 
-#include "surface/_surface.h"
+#include "../surface/_surface.h"
 
 int
 pg_sse2_at_runtime_but_uncompiled();

@@ -11,7 +11,7 @@ if sdl_api != 3
                 'ft_unicode.c',
                 'freetype.c',
             ],
-            include_directories: '..',
+            include_directories: '../include',
             c_args: warnings_error + warnings_temp_freetype,
             dependencies: pg_base_deps + freetype_dep,
             install: true,

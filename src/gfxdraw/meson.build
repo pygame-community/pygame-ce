@@ -3,7 +3,7 @@ if sdl_api != 3
 gfxdraw = py.extension_module(
     'gfxdraw',
     ['gfxdraw.c', 'SDL_gfxPrimitives.c'],
-    include_directories: '..',
+    include_directories: '../include',
     # c_args: warnings_error,
     dependencies: pg_base_deps,
     install: true,

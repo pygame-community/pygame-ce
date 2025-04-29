@@ -19,7 +19,6 @@
 */
 
 #define PYGAME_FREETYPE_INTERNAL
-#define NO_PYGAME_C_API
 
 #include "ft_wrap.h"
 #include FT_MODULE_H

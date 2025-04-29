@@ -5,7 +5,7 @@
 #include "pgcompat.h"
 #include "pgopengl.h"
 
-#include "doc/sdl2_video_doc.h"
+#include "../doc/sdl2_video_doc.h"
 #include "window_doc.h"
 
 static int is_window_mod_init = 0;

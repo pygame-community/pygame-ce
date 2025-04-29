@@ -633,7 +633,6 @@ PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */
 
-#endif /* PYGAME_H */
 
 /*  Use the end of this file for other cross module inline utility
  *  functions There seems to be no good reason to stick to macro only
@@ -799,3 +798,5 @@ pg_PointList_FromArrayDouble(double const *array, int arr_length)
     __cached_exception_traceback = NULL;
 
 #endif
+
+#endif /* PYGAME_H */

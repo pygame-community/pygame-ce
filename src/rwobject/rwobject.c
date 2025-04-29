@@ -29,7 +29,7 @@
 
 #include "pgcompat.h"
 
-#include "base/pygame_doc.h"
+#include "../base/pygame_doc.h"
 
 typedef struct {
     PyObject *read;

@@ -34,7 +34,7 @@
 
 #include "gfxdraw_doc.h"
 
-#include "surface/surface.h"
+#include "../surface/surface.h"
 
 #include "pgcompat.h"
 

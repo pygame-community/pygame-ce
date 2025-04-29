@@ -1,7 +1,7 @@
 from pygame._sdl2.sdl2 import error
 cimport cython
 
-cdef extern from "../pygame.h" nogil:
+cdef extern from "pygame.h" nogil:
     int pgJoystick_Check(object joy)
     object pgJoystick_New(int);
     void import_pygame_joystick()

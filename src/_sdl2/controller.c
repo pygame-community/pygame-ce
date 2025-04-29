@@ -1,6 +1,6 @@
 
-#include "../pgcompat.h"
-#include "../pygame.h"
+#include "pgcompat.h"
+#include "pygame.h"
 #include "structmember.h"
 
 #include "../doc/sdl2_controller_doc.h"
