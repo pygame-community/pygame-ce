@@ -40,6 +40,8 @@ subdir('pixelarray')
 
 subdir('math')
 
+subdir('locals')
+
 subdir('pixelcopy')
 
 subdir('surfarray')

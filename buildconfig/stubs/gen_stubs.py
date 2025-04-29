@@ -148,7 +148,7 @@ with open(init_file, "w") as f:
         f.write(")\n")
 
 # write locals.pyi file
-locals_file = pathlib.Path(__file__).parent / "pygame" / "locals.pyi"
+locals_file = pathlib.Path(__file__).parent.parent.parent / "src" / "locals" / "locals.pyi"
 with open(locals_file, "w") as f:
     f.write(info_header)
     f.write("\n")
