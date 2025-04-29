@@ -33,7 +33,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/font_doc.h"
+#include "font_doc.h"
 
 #include "structmember.h"
 

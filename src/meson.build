@@ -62,16 +62,7 @@ subdir('camera')
 subdir('scrap')
 
 # optional modules
-if sdl_ttf_dep.found()
-    font = py.extension_module(
-        'font',
-        'font.c',
-        c_args: warnings_error,
-        dependencies: pg_base_deps + sdl_ttf_dep,
-        install: true,
-        subdir: pg,
-    )
-endif
+subdir('font')
 
 # TODO: support SDL3
 if sdl_api != 3
