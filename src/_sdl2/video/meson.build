@@ -8,4 +8,6 @@ _sdl2_video = py.extension_module(
 )
 
 install_data('video.pyi', install_dir: pg_dir / '_sdl2', install_tag: 'pg-tag')
-py.install_sources('video_test.py', subdir: pg / 'tests')
+if not get_option('stripped')
+    py.install_sources('video_test.py', subdir: pg / 'tests')
+endif

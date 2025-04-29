@@ -36,4 +36,6 @@ _camera = py.extension_module(
 )
 install_data('camera.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
 py.install_sources(python_sources, subdir: pg)
-py.install_sources('camera_test.py', subdir: pg / 'tests')
+if not get_option('stripped')
+    py.install_sources('camera_test.py', subdir: pg / 'tests')
+endif

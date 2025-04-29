@@ -21,4 +21,8 @@ if sdl_image_dep.found()
 endif
 
 install_data('image.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
-py.install_sources('image_test.py', subdir: pg / 'tests')
+if not get_option('stripped')
+    py.install_sources('image_test.py', subdir: pg / 'tests')
+    py.install_sources('imageext_test.py', subdir: pg / 'tests')
+    py.install_sources('image__save_gl_surface_test.py', subdir: pg / 'tests')
+endif

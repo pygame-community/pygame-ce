@@ -11,7 +11,9 @@ if sdl_api != 3
             subdir: pg,
         )
         install_data('mixer.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
-        py.install_sources('mixer_test.py', subdir: pg / 'tests')
+        if not get_option('stripped')
+            py.install_sources('mixer_test.py', subdir: pg / 'tests')
+        endif
 
         mixer_music = py.extension_module(
             'mixer_music',
@@ -23,6 +25,8 @@ if sdl_api != 3
             subdir: pg,
         )
         install_data('mixer_music.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
-        py.install_sources('mixer_music_test.py', subdir: pg / 'tests')
+        if not get_option('stripped')
+            py.install_sources('mixer_music_test.py', subdir: pg / 'tests')
+        endif
     endif
 endif

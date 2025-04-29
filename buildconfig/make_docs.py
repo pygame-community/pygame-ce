@@ -9,7 +9,7 @@ rst_dir = 'docs'
 rst_source_dir = os.path.join(rst_dir, 'reST')
 rst_build_dir = os.path.join('docs', 'generated')
 rst_doctree_dir = os.path.join(rst_build_dir, 'doctrees')
-c_header_dir = os.path.join('src', 'doc')
+c_header_dir = os.path.join('src', 'docs')
 
 special_paths = {
     "music": os.path.join("src", "mixer"),

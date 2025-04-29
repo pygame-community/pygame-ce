@@ -13,4 +13,6 @@ scrap = py.extension_module(
     subdir: pg,
 )
 install_data('scrap.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
-py.install_sources('scrap_test.py', subdir: pg / 'tests')
+if not get_option('stripped')
+    py.install_sources('scrap_test.py', subdir: pg / 'tests')
+endif

@@ -63,6 +63,8 @@ subdir('_debug')
 
 subdir('system')
 
+subdir('tests')
+
 subdir('geometry')
 
 subdir('window')
@@ -95,6 +97,8 @@ subdir('_freetype')
 subdir('pypm')
 
 subdir('macosx')
+
+subdir('docs')
 
 subdir('resources')
 

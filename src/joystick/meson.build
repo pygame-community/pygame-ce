@@ -8,4 +8,6 @@ joystick = py.extension_module(
     subdir: pg,
 )
 install_data('joystick.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
-py.install_sources('joystick_test.py', subdir: pg / 'tests')
+if not get_option('stripped')
+    py.install_sources('joystick_test.py', subdir: pg / 'tests')
+endif

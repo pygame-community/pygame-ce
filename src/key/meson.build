@@ -8,4 +8,6 @@ key = py.extension_module(
     subdir: pg,
 )
 install_data('key.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
-py.install_sources('key_test.py', subdir: pg / 'tests')
+if not get_option('stripped')
+    py.install_sources('key_test.py', subdir: pg / 'tests')
+endif

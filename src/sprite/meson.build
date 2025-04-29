@@ -4,4 +4,6 @@ python_sources = files(
 )
 py.install_sources(python_sources, subdir: pg)
 install_data('sprite.pyi', install_dir: pg_dir, install_tag: 'pg-tag')
-py.install_sources('sprite_test.py', subdir: pg / 'tests')
+if not get_option('stripped')
+    py.install_sources('sprite_test.py', subdir: pg / 'tests')
+endif
