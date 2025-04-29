@@ -80,3 +80,5 @@ if portmidi_dep.found()
 endif
 
 subdir('__briefcase')
+
+subdir('__pyinstaller')
