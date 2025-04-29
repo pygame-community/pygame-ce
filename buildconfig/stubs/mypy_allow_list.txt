@@ -17,6 +17,7 @@ pygame\.tests.*
 pygame\.camera
 pygame\.gfxdraw
 pygame\.freetype
+pygame\.midi
 
 # don't look for stubs for pyinstaller hook
 pygame\.__pyinstaller.*

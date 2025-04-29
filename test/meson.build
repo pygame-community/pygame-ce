@@ -8,7 +8,6 @@ test_files = files(
     'image__save_gl_surface_test.py',
     'imageext_test.py',
     'locals_test.py',
-    'midi_test.py',
     'sndarray_tags.py',
     'sndarray_test.py',
     'surfarray_tags.py',

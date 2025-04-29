@@ -65,6 +65,8 @@ subdir('_render')
 
 subdir('gfxdraw')
 
+subdir('midi')
+
 subdir('_sdl2')
 
 subdir('camera')
