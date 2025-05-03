@@ -16,7 +16,7 @@
 #define DOC_SURFACE_UNLOCK "unlock() -> None\nUnlock the Surface memory from pixel access."
 #define DOC_SURFACE_MUSTLOCK "mustlock() -> bool\nTest if the Surface requires locking."
 #define DOC_SURFACE_GETLOCKED "get_locked() -> bool\nTest if the Surface is current locked."
-#define DOC_SURFACE_GETLOCKS "get_locks() -> tuple[Any, Ellipsis]\nGets the locks for the Surface."
+#define DOC_SURFACE_GETLOCKS "get_locks() -> tuple[Any, ...]\nGets the locks for the Surface."
 #define DOC_SURFACE_GETAT "get_at(x_y, /) -> Color\nGet the color value at a single pixel."
 #define DOC_SURFACE_SETAT "set_at(x_y, color, /) -> None\nSet the color value for a single pixel."
 #define DOC_SURFACE_GETATMAPPED "get_at_mapped(x_y, /) -> int\nGet the mapped color value at a single pixel."

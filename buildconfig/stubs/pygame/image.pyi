@@ -369,9 +369,7 @@ def load_basic(file: FileLike, /) -> Surface:
     file-like object, or a pathlib.Path.
 
     This function only supports loading "basic" image format, ie ``BMP``
-    format.
-
-    This function is always available, no matter how pygame was built.
+    format. This function is always available, no matter how pygame was built.
     """
 
 def load_extended(file: FileLike, namehint: str = "") -> Surface:
