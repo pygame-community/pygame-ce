@@ -69,6 +69,14 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
 /* statics */
 static pgSurfaceObject *
 pgSurface_New2(SDL_Surface *info, int owner);
+static int
+pgSurface_Lock(pgSurfaceObject *);
+static int
+pgSurface_Unlock(pgSurfaceObject *);
+static int
+pgSurface_LockBy(pgSurfaceObject *, PyObject *);
+static int
+pgSurface_UnlockBy(pgSurfaceObject *, PyObject *);
 static PyObject *
 surf_subtype_new(PyTypeObject *type, SDL_Surface *s, int owner);
 static PyObject *
@@ -710,6 +718,168 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     }
 
     return 0;
+}
+
+/* surflock methods */
+static void
+pgSurface_Prep(pgSurfaceObject *surfobj)
+{
+    struct pgSubSurface_Data *data = ((pgSurfaceObject *)surfobj)->subsurface;
+    if (data != NULL) {
+        pgSurface_LockBy((pgSurfaceObject *)data->owner, (PyObject *)surfobj);
+    }
+}
+
+static void
+pgSurface_Unprep(pgSurfaceObject *surfobj)
+{
+    struct pgSubSurface_Data *data = ((pgSurfaceObject *)surfobj)->subsurface;
+    if (data != NULL) {
+        pgSurface_UnlockBy((pgSurfaceObject *)data->owner,
+                           (PyObject *)surfobj);
+    }
+}
+
+static int
+pgSurface_Lock(pgSurfaceObject *surfobj)
+{
+    return pgSurface_LockBy(surfobj, (PyObject *)surfobj);
+}
+
+static int
+pgSurface_Unlock(pgSurfaceObject *surfobj)
+{
+    return pgSurface_UnlockBy(surfobj, (PyObject *)surfobj);
+}
+
+static int
+pgSurface_LockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
+{
+    PyObject *ref;
+    pgSurfaceObject *surf = (pgSurfaceObject *)surfobj;
+
+    if (surf->locklist == NULL) {
+        surf->locklist = PyList_New(0);
+        if (surf->locklist == NULL) {
+            return 0;
+        }
+    }
+    ref = PyWeakref_NewRef(lockobj, NULL);
+    if (ref == NULL) {
+        return 0;
+    }
+    if (ref == Py_None) {
+        Py_DECREF(ref);
+        return 0;
+    }
+    if (0 != PyList_Append(surf->locklist, ref)) {
+        Py_DECREF(ref);
+        return 0; /* Exception already set. */
+    }
+    Py_DECREF(ref);
+
+    if (surf->subsurface != NULL) {
+        pgSurface_Prep(surfobj);
+    }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_LockSurface(surf->surf))
+#else
+    if (SDL_LockSurface(surf->surf) == -1)
+#endif
+    {
+        PyErr_SetString(PyExc_RuntimeError, "error locking surface");
+        return 0;
+    }
+    return 1;
+}
+
+static int
+pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
+{
+    PG_DECLARE_EXCEPTION_SAVER
+
+    pgSurfaceObject *surf = (pgSurfaceObject *)surfobj;
+    int found = 0;
+    int noerror = 1;
+    int weakref_getref_result;
+
+    if (surf->locklist != NULL) {
+        PyObject *item, *ref;
+        Py_ssize_t len = PyList_Size(surf->locklist);
+        while (--len >= 0 && !found) {
+            item = PyList_GetItem(surf->locklist, len);
+
+            weakref_getref_result = PyWeakref_GetRef(item, &ref);
+            if (weakref_getref_result == -1) {
+                noerror = 0;
+            }
+            if (weakref_getref_result == 1) {
+                if (ref == lockobj) {
+                    // Need to cache any currently set exceptions before
+                    // calling PySequence_DelItem
+                    PG_SAVE_EXCEPTION
+
+                    if (PySequence_DelItem(surf->locklist, len) == -1) {
+                        Py_DECREF(ref);
+                        // Restore the previously set exception before
+                        // returning
+                        PG_UNSAVE_EXCEPTION
+                        return 0;
+                    }
+                    else {
+                        found = 1;
+                    }
+                    // Restore the previously set exception
+                    PG_UNSAVE_EXCEPTION
+                }
+                Py_DECREF(ref);
+            }
+        }
+
+        /* Clear dead references */
+        len = PyList_Size(surf->locklist);
+        while (--len >= 0) {
+            item = PyList_GetItem(surf->locklist, len);
+
+            weakref_getref_result = PyWeakref_GetRef(item, &ref);
+            if (weakref_getref_result == -1) {
+                noerror = 0;
+            }
+            else if (weakref_getref_result == 0) {
+                // Need to cache any currently set exceptions before calling
+                // PySequence_DelItem
+                PG_SAVE_EXCEPTION
+                if (PySequence_DelItem(surf->locklist, len) == -1) {
+                    noerror = 0;
+                }
+                else {
+                    found++;
+                }
+                // Restore the previously set exception
+                PG_UNSAVE_EXCEPTION
+            }
+            else if (weakref_getref_result == 1) {
+                Py_DECREF(ref);
+            }
+        }
+    }
+
+    if (!found) {
+        return noerror;
+    }
+
+    /* Release all found locks. */
+    while (found > 0) {
+        if (surf->surf != NULL) {
+            SDL_UnlockSurface(surf->surf);
+        }
+        if (surf->subsurface != NULL) {
+            pgSurface_Unprep(surfobj);
+        }
+        found--;
+    }
+
+    return noerror;
 }
 
 /* surface object methods */
@@ -4308,10 +4478,6 @@ MODINIT_DEFINE(surface)
     if (PyErr_Occurred()) {
         return NULL;
     }
-    _IMPORT_PYGAME_MODULE(surflock);
-    if (PyErr_Occurred()) {
-        return NULL;
-    }
 
     /* type preparation */
     if (PyType_Ready(&pgSurface_Type) < 0) {
@@ -4347,6 +4513,12 @@ MODINIT_DEFINE(surface)
     c_api[1] = pgSurface_New2;
     c_api[2] = pgSurface_Blit;
     c_api[3] = pgSurface_SetSurface;
+    c_api[4] = pgSurface_Prep;
+    c_api[5] = pgSurface_Unprep;
+    c_api[6] = pgSurface_Lock;
+    c_api[7] = pgSurface_Unlock;
+    c_api[8] = pgSurface_LockBy;
+    c_api[9] = pgSurface_UnlockBy;
     apiobj = encapsulate_api(c_api, "surface");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);

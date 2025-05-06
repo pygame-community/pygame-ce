@@ -33,7 +33,6 @@ from . import (
     rect as rect,
     rwobject as rwobject,
     surface as surface,
-    surflock as surflock,
     sysfont as sysfont,
     _debug as _debug,
     system as system,
