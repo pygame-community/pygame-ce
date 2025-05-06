@@ -1422,16 +1422,12 @@ MODINIT_DEFINE(font)
         return NULL;
     }
 
-    Py_INCREF(&PyFont_Type);
-    if (PyModule_AddObject(module, "FontType", (PyObject *)&PyFont_Type)) {
-        Py_DECREF(&PyFont_Type);
+    if (PyModule_AddObjectRef(module, "FontType", (PyObject *)&PyFont_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&PyFont_Type);
-    if (PyModule_AddObject(module, "Font", (PyObject *)&PyFont_Type)) {
-        Py_DECREF(&PyFont_Type);
+    if (PyModule_AddObjectRef(module, "Font", (PyObject *)&PyFont_Type)) {
         Py_DECREF(module);
         return NULL;
     }
