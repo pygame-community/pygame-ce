@@ -87,7 +87,11 @@ static PyTypeObject pgVectorIter_Type;
 
 #define pgVector2_Check(x) (PyType_IsSubtype(Py_TYPE(x), &pgVector2_Type))
 #define pgVector3_Check(x) (PyType_IsSubtype(Py_TYPE(x), &pgVector3_Type))
+#define pgVector2_CheckExact(x) (Py_TYPE(x) == &pgVector2_Type)
+#define pgVector3_CheckExact(x) (Py_TYPE(x) == &pgVector3_Type)
 #define pgVector_Check(x) (pgVector2_Check(x) || pgVector3_Check(x))
+#define pgVector_CheckExact(x) \
+    (pgVector2_CheckExact(x) || pgVector3_CheckExact(x))
 #define vector_elementwiseproxy_Check(x) \
     (Py_TYPE(x) == &pgVectorElementwiseProxy_Type)
 #define _vector_subtype_new(x) \
@@ -110,6 +114,31 @@ typedef struct {
 typedef struct {
     PyObject_HEAD pgVector *vec;
 } vector_elementwiseproxy;
+
+#define VECTOR_CACHE_SIZE 100
+
+static pgVector *vec2_cache[VECTOR_CACHE_SIZE] = {};
+static int vec2_cache_num = 0;
+static pgVector *vec3_cache[VECTOR_CACHE_SIZE] = {};
+static int vec3_cache_num = 0;
+
+#define _VEC_CACHE_ADD(x, v)                          \
+    {                                                 \
+        if (vec##x##_cache_num < VECTOR_CACHE_SIZE) { \
+            Py_INCREF(v);                             \
+            vec##x##_cache[vec##x##_cache_num] = v;   \
+            vec##x##_cache_num++;                     \
+        }                                             \
+    }
+
+#define _VEC_CACHE_POP(x, v)                           \
+    {                                                  \
+        if (vec##x##_cache_num > 0) {                  \
+            vec##x##_cache_num--;                      \
+            (v) = vec##x##_cache[vec##x##_cache_num];  \
+            vec##x##_cache[vec##x##_cache_num] = NULL; \
+        }                                              \
+    }
 
 /* further forward declarations */
 /* math functions */
@@ -632,7 +661,31 @@ pgVector_NEW(Py_ssize_t dim)
 static void
 vector_dealloc(pgVector *self)
 {
+    if (pgVector_CheckExact(self) &&
+        PyObject_CallFinalizerFromDealloc((PyObject *)self) < 0) {
+        return;
+    }
     Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+static void
+vector_finalize(PyObject *self)
+{
+    if (!pgVector_CheckExact(self))
+        return;
+
+    pgVector *vec = (pgVector *)self;
+
+    switch (vec->dim) {
+        case 2:
+            _VEC_CACHE_ADD(2, vec)
+            break;
+        case 3:
+            _VEC_CACHE_ADD(3, vec)
+            break;
+        default:
+            break;
+    }
 }
 
 /**********************************************
@@ -2266,7 +2319,15 @@ vector___round__(pgVector *self, PyObject *args)
 static PyObject *
 vector2_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    pgVector *vec = (pgVector *)type->tp_alloc(type, 0);
+    pgVector *vec = NULL;
+
+    if (type == &pgVector2_Type) {
+        _VEC_CACHE_POP(2, vec)
+    }
+
+    if (vec != NULL)
+        return (PyObject *)vec;
+    vec = (pgVector *)type->tp_alloc(type, 0);
 
     if (vec != NULL) {
         vec->dim = 2;
@@ -2686,6 +2747,7 @@ static PyTypeObject pgVector2_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.math.Vector2",
     .tp_basicsize = sizeof(pgVector),
     .tp_dealloc = (destructor)vector_dealloc,
+    .tp_finalize = (destructor)vector_finalize,
     .tp_repr = (reprfunc)vector_repr,
     .tp_as_number = &vector_as_number,
     .tp_as_sequence = &vector_as_sequence,
@@ -2711,7 +2773,15 @@ static PyTypeObject pgVector2_Type = {
 static PyObject *
 vector3_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    pgVector *vec = (pgVector *)type->tp_alloc(type, 0);
+    pgVector *vec = NULL;
+
+    if (type == &pgVector3_Type) {
+        _VEC_CACHE_POP(3, vec)
+    }
+
+    if (vec != NULL)
+        return (PyObject *)vec;
+    vec = (pgVector *)type->tp_alloc(type, 0);
 
     if (vec != NULL) {
         vec->dim = 3;
@@ -3597,6 +3667,7 @@ static PyTypeObject pgVector3_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.math.Vector3",
     .tp_basicsize = sizeof(pgVector),
     .tp_dealloc = (destructor)vector_dealloc,
+    .tp_finalize = (destructor)vector_finalize,
     .tp_repr = (reprfunc)vector_repr,
     .tp_as_number = &vector_as_number,
     .tp_as_sequence = &vector_as_sequence,
