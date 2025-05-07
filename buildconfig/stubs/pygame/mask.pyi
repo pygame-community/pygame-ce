@@ -52,6 +52,7 @@ class Mask:
         setcolor: Optional[ColorLike] = (255, 255, 255, 255),
         unsetcolor: Optional[ColorLike] = (0, 0, 0, 255),
         dest: Union[RectLike, Point] = (0, 0),
+        area: Optional[RectLike] = None,
     ) -> Surface: ...
 
 @deprecated("Use `Mask` instead (MaskType is an old alias)")
