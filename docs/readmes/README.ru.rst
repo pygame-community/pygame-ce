@@ -154,14 +154,14 @@ SDL_rotozoom, а gfxdraw имеет встроенную версию SDL_gfx.
 -----------------
 Прежде всего, спасибо, что согласились внести свой вклад в pygame-ce! Именно такие люди, как вы, делают pygame-ce отличной библиотекой. Пожалуйста, выполните следующие действия, чтобы начать:
 
-1. Ознакомьтесь со страницами вики `Contribution Guidelines`_ и `Many Ways to Contribute`_.
-2. Ознакомьтесь с документацией `Opening A Pull Request`_ и `Opening a Great Pull Request`_.
-3. Прочитайте, как сделать `label and link reported issues`_.
+1. Ознакомьтесь со страницами вики `Руководящие принципы по внесению вклада`_ и `Множество способов внести свой вклад`_.
+2. Ознакомьтесь с документацией `Отправка запроса на вытягивание`_ и `Отправка отличного запроса на вытягивание`_.
+3. Прочитайте, как `маркировать и связывать сообщённые проблемы`_.
 4. Проверьте `issue tracker`_ на наличие интересующих вас открытых проблем или создайте новую проблему, чтобы начать обсуждение своей идеи.
 
-На странице `wiki pages`_ есть множество ресурсов, которые могут помочь вам начать.
+На странице `вики-проекта`_ есть множество ресурсов, которые могут помочь вам начать.
 
-Если у вас есть какие-то вопросы, не стесняйтесь задавать их на `Pygame Community Discord Server`_ или открыв проблему (issue).
+Если у вас есть какие-то вопросы, не стесняйтесь задавать их на `сервере Discord Pygame Community`_ или открыв проблему (issue).
 
 License
 -------
@@ -205,14 +205,14 @@ License
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
-.. _Contribution Guidelines: https://github.com/pygame-community/pygame-ce/wiki/Contribution-guidelines
-.. _Many Ways to Contribute: https://github.com/pygame-community/pygame-ce/wiki/Many-ways-to-contribute
-.. _Opening A Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-pull-request
-.. _Opening a Great Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
+.. _Руководящие принципы по внесению вклада: https://github.com/pygame-community/pygame-ce/wiki/Contribution-guidelines
+.. _Множество способов внести свой вклад: https://github.com/pygame-community/pygame-ce/wiki/Many-ways-to-contribute
+.. _Отправка запроса на вытягивание: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-pull-request
+.. _Отправка отличного запроса на вытягивание: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
 .. _issue tracker: https://github.com/pygame-community/pygame-ce/issues
-.. _label and link reported issues: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
-.. _Pygame Community Discord Server: https://discord.gg/pygame
-.. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
+.. _маркировать и связывать сообщённые проблемы: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
+.. _сервере Discord Pygame Community: https://discord.gg/pygame
+.. _вики-проекта: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _English: ./../../README.rst
 .. _简体中文: README.zh-cn.rst
