@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-import sys
-import os
 import io
-import unittest
+import os
 import pathlib
 import platform
+import sys
+import unittest
 
 import pygame
 from pygame import font as pygame_font  # So font can be replaced with ftfont
@@ -409,6 +409,10 @@ class FontTypeTest(unittest.TestCase):
         # check invalid linesize
         with self.assertRaises(ValueError):
             f.set_linesize(-1)
+        with self.assertRaises(OverflowError):
+            f.set_linesize(2**100)
+        with self.assertRaises(TypeError):
+            f.set_linesize(12.0)
 
     def test_metrics(self):
         # Ensure bytes decoding works correctly. Can only compare results

@@ -518,6 +518,7 @@ solves no longer exists, it will likely be removed in the future.
 
       Set the height in pixels for a line of text with the font. When rendering
       multiple lines of text this refers to the amount of space between lines.
+      The value must be non-negative.
 
       .. versionadded:: 2.5.4
 
