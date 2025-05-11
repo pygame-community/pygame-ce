@@ -235,12 +235,18 @@ font_set_linesize(PyObject *self, PyObject *arg)
 
 #if SDL_TTF_VERSION_ATLEAST(2, 24, 0)
     TTF_Font *font = PyFont_AsFont(self);
-    int linesize = PyLong_AsLong(arg);
-    if (PyErr_Occurred())
-        return NULL;
 
-    if (linesize < 0)
+    if (!PyLong_Check(arg)) {
+        return RAISE(PyExc_TypeError, "linesize must be an integer");
+    }
+    int linesize = PyLong_AsLong(arg);
+    if (linesize == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
+
+    if (linesize < 0) {
         return RAISE(PyExc_ValueError, "linesize must be >= 0");
+    }
 
     TTF_SetFontLineSkip(font, linesize);
 
