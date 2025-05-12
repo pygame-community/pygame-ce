@@ -1,12 +1,11 @@
 from typing import Any, Optional, Union, overload
-from typing_extensions import deprecated  # added in 3.13
 
 import numpy
-
 from pygame.event import Event
+from pygame.typing import FileLike
+from typing_extensions import deprecated  # added in 3.13
 
 from . import mixer_music
-from pygame.typing import FileLike
 
 # export mixer_music as mixer.music
 music = mixer_music
@@ -62,8 +61,10 @@ class Sound:
     ) -> Channel: ...
     # possibly going to be deprecated/removed soon, in which case these
     # typestubs must be removed too
-    __array_interface__: dict[str, Any]
-    __array_struct__: Any
+    @property
+    def __array_interface__(self) -> dict[str, Any]: ...
+    @property
+    def __array_struct__(self) -> Any: ...
     def stop(self) -> None: ...
     def fadeout(self, time: int, /) -> None: ...
     def set_volume(self, value: float, /) -> None: ...
@@ -71,7 +72,6 @@ class Sound:
     def get_num_channels(self) -> int: ...
     def get_length(self) -> float: ...
     def get_raw(self) -> bytes: ...
-
 
 class Channel:
     def __init__(self, id: int) -> None: ...

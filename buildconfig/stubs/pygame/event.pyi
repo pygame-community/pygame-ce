@@ -1,7 +1,7 @@
-from typing import Any, Optional, Union, final
-from typing_extensions import deprecated  # added in 3.13
+from typing import Any, ClassVar, Optional, Union, final
 
 from pygame.typing import SequenceLike
+from typing_extensions import deprecated  # added in 3.13
 
 class _GenericEvent:
     # Just exists to avoid duplication of data for Event
@@ -10,11 +10,11 @@ class _GenericEvent:
     @property
     def type(self) -> int: ...
     __dict__: dict[str, Any]
-    __hash__: None  # type: ignore
+    __hash__: ClassVar[None]  # type: ignore[assignment]
     def __init__(
         self, type: int, dict: dict[str, Any] = ..., **kwargs: Any
     ) -> None: ...
-    def __getattribute__(self, name: str) -> Any: ...
+    def __getattr__(self, name: str) -> Any: ...
     def __setattr__(self, name: str, value: Any) -> None: ...
     def __delattr__(self, name: str) -> None: ...
     def __bool__(self) -> bool: ...

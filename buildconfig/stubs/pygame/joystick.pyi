@@ -1,4 +1,5 @@
 from typing import final
+
 from typing_extensions import deprecated  # added in 3.13
 
 def init() -> None: ...

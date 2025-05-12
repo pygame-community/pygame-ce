@@ -11,9 +11,9 @@ import os
 import re
 import subprocess
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import Any, Union
-from enum import Enum
 
 MOD_NAME = "pygame-ce"
 DIST_DIR = "dist"
@@ -27,7 +27,6 @@ pyproject_path = source_tree / "pyproject.toml"
 SDL3_ARGS = [
     "-Csetup-args=-Dsdl_api=3",
     "-Csetup-args=-Dmixer=disabled",
-    "-Csetup-args=-Dfont=disabled",
 ]
 COVERAGE_ARGS = ["-Csetup-args=-Dcoverage=true"]
 

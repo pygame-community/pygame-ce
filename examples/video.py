@@ -11,9 +11,9 @@ Experimental!
 """
 
 import os
-import pygame
 
-from pygame._sdl2 import Window, Texture, Image, Renderer, get_drivers
+import pygame
+from pygame._sdl2 import Image, Renderer, Texture, Window, get_drivers
 
 data_dir = os.path.join(os.path.split(os.path.abspath(__file__))[0], "data")
 

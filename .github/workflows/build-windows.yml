@@ -57,12 +57,12 @@ jobs:
           arch: ${{ matrix.msvc-dev-arch }}
 
       - name: Install uv for speed
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
           version: "0.5.26"
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.22.0
+        uses: pypa/cibuildwheel@v2.23.2
 
       - uses: actions/upload-artifact@v4
         with:

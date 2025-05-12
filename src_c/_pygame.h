@@ -84,7 +84,7 @@
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
-    SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
+    SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
 
 /* Emulating SDL2 SDL_LockMutex API. In SDL3, it returns void. */
 static inline int
@@ -129,6 +129,8 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 {
     return SDL_GetPixelFormatDetails(surf->format);
 }
+
+#define PG_GetSurfacePalette SDL_GetSurfacePalette
 
 #define PG_GetRGBA SDL_GetRGBA
 #define PG_GetRGB SDL_GetRGB
@@ -223,6 +225,12 @@ static inline PG_PixelFormat *
 PG_GetSurfaceFormat(SDL_Surface *surf)
 {
     return surf->format;
+}
+
+static inline SDL_Palette *
+PG_GetSurfacePalette(SDL_Surface *surf)
+{
+    return surf->format->palette;
 }
 
 // NOTE:
@@ -616,7 +624,8 @@ typedef enum {
 #define PYGAMEAPI_BASE_NUMSLOTS 30
 #define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
-#define PYGAMEAPI_RENDERER_NUMSLOTS 3
+#define PYGAMEAPI_RENDER_NUMSLOTS 3
 #define PYGAMEAPI_GEOMETRY_NUMSLOTS 2
+#define PYGAMEAPI_BUFFERPROXY_NUMSLOTS 4
 
 #endif /* _PYGAME_INTERNAL_H */
