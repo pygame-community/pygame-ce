@@ -57,7 +57,7 @@ them, this is how you can do it:
 Don't forget to report us any problem with the experimental features on `github`_ so we can easily
 turn them to stable API in the future ^^.
 
-**Below is currently the list of experimental modules :**
+**Below is currently the list of experimental modules:**
 
 :doc:`ref/geometry`
   Pygame module for the Circle, Line, and Polygon objects.
@@ -67,6 +67,9 @@ turn them to stable API in the future ^^.
 
 :doc:`ref/sdl2_video`
   Pygame module for porting new SDL video systems.
+
+:doc:`ref/_render`
+  Experimental pygame module porting the SDL render video system (A C implementation of the sdl2_video module, currently incomplete!)
 
 .. _github: https://github.com/pygame-community/pygame-ce
 
