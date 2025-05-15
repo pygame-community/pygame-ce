@@ -35,6 +35,20 @@ static PyTypeObject pgImage_Type;
         return RAISE(PyExc_TypeError, "invalid " #name " argument"); \
     }
 
+#define PARSE_COLOR(obj, r, g, b, a, name)                               \
+    if (Py_IsNone(obj)) {                                                \
+        r = 255; g = 255; b = 255; a = 255;                              \
+    }                                                                    \
+    else {                                                               \
+        if (!pg_IntFromObjIndex(obj, 0, &r) ||                           \
+            !pg_IntFromObjIndex(obj, 1, &g) ||                           \
+            !pg_IntFromObjIndex(obj, 2, &b)) {                           \
+            return RAISE(PyExc_TypeError, "invalid " #name " argument"); \
+        }                                                                \
+        if (PySequence_Size(obj) == 4)                                   \
+            pg_IntFromObjIndex(obj, 3, &a);                              \
+    }
+
 static void
 texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest);
 
@@ -546,7 +560,527 @@ renderer_dealloc(pgRendererObject *self, PyObject *_null)
 static void
 texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
 {
-    return;
+    SDL_Rect srcrect, *srcrectptr = NULL;
+    SDL_FRect dstrect, *dstrectptr = NULL;
+    if (!Py_IsNone(area)) {
+        if (!(srcrectptr = pgRect_FromObject(area, &srcrect))) {
+            RAISE(PyExc_ValueError, "srcrect must be a Rect or None");
+        }
+    }
+    if (!Py_IsNone(dest)) {
+        if (!(dstrectptr = pgFRect_FromObject(dest, &dstrect))) {
+            if (!pg_TwoFloatsFromObj(dest, &dstrect.x, &dstrect.y)) {
+                RAISE(PyExc_ValueError,
+                      "dstrect must be a point, Rect, or None");
+            }
+            dstrect.w = (float)self->width;
+            dstrect.h = (float)self->height;
+        }
+    }
+    if (SDL_RenderCopyExF(self->renderer->renderer, self->texture, srcrectptr,
+                          dstrectptr, 0, NULL, SDL_FLIP_NONE) < 0) {
+        RAISE(pgExc_SDLError, SDL_GetError());
+    }
+}
+
+static PyObject *
+texture_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgRendererObject *renderer;
+    pgSurfaceObject *surfobj;
+    pgTextureObject *new_texture;
+    SDL_Surface *surf = NULL;
+    static char *keywords[] = {"renderer", "surface", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", keywords, &renderer,
+                                     &pgSurface_Type, &surfobj)) {
+        return NULL; /* Exception already set. */
+    }
+    new_texture =
+        (pgTextureObject *)(&(pgTexture_Type))->tp_alloc(&pgTexture_Type, 0);
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+    new_texture->texture =
+        SDL_CreateTextureFromSurface(renderer->renderer, surf);
+    if (!new_texture->texture) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    new_texture->renderer = renderer;
+    new_texture->width = surf->w;
+    new_texture->height = surf->h;
+    return (PyObject *)new_texture;
+}
+
+static PyObject *
+texture_get_rect(pgTextureObject *self, PyObject *const *args,
+                 Py_ssize_t nargs, PyObject *kwargs)
+{
+    PyObject *rect = pgRect_New4(0, 0, self->width, self->height);
+    return pgObject_getRectHelper(rect, args, nargs, kwargs, "rect");
+}
+
+static PyObject *
+texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *srcrectobj = Py_None, *dstrectobj = Py_None,
+             *originobj = Py_None;
+    SDL_Rect srcrect, *srcrectptr = NULL;
+    SDL_FRect dstrect, *dstrectptr = NULL;
+    SDL_FPoint origin, *originptr = NULL;
+    int has_origin = 0;
+    double angle = 0;
+    int flip_x = 0;
+    int flip_y = 0;
+    SDL_RendererFlip flip = SDL_FLIP_NONE;
+    static char *keywords[] = {"srcrect", "dstrect", "angle", "origin",
+                               "flip_x",  "flip_y",  NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOdOpp", keywords,
+                                     &srcrectobj, &dstrectobj, &angle,
+                                     &originobj, &flip_x, &flip_y)) {
+        return NULL; /* Exception already set. */
+    }
+    if (!Py_IsNone(srcrectobj)) {
+        if (!(srcrectptr = pgRect_FromObject(srcrectobj, &srcrect))) {
+            return RAISE(PyExc_ValueError, "srcrect must be a Rect or None");
+        }
+    }
+    if (!Py_IsNone(dstrectobj)) {
+        if (!(dstrectptr = pgFRect_FromObject(dstrectobj, &dstrect))) {
+            if (!pg_TwoFloatsFromObj(dstrectobj, &dstrect.x, &dstrect.y)) {
+                return RAISE(PyExc_ValueError,
+                             "dstrect must be a point, Rect, or None");
+            }
+            dstrect.w = (float)self->width;
+            dstrect.h = (float)self->height;
+        }
+    }
+    if (!Py_IsNone(originobj)) {
+        if (!pg_TwoFloatsFromObj(originobj, &origin.x, &origin.y)) {
+            return RAISE(PyExc_ValueError, "origin must be a point or None");
+        }
+        originptr = &origin;
+    }
+    if (flip_x)
+        flip |= SDL_FLIP_HORIZONTAL;
+    if (flip_y)
+        flip |= SDL_FLIP_VERTICAL;
+    RENDERER_ERROR_CHECK(SDL_RenderCopyExF(self->renderer->renderer,
+                                           self->texture, srcrectptr,
+                                           dstrectptr, angle, originptr, flip))
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+texture_draw_triangle(pgTextureObject *self, PyObject *args, PyObject *kwargs)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 18)
+    PyObject *p1_xyobj, *p2_xyobj, *p3_xyobj,
+        *p1_uvobj = Py_None, *p2_uvobj = Py_None, *p3_uvobj = Py_None,
+        *p1_modobj = Py_None, *p2_modobj = Py_None, *p3_modobj = Py_None;
+    Uint8 _r_mod, _g_mod, _b_mod, _a_mod;
+    float r_mod, g_mod, b_mod, a_mod;
+    int p1_mod[4], p2_mod[4], p3_mod[4];
+    SDL_Vertex vertices[3];
+    static char *keywords[] = {"p1_xy", "p2_xy",  "p3_xy",  "p1_uv",  "p2_uv",
+                               "p3_uv", "p1_mod", "p2_mod", "p3_mod", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOO|OOOOOO", keywords,
+                                     &p1_xyobj, &p2_xyobj, &p3_xyobj,
+                                     &p1_uvobj, &p2_uvobj, &p3_uvobj,
+                                     &p1_modobj, &p2_modobj, &p3_modobj)) {
+        return NULL; /* Exception already set. */
+    }
+    /* Parse position */
+    PARSE_POINT(p1_xyobj, vertices[0].position.x, vertices[0].position.y, "p1_xy")
+    PARSE_POINT(p2_xyobj, vertices[1].position.x, vertices[1].position.y, "p2_xy")
+    PARSE_POINT(p3_xyobj, vertices[2].position.x, vertices[2].position.y, "p3_xy")
+    /* Parse tex_coord */
+    if (Py_IsNone(p1_uvobj)) {
+        vertices[0].tex_coord.x = 0.0;
+        vertices[0].tex_coord.y = 0.0;
+    }
+    else {
+        PARSE_POINT(p1_xyobj, vertices[0].tex_coord.x, vertices[0].tex_coord.y, "p1_uv")
+    }
+    if (Py_IsNone(p2_uvobj)) {
+        vertices[1].tex_coord.x = 1.0;
+        vertices[1].tex_coord.y = 1.0;
+    }
+    else {
+        PARSE_POINT(p2_xyobj, vertices[1].tex_coord.x, vertices[1].tex_coord.y, "p2_uv")
+    }
+    if (Py_IsNone(p3_uvobj)) {
+        vertices[2].tex_coord.x = 0.0;
+        vertices[2].tex_coord.y = 1.0;
+    }
+    else {
+        PARSE_POINT(p3_xyobj, vertices[2].tex_coord.x, vertices[2].tex_coord.y, "p3_uv")
+    }
+    /* Parse color */
+    PARSE_COLOR(p1_modobj, p1_mod[0], p1_mod[1], p1_mod[2], p1_mod[3], "p1_mod")
+    PARSE_COLOR(p2_modobj, p2_mod[0], p2_mod[1], p2_mod[2], p2_mod[3], "p2_mod")
+    PARSE_COLOR(p3_modobj, p3_mod[0], p3_mod[1], p3_mod[2], p3_mod[3], "p3_mod")
+    RENDERER_ERROR_CHECK(SDL_GetTextureColorMod(self->texture, &_r_mod, &_g_mod, &_b_mod));
+    RENDERER_ERROR_CHECK(SDL_GetTextureAlphaMod(self->texture, &_a_mod));
+    r_mod = _r_mod / 255.0;
+    g_mod = _g_mod / 255.0;
+    b_mod = _b_mod / 255.0;
+    a_mod = _a_mod / 255.0;
+    vertices[0].color.r = (int)r_mod * p1_mod[0];
+    vertices[0].color.g = (int)g_mod * p1_mod[1];
+    vertices[0].color.b = (int)b_mod * p1_mod[2];
+    vertices[0].color.a = (int)a_mod * p1_mod[3];
+    vertices[1].color.r = (int)r_mod * p2_mod[0];
+    vertices[1].color.g = (int)g_mod * p2_mod[1];
+    vertices[1].color.b = (int)b_mod * p2_mod[2];
+    vertices[1].color.a = (int)a_mod * p2_mod[3];
+    vertices[2].color.r = (int)r_mod * p3_mod[0];
+    vertices[2].color.g = (int)g_mod * p3_mod[1];
+    vertices[2].color.b = (int)b_mod * p3_mod[2];
+    vertices[2].color.a = (int)a_mod * p3_mod[3];
+    RENDERER_ERROR_CHECK(SDL_RenderGeometry(
+        self->renderer->renderer, self->texture, vertices, 3, NULL, 0))
+    Py_RETURN_NONE;
+#else
+    RAISE(PyExc_TypeError, "draw_triangle() requires SDL 2.0.18 or newer");
+    Py_RETURN_NONE;
+#endif
+}
+
+static PyObject *
+texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 18)
+    PyObject *p1_xyobj, *p2_xyobj, *p3_xyobj, *p4_xyobj,
+        *p1_uvobj = Py_None, *p2_uvobj = Py_None, *p3_uvobj = Py_None,
+        *p4_uvobj = Py_None, *p1_modobj = Py_None, *p2_modobj = Py_None,
+        *p3_modobj = Py_None, *p4_modobj = Py_None;
+    Uint8 _r_mod, _g_mod, _b_mod, _a_mod;
+    float r_mod, g_mod, b_mod, a_mod;
+    SDL_Vertex vertices[6];
+    int p1_mod[] = {255, 255, 255, 255}, p2_mod[] = {255, 255, 255, 255},
+        p3_mod[] = {255, 255, 255, 255}, p4_mod[] = {255, 255, 255, 255};
+    static char *keywords[] = {"p1_xy",  "p2_xy",  "p3_xy", "p4_xy",  "p1_uv",
+                               "p2_uv",  "p3_uv",  "p4_uv", "p1_mod", "p2_mod",
+                               "p3_mod", "p4_mod", NULL};
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "OOOO|OOOOOOOO", keywords, &p1_xyobj, &p2_xyobj,
+            &p3_xyobj, &p4_xyobj, &p1_uvobj, &p2_uvobj, &p3_uvobj, &p4_uvobj,
+            &p1_modobj, &p2_modobj, &p3_modobj, &p4_modobj)) {
+        return NULL; /* Exception already set. */
+    }
+    /* Parse position */
+    PARSE_POINT(p1_xyobj, vertices[0].position.x, vertices[0].position.y, "p1_xy")
+    PARSE_POINT(p2_xyobj, vertices[1].position.x, vertices[1].position.y, "p2_xy")
+    PARSE_POINT(p3_xyobj, vertices[2].position.x, vertices[2].position.y, "p3_xy")
+    vertices[3].position = vertices[2].position;
+    PARSE_POINT(p4_xyobj, vertices[4].position.x, vertices[4].position.y, "p4_xy")
+    vertices[5].position = vertices[0].position;
+    /* Parse tex_coord */
+    if (Py_IsNone(p1_uvobj)) {
+        vertices[0].tex_coord.x = 0.0;
+        vertices[0].tex_coord.y = 0.0;
+    }
+    else {
+        PARSE_POINT(p1_xyobj, vertices[0].tex_coord.x, vertices[0].tex_coord.y, "p1_uv")
+    }
+    if (Py_IsNone(p2_uvobj)) {
+        vertices[1].tex_coord.x = 1.0;
+        vertices[1].tex_coord.y = 0.0;
+    }
+    else {
+        PARSE_POINT(p2_xyobj, vertices[1].tex_coord.x, vertices[1].tex_coord.y, "p2_uv")
+    }
+    if (Py_IsNone(p3_uvobj)) {
+        vertices[2].tex_coord.x = 1.0;
+        vertices[2].tex_coord.y = 1.0;
+    }
+    else {
+        PARSE_POINT(p3_xyobj, vertices[2].tex_coord.x, vertices[2].tex_coord.y, "p3_uv")
+    }
+    vertices[3].tex_coord = vertices[2].tex_coord;
+    if (Py_IsNone(p4_uvobj)) {
+        vertices[4].tex_coord.x = 0.0;
+        vertices[4].tex_coord.y = 1.0;
+    }
+    else {
+        PARSE_POINT(p4_xyobj, vertices[4].tex_coord.x, vertices[4].tex_coord.y, "p4_uv")
+    }
+    vertices[5].tex_coord = vertices[0].tex_coord;
+    /* Parse color */
+    PARSE_COLOR(p1_modobj, p1_mod[0], p1_mod[1], p1_mod[2], p1_mod[3], "p1_mod")
+    PARSE_COLOR(p2_modobj, p2_mod[0], p2_mod[1], p2_mod[2], p2_mod[3], "p2_mod")
+    PARSE_COLOR(p3_modobj, p3_mod[0], p3_mod[1], p3_mod[2], p3_mod[3], "p3_mod")
+    PARSE_COLOR(p4_modobj, p4_mod[0], p4_mod[1], p4_mod[2], p4_mod[3], "p4_mod")
+    RENDERER_ERROR_CHECK(SDL_GetTextureColorMod(self->texture, &_r_mod, &_g_mod, &_b_mod));
+    RENDERER_ERROR_CHECK(SDL_GetTextureAlphaMod(self->texture, &_a_mod));
+    r_mod = _r_mod / 255.0;
+    g_mod = _g_mod / 255.0;
+    b_mod = _b_mod / 255.0;
+    a_mod = _a_mod / 255.0;
+    vertices[0].color.r = (int)r_mod * p1_mod[0];
+    vertices[0].color.g = (int)g_mod * p1_mod[1];
+    vertices[0].color.b = (int)b_mod * p1_mod[2];
+    vertices[0].color.a = (int)a_mod * p1_mod[3];
+    vertices[1].color.r = (int)r_mod * p2_mod[0];
+    vertices[1].color.g = (int)g_mod * p2_mod[1];
+    vertices[1].color.b = (int)b_mod * p2_mod[2];
+    vertices[1].color.a = (int)a_mod * p2_mod[3];
+    vertices[2].color.r = (int)r_mod * p3_mod[0];
+    vertices[2].color.g = (int)g_mod * p3_mod[1];
+    vertices[2].color.b = (int)b_mod * p3_mod[2];
+    vertices[2].color.a = (int)a_mod * p3_mod[3];
+    vertices[3].color = vertices[2].color;
+    vertices[4].color.r = (int)r_mod * p4_mod[0];
+    vertices[4].color.g = (int)g_mod * p4_mod[1];
+    vertices[4].color.b = (int)b_mod * p4_mod[2];
+    vertices[4].color.a = (int)a_mod * p4_mod[3];
+    vertices[5].color = vertices[0].color;
+    RENDERER_ERROR_CHECK(SDL_RenderGeometry(
+        self->renderer->renderer, self->texture, vertices, 6, NULL, 0))
+    Py_RETURN_NONE;
+#else
+    RAISE(PyExc_TypeError, "draw_triangle() requires SDL 2.0.18 or newer");
+    Py_RETURN_NONE;
+#endif
+}
+
+static PyObject *
+texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    PyObject *rectobj = Py_None;
+    SDL_Surface *surf = NULL;
+    SDL_Rect area, *areaptr = NULL;
+    SDL_Surface *converted_surf = NULL;
+    SDL_PixelFormat *pixel_format = NULL;
+    SDL_BlendMode blend;
+    Uint32 format;
+    int res;
+    int dst_width, dst_height;
+    static char *keywords[] = {"surface", "area", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O", keywords,
+                                     &pgSurface_Type, &surfobj, &rectobj)) {
+        return NULL; /* Exception already set. */
+    }
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+    area.x = 0;
+    area.y = 0;
+    if (!Py_IsNone(rectobj)) {
+        if (!(areaptr = pgRect_FromObject(rectobj, &area))) {
+            return RAISE(PyExc_ValueError, "area must be a rectangle or None");
+        }
+    }
+    if (areaptr == NULL) {
+        dst_width = self->width;
+        dst_height = self->height;
+    }
+    else {
+        dst_width = area.w;
+        dst_height = area.h;
+    }
+    if (dst_width > surf->w || dst_height > surf->h) {
+        areaptr = &area;
+        area.w = surf->w;
+        area.h = surf->h;
+    }
+    RENDERER_ERROR_CHECK(
+        SDL_QueryTexture(self->texture, &format, NULL, NULL, NULL))
+    if (format != surf->format->format) {
+        RENDERER_ERROR_CHECK(SDL_GetSurfaceBlendMode(surf, &blend))
+        pixel_format = SDL_AllocFormat(format);
+        if (pixel_format == NULL)
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        converted_surf = SDL_ConvertSurface(surf, pixel_format, 0);
+        if (SDL_SetSurfaceBlendMode(converted_surf, blend) < 0) {
+            SDL_FreeSurface(converted_surf);
+            SDL_FreeFormat(pixel_format);
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+
+        res = SDL_UpdateTexture(self->texture, areaptr, converted_surf->pixels,
+                                converted_surf->pitch);
+        SDL_FreeSurface(converted_surf);
+        SDL_FreeFormat(pixel_format);
+    }
+    else {
+        res = SDL_UpdateTexture(self->texture, areaptr, surf->pixels,
+                                surf->pitch);
+    }
+    if (res < 0)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+texture_get_renderer(pgTextureObject *self, void *closure)
+{
+    Py_INCREF(self->renderer);
+    return (PyObject *)self->renderer;
+}
+
+static PyObject *
+texture_get_width(pgTextureObject *self, void *closure)
+{
+    return PyLong_FromLong(self->width);
+}
+
+static PyObject *
+texture_get_height(pgTextureObject *self, void *closure)
+{
+    return PyLong_FromLong(self->height);
+}
+
+static PyObject *
+texture_get_alpha(pgTextureObject *self, void *closure)
+{
+    Uint8 alpha;
+    RENDERER_ERROR_CHECK(SDL_GetTextureAlphaMod(self->texture, &alpha));
+    return PyLong_FromLong(alpha);
+}
+
+static int
+texture_set_alpha(pgTextureObject *self, PyObject *arg, void *closure)
+{
+    if (PyLong_Check(arg)) {
+        unsigned long longval = PyLong_AsUnsignedLong(arg);
+        RENDERER_PROPERTY_ERROR_CHECK(
+            SDL_SetTextureAlphaMod(self->texture, (Uint8)longval))
+        return 0;
+    }
+    return -1;
+}
+
+static PyObject *
+texture_get_blend_mode(pgTextureObject *self, void *closure)
+{
+    SDL_BlendMode blend_mode;
+    RENDERER_ERROR_CHECK(SDL_GetTextureBlendMode(self->texture, &blend_mode));
+    return PyLong_FromLong((long)blend_mode);
+}
+
+static int
+texture_set_blend_mode(pgTextureObject *self, PyObject *arg, void *closure)
+{
+    if (PyLong_Check(arg)) {
+        long longval = PyLong_AsLong(arg);
+        RENDERER_PROPERTY_ERROR_CHECK(
+            SDL_SetTextureBlendMode(self->texture, (int)longval))
+        return 0;
+    }
+    return 1;
+}
+
+static PyObject *
+texture_get_color(pgTextureObject *self, void *closure)
+{
+    Uint8 color[4];
+    RENDERER_ERROR_CHECK(SDL_GetTextureColorMod(self->texture, &color[0],
+                                                &color[1], &color[2]));
+    color[3] = 255;
+    return pgColor_NewLength(color, 4);
+}
+
+static int
+texture_set_color(pgTextureObject *self, PyObject *arg, void *closure)
+{
+    Uint8 color[4];
+    if (!pg_RGBAFromObjEx(arg, color, PG_COLOR_HANDLE_ALL)) {
+        return -1;
+    }
+    RENDERER_PROPERTY_ERROR_CHECK(
+        SDL_SetTextureColorMod(self->texture, color[0], color[1], color[2]))
+    return 0;
+}
+
+static int
+texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
+{
+    SDL_Texture *texture = NULL;
+    pgRendererObject *renderer;
+    PyObject *sizeobj;
+    int width;
+    int height;
+    int depth = 0;
+    int staticc = 0;
+    int streaming = 0;
+    int target = 0;
+    int scale_quality = -1;
+    int access = SDL_TEXTUREACCESS_STATIC;
+    Uint32 format;
+
+    char *keywords[] = {"renderer",  "size",   "depth",         "static",
+                        "streaming", "target", "scale_quality", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|ipppi", keywords,
+                                     &renderer, &sizeobj, &depth, &staticc,
+                                     &streaming, &target, &scale_quality)) {
+        return -1;
+    }
+    format = format_from_depth(depth);
+    if (!pg_TwoIntsFromObj(sizeobj, &width, &height)) {
+        RAISE(PyExc_TypeError, "invalid size argument");
+        return -1;
+    }
+    if (width <= 0 || height <= 0) {
+        RAISE(PyExc_ValueError, "size must contain two positive values");
+        return -1;
+    }
+    if (streaming) {
+        if (staticc || target) {
+            RAISE(PyExc_ValueError,
+                  "only one of static, streaming, or target can be true");
+            return -1;
+        }
+        access = SDL_TEXTUREACCESS_STREAMING;
+    }
+    else if (target) {
+        if (staticc) {
+            RAISE(PyExc_ValueError,
+                  "only one of static, streaming, or target can be true");
+            return -1;
+        }
+        access = SDL_TEXTUREACCESS_TARGET;
+    }
+    else {
+        access = SDL_TEXTUREACCESS_STATIC;
+    }
+    self->renderer = renderer;
+    self->texture = SDL_CreateTexture(renderer->renderer, format, access, width, height);
+    if (!self->texture) {
+        RAISE(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+    if (scale_quality != -1) {
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+        if (SDL_SetTextureScaleMode(self->texture, scale_quality) < 0) {
+            RAISE(pgExc_SDLError, SDL_GetError());
+            return -1;
+        }
+#else
+        switch (scale_quality) {
+            case 0:
+                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+                break;
+            case 1:
+                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+                break;
+            case 2:
+                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
+                break;
+        }
+#endif
+    }
+    self->width = width;
+    self->height = height;
+    return 0;
+}
+
+static void
+texture_dealloc(pgTextureObject *self, PyObject *_null)
+{
+    if (self->texture) {
+        SDL_DestroyTexture(self->texture);
+    }
+    Py_TYPE(self)->tp_free(self);
 }
 
 /* Image implementation */
@@ -610,6 +1144,37 @@ static PyGetSetDef renderer_getset[] = {
      DOC_SDL2_VIDEO_RENDERER_TARGET, NULL},
     {NULL, 0, NULL, NULL, NULL}};
 
+static PyMethodDef texture_methods[] = {
+    {"get_rect", (PyCFunction)texture_get_rect, METH_FASTCALL | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_TEXTURE_GETRECT},
+    {"draw", (PyCFunction)texture_draw, METH_VARARGS | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_TEXTURE_DRAW},
+    {"draw_triangle", (PyCFunction)texture_draw_triangle,
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_TEXTURE_DRAWTRIANGLE},
+    {"draw_quad", (PyCFunction)texture_draw_quad, METH_VARARGS | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_TEXTURE_DRAWQUAD},
+    {"update", (PyCFunction)texture_update, METH_VARARGS | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_TEXTURE_UPDATE},
+    {"from_surface", (PyCFunction)texture_from_surface,
+     METH_VARARGS | METH_KEYWORDS | METH_CLASS,
+     DOC_SDL2_VIDEO_TEXTURE_FROMSURFACE},
+    {NULL, NULL, 0, NULL}};
+
+static PyGetSetDef texture_getset[] = {
+    {"renderer", (getter)texture_get_renderer, (setter)NULL,
+     DOC_SDL2_VIDEO_TEXTURE_RENDERER, NULL},
+    {"width", (getter)texture_get_width, (setter)NULL,
+     DOC_SDL2_VIDEO_TEXTURE_WIDTH, NULL},
+    {"height", (getter)texture_get_height, (setter)NULL,
+     DOC_SDL2_VIDEO_TEXTURE_HEIGHT, NULL},
+    {"alpha", (getter)texture_get_alpha, (setter)texture_set_alpha,
+     DOC_SDL2_VIDEO_TEXTURE_ALPHA, NULL},
+    {"blend_mode", (getter)texture_get_blend_mode,
+     (setter)texture_set_blend_mode, DOC_SDL2_VIDEO_TEXTURE_BLENDMODE, NULL},
+    {"color", (getter)texture_get_color, (setter)texture_set_color,
+     DOC_SDL2_VIDEO_TEXTURE_COLOR, NULL},
+    {NULL, 0, NULL, NULL, NULL}};
+
 static PyMethodDef texture_methods[] = {{NULL, NULL, 0, NULL}};
 
 static PyGetSetDef texture_getset[] = {{NULL, 0, NULL, NULL, NULL}};
@@ -626,15 +1191,19 @@ static PyTypeObject pgRenderer_Type = {
     .tp_methods = renderer_methods,
     .tp_init = (initproc)renderer_init,
     .tp_new = PyType_GenericNew,
-    .tp_getset = renderer_getset};
+    .tp_getset = renderer_getset
+};
 
 static PyTypeObject pgTexture_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._render.Texture",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Texture",
     .tp_basicsize = sizeof(pgTextureObject),
-    //.tp_dealloc = (destructor)texture_dealloc,
-    .tp_doc = DOC_SDL2_VIDEO_TEXTURE, .tp_methods = texture_methods,
-    //.tp_init = (initproc)texture_init,
-    .tp_new = PyType_GenericNew, .tp_getset = texture_getset};
+    .tp_dealloc = (destructor)texture_dealloc,
+    .tp_doc = DOC_SDL2_VIDEO_TEXTURE,
+    .tp_methods = texture_methods,
+    .tp_init = (initproc)texture_init,
+    .tp_new = PyType_GenericNew,
+    .tp_getset = texture_getset
+};
 
 static PyTypeObject pgImage_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._render.Image",

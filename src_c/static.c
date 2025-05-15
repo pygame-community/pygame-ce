@@ -370,7 +370,6 @@ PyInit_pygame_static()
 #include "simd_blitters_sse2.c"
 
 #include "window.c"
-#include "renderer.c"
 
 #undef pgVidInfo_Type
 #undef pgVidInfo_New
