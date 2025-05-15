@@ -592,7 +592,8 @@ texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
     SDL_FRect dstrect, *dstrectptr = NULL;
     if (!Py_IsNone(area)) {
         if (!(srcrectptr = pgRect_FromObject(area, &srcrect))) {
-            RAISE(PyExc_ValueError, "srcrect must be a Rect or None");
+            PyErr_SetString(PyExc_ValueError,
+                            "srcrect must be a Rect or None");
         }
     }
     if (!Py_IsNone(dest)) {
@@ -654,7 +655,6 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     SDL_Rect srcrect, *srcrectptr = NULL;
     SDL_FRect dstrect, *dstrectptr = NULL;
     SDL_FPoint origin, *originptr = NULL;
-    int has_origin = 0;
     double angle = 0;
     int flip_x = 0;
     int flip_y = 0;
@@ -1071,26 +1071,25 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     }
     format = format_from_depth(depth);
     if (!pg_TwoIntsFromObj(sizeobj, &width, &height)) {
-        RAISE(PyExc_TypeError, "invalid size argument");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "invalid size argument", -1)
     }
     if (width <= 0 || height <= 0) {
-        RAISE(PyExc_ValueError, "size must contain two positive values");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "size must contain two positive values",
+                    -1)
     }
     if (streaming) {
         if (staticc || target) {
-            RAISE(PyExc_ValueError,
-                  "only one of static, streaming, or target can be true");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "only one of static, streaming, or target can be true",
+                        -1)
         }
         access = SDL_TEXTUREACCESS_STREAMING;
     }
     else if (target) {
         if (staticc) {
-            RAISE(PyExc_ValueError,
-                  "only one of static, streaming, or target can be true");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "only one of static, streaming, or target can be true",
+                        -1)
         }
         access = SDL_TEXTUREACCESS_TARGET;
     }
