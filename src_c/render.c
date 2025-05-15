@@ -599,8 +599,8 @@ texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
     if (!Py_IsNone(dest)) {
         if (!(dstrectptr = pgFRect_FromObject(dest, &dstrect))) {
             if (!pg_TwoFloatsFromObj(dest, &dstrect.x, &dstrect.y)) {
-                RAISE(PyExc_ValueError,
-                      "dstrect must be a point, Rect, or None");
+                PyErr_SetString(PyExc_ValueError,
+                                "dstrect must be a point, Rect, or None");
             }
             dstrect.w = (float)self->width;
             dstrect.h = (float)self->height;
@@ -608,7 +608,7 @@ texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
     }
     if (SDL_RenderCopyExF(self->renderer->renderer, self->texture, srcrectptr,
                           dstrectptr, 0, NULL, SDL_FLIP_NONE) < 0) {
-        RAISE(pgExc_SDLError, SDL_GetError());
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
     }
 }
 
