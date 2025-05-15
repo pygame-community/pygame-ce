@@ -76,9 +76,9 @@ format_from_depth(int depth)
         Amask = 0xF << 12;
     }
     else {
-        RAISE(PyExc_ValueError,
-              "no standard masks exist for given bitdepth with alpha");
-        return -1;
+        RAISERETURN(PyExc_ValueError,
+                    "no standard masks exist for given bitdepth with alpha",
+                    -1)
     }
     return SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask);
 }
@@ -1050,7 +1050,6 @@ texture_set_color(pgTextureObject *self, PyObject *arg, void *closure)
 static int
 texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 {
-    SDL_Texture *texture = NULL;
     pgRendererObject *renderer;
     PyObject *sizeobj;
     int width;
@@ -1102,15 +1101,12 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     self->texture =
         SDL_CreateTexture(renderer->renderer, format, access, width, height);
     if (!self->texture) {
-        RAISE(pgExc_SDLError, SDL_GetError());
-        return -1;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1)
     }
     if (scale_quality != -1) {
 #if SDL_VERSION_ATLEAST(2, 0, 12)
-        if (SDL_SetTextureScaleMode(self->texture, scale_quality) < 0) {
-            RAISE(pgExc_SDLError, SDL_GetError());
-            return -1;
-        }
+        RENDERER_PROPERTY_ERROR_CHECK(
+            SDL_SetTextureScaleMode(self->texture, scale_quality))
 #else
         switch (scale_quality) {
             case 0:
