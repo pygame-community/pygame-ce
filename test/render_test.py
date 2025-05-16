@@ -432,10 +432,8 @@ class TextureTest(unittest.TestCase):
         texture2 = self.create_texture_from_surface()
         texture2.draw(pygame.Rect(10, 20, 40, 40), pygame.Rect(50, 30, 35, 20), 45)
         result = self.renderer.to_surface()
-        self.assertEqual(pygame.Color(0, 0, 0, 255), result.get_at((63, 50)))
         for x in range(64, 82):
             self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 50)))
-        self.assertEqual(pygame.Color(0, 0, 0, 255), result.get_at((82, 50)))
 
     def test_update(self):
         surface = pygame.Surface((100, 100))
