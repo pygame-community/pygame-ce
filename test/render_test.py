@@ -1,7 +1,7 @@
 import unittest
 
 import pygame
-import pygame._render as _render
+import pygame._sdl2.video as _render
 
 
 class DrawableObject:
