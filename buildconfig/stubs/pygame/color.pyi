@@ -1,3 +1,4 @@
+import sys
 from collections.abc import Collection, Iterator
 from typing import Any, ClassVar, SupportsIndex, Union, overload
 
@@ -22,6 +23,8 @@ class Color(Collection[int]):
     __hash__: ClassVar[None]  # type: ignore[assignment]
     @property
     def __array_struct__(self) -> Any: ...
+    if sys.version_info >= (3, 12):
+        def __buffer__(self, flags: int, /) -> memoryview[int]: ...
     @overload
     def __init__(self, r: int, g: int, b: int, a: int = 255) -> None: ...
     @overload
