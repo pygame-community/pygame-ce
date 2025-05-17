@@ -231,6 +231,27 @@ class TextureTest(unittest.TestCase):
         surface.fill(pygame.Color(80, 120, 160, 128))
         return _render.Texture.from_surface(self.renderer, surface)
 
+    def test_init(self):
+        _render.Texture(self.renderer, (100, 100))
+        _render.Texture(self.renderer, (100, 100), depth=32)
+        with self.assertRaises(pygame.error):
+            _render.Texture(self.renderer, (100, 100), depth=33)
+        _render.Texture(self.renderer, (100, 100), depth=32, static=True)
+        _render.Texture(self.renderer, (100, 100), depth=32, streaming=True)
+        _render.Texture(self.renderer, (100, 100), depth=32, target=True)
+        with self.assertRaises(ValueError):
+            _render.Texture(
+                self.renderer, (100, 100), depth=32, static=True, target=True
+            )
+        with self.assertRaises(ValueError):
+            _render.Texture(
+                self.renderer, (100, 100), depth=32, target=True, streaming=True
+            )
+        with self.assertRaises(ValueError):
+            _render.Texture(
+                self.renderer, (100, 100), depth=32, static=True, streaming=True
+            )
+
     def test_alpha(self):
         self.assertEqual(255, self.texture.alpha)
         self.texture.alpha = 128
