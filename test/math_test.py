@@ -1410,6 +1410,104 @@ class Vector2TypeTest(unittest.TestCase):
         exception = ctx.exception
         self.assertEqual(str(exception), "Cannot delete the y attribute")
 
+    def test_angle_rad_property(self):
+        v0 = Vector2(1, 0)
+        self.assertEqual(v0.angle_rad, 0.0)
+
+        v1 = Vector2(0, 1)
+        self.assertEqual(v1.angle_rad, math.pi / 2)
+
+        v2 = Vector2(-1, 0)
+        self.assertEqual(v2.angle_rad, math.pi)
+
+        v3 = Vector2(0, -1)
+        self.assertEqual(v3.angle_rad, -math.pi / 2)
+
+        v4 = Vector2(1, 1)
+        self.assertEqual(v4.angle_rad, math.pi / 4)
+
+        v5 = Vector2(-1, 1)
+        self.assertEqual(v5.angle_rad, 3 * math.pi / 4)
+
+        v6 = Vector2(-1, -1)
+        self.assertEqual(v6.angle_rad, -3 * math.pi / 4)
+
+        v7 = Vector2(1, -1)
+        self.assertEqual(v7.angle_rad, -math.pi / 4)
+
+        v8 = Vector2(float('inf'), float('inf'))
+        self.assertEqual(v8.angle_rad, math.pi / 4)
+
+        v9 = Vector2(float('-inf'), float('inf'))
+        self.assertEqual(v9.angle_rad, 3 * math.pi / 4)
+
+        v10 = Vector2(float('-inf'), float('-inf'))
+        self.assertEqual(v10.angle_rad, -3 * math.pi / 4)
+
+        v11 = Vector2(float('inf'), float('-inf'))
+        self.assertEqual(v11.angle_rad, -math.pi / 4)
+
+        v12 = Vector2(0, 0)
+        self.assertEqual(v12.angle_rad, 0.0)
+
+        v13 = Vector2(float('nan'), 1)
+        self.assertTrue(math.isnan(v13.angle_rad))
+
+        v14 = Vector2(1, float('nan'))
+        self.assertTrue(math.isnan(v14.angle_rad))
+
+        v15 = Vector2(float('nan'), float('nan'))
+        self.assertTrue(math.isnan(v15.angle_rad))
+
+    def test_angle_property(self):
+        v0 = pygame.math.Vector2(1, 0)
+        self.assertEqual(v0.angle, 0.0)
+
+        v1 = pygame.math.Vector2(0, 1)
+        self.assertEqual(v1.angle, 90.0)
+
+        v2 = pygame.math.Vector2(-1, 0)
+        self.assertEqual(v2.angle, 180.0)
+
+        v3 = pygame.math.Vector2(0, -1)
+        self.assertEqual(v3.angle, -90.0)
+
+        v4 = pygame.math.Vector2(1, 1)
+        self.assertEqual(v4.angle, 45.0)
+
+        v5 = pygame.math.Vector2(-1, 1)
+        self.assertEqual(v5.angle, 135.0)
+
+        v6 = pygame.math.Vector2(-1, -1)
+        self.assertEqual(v6.angle, -135.0)
+
+        v7 = pygame.math.Vector2(1, -1)
+        self.assertEqual(v7.angle, -45.0)
+
+        v8 = pygame.math.Vector2(float('inf'), float('inf'))
+        self.assertEqual(v8.angle, 45.0)
+
+        v9 = pygame.math.Vector2(float('-inf'), float('inf'))
+        self.assertEqual(v9.angle, 135.0)
+
+        v10 = pygame.math.Vector2(float('-inf'), float('-inf'))
+        self.assertEqual(v10.angle, -135.0)
+
+        v11 = pygame.math.Vector2(float('inf'), float('-inf'))
+        self.assertEqual(v11.angle, -45.0)
+
+        v12 = pygame.math.Vector2(0, 0)
+        self.assertEqual(v12.angle, 0.0)
+
+        v13 = pygame.math.Vector2(float('nan'), 1)
+        self.assertTrue(math.isnan(v13.angle))
+
+        v14 = pygame.math.Vector2(1, float('nan'))
+        self.assertTrue(math.isnan(v14.angle))
+
+        v15 = pygame.math.Vector2(float('nan'), float('nan'))
+        self.assertTrue(math.isnan(v15.angle))
+
 
 class Vector3TypeTest(unittest.TestCase):
     def setUp(self):
