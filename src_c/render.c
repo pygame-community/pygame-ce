@@ -1100,7 +1100,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     self->texture =
         SDL_CreateTexture(renderer->renderer, format, access, width, height);
     if (!self->texture) {
-        RAISERETURN(PyExc_ValueError, SDL_GetError(), -1)
+        RAISERETURN(PyExc_ValueError, "Debug?", -1)
     }
     if (scale_quality != -1) {
 #if SDL_VERSION_ATLEAST(2, 0, 12)
