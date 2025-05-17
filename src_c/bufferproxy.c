@@ -604,10 +604,8 @@ MODINIT_DEFINE(bufferproxy)
         return NULL;
     }
 
-    Py_INCREF(&pgBufferProxy_Type);
-    if (PyModule_AddObject(module, "BufferProxy",
-                           (PyObject *)&pgBufferProxy_Type)) {
-        Py_DECREF(&pgBufferProxy_Type);
+    if (PyModule_AddObjectRef(module, "BufferProxy",
+                              (PyObject *)&pgBufferProxy_Type)) {
         Py_DECREF(module);
         return NULL;
     }

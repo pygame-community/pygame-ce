@@ -2101,28 +2101,22 @@ MODINIT_DEFINE(mixer)
         return NULL;
     }
 
-    Py_INCREF(&pgSound_Type);
-    if (PyModule_AddObject(module, "Sound", (PyObject *)&pgSound_Type)) {
-        Py_DECREF(&pgSound_Type);
+    if (PyModule_AddObjectRef(module, "Sound", (PyObject *)&pgSound_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&pgSound_Type);
-    if (PyModule_AddObject(module, "SoundType", (PyObject *)&pgSound_Type)) {
-        Py_DECREF(&pgSound_Type);
+    if (PyModule_AddObjectRef(module, "SoundType",
+                              (PyObject *)&pgSound_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&pgChannel_Type);
-    if (PyModule_AddObject(module, "ChannelType",
-                           (PyObject *)&pgChannel_Type)) {
-        Py_DECREF(&pgChannel_Type);
+    if (PyModule_AddObjectRef(module, "ChannelType",
+                              (PyObject *)&pgChannel_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&pgChannel_Type);
-    if (PyModule_AddObject(module, "Channel", (PyObject *)&pgChannel_Type)) {
-        Py_DECREF(&pgChannel_Type);
+    if (PyModule_AddObjectRef(module, "Channel",
+                              (PyObject *)&pgChannel_Type)) {
         Py_DECREF(module);
         return NULL;
     }

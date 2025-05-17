@@ -869,16 +869,13 @@ MODINIT_DEFINE(newbuffer)
         return NULL;
     }
 
-    Py_INCREF(&BufferMixin_Type);
-    if (PyModule_AddObject(module, "BufferMixin",
-                           (PyObject *)&BufferMixin_Type)) {
-        Py_DECREF(&BufferMixin_Type);
+    if (PyModule_AddObjectRef(module, "BufferMixin",
+                              (PyObject *)&BufferMixin_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&Py_buffer_Type);
-    if (PyModule_AddObject(module, "Py_buffer", (PyObject *)&Py_buffer_Type)) {
-        Py_DECREF(&Py_buffer_Type);
+    if (PyModule_AddObjectRef(module, "Py_buffer",
+                              (PyObject *)&Py_buffer_Type)) {
         Py_DECREF(module);
         return NULL;
     }
