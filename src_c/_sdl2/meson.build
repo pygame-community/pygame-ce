@@ -1,5 +1,10 @@
 cython_base = '../cython/pygame/_sdl2'
+sdl_cargs = []
+if sdl_api == 3
+sdl_cargs += ['-DUSE_SDL3']
+endif
 
+if sdl_api != 3
 _sdl2_audio = py.extension_module(
     'audio',
     fs.is_file('audio.c') ? 'audio.c' : cython_base / 'audio.pyx',
@@ -8,7 +13,9 @@ _sdl2_audio = py.extension_module(
     install: true,
     subdir: pg / '_sdl2',
 )
+endif
 
+if sdl_api != 3
 _sdl2_video = py.extension_module(
     'video',
     fs.is_file('video.c') ? 'video.c' : cython_base / 'video.pyx',
@@ -37,6 +44,7 @@ if sdl_mixer_dep.found()
         subdir: pg / '_sdl2',
     )
 endif
+endif
 
 _sdl2_sdl2 = py.extension_module(
     'sdl2',
@@ -45,9 +53,11 @@ _sdl2_sdl2 = py.extension_module(
     include_directories: '..',
     install: true,
     subdir: pg / '_sdl2',
+    c_args: sdl_cargs,
 )
 
-# This is not a cython file
+# These are not a cython files
+if sdl_api != 3
 _sdl2_touch = py.extension_module(
     'touch',
     'touch.c',
@@ -56,6 +66,7 @@ _sdl2_touch = py.extension_module(
     install: true,
     subdir: pg / '_sdl2',
 )
+endif
 
 _sdl2_controller = py.extension_module(
     'controller',
