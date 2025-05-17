@@ -5,7 +5,6 @@
 #include "pgcompat.h"
 
 #include "doc/sdl2_video_doc.h"
-#include "doc/_render_doc.h"
 
 static PyTypeObject pgRenderer_Type;
 
@@ -560,54 +559,55 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
 /* Module definition */
 static PyMethodDef renderer_methods[] = {
     {"draw_point", (PyCFunction)renderer_draw_point,
-     METH_VARARGS | METH_KEYWORDS, DOC_RENDER_RENDERER_DRAWPOINT},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_DRAWPOINT},
     {"draw_line", (PyCFunction)renderer_draw_line,
-     METH_VARARGS | METH_KEYWORDS, DOC_RENDER_RENDERER_DRAWLINE},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_DRAWLINE},
     {"draw_rect", (PyCFunction)renderer_draw_rect,
-     METH_VARARGS | METH_KEYWORDS, DOC_RENDER_RENDERER_DRAWRECT},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_DRAWRECT},
     {"draw_triangle", (PyCFunction)renderer_draw_triangle,
-     METH_VARARGS | METH_KEYWORDS, DOC_RENDER_RENDERER_DRAWTRIANGLE},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_DRAWTRIANGLE},
     {"draw_quad", (PyCFunction)renderer_draw_quad,
-     METH_VARARGS | METH_KEYWORDS, DOC_RENDER_RENDERER_DRAWQUAD},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_DRAWQUAD},
     {"fill_rect", (PyCFunction)renderer_fill_rect,
-     METH_VARARGS | METH_KEYWORDS, DOC_RENDER_RENDERER_FILLRECT},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_FILLRECT},
     {"fill_triangle", (PyCFunction)renderer_fill_triangle,
-     METH_VARARGS | METH_KEYWORDS, DOC_RENDER_RENDERER_FILLTRIANGLE},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_FILLTRIANGLE},
     {"fill_quad", (PyCFunction)renderer_fill_quad,
-     METH_VARARGS | METH_KEYWORDS, DOC_RENDER_RENDERER_FILLQUAD},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_FILLQUAD},
     {"present", (PyCFunction)renderer_present, METH_NOARGS,
-     DOC_RENDER_RENDERER_PRESENT},
+     DOC_SDL2_VIDEO_RENDERER_PRESENT},
     {"clear", (PyCFunction)renderer_clear, METH_NOARGS,
-     DOC_RENDER_RENDERER_CLEAR},
+     DOC_SDL2_VIDEO_RENDERER_CLEAR},
     {"set_viewport", (PyCFunction)renderer_set_viewport,
-     METH_VARARGS | METH_KEYWORDS, DOC_RENDER_RENDERER_SETVIEWPORT},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT},
     {"get_viewport", (PyCFunction)renderer_get_viewport, METH_NOARGS,
-     DOC_RENDER_RENDERER_GETVIEWPORT},
+     DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT},
     {"compose_custom_blend_mode",
      (PyCFunction)renderer_compose_custom_blend_mode,
      METH_VARARGS | METH_KEYWORDS | METH_CLASS,
-     DOC_RENDER_RENDERER_COMPOSECUSTOMBLENDMODE},
+     DOC_SDL2_VIDEO_RENDERER_COMPOSECUSTOMBLENDMODE},
     {"from_window", (PyCFunction)renderer_from_window,
      METH_CLASS | METH_VARARGS | METH_KEYWORDS,
-     DOC_RENDER_RENDERER_FROMWINDOW},
+     DOC_SDL2_VIDEO_GETGRABBEDWINDOW},
     {"to_surface", (PyCFunction)renderer_to_surface,
-     METH_VARARGS | METH_KEYWORDS, DOC_RENDER_RENDERER_TOSURFACE},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_TOSURFACE},
     {"blit", (PyCFunction)renderer_blit, METH_VARARGS | METH_KEYWORDS,
-     DOC_RENDER_RENDERER_SETVIEWPORT},
+     DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef renderer_getset[] = {
     {"draw_color", (getter)renderer_get_draw_color,
-     (setter)renderer_set_draw_color, DOC_RENDER_RENDERER_DRAWCOLOR, NULL},
+     (setter)renderer_set_draw_color, DOC_SDL2_VIDEO_RENDERER_DRAWCOLOR, NULL},
     {"draw_blend_mode", (getter)renderer_get_draw_blend_mode,
-     (setter)renderer_set_draw_blend_mode, DOC_RENDER_RENDERER_DRAWCOLOR,
+     (setter)renderer_set_draw_blend_mode, DOC_SDL2_VIDEO_RENDERER_DRAWCOLOR,
      NULL},
     {"logical_size", (getter)renderer_get_logical_size,
-     (setter)renderer_set_logical_size, DOC_RENDER_RENDERER_LOGICALSIZE, NULL},
+     (setter)renderer_set_logical_size, DOC_SDL2_VIDEO_RENDERER_LOGICALSIZE,
+     NULL},
     {"scale", (getter)renderer_get_scale, (setter)renderer_set_scale,
-     DOC_RENDER_RENDERER_SCALE, NULL},
+     DOC_SDL2_VIDEO_RENDERER_SCALE, NULL},
     {"target", (getter)renderer_get_target, (setter)renderer_set_target,
-     DOC_RENDER_RENDERER_TARGET, NULL},
+     DOC_SDL2_VIDEO_RENDERER_TARGET, NULL},
     {NULL, 0, NULL, NULL, NULL}};
 
 static PyMethodDef texture_methods[] = {{NULL, NULL, 0, NULL}};
@@ -622,7 +622,7 @@ static PyTypeObject pgRenderer_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._render.Renderer",
     .tp_basicsize = sizeof(pgRendererObject),
     .tp_dealloc = (destructor)renderer_dealloc,
-    .tp_doc = DOC_RENDER_RENDERER,
+    .tp_doc = DOC_SDL2_VIDEO_RENDERER,
     .tp_methods = renderer_methods,
     .tp_init = (initproc)renderer_init,
     .tp_new = PyType_GenericNew,
