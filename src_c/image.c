@@ -1690,7 +1690,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     int alpha = 0;
     struct TGAheader h;
     int srcbpp;
-    Uint8 surf_alpha;
+    SDL_BlendMode surf_blendmode;
     int have_surf_colorkey = 0;
     Uint32 surf_colorkey;
     SDL_Rect r;
@@ -1721,7 +1721,15 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     SDL_PixelFormatEnum output_format;
 #endif
 
-    SDL_GetSurfaceAlphaMod(surface, &surf_alpha);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_GetSurfaceBlendMode(surface, &surf_blendmode))
+#else
+    if (SDL_GetSurfaceBlendMode(surface, &surf_blendmode) < 0)
+#endif
+    {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
     if ((have_surf_colorkey = SDL_HasColorKey(surface))) {
         SDL_GetColorKey(surface, &surf_colorkey);
     }
@@ -1811,12 +1819,8 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
         }
     }
 
-    /* Temporarily remove colorkey and alpha from surface so copies are
-       opaque */
-    SDL_SetSurfaceAlphaMod(surface, SDL_ALPHA_OPAQUE);
-    if (have_surf_colorkey) {
-        SDL_SetColorKey(surface, SDL_FALSE, surf_colorkey);
-    }
+    /* Temporarily set SDL_BLENDMODE_NONE so that copies are opaque */
+    SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 
     r.x = 0;
     r.w = surface->w;
@@ -1847,10 +1851,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     }
 
     /* restore flags */
-    SDL_SetSurfaceAlphaMod(surface, surf_alpha);
-    if (have_surf_colorkey) {
-        SDL_SetColorKey(surface, SDL_TRUE, surf_colorkey);
-    }
+    SDL_SetSurfaceBlendMode(surface, surf_blendmode);
 
     free(rlebuf);
     SDL_FreeSurface(linebuf);
