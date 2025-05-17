@@ -340,44 +340,32 @@ typedef struct {
     (*(int (*)(pgSurfaceObject *, pgSurfaceObject *, SDL_Rect *, SDL_Rect *, \
                int))PYGAMEAPI_GET_SLOT(surface, 2))
 
-#define import_pygame_surface()         \
-    do {                                \
-        IMPORT_PYGAME_MODULE(surface);  \
-        if (PyErr_Occurred() != NULL)   \
-            break;                      \
-        IMPORT_PYGAME_MODULE(surflock); \
-    } while (0)
+#define pgSurface_Prep(x) \
+    if ((x)->subsurface)  \
+    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surface, 4)))(x)
+
+#define pgSurface_Unprep(x) \
+    if ((x)->subsurface)    \
+    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surface, 5)))(x)
+
+#define pgSurface_Lock \
+    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surface, 6))
+
+#define pgSurface_Unlock \
+    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surface, 7))
+
+#define pgSurface_LockBy \
+    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surface, 8))
+
+#define pgSurface_UnlockBy \
+    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surface, 9))
+
+#define import_pygame_surface() IMPORT_PYGAME_MODULE(surface)
 
 #define pgSurface_New(surface) pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) pgSurface_New2((surface), 0)
 
 #endif /* ~PYGAMEAPI_SURFACE_INTERNAL */
-
-/*
- * SURFLOCK module
- * auto imported/initialized by surface
- */
-#ifndef PYGAMEAPI_SURFLOCK_INTERNAL
-#define pgSurface_Prep(x) \
-    if ((x)->subsurface)  \
-    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 0)))(x)
-
-#define pgSurface_Unprep(x) \
-    if ((x)->subsurface)    \
-    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 1)))(x)
-
-#define pgSurface_Lock \
-    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 2))
-
-#define pgSurface_Unlock \
-    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 3))
-
-#define pgSurface_LockBy \
-    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 4))
-
-#define pgSurface_UnlockBy \
-    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 5))
-#endif
 
 /*
  * EVENT module
@@ -604,7 +592,6 @@ PYGAMEAPI_DEFINE_SLOTS(rect);
 PYGAMEAPI_DEFINE_SLOTS(joystick);
 PYGAMEAPI_DEFINE_SLOTS(display);
 PYGAMEAPI_DEFINE_SLOTS(surface);
-PYGAMEAPI_DEFINE_SLOTS(surflock);
 PYGAMEAPI_DEFINE_SLOTS(event);
 PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
@@ -620,7 +607,6 @@ PYGAMEAPI_EXTERN_SLOTS(rect);
 PYGAMEAPI_EXTERN_SLOTS(joystick);
 PYGAMEAPI_EXTERN_SLOTS(display);
 PYGAMEAPI_EXTERN_SLOTS(surface);
-PYGAMEAPI_EXTERN_SLOTS(surflock);
 PYGAMEAPI_EXTERN_SLOTS(event);
 PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
