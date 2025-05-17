@@ -350,7 +350,6 @@ def inject_template_globals(app, pagename, templatename, context, doctree):
         "pixelcopy",
         "sndarray",
         "surfarray",
-        "_render"
     ]
     existing_order = ["pygame." + x for x in existing_order]
 
