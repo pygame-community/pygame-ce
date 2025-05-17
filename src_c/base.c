@@ -2396,6 +2396,7 @@ MODINIT_DEFINE(base)
     /* create the exceptions */
     pgExc_SDLError =
         PyErr_NewException("pygame.error", PyExc_RuntimeError, NULL);
+    Py_XINCREF(pgExc_SDLError);
     if (PyModule_AddObject(module, "error", pgExc_SDLError)) {
         Py_XDECREF(pgExc_SDLError);
         goto error;
