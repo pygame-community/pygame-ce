@@ -239,7 +239,11 @@ pg_display_init(PyObject *self, PyObject *_null)
     drivername = SDL_getenv("SDL_VIDEODRIVER");
     if (drivername &&
         !SDL_strncasecmp("windib", drivername, SDL_strlen(drivername))) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_setenv_unsafe("SDL_VIDEODRIVER", "windows", 1);
+#else
         SDL_setenv("SDL_VIDEODRIVER", "windows", 1);
+#endif
     }
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
         if (!_pg_mac_display_init()) {
@@ -733,7 +737,11 @@ _get_video_window_pos(int *x, int *y, int *center_window)
     return 0;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static bool
+#else
 static int SDLCALL
+#endif
 pg_ResizeEventWatch(void *userdata, SDL_Event *event)
 {
     SDL_Window *pygame_window;
@@ -759,7 +767,11 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     }
 
     if (state->unscaled_render && pg_renderer != NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED) {
+#else
         if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+#endif
             int w = event->window.data1;
             int h = event->window.data2;
             pgSurfaceObject *display_surface = pg_GetDefaultWindowSurface();
@@ -779,10 +791,18 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     }
 
     if (pg_renderer != NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (event->type == SDL_WINDOWEVENT_MAXIMIZED) {
+#else
         if (event->window.event == SDL_WINDOWEVENT_MAXIMIZED) {
+#endif
             SDL_RenderSetIntegerScale(pg_renderer, SDL_FALSE);
         }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (event->type == SDL_WINDOWEVENT_RESTORED) {
+#else
         if (event->window.event == SDL_WINDOWEVENT_RESTORED) {
+#endif
             SDL_RenderSetIntegerScale(
                 pg_renderer, !(SDL_GetHintBoolean(
                                  "SDL_HINT_RENDER_SCALE_QUALITY", SDL_FALSE)));
@@ -791,7 +811,11 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     }
 
     if (state->using_gl) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED) {
+#else
         if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+#endif
             GL_glViewport_Func p_glViewport =
                 (GL_glViewport_Func)SDL_GL_GetProcAddress("glViewport");
             int wnew = event->window.data1;
@@ -817,7 +841,11 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
         return 0;
     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED) {
+#else
     if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+#endif
         SDL_Surface *sdl_surface = SDL_GetWindowSurface(window);
         pgSurfaceObject *old_surface = pg_GetDefaultWindowSurface();
         if (sdl_surface != old_surface->surf) {
@@ -853,7 +881,7 @@ pg_display_set_autoresize(PyObject *self, PyObject *arg)
 int
 _get_display(SDL_Window *win)
 {
-    char *display_env = SDL_getenv("PYGAME_DISPLAY");
+    const char *display_env = SDL_getenv("PYGAME_DISPLAY");
     int display = 0; /* default display 0 */
 
     if (win != NULL) {
@@ -932,7 +960,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
        screen as the old one */
     int display = _get_display(win);
     char *title = state->title;
-    char *scale_env, *winid_env;
+    const char *scale_env, *winid_env;
     SDL_SysWMinfo wm_info;
 
     SDL_VERSION(&wm_info.version);
