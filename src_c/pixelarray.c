@@ -1936,10 +1936,8 @@ MODINIT_DEFINE(pixelarray)
     if (!module) {
         return NULL;
     }
-    Py_INCREF(&pgPixelArray_Type);
-    if (PyModule_AddObject(module, "PixelArray",
-                           (PyObject *)&pgPixelArray_Type)) {
-        Py_DECREF((PyObject *)&pgPixelArray_Type);
+    if (PyModule_AddObjectRef(module, "PixelArray",
+                              (PyObject *)&pgPixelArray_Type)) {
         Py_DECREF(module);
         return NULL;
     }

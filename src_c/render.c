@@ -707,23 +707,19 @@ MODINIT_DEFINE(_render)
         return NULL;
     }
 
-    Py_INCREF(&pgRenderer_Type);
-    if (PyModule_AddObject(module, "Renderer", (PyObject *)&pgRenderer_Type)) {
-        Py_DECREF(&pgRenderer_Type);
+    if (PyModule_AddObjectRef(module, "Renderer",
+                              (PyObject *)&pgRenderer_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&pgTexture_Type);
-    if (PyModule_AddObject(module, "Texture", (PyObject *)&pgTexture_Type)) {
-        Py_DECREF(&pgTexture_Type);
+    if (PyModule_AddObjectRef(module, "Texture",
+                              (PyObject *)&pgTexture_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&pgImage_Type);
-    if (PyModule_AddObject(module, "Image", (PyObject *)&pgImage_Type)) {
-        Py_DECREF(&pgImage_Type);
+    if (PyModule_AddObjectRef(module, "Image", (PyObject *)&pgImage_Type)) {
         Py_DECREF(module);
         return NULL;
     }
