@@ -718,7 +718,13 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     _DisplayState *state;
     SDL_Window *window;
 
-    if (event->type != SDL_WINDOWEVENT) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (event->type >= SDL_EVENT_WINDOW_FIRST &&
+        event->type <= SDL_EVENT_WINDOW_LAST)
+#else
+    if (event->type == SDL_WINDOWEVENT)
+#endif
+    {
         return 0;
     }
 
@@ -3067,7 +3073,11 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
     if (buttons == NULL) {
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData));
         buttons_data->flags = 0;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        buttons_data->buttonID = 0;
+#else
         buttons_data->buttonid = 0;
+#endif
         buttons_data->text = "OK";
 
         msgbox_data.numbuttons = 1;
@@ -3141,6 +3151,19 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
             }
 
             buttons_data[i].text = btn_name;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            buttons_data[i].buttonID = (int)i;
+            buttons_data[i].flags = 0;
+            if (return_button_index == buttons_data[i].buttonID) {
+                buttons_data[i].flags |=
+                    SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+            }
+            if (escape_button_used &&
+                escape_button_index == buttons_data[i].buttonID) {
+                buttons_data[i].flags |=
+                    SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+            }
+#else
             buttons_data[i].buttonid = (int)i;
             buttons_data[i].flags = 0;
             if (return_button_index == buttons_data[i].buttonid) {
@@ -3152,6 +3175,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
                 buttons_data[i].flags |=
                     SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
             }
+#endif
         }
     }
 
