@@ -598,11 +598,11 @@ MODINIT_DEFINE(controller)
         .m_doc = DOC_SDL2_CONTROLLER,
         .m_size = -1,
         .m_methods = _controller_module_methods,
-        /*
-        #if PY_VERSION_HEX >= 0x030D0000
-                .m_slots = mod_controller_slots,
-        #endif
-        */
+/*
+#if PY_VERSION_HEX >= 0x030D0000
+        .m_slots = mod_controller_slots,
+#endif
+*/
     };
 
     import_pygame_base();

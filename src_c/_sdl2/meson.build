@@ -57,7 +57,7 @@ _sdl2_sdl2 = py.extension_module(
     c_args: sdl_cargs,
 )
 
-# These are not a cython files
+# These are not cython files
 _sdl2_touch = py.extension_module(
     'touch',
     'touch.c',
