@@ -44,7 +44,9 @@ static SDL_Texture *pg_texture = NULL;
 typedef struct _display_state_s {
     char *title;
     PyObject *icon;
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     Uint16 *gamma_ramp;
+#endif
     SDL_GLContext gl_context;
     int toggle_windowed_w;
     int toggle_windowed_h;
@@ -87,10 +89,12 @@ _display_state_cleanup(_DisplayState *state)
         SDL_GL_DeleteContext(state->gl_context);
         state->gl_context = NULL;
     }
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (state->gamma_ramp) {
         free(state->gamma_ramp);
         state->gamma_ramp = NULL;
     }
+#endif
 }
 
 // prevent this code block from being linked twice
@@ -1342,6 +1346,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 surf = SDL_GetWindowSurface(win);
             }
         }
+
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
         if (state->gamma_ramp) {
             int result = SDL_SetWindowGammaRamp(win, state->gamma_ramp,
                                                 state->gamma_ramp + 256,
@@ -1356,6 +1362,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 goto DESTROY_WINDOW;
             }
         }
+#endif
 
         if (state->using_gl && pg_renderer != NULL) {
             _display_state_cleanup(state);
@@ -2011,6 +2018,24 @@ pg_set_palette(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static PyObject *
+pg_set_gamma(PyObject *self, PyObject *arg)
+{
+    return RAISE(pgExc_SDLError,
+                 "set_gamma not supported with SDL3, this functionality has "
+                 "been removed.");
+}
+
+static PyObject *
+pg_set_gamma_ramp(PyObject *self, PyObject *arg)
+{
+    return RAISE(
+        pgExc_SDLError,
+        "pg_set_gamma_ramp not supported with SDL3, this functionality has "
+        "been removed.");
+}
+#else
 static PyObject *
 pg_set_gamma(PyObject *self, PyObject *arg)
 {
@@ -2150,6 +2175,7 @@ pg_set_gamma_ramp(PyObject *self, PyObject *arg)
     }
     return PyBool_FromLong(result == 0);
 }
+#endif
 
 static PyObject *
 pg_set_caption(PyObject *self, PyObject *arg)
@@ -3207,7 +3233,9 @@ MODINIT_DEFINE(display)
     state = DISPLAY_MOD_STATE(module);
     state->title = NULL;
     state->icon = NULL;
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     state->gamma_ramp = NULL;
+#endif
     state->using_gl = 0;
     state->auto_resize = SDL_TRUE;
 
