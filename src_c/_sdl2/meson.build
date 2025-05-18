@@ -57,7 +57,6 @@ _sdl2_sdl2 = py.extension_module(
 )
 
 # These are not a cython files
-if sdl_api != 3
 _sdl2_touch = py.extension_module(
     'touch',
     'touch.c',
@@ -66,7 +65,6 @@ _sdl2_touch = py.extension_module(
     install: true,
     subdir: pg / '_sdl2',
 )
-endif
 
 _sdl2_controller = py.extension_module(
     'controller',
