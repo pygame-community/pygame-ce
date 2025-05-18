@@ -737,6 +737,25 @@ _get_video_window_pos(int *x, int *y, int *center_window)
     return 0;
 }
 
+static inline int
+PG_RenderSetIntegerScale(SDL_Renderer *renderer, int enable)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int w = 0, h = 0;
+    if (!SDL_GetRenderLogicalPresentation(renderer, &w, &h, NULL)) {
+        return -1;
+    }
+    return SDL_SetRenderLogicalPresentation(
+               renderer, w, h,
+               enable ? SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
+                      : SDL_LOGICAL_PRESENTATION_LETTERBOX)
+               ? 0
+               : -1;
+#else
+    return SDL_RenderSetIntegerScale(renderer, enable);
+#endif
+}
+
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 static bool
 #else
@@ -796,14 +815,14 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
 #else
         if (event->window.event == SDL_WINDOWEVENT_MAXIMIZED) {
 #endif
-            SDL_RenderSetIntegerScale(pg_renderer, SDL_FALSE);
+            PG_RenderSetIntegerScale(pg_renderer, SDL_FALSE);
         }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
         if (event->type == SDL_WINDOWEVENT_RESTORED) {
 #else
         if (event->window.event == SDL_WINDOWEVENT_RESTORED) {
 #endif
-            SDL_RenderSetIntegerScale(
+            PG_RenderSetIntegerScale(
                 pg_renderer, !(SDL_GetHintBoolean(
                                  "SDL_HINT_RENDER_SCALE_QUALITY", SDL_FALSE)));
         }
@@ -981,10 +1000,13 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
     if (scale_env != NULL) {
         flags |= PGS_SCALED;
+        /* TODO: figure out SDL3 equivalent */
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
         if (strcmp(scale_env, "photo") == 0) {
             SDL_SetHintWithPriority(SDL_HINT_RENDER_SCALE_QUALITY, "best",
                                     SDL_HINT_NORMAL);
         }
+#endif
     }
 
     if (size != NULL) {
@@ -1363,8 +1385,12 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
             if (flags & PGS_SCALED || state->unscaled_render) {
                 if (pg_renderer == NULL) {
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+                    /* TODO: check if this behaviour is still to be retained
+                     * in SDL3 */
                     SDL_SetHintWithPriority(SDL_HINT_RENDER_SCALE_QUALITY,
                                             "nearest", SDL_HINT_DEFAULT);
+#endif
 
 #if SDL_VERSION_ATLEAST(2, 28, 0)
                     /* If the window has a surface associated with it already,
@@ -1375,6 +1401,12 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     }
 #endif
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                    pg_renderer = SDL_CreateRenderer(win, NULL);
+                    if (vsync && pg_renderer) {
+                        SDL_SetRenderVSync(pg_renderer, 1);
+                    }
+#else
                     if (vsync) {
                         pg_renderer = SDL_CreateRenderer(
                             win, -1, SDL_RENDERER_PRESENTVSYNC);
@@ -1382,6 +1414,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     else {
                         pg_renderer = SDL_CreateRenderer(win, -1, 0);
                     }
+#endif
 
                     if (pg_renderer == NULL) {
                         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -1391,12 +1424,24 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         /* use whole screen with uneven pixels on fullscreen,
                            exact scale otherwise.
                            we chose the window size for this to work */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                        int enable_intscale =
+                            !(flags & PGS_FULLSCREEN ||
+                              SDL_GetHintBoolean(
+                                  "SDL_HINT_RENDER_SCALE_QUALITY", SDL_FALSE));
+                        SDL_SetRenderLogicalPresentation(
+                            pg_renderer, w, h,
+                            enable_intscale
+                                ? SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
+                                : SDL_LOGICAL_PRESENTATION_LETTERBOX);
+#else
                         SDL_RenderSetIntegerScale(
                             pg_renderer, !(flags & PGS_FULLSCREEN ||
                                            SDL_GetHintBoolean(
                                                "SDL_HINT_RENDER_SCALE_QUALITY",
                                                SDL_FALSE)));
                         SDL_RenderSetLogicalSize(pg_renderer, w, h);
+#endif
                         /* this must be called after creating the renderer!*/
                         SDL_SetWindowMinimumSize(win, w, h);
                     }
@@ -2835,18 +2880,31 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
                 /* display surface lost? */
                 SDL_DestroyTexture(pg_texture);
                 SDL_DestroyRenderer(pg_renderer);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                pg_renderer = SDL_CreateRenderer(win, SDL_SOFTWARE_RENDERER);
+#else
                 pg_renderer =
                     SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE);
+#endif
                 pg_texture =
                     SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
                                       SDL_TEXTUREACCESS_STREAMING, w, h);
             }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            int enable_intscale = !SDL_GetHintBoolean(
+                "SDL_HINT_RENDER_SCALE_QUALITY", SDL_FALSE);
+            SDL_SetRenderLogicalPresentation(
+                pg_renderer, w, h,
+                enable_intscale ? SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
+                                : SDL_LOGICAL_PRESENTATION_LETTERBOX);
+#else
             SDL_RenderSetLogicalSize(pg_renderer, w, h);
 
             /* use exact integer scale in windowed mode */
             SDL_RenderSetIntegerScale(
                 pg_renderer, !SDL_GetHintBoolean(
                                  "SDL_HINT_RENDER_SCALE_QUALITY", SDL_FALSE));
+#endif
             SDL_SetWindowMinimumSize(win, w, h);
         }
         else if (state->using_gl) {
@@ -2977,15 +3035,24 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
                 /* display surface lost? only on x11? */
                 SDL_DestroyTexture(pg_texture);
                 SDL_DestroyRenderer(pg_renderer);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                pg_renderer = SDL_CreateRenderer(win, SDL_SOFTWARE_RENDERER);
+#else
                 pg_renderer =
                     SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE);
+#endif
                 pg_texture =
                     SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
                                       SDL_TEXTUREACCESS_STREAMING, w, h);
             }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            SDL_SetRenderLogicalPresentation(
+                pg_renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+#else
             SDL_RenderSetLogicalSize(pg_renderer, w, h);
             SDL_RenderSetIntegerScale(pg_renderer, SDL_FALSE);
+#endif
         }
         else if (state->using_gl) {
             result =
@@ -3115,9 +3182,18 @@ pg_display_resize_event(PyObject *self, PyObject *event)
         }
     }
     else if (pg_renderer != NULL) {
+        /* TODO: verify why this block exists and whether SDL3 port is
+         * equivalent */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_RendererLogicalPresentation mode;
+        SDL_GetRenderLogicalPresentation(pg_renderer, &w, &h, &mode);
+        SDL_SetWindowSize(win, (w > wnew) ? w : wnew, (h > hnew) ? h : hnew);
+        result = SDL_SetRenderLogicalPresentation(pg_renderer, w, h, mode);
+#else
         SDL_RenderGetLogicalSize(pg_renderer, &w, &h);
         SDL_SetWindowSize(win, (w > wnew) ? w : wnew, (h > hnew) ? h : hnew);
         result = SDL_RenderSetLogicalSize(pg_renderer, w, h);
+#endif
         if (result != 0) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
