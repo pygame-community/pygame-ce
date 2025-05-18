@@ -31,7 +31,9 @@
 
 #include "doc/display_doc.h"
 
+#ifndef PG_SDL3
 #include <SDL_syswm.h>
+#endif
 
 static PyTypeObject pgVidInfo_Type;
 
@@ -499,12 +501,14 @@ pg_get_wm_info(PyObject *self, PyObject *_null)
 {
     PyObject *dict;
     PyObject *tmp;
-    SDL_SysWMinfo info;
     SDL_Window *win;
 
     VIDEO_INIT_CHECK();
 
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SysWMinfo info;
     SDL_VERSION(&(info.version))
+#endif
     dict = PyDict_New();
     if (!dict) {
         return NULL;
@@ -514,12 +518,32 @@ pg_get_wm_info(PyObject *self, PyObject *_null)
     if (!win) {
         return dict;
     }
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_GetWindowWMInfo(win, &info)) {
         return dict;
     }
+#endif
 
     (void)tmp;
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    tmp = PyLong_FromLongLong((long long)SDL_GetPointerProperty(
+        SDL_GetWindowProperties(win), SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+        NULL));
+    PyDict_SetItemString(dict, "window", tmp);
+    Py_DECREF(tmp);
+
+    tmp = PyLong_FromLongLong((long long)SDL_GetPointerProperty(
+        SDL_GetWindowProperties(win), SDL_PROP_WINDOW_WIN32_HDC_POINTER,
+        NULL));
+    PyDict_SetItemString(dict, "hdc", tmp);
+    Py_DECREF(tmp);
+    tmp = PyLong_FromLongLong((long long)SDL_GetPointerProperty(
+        SDL_GetWindowProperties(win), SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER,
+        NULL));
+    PyDict_SetItemString(dict, "hinstance", tmp);
+    Py_DECREF(tmp);
+#else
     tmp = PyLong_FromLongLong((long long)info.info.win.window);
     PyDict_SetItemString(dict, "window", tmp);
     Py_DECREF(tmp);
@@ -531,12 +555,26 @@ pg_get_wm_info(PyObject *self, PyObject *_null)
     PyDict_SetItemString(dict, "hinstance", tmp);
     Py_DECREF(tmp);
 #endif
-#if defined(SDL_VIDEO_DRIVER_WINRT)
+#endif
+#if defined(SDL_VIDEO_DRIVER_WINRT) && !SDL_VERSION_ATLEAST(3, 0, 0)
     tmp = PyCapsule_New(info.info.winrt.window, "window", NULL);
     PyDict_SetItemString(dict, "window", tmp);
     Py_DECREF(tmp);
 #endif
 #if defined(SDL_VIDEO_DRIVER_X11)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    tmp = PyLong_FromLong(SDL_GetNumberProperty(
+        SDL_GetWindowProperties(win), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0));
+    PyDict_SetItemString(dict, "window", tmp);
+    Py_DECREF(tmp);
+
+    tmp = PyCapsule_New(
+        SDL_GetPointerProperty(SDL_GetWindowProperties(win),
+                               SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL),
+        "display", NULL);
+    PyDict_SetItemString(dict, "display", tmp);
+    Py_DECREF(tmp);
+#else
     tmp = PyLong_FromLong(info.info.x11.window);
     PyDict_SetItemString(dict, "window", tmp);
     Py_DECREF(tmp);
@@ -545,7 +583,8 @@ pg_get_wm_info(PyObject *self, PyObject *_null)
     PyDict_SetItemString(dict, "display", tmp);
     Py_DECREF(tmp);
 #endif
-#if defined(SDL_VIDEO_DRIVER_DIRECTFB)
+#endif
+#if defined(SDL_VIDEO_DRIVER_DIRECTFB) && !SDL_VERSION_ATLEAST(3, 0, 0)
     tmp = PyCapsule_New(info.info.dfb.dfb, "dfb", NULL);
     PyDict_SetItemString(dict, "dfb", tmp);
     Py_DECREF(tmp);
@@ -559,11 +598,46 @@ pg_get_wm_info(PyObject *self, PyObject *_null)
     Py_DECREF(tmp);
 #endif
 #if defined(SDL_VIDEO_DRIVER_COCOA)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    tmp = PyCapsule_New(
+        SDL_GetPointerProperty(SDL_GetWindowProperties(win),
+                               SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL),
+        "window", NULL);
+    PyDict_SetItemString(dict, "window", tmp);
+    Py_DECREF(tmp);
+#else
     tmp = PyCapsule_New(info.info.cocoa.window, "window", NULL);
     PyDict_SetItemString(dict, "window", tmp);
     Py_DECREF(tmp);
 #endif
+#endif
 #if defined(SDL_VIDEO_DRIVER_UIKIT)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    tmp = PyCapsule_New(
+        SDL_GetPointerProperty(SDL_GetWindowProperties(win),
+                               SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL),
+        "window", NULL);
+    PyDict_SetItemString(dict, "window", tmp);
+    Py_DECREF(tmp);
+
+    tmp = PyLong_FromLong(SDL_GetPointerNumber(
+        SDL_GetWindowProperties(win),
+        SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER, 0));
+    PyDict_SetItemString(dict, "framebuffer", tmp);
+    Py_DECREF(tmp);
+
+    tmp = PyLong_FromLong(SDL_GetPointerNumber(
+        SDL_GetWindowProperties(win),
+        SDL_PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER, 0));
+    PyDict_SetItemString(dict, "colorbuffer", tmp);
+    Py_DECREF(tmp);
+
+    tmp = PyLong_FromLong(SDL_GetPointerNumber(
+        SDL_GetWindowProperties(win),
+        SDL_PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER, 0));
+    PyDict_SetItemString(dict, "resolveFramebuffer", tmp);
+    Py_DECREF(tmp);
+#else
     tmp = PyCapsule_New(info.info.uikit.window, "window", NULL);
     PyDict_SetItemString(dict, "window", tmp);
     Py_DECREF(tmp);
@@ -580,7 +654,23 @@ pg_get_wm_info(PyObject *self, PyObject *_null)
     PyDict_SetItemString(dict, "resolveFramebuffer", tmp);
     Py_DECREF(tmp);
 #endif
+#endif
 #if defined(SDL_VIDEO_DRIVER_WAYLAND)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    tmp = PyCapsule_New(
+        SDL_GetPointerProperty(SDL_GetWindowProperties(win),
+                               SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL),
+        "display", NULL);
+    PyDict_SetItemString(dict, "display", tmp);
+    Py_DECREF(tmp);
+
+    tmp = PyCapsule_New(
+        SDL_GetPointerProperty(SDL_GetWindowProperties(win),
+                               SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL),
+        "surface", NULL);
+    PyDict_SetItemString(dict, "surface", tmp);
+    Py_DECREF(tmp);
+#else
     tmp = PyCapsule_New(info.info.wl.display, "display", NULL);
     PyDict_SetItemString(dict, "display", tmp);
     Py_DECREF(tmp);
@@ -593,7 +683,22 @@ pg_get_wm_info(PyObject *self, PyObject *_null)
     PyDict_SetItemString(dict, "shell_surface", tmp);
     Py_DECREF(tmp);
 #endif
+#endif
 #if defined(SDL_VIDEO_DRIVER_ANDROID)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    tmp = PyCapsule_New(
+        SDL_GetPointerProperty(SDL_GetWindowProperties(win),
+                               SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL),
+        "window", NULL);
+    PyDict_SetItemString(dict, "window", tmp);
+    Py_DECREF(tmp);
+
+    tmp = PyLong_FromLong((long)SDL_GetPointerProperty(
+        SDL_GetWindowProperties(win), SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER,
+        NULL));
+    PyDict_SetItemString(dict, "surface", tmp);
+    Py_DECREF(tmp);
+#else
     tmp = PyCapsule_New(info.info.android.window, "window", NULL);
     PyDict_SetItemString(dict, "window", tmp);
     Py_DECREF(tmp);
@@ -602,7 +707,21 @@ pg_get_wm_info(PyObject *self, PyObject *_null)
     PyDict_SetItemString(dict, "surface", tmp);
     Py_DECREF(tmp);
 #endif
+#endif
 #if defined(SDL_VIDEO_DRIVER_VIVANTE)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    tmp = PyLong_FromLong((long)SDL_GetPointerProperty(
+        SDL_GetWindowProperties(win), SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER,
+        NULL));
+    PyDict_SetItemString(dict, "display", tmp);
+    Py_DECREF(tmp);
+
+    tmp = PyLong_FromLong((long)SDL_GetPointerProperty(
+        SDL_GetWindowProperties(win), SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER,
+        NULL));
+    PyDict_SetItemString(dict, "window", tmp);
+    Py_DECREF(tmp);
+#else
     tmp = PyLong_FromLong((long)info.info.vivante.display);
     PyDict_SetItemString(dict, "display", tmp);
     Py_DECREF(tmp);
@@ -610,6 +729,7 @@ pg_get_wm_info(PyObject *self, PyObject *_null)
     tmp = PyLong_FromLong((long)info.info.vivante.window);
     PyDict_SetItemString(dict, "window", tmp);
     Py_DECREF(tmp);
+#endif
 #endif
 
     return dict;
@@ -980,9 +1100,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     int display = _get_display(win);
     char *title = state->title;
     const char *scale_env, *winid_env;
-    SDL_SysWMinfo wm_info;
-
-    SDL_VERSION(&wm_info.version);
 
     char *keywords[] = {"size", "flags", "depth", "display", "vsync", NULL};
 
@@ -2729,6 +2846,63 @@ pg_desktop_refresh_rates(PyObject *self, PyObject *_null)
     return result;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+typedef enum {
+    SDL_SYSWM_UNKNOWN,
+    SDL_SYSWM_WINDOWS,
+    SDL_SYSWM_X11,
+    SDL_SYSWM_DIRECTFB,
+    SDL_SYSWM_COCOA,
+    SDL_SYSWM_UIKIT,
+    SDL_SYSWM_WAYLAND,
+    SDL_SYSWM_MIR, /* no longer available, left for API/ABI compatibility. */
+    SDL_SYSWM_WINRT,
+    SDL_SYSWM_ANDROID,
+    SDL_SYSWM_VIVANTE,
+    SDL_SYSWM_OS2,
+    SDL_SYSWM_HAIKU,
+    SDL_SYSWM_KMSDRM,
+    SDL_SYSWM_RISCOS
+} SDL_SYSWM_TYPE;
+
+static SDL_SYSWM_TYPE
+get_syswm_type()
+{
+    const char *driver = SDL_GetCurrentVideoDriver();
+    if (!driver) {
+        return SDL_SYSWM_UNKNOWN;
+    }
+
+    if (strcmp(driver, "android") == 0) {
+        return SDL_SYSWM_ANDROID;
+    }
+    else if (strcmp(driver, "cocoa") == 0) {
+        return SDL_SYSWM_COCOA;
+    }
+    else if (strcmp(driver, "kmsdrm") == 0) {
+        return SDL_SYSWM_KMSDRM;
+    }
+    else if (strcmp(driver, "uikit") == 0) {
+        return SDL_SYSWM_UIKIT;
+    }
+    else if (strcmp(driver, "vivante") == 0) {
+        return SDL_SYSWM_VIVANTE;
+    }
+    else if (strcmp(driver, "wayland") == 0) {
+        return SDL_SYSWM_WAYLAND;
+    }
+    else if (strcmp(driver, "windows") == 0) {
+        return SDL_SYSWM_WINDOWS;
+    }
+    else if (strcmp(driver, "x11") == 0) {
+        return SDL_SYSWM_X11;
+    }
+    else {
+        return SDL_SYSWM_UNKNOWN;
+    }
+}
+#endif
+
 static PyObject *
 pg_toggle_fullscreen(PyObject *self, PyObject *_null)
 {
@@ -2738,7 +2912,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
     pgSurfaceObject *display_surface;
     _DisplayState *state = DISPLAY_MOD_STATE(self);
     GL_glViewport_Func p_glViewport = NULL;
-    SDL_SysWMinfo wm_info;
+    SDL_SYSWM_TYPE subsystem;
     int is_renderer_software = 0;
 
     VIDEO_INIT_CHECK();
@@ -2748,10 +2922,16 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
 
     flags = SDL_GetWindowFlags(win);
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    subsystem = get_syswm_type();
+#else
+    SDL_SysWMinfo wm_info;
     SDL_VERSION(&wm_info.version);
     if (!SDL_GetWindowWMInfo(win, &wm_info)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
+    subsystem = wm_info.subsystem;
+#endif
 
     if (state->using_gl && pg_renderer != NULL) {
         return RAISE(pgExc_SDLError,
@@ -2774,7 +2954,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
 #endif
     }
 
-    switch (wm_info.subsystem) {
+    switch (subsystem) {
         // if we get this to work correctly with more systems, move them here
         case SDL_SYSWM_WINDOWS:
         case SDL_SYSWM_X11:
@@ -2876,7 +3056,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             }
             SDL_SetWindowSize(win, w * scale, h * scale);
 
-            if (is_renderer_software && wm_info.subsystem == SDL_SYSWM_X11) {
+            if (is_renderer_software && subsystem == SDL_SYSWM_X11) {
                 /* display surface lost? */
                 SDL_DestroyTexture(pg_texture);
                 SDL_DestroyRenderer(pg_renderer);
@@ -2950,7 +3130,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             }
             display_surface->surf = SDL_GetWindowSurface(win);
         }
-        else if (wm_info.subsystem == SDL_SYSWM_X11) {
+        else if (subsystem == SDL_SYSWM_X11) {
             /* This is a HACK, specifically to work around faulty behaviour of
              * SDL_SetWindowFullscreen on X11 when switching out of fullscreen
              * would change the physical resolution of the display back to the
@@ -3025,7 +3205,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             if (result != 0) {
                 return RAISE(pgExc_SDLError, SDL_GetError());
             }
-            if (is_renderer_software && wm_info.subsystem == SDL_SYSWM_X11) {
+            if (is_renderer_software && subsystem == SDL_SYSWM_X11) {
                 if (PyErr_WarnEx(
                         PyExc_Warning,
                         "recreating software renderer in toggle_fullscreen",
@@ -3089,7 +3269,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             }
             display_surface->surf = SDL_GetWindowSurface(win);
         }
-        else if (wm_info.subsystem == SDL_SYSWM_WAYLAND) {
+        else if (subsystem == SDL_SYSWM_WAYLAND) {
             /* This only happens AFTER other options have been exhausted.
              * with GL, Renderer, or the correct window size, toggling works.
              * Only entering a hard fullscreen state is unsupported. */
