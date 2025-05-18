@@ -2370,12 +2370,25 @@ pg_is_vsync(PyObject *self, PyObject *_null)
     }
 
     if (state->using_gl) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        int interval;
+        if (!SDL_GL_GetSwapInterval(&interval)) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+        if (interval != 0) {
+            Py_RETURN_TRUE;
+        }
+        else {
+            Py_RETURN_FALSE;
+        }
+#else
         if (SDL_GL_GetSwapInterval() != 0) {
             Py_RETURN_TRUE;
         }
         else {
             Py_RETURN_FALSE;
         }
+#endif
     }
 
     Py_RETURN_FALSE;
@@ -2534,7 +2547,11 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
     */
     if (state->using_gl) {
         p_glViewport = (GL_glViewport_Func)SDL_GL_GetProcAddress("glViewport");
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_GetWindowSizeInPixels(win, &w, &h);
+#else
         SDL_GL_GetDrawableSize(win, &w, &h);
+#endif
     }
     else {
         w = display_surface->surf->w;
