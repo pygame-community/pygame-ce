@@ -3,7 +3,14 @@
 
 from .sdl2 cimport *
 
-cdef extern from "SDL.h" nogil:
+cdef extern from * nogil:
+    """
+    #ifdef USE_SDL3
+    #include <SDL3/SDL.h>
+    #else
+    #include <SDL.h>
+    #endif
+    """
     # https://wiki.libsdl.org/SDL_OpenAudioDevice
     # https://wiki.libsdl.org/SDL_CloseAudioDevice
     # https://wiki.libsdl.org/SDL_AudioSpec

@@ -1,6 +1,5 @@
 from pygame.version import SDL
 
-print(SDL)
 if __import__("sys").platform not in ("wasi", "emscripten"):
     if SDL < (3, 0, 0):
         from .audio import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]

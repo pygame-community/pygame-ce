@@ -12,6 +12,7 @@ _sdl2_audio = py.extension_module(
     include_directories: '..',
     install: true,
     subdir: pg / '_sdl2',
+    c_args: sdl_cargs,
 )
 endif
 
