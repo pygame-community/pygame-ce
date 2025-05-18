@@ -1279,8 +1279,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
             if (flags & PGS_SCALED || state->unscaled_render) {
                 if (pg_renderer == NULL) {
-                    SDL_RendererInfo info;
-
                     SDL_SetHintWithPriority(SDL_HINT_RENDER_SCALE_QUALITY,
                                             "nearest", SDL_HINT_DEFAULT);
 
@@ -1319,6 +1317,26 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         SDL_SetWindowMinimumSize(win, w, h);
                     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                    int has_vsync = 0;
+                    SDL_GetRenderVSync(pg_renderer, &has_vsync);
+                    if (vsync && has_vsync) {
+                        PyErr_SetString(pgExc_SDLError,
+                                        "could not enable vsync");
+                        _display_state_cleanup(state);
+                        goto DESTROY_WINDOW;
+                    }
+                    const char *name = SDL_GetRendererName(pg_renderer);
+                    if (name && !strcmp(name, SDL_SOFTWARE_RENDERER)) {
+                        if (PyErr_WarnEx(PyExc_Warning,
+                                         "no fast renderer available",
+                                         1) != 0) {
+                            _display_state_cleanup(state);
+                            goto DESTROY_WINDOW;
+                        }
+                    }
+#else
+                    SDL_RendererInfo info;
                     SDL_GetRendererInfo(pg_renderer, &info);
                     if (vsync && !(info.flags & SDL_RENDERER_PRESENTVSYNC)) {
                         PyErr_SetString(pgExc_SDLError,
@@ -1334,6 +1352,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                             goto DESTROY_WINDOW;
                         }
                     }
+#endif
 
                     pg_texture = SDL_CreateTexture(
                         pg_renderer, SDL_PIXELFORMAT_ARGB8888,
@@ -2272,6 +2291,21 @@ pg_iconify(PyObject *self, PyObject *_null)
 static PyObject *
 pg_get_scaled_renderer_info(PyObject *self, PyObject *_null)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    VIDEO_INIT_CHECK();
+    if (!pg_renderer) {
+        Py_RETURN_NONE;
+    }
+
+    const char *name = SDL_GetRendererName(pg_renderer);
+    if (!name) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    /* flags are not being handled here but it shouldn't matter as this is
+     * undocumented API */
+    return Py_BuildValue("(si)", name, 0);
+#else
     SDL_RendererInfo r_info;
 
     VIDEO_INIT_CHECK();
@@ -2284,6 +2318,7 @@ pg_get_scaled_renderer_info(PyObject *self, PyObject *_null)
     }
 
     return Py_BuildValue("(si)", r_info.name, r_info.flags);
+#endif
 }
 
 static PyObject *
@@ -2355,6 +2390,19 @@ pg_is_vsync(PyObject *self, PyObject *_null)
     }
 
     if (pg_renderer != NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        int has_vsync = 0;
+        if (!SDL_GetRenderVSync(pg_renderer, &has_vsync)) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+
+        if (has_vsync) {
+            Py_RETURN_TRUE;
+        }
+        else {
+            Py_RETURN_FALSE;
+        }
+#else
         SDL_RendererInfo info;
 
         if (SDL_GetRendererInfo(pg_renderer, &info) != 0) {
@@ -2367,6 +2415,7 @@ pg_is_vsync(PyObject *self, PyObject *_null)
         else {
             Py_RETURN_FALSE;
         }
+#endif
     }
 
     if (state->using_gl) {
@@ -2465,7 +2514,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
     _DisplayState *state = DISPLAY_MOD_STATE(self);
     GL_glViewport_Func p_glViewport = NULL;
     SDL_SysWMinfo wm_info;
-    SDL_RendererInfo r_info;
+    int is_renderer_software = 0;
 
     VIDEO_INIT_CHECK();
     if (!win) {
@@ -2485,9 +2534,19 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
     }
 
     if (pg_renderer != NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        const char *r_name;
+        if (!(r_name = SDL_GetRendererName(pg_renderer))) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+        is_renderer_software = !strcmp(r_name, SDL_SOFTWARE_RENDERER);
+#else
+        SDL_RendererInfo r_info;
         if (SDL_GetRendererInfo(pg_renderer, &r_info) != 0) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
+        is_renderer_software = r_info.flags & SDL_RENDERER_SOFTWARE;
+#endif
     }
 
     switch (wm_info.subsystem) {
@@ -2583,8 +2642,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             }
             SDL_SetWindowSize(win, w * scale, h * scale);
 
-            if (r_info.flags & SDL_RENDERER_SOFTWARE &&
-                wm_info.subsystem == SDL_SYSWM_X11) {
+            if (is_renderer_software && wm_info.subsystem == SDL_SYSWM_X11) {
                 /* display surface lost? */
                 SDL_DestroyTexture(pg_texture);
                 SDL_DestroyRenderer(pg_renderer);
@@ -2720,8 +2778,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             if (result != 0) {
                 return RAISE(pgExc_SDLError, SDL_GetError());
             }
-            if (r_info.flags & SDL_RENDERER_SOFTWARE &&
-                wm_info.subsystem == SDL_SYSWM_X11) {
+            if (is_renderer_software && wm_info.subsystem == SDL_SYSWM_X11) {
                 if (PyErr_WarnEx(
                         PyExc_Warning,
                         "recreating software renderer in toggle_fullscreen",
