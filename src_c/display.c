@@ -335,8 +335,10 @@ pg_vidinfo_getattr(PyObject *self, char *name)
                              info->vfmt->Bshift, info->vfmt->Ashift);
     }
     else if (!strcmp(name, "losses")) {
-        return Py_BuildValue("(iiii)", info->vfmt->Rloss, info->vfmt->Gloss,
-                             info->vfmt->Bloss, info->vfmt->Aloss);
+        return Py_BuildValue("(iiii)", PG_FORMAT_R_LOSS(info->vfmt),
+                             PG_FORMAT_G_LOSS(info->vfmt),
+                             PG_FORMAT_B_LOSS(info->vfmt),
+                             PG_FORMAT_A_LOSS(info->vfmt));
     }
     else if (!strcmp(name, "current_h")) {
         return PyLong_FromLong(info->current_h);
@@ -382,8 +384,9 @@ pg_vidinfo_str(PyObject *self)
         PG_FORMAT_BytesPerPixel(info->vfmt), info->vfmt->Rmask,
         info->vfmt->Gmask, info->vfmt->Bmask, info->vfmt->Amask,
         info->vfmt->Rshift, info->vfmt->Gshift, info->vfmt->Bshift,
-        info->vfmt->Ashift, info->vfmt->Rloss, info->vfmt->Gloss,
-        info->vfmt->Bloss, info->vfmt->Aloss, info->current_w, info->current_h,
+        info->vfmt->Ashift, PG_FORMAT_R_LOSS(info->vfmt),
+        PG_FORMAT_G_LOSS(info->vfmt), PG_FORMAT_B_LOSS(info->vfmt),
+        PG_FORMAT_A_LOSS(info->vfmt), info->current_w, info->current_h,
         pixel_format_name);
 }
 
@@ -415,7 +418,7 @@ static pg_VideoInfo *
 pg_GetVideoInfo(pg_VideoInfo *info)
 {
     SDL_DisplayMode mode;
-    SDL_PixelFormat *tempformat;
+    PG_PixelFormat *tempformat;
     Uint32 formatenum;
     pgSurfaceObject *winsurfobj;
     SDL_Surface *winsurf;
@@ -431,7 +434,12 @@ pg_GetVideoInfo(pg_VideoInfo *info)
         winsurf = pgSurface_AsSurface(winsurfobj);
         info->current_w = winsurf->w;
         info->current_h = winsurf->h;
-        info->vfmt_data = *(winsurf->format);
+        PG_PixelFormat *fmt = PG_GetSurfaceFormat(winsurf);
+        if (!fmt) {
+            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            return (pg_VideoInfo *)NULL;
+        }
+        info->vfmt_data = *fmt;
         info->vfmt = &info->vfmt_data;
     }
     else {
@@ -449,7 +457,9 @@ pg_GetVideoInfo(pg_VideoInfo *info)
         if ((tempformat = SDL_AllocFormat(formatenum))) {
             info->vfmt_data = *tempformat;
             info->vfmt = &info->vfmt_data;
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
             SDL_FreeFormat(tempformat);
+#endif
         }
         else {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
@@ -1423,7 +1433,11 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         Py_DECREF(surface);
 
         /* ensure window is always black after a set_mode call */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_FillRect(surf, NULL, SDL_MapSurfaceRGB(surf, 0, 0, 0));
+#else
         SDL_FillRect(surf, NULL, SDL_MapRGB(surf->format, 0, 0, 0));
+#endif
     }
 
     /*set the window icon*/
@@ -1968,7 +1982,7 @@ pg_set_palette(PyObject *self, PyObject *args)
 
     Py_INCREF(surface);
     surf = pgSurface_AsSurface(surface);
-    pal = surf->format->palette;
+    pal = PG_GetSurfacePalette(surf);
     if (PG_SURF_BytesPerPixel(surf) != 1 || !pal) {
         Py_DECREF(surface);
         return RAISE(pgExc_SDLError, "Display mode is not colormapped");
