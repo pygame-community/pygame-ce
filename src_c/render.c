@@ -1060,6 +1060,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     int target = 0;
     int scale_quality = -1;
     int access = SDL_TEXTUREACCESS_STATIC;
+    Uint32 Rmask, Gmask, Bmask, Amask;
     Uint32 format;
 
     char *keywords[] = {"renderer",  "size",   "depth",         "static",
@@ -1069,7 +1070,24 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
                                      &streaming, &target, &scale_quality)) {
         return -1;
     }
-    format = format_from_depth(depth);
+    if (depth == 0 || depth == 32) {
+        Rmask = 0xFF << 16;
+        Gmask = 0xFF << 8;
+        Bmask = 0xFF;
+        Amask = 0xFF << 24;
+    }
+    else if (depth == 16) {
+        Rmask = 0xF << 8;
+        Gmask = 0xF << 4;
+        Bmask = 0xF;
+        Amask = 0xF << 12;
+    }
+    else {
+        RAISERETURN(PyExc_ValueError,
+                    "no standard masks exist for given bitdepth with alpha",
+                    -1)
+    }
+    format = SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask);
     if (!pg_TwoIntsFromObj(sizeobj, &width, &height)) {
         RAISERETURN(PyExc_TypeError, "invalid size argument", -1)
     }
