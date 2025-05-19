@@ -58,31 +58,6 @@ texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest);
 static void
 image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest);
 
-/* Helper functions */
-static inline Uint32
-format_from_depth(int depth)
-{
-    Uint32 Rmask, Gmask, Bmask, Amask;
-    if (depth == 0 || depth == 32) {
-        Rmask = 0xFF << 16;
-        Gmask = 0xFF << 8;
-        Bmask = 0xFF;
-        Amask = 0xFF << 24;
-    }
-    else if (depth == 16) {
-        Rmask = 0xF << 8;
-        Gmask = 0xF << 4;
-        Bmask = 0xF;
-        Amask = 0xF << 12;
-    }
-    else {
-        RAISERETURN(PyExc_ValueError,
-                    "no standard masks exist for given bitdepth with alpha",
-                    -1)
-    }
-    return SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask);
-}
-
 /* Renderer implementation */
 static PyObject *
 renderer_from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
