@@ -20,6 +20,6 @@ class BufferProxy:
     def __init__(self, parent: Any) -> None: ...  # TODO: parent: TypedDict | Protocol
     def write(
         self,
-        buffer: str | bytes,  # See https://docs.python.org/3/c-api/arg.html at s#
+        buffer: str | bytes,  # Any "read-only bytes-like-object" is valid
         offset: int = 0,
     ) -> None: ...
