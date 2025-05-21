@@ -27,7 +27,7 @@ controller_module_init(PyObject *module, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER)) {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) == SDL_FALSE) {
+        if (!SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
 #else
         if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
 #endif

@@ -6,7 +6,7 @@ from libc.stdio cimport *
 
 cdef extern from * nogil:
     """
-    #ifdef USE_SDL3
+    #ifdef PG_SDL3
     #include <SDL3/SDL.h>
     #define SDL_INIT_TIMER 0
     #define SDL_INIT_EVERYTHING 0

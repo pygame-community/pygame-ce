@@ -5,7 +5,7 @@ from .sdl2 cimport *
 
 cdef extern from * nogil:
     """
-    #ifdef USE_SDL3
+    #ifdef PG_SDL3
     #include <SDL3/SDL.h>
     #else
     #include <SDL.h>

@@ -1,8 +1,4 @@
 cython_base = '../cython/pygame/_sdl2'
-sdl_cargs = []
-if sdl_api == 3
-sdl_cargs += ['-DUSE_SDL3']
-endif
 
 if sdl_api != 3
 _sdl2_audio = py.extension_module(
@@ -12,7 +8,6 @@ _sdl2_audio = py.extension_module(
     include_directories: '..',
     install: true,
     subdir: pg / '_sdl2',
-    c_args: sdl_cargs,
 )
 endif
 
@@ -54,7 +49,6 @@ _sdl2_sdl2 = py.extension_module(
     include_directories: '..',
     install: true,
     subdir: pg / '_sdl2',
-    c_args: sdl_cargs,
 )
 
 # These are not cython files
