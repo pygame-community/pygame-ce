@@ -287,12 +287,7 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
                      intsize);
         return -1;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (!SDL_GetSurfaceBlendMode(surf, &mode))
-#else
-    if (SDL_GetSurfaceBlendMode(surf, &mode) < 0)
-#endif
-    {
+    if (!PG_GetSurfaceBlendMode(surf, &mode)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }

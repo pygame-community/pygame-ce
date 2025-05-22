@@ -95,12 +95,7 @@ _PgSurface_SrcAlpha(SDL_Surface *surf)
 {
     if (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(surf))) {
         SDL_BlendMode mode;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (!SDL_GetSurfaceBlendMode(surf, &mode))
-#else
-        if (SDL_GetSurfaceBlendMode(surf, &mode) < 0)
-#endif
-        {
+        if (!PG_GetSurfaceBlendMode(surf, &mode)) {
             return -1;
         }
         if (mode == SDL_BLENDMODE_BLEND) {
@@ -181,7 +176,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
 
     isalpha = _PgSurface_SrcAlpha(surf);
     if (isalpha == 1) {
-        if (SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND) != 0) {
+        if (!PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
@@ -193,7 +188,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         return NULL;
     }
     else {
-        if (SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE) != 0) {
+        if (!PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;

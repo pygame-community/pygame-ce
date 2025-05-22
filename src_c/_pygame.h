@@ -132,6 +132,8 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 
 #define PG_GetSurfacePalette SDL_GetSurfacePalette
 #define PG_SetPaletteColors SDL_SetPaletteColors
+#define PG_SetSurfaceBlendMode SDL_SetSurfaceBlendMode
+#define PG_GetSurfaceBlendMode SDL_GetSurfaceBlendMode
 
 #define PG_GetRGBA SDL_GetRGBA
 #define PG_GetRGB SDL_GetRGB
@@ -239,6 +241,18 @@ PG_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors,
                     int firstcolor, int ncolors)
 {
     return SDL_SetPaletteColors(palette, colors, firstcolor, ncolors) == 0;
+}
+
+static inline bool
+PG_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
+{
+    return SDL_SetSurfaceBlendMode(surface, blendMode) == 0;
+}
+
+static inline bool
+PG_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
+{
+    return SDL_GetSurfaceBlendMode(surface, blendMode) == 0;
 }
 
 // NOTE:

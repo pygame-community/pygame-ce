@@ -1517,12 +1517,12 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
             return RAISE(PyExc_TypeError, "invalid alpha argument");
         }
 
-        if (SDL_SetSurfaceBlendMode(surf, SDL_BLENDMODE_BLEND) != 0) {
+        if (!PG_SetSurfaceBlendMode(surf, SDL_BLENDMODE_BLEND)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
     else {
-        if (SDL_SetSurfaceBlendMode(surf, SDL_BLENDMODE_NONE) != 0) {
+        if (!PG_SetSurfaceBlendMode(surf, SDL_BLENDMODE_NONE)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
@@ -1539,7 +1539,7 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
 
     if (alpha == 255 && (PG_SURF_BytesPerPixel(surf) == 1)) {
         /* Can't blend with a surface alpha of 255 and 8bit surfaces */
-        if (SDL_SetSurfaceBlendMode(surf, SDL_BLENDMODE_NONE) != 0) {
+        if (!PG_SetSurfaceBlendMode(surf, SDL_BLENDMODE_NONE)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
@@ -1582,7 +1582,7 @@ surf_get_alpha(pgSurfaceObject *self, PyObject *_null)
 
     SURF_INIT_CHECK(surf)
 
-    if (SDL_GetSurfaceBlendMode(surf, &mode) != 0) {
+    if (!PG_GetSurfaceBlendMode(surf, &mode)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1605,7 +1605,7 @@ surf_get_blendmode(PyObject *self, PyObject *_null)
 
     SURF_INIT_CHECK(surf)
 
-    if (SDL_GetSurfaceBlendMode(surf, &mode) != 0) {
+    if (!PG_GetSurfaceBlendMode(surf, &mode)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     return PyLong_FromLong((long)mode);
@@ -2970,7 +2970,7 @@ static int
 _PgSurface_SrcAlpha(SDL_Surface *surf)
 {
     SDL_BlendMode mode;
-    if (SDL_GetSurfaceBlendMode(surf, &mode) < 0) {
+    if (!PG_GetSurfaceBlendMode(surf, &mode)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
