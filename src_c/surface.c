@@ -674,8 +674,8 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         /* Give the surface something other than an all white palette.
          *          */
         SDL_Palette *surf_palette = SDL_CreateSurfacePalette(surface);
-        if (SDL_SetPaletteColors(surf_palette, default_palette_colors, 0,
-                                 default_palette_size - 1) != 0) {
+        if (!PG_SetPaletteColors(surf_palette, default_palette_colors, 0,
+                                 default_palette_size - 1)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(surface);
             return -1;
@@ -858,9 +858,9 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surface))) {
         /* Give the surface something other than an all white palette.
          *          */
-        if (SDL_SetPaletteColors(surface->format->palette,
+        if (!PG_SetPaletteColors(surface->format->palette,
                                  default_palette_colors, 0,
-                                 default_palette_size - 1) != 0) {
+                                 default_palette_size - 1)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(surface);
             return -1;
@@ -1332,7 +1332,7 @@ surf_set_palette(PyObject *self, PyObject *seq)
     }
 
     if (!pal) {
-        return RAISE(pgExc_SDLError, "Surface is not palettitized\n");
+        return RAISE(pgExc_SDLError, "Surface is not palettized\n");
     }
     old_colors = pal->colors;
 
@@ -1360,8 +1360,7 @@ surf_set_palette(PyObject *self, PyObject *seq)
         colors[i].a = (unsigned char)old_colors[i].a;
     }
 
-    ecode = SDL_SetPaletteColors(pal, colors, 0, len);
-    if (ecode != 0) {
+    if (!PG_SetPaletteColors(pal, colors, 0, len)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -1405,7 +1404,7 @@ surf_set_palette_at(PyObject *self, PyObject *args)
     color.b = rgba[2];
     color.a = pal->colors[_index].a; /* May be a colorkey color. */
 
-    if (SDL_SetPaletteColors(pal, &color, _index, 1) != 0) {
+    if (!PG_SetPaletteColors(pal, &color, _index, 1)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -3232,7 +3231,7 @@ surf_subsurface(PyObject *self, PyObject *args)
             SDL_FreeSurface(sub);
             return NULL;
         }
-        if (SDL_SetPaletteColors(pal, colors, 0, ncolors) != 0) {
+        if (!PG_SetPaletteColors(pal, colors, 0, ncolors)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreePalette(pal);
             SDL_FreeSurface(sub);

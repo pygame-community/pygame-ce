@@ -494,7 +494,7 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
         colors[0].g = ~colors[1].g;
         colors[0].b = ~colors[1].b;
         colors[0].a = SDL_ALPHA_OPAQUE;
-        if (SDL_SetPaletteColors(palette, colors, 0, 2)) {
+        if (!PG_SetPaletteColors(palette, colors, 0, 2)) {
             PyErr_Format(PyExc_SystemError,
                          "Pygame bug in _PGFT_Render_NewSurface: %.200s",
                          SDL_GetError());

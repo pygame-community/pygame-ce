@@ -131,6 +131,7 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 }
 
 #define PG_GetSurfacePalette SDL_GetSurfacePalette
+#define PG_SetPaletteColors SDL_SetPaletteColors
 
 #define PG_GetRGBA SDL_GetRGBA
 #define PG_GetRGB SDL_GetRGB
@@ -231,6 +232,13 @@ static inline SDL_Palette *
 PG_GetSurfacePalette(SDL_Surface *surf)
 {
     return surf->format->palette;
+}
+
+static inline bool
+PG_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors,
+                    int firstcolor, int ncolors)
+{
+    return SDL_SetPaletteColors(palette, colors, firstcolor, ncolors) == 0;
 }
 
 // NOTE:

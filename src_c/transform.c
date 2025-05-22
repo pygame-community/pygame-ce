@@ -158,8 +158,8 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
             return NULL;
         }
 
-        if (SDL_SetPaletteColors(newsurf_palette, surf_palette->colors, 0,
-                                 surf_palette->ncolors) != 0) {
+        if (!PG_SetPaletteColors(newsurf_palette, surf_palette->colors, 0,
+                                 surf_palette->ncolors)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
