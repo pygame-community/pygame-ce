@@ -84,8 +84,6 @@ rwobject = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 simd_blitters_avx2 = static_library(
     'simd_blitters_avx2',
     'simd_blitters_avx2.c',
@@ -132,7 +130,6 @@ surface = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 surflock = py.extension_module(
     'surflock',
