@@ -104,7 +104,7 @@ _PgSurface_SrcAlpha(SDL_Surface *surf)
     }
     else {
         Uint8 color = SDL_ALPHA_OPAQUE;
-        if (SDL_GetSurfaceAlphaMod(surf, &color) != 0) {
+        if (!PG_GetSurfaceAlphaMod(surf, &color)) {
             return -1;
         }
         if (color != SDL_ALPHA_OPAQUE) {
@@ -161,13 +161,13 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         }
     }
 
-    if (SDL_GetSurfaceAlphaMod(surf, &alpha) != 0) {
+    if (!PG_GetSurfaceAlphaMod(surf, &alpha)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         SDL_FreeSurface(newsurf);
         return NULL;
     }
     if (alpha != 255) {
-        if (SDL_SetSurfaceAlphaMod(newsurf, alpha) != 0) {
+        if (!PG_SetSurfaceAlphaMod(newsurf, alpha)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;

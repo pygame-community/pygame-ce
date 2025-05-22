@@ -1562,11 +1562,11 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
     }
     /* HACK HACK HACK */
     if (result == 0) {
-        result = SDL_SetSurfaceAlphaMod(surf, alpha);
+        result = !PG_SetSurfaceAlphaMod(surf, alpha);
     }
     pgSurface_Unprep(self);
 
-    if (result == -1) {
+    if (result != 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1590,7 +1590,7 @@ surf_get_alpha(pgSurfaceObject *self, PyObject *_null)
         Py_RETURN_NONE;
     }
 
-    if (SDL_GetSurfaceAlphaMod(surf, &alpha) != 0) {
+    if (!PG_GetSurfaceAlphaMod(surf, &alpha)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -3245,13 +3245,13 @@ surf_subsurface(PyObject *self, PyObject *args)
         }
         SDL_FreePalette(pal);
     }
-    if (SDL_GetSurfaceAlphaMod(surf, &alpha) != 0) {
+    if (!PG_GetSurfaceAlphaMod(surf, &alpha)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         SDL_FreeSurface(sub);
         return NULL;
     }
     if (alpha != 255) {
-        if (SDL_SetSurfaceAlphaMod(sub, alpha) != 0) {
+        if (!PG_SetSurfaceAlphaMod(sub, alpha)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(sub);
             return NULL;
@@ -4515,7 +4515,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     /* can't blit alpha to 8bit, crashes SDL */
     else if (PG_SURF_BytesPerPixel(dst) == 1 &&
              (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(src)) ||
-              ((SDL_GetSurfaceAlphaMod(src, &alpha) == 0 && alpha != 255)))) {
+              ((PG_GetSurfaceAlphaMod(src, &alpha) && alpha != 255)))) {
         /* Py_BEGIN_ALLOW_THREADS */
         if (PG_SURF_BytesPerPixel(src) == 1) {
             result = pygame_Blit(src, srcrect, dst, dstrect, 0);
