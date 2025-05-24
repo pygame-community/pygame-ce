@@ -17,7 +17,6 @@ pygame C API
    c_api/rect.rst
    c_api/rwobject.rst
    c_api/surface.rst
-   c_api/surflock.rst
    c_api/version.rst
    c_api/window.rst
 

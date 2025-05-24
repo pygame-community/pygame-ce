@@ -59,7 +59,6 @@ mouse src_c/void.c
 pixelcopy src_c/void.c
 pixelarray src_c/void.c
 surface src_c/void.c
-surflock src_c/void.c
 rect src_c/void.c
 rwobject src_c/void.c
 system src_c/void.c
