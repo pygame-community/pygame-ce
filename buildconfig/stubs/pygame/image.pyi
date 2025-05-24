@@ -62,9 +62,8 @@ following formats.
 .. versionaddedold:: 1.8 Saving PNG and JPEG files.
 """
 
-from typing import Literal, Optional, Union
+from typing import Literal, NamedTuple, Optional
 
-from pygame.bufferproxy import BufferProxy
 from pygame.surface import Surface
 from pygame.typing import FileLike, IntPoint, Point
 from typing_extensions import (
@@ -77,6 +76,10 @@ _to_bytes_format = Literal[
     "P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR", "RGBA_PREMULT", "ARGB_PREMULT"
 ]
 _from_bytes_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR"]
+
+class _AnimationFrame(NamedTuple):
+    surface: Surface
+    delay: int
 
 def load(file: FileLike, namehint: str = "") -> Surface:
     """Load new image from a file (or file-like object).
@@ -136,7 +139,7 @@ def load_sized_svg(file: FileLike, size: Point) -> Surface:
     .. versionadded:: 2.4.0
     """
 
-def load_animation(file: FileLike, namehint: str = "") -> list[tuple[Surface, int]]:
+def load_animation(file: FileLike, namehint: str = "") -> list[_AnimationFrame]:
     """Load an animation (GIF/WEBP) from a file (or file-like object).
 
     Load an animation (GIF/WEBP) from a file source. You can pass either a
@@ -145,8 +148,9 @@ def load_animation(file: FileLike, namehint: str = "") -> list[tuple[Surface, in
     namehint argument so that the file extension can be used to infer the file
     format.
 
-    This returns a list of tuples (corresponding to every frame of the animation),
-    where each tuple is a (surface, delay) pair for that frame.
+    This returns a list of named tuples (corresponding to every frame of the animation),
+    where each tuple is a (surface, delay) pair for that frame. Being named tuples,
+    the items can be accessed as frame.surface and frame.delay.
 
     This function requires SDL_image 2.6.0 or above. If pygame was compiled with
     an older version, ``pygame.error`` will be raised when this function is
