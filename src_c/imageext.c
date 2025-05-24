@@ -217,8 +217,6 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
     SDL_RWops *rw = NULL;
     static char *kwds[] = {"file", "namehint", NULL};
 
-    assert(animation_frame_type);
-
     if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O|s", kwds, &obj, &name)) {
         return NULL;
     }
@@ -257,6 +255,10 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     for (int i = 0; i < surfs->count; i++) {
+        PyObject *delay_obj = PyLong_FromLong(surfs->delays[i]);
+        if (!delay_obj) {
+            goto error;
+        }
         PyObject *frame = (PyObject *)pgSurface_New(surfs->frames[i]);
         if (!frame) {
             /* IMG_FreeAnimation takes care of freeing of member SDL surfaces
@@ -273,15 +275,7 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
         }
 
         PyStructSequence_SetItem(listentry, 0, frame);
-        PyObject *delay_obj = PyLong_FromLong(surfs->delays[i]);
-        if (!delay_obj) {
-            Py_DECREF(listentry);
-            Py_DECREF(frame);
-            goto error;
-        }
         PyStructSequence_SetItem(listentry, 1, delay_obj);
-        Py_DECREF(delay_obj);
-
         PyList_SET_ITEM(ret, i, listentry);
     }
     IMG_FreeAnimation(surfs);
@@ -492,7 +486,7 @@ MODINIT_DEFINE(imageext)
         {"surface", NULL}, {"delay", NULL}, {NULL, NULL}};
 
     static struct PyStructSequence_Desc _namedtuple_descr = {
-        .name = "AnimationFrame",
+        .name = "_AnimationFrame",
         .doc = NULL,
         .fields = _namedtuple_fields,
         .n_in_sequence = 2,
