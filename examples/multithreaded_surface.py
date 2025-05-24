@@ -1,19 +1,20 @@
-import pygame
-import threading
 import random
-
+import sys
+import threading
 from time import perf_counter
 
-start = perf_counter()
+import pygame
 
 pygame.init()
+
+print(f"{sys._is_gil_enabled() = }")
 
 WIDTH, HEIGHT = 100, 100
 NUM_THREADS = 10
 surface = pygame.Surface((WIDTH, HEIGHT))
 surface.fill("black")
 
-LERP_OFFSET = 0.001
+LERP_OFFSET = 0.0001
 
 
 def get_random_color() -> pygame.Color:
@@ -47,6 +48,7 @@ batches = {
     for i in range(WIDTH * HEIGHT // NUM_THREADS)
 }
 
+start = perf_counter()
 for batch in batches.values():
     threads: list[threading.Thread] = []
     for pixel, color in batch:
@@ -58,13 +60,26 @@ for batch in batches.values():
 
     while any([t.is_alive() for t in threads]):
         continue
+end = perf_counter()
 
 pygame.image.save(pygame.transform.scale_by(surface, 10), "out.png")
-
-end = perf_counter()
 
 print(f"time taken: {end - start}")
 
 for pixel, color in zip(pixels, colors):
     surface.set_at(pixel, color)
 pygame.image.save(pygame.transform.scale_by(surface, 10), "comparison.png")
+
+import numpy
+
+threaded_surf = pygame.image.load("out.png")
+compare_surf = pygame.image.load("comparison.png")
+
+threaded_arr = pygame.surfarray.array3d(threaded_surf)
+compare_arr = pygame.surfarray.array3d(compare_surf)
+
+threaded_alpha = pygame.surfarray.array_alpha(threaded_surf)
+compare_alpha = pygame.surfarray.array_alpha(compare_surf)
+
+numpy.testing.assert_array_equal(threaded_arr, compare_arr)
+numpy.testing.assert_array_equal(threaded_alpha, compare_alpha)

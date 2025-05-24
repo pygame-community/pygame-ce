@@ -670,10 +670,15 @@ PYGAMEAPI_EXTERN_SLOTS(geometry);
         Py_DECREF(module);                                           \
         return NULL;                                                 \
     }                                                                \
-    printf("%s was compiled with GIL disabled\n", name);
-#else
+    printf("%s was compiled with GIL disabled (single)\n", name);
+#define DISABLE_GIL_MULTIPHASE_INITIALIZATION(name) \
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+
+#else  // PY_GIL_DISABLED is not defined
 #define DISABLE_GIL_SINGLE_INITIALIZATION(module, name) \
-    printf("%s was compiled with GIL enabled\n", name);
+    printf("%s was compiled with GIL disabled (single)\n", name);
+#define DISABLE_GIL_MULTIPHASE_INITIALIZATION(name) \
+    {Py_mod_gil, Py_MOD_GIL_USED},
 #endif
 
 static PG_INLINE PyObject *

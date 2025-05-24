@@ -52,10 +52,10 @@ typedef enum {
 } SurfViewKind;
 
 /* To avoid problems with non-const Py_buffer format field */
-static char FormatUint8[] = "B";
-static char FormatUint16[] = "=H";
-static char FormatUint24[] = "3x";
-static char FormatUint32[] = "=I";
+#define FormatUint8 "B"
+#define FormatUint16 "=H"
+#define FormatUint24 "3x"
+#define FormatUint32 "=I"
 
 typedef struct pg_bufferinternal_s {
     PyObject *consumer_ref; /* A weak reference to a bufferproxy object   */
@@ -4623,17 +4623,64 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
 
 static PyMethodDef _surface_methods[] = {{NULL, NULL, 0, NULL}};
 
+int
+exec_surface(PyObject *module)
+{
+    PyObject *apiobj;
+    static void *c_api[PYGAMEAPI_SURFACE_NUMSLOTS];
+
+    if (pg_warn_simd_at_runtime_but_uncompiled() < 0) {
+        return -1;
+    }
+
+    if (PyModule_AddObjectRef(module, "SurfaceType",
+                              (PyObject *)&pgSurface_Type)) {
+        return -1;
+    }
+
+    if (PyModule_AddObjectRef(module, "Surface",
+                              (PyObject *)&pgSurface_Type)) {
+        return -1;
+    }
+
+    /* export the c api */
+    c_api[0] = &pgSurface_Type;
+    c_api[1] = pgSurface_New2;
+    c_api[2] = pgSurface_Blit;
+    c_api[3] = pgSurface_SetSurface;
+    apiobj = encapsulate_api(c_api, "surface");
+    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
+        return -1;
+    }
+
+    if (PyModule_AddObjectRef(module, "_dict", pgSurface_Type.tp_dict)) {
+        return -1;
+    }
+
+    return 0;
+}
+
 MODINIT_DEFINE(surface)
 {
-    PyObject *module, *apiobj;
-    static void *c_api[PYGAMEAPI_SURFACE_NUMSLOTS];
+    static PyModuleDef_Slot surf_slots[] = {
+        {Py_mod_exec, &exec_surface},
+#if PY_VERSION_HEX >= 0x030c0000
+        {Py_mod_multiple_interpreters,
+         Py_MOD_MULTIPLE_INTERPRETERS_NOT_SUPPORTED},  // TODO: see if this can
+                                                       // be supported later
+#endif
+#if PY_VERSION_HEX >= 0x030d0000
+        DISABLE_GIL_MULTIPHASE_INITIALIZATION("surface")
+#endif
+            {0, NULL}};
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "surface",
                                          DOC_SURFACE,
-                                         -1,
+                                         0,
                                          _surface_methods,
-                                         NULL,
+                                         surf_slots,
                                          NULL,
                                          NULL,
                                          NULL};
@@ -4667,44 +4714,5 @@ MODINIT_DEFINE(surface)
         return NULL;
     }
 
-    /* create the module */
-    module = PyModule_Create(&_module);
-    if (module == NULL) {
-        return NULL;
-    }
-
-    DISABLE_GIL_SINGLE_INITIALIZATION(module, _module.m_name)
-
-    if (pg_warn_simd_at_runtime_but_uncompiled() < 0) {
-        Py_DECREF(module);
-        return NULL;
-    }
-    if (PyModule_AddObjectRef(module, "SurfaceType",
-                              (PyObject *)&pgSurface_Type)) {
-        Py_DECREF(module);
-        return NULL;
-    }
-
-    if (PyModule_AddObjectRef(module, "Surface",
-                              (PyObject *)&pgSurface_Type)) {
-        Py_DECREF(module);
-        return NULL;
-    }
-
-    /* export the c api */
-    c_api[0] = &pgSurface_Type;
-    c_api[1] = pgSurface_New2;
-    c_api[2] = pgSurface_Blit;
-    c_api[3] = pgSurface_SetSurface;
-    apiobj = encapsulate_api(c_api, "surface");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
-        Py_DECREF(module);
-        return NULL;
-    }
-    if (PyModule_AddObjectRef(module, "_dict", pgSurface_Type.tp_dict)) {
-        Py_DECREF(module);
-        return NULL;
-    }
-    return module;
+    return PyModuleDef_Init(&_module);
 }
