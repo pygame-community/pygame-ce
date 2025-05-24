@@ -263,6 +263,7 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
         if (!frame) {
             /* IMG_FreeAnimation takes care of freeing of member SDL surfaces
              */
+            Py_DECREF(delay_obj);
             goto error;
         }
         /* The python surface object now "owns" the sdl surface, so set it
@@ -271,6 +272,7 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
         PyObject *listentry = PyStructSequence_New(animation_frame_type);
         if (!listentry) {
             Py_DECREF(frame);
+            Py_DECREF(delay_obj);
             goto error;
         }
 
