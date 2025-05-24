@@ -127,8 +127,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
         if ((info.src_has_colorkey = SDL_HasColorKey(src))) {
             SDL_GetColorKey(src, &info.src_colorkey);
         }
-        if (SDL_GetSurfaceBlendMode(src, &info.src_blend) ||
-            SDL_GetSurfaceBlendMode(dst, &info.dst_blend)) {
+        if (!PG_GetSurfaceBlendMode(src, &info.src_blend) ||
+            !PG_GetSurfaceBlendMode(dst, &info.dst_blend)) {
             okay = 0;
         }
         if (okay) {
