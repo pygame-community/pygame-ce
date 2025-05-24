@@ -69,6 +69,7 @@
 static SDL_mutex *_pg_img_mutex = 0;
 #endif
 */
+static PyTypeObject *animation_frame_type = NULL;
 
 static char *
 iext_find_extension(char *fullname)
@@ -216,6 +217,8 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
     SDL_RWops *rw = NULL;
     static char *kwds[] = {"file", "namehint", NULL};
 
+    assert(animation_frame_type);
+
     if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O|s", kwds, &obj, &name)) {
         return NULL;
     }
@@ -263,12 +266,22 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
         /* The python surface object now "owns" the sdl surface, so set it
          * to null in the animation to prevent double free */
         surfs->frames[i] = NULL;
-
-        PyObject *listentry = Py_BuildValue("(Oi)", frame, surfs->delays[i]);
-        Py_DECREF(frame);
+        PyObject *listentry = PyStructSequence_New(animation_frame_type);
         if (!listentry) {
+            Py_DECREF(frame);
             goto error;
         }
+
+        PyStructSequence_SetItem(listentry, 0, frame);
+        PyObject *delay_obj = PyLong_FromLong(surfs->delays[i]);
+        if (!delay_obj) {
+            Py_DECREF(listentry);
+            Py_DECREF(frame);
+            goto error;
+        }
+        PyStructSequence_SetItem(listentry, 1, delay_obj);
+        Py_DECREF(delay_obj);
+
         PyList_SET_ITEM(ret, i, listentry);
     }
     IMG_FreeAnimation(surfs);
@@ -461,7 +474,6 @@ MODINIT_DEFINE(imageext)
         return NULL;
     }
     import_pygame_rwobject();
-
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -475,6 +487,22 @@ MODINIT_DEFINE(imageext)
         }
     #endif
     */
+
+    static PyStructSequence_Field _namedtuple_fields[] = {
+        {"surface", NULL}, {"delay", NULL}, NULL};
+
+    static struct PyStructSequence_Desc _namedtuple_descr = {
+        .name = "AnimationFrame",
+        .doc = NULL,
+        .fields = _namedtuple_fields,
+        .n_in_sequence = 2,
+    };
+
+    animation_frame_type = PyStructSequence_NewType(&_namedtuple_descr);
+    if (animation_frame_type == NULL) {
+        return NULL;  // exception set
+    }
+    Py_INCREF(animation_frame_type);
 
     /* create the module */
     return PyModule_Create(&_module);
