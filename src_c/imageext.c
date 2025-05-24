@@ -496,7 +496,6 @@ MODINIT_DEFINE(imageext)
     if (animation_frame_type == NULL) {
         return NULL;  // exception set
     }
-    Py_INCREF(animation_frame_type);
 
     /* create the module */
     return PyModule_Create(&_module);
