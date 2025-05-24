@@ -625,7 +625,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Usage: Accessing `angle` provides the current angle of the vector in degrees within the predefined range of [-180, 180].
 
-      .. versionadded:: 2.5.4
+      .. versionadded:: 2.5.5
 
    .. attribute:: angle_rad
 
@@ -636,7 +636,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Usage: Accessing `angle_rad` provides the current angle of the vector in radians within the predefined range of [-π, π].
 
-      .. versionadded:: 2.5.4
+      .. versionadded:: 2.5.5
 
    .. ## pygame.math.Vector2 ##
 
