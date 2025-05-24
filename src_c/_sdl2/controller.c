@@ -396,7 +396,7 @@ controller_rumble(pgControllerObject *self, PyObject *args, PyObject *kwargs)
     SDL_bool success = SDL_GameControllerRumble(
         self->controller, (Uint16)low_freq, (Uint16)high_freq, duration);
 
-    return PyBool_FromLong(success == SDL_TRUE);
+    return PyBool_FromLong(success);
 #else
     int success = SDL_GameControllerRumble(self->controller, (Uint16)low_freq,
                                            (Uint16)high_freq, duration);
@@ -412,7 +412,7 @@ controller_stop_rumble(pgControllerObject *self, PyObject *_null)
     if (!self->controller) {
         return RAISE(pgExc_SDLError, "Controller is not initialized");
     }
-    if (SDL_GameControllerRumble(self->controller, 0, 0, 1) == SDL_FALSE) {
+    if (!SDL_GameControllerRumble(self->controller, 0, 0, 1)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
