@@ -9,9 +9,7 @@ _sdl2_audio = py.extension_module(
     install: true,
     subdir: pg / '_sdl2',
 )
-endif
 
-if sdl_api != 3
 _sdl2_video = py.extension_module(
     'video',
     fs.is_file('video.c') ? 'video.c' : cython_base / 'video.pyx',
