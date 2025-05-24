@@ -4649,8 +4649,7 @@ exec_surface(PyObject *module)
     c_api[2] = pgSurface_Blit;
     c_api[3] = pgSurface_SetSurface;
     apiobj = encapsulate_api(c_api, "surface");
-    if (PyModule_AddObjectRef(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if (PyModule_Add(module, PYGAMEAPI_LOCAL_ENTRY, apiobj) < 0) {
         return -1;
     }
 
