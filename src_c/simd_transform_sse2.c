@@ -424,7 +424,7 @@ filter_expand_Y_SSE2(Uint8 *srcpix, Uint8 *dstpix, int width, int srcpitch,
 }
 
 void
-grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
+grayscale_sse2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf)
 {
     /* For the SSE2 SIMD version of grayscale we do one pixel at a time
      * Thus we can calculate the number of loops (and pixels) by multiplying
@@ -460,16 +460,15 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    Uint64 amask64 = ((Uint64)src->format->Amask) | src->format->Amask;
+    Uint64 amask64 = ((Uint64)src_fmt->Amask) | src_fmt->Amask;
     Uint64 rgbmask64 = ~amask64;
 
     Uint64 rgb_weights =
-        ((Uint64)((0x4C << src->format->Rshift) |
-                  (0x96 << src->format->Gshift) |
-                  (0x1D << src->format->Bshift))
+        ((Uint64)((0x4C << src_fmt->Rshift) | (0x96 << src_fmt->Gshift) |
+                  (0x1D << src_fmt->Bshift))
          << 32) |
-        ((0x4C << src->format->Rshift) | (0x96 << src->format->Gshift) |
-         (0x1D << src->format->Bshift));
+        ((0x4C << src_fmt->Rshift) | (0x96 << src_fmt->Gshift) |
+         (0x1D << src_fmt->Bshift));
 
     Uint64 *srcp64 = (Uint64 *)src->pixels;
     Uint64 *dstp64 = (Uint64 *)newsurf->pixels;
@@ -613,7 +612,7 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
 }
 
 void
-invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
+invert_sse2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf)
 {
     int s_row_skip = (src->pitch - src->w * 4) / 4;
 
@@ -638,8 +637,8 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     __m128i *srcp128 = (__m128i *)src->pixels;
     __m128i *dstp128 = (__m128i *)newsurf->pixels;
 
-    mm_rgb_invert_mask = _mm_set1_epi32(~src->format->Amask);
-    mm_alpha_mask = _mm_set1_epi32(src->format->Amask);
+    mm_rgb_invert_mask = _mm_set1_epi32(~src_fmt->Amask);
+    mm_alpha_mask = _mm_set1_epi32(src_fmt->Amask);
 
     while (num_batches--) {
         perfect_4_pixels_batch_counter = perfect_4_pixels;

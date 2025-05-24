@@ -2280,19 +2280,23 @@ static int
 _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
 {
     if (xOrSequence) {
-        if (RealNumber_Check(xOrSequence)) {
-            self->coords[0] = PyFloat_AsDouble(xOrSequence);
-            /* scalar constructor. */
-            if (y == NULL) {
-                self->coords[1] = self->coords[0];
-                return 0;
-            }
-        }
-        else if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
+        if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
             if (!PySequence_AsVectorCoords(xOrSequence, self->coords, 2)) {
                 return -1;
             }
             else {
+                return 0;
+            }
+        }
+        else if (RealNumber_Check(xOrSequence)) {
+            self->coords[0] = PyFloat_AsDouble(xOrSequence);
+            if (self->coords[0] == -1.0 && PyErr_Occurred()) {
+                return -1;
+            }
+
+            /* scalar constructor. */
+            if (y == NULL) {
+                self->coords[1] = self->coords[0];
                 return 0;
             }
         }
@@ -2323,6 +2327,9 @@ _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
 
     if (RealNumber_Check(y)) {
         self->coords[1] = PyFloat_AsDouble(y);
+        if (self->coords[1] == -1.0 && PyErr_Occurred()) {
+            return -1;
+        }
     }
     else {
         goto error;
@@ -2718,20 +2725,24 @@ static int
 _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
 {
     if (xOrSequence) {
-        if (RealNumber_Check(xOrSequence)) {
-            self->coords[0] = PyFloat_AsDouble(xOrSequence);
-            /* scalar constructor. */
-            if (y == NULL && z == NULL) {
-                self->coords[1] = self->coords[0];
-                self->coords[2] = self->coords[0];
-                return 0;
-            }
-        }
-        else if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
+        if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
             if (!PySequence_AsVectorCoords(xOrSequence, self->coords, 3)) {
                 return -1;
             }
             else {
+                return 0;
+            }
+        }
+        else if (RealNumber_Check(xOrSequence)) {
+            self->coords[0] = PyFloat_AsDouble(xOrSequence);
+            if (self->coords[0] == -1.0 && PyErr_Occurred()) {
+                return -1;
+            }
+
+            /* scalar constructor. */
+            if (y == NULL && z == NULL) {
+                self->coords[1] = self->coords[0];
+                self->coords[2] = self->coords[0];
                 return 0;
             }
         }
@@ -2764,7 +2775,14 @@ _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
     else if (y && z) {
         if (RealNumber_Check(y) && RealNumber_Check(z)) {
             self->coords[1] = PyFloat_AsDouble(y);
+            if (self->coords[1] == -1.0 && PyErr_Occurred()) {
+                return -1;
+            }
+
             self->coords[2] = PyFloat_AsDouble(z);
+            if (self->coords[2] == -1.0 && PyErr_Occurred()) {
+                return -1;
+            }
         }
         else {
             goto error;
@@ -4573,31 +4591,15 @@ MODINIT_DEFINE(math)
     }
 
     /* add extension types to module */
-    Py_INCREF(&pgVector2_Type);
-    Py_INCREF(&pgVector3_Type);
-    Py_INCREF(&pgVectorIter_Type);
-    Py_INCREF(&pgVectorElementwiseProxy_Type);
-    if ((PyModule_AddObject(module, "Vector2", (PyObject *)&pgVector2_Type) !=
+    if ((PyModule_AddObjectRef(module, "Vector2",
+                               (PyObject *)&pgVector2_Type) < 0) ||
+        (PyModule_AddObjectRef(module, "Vector3",
+                               (PyObject *)&pgVector3_Type) < 0) ||
+        (PyModule_AddObjectRef(module, "VectorElementwiseProxy",
+                               (PyObject *)&pgVectorElementwiseProxy_Type) <
          0) ||
-        (PyModule_AddObject(module, "Vector3", (PyObject *)&pgVector3_Type) !=
-         0) ||
-        (PyModule_AddObject(module, "VectorElementwiseProxy",
-                            (PyObject *)&pgVectorElementwiseProxy_Type) !=
-         0) ||
-        (PyModule_AddObject(module, "VectorIterator",
-                            (PyObject *)&pgVectorIter_Type) != 0)) {
-        if (!PyObject_HasAttrString(module, "Vector2")) {
-            Py_DECREF(&pgVector2_Type);
-        }
-        if (!PyObject_HasAttrString(module, "Vector3")) {
-            Py_DECREF(&pgVector3_Type);
-        }
-        if (!PyObject_HasAttrString(module, "VectorElementwiseProxy")) {
-            Py_DECREF(&pgVectorElementwiseProxy_Type);
-        }
-        if (!PyObject_HasAttrString(module, "VectorIterator")) {
-            Py_DECREF(&pgVectorIter_Type);
-        }
+        (PyModule_AddObjectRef(module, "VectorIterator",
+                               (PyObject *)&pgVectorIter_Type) < 0)) {
         Py_DECREF(module);
         return NULL;
     }

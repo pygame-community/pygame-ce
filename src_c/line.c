@@ -261,8 +261,7 @@ pg_line_repr(pgLineObject *self)
         return NULL;
     }
 
-    result =
-        PyUnicode_FromFormat("<Line((%R, %R), (%R, %R))>", ax, ay, bx, by);
+    result = PyUnicode_FromFormat("Line((%R, %R), (%R, %R))", ax, ay, bx, by);
 
     Py_DECREF(ax);
     Py_DECREF(ay);

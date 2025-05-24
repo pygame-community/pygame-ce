@@ -2649,16 +2649,12 @@ MODINIT_DEFINE(mask)
     if (module == NULL) {
         return NULL;
     }
-    Py_INCREF(&pgMask_Type);
-    if (PyModule_AddObject(module, "MaskType", (PyObject *)&pgMask_Type)) {
-        Py_DECREF(&pgMask_Type);
+    if (PyModule_AddObjectRef(module, "MaskType", (PyObject *)&pgMask_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&pgMask_Type);
-    if (PyModule_AddObject(module, "Mask", (PyObject *)&pgMask_Type)) {
-        Py_DECREF(&pgMask_Type);
+    if (PyModule_AddObjectRef(module, "Mask", (PyObject *)&pgMask_Type)) {
         Py_DECREF(module);
         return NULL;
     }

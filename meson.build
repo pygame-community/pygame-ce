@@ -109,10 +109,10 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         )
     endif
 
-    sdl_ver = (sdl_api == 3) ? '3.2.6' : '2.32.2'
-    sdl_image_ver = (sdl_api == 3) ? '3.2.0' : '2.8.4'
+    sdl_ver = (sdl_api == 3) ? '3.2.10' : '2.32.6'
+    sdl_image_ver = (sdl_api == 3) ? '3.2.4' : '2.8.8'
     sdl_mixer_ver = '2.8.1'
-    sdl_ttf_ver = (sdl_api == 3) ? '3.2.0' : '2.24.0'
+    sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
 
     dlls = []
 

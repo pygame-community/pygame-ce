@@ -1,10 +1,10 @@
+import sys
 from typing import Any, Optional, Union
-from typing_extensions import deprecated  # added in 3.13
 
 from pygame.rect import Rect
 from pygame.surface import Surface
-
 from pygame.typing import ColorLike, Point, RectLike
+from typing_extensions import deprecated  # added in 3.13
 
 def from_surface(surface: Surface, threshold: int = 127) -> Mask: ...
 def from_threshold(
@@ -54,6 +54,9 @@ class Mask:
         unsetcolor: Optional[ColorLike] = (0, 0, 0, 255),
         dest: Union[RectLike, Point] = (0, 0),
     ) -> Surface: ...
+    if sys.version_info >= (3, 12):
+        def __buffer__(self, flags: int, /) -> memoryview[int]: ...
+        def __release_buffer__(self, view: memoryview[int], /) -> None: ...
 
 @deprecated("Use `Mask` instead (MaskType is an old alias)")
 class MaskType(Mask): ...

@@ -754,9 +754,7 @@ MODINIT_DEFINE(time)
         return NULL;
     }
 
-    Py_INCREF(&PyClock_Type);
-    if (PyModule_AddObject(module, "Clock", (PyObject *)&PyClock_Type)) {
-        Py_DECREF(&PyClock_Type);
+    if (PyModule_AddObjectRef(module, "Clock", (PyObject *)&PyClock_Type)) {
         Py_DECREF(module);
         return NULL;
     }

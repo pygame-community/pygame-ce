@@ -1,7 +1,7 @@
-import numpy
-import cv2
 import time
 
+import cv2
+import numpy
 import pygame
 
 

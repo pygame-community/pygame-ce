@@ -78,28 +78,28 @@ def get_urls(x86=True, x64=True):
     url_sha1 = []
     url_sha1.extend([
         [
-        'https://github.com/libsdl-org/SDL/releases/download/release-2.32.2/SDL2-devel-2.32.2-VC.zip',
-        '08737e7e813443e47b663be4d91f8a4d8de6916b',
+        'https://github.com/libsdl-org/SDL/releases/download/release-2.32.6/SDL2-devel-2.32.6-VC.zip',
+        'beab1beb38b0c5a4cc6ebd2d059431e1de631b35',
         ],
         [
-        'https://github.com/libsdl-org/SDL/releases/download/release-3.2.6/SDL3-devel-3.2.6-VC.zip',
-        'a36424427129f9ae133e59cfe070fc0b418d7fe0'
+        'https://github.com/libsdl-org/SDL/releases/download/release-3.2.10/SDL3-devel-3.2.10-VC.zip',
+        '7a17d6fc7aa509c0c020e16ca10f82d6b5c2fc57'
         ],
         [
-        'https://github.com/pygame-community/SDL_image/releases/download/2.8.4-pgce/SDL2_image-devel-2.8.4-VCpgce.zip',
-        'b9b4a5d44cab57901003255a1c1f98a42282762b'
+        'https://github.com/pygame-community/SDL_image/releases/download/2.8.8-pgce/SDL2_image-devel-2.8.8-VCpgce.zip',
+        '8cd149cbaae2d362f2eaa69483d992e79f4836f5'
         ],
         [
-        'https://github.com/libsdl-org/SDL_image/releases/download/release-3.2.0/SDL3_image-devel-3.2.0-VC.zip',
-        '2aebab1f803edfb708622fa4e1afc0afadcf5c8b'
+        'https://github.com/libsdl-org/SDL_image/releases/download/release-3.2.4/SDL3_image-devel-3.2.4-VC.zip',
+        'd0db06c5dd2c7c6399e55332ff1dccd984914cb7'
         ],
         [
         'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.24.0/SDL2_ttf-devel-2.24.0-VC.zip',
         '2d18b9a4fc2ec0eee80de2a946b088d4e6efd0ee'
         ],
         [
-        'https://github.com/libsdl-org/SDL_ttf/releases/download/release-3.2.0/SDL3_ttf-devel-3.2.0-VC.zip',
-        '2883df767c9b8c910c10108242542ef36054a267'
+        'https://github.com/libsdl-org/SDL_ttf/releases/download/release-3.2.2/SDL3_ttf-devel-3.2.2-VC.zip',
+        '3786bc016d89ca4cf9739e4d342ca29e3e29c137'
         ],
         [
         'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.1/SDL2_mixer-devel-2.8.1-VC.zip',
@@ -213,23 +213,23 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_image-devel-2.8.4-VCpgce/SDL2_image-2.8.4'
+                'SDL2_image-devel-2.8.8-VCpgce/SDL2_image-2.8.8'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_image-2.8.4'
+                'SDL2_image-2.8.8'
             )
         )
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3_image-devel-3.2.0-VC/SDL3_image-3.2.0'
+                'SDL3_image-devel-3.2.4-VC/SDL3_image-3.2.4'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3_image-3.2.0'
+                'SDL3_image-3.2.4'
             )
         )
 
@@ -258,34 +258,34 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3_ttf-devel-3.2.0-VC/SDL3_ttf-3.2.0'
+                'SDL3_ttf-devel-3.2.2-VC/SDL3_ttf-3.2.2'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3_ttf-3.2.0'
+                'SDL3_ttf-3.2.2'
             )
         )
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2-devel-2.32.2-VC/SDL2-2.32.2'
+                'SDL2-devel-2.32.6-VC/SDL2-2.32.6'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2-2.32.2'
+                'SDL2-2.32.6'
             )
         )
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3-devel-3.2.6-VC/SDL3-3.2.6'
+                'SDL3-devel-3.2.10-VC/SDL3-3.2.10'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3-3.2.6'
+                'SDL3-3.2.10'
             )
         )
 

@@ -53,6 +53,7 @@ def build_signatures(object):
 
         # Shorten "pygame.module.X" types to "X"
         ret = re.sub(r"pygame(.[a-zA-Z0-9_]+)+", lambda x: x.group(1)[1:], ret)
+        ret = ret.replace("Ellipsis", "...")
 
         yield f"| :sg:`{name}{arg_string} -> {ret}`"
 

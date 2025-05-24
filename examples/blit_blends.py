@@ -21,15 +21,16 @@ Keyboard Controls
 """
 
 import os
-import pygame
 import time
+
+import pygame
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "data")
 
 try:
-    import pygame.surfarray
     import numpy
+    import pygame.surfarray
 except ImportError:
     print("no surfarray for you!  install numpy")
 

@@ -84,7 +84,7 @@
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
-    SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
+    SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
 
 /* Emulating SDL2 SDL_LockMutex API. In SDL3, it returns void. */
 static inline int
@@ -626,5 +626,6 @@ typedef enum {
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
 #define PYGAMEAPI_RENDER_NUMSLOTS 3
 #define PYGAMEAPI_GEOMETRY_NUMSLOTS 2
+#define PYGAMEAPI_BUFFERPROXY_NUMSLOTS 4
 
 #endif /* _PYGAME_INTERNAL_H */
