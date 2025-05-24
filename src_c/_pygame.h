@@ -136,6 +136,7 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 #define PG_GetSurfaceBlendMode SDL_GetSurfaceBlendMode
 #define PG_GetSurfaceAlphaMod SDL_GetSurfaceAlphaMod
 #define PG_SetSurfaceAlphaMod SDL_SetSurfaceAlphaMod
+#define PG_FillSurfaceRect SDL_FillSurfaceRect
 
 #define PG_GetRGBA SDL_GetRGBA
 #define PG_GetRGB SDL_GetRGB
@@ -267,6 +268,12 @@ static inline bool
 PG_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
 {
     return SDL_SetSurfaceAlphaMod(surface, alpha) == 0;
+}
+
+static inline bool
+PG_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
+{
+    return SDL_FillRect(dst, rect, color) == 0;
 }
 
 // NOTE:
