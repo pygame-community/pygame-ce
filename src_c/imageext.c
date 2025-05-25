@@ -255,7 +255,7 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     for (int i = 0; i < surfs->count; i++) {
-        PyObject *delay_obj = PyLong_FromLong(surfs->delays[i]);
+        PyObject *delay_obj = PyFloat_FromDouble((double)surfs->delays[i]);
         if (!delay_obj) {
             goto error;
         }
