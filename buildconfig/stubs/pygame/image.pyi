@@ -79,7 +79,7 @@ _from_bytes_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR"]
 
 class _AnimationFrame(NamedTuple):
     surface: Surface
-    delay_ms: int
+    delay_ms: float
 
 def load(file: FileLike, namehint: str = "") -> Surface:
     """Load new image from a file (or file-like object).
@@ -140,7 +140,7 @@ def load_sized_svg(file: FileLike, size: Point) -> Surface:
     """
 
 def load_animation(file: FileLike, namehint: str = "") -> list[_AnimationFrame]:
-    """Load an animation (GIF/WEBP) from a file (or file-like object).
+    """Load an animation (GIF/WEBP) from a file (or file-like object) as a list of frames.
 
     Load an animation (GIF/WEBP) from a file source. You can pass either a
     filename, a Python file-like object, or a pathlib.Path. If you pass a raw
