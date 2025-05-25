@@ -265,7 +265,7 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
         surfs->frames[i] = NULL;
 
         PyObject *listentry =
-            Py_BuildValue("(Of)", frame, (float)surfs->delays[i]);
+            Py_BuildValue("(Od)", frame, (double)surfs->delays[i]);
         Py_DECREF(frame);
         if (!listentry) {
             goto error;
