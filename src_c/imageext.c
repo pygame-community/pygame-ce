@@ -446,6 +446,16 @@ static PyMethodDef _imageext_methods[] = {
 /*DOC*/ static char _imageext_doc[] =
     /*DOC*/ "additional image loaders";
 
+static PyStructSequence_Field _namedtuple_fields[] = {
+    {"surface", NULL}, {"delay_ms", NULL}, {NULL, NULL}};
+
+static struct PyStructSequence_Desc _namedtuple_descr = {
+    .name = "_AnimationFrame",
+    .doc = NULL,
+    .fields = _namedtuple_fields,
+    .n_in_sequence = 2,
+};
+
 MODINIT_DEFINE(imageext)
 {
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
@@ -483,16 +493,6 @@ MODINIT_DEFINE(imageext)
         }
     #endif
     */
-
-    static PyStructSequence_Field _namedtuple_fields[] = {
-        {"surface", NULL}, {"delay_ms", NULL}, {NULL, NULL}};
-
-    static struct PyStructSequence_Desc _namedtuple_descr = {
-        .name = "_AnimationFrame",
-        .doc = NULL,
-        .fields = _namedtuple_fields,
-        .n_in_sequence = 2,
-    };
 
     animation_frame_type = PyStructSequence_NewType(&_namedtuple_descr);
     if (animation_frame_type == NULL) {
