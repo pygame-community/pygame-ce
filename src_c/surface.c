@@ -4600,6 +4600,35 @@ static PyMethodDef _surface_methods[] = {{NULL, NULL, 0, NULL}};
 int
 exec_surface(PyObject *module)
 {
+    /* imported needed apis; Do this first so if there is an error
+       the module is not loaded.
+    */
+    import_pygame_base();
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+    import_pygame_color();
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+    import_pygame_rect();
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+    import_pygame_bufferproxy();
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+    _IMPORT_PYGAME_MODULE(surflock);
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+
+    /* type preparation */
+    if (PyType_Ready(&pgSurface_Type) < 0) {
+        return -1;
+    }
+
     PyObject *apiobj;
     static void *c_api[PYGAMEAPI_SURFACE_NUMSLOTS];
 
@@ -4657,35 +4686,6 @@ MODINIT_DEFINE(surface)
                                          NULL,
                                          NULL,
                                          NULL};
-
-    /* imported needed apis; Do this first so if there is an error
-       the module is not loaded.
-    */
-    import_pygame_base();
-    if (PyErr_Occurred()) {
-        return NULL;
-    }
-    import_pygame_color();
-    if (PyErr_Occurred()) {
-        return NULL;
-    }
-    import_pygame_rect();
-    if (PyErr_Occurred()) {
-        return NULL;
-    }
-    import_pygame_bufferproxy();
-    if (PyErr_Occurred()) {
-        return NULL;
-    }
-    _IMPORT_PYGAME_MODULE(surflock);
-    if (PyErr_Occurred()) {
-        return NULL;
-    }
-
-    /* type preparation */
-    if (PyType_Ready(&pgSurface_Type) < 0) {
-        return NULL;
-    }
 
     return PyModuleDef_Init(&_module);
 }
