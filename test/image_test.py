@@ -1388,7 +1388,7 @@ class ImageModuleTest(unittest.TestCase):
                 for val in s:
                     self.assertIsInstance(val, tuple)
                     frame, delay = val
-                    frameattr, delayattr = val.surface, val.delay
+                    frameattr, delayattr = val.surface, val.delay_ms
                     self.assertEqual(frame, frameattr)
                     self.assertEqual(delay, delayattr)
                     self.assertIsInstance(frame, pygame.Surface)

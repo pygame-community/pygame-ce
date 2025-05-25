@@ -485,7 +485,7 @@ MODINIT_DEFINE(imageext)
     */
 
     static PyStructSequence_Field _namedtuple_fields[] = {
-        {"surface", NULL}, {"delay", NULL}, {NULL, NULL}};
+        {"surface", NULL}, {"delay_ms", NULL}, {NULL, NULL}};
 
     static struct PyStructSequence_Desc _namedtuple_descr = {
         .name = "_AnimationFrame",

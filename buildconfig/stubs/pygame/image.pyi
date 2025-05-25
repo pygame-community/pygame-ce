@@ -79,7 +79,7 @@ _from_bytes_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR"]
 
 class _AnimationFrame(NamedTuple):
     surface: Surface
-    delay: int
+    delay_ms: int
 
 def load(file: FileLike, namehint: str = "") -> Surface:
     """Load new image from a file (or file-like object).
@@ -149,8 +149,8 @@ def load_animation(file: FileLike, namehint: str = "") -> list[_AnimationFrame]:
     format.
 
     This returns a list of named tuples (corresponding to every frame of the animation),
-    where each tuple is a (surface, delay) pair for that frame. Being named tuples,
-    the items can be accessed as frame.surface and frame.delay.
+    where each tuple is a (surface, delay in milliseconds) pair for that frame. Being
+    named tuples, the items can be accessed as frame.surface and frame.delay_ms.
 
     This function requires SDL_image 2.6.0 or above. If pygame was compiled with
     an older version, ``pygame.error`` will be raised when this function is
