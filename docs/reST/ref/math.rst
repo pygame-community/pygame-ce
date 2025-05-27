@@ -43,6 +43,17 @@ Multiple coordinates can be set using slices or swizzling
    v.xy = 1, 2
    v[:] = 1, 2
 
+A vector can be converted to other data types using the built-in constructors
+
+::
+
+    v = pygame.Vector2(1, 2)
+
+    list(v) == [1.0, 2.0]
+    tuple(v) == (1.0, 2.0)
+    set(v) == {1.0, 2.0}
+
+
 .. versionaddedold:: 1.9.2pre
 .. versionchangedold:: 1.9.4 Removed experimental notice.
 .. versionchangedold:: 1.9.4 Allow scalar construction like GLSL Vector2(2) == Vector2(2.0, 2.0)
