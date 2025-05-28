@@ -2578,15 +2578,12 @@ MODINIT_DEFINE(event)
         return NULL;
     }
 
-    Py_INCREF(&pgEvent_Type);
-    if (PyModule_AddObject(module, "EventType", (PyObject *)&pgEvent_Type)) {
-        Py_DECREF(&pgEvent_Type);
+    if (PyModule_AddObjectRef(module, "EventType",
+                              (PyObject *)&pgEvent_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&pgEvent_Type);
-    if (PyModule_AddObject(module, "Event", (PyObject *)&pgEvent_Type)) {
-        Py_DECREF(&pgEvent_Type);
+    if (PyModule_AddObjectRef(module, "Event", (PyObject *)&pgEvent_Type)) {
         Py_DECREF(module);
         return NULL;
     }

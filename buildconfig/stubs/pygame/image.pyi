@@ -67,9 +67,11 @@ from typing import Literal, Optional, Union
 from pygame.bufferproxy import BufferProxy
 from pygame.surface import Surface
 from pygame.typing import FileLike, IntPoint, Point
-from typing_extensions import deprecated  # added in 3.13
+from typing_extensions import (
+    Buffer,  # collections.abc 3.12
+    deprecated,  # added in 3.13
+)
 
-_BufferLike = Union[BufferProxy, bytes, bytearray, memoryview]
 _from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]
 _to_bytes_format = Literal[
     "P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR", "RGBA_PREMULT", "ARGB_PREMULT"
@@ -134,8 +136,8 @@ def load_sized_svg(file: FileLike, size: Point) -> Surface:
     .. versionadded:: 2.4.0
     """
 
-def load_animation(file: FileLike, namehint: str = "") -> list[tuple[Surface, int]]:
-    """Load an animation (GIF/WEBP) from a file (or file-like object).
+def load_animation(file: FileLike, namehint: str = "") -> list[tuple[Surface, float]]:
+    """Load an animation (GIF/WEBP) from a file (or file-like object) as a list of frames.
 
     Load an animation (GIF/WEBP) from a file source. You can pass either a
     filename, a Python file-like object, or a pathlib.Path. If you pass a raw
@@ -144,7 +146,7 @@ def load_animation(file: FileLike, namehint: str = "") -> list[tuple[Surface, in
     format.
 
     This returns a list of tuples (corresponding to every frame of the animation),
-    where each tuple is a (surface, delay) pair for that frame.
+    where each tuple is a (surface, delay in milliseconds) pair for that frame.
 
     This function requires SDL_image 2.6.0 or above. If pygame was compiled with
     an older version, ``pygame.error`` will be raised when this function is
@@ -320,7 +322,7 @@ def frombytes(
     """
 
 def frombuffer(
-    buffer: _BufferLike,
+    buffer: Buffer,
     size: IntPoint,
     format: _from_buffer_format,
     pitch: int = -1,
