@@ -35,7 +35,7 @@ subscripts
    v.y == v[1]
    v.z == v[2]
 
-Multiple coordinates can be set using slices or swizzling
+Multiple coordinates can be set using swizzling or slices
 
 ::
 
@@ -53,6 +53,19 @@ A vector can be converted to other data types using the built-in constructors
     tuple(v) == (1.0, 2.0)
     set(v) == {1.0, 2.0}
 
+Conversion can be combined with swizzling or slicing to create a new order
+
+::
+
+    v = pygame.Vector3(1, 2, 3)
+
+    list(v.xz) == [1.0, 3.0]
+    tuple(v.yyy) == (2.0, 2.0, 2.0)
+    set(v.xxyyzz) == {1.0, 2.0, 3.0} # sets remove duplicates
+
+    list(v[:]) == [1.0, 2.0, 3.0]
+    tuple(v[::-1]) == (3.0, 2.0, 1.0)
+    set(v[1:3]) == {2.0, 3.0}
 
 .. versionaddedold:: 1.9.2pre
 .. versionchangedold:: 1.9.4 Removed experimental notice.
