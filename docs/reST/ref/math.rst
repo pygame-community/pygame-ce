@@ -49,10 +49,10 @@ Multiple coordinates can be set and retrieved using slices or swizzling.
    print(v.yx)  # Vector2(2, 1)
    print(v.xyyx)  # (1.0, 2.0, 2.0, 1.0)
 
-Note above, that swizzlling with 2 components will return a Vector2 instance
+Note above, that swizzling with 2 components will return a Vector2 instance
 again, while more than 2 components will result in a tuple. But since vectors
-support the iterator protocol, they can be by unpacked, or converted to lists
-or tuples.
+support the iterator protocol, they can be unpacked, or converted to lists or
+tuples.
 
 ::
 
