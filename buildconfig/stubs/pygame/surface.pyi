@@ -776,18 +776,24 @@ class Surface:
         ..versionadded:: 2.3.0
         """
 
+    @deprecated("since 2.5.5. Not needed for pygame usage")
     def get_bitsize(self) -> int:
         """Get the bit depth of the Surface pixel format.
 
         Returns the number of bits used to represent each pixel. This value may
         not exactly fill the number of bytes used per pixel. For example a 15 bit
         Surface still requires a full 2 bytes.
+
+        .. deprecated: 2.5.5 This value is not needed for normal pygame usage.
         """
 
+    @deprecated("since 2.5.5. Not needed for pygame usage")
     def get_bytesize(self) -> int:
         """Get the bytes used per Surface pixel.
 
         Return the number of bytes used per pixel.
+
+        .. deprecated: 2.5.5 This value is not needed for normal pygame usage.
         """
 
     def get_flags(self) -> int:
@@ -821,6 +827,7 @@ class Surface:
             PREALLOC       0x01000000    # Surface uses preallocated memory
         """
 
+    @deprecated("since 2.5.5. Not needed for pygame usage")
     def get_pitch(self) -> int:
         """Get the number of bytes used per Surface row.
 
@@ -828,15 +835,16 @@ class Surface:
         in video memory are not always linearly packed. Subsurfaces will also
         have a larger pitch than their real width.
 
-        This value is not needed for normal pygame usage.
+        .. deprecated: 2.5.5 This value is not needed for normal pygame usage.
         """
 
+    @deprecated("since 2.5.5. Not needed for pygame usage")
     def get_masks(self) -> tuple[int, int, int, int]:
         """The bitmasks needed to convert between a color and a mapped integer.
 
         Returns the bitmasks used to isolate each color in a mapped integer.
 
-        This value is not needed for normal pygame usage.
+        .. deprecated: 2.5.5 This value is not needed for normal pygame usage.
         """
 
     @deprecated("since 2.0.0. Immutable in SDL2")
@@ -853,13 +861,14 @@ class Surface:
         .. versionaddedold:: 1.8.1
         """
 
+    @deprecated("since 2.5.5. Not needed for pygame usage")
     def get_shifts(self) -> tuple[int, int, int, int]:
         """The bit shifts needed to convert between a color and a mapped integer.
 
         Returns the pixel shifts need to convert between each color and a mapped
         integer.
 
-        This value is not needed for normal pygame usage.
+        .. deprecated: 2.5.5 This value is not needed for normal pygame usage.
         """
 
     @deprecated("since 2.0.0. Immutable in SDL2")
@@ -876,13 +885,14 @@ class Surface:
         .. versionaddedold:: 1.8.1
         """
 
+    @deprecated("since 2.5.5. Not needed for pygame usage")
     def get_losses(self) -> tuple[int, int, int, int]:
         """The significant bits used to convert between a color and a mapped integer.
 
         Return the least significant number of bits stripped from each color in a
         mapped integer.
 
-        This value is not needed for normal pygame usage.
+        .. deprecated: 2.5.5 This value is not needed for normal pygame usage.
         """
 
     def get_bounding_rect(self, min_alpha: int = 1) -> Rect:
