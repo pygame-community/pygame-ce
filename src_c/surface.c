@@ -3042,6 +3042,12 @@ surf_get_flags(PyObject *self, PyObject *_null)
 static PyObject *
 surf_get_pitch(PyObject *self, PyObject *_null)
 {
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "The pitch information is not needed for pygame usage",
+                     1) == -1) {
+        return NULL;
+    }
+
     SDL_Surface *surf = pgSurface_AsSurface(self);
 
     SURF_INIT_CHECK(surf)
@@ -3102,6 +3108,12 @@ surf_get_frect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
 static PyObject *
 surf_get_bitsize(PyObject *self, PyObject *_null)
 {
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "The bitsize information is not needed for pygame usage",
+                     1) == -1) {
+        return NULL;
+    }
+
     SDL_Surface *surf = pgSurface_AsSurface(self);
     SURF_INIT_CHECK(surf)
 
@@ -3111,6 +3123,12 @@ surf_get_bitsize(PyObject *self, PyObject *_null)
 static PyObject *
 surf_get_bytesize(PyObject *self, PyObject *_null)
 {
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "The bytesize information is not needed for pygame usage",
+                     1) == -1) {
+        return NULL;
+    }
+
     SDL_Surface *surf = pgSurface_AsSurface(self);
     SURF_INIT_CHECK(surf)
 
@@ -3120,6 +3138,12 @@ surf_get_bytesize(PyObject *self, PyObject *_null)
 static PyObject *
 surf_get_masks(PyObject *self, PyObject *_null)
 {
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "The masks information is not needed for pygame usage",
+                     1) == -1) {
+        return NULL;
+    }
+
     SDL_Surface *surf = pgSurface_AsSurface(self);
 
     SURF_INIT_CHECK(surf)
@@ -3142,6 +3166,12 @@ surf_set_masks(PyObject *self, PyObject *args)
 static PyObject *
 surf_get_shifts(PyObject *self, PyObject *_null)
 {
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "The shifts information is not needed for pygame usage",
+                     1) == -1) {
+        return NULL;
+    }
+
     SDL_Surface *surf = pgSurface_AsSurface(self);
 
     SURF_INIT_CHECK(surf)
@@ -3164,6 +3194,12 @@ surf_set_shifts(PyObject *self, PyObject *args)
 static PyObject *
 surf_get_losses(PyObject *self, PyObject *_null)
 {
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "The losses information is not needed for pygame usage",
+                     1) == -1) {
+        return NULL;
+    }
+
     SDL_Surface *surf = pgSurface_AsSurface(self);
 
     SURF_INIT_CHECK(surf)
