@@ -62,6 +62,33 @@ tuples.
    print(tuple(v.yx))  # (2.0, 1.0)
 
 
+A vector can be converted to other data types using the built-in constructors
+
+::
+
+    v = pygame.Vector2(1, 2)
+
+    list(v) == [1.0, 2.0]
+    tuple(v) == (1.0, 2.0)
+    set(v) == {1.0, 2.0}
+
+Conversion can be combined with swizzling or slicing to create a new order
+
+::
+
+    v = pygame.Vector3(1, 2, 3)
+
+    list(v.xz) == [1.0, 3.0]
+    list(v.zyx) == [3.0, 2.0, 1.0]
+    list(v.yyy) == [2.0, 2.0, 2.0]
+    tuple(v.xyyzzz) == (1.0, 2.0, 2.0, 3.0, 3.0, 3.0)
+    tuple(v.zxyxzzyx) == (3.0, 1.0, 2.0, 1.0, 3.0, 3.0, 2.0, 1.0)
+    set(v.yxzxzyzxyx) == {1.0, 2.0, 3.0} # sets remove duplicates
+
+    list(v[:]) == [1.0, 2.0, 3.0]
+    tuple(v[::-1]) == (3.0, 2.0, 1.0)
+    set(v[1:3]) == {2.0, 3.0}
+
 .. versionaddedold:: 1.9.2pre
 .. versionchangedold:: 1.9.4 Removed experimental notice.
 .. versionchangedold:: 1.9.4 Allow scalar construction like GLSL Vector2(2) == Vector2(2.0, 2.0)
