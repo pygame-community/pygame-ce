@@ -46,7 +46,6 @@ PG_AUTOIMPORT_SUBMODS = [
     "rect",
     "rwobject",
     "surface",
-    "surflock",
     "sysfont",
     "_debug",
     "system",
