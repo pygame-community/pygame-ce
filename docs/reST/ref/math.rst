@@ -35,13 +35,32 @@ subscripts
    v.y == v[1]
    v.z == v[2]
 
-Multiple coordinates can be set using slices or swizzling
+Multiple coordinates can be set and retrieved using slices or swizzling.
 
 ::
 
    v = pygame.Vector2()
    v.xy = 1, 2
    v[:] = 1, 2
+   print(v)  # Vector2(1, 2)
+   print(v.x)  # 1.0
+   print(v.y)  # 2.0
+   print(v.xy)  # Vector2(1, 2)
+   print(v.yx)  # Vector2(2, 1)
+   print(v.xyyx)  # (1.0, 2.0, 2.0, 1.0)
+
+Note above, that swizzling with 2 components will return a Vector2 instance
+again, while more than 2 components will result in a tuple. But since vectors
+support the iterator protocol, they can be unpacked, or converted to lists or
+tuples.
+
+::
+
+   v = Vector2(1, 2)
+   print(*v)  # 1.0 2.0
+   print(tuple(v))  # (1.0, 2.0)
+   print(tuple(v.yx))  # (2.0, 1.0)
+
 
 .. versionaddedold:: 1.9.2pre
 .. versionchangedold:: 1.9.4 Removed experimental notice.
