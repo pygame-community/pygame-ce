@@ -264,7 +264,8 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
          * to null in the animation to prevent double free */
         surfs->frames[i] = NULL;
 
-        PyObject *listentry = Py_BuildValue("(Oi)", frame, surfs->delays[i]);
+        PyObject *listentry =
+            Py_BuildValue("(Od)", frame, (double)surfs->delays[i]);
         Py_DECREF(frame);
         if (!listentry) {
             goto error;

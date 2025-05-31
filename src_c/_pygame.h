@@ -131,6 +131,13 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 }
 
 #define PG_GetSurfacePalette SDL_GetSurfacePalette
+#define PG_SetPaletteColors SDL_SetPaletteColors
+#define PG_SetSurfaceBlendMode SDL_SetSurfaceBlendMode
+#define PG_GetSurfaceBlendMode SDL_GetSurfaceBlendMode
+#define PG_GetSurfaceAlphaMod SDL_GetSurfaceAlphaMod
+#define PG_SetSurfaceAlphaMod SDL_SetSurfaceAlphaMod
+#define PG_FillSurfaceRect SDL_FillSurfaceRect
+#define PG_LockSurface SDL_LockSurface
 
 #define PG_GetRGBA SDL_GetRGBA
 #define PG_GetRGB SDL_GetRGB
@@ -231,6 +238,49 @@ static inline SDL_Palette *
 PG_GetSurfacePalette(SDL_Surface *surf)
 {
     return surf->format->palette;
+}
+
+static inline bool
+PG_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors,
+                    int firstcolor, int ncolors)
+{
+    return SDL_SetPaletteColors(palette, colors, firstcolor, ncolors) == 0;
+}
+
+static inline bool
+PG_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
+{
+    return SDL_SetSurfaceBlendMode(surface, blendMode) == 0;
+}
+
+static inline bool
+PG_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
+{
+    return SDL_GetSurfaceBlendMode(surface, blendMode) == 0;
+}
+
+static inline bool
+PG_GetSurfaceAlphaMod(SDL_Surface *surface, Uint8 *alpha)
+{
+    return SDL_GetSurfaceAlphaMod(surface, alpha) == 0;
+}
+
+static inline bool
+PG_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
+{
+    return SDL_SetSurfaceAlphaMod(surface, alpha) == 0;
+}
+
+static inline bool
+PG_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
+{
+    return SDL_FillRect(dst, rect, color) == 0;
+}
+
+static inline bool
+PG_LockSurface(SDL_Surface *surface)
+{
+    return SDL_LockSurface(surface) == 0;
 }
 
 // NOTE:
