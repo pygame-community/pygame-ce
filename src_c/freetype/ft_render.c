@@ -286,7 +286,7 @@ _PGFT_Render_ExistingSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
     Layout *font_text;
 
     if (SDL_MUSTLOCK(surface)) {
-        if (SDL_LockSurface(surface) == -1) {
+        if (!PG_LockSurface(surface)) {
             SDL_FreeSurface(surface);
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             return -1;
@@ -445,7 +445,7 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
     }
 
     if (SDL_MUSTLOCK(surface)) {
-        if (SDL_LockSurface(surface) == -1) {
+        if (!PG_LockSurface(surface)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(surface);
             return 0;

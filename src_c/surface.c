@@ -2198,7 +2198,7 @@ surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     else {
         pgSurface_Prep(self);
         pgSurface_Lock((pgSurfaceObject *)self);
-        result = SDL_FillRect(surf, &sdlrect, color);
+        result = PG_FillSurfaceRect(surf, &sdlrect, color) - 1;
         pgSurface_Unlock((pgSurfaceObject *)self);
         pgSurface_Unprep(self);
     }
@@ -2938,7 +2938,7 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
     if (!repeat) {
         if (dx >= w || dx <= -w || dy >= h || dy <= -h) {
             if (erase) {
-                if (SDL_FillRect(surf, NULL, 0) == -1) {
+                if (!PG_FillSurfaceRect(surf, NULL, 0)) {
                     PyErr_SetString(pgExc_SDLError, SDL_GetError());
                     return NULL;
                 }

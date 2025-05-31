@@ -1178,7 +1178,6 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     int top_left_radius = -1, top_right_radius = -1, bottom_left_radius = -1,
         bottom_right_radius = -1;
     SDL_Rect sdlrect;
-    int result;
     SDL_Rect clipped;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
@@ -1248,10 +1247,10 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
         else {
             pgSurface_Prep(surfobj);
             pgSurface_Lock(surfobj);
-            result = SDL_FillRect(surf, &clipped, color);
+            bool success = PG_FillSurfaceRect(surf, &clipped, color);
             pgSurface_Unlock(surfobj);
             pgSurface_Unprep(surfobj);
-            if (result != 0) {
+            if (!success) {
                 return RAISE(pgExc_SDLError, SDL_GetError());
             }
         }
