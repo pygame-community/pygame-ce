@@ -2420,20 +2420,10 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
     int src_lock = SDL_MUSTLOCK(src);
     int dst_lock = src != newsurf && SDL_MUSTLOCK(newsurf);
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (src_lock && !SDL_LockSurface(src))
-#else
-    if (src_lock && SDL_LockSurface(src) < 0)
-#endif
-    {
+    if (src_lock && !PG_LockSurface(src)) {
         return NULL;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (dst_lock && !SDL_LockSurface(newsurf))
-#else
-    if (dst_lock && SDL_LockSurface(newsurf) < 0)
-#endif
-    {
+    if (dst_lock && !PG_LockSurface(newsurf)) {
         if (src_lock) {
             SDL_UnlockSurface(src);
         }
@@ -2696,13 +2686,13 @@ modify_hsl(SDL_Surface *surf, PG_PixelFormat *fmt, SDL_Surface *dst,
 {
     int surf_locked = 0;
     if (SDL_MUSTLOCK(surf)) {
-        if (SDL_LockSurface(surf) == 0) {
+        if (PG_LockSurface(surf)) {
             surf_locked = 1;
         }
     }
     int dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) == 0) {
+        if (PG_LockSurface(dst)) {
             dst_locked = 1;
         }
     }

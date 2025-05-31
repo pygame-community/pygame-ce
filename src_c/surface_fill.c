@@ -927,7 +927,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 
     /* Lock the surface, if needed */
     if (SDL_MUSTLOCK(surface)) {
-        if (SDL_LockSurface(surface) < 0) {
+        if (!PG_LockSurface(surface)) {
             return -1;
         }
         locked = 1;
