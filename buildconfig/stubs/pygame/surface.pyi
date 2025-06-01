@@ -142,7 +142,7 @@ class Surface:
         **Parameters**
             - ``source``
                 The ``Surface`` object to draw onto this ``Surface``.
-                If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
+                If it has transparency, transparent pixels will be ignored when blitting to an 8-bit ``Surface``.
             - ``dest`` *(optional)*
                 The ``source`` draw position onto this ``Surface``, defaults to (0, 0).
                 It can be a coordinate pair ``(x, y)`` or a ``Rect`` (using its top-left corner).
