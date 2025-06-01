@@ -52,8 +52,8 @@ class Surface:
     the format will best match the display Surface.
 
     One way to control the pixel format/charateristics is providing a bitmask of flags:
-       * ``HWSURFACE``: Creates the image in video memory but is obsolete in pygame 2
        * ``SRCALPHA``: If it is possible the Surface will include an alpha channel.
+       * ``HWSURFACE``: Creates the image in video memory but is obsolete in pygame 2.
 
     Otherwise The pixel format can be controlled in different ways:
        * Providing another ``Surface`` after the flags argument. In this case that Surface's
@@ -292,6 +292,7 @@ class Surface:
              for blitting. It is a good idea to convert all Surfaces before
              blitting them. In this case the converted Surface won't have any
              alpha. See :meth:`convert_alpha()` for preserving or creating per-pixel alpha.
+             An exception is thrown if the display Surface was not initialized.
            * If another Surface is provided, the format of that Surface will
              be used.
            * Passing the bit depth of a pixel that will result in the same formats
