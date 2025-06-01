@@ -4625,9 +4625,7 @@ MODINIT_DEFINE(pg_math)
 MODINIT_DEFINE(math)
 #endif
 {
-    PyObject *module, *apiobj;
-    static void *c_api[PYGAMEAPI_MATH_NUMSLOTS];
-
+    PyObject *module;
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "math",
                                          DOC_MATH,
@@ -4663,20 +4661,6 @@ MODINIT_DEFINE(math)
          0) ||
         (PyModule_AddObjectRef(module, "VectorIterator",
                                (PyObject *)&pgVectorIter_Type) < 0)) {
-        Py_DECREF(module);
-        return NULL;
-    }
-
-    /* export the C api */
-    c_api[0] = &pgVector2_Type;
-    c_api[1] = &pgVector3_Type;
-    /*
-    c_api[2] = pgVector_NEW;
-    c_api[3] = pgVectorCompatible_Check;
-    */
-    apiobj = encapsulate_api(c_api, "math");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
         Py_DECREF(module);
         return NULL;
     }
