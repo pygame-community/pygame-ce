@@ -314,12 +314,9 @@ class Surface:
         """Change the pixel format of a Surface including per pixel alphas.
 
         Creates a new copy of the Surface with a different format that contains
-        an alpha channel. The new Surface will be in a format suited for quick
-        blitting to the display Surface (without stripping the alpha).
-
-        Unlike the :meth:`convert()` method, the pixel format for the new
-        Surface will not be exactly the same as the display Surface, but it will
-        be optimized for fast alpha blitting to it.
+        an alpha channel. Unlike the :meth:`convert()` method, the pixel format
+        for the new Surface will not be exactly the same as the display Surface,
+        but it will be suited and optimized for fast alpha blitting to it.
 
         As with :meth:`convert()`, the returned Surface has the same class as this
         Surface. An exception will be raised if the display Surface has not
