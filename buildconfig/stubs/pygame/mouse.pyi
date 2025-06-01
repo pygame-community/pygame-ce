@@ -83,7 +83,7 @@ def get_pressed(
 def get_pressed(
     num_buttons: Literal[5], desktop: bool = False
 ) -> tuple[bool, bool, bool, bool, bool]: ...
-def get_pressed(*args, **kwargs) -> Any:
+def get_pressed(*args, **kwargs) -> Any:  # type: ignore
     """Get the state of the mouse buttons.
 
     Returns a sequence of booleans representing the state of all the mouse
@@ -191,7 +191,7 @@ def get_rel() -> tuple[int, int]:
 def set_pos(pos: Point, /) -> None: ...
 @overload
 def set_pos(x: float, y: float, /) -> None: ...
-def set_pos(*args) -> None:
+def set_pos(*args) -> None:  # type: ignore
     """Set the mouse cursor position.
 
     Set the current mouse position to arguments given. If the mouse cursor is
@@ -243,7 +243,7 @@ def set_cursor(
 def set_cursor(hotspot: IntPoint, surface: Surface) -> None: ...
 @overload
 def set_cursor(constant: int) -> None: ...
-def set_cursor(*args, **kwargs) -> None:
+def set_cursor(*args, **kwargs) -> None:  # type: ignore
     """Set the mouse cursor to a new cursor.
 
     Set the mouse cursor to something new. This function accepts either an explicit
