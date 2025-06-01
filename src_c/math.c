@@ -4636,14 +4636,6 @@ MODINIT_DEFINE(math)
                                          NULL,
                                          NULL};
 
-    /* initialize the extension types */
-    if ((PyType_Ready(&pgVector2_Type) < 0) ||
-        (PyType_Ready(&pgVector3_Type) < 0) ||
-        (PyType_Ready(&pgVectorIter_Type) < 0) ||
-        (PyType_Ready(&pgVectorElementwiseProxy_Type) < 0)) {
-        return NULL;
-    }
-
     /* initialize the module */
     module = PyModule_Create(&_module);
 
@@ -4652,15 +4644,10 @@ MODINIT_DEFINE(math)
     }
 
     /* add extension types to module */
-    if ((PyModule_AddObjectRef(module, "Vector2",
-                               (PyObject *)&pgVector2_Type) < 0) ||
-        (PyModule_AddObjectRef(module, "Vector3",
-                               (PyObject *)&pgVector3_Type) < 0) ||
-        (PyModule_AddObjectRef(module, "VectorElementwiseProxy",
-                               (PyObject *)&pgVectorElementwiseProxy_Type) <
-         0) ||
-        (PyModule_AddObjectRef(module, "VectorIterator",
-                               (PyObject *)&pgVectorIter_Type) < 0)) {
+    if ((PyModule_AddType(module, &pgVector2_Type) < 0) ||
+        (PyModule_AddType(module, &pgVector3_Type) < 0) ||
+        (PyModule_AddType(module, &pgVectorElementwiseProxy_Type) < 0) ||
+        (PyModule_AddType(module, &pgVectorIter_Type) < 0)) {
         Py_DECREF(module);
         return NULL;
     }
