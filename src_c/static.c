@@ -430,9 +430,9 @@ PyInit_pygame_static()
 
 #include "gfxdraw.c"
 
-#include "alphablit.c"
+#include "surface/alphablit.c"
 
-#include "surface_fill.c"
+#include "surface/surface_fill.c"
 #include "pixelarray.c"
 #include "pixelcopy.c"
 #include "newbuffer.c"
