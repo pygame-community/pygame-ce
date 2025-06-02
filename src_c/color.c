@@ -592,7 +592,6 @@ static int
 _parse_color_from_text(PyObject *str_obj, Uint8 *rgba)
 {
     /* Named color */
-    PyObject *color = NULL;
     PyObject *name1 = NULL, *name2 = NULL;
 
     /* We assume the caller handled this check for us. */
