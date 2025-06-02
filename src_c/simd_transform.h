@@ -1,5 +1,5 @@
 #define NO_PYGAME_C_API
-#include "_surface.h"
+#include "surface/_surface.h"
 
 /* TODO: This compat code should probably go in some place like simd_shared.h
  * That header file however is inconsistently used at the moment and not

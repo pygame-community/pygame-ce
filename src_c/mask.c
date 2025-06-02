@@ -127,7 +127,7 @@ mask_get_size(PyObject *self, PyObject *_null)
  * Returns:
  *     Rect object or NULL to indicate a fail
  *
- * Ref: src_c/surface.c surf_get_rect()
+ * Ref: src_c/surface/surface.c surf_get_rect()
  */
 static PyObject *
 mask_get_rect(PyObject *self, PyObject *args, PyObject *kwargs)

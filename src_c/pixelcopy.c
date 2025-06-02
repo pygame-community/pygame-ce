@@ -22,7 +22,7 @@
 
 #include <stddef.h>
 
-#include "palette.h"
+#include "include/palette.h"
 
 #include "pgcompat.h"
 
