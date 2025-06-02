@@ -2340,13 +2340,8 @@ static int
 _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
 {
     if (xOrSequence) {
-        if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
-            if (!PySequence_AsVectorCoords(xOrSequence, self->coords, 2)) {
-                return -1;
-            }
-            else {
-                return 0;
-            }
+        if (pg_VectorCoordsFromObj(xOrSequence, 2, self->coords)) {
+            return 0;
         }
         else if (RealNumber_Check(xOrSequence)) {
             self->coords[0] = PyFloat_AsDouble(xOrSequence);
@@ -2788,13 +2783,8 @@ static int
 _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
 {
     if (xOrSequence) {
-        if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
-            if (!PySequence_AsVectorCoords(xOrSequence, self->coords, 3)) {
-                return -1;
-            }
-            else {
-                return 0;
-            }
+        if (pg_VectorCoordsFromObj(xOrSequence, 3, self->coords)) {
+            return 0;
         }
         else if (RealNumber_Check(xOrSequence)) {
             self->coords[0] = PyFloat_AsDouble(xOrSequence);
