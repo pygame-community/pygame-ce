@@ -3,6 +3,7 @@ if sdl_api != 3
     simd_blitters_avx2 = static_library(
         'simd_blitters_avx2',
         'simd_blitters_avx2.c',
+        include_directories: '../include',
         dependencies: pg_base_deps,
         c_args: simd_avx2_flags + warnings_error,
     )
@@ -10,6 +11,7 @@ if sdl_api != 3
     simd_blitters_sse2 = static_library(
         'simd_blitters_sse2',
         'simd_blitters_sse2.c',
+        include_directories: '../include',
         dependencies: pg_base_deps,
         c_args: simd_sse2_neon_flags + warnings_error,
     )
@@ -17,6 +19,7 @@ if sdl_api != 3
     simd_surface_fill_avx2 = static_library(
         'simd_surface_fill_avx2',
         'simd_surface_fill_avx2.c',
+        include_directories: '../include',
         dependencies: pg_base_deps,
         c_args: simd_avx2_flags + warnings_error,
     )
@@ -24,6 +27,7 @@ if sdl_api != 3
     simd_surface_fill_sse2 = static_library(
         'simd_surface_fill_sse2',
         'simd_surface_fill_sse2.c',
+        include_directories: '../include',
         dependencies: pg_base_deps,
         c_args: simd_sse2_neon_flags + warnings_error,
     )
