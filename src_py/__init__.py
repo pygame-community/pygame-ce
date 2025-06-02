@@ -364,7 +364,6 @@ def packager_imports():
     import numpy
     import OpenGL.GL
     import pygame.macosx
-    import pygame.colordict
 
 
 # make Rects pickleable

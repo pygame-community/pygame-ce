@@ -60,8 +60,6 @@ pg_round(double d)
 
 typedef enum { TRISTATE_SUCCESS, TRISTATE_FAIL, TRISTATE_ERROR } tristate;
 
-static PyObject *_COLORDICT = NULL;
-
 static int
 _get_double(PyObject *, double *);
 static int
@@ -588,6 +586,8 @@ _color_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return (PyObject *)_color_new_internal_length(type, DEFAULT_RGBA, 4);
 }
 
+#include "colordict.c"
+
 static int
 _parse_color_from_text(PyObject *str_obj, Uint8 *rgba)
 {
@@ -598,9 +598,7 @@ _parse_color_from_text(PyObject *str_obj, Uint8 *rgba)
     /* We assume the caller handled this check for us. */
     assert(PyUnicode_Check(str_obj));
 
-    color = PyDict_GetItem(_COLORDICT,
-                           str_obj);  // optimize for correct color names
-    if (!color) {
+    if (!parse_color_from_colordict(str_obj, &rgba[0], &rgba[1], &rgba[2])) {
         switch (_hexcolor(str_obj, rgba)) {
             case TRISTATE_FAIL:
                 /* Do re-handling of colordict path below */
@@ -621,22 +619,14 @@ _parse_color_from_text(PyObject *str_obj, Uint8 *rgba)
         if (!name2) {
             return -1;
         }
-        color = PyDict_GetItem(_COLORDICT, name2);
-        Py_DECREF(name2);
-        if (!color) {
+        if (!parse_color_from_colordict(name2, &rgba[0], &rgba[1], &rgba[2])) {
+            Py_DECREF(name2);
             PyErr_SetString(PyExc_ValueError, "invalid color name");
             return -1;
         }
+        Py_DECREF(name2);
     }
-
-    if (!pg_RGBAFromObjEx(color, rgba, PG_COLOR_HANDLE_RESTRICT_SEQ)) {
-        PyErr_Format(PyExc_RuntimeError,
-                     "internal pygame error - colordict is supposed to "
-                     "only have tuple values, but there is an object of "
-                     "type '%s' here - Report this to the pygame devs",
-                     Py_TYPE(color)->tp_name);
-        return -1;
-    }
+    rgba[3] = 255;
     return 0;
 }
 
@@ -2478,7 +2468,7 @@ pg_MappedColorFromObj(PyObject *val, SDL_Surface *surf, Uint32 *color,
 
 MODINIT_DEFINE(color)
 {
-    PyObject *module = NULL, *colordict_module, *apiobj;
+    PyObject *module = NULL, *apiobj;
     static void *c_api[PYGAMEAPI_COLOR_NUMSLOTS];
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
@@ -2499,17 +2489,6 @@ MODINIT_DEFINE(color)
         return NULL;
     }
 
-    colordict_module = PyImport_ImportModule("pygame.colordict");
-    if (!colordict_module) {
-        return NULL;
-    }
-
-    _COLORDICT = PyObject_GetAttrString(colordict_module, "THECOLORS");
-    Py_DECREF(colordict_module);
-    if (!_COLORDICT) {
-        return NULL;
-    }
-
     /* type preparation */
     if (PyType_Ready(&pgColor_Type) < 0) {
         goto error;
@@ -2522,9 +2501,6 @@ MODINIT_DEFINE(color)
     }
 
     if (PyModule_AddObjectRef(module, "Color", (PyObject *)&pgColor_Type)) {
-        goto error;
-    }
-    if (PyModule_AddObjectRef(module, "THECOLORS", _COLORDICT)) {
         goto error;
     }
 
@@ -2543,6 +2519,5 @@ MODINIT_DEFINE(color)
 
 error:
     Py_XDECREF(module);
-    Py_DECREF(_COLORDICT);
     return NULL;
 }
