@@ -848,6 +848,18 @@ class ColorTypeTest(unittest.TestCase):
             ValueError, lambda: pygame.Color.from_normalized(1, 1, 1, 1, "lel")
         )
 
+    def test_from_hex(self):
+        hex = pygame.Color.from_hex("#FFFFFF")
+
+        expected_hex = (255, 255, 255, 255)
+
+        self.assertEqual(expected_hex, hex)
+
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_hex("not-a-color")
+        )
+
+
     def test_normalize(self):
         c = pygame.Color(204, 38, 194, 55)
         self.assertEqual(c.r, 204)
