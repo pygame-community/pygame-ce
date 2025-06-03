@@ -300,7 +300,7 @@ def bloom(
        is preferred for real-time effects. Using real-time bloom on very big surfaces
        is generally not advised, caching is preferred.
 
-    .. versionadded:: 2.5.2
+    .. versionadded:: 2.5.5
     """
 
 def average_surfaces(
