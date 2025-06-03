@@ -23,9 +23,12 @@
 #include <limits.h>
 #include <stdio.h>
 
-#include "SDL.h"
-
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
+#include <SDL.h>
 #include "SDL_syswm.h"
+#endif
 
 #include "pygame.h"
 
@@ -118,8 +121,9 @@ _scrap_init(PyObject *self, PyObject *args)
      * if (!SDL_GetVideoSurface())
      *     return RAISE(pgExc_SDLError, "No display mode is set");
      */
-    if (!pygame_scrap_init())
+    if (!pygame_scrap_init()) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 
     Py_RETURN_NONE;
 }
@@ -172,8 +176,9 @@ _scrap_get_types(PyObject *self, PyObject *_null)
 
     list = PyList_New(0);
     types = pygame_scrap_get_types();
-    if (!types)
+    if (!types) {
         return list;
+    }
     while (types[i] != NULL) {
         type = types[i];
         tmp = PyUnicode_DecodeASCII(type, strlen(type), 0);
@@ -206,10 +211,12 @@ _scrap_contains(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    if (!PyArg_ParseTuple(args, "s", &type))
+    if (!PyArg_ParseTuple(args, "s", &type)) {
         return NULL;
-    if (pygame_scrap_contains(type))
+    }
+    if (pygame_scrap_contains(type)) {
         Py_RETURN_TRUE;
+    }
     Py_RETURN_FALSE;
 }
 
@@ -233,8 +240,9 @@ _scrap_get_scrap(PyObject *self, PyObject *args)
 
     PYGAME_SCRAP_INIT_CHECK();
 
-    if (!PyArg_ParseTuple(args, "s", &scrap_type))
+    if (!PyArg_ParseTuple(args, "s", &scrap_type)) {
         return NULL;
+    }
 
     if (!pygame_scrap_lost()) {
         /* Still own the clipboard. */
@@ -280,8 +288,9 @@ _scrap_get_scrap(PyObject *self, PyObject *args)
     /* pygame_get_scrap() only returns NULL or !NULL, but won't set any
      * errors. */
     scrap = pygame_scrap_get(scrap_type, &count);
-    if (!scrap)
+    if (!scrap) {
         Py_RETURN_NONE;
+    }
 
     retval = PyBytes_FromStringAndSize(scrap, count);
 #if defined(PYGAME_SCRAP_FREE_STRING)
@@ -317,9 +326,10 @@ _scrap_put_scrap(PyObject *self, PyObject *args)
     }
 
     /* Set it in the clipboard. */
-    if (!pygame_scrap_put(scrap_type, scraplen, scrap))
+    if (!pygame_scrap_put(scrap_type, scraplen, scrap)) {
         return RAISE(pgExc_SDLError,
                      "content could not be placed in clipboard.");
+    }
 
     /* Add or replace the set value. */
     switch (_currentmode) {
@@ -354,8 +364,9 @@ _scrap_lost_scrap(PyObject *self, PyObject *_null)
         return NULL;
     }
 
-    if (pygame_scrap_lost())
+    if (pygame_scrap_lost()) {
         Py_RETURN_TRUE;
+    }
     Py_RETURN_FALSE;
 }
 
@@ -374,11 +385,13 @@ _scrap_set_mode(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    if (!PyArg_ParseTuple(args, "i", &_currentmode))
+    if (!PyArg_ParseTuple(args, "i", &_currentmode)) {
         return NULL;
+    }
 
-    if (_currentmode != SCRAP_CLIPBOARD && _currentmode != SCRAP_SELECTION)
+    if (_currentmode != SCRAP_CLIPBOARD && _currentmode != SCRAP_SELECTION) {
         return RAISE(PyExc_ValueError, "invalid clipboard mode");
+    }
 
     /* Force the clipboard, if not in a X11 environment. */
     _currentmode = SCRAP_CLIPBOARD;

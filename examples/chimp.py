@@ -9,6 +9,7 @@ follow along in the tutorial.
 
 # Import Modules
 import os
+
 import pygame
 
 if not pygame.font:
@@ -55,7 +56,7 @@ class Fist(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
-        self.image, self.rect = load_image("fist.png", -1)
+        self.image, self.rect = load_image("fist.webp", -1)
         self.fist_offset = (-235, -80)
         self.punching = False
 
@@ -85,7 +86,7 @@ class Chimp(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
-        self.image, self.rect = load_image("chimp.png", -1, 4)
+        self.image, self.rect = load_image("chimp.webp", -1, 4)
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.rect.topleft = 10, 90

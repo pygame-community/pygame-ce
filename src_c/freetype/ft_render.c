@@ -286,7 +286,7 @@ _PGFT_Render_ExistingSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
     Layout *font_text;
 
     if (SDL_MUSTLOCK(surface)) {
-        if (SDL_LockSurface(surface) == -1) {
+        if (!PG_LockSurface(surface)) {
             SDL_FreeSurface(surface);
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             return -1;
@@ -445,7 +445,7 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
     }
 
     if (SDL_MUSTLOCK(surface)) {
-        if (SDL_LockSurface(surface) == -1) {
+        if (!PG_LockSurface(surface)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(surface);
             return 0;
@@ -494,7 +494,7 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
         colors[0].g = ~colors[1].g;
         colors[0].b = ~colors[1].b;
         colors[0].a = SDL_ALPHA_OPAQUE;
-        if (SDL_SetPaletteColors(palette, colors, 0, 2)) {
+        if (!PG_SetPaletteColors(palette, colors, 0, 2)) {
             PyErr_Format(PyExc_SystemError,
                          "Pygame bug in _PGFT_Render_NewSurface: %.200s",
                          SDL_GetError());

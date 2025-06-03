@@ -1,7 +1,11 @@
 #ifndef PGCOMPAT_RECT_H
 #define PGCOMPAT_RECT_H
 
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
+#endif
 
 /* SDL 2.0.22 provides some utility functions for FRects */
 #if !(SDL_VERSION_ATLEAST(2, 0, 22))

@@ -23,8 +23,8 @@ Keyboard Controls:
 * Press escape to exit
 """
 
-import sys
 import os
+import sys
 
 import pygame
 
@@ -122,7 +122,7 @@ class FontViewer:
             line = text.replace("&N", name)
             try:
                 surf = font.render(
-                    line, 1, color, self.back_color, self.screen_size[0] - 20
+                    line, True, color, self.back_color, self.screen_size[0] - 20
                 )
             except pygame.error as e:
                 print(e)
@@ -281,5 +281,6 @@ class FontViewer:
         return True
 
 
-viewer = FontViewer()
-pygame.quit()
+if __name__ == "__main__":
+    viewer = FontViewer()
+    pygame.quit()

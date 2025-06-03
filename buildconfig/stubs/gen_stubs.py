@@ -128,9 +128,12 @@ with open(init_file, "w") as f:
     # write the module docstring of this file in the generated file, so that
     # people know this file exists
     f.write(info_header)
+    f.write("# ruff: noqa: I001\n")
     f.write(misc_stubs)
 
     for mod, items in pygame_all_imports.items():
+        if mod == "pygame":
+            mod = "."
         if len(items) <= 4:
             # try to write imports in a single line if it can fit the line limit
             import_items = (f"{string} as {string}" for string in items)

@@ -1,13 +1,12 @@
-import unittest
 import os
 import platform
-
-from pygame.tests import test_utils
-from pygame.tests.test_utils import example_path
+import unittest
 
 import pygame
 import pygame.transform
 from pygame.locals import *
+from pygame.tests import test_utils
+from pygame.tests.test_utils import example_path
 
 
 def show_image(s, images=[]):
@@ -1147,6 +1146,13 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(dest_surface.get_size(), expected_size)
         self.assertEqual(dest_surface.get_flags(), expected_flags)
 
+    def test_threshold_all_color_types(self):
+        s1 = pygame.Surface((32, 32), SRCALPHA, 32)
+        s2 = pygame.Surface((32, 32), SRCALPHA, 32)
+
+        for color in [(0, 255, 0), (255, 0, 0, 0), 0, "blue", pygame.Color("#FFFFFF")]:
+            pygame.transform.threshold(s1, s2, color, color, color)
+
     def test_laplacian(self):
         """ """
 
@@ -1951,7 +1957,7 @@ class TransformDisplayModuleTest(unittest.TestCase):
 
     def test_flip(self):
         """honors the set_color key on the returned surface from flip."""
-        image_loaded = pygame.image.load(example_path("data/chimp.png"))
+        image_loaded = pygame.image.load(example_path("data/chimp.webp"))
 
         image = pygame.Surface(image_loaded.get_size(), 0, 32)
         image.blit(image_loaded, (0, 0))
@@ -1995,7 +2001,7 @@ class TransformDisplayModuleTest(unittest.TestCase):
 
     def test_flip_alpha(self):
         """returns a surface with the same properties as the input."""
-        image_loaded = pygame.image.load(example_path("data/chimp.png"))
+        image_loaded = pygame.image.load(example_path("data/chimp.webp"))
 
         image_alpha = pygame.Surface(image_loaded.get_size(), pygame.SRCALPHA, 32)
         image_alpha.blit(image_loaded, (0, 0))

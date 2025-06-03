@@ -1,13 +1,13 @@
-from typing import Any, Iterator, Literal, Tuple, Union, overload
+from collections.abc import Iterator
+from typing import Any, Literal, Union, overload
 
 from pygame.surface import Surface
-
 from pygame.typing import FileLike, IntPoint, SequenceLike
 
-_Small_string = Tuple[
+_Small_string = tuple[
     str, str, str, str, str, str, str, str, str, str, str, str, str, str, str, str
 ]
-_Big_string = Tuple[
+_Big_string = tuple[
     str,
     str,
     str,
@@ -51,10 +51,10 @@ def compile(
     black: str = "X",
     white: str = ".",
     xor: str = "o",
-) -> Tuple[Tuple[int, ...], Tuple[int, ...]]: ...
+) -> tuple[tuple[int, ...], tuple[int, ...]]: ...
 def load_xbm(
     curs: FileLike, mask: FileLike
-) -> Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, ...], Tuple[int, ...]]: ...
+) -> tuple[tuple[int, int], tuple[int, int], tuple[int, ...], tuple[int, ...]]: ...
 
 class Cursor:
     @overload
@@ -79,13 +79,11 @@ class Cursor:
     def __len__(self) -> int: ...
     def __copy__(self) -> Cursor: ...
     def __hash__(self) -> int: ...
-    def __getitem__(
-        self, index: int
-    ) -> Union[int, IntPoint, Surface]: ...
+    def __getitem__(self, index: int) -> Union[int, IntPoint, Surface]: ...
     def copy(self) -> Cursor: ...
     type: Literal["system", "color", "bitmap"]
     data: Union[
-        Tuple[int],
-        Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, ...], Tuple[int, ...]],
-        Tuple[IntPoint, Surface],
+        tuple[int],
+        tuple[tuple[int, int], tuple[int, int], tuple[int, ...], tuple[int, ...]],
+        tuple[IntPoint, Surface],
     ]

@@ -9,31 +9,31 @@ test_runner_mod = test_pkg_name + ".test_utils.test_runner"
 if is_pygame_pkg:
     from pygame.tests.test_utils import import_submodule
     from pygame.tests.test_utils.test_runner import (
-        prepare_test_env,
-        run_test,
+        TEST_RESULTS_START,
         combine_results,
         get_test_results,
-        TEST_RESULTS_START,
+        prepare_test_env,
+        run_test,
     )
 else:
     from test.test_utils import import_submodule
     from test.test_utils.test_runner import (
-        prepare_test_env,
-        run_test,
+        TEST_RESULTS_START,
         combine_results,
         get_test_results,
-        TEST_RESULTS_START,
+        prepare_test_env,
+        run_test,
     )
-import pygame
-
 import os
+import random
 import re
 import shutil
 import tempfile
 import time
-import random
 from concurrent.futures import ThreadPoolExecutor
 from pprint import pformat
+
+import pygame
 
 was_run = False
 

@@ -62,6 +62,7 @@ one.
    DEPRECATED: Uses the requested array type for the module functions. The
    only supported arraytype is ``'numpy'``. Other values will raise ValueError.
    Using this function will raise a ``DeprecationWarning``.
+
    .. ## pygame.sndarray.use_arraytype ##
 
 .. function:: get_arraytype

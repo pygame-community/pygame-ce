@@ -2,7 +2,7 @@
 
 import sys
 import webbrowser
-from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 # use relative import here and not absolute, so that `python -m docs` works at
 # development time

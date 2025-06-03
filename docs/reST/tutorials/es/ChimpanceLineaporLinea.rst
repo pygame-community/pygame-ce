@@ -48,7 +48,7 @@ del chimpancé para ti mismo en el directorio de ejemplos.
 
    (no, este no es un anuncio, es una captura de pantalla)
 
-   .. image:: ../assets/chimpshot.gif
+   .. image:: ../assets/chimpshot.webp
       :alt: chimp game banner
 
    :doc:`Full Source <../chimp.py>`
@@ -187,7 +187,7 @@ las revisaremos de a una. ::
 
         def __init__(self):
             pg.sprite.Sprite.__init__(self)  # call Sprite initializer
-            self.image, self.rect = load_image("fist.png", -1)
+            self.image, self.rect = load_image("fist.webp", -1)
             self.fist_offset = (-235, -80)
             self.punching = False
 
@@ -239,7 +239,7 @@ el puño está chocando con el sprite objetivo. ::
 
         def __init__(self):
             pg.sprite.Sprite.__init__(self)  # call Sprite intializer
-            self.image, self.rect = load_image("chimp.png", -1, 4)
+            self.image, self.rect = load_image("chimp.webp", -1, 4)
             screen = pg.display.get_surface()
             self.area = screen.get_rect()
             self.rect.topleft = 10, 90
