@@ -113,6 +113,8 @@ draw_round_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1,
         return NULL;                                     \
     }
 
+#define CHECK_NAN(value) value == 0x80000000
+
 /* Definition of functions that get called in Python */
 
 /* Draws an antialiased line on the given surface.
@@ -180,6 +182,10 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (width < 1) {
+        return pgRect_New4((int)startx, (int)starty, 0, 0);
+    }
+
+    if (CHECK_NAN(startx)) {
         return pgRect_New4((int)startx, (int)starty, 0, 0);
     }
 
@@ -267,6 +273,10 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (width < 1) {
+        return pgRect_New4(startx, starty, 0, 0);
+    }
+
+    if (CHECK_NAN(startx) || CHECK_NAN(starty) || CHECK_NAN(endx) || CHECK_NAN(endy)) {
         return pgRect_New4(startx, starty, 0, 0);
     }
 
@@ -421,15 +431,17 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     extra_px = steep_prev > steep_curr;
     disable_endpoints =
         !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
-    if (closed) {
-        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
-                    pts[2], pts[3], drawn_area, disable_endpoints,
-                    disable_endpoints, extra_px);
-    }
-    else {
-        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
-                    pts[2], pts[3], drawn_area, 0, disable_endpoints,
-                    extra_px);
+    if (!CHECK_NAN(pts[0])) {
+        if (closed) {
+            draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                        pts[2], pts[3], drawn_area, disable_endpoints,
+                        disable_endpoints, extra_px);
+        }
+        else {
+            draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                        pts[2], pts[3], drawn_area, 0, disable_endpoints,
+                        extra_px);
+        }
     }
 
     for (loop = 2; loop < length - 1; ++loop) {
@@ -440,19 +452,21 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
 
         /* Comparing previous and current line.
          * If one is steep and other is not, extra pixel must be drawn.*/
-        steep_prev =
-            fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
-        steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
-        extra_px = steep_prev != steep_curr;
-        disable_endpoints =
-            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
-        pts_prev[0] = pts[0];
-        pts_prev[1] = pts[1];
-        pts_prev[2] = pts[2];
-        pts_prev[3] = pts[3];
-        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
-                    pts[2], pts[3], drawn_area, disable_endpoints,
-                    disable_endpoints, extra_px);
+        if (!CHECK_NAN(pts[0])) {
+            steep_prev =
+                fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+            steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+            extra_px = steep_prev != steep_curr;
+            disable_endpoints =
+                !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+            pts_prev[0] = pts[0];
+            pts_prev[1] = pts[1];
+            pts_prev[2] = pts[2];
+            pts_prev[3] = pts[3];
+            draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                        pts[2], pts[3], drawn_area, disable_endpoints,
+                        disable_endpoints, extra_px);
+        }
     }
 
     /* Last line - if open, add endpoint pixels. */
@@ -470,15 +484,17 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     pts_prev[1] = pts[1];
     pts_prev[2] = pts[2];
     pts_prev[3] = pts[3];
-    if (closed) {
-        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
-                    pts[2], pts[3], drawn_area, disable_endpoints,
-                    disable_endpoints, extra_px);
-    }
-    else {
-        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
-                    pts[2], pts[3], drawn_area, disable_endpoints, 0,
-                    extra_px);
+    if (!CHECK_NAN(pts[0])) {
+        if (closed) {
+            draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                        pts[2], pts[3], drawn_area, disable_endpoints,
+                        disable_endpoints, extra_px);
+        }
+        else {
+            draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                        pts[2], pts[3], drawn_area, disable_endpoints, 0,
+                        extra_px);
+        }
     }
 
     if (closed && length > 2) {
@@ -486,15 +502,17 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         pts[1] = ylist[length - 1];
         pts[2] = xlist[0];
         pts[3] = ylist[0];
-        steep_prev =
-            fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
-        steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
-        extra_px = steep_prev != steep_curr;
-        disable_endpoints =
-            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
-        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
-                    pts[2], pts[3], drawn_area, disable_endpoints,
-                    disable_endpoints, extra_px);
+        if (!CHECK_NAN(pts[0])) {
+            steep_prev =
+                fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+            steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+            extra_px = steep_prev != steep_curr;
+            disable_endpoints =
+                !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+            draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                        pts[2], pts[3], drawn_area, disable_endpoints,
+                        disable_endpoints, extra_px);
+        }
     }
 
     PyMem_Free(points_buf);
@@ -615,15 +633,19 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     for (loop = 1; loop < length; ++loop) {
-        draw_line_width(surf, surf_clip_rect, color, xlist[loop - 1],
-                        ylist[loop - 1], xlist[loop], ylist[loop], width,
-                        drawn_area);
+        if (!CHECK_NAN(xlist[loop - 1]) || !CHECK_NAN(ylist[loop - 1]) || !CHECK_NAN(xlist[loop]) || !CHECK_NAN(ylist[loop])) {
+            draw_line_width(surf, surf_clip_rect, color, xlist[loop - 1],
+                            ylist[loop - 1], xlist[loop], ylist[loop], width,
+                            drawn_area);
+        }
     }
 
     if (closed && length > 2) {
-        draw_line_width(surf, surf_clip_rect, color, xlist[length - 1],
-                        ylist[length - 1], xlist[0], ylist[0], width,
-                        drawn_area);
+        if (!CHECK_NAN(xlist[length - 1]) || !CHECK_NAN(ylist[length - 1]) || !CHECK_NAN(xlist[0]) || !CHECK_NAN(ylist[0])) {
+            draw_line_width(surf, surf_clip_rect, color, xlist[length - 1],
+                            ylist[length - 1], xlist[0], ylist[0], width,
+                            drawn_area);
+        }
     }
 
     PyMem_Free(xlist);
