@@ -4235,7 +4235,7 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
 
     src = pgSurface_AsSurface(srcobj);
 
-    if (src->format->palette) {
+    if (PG_GetSurfacePalette(src) != NULL) {
         return RAISE(PyExc_ValueError, "Indexed surfaces cannot be bloomed.");
     }
 
@@ -4260,10 +4260,7 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
     }
 
     if (PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(retsurf) ||
-        src->format->Rmask != retsurf->format->Rmask ||
-        src->format->Gmask != retsurf->format->Gmask ||
-        src->format->Bmask != retsurf->format->Bmask ||
-        src->format->Amask != retsurf->format->Amask) {
+        PG_SURF_FORMATENUM(src) != PG_SURF_FORMATENUM(retsurf)) {
         return RAISE(PyExc_ValueError,
                      "Source and destination surfaces need the same format.");
     }
