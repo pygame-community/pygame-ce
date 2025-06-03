@@ -463,7 +463,7 @@ def hsl(
 def pixelate(
     surface: Surface,
     pixel_size: int,
-    dest_surface: Optional[Surface] = None
+    dest_surface: Optional[Surface] = None,
 ) -> Surface:
     """Returns a pixelated version of the original surface.
 

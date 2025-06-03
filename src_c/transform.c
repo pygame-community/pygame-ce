@@ -4248,13 +4248,13 @@ surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (testWidth > INT_MAX || testWidth <= 0) {
         PyErr_SetString(PyExc_OverflowError,
-                        "Cannot scale width outside the range [0, INT_MAX]");
+                        "Cannot scale width outside the range (0, INT_MAX]");
         return NULL;
     }
 
     if (testHeight > INT_MAX || testHeight <= 0) {
         PyErr_SetString(PyExc_OverflowError,
-                        "Cannot scale height outside the range [0, INT_MAX]");
+                        "Cannot scale height outside the range (0, INT_MAX]");
         return NULL;
     }
 
