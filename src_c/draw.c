@@ -113,7 +113,7 @@ draw_round_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1,
         return NULL;                                     \
     }
 
-#define CHECK_NAN(value) value == 0x80000000
+#define CHECK_NAN(value) (value == 0x80000000)
 
 /* Definition of functions that get called in Python */
 
@@ -633,7 +633,7 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     for (loop = 1; loop < length; ++loop) {
-        if (!CHECK_NAN(xlist[loop - 1]) || !CHECK_NAN(ylist[loop - 1]) || !CHECK_NAN(xlist[loop]) || !CHECK_NAN(ylist[loop])) {
+        if (!CHECK_NAN(xlist[loop - 1]) && !CHECK_NAN(ylist[loop - 1]) && !CHECK_NAN(xlist[loop]) && !CHECK_NAN(ylist[loop])) {
             draw_line_width(surf, surf_clip_rect, color, xlist[loop - 1],
                             ylist[loop - 1], xlist[loop], ylist[loop], width,
                             drawn_area);
@@ -641,7 +641,7 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (closed && length > 2) {
-        if (!CHECK_NAN(xlist[length - 1]) || !CHECK_NAN(ylist[length - 1]) || !CHECK_NAN(xlist[0]) || !CHECK_NAN(ylist[0])) {
+        if (!CHECK_NAN(xlist[length - 1]) && !CHECK_NAN(ylist[length - 1]) && !CHECK_NAN(xlist[0]) && !CHECK_NAN(ylist[0])) {
             draw_line_width(surf, surf_clip_rect, color, xlist[length - 1],
                             ylist[length - 1], xlist[0], ylist[0], width,
                             drawn_area);
