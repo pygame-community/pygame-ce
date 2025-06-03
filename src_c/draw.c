@@ -113,7 +113,7 @@ draw_round_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1,
         return NULL;                                     \
     }
 
-#define CHECK_NAN(value) (value == 0x80000000)
+#define CHECK_NAN(value) ((unsigned int)value == 0x80000000)
 
 /* Definition of functions that get called in Python */
 
