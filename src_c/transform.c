@@ -4231,7 +4231,7 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
 
     SDL_Surface *src = NULL;
     SDL_Surface *retsurf = NULL;
-    int result;
+    int result = 0;
 
     src = pgSurface_AsSurface(srcobj);
 
