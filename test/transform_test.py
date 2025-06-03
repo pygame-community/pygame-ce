@@ -1461,6 +1461,39 @@ class TransformModuleTest(unittest.TestCase):
         for pt, color in gradient:
             self.assertTrue(s.get_at(pt) == color)
 
+    def test_rotate_after_convert_regression(self):
+        # Tests a regression found from https://github.com/pygame-community/pygame-ce/pull/3314
+        # Reported in https://github.com/pygame-community/pygame-ce/issues/3463
+
+        pygame.display.set_mode((1, 1))
+
+        output1 = pygame.transform.rotate(
+            pygame.image.load(
+                os.path.join(
+                    os.path.abspath(os.path.dirname(__file__)),
+                    "../examples/data/alien1.png",
+                )
+            ).convert_alpha(),
+            180,
+        )
+        output2 = pygame.transform.rotate(
+            pygame.image.load(
+                os.path.join(
+                    os.path.abspath(os.path.dirname(__file__)),
+                    "../examples/data/alien1.png",
+                )
+            ),
+            180,
+        ).convert_alpha()
+
+        for x in range(50):
+            for y in range(50):
+                color1 = pygame.Color(output1.get_at((x, y)))
+                color2 = pygame.Color(output2.get_at((x, y)))
+                self.assertEqual(color1, color2)
+
+        pygame.quit()
+
     def test_scale2x(self):
         # __doc__ (as of 2008-06-25) for pygame.transform.scale2x:
 

@@ -4625,9 +4625,7 @@ MODINIT_DEFINE(pg_math)
 MODINIT_DEFINE(math)
 #endif
 {
-    PyObject *module, *apiobj;
-    static void *c_api[PYGAMEAPI_MATH_NUMSLOTS];
-
+    PyObject *module;
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "math",
                                          DOC_MATH,
@@ -4638,14 +4636,6 @@ MODINIT_DEFINE(math)
                                          NULL,
                                          NULL};
 
-    /* initialize the extension types */
-    if ((PyType_Ready(&pgVector2_Type) < 0) ||
-        (PyType_Ready(&pgVector3_Type) < 0) ||
-        (PyType_Ready(&pgVectorIter_Type) < 0) ||
-        (PyType_Ready(&pgVectorElementwiseProxy_Type) < 0)) {
-        return NULL;
-    }
-
     /* initialize the module */
     module = PyModule_Create(&_module);
 
@@ -4654,29 +4644,10 @@ MODINIT_DEFINE(math)
     }
 
     /* add extension types to module */
-    if ((PyModule_AddObjectRef(module, "Vector2",
-                               (PyObject *)&pgVector2_Type) < 0) ||
-        (PyModule_AddObjectRef(module, "Vector3",
-                               (PyObject *)&pgVector3_Type) < 0) ||
-        (PyModule_AddObjectRef(module, "VectorElementwiseProxy",
-                               (PyObject *)&pgVectorElementwiseProxy_Type) <
-         0) ||
-        (PyModule_AddObjectRef(module, "VectorIterator",
-                               (PyObject *)&pgVectorIter_Type) < 0)) {
-        Py_DECREF(module);
-        return NULL;
-    }
-
-    /* export the C api */
-    c_api[0] = &pgVector2_Type;
-    c_api[1] = &pgVector3_Type;
-    /*
-    c_api[2] = pgVector_NEW;
-    c_api[3] = pgVectorCompatible_Check;
-    */
-    apiobj = encapsulate_api(c_api, "math");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if ((PyModule_AddType(module, &pgVector2_Type) < 0) ||
+        (PyModule_AddType(module, &pgVector3_Type) < 0) ||
+        (PyModule_AddType(module, &pgVectorElementwiseProxy_Type) < 0) ||
+        (PyModule_AddType(module, &pgVectorIter_Type) < 0)) {
         Py_DECREF(module);
         return NULL;
     }
