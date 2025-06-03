@@ -136,7 +136,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
     /* Copy palette, colorkey, etc info */
     if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         SDL_Palette *newsurf_palette = PG_GetSurfacePalette(newsurf);
-        SDL_Palette *surf_palette = PG_GetSurfacePalette(newsurf);
+        SDL_Palette *surf_palette = PG_GetSurfacePalette(surf);
 
         if (newsurf_palette == NULL) {
             PyErr_SetString(
