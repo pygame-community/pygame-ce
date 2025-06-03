@@ -4160,8 +4160,8 @@ luminance_filter(SDL_Surface *src, float intensity, float threshold)
 {
     SDL_Surface *bpfsurf = newsurf_fromsurf(src, src->w, src->h);
 
-    SDL_PixelFormat *fmt = PG_GetSurfaceFormat(src);
-    SDL_PixelFormat *dfmt = PG_GetSurfaceFormat(bpfsurf);
+    PG_PixelFormat *fmt = PG_GetSurfaceFormat(src);
+    PG_PixelFormat *dfmt = PG_GetSurfaceFormat(bpfsurf);
     if (fmt == NULL || dfmt == NULL) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
