@@ -152,7 +152,7 @@ _pg_repeat_callback(Uint32 interval, void *param)
     int repeat_interval_copy = pg_key_repeat_interval;
     PG_UNLOCK_EVFILTER_MUTEX
 
-    repeat_event_copy.type = PGE_KEYREPEAT;
+    repeat_event_copy.type = SDL_KEYDOWN;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     repeat_event_copy.key.down = true;
     repeat_event_copy.key.repeat = true;
@@ -160,7 +160,13 @@ _pg_repeat_callback(Uint32 interval, void *param)
     repeat_event_copy.key.state = SDL_PRESSED;
     repeat_event_copy.key.repeat = 1;
 #endif
-    SDL_PushEvent(&repeat_event_copy);
+    /* Use SDL_PeepEvents and not SDL_PushEvent because we don't want
+     * this to go through our event filter.
+     * Because this doesn't go through our filter we have to check event
+     * blocking beforehand. */
+    if (PG_EventEnabled(_pg_pgevent_proxify(repeat_event_copy.type))) {
+        SDL_PeepEvents(&repeat_event_copy, 1, SDL_ADDEVENT, 0, 0);
+    }
     return repeat_interval_copy;
 }
 
@@ -632,10 +638,6 @@ pg_event_filter(void *_, SDL_Event *event)
             _pg_last_keydown_event.type = 0;
         }
         PG_UNLOCK_EVFILTER_MUTEX
-    }
-
-    else if (event->type == PGE_KEYREPEAT) {
-        event->type = SDL_KEYDOWN;
     }
 
     else if (event->type == SDL_KEYUP) {
@@ -2481,8 +2483,6 @@ pg_event_set_blocked(PyObject *self, PyObject *obj)
     /* Never block SDL_WINDOWEVENT on SDL2, we need them for translation */
     PG_SetEventEnabled(SDL_WINDOWEVENT, SDL_TRUE);
 #endif
-    /* Never block PGE_KEYREPEAT too, its needed for pygame internal use */
-    PG_SetEventEnabled(PGE_KEYREPEAT, SDL_TRUE);
     Py_RETURN_NONE;
 }
 
