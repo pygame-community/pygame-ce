@@ -5,12 +5,15 @@
 
 .. module:: pygame.freetype
    :synopsis: Enhanced pygame module for loading and rendering computer fonts
+   .. note:: The ``pygame.freetype`` module is no longer being maintained,
+      and instead use of :mod:`pygame.font` is strongly recommended.
+
 
 | :sl:`Enhanced pygame module for loading and rendering computer fonts`
 
-The ``pygame.freetype`` module is a replacement for :mod:`pygame.font`.
-It has all of the functionality of the original, plus many new features.
-Yet is has absolutely no dependencies on the SDL_ttf library.
+The ``pygame.freetype`` module is an old pygame module for font functionality
+and has since been replaced by the newer :mod:`pygame.font` module.
+It has absolutely no dependencies on the SDL_ttf library.
 It is implemented directly on the FreeType 2 library.
 The ``pygame.freetype`` module is not itself backward compatible with
 :mod:`pygame.font`.
