@@ -849,12 +849,23 @@ class ColorTypeTest(unittest.TestCase):
         )
 
     def test_from_hex(self):
-        hex = pygame.Color.from_hex("#FFFFFF")
+        color1 = pygame.Color.from_hex("#FFFFFF")  # White
+        color2 = pygame.Color.from_hex("#000000")  # Black
+        color3 = pygame.Color.from_hex("#AAFF00")  # Random
+        color4 = pygame.Color.from_hex("#FF000080")  # Red (50% opacity)
 
-        expected_hex = (255, 255, 255, 255)
+        expected_color1 = (255, 255, 255, 255)
+        expected_color2 = (0, 0, 0, 255)
+        expected_color3 = (170, 255, 0, 255)
+        expected_color4 = (255, 0, 0, 128)
 
-        self.assertEqual(expected_hex, hex)
+        self.assertEqual(color1, expected_color1)
+        self.assertEqual(color2, expected_color2)
+        self.assertEqual(color3, expected_color3)
+        self.assertEqual(color4, expected_color4)
 
+        self.assertRaises(ValueError, lambda: pygame.Color.from_hex("#FFFFFG"))
+        self.assertRaises(ValueError, lambda: pygame.Color.from_hex("#FFFFFFF"))
         self.assertRaises(ValueError, lambda: pygame.Color.from_hex("not-a-color"))
         self.assertRaises(
             TypeError, lambda: pygame.Color.from_hex("not-a-color", "lel")
