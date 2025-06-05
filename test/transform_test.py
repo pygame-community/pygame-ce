@@ -173,6 +173,44 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(s.get_alpha(), s3.get_alpha())
         self.assertEqual(s.get_alpha(), s2.get_alpha())
 
+    def test_scale__palette(self):
+        """see if palette information from source is kept.
+
+        Test for newsurf_fromsurf regression reported in
+        https://github.com/pygame-community/pygame-ce/issues/3463"""
+
+        s = pygame.Surface((32, 32), depth=8)
+        s.fill("red", [0, 0, 32, 16])
+        s.fill("purple", [0, 16, 32, 16])
+        self.assertTrue(len(s.get_palette()) > 0)
+
+        s2 = pygame.transform.scale(s, (64, 64))
+        self.assertEqual(s.get_palette()[0], s2.get_palette()[0])
+        self.assertEqual(s.get_at_mapped((0, 0)), s2.get_at_mapped((0, 0)))
+        self.assertEqual(s.get_at_mapped((0, 17)), s2.get_at_mapped((0, 35)))
+
+        # Also test with a custom palette to make sure the output doesn't just
+        # have a default palette.
+        s = pygame.Surface((32, 32), depth=8)
+        s.set_palette(
+            [
+                pygame.Color("red"),
+                pygame.Color("purple"),
+                pygame.Color("gold"),
+                pygame.Color("blue"),
+                pygame.Color("lightgreen"),
+            ]
+        )
+        s.fill("red", [0, 0, 32, 16])
+        s.fill("purple", [0, 16, 32, 16])
+        self.assertTrue(len(s.get_palette()) > 0)
+
+        s2 = pygame.transform.scale(s, (64, 64))
+        self.assertEqual(s.get_palette()[0], s2.get_palette()[0])
+        self.assertEqual(s.get_palette(), s2.get_palette())
+        self.assertEqual(s.get_at_mapped((0, 0)), s2.get_at_mapped((0, 0)))
+        self.assertEqual(s.get_at_mapped((0, 17)), s2.get_at_mapped((0, 35)))
+
     def test_scale__destination(self):
         """see if the destination surface can be passed in to use."""
 
@@ -1726,6 +1764,34 @@ class TransformModuleTest(unittest.TestCase):
             surface,
             pygame.Surface((10, 10), depth=8),
         )
+
+    def test_invert__palette(self):
+        """see if palette information from source is kept.
+
+        Test for newsurf_fromsurf regression reported in
+        https://github.com/pygame-community/pygame-ce/issues/3463"""
+
+        s = pygame.Surface((32, 32), depth=8)
+        s.set_palette([pygame.Color("orange") for _ in range(256)])
+        s.set_palette(
+            [
+                pygame.Color("red"),
+                pygame.Color("purple"),
+                pygame.Color("gold"),
+                pygame.Color("blue"),
+                pygame.Color("lightgreen"),
+            ]
+        )
+        s.fill("red", [0, 0, 32, 16])
+        s.fill("blue", [0, 16, 32, 16])
+        self.assertTrue(len(s.get_palette()) > 0)
+
+        s2 = pygame.transform.invert(s)
+        self.assertEqual(s.get_palette()[0], s2.get_palette()[0])
+        self.assertEqual(s.get_palette(), s2.get_palette())
+
+        self.assertEqual(s2.get_at((0, 0)), pygame.Color("lightgreen"))
+        self.assertEqual(s2.get_at((0, 17)), pygame.Color("gold"))
 
     def test_smoothscale(self):
         """Tests the stated boundaries, sizing, and color blending of smoothscale function"""
