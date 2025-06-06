@@ -7,7 +7,7 @@ if fs.is_dir('generated')
         'generated',
         exclude_directories: [
             'doctrees',
-            'tutorials',
+            'tutorials/ko',
             '_sources/tutorials',
             '_sources/c_api',
         ],
