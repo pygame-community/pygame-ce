@@ -1,0 +1,25 @@
+# =========================================================================
+#   Unity - A Test Framework for C
+#   ThrowTheSwitch.org
+#   Copyright (c) 2007-24 Mike Karlesky, Mark VanderVoord, & Greg Williams
+#   SPDX-License-Identifier: MIT
+# =========================================================================
+
+{
+  "name": "Unity",
+  "version": "2.6.0",
+  "keywords": "unit-testing, testing, tdd, testing-framework",
+  "description": "Simple Unit Testing for C",
+  "homepage": "http://www.throwtheswitch.org/unity",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ThrowTheSwitch/Unity.git"
+  },
+  "frameworks": "*",
+  "platforms": "*",
+  "headers": "unity.h",
+  "build": {
+    "extraScript": "platformio-build.py"
+  }
+}

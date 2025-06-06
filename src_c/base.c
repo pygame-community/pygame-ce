@@ -22,27 +22,28 @@
 #define NO_PYGAME_C_API
 #define PYGAMEAPI_BASE_INTERNAL
 
-#include "pygame.h"
+#include "base.h"
 
 #include <signal.h>
 #include "doc/pygame_doc.h"
-#include "pgarrinter.h"
 #include "pgcompat.h"
+
+PG_PixelFormatEnum pg_default_convert_format = 0;
+
+/* Custom exceptions */
+static PyObject *pgExc_BufferError = NULL;
+
+/* Only one instance of the state per process. */
+static PyObject *pg_quit_functions = NULL;
+static int pg_is_init = 0;
+static int pg_sdl_was_init = 0;
+SDL_Window *pg_default_window = NULL;
+pgSurfaceObject *pg_default_screen = NULL;
+static int pg_env_blend_alpha_SDL2 = 0;
 
 /* This file controls all the initialization of
  * the module and the various SDL subsystems
  */
-
-/*platform specific init stuff*/
-
-#ifdef MS_WIN32 /*python gives us MS_WIN32*/
-#define WIN32_LEAN_AND_MEAN
-#define VC_EXTRALEAN
-#include <windows.h>
-extern int
-SDL_RegisterApp(const char *, Uint32, void *);
-#endif
-
 #if defined(macintosh)
 #if (!defined(__MWERKS__) && !TARGET_API_MAC_CARBON)
 QDGlobals pg_qd;
@@ -59,122 +60,6 @@ QDGlobals pg_qd;
 #define BUF_OTHER_ENDIAN '<'
 #endif
 #define BUF_MY_ENDIAN '='
-
-/* Extended array struct */
-typedef struct pg_capsule_interface_s {
-    PyArrayInterface inter;
-    Py_intptr_t imem[1];
-} pgCapsuleInterface;
-
-/* Py_buffer internal data for an array interface/struct */
-typedef struct pg_view_internals_s {
-    char format[4]; /* make 4 byte word sized */
-    Py_ssize_t imem[1];
-} pgViewInternals;
-
-/* Custom exceptions */
-static PyObject *pgExc_BufferError = NULL;
-
-/* Only one instance of the state per process. */
-static PyObject *pg_quit_functions = NULL;
-static int pg_is_init = 0;
-static int pg_sdl_was_init = 0;
-SDL_Window *pg_default_window = NULL;
-pgSurfaceObject *pg_default_screen = NULL;
-static int pg_env_blend_alpha_SDL2 = 0;
-
-static void
-pg_install_parachute(void);
-static void
-pg_uninstall_parachute(void);
-static void
-pg_atexit_quit(void);
-static int
-pgGetArrayStruct(PyObject *, PyObject **, PyArrayInterface **);
-static PyObject *
-pgArrayStruct_AsDict(PyArrayInterface *);
-static PyObject *
-pgBuffer_AsArrayInterface(Py_buffer *);
-static PyObject *
-pgBuffer_AsArrayStruct(Py_buffer *);
-static int
-_pg_buffer_is_byteswapped(Py_buffer *);
-static void
-pgBuffer_Release(pg_buffer *);
-static int
-pgObject_GetBuffer(PyObject *, pg_buffer *, int);
-static inline PyObject *
-pgObject_getRectHelper(PyObject *, PyObject *const *, Py_ssize_t, PyObject *,
-                       char *);
-static int
-pgGetArrayInterface(PyObject **, PyObject *);
-static int
-pgArrayStruct_AsBuffer(pg_buffer *, PyObject *, PyArrayInterface *, int);
-static int
-_pg_arraystruct_as_buffer(Py_buffer *, PyObject *, PyArrayInterface *, int);
-static int
-_pg_arraystruct_to_format(char *, PyArrayInterface *, int);
-static int
-pgDict_AsBuffer(pg_buffer *, PyObject *, int);
-static int
-_pg_shape_check(PyObject *);
-static int
-_pg_typestr_check(PyObject *);
-static int
-_pg_strides_check(PyObject *);
-static int
-_pg_data_check(PyObject *);
-static int
-_pg_is_int_tuple(PyObject *);
-static int
-_pg_values_as_buffer(Py_buffer *, int, PyObject *, PyObject *, PyObject *,
-                     PyObject *);
-static int
-_pg_int_tuple_as_ssize_arr(PyObject *, Py_ssize_t *);
-static int
-_pg_typestr_as_format(PyObject *, char *, Py_ssize_t *);
-static PyObject *
-pg_view_get_typestr_obj(Py_buffer *);
-static PyObject *
-pg_view_get_shape_obj(Py_buffer *);
-static PyObject *
-pg_view_get_strides_obj(Py_buffer *);
-static PyObject *
-pg_view_get_data_obj(Py_buffer *);
-static char
-_pg_as_arrayinter_typekind(Py_buffer *);
-static char
-_pg_as_arrayinter_byteorder(Py_buffer *);
-static int
-_pg_as_arrayinter_flags(Py_buffer *);
-static pgCapsuleInterface *
-_pg_new_capsuleinterface(Py_buffer *);
-static void
-_pg_capsule_PyMem_Free(PyObject *);
-static PyObject *
-_pg_shape_as_tuple(PyArrayInterface *);
-static PyObject *
-_pg_typekind_as_str(PyArrayInterface *);
-static PyObject *
-_pg_strides_as_tuple(PyArrayInterface *);
-static PyObject *
-_pg_data_as_tuple(PyArrayInterface *);
-static PyObject *
-pg_get_array_interface(PyObject *, PyObject *);
-static void
-_pg_release_buffer_array(Py_buffer *);
-static void
-_pg_release_buffer_generic(Py_buffer *);
-static SDL_Window *
-pg_GetDefaultWindow(void);
-static void
-pg_SetDefaultWindow(SDL_Window *);
-static pgSurfaceObject *
-pg_GetDefaultWindowSurface(void);
-static void
-pg_SetDefaultWindowSurface(pgSurfaceObject *);
-static int
-pg_EnvShouldBlendAlphaSDL2(void);
 
 /* compare compiled to linked, raise python error on incompatibility */
 static int
@@ -1841,7 +1726,7 @@ _pg_strides_check(PyObject *op)
     return 0;
 }
 
-static int
+int
 _pg_is_int_tuple(PyObject *op)
 {
     Py_ssize_t i;
@@ -2204,8 +2089,6 @@ pg_SetDefaultWindowSurface(pgSurfaceObject *screen)
     Py_XDECREF(pg_default_screen);
     pg_default_screen = screen;
 }
-
-PG_PixelFormatEnum pg_default_convert_format = 0;
 
 static PG_PixelFormatEnum
 pg_GetDefaultConvertFormat(void)
