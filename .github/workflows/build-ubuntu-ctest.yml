@@ -43,7 +43,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  gen_coverage:
+  gen_ctest:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
