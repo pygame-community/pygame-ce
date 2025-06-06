@@ -144,7 +144,7 @@ jobs:
         install: ${{ env.INSTALL_CMD }}
         run: |
           echo "\nInstalling wheel\n"
-          pip3 install --no-index --pre --break-system-packages --find-links /artifacts_new pygame-ce -Csetup_args=-Dctest=true
+          pip3 install --no-index --pre --break-system-packages --find-links /artifacts_new pygame-ce
           echo "\nRunning tests\n"
           export SDL_VIDEODRIVER=dummy
           export SDL_AUDIODRIVER=disk
