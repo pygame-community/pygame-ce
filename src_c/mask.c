@@ -2205,7 +2205,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
                 y_dest = dest_rect->y;
             }
             else {
-                PyErr_SetString(PyExc_TypeError, "invalid dest argument");
+                RAISE(PyExc_TypeError, "invalid dest argument");
                 goto to_surface_error;
             }
         }
@@ -2213,7 +2213,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (areaobj && areaobj != Py_None) {
         if (!(area_rect = pgRect_FromObject(areaobj, &temp_rect))) {
-            PyErr_SetString(PyExc_TypeError, "invalid rectstyle argument");
+            RAISE(PyExc_TypeError, "invalid rectstyle argument");
             goto to_surface_error;
         }
 
