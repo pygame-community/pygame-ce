@@ -326,8 +326,7 @@ accurate_delay(Sint64 ticks)
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
         if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
-            return -1;
+            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
     }
 #endif

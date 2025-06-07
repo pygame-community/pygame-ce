@@ -86,17 +86,15 @@ _pg_is_exception_class(PyObject *obj, void **optr)
         !PyObject_IsSubclass(obj, PyExc_BaseException)) {
         oname = PyObject_Str(obj);
         if (oname == NULL) {
-            PyErr_SetString(PyExc_TypeError,
-                            "invalid exception class argument");
-            return 0;
+            RAISERETURN(PyExc_TypeError, "invalid exception class argument",
+                        0);
         }
         tmp = PyUnicode_AsEncodedString(oname, "ascii", "replace");
         Py_DECREF(oname);
 
         if (tmp == NULL) {
-            PyErr_SetString(PyExc_TypeError,
-                            "invalid exception class argument");
-            return 0;
+            RAISERETURN(PyExc_TypeError, "invalid exception class argument",
+                        0);
         }
 
         oname = tmp;
@@ -131,8 +129,7 @@ fetch_object_methods(pgRWHelper *helper, PyObject *obj)
         }
     }
     if (!helper->read && !helper->write) {
-        PyErr_SetString(PyExc_TypeError, "not a file object");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "not a file object", -1);
     }
     if (PyObject_HasAttrString(obj, "seek")) {
         helper->seek = PyObject_GetAttrString(obj, "seek");
@@ -212,7 +209,7 @@ pg_EncodeString(PyObject *obj, const char *encoding, const char *errors,
             Py_DECREF(exc_type);
             Py_XDECREF(exc_trace);
             if (exc_value == NULL) {
-                PyErr_SetString(eclass, "Unicode encoding error");
+                RAISE(eclass, "Unicode encoding error");
             }
             else {
                 str = PyObject_Str(exc_value);
@@ -272,7 +269,7 @@ pg_EncodeFilePath(PyObject *obj, PyObject *eclass)
     /* End code replacement section */
 
     if (obj == NULL) {
-        PyErr_SetString(PyExc_SyntaxError, "Forwarded exception");
+        RAISE(PyExc_SyntaxError, "Forwarded exception");
     }
 
     PyObject *result =
@@ -699,7 +696,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
 #else
                     if (SDL_RWclose(rw) < 0) {
 #endif
-                        PyErr_SetString(PyExc_IOError, SDL_GetError());
+                        RAISE(PyExc_IOError, SDL_GetError());
                     }
                     return (SDL_RWops *)PyErr_NoMemory();
                 }
@@ -816,7 +813,7 @@ pg_encode_string(PyObject *self, PyObject *args, PyObject *keywds)
     }
 
     if (obj == NULL) {
-        PyErr_SetString(PyExc_SyntaxError, "Forwarded exception");
+        RAISE(PyExc_SyntaxError, "Forwarded exception");
     }
     return pg_EncodeString(obj, encoding, errors, eclass);
 }

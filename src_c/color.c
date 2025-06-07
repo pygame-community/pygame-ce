@@ -356,10 +356,9 @@ _get_color_int_component(PyObject *val, Uint8 *color)
     if (PyLong_Check(val)) {
         unsigned long longval = PyLong_AsUnsignedLong(val);
         if (PyErr_Occurred() || (longval > 255)) {
-            PyErr_SetString(
-                PyExc_ValueError,
-                "invalid color component (must be in range [0, 255])");
-            return 0;
+            RAISERETURN(PyExc_ValueError,
+                        "invalid color component (must be in range [0, 255])",
+                        0);
         }
         *color = (Uint8)longval;
         return 1;
@@ -624,8 +623,7 @@ _parse_color_from_text(PyObject *str_obj, Uint8 *rgba)
         color = PyDict_GetItem(_COLORDICT, name2);
         Py_DECREF(name2);
         if (!color) {
-            PyErr_SetString(PyExc_ValueError, "invalid color name");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "invalid color name", -1);
         }
     }
 
@@ -1035,8 +1033,7 @@ _color_set_hsva(pgColorObject *color, PyObject *value, void *closure)
 
     if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
         PySequence_Size(value) > 4) {
-        PyErr_SetString(PyExc_ValueError, "invalid HSVA value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid HSVA value", -1);
     }
 
     /* H */
@@ -1044,8 +1041,7 @@ _color_set_hsva(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(hsva[0])) || hsva[0] < 0 ||
         hsva[0] > 360) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid HSVA value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid HSVA value", -1);
     }
     Py_DECREF(item);
 
@@ -1054,8 +1050,7 @@ _color_set_hsva(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(hsva[1])) || hsva[1] < 0 ||
         hsva[1] > 100) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid HSVA value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid HSVA value", -1);
     }
     Py_DECREF(item);
 
@@ -1064,8 +1059,7 @@ _color_set_hsva(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(hsva[2])) || hsva[2] < 0 ||
         hsva[2] > 100) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid HSVA value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid HSVA value", -1);
     }
     Py_DECREF(item);
 
@@ -1075,8 +1069,7 @@ _color_set_hsva(pgColorObject *color, PyObject *value, void *closure)
         if (!item || !_get_double(item, &(hsva[3])) || hsva[3] < 0 ||
             hsva[3] > 100) {
             Py_XDECREF(item);
-            PyErr_SetString(PyExc_ValueError, "invalid HSVA value");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "invalid HSVA value", -1);
         }
         Py_DECREF(item);
     }
@@ -1201,8 +1194,7 @@ _color_set_hsla(pgColorObject *color, PyObject *value, void *closure)
 
     if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
         PySequence_Size(value) > 4) {
-        PyErr_SetString(PyExc_ValueError, "invalid HSLA value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid HSLA value", -1);
     }
 
     /* H */
@@ -1210,8 +1202,7 @@ _color_set_hsla(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(hsla[0])) || hsla[0] < 0 ||
         hsla[0] > 360) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid HSLA value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid HSLA value", -1);
     }
     Py_DECREF(item);
 
@@ -1220,8 +1211,7 @@ _color_set_hsla(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(hsla[1])) || hsla[1] < 0 ||
         hsla[1] > 100) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid HSLA value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid HSLA value", -1);
     }
     Py_DECREF(item);
 
@@ -1230,8 +1220,7 @@ _color_set_hsla(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(hsla[2])) || hsla[2] < 0 ||
         hsla[2] > 100) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid HSLA value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid HSLA value", -1);
     }
     Py_DECREF(item);
 
@@ -1241,8 +1230,7 @@ _color_set_hsla(pgColorObject *color, PyObject *value, void *closure)
         if (!item || !_get_double(item, &(hsla[3])) || hsla[3] < 0 ||
             hsla[3] > 100) {
             Py_XDECREF(item);
-            PyErr_SetString(PyExc_ValueError, "invalid HSLA value");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "invalid HSLA value", -1);
         }
         Py_DECREF(item);
     }
@@ -1366,8 +1354,7 @@ _color_set_i1i2i3(pgColorObject *color, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK("i1i2i3", value);
 
     if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
-        PyErr_SetString(PyExc_ValueError, "invalid I1I2I3 value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid I1I2I3 value", -1);
     }
 
     /* I1 */
@@ -1375,8 +1362,7 @@ _color_set_i1i2i3(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(i1i2i3[0])) || i1i2i3[0] < 0 ||
         i1i2i3[0] > 1) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid I1I2I3 value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid I1I2I3 value", -1);
     }
     Py_DECREF(item);
 
@@ -1385,8 +1371,7 @@ _color_set_i1i2i3(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(i1i2i3[1])) || i1i2i3[1] < -0.5f ||
         i1i2i3[1] > 0.5f) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid I1I2I3 value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid I1I2I3 value", -1);
     }
     Py_DECREF(item);
 
@@ -1395,8 +1380,7 @@ _color_set_i1i2i3(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(i1i2i3[2])) || i1i2i3[2] < -0.5f ||
         i1i2i3[2] > 0.5f) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid I1I2I3 value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid I1I2I3 value", -1);
     }
     Py_DECREF(item);
 
@@ -1438,16 +1422,14 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK("cmy", value);
 
     if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
-        PyErr_SetString(PyExc_ValueError, "invalid CMY value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid CMY value", -1);
     }
 
     /* I1 */
     item = PySequence_GetItem(value, 0);
     if (!item || !_get_double(item, &(cmy[0])) || cmy[0] < 0 || cmy[0] > 1) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid CMY value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid CMY value", -1);
     }
     Py_DECREF(item);
 
@@ -1455,8 +1437,7 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
     item = PySequence_GetItem(value, 1);
     if (!item || !_get_double(item, &(cmy[1])) || cmy[1] < 0 || cmy[1] > 1) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid CMY value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid CMY value", -1);
     }
     Py_DECREF(item);
 
@@ -1464,8 +1445,7 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
     item = PySequence_GetItem(value, 2);
     if (!item || !_get_double(item, &(cmy[2])) || cmy[2] < 0 || cmy[2] > 1) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid CMY value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid CMY value", -1);
     }
     Py_DECREF(item);
 
@@ -1499,16 +1479,14 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
 
     if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
         PySequence_Size(value) > 4) {
-        PyErr_SetString(PyExc_ValueError, "invalid normalized value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid normalized value", -1);
     }
 
     item = PySequence_GetItem(value, 0);
     if (!item || !_get_double(item, &(frgba[0])) || frgba[0] < 0.0 ||
         frgba[0] > 1.0) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid normalized value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid normalized value", -1);
     }
     Py_DECREF(item);
 
@@ -1516,8 +1494,7 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(frgba[1])) || frgba[1] < 0.0 ||
         frgba[1] > 1.0) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid normalized value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid normalized value", -1);
     }
     Py_DECREF(item);
 
@@ -1525,8 +1502,7 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
     if (!item || !_get_double(item, &(frgba[2])) || frgba[2] < 0.0 ||
         frgba[2] > 1.0) {
         Py_XDECREF(item);
-        PyErr_SetString(PyExc_ValueError, "invalid normalized value");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid normalized value", -1);
     }
     Py_DECREF(item);
 
@@ -1535,8 +1511,7 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
         if (!item || !_get_double(item, &(frgba[3])) || frgba[3] < 0.0 ||
             frgba[3] > 1.0) {
             Py_XDECREF(item);
-            PyErr_SetString(PyExc_ValueError, "invalid normalized value");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "invalid normalized value", -1);
         }
         Py_DECREF(item);
     }
@@ -1563,14 +1538,12 @@ _color_set_hex(pgColorObject *color, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK("hex", value);
 
     if (!PyUnicode_Check(value)) {
-        PyErr_SetString(PyExc_TypeError, "hex color must be a string");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "hex color must be a string", -1);
     }
 
     switch (_hexcolor(value, color->data)) {
         case TRISTATE_FAIL:
-            PyErr_SetString(PyExc_ValueError, "invalid hex string");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "invalid hex string", -1);
         case TRISTATE_ERROR:
             return -1; /* forward python error */
         default:
@@ -1874,8 +1847,7 @@ _color_ass_item(pgColorObject *color, Py_ssize_t _index, PyObject *value)
         case 3:
             return _color_set_a(color, value, NULL);
         default:
-            PyErr_SetString(PyExc_IndexError, "invalid index");
-            break;
+            RAISERETURN(PyExc_IndexError, "invalid index", -1);
     }
     return -1;
 }
@@ -1946,9 +1918,8 @@ static int
 _color_contains(pgColorObject *self, PyObject *arg)
 {
     if (!PyLong_Check(arg)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "'in <pygame.Color>' requires integer object");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "'in <pygame.Color>' requires integer object", -1);
     }
 
     long comp = PyLong_AsLong(arg);
@@ -1970,9 +1941,8 @@ static int
 _color_set_slice(pgColorObject *color, PyObject *idx, PyObject *val)
 {
     if (val == NULL) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Color object doesn't support item deletion");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "Color object doesn't support item deletion", -1);
     }
     if (PyLong_Check(idx)) {
         return _color_ass_item(color, PyLong_AsLong(idx), val);
@@ -2009,16 +1979,14 @@ _color_set_slice(pgColorObject *color, PyObject *idx, PyObject *val)
                 c = PyLong_AsLong(obj);
             }
             else {
-                PyErr_SetString(PyExc_TypeError,
-                                "color components must be integers");
                 Py_DECREF(fastitems);
-                return -1;
+                RAISERETURN(PyExc_TypeError,
+                            "color components must be integers", -1);
             }
             if (c < 0 || c > 255) {
-                PyErr_SetString(PyExc_ValueError,
-                                "color component must be 0-255");
                 Py_DECREF(fastitems);
-                return -1;
+                RAISERETURN(PyExc_TypeError, "color component must be 0-255",
+                            -1);
             }
             color->data[cur] = (Uint8)c;
         }
@@ -2026,8 +1994,7 @@ _color_set_slice(pgColorObject *color, PyObject *idx, PyObject *val)
         Py_DECREF(fastitems);
         return 0;
     }
-    PyErr_SetString(PyExc_IndexError, "Index must be an integer or slice");
-    return -1;
+    RAISERETURN(PyExc_IndexError, "Index must be an integer or slice", -1);
 }
 
 /*
@@ -2080,8 +2047,7 @@ _color_getbuffer(pgColorObject *color, Py_buffer *view, int flags)
     static char format[] = "B";
 
     if (PyBUF_HAS_FLAG(flags, PyBUF_WRITABLE)) {
-        PyErr_SetString(pgExc_BufferError, "color buffer is read-only");
-        return -1;
+        RAISERETURN(pgExc_BufferError, "color buffer is read-only", -1);
     }
     view->buf = color->data;
     view->ndim = 1;
@@ -2275,17 +2241,16 @@ _color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
         }
 
         if (entry_was_set[idx]) {
-            PyErr_SetString(PyExc_AttributeError,
-                            "Attribute assignment conflicts with swizzling");
+            RAISE(PyExc_AttributeError,
+                  "Attribute assignment conflicts with swizzling");
             goto swizzle_error;
         }
 
         entry_was_set[idx] = 1;
         entry_obj = PySequence_GetItem(val, i);
         if (entry_obj == NULL) {
-            PyErr_SetString(
-                PyExc_TypeError,
-                "A sequence of the corresponding elements is expected");
+            RAISE(PyExc_TypeError,
+                  "A sequence of the corresponding elements is expected");
             goto swizzle_error;
         }
 
@@ -2299,9 +2264,8 @@ _color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
             entry[idx] = (Uint8)entry_long;
         }
         else {
-            PyErr_SetString(
-                PyExc_TypeError,
-                "Color element is outside of the range from 0 to 255");
+            RAISE(PyExc_TypeError,
+                  "Color element is outside of the range from 0 to 255");
             goto swizzle_error;
         }
     }
@@ -2383,10 +2347,8 @@ _pg_pylong_to_uint32(PyObject *val, Uint32 *color, int handle_negative)
     return 1;
 
 error:
-    PyErr_SetString(
-        PyExc_ValueError,
-        "invalid color argument (integer out of acceptable range)");
-    return 0;
+    RAISERETURN(PyExc_ValueError,
+                "invalid color argument (integer out of acceptable range)", 0);
 }
 
 static int
@@ -2418,11 +2380,10 @@ pg_RGBAFromObjEx(PyObject *obj, Uint8 *rgba, pgColorHandleFlags handle_flags)
 
     if ((handle_flags & PG_COLOR_HANDLE_RESTRICT_SEQ) && !PyTuple_Check(obj)) {
         /* ValueError (and not TypeError) for backcompat reasons */
-        PyErr_SetString(
-            PyExc_ValueError,
-            "invalid color (here, generic sequences are "
-            "restricted, but pygame.Color and RGB[A] tuples are allowed)");
-        return 0;
+        RAISERETURN(PyExc_ValueError,
+                    "invalid color (here, generic sequences are restricted, "
+                    "but pygame.Color and RGB[A] tuples are allowed)",
+                    0);
     }
 
     if (pg_RGBAFromObj(obj, rgba)) {
@@ -2433,18 +2394,17 @@ pg_RGBAFromObjEx(PyObject *obj, Uint8 *rgba, pgColorHandleFlags handle_flags)
     /* Error */
     if (PySequence_Check(obj)) {
         /* It was a tuple-like; raise a ValueError */
-        PyErr_SetString(
-            PyExc_ValueError,
-            "invalid color (color sequence must have size 3 or "
-            "4, and each element must be an integer in the range [0, "
-            "255])");
+        RAISERETURN(PyExc_ValueError,
+                    "invalid color (color sequence must have size 3 or 4, and "
+                    "each element must be an integer in the range [0, 255])",
+                    0);
     }
     else {
         PyErr_Format(PyExc_TypeError,
                      "unable to interpret object of type '%128s' as a color",
                      Py_TYPE(obj)->tp_name);
+        return 0;
     }
-    return 0;
 }
 
 static int

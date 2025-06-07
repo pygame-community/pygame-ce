@@ -909,7 +909,7 @@ pgGetArrayStruct(PyObject *obj, PyObject **cobj_p, PyArrayInterface **inter_p)
     if (cobj == NULL) {
         if (PyErr_ExceptionMatches(PyExc_AttributeError)) {
             PyErr_Clear();
-            PyErr_SetString(PyExc_ValueError, "no C-struct array interface");
+            RAISERETURN(PyExc_ValueError, "no C-struct array interface", -1);
         }
         return -1;
     }
@@ -920,8 +920,7 @@ pgGetArrayStruct(PyObject *obj, PyObject **cobj_p, PyArrayInterface **inter_p)
 
     if (inter == NULL || inter->two != 2 /* conditional or */) {
         Py_DECREF(cobj);
-        PyErr_SetString(PyExc_ValueError, "invalid array interface");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "invalid array interface", -1);
     }
 
     *cobj_p = cobj;
@@ -944,10 +943,9 @@ pgArrayStruct_AsDict(PyArrayInterface *inter_p)
     if (inter_p->flags & PAI_ARR_HAS_DESCR) {
         if (!inter_p->descr) {
             Py_DECREF(dictobj);
-            PyErr_SetString(PyExc_ValueError,
-                            "Array struct has descr flag set"
-                            " but no descriptor");
-            return 0;
+            RAISERETURN(PyExc_ValueError,
+                        "Array struct has descr flag set  but no descriptor",
+                        0);
         }
         if (PyDict_SetItemString(dictobj, "descr", inter_p->descr)) {
             Py_DECREF(dictobj);
@@ -1332,15 +1330,13 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
                 break;
             default:
                 pgBuffer_Release(pg_view_p);
-                PyErr_SetString(PyExc_ValueError,
-                                "Unsupported array element type");
-                return -1;
+                RAISERETURN(PyExc_ValueError, "Unsupported array element type",
+                            -1);
         }
         if (*fchar_p != '\0') {
             pgBuffer_Release(pg_view_p);
-            PyErr_SetString(PyExc_ValueError,
-                            "Arrays of records are unsupported");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "Arrays of records are unsupported",
+                        -1);
         }
         success = 1;
     }
@@ -1476,7 +1472,7 @@ pgGetArrayInterface(PyObject **dict, PyObject *obj)
     if (inter == NULL) {
         if (PyErr_ExceptionMatches(PyExc_AttributeError)) {
             PyErr_Clear();
-            PyErr_SetString(PyExc_ValueError, "no array interface");
+            RAISERETURN(PyExc_ValueError, "no array interface", -1)
         }
         return -1;
     }
@@ -1517,29 +1513,25 @@ _pg_arraystruct_as_buffer(Py_buffer *view_p, PyObject *cobj,
     view_p->obj = 0;
     view_p->internal = 0;
     if (PyBUF_HAS_FLAG(flags, PyBUF_WRITABLE) && readonly) {
-        PyErr_SetString(pgExc_BufferError,
-                        "require writable buffer, but it is read-only");
-        return -1;
+        RAISERETURN(pgExc_BufferError,
+                    "require writable buffer, but it is read-only", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_ANY_CONTIGUOUS)) {
         if (!(inter_p->flags & (PAI_CONTIGUOUS | PAI_FORTRAN))) {
-            PyErr_SetString(pgExc_BufferError,
-                            "buffer data is not contiguous");
-            return -1;
+            RAISERETURN(pgExc_BufferError, "buffer data is not contiguous",
+                        -1);
         }
     }
     else if (PyBUF_HAS_FLAG(flags, PyBUF_C_CONTIGUOUS)) {
         if (!(inter_p->flags & PAI_CONTIGUOUS)) {
-            PyErr_SetString(pgExc_BufferError,
-                            "buffer data is not C contiguous");
-            return -1;
+            RAISERETURN(pgExc_BufferError, "buffer data is not C contiguous",
+                        -1);
         }
     }
     else if (PyBUF_HAS_FLAG(flags, PyBUF_F_CONTIGUOUS)) {
         if (!(inter_p->flags & PAI_FORTRAN)) {
-            PyErr_SetString(pgExc_BufferError,
-                            "buffer data is not F contiguous");
-            return -1;
+            RAISERETURN(pgExc_BufferError, "buffer data is not F contiguous",
+                        -1);
         }
     }
     internal_p = (pgViewInternals *)PyMem_Malloc(sz);
@@ -1573,9 +1565,8 @@ _pg_arraystruct_as_buffer(Py_buffer *view_p, PyObject *cobj,
         view_p->shape = 0;
     }
     else {
-        PyErr_SetString(pgExc_BufferError,
-                        "buffer data is not C contiguous, shape needed");
-        return -1;
+        RAISERETURN(pgExc_BufferError,
+                    "buffer data is not C contiguous, shape needed", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_STRIDES)) {
         view_p->strides = view_p->shape + inter_p->nd;
@@ -1587,9 +1578,8 @@ _pg_arraystruct_as_buffer(Py_buffer *view_p, PyObject *cobj,
         view_p->strides = 0;
     }
     else {
-        PyErr_SetString(pgExc_BufferError,
-                        "buffer is not contiguous, strides needed");
-        return -1;
+        RAISERETURN(pgExc_BufferError,
+                    "buffer is not contiguous, strides needed", -1);
     }
     view_p->suboffsets = 0;
     view_p->len = view_p->itemsize;
@@ -1757,18 +1747,15 @@ static int
 _pg_shape_check(PyObject *op)
 {
     if (!op) {
-        PyErr_SetString(PyExc_ValueError, "required 'shape' item is missing");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "required 'shape' item is missing", -1);
     }
     if (!_pg_is_int_tuple(op)) {
-        PyErr_SetString(PyExc_ValueError,
-                        "expected a tuple of ints for 'shape'");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "expected a tuple of ints for 'shape'",
+                    -1);
     }
     if (PyTuple_GET_SIZE(op) == 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "expected 'shape' to be at least one-dimensional");
-        return -1;
+        RAISERETURN(PyExc_ValueError,
+                    "expected 'shape' to be at least one-dimensional", -1);
     }
     return 0;
 }
@@ -1777,28 +1764,23 @@ static int
 _pg_typestr_check(PyObject *op)
 {
     if (!op) {
-        PyErr_SetString(PyExc_ValueError,
-                        "required 'typestr' item is missing");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "required 'typestr' item is missing",
+                    -1);
     }
     if (PyUnicode_Check(op)) {
-        Py_ssize_t len = PyUnicode_GET_LENGTH(op);
-        if (len != 3) {
-            PyErr_SetString(PyExc_ValueError,
-                            "expected 'typestr' to be length 3");
-            return -1;
+        if (PyUnicode_GET_LENGTH(op) != 3) {
+            RAISERETURN(PyExc_ValueError, "expected 'typestr' to be length 3",
+                        -1);
         }
     }
     else if (PyBytes_Check(op)) {
         if (PyBytes_GET_SIZE(op) != 3) {
-            PyErr_SetString(PyExc_ValueError,
-                            "expected 'typestr' to be length 3");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "expected 'typestr' to be length 3",
+                        -1);
         }
     }
     else {
-        PyErr_SetString(PyExc_ValueError, "expected a string for 'typestr'");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "expected a string for 'typestr'", -1);
     }
     return 0;
 }
@@ -1809,23 +1791,19 @@ _pg_data_check(PyObject *op)
     PyObject *item;
 
     if (!op) {
-        PyErr_SetString(PyExc_ValueError, "required 'data' item is missing");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "required 'data' item is missing", -1);
     }
     if (!PyTuple_Check(op)) {
-        PyErr_SetString(PyExc_ValueError, "expected a tuple for 'data'");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "expected a tuple for 'data'", -1);
     }
     if (PyTuple_GET_SIZE(op) != 2) {
-        PyErr_SetString(PyExc_ValueError,
-                        "expected a length 2 tuple for 'data'");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "expected a length 2 tuple for 'data'",
+                    -1);
     }
     item = PyTuple_GET_ITEM(op, 0);
     if (!PyLong_Check(item)) {
-        PyErr_SetString(PyExc_ValueError,
-                        "expected an int for item 0 of 'data'");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "expected an int for item 0 of 'data'",
+                    -1);
     }
     return 0;
 }
@@ -1834,9 +1812,8 @@ static int
 _pg_strides_check(PyObject *op)
 {
     if (op && !_pg_is_int_tuple(op) /* Conditional && */) {
-        PyErr_SetString(PyExc_ValueError,
-                        "expected a tuple of ints for 'strides'");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "expected a tuple of ints for 'strides'",
+                    -1);
     }
     return 0;
 }
@@ -1873,9 +1850,8 @@ _pg_values_as_buffer(Py_buffer *view_p, int flags, PyObject *typestr,
     view_p->obj = 0;
     view_p->internal = 0;
     if (strides && PyTuple_GET_SIZE(strides) != ndim /* Cond. && */) {
-        PyErr_SetString(PyExc_ValueError,
-                        "'shape' and 'strides' are not the same length");
-        return -1;
+        RAISERETURN(PyExc_ValueError,
+                    "'shape' and 'strides' are not the same length", -1);
     }
     view_p->ndim = (int)ndim;
     view_p->buf = PyLong_AsVoidPtr(PyTuple_GET_ITEM(data, 0));
@@ -1887,9 +1863,8 @@ _pg_values_as_buffer(Py_buffer *view_p, int flags, PyObject *typestr,
         return -1;
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_WRITABLE) && view_p->readonly) {
-        PyErr_SetString(pgExc_BufferError,
-                        "require writable buffer, but it is read-only");
-        return -1;
+        RAISERETURN(pgExc_BufferError,
+                    "require writable buffer, but it is read-only", -1);
     }
     sz = sizeof(pgViewInternals) + (2 * ndim - 1) * sizeof(Py_ssize_t);
     internal_p = (pgViewInternals *)PyMem_Malloc(sz);
@@ -1928,23 +1903,20 @@ _pg_values_as_buffer(Py_buffer *view_p, int flags, PyObject *typestr,
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_ANY_CONTIGUOUS)) {
         if (!PyBuffer_IsContiguous(view_p, 'A')) {
-            PyErr_SetString(pgExc_BufferError,
-                            "buffer data is not contiguous");
-            return -1;
+            RAISERETURN(pgExc_BufferError, "buffer data is not contiguous",
+                        -1);
         }
     }
     else if (PyBUF_HAS_FLAG(flags, PyBUF_C_CONTIGUOUS)) {
         if (!PyBuffer_IsContiguous(view_p, 'C')) {
-            PyErr_SetString(pgExc_BufferError,
-                            "buffer data is not C contiguous");
-            return -1;
+            RAISERETURN(pgExc_BufferError, "buffer data is not C contiguous",
+                        -1);
         }
     }
     else if (PyBUF_HAS_FLAG(flags, PyBUF_F_CONTIGUOUS)) {
         if (!PyBuffer_IsContiguous(view_p, 'F')) {
-            PyErr_SetString(pgExc_BufferError,
-                            "buffer data is not F contiguous");
-            return -1;
+            RAISERETURN(pgExc_BufferError, "buffer data is not F contiguous",
+                        -1);
         }
     }
     if (!PyBUF_HAS_FLAG(flags, PyBUF_STRIDES)) {
@@ -1952,9 +1924,8 @@ _pg_values_as_buffer(Py_buffer *view_p, int flags, PyObject *typestr,
             view_p->strides = 0;
         }
         else {
-            PyErr_SetString(pgExc_BufferError,
-                            "buffer data is not C contiguous, strides needed");
-            return -1;
+            RAISERETURN(pgExc_BufferError,
+                        "buffer data is not C contiguous, strides needed", -1);
         }
     }
     if (!PyBUF_HAS_FLAG(flags, PyBUF_ND)) {
@@ -1962,9 +1933,8 @@ _pg_values_as_buffer(Py_buffer *view_p, int flags, PyObject *typestr,
             view_p->shape = 0;
         }
         else {
-            PyErr_SetString(pgExc_BufferError,
-                            "buffer data is not C contiguous, shape needed");
-            return -1;
+            RAISERETURN(pgExc_BufferError,
+                        "buffer data is not C contiguous, shape needed", -1);
         }
     }
     if (!PyBUF_HAS_FLAG(flags, PyBUF_FORMAT)) {

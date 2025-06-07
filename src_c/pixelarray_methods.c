@@ -257,12 +257,11 @@ _get_weights(PyObject *weights, float *wr, float *wg, float *wb)
     }
 
     if (!PySequence_Check(weights)) {
-        PyErr_SetString(PyExc_TypeError, "weights must be a sequence");
+        RAISE(PyExc_TypeError, "weights must be a sequence");
         success = 0;
     }
     else if (PySequence_Size(weights) < 3) {
-        PyErr_SetString(PyExc_TypeError,
-                        "weights must contain at least 3 values");
+        RAISE(PyExc_TypeError, "weights must contain at least 3 values");
         success = 0;
     }
     else {
@@ -302,7 +301,7 @@ _get_weights(PyObject *weights, float *wr, float *wg, float *wb)
                 }
             }
             else {
-                PyErr_SetString(PyExc_TypeError, "invalid weights");
+                RAISE(PyExc_TypeError, "invalid weights");
                 success = 0;
             }
             Py_XDECREF(item);
@@ -320,9 +319,8 @@ _get_weights(PyObject *weights, float *wr, float *wg, float *wb)
         *wb = rgb[2];
         if ((*wr < 0 || *wg < 0 || *wb < 0) ||
             (*wr == 0 && *wg == 0 && *wb == 0)) {
-            PyErr_SetString(PyExc_ValueError,
-                            "weights must be positive and greater than 0");
-            return 0;
+            RAISERETURN(PyExc_ValueError,
+                        "weights must be positive and greater than 0", 0);
         }
         /* Build the average weight values. */
         sum = *wr + *wg + *wb;
@@ -810,8 +808,7 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
 
     if (other_array->shape[0] != dim0 || other_array->shape[1] != dim1) {
         /* Bounds do not match. */
-        PyErr_SetString(PyExc_ValueError, "array sizes do not match");
-        return 0;
+        RAISERETURN(PyExc_ValueError, "array sizes do not match", 0);
     }
 
     other_surf = pgSurface_AsSurface(other_array->surface);
@@ -830,8 +827,7 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     if (PG_FORMAT_BytesPerPixel(other_format) != bpp) {
         /* bpp do not match. We cannot guarantee that the padding and co
          * would be set correctly. */
-        PyErr_SetString(PyExc_ValueError, "bit depths do not match");
-        return 0;
+        RAISERETURN(PyExc_ValueError, "bit depths do not match", 0);
     }
 
     other_stride0 = other_array->strides[0];

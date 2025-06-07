@@ -44,12 +44,11 @@ static int
 pg_circle_init(pgCircleObject *self, PyObject *args, PyObject *kwds)
 {
     if (!pgCircle_FromObject(args, &self->circle)) {
-        PyErr_SetString(
-            PyExc_TypeError,
-            "Arguments must be a Circle, a sequence of length 3 or 2, or an "
-            "object with an attribute called 'circle', all with corresponding "
-            "nonnegative radius argument");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "Arguments must be a Circle, a sequence of length 3 or 2, "
+                    "or an object with an attribute called 'circle', all with "
+                    "corresponding nonnegative radius argument",
+                    -1);
     }
     return 0;
 }
@@ -139,10 +138,8 @@ static PyObject *
 pg_circle_update(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     if (!pgCircle_FromObjectFastcall(args, nargs, &self->circle)) {
-        PyErr_SetString(
-            PyExc_TypeError,
-            "Circle.update requires a circle or CircleLike object");
-        return NULL;
+        return RAISE(PyExc_TypeError,
+                     "Circle.update requires a circle or CircleLike object");
     }
     Py_RETURN_NONE;
 }
@@ -334,18 +331,17 @@ _pg_circle_collideswith(pgCircleBase *scirc, PyObject *arg)
     else if (PySequence_Check(arg)) {
         double x, y;
         if (!pg_TwoDoublesFromObj(arg, &x, &y)) {
-            PyErr_SetString(
+            RAISERETURN(
                 PyExc_TypeError,
-                "Invalid point argument, must be a sequence of two numbers");
-            return -1;
+                "Invalid point argument, must be a sequence of two numbers",
+                -1);
         }
         result = pgCollision_CirclePoint(scirc, x, y);
     }
     else {
-        PyErr_SetString(
-            PyExc_TypeError,
-            "Invalid point argument, must be a sequence of 2 numbers");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "Invalid point argument, must be a sequence of 2 numbers",
+                    -1);
     }
 
     return result;
@@ -672,8 +668,7 @@ pg_circle_setr(pgCircleObject *self, PyObject *value, void *closure)
     }
 
     if (radius < 0) {
-        PyErr_SetString(PyExc_ValueError, "Radius must be nonnegative");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "Radius must be nonnegative", -1);
     }
 
     self->circle.r = radius;
@@ -695,15 +690,13 @@ pg_circle_setr_sqr(pgCircleObject *self, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
 
     if (!pg_DoubleFromObj(value, &radius_squared)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Invalid type for radius squared, must be numeric");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "Invalid type for radius squared, must be numeric", -1);
     }
 
     if (radius_squared < 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Invalid radius squared value, must be nonnegative");
-        return -1;
+        RAISERETURN(PyExc_ValueError,
+                    "Invalid radius squared value, must be nonnegative", -1);
     }
 
     self->circle.r = sqrt(radius_squared);
@@ -722,8 +715,7 @@ pg_circle_setcenter(pgCircleObject *self, PyObject *value, void *closure)
 {
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
     if (!pg_TwoDoublesFromObj(value, &self->circle.x, &self->circle.y)) {
-        PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "Expected a sequence of 2 numbers", -1);
     }
     return 0;
 }
@@ -742,15 +734,13 @@ pg_circle_setarea(pgCircleObject *self, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
 
     if (!pg_DoubleFromObj(value, &area)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Invalid type for area, must be numeric");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "Invalid type for area, must be numeric",
+                    -1);
     }
 
     if (area < 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Invalid area value, must be nonnegative");
-        return -1;
+        RAISERETURN(PyExc_ValueError,
+                    "Invalid area value, must be nonnegative", -1);
     }
 
     self->circle.r = sqrt(area / M_PI);
@@ -773,15 +763,13 @@ pg_circle_setcircumference(pgCircleObject *self, PyObject *value,
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
 
     if (!pg_DoubleFromObj(value, &circumference)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Invalid type for circumference, must be numeric");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "Invalid type for circumference, must be numeric", -1);
     }
 
     if (circumference < 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Invalid circumference value, must be nonnegative");
-        return -1;
+        RAISERETURN(PyExc_ValueError,
+                    "Invalid circumference value, must be nonnegative", -1);
     }
 
     self->circle.r = circumference / M_TWOPI;
@@ -803,15 +791,13 @@ pg_circle_setdiameter(pgCircleObject *self, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
 
     if (!pg_DoubleFromObj(value, &diameter)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Invalid type for diameter, must be numeric");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "Invalid type for diameter, must be numeric", -1);
     }
 
     if (diameter < 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Invalid diameter value, must be nonnegative");
-        return -1;
+        RAISERETURN(PyExc_ValueError,
+                    "Invalid diameter value, must be nonnegative", -1);
     }
 
     self->circle.r = diameter / 2;
@@ -834,8 +820,7 @@ pg_circle_settop(pgCircleObject *self, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
 
     if (!pg_TwoDoublesFromObj(value, &x, &y)) {
-        PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "Expected a sequence of 2 numbers", -1);
     }
 
     self->circle.y = y + self->circle.r;
@@ -859,8 +844,7 @@ pg_circle_setleft(pgCircleObject *self, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
 
     if (!pg_TwoDoublesFromObj(value, &x, &y)) {
-        PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "Expected a sequence of 2 numbers", -1);
     }
 
     self->circle.x = x + self->circle.r;
@@ -884,8 +868,7 @@ pg_circle_setbottom(pgCircleObject *self, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
 
     if (!pg_TwoDoublesFromObj(value, &x, &y)) {
-        PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "Expected a sequence of 2 numbers", -1);
     }
 
     self->circle.y = y - self->circle.r;
@@ -909,8 +892,7 @@ pg_circle_setright(pgCircleObject *self, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
 
     if (!pg_TwoDoublesFromObj(value, &x, &y)) {
-        PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "Expected a sequence of 2 numbers", -1);
     }
 
     self->circle.x = x - self->circle.r;

@@ -386,8 +386,7 @@ PySequence_GetItem_AsDouble(PyObject *seq, Py_ssize_t index)
 
     item = PySequence_GetItem(seq, index);
     if (item == NULL) {
-        PyErr_SetString(PyExc_TypeError, "a sequence is expected");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "a sequence is expected", -1);
     }
     value = PyFloat_AsDouble(item);
     Py_DECREF(item);
@@ -408,8 +407,7 @@ PySequence_AsVectorCoords(PyObject *seq, double *const coords,
         return 1;
     }
     if (!PySequence_Check(seq) || PySequence_Length(seq) != size) {
-        PyErr_SetString(PyExc_ValueError, "Sequence has the wrong length.");
-        return 0;
+        RAISERETURN(PyExc_ValueError, "Sequence has the wrong length.", 0);
     }
 
     for (i = 0; i < size; ++i) {
@@ -439,10 +437,8 @@ pgVectorCompatible_Check(PyObject *obj, Py_ssize_t dim)
             }
             break;
         default:
-            PyErr_SetString(
-                PyExc_SystemError,
-                "Wrong internal call to pgVectorCompatible_Check.");
-            return 0;
+            RAISERETURN(PyExc_SystemError,
+                        "Wrong internal call to pgVectorCompatible_Check.", 0);
     }
 
     if (!PySequence_Check(obj) || (PySequence_Length(obj) != dim)) {
@@ -486,9 +482,8 @@ pg_VectorCoordsFromObj(PyObject *obj, Py_ssize_t dim, double *const coords)
             }
             break;
         default:
-            PyErr_SetString(PyExc_SystemError,
-                            "Wrong internal call to pg_VectorCoordsFromObj.");
-            return 0;
+            RAISERETURN(PyExc_SystemError,
+                        "Wrong internal call to pg_VectorCoordsFromObj.", 0);
     }
 
     if (!PySequence_Check(obj) || (PySequence_Length(obj) != dim)) {
@@ -527,9 +522,8 @@ get_double_from_unicode_slice(PyObject *unicode_obj, Py_ssize_t idx1,
     PyObject *float_obj;
     PyObject *slice = PySequence_GetSlice(unicode_obj, idx1, idx2);
     if (slice == NULL) {
-        PyErr_SetString(PyExc_SystemError,
-                        "internal error while converting str slice to float");
-        return -1;
+        RAISERETURN(PyExc_SystemError,
+                    "internal error while converting str slice to float", -1);
     }
     float_obj = PyFloat_FromString(slice);
     Py_DECREF(slice);
@@ -772,9 +766,8 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_DIV | OP_ARG_NUMBER:
         case OP_DIV | OP_ARG_NUMBER | OP_INPLACE:
             if (tmp == 0.) {
-                PyErr_SetString(PyExc_ZeroDivisionError, "division by zero");
                 Py_DECREF(ret);
-                return NULL;
+                return RAISE(PyExc_ZeroDivisionError, "division by zero");
             }
             tmp = 1. / tmp;
             for (i = 0; i < dim; i++) {
@@ -784,9 +777,8 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_FLOOR_DIV | OP_ARG_NUMBER:
         case OP_FLOOR_DIV | OP_ARG_NUMBER | OP_INPLACE:
             if (tmp == 0.) {
-                PyErr_SetString(PyExc_ZeroDivisionError, "division by zero");
                 Py_DECREF(ret);
-                return NULL;
+                return RAISE(PyExc_ZeroDivisionError, "division by zero");
             }
             tmp = 1. / tmp;
             for (i = 0; i < dim; i++) {
@@ -1032,12 +1024,10 @@ static int
 vector_SetItem(pgVector *self, Py_ssize_t index, PyObject *value)
 {
     if (index < 0 || index >= self->dim) {
-        PyErr_SetString(PyExc_IndexError, "subscript out of range.");
-        return -1;
+        RAISERETURN(PyExc_IndexError, "subscript out of range.", -1);
     }
     if (value == NULL) {
-        PyErr_SetString(PyExc_TypeError, "item deletion is not supported");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "item deletion is not supported", -1);
     }
 
     self->coords[index] = PyFloat_AsDouble(value);
@@ -1110,9 +1100,8 @@ vector_SetSlice(pgVector *self, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
     double new_coords[VECTOR_MAX_SIZE];
 
     if (v == NULL) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Vector object doesn't support item deletion");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "Vector object doesn't support item deletion", -1);
     }
 
     if (ilow < 0) {
@@ -1241,9 +1230,8 @@ vector_ass_subscript(pgVector *self, PyObject *key, PyObject *value)
 
         if (value == NULL) {
             /* delete slice not supported */
-            PyErr_SetString(PyExc_TypeError,
-                            "Deletion of vector components is not supported.");
-            return -1;
+            RAISERETURN(PyExc_TypeError,
+                        "Deletion of vector components is not supported.", -1);
         }
         else {
             /* assign slice */
@@ -1283,19 +1271,16 @@ vector_set_component(pgVector *self, PyObject *value, int component)
     if (value == NULL) {
         switch (component) {
             case 0: {
-                PyErr_SetString(PyExc_TypeError,
-                                "Cannot delete the x attribute");
-                break;
+                RAISERETURN(PyExc_TypeError, "Cannot delete the x attribute",
+                            -1);
             }
             case 1: {
-                PyErr_SetString(PyExc_TypeError,
-                                "Cannot delete the y attribute");
-                break;
+                RAISERETURN(PyExc_TypeError, "Cannot delete the y attribute",
+                            -1);
             }
             case 2: {
-                PyErr_SetString(PyExc_TypeError,
-                                "Cannot delete the z attribute");
-                break;
+                RAISERETURN(PyExc_TypeError, "Cannot delete the z attribute",
+                            -1);
             }
             default: {
                 PyErr_BadInternalCall();
@@ -1672,10 +1657,8 @@ vector_slerp(pgVector *self, PyObject *args)
     }
     /* special case angle==180 and angle==-180 */
     else if (fabs(fabs(angle) - M_PI) < self->epsilon) {
-        PyErr_SetString(PyExc_ValueError,
-                        "SLERP with 180 degrees is undefined.");
         Py_DECREF(ret);
-        return NULL;
+        return RAISE(PyExc_ValueError, "SLERP with 180 degrees is undefined.");
     }
     else {
         f0 = ((length2 - length1) * t + length1) / sin(angle);
@@ -1772,9 +1755,7 @@ _vector_reflect_helper(double *dst_coords, const double *src_coords,
     norm_length = _scalar_product(norm_coords, norm_coords, dim);
 
     if (norm_length < epsilon) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Normal must not be of length zero.");
-        return 0;
+        RAISERETURN(PyExc_ValueError, "Normal must not be of length zero.", 0);
     }
     if (norm_length != 1) {
         norm_length = sqrt(norm_length);
@@ -1834,8 +1815,7 @@ _vector_distance_helper(pgVector *self, PyObject *other)
         double dx, dy;
 
         if (dim != otherv->dim) {
-            PyErr_SetString(PyExc_ValueError, "Vectors must be the same size");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "Vectors must be the same size", -1);
         }
 
         dx = otherv->coords[0] - self->coords[0];
@@ -1859,9 +1839,8 @@ _vector_distance_helper(pgVector *self, PyObject *other)
 
         if (PySequence_Fast_GET_SIZE(fast_seq) != dim) {
             Py_DECREF(fast_seq);
-            PyErr_SetString(PyExc_ValueError,
-                            "Vector and sequence must be the same size");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "Vector and sequence must be the same size", -1);
         }
 
         for (i = 0; i < dim; ++i) {
@@ -1903,18 +1882,16 @@ static int
 _vector_check_snprintf_success(int return_code, int max_size)
 {
     if (return_code < 0) {
-        PyErr_SetString(
-            PyExc_SystemError,
-            "internal snprintf call went wrong! Please report "
-            "this to github.com/pygame-community/pygame-ce/issues");
-        return 0;
+        RAISERETURN(PyExc_SystemError,
+                    "internal snprintf call went wrong! Please report this to "
+                    "github.com/pygame-community/pygame-ce/issues",
+                    0);
     }
     if (return_code >= max_size) {
-        PyErr_SetString(
-            PyExc_SystemError,
-            "Internal buffer too small for snprintf! Please report "
-            "this to github.com/pygame-community/pygame-ce/issues");
-        return 0;
+        RAISERETURN(PyExc_SystemError,
+                    "Internal buffer too small for snprintf! Please report "
+                    "this to github.com/pygame-community/pygame-ce/issues",
+                    0);
     }
     return 1;
 }
@@ -2005,10 +1982,9 @@ vector_project_onto(pgVector *self, PyObject *other)
     b_dot_b = _scalar_product(other_coords, other_coords, self->dim);
 
     if (b_dot_b < self->epsilon) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Cannot project onto a vector with zero length");
         Py_DECREF(ret);
-        return NULL;
+        return RAISE(PyExc_ValueError,
+                     "Cannot project onto a vector with zero length");
     }
 
     factor = a_dot_b / b_dot_b;
@@ -2193,19 +2169,17 @@ vector_setAttr_swizzle(pgVector *self, PyObject *attr_name, PyObject *val)
             }
             return 0;
         case SWIZZLE_ERR_DOUBLE_IDX:
-            PyErr_SetString(PyExc_AttributeError,
-                            "Attribute assignment conflicts with swizzling.");
-            return -1;
+            RAISERETURN(PyExc_AttributeError,
+                        "Attribute assignment conflicts with swizzling.", -1);
         case SWIZZLE_ERR_EXTRACTION_ERR:
             /* exception was set by PySequence_GetItem_AsDouble */
             return -1;
         default:
             /* this should NEVER happen and means a bug in the code */
-            PyErr_SetString(
-                PyExc_RuntimeError,
-                "Unhandled error in swizzle code. Please report "
-                "this bug to github.com/pygame-community/pygame-ce/issues");
-            return -1;
+            RAISERETURN(PyExc_RuntimeError,
+                        "Unhandled error in swizzle code. Please report this "
+                        "bug to github.com/pygame-community/pygame-ce/issues",
+                        -1);
     }
 }
 
@@ -2214,9 +2188,7 @@ static Py_ssize_t
 vector_readbuffer(pgVector *self, Py_ssize_t segment, void **ptrptr)
 {
     if (segment != 0) {
-        PyErr_SetString(PyExc_SystemError,
-                        "accessing non-existent vector segment");
-        return -1;
+        RAISERETURN(PyExc_SystemError, "accessing non-existent vector segment", -1);
     }
     *ptrptr = self->coords;
     return self->dim;
@@ -2226,9 +2198,7 @@ static Py_ssize_t
 vector_writebuffer(pgVector *self, Py_ssize_t segment, void **ptrptr)
 {
     if (segment != 0) {
-        PyErr_SetString(PyExc_SystemError,
-                        "accessing non-existent vector segment");
-        return -1;
+        RAISERETURN(PyExc_SystemError, "accessing non-existent vector segment", -1);
     }
     *ptrptr = self->coords;
     return self->dim;
@@ -2312,9 +2282,8 @@ vector___round__(pgVector *self, PyObject *args)
         }
     }
     else {
-        PyErr_SetString(PyExc_TypeError, "Argument must be an integer");
         Py_DECREF(ret);
-        return NULL;
+        return RAISE(PyExc_TypeError, "Argument must be an integer");
     }
 
     return (PyObject *)ret;
@@ -2399,11 +2368,10 @@ _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
     /* success initialization */
     return 0;
 error:
-    PyErr_SetString(PyExc_ValueError,
-                    "Vector2 must be set with 2 real numbers, a "
-                    "sequence of 2 real numbers, or "
-                    "another Vector2 instance");
-    return -1;
+    RAISERETURN(PyExc_ValueError,
+                "Vector2 must be set with 2 real numbers, a sequence of 2 "
+                "real numbers, or another Vector2 instance",
+                -1);
 }
 
 static int
@@ -2469,12 +2437,11 @@ _vector2_rotate_helper(double *dst_coords, const double *src_coords,
                 break;
             default:
                 /* this should NEVER happen and means a bug in the code */
-                PyErr_SetString(
-                    PyExc_RuntimeError,
-                    "Please report this bug in vector2_rotate_helper to "
-                    "the developers at "
-                    "github.com/pygame-community/pygame-ce/issues");
-                return 0;
+                RAISERETURN(PyExc_RuntimeError,
+                            "Please report this bug in vector2_rotate_helper "
+                            "to the developers at "
+                            "github.com/pygame-community/pygame-ce/issues",
+                            0);
         }
     }
     else {
@@ -2594,10 +2561,9 @@ vector2_cross(pgVector *self, PyObject *other)
     }
 
     if (!pg_VectorCoordsFromObj(other, 2, other_coords)) {
-        PyErr_SetString(
+        return RAISE(
             PyExc_TypeError,
             "Incompatible vector argument: cannot calculate cross product");
-        return NULL;
     }
 
     return PyFloat_FromDouble((self->coords[0] * other_coords[1]) -
@@ -2617,10 +2583,9 @@ vector2_angle_to(pgVector *self, PyObject *other)
     double other_coords[2];
 
     if (!pg_VectorCoordsFromObj(other, 2, other_coords)) {
-        PyErr_SetString(
+        return RAISE(
             PyExc_TypeError,
             "Incompatible vector argument: cannot calculate angle to");
-        return NULL;
     }
 
     angle = (atan2(other_coords[1], other_coords[0]) -
@@ -2855,11 +2820,10 @@ _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
     /* success initialization */
     return 0;
 error:
-    PyErr_SetString(PyExc_ValueError,
-                    "Vector3 must be set with 3 real numbers, a "
-                    "sequence of 3 real numbers, or "
-                    "another Vector3 instance");
-    return -1;
+    RAISERETURN(PyExc_ValueError,
+                "Vector3 must be set with 3 real numbers, a sequence of 3 "
+                "real numbers, or another Vector3 instance",
+                -1);
 }
 
 static int
@@ -2915,8 +2879,7 @@ _vector3_rotate_helper(double *dst_coords, const double *src_coords,
 
     /* Rotation axis may not be Zero */
     if (axisLength2 < epsilon) {
-        PyErr_SetString(PyExc_ValueError, "Rotation Axis is to close to Zero");
-        return 0;
+        RAISERETURN(PyExc_ValueError, "Rotation Axis is to close to Zero", 0);
     }
 
     /* normalize the axis */
@@ -2975,12 +2938,11 @@ _vector3_rotate_helper(double *dst_coords, const double *src_coords,
                 break;
             default:
                 /* this should NEVER happen and means a bug in the code */
-                PyErr_SetString(
-                    PyExc_RuntimeError,
-                    "Please report this bug in vector3_rotate_helper to "
-                    "the developers at "
-                    "github.com/pygame-community/pygame-ce/issues");
-                return 0;
+                RAISERETURN(PyExc_RuntimeError,
+                            "Please report this bug in vector3_rotate_helper "
+                            "to the developers at "
+                            "github.com/pygame-community/pygame-ce/issues",
+                            0);
         }
     }
     else {
@@ -3454,10 +3416,9 @@ vector3_cross(pgVector *self, PyObject *other)
     double other_coords[3];
 
     if (!pg_VectorCoordsFromObj(other, 3, other_coords)) {
-        PyErr_SetString(
+        return RAISE(
             PyExc_TypeError,
             "Incompatible vector argument: cannot calculate cross product");
-        return NULL;
     }
 
     self_coords = self->coords;
@@ -3484,10 +3445,9 @@ vector3_angle_to(pgVector *self, PyObject *other)
     double other_coords[3];
 
     if (!pg_VectorCoordsFromObj(other, 3, other_coords)) {
-        PyErr_SetString(
+        return RAISE(
             PyExc_TypeError,
             "Incompatible vector argument: cannot calculate angle to");
-        return NULL;
     }
 
     squared_length1 = _scalar_product(self->coords, self->coords, self->dim);
@@ -4016,10 +3976,8 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_DIV | OP_ARG_VECTOR:
             for (i = 0; i < vec->dim; i++) {
                 if (other_coords[i] == 0) {
-                    PyErr_SetString(PyExc_ZeroDivisionError,
-                                    "division by zero");
                     Py_DECREF(ret);
-                    return NULL;
+                    return RAISE(PyExc_ZeroDivisionError, "division by zero");
                 }
                 ret->coords[i] = vec->coords[i] / other_coords[i];
             }
@@ -4027,10 +3985,8 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_DIV | OP_ARG_VECTOR | OP_ARG_REVERSE:
             for (i = 0; i < vec->dim; i++) {
                 if (vec->coords[i] == 0) {
-                    PyErr_SetString(PyExc_ZeroDivisionError,
-                                    "division by zero");
                     Py_DECREF(ret);
-                    return NULL;
+                    return RAISE(PyExc_ZeroDivisionError, "division by zero");
                 }
                 ret->coords[i] = other_coords[i] / vec->coords[i];
             }
@@ -4038,10 +3994,8 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_DIV | OP_ARG_NUMBER | OP_ARG_REVERSE:
             for (i = 0; i < vec->dim; i++) {
                 if (vec->coords[i] == 0) {
-                    PyErr_SetString(PyExc_ZeroDivisionError,
-                                    "division by zero");
                     Py_DECREF(ret);
-                    return NULL;
+                    return RAISE(PyExc_ZeroDivisionError, "division by zero");
                 }
                 ret->coords[i] = other_value / vec->coords[i];
             }
@@ -4049,10 +4003,8 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_FLOOR_DIV | OP_ARG_VECTOR:
             for (i = 0; i < vec->dim; i++) {
                 if (other_coords[i] == 0) {
-                    PyErr_SetString(PyExc_ZeroDivisionError,
-                                    "division by zero");
                     Py_DECREF(ret);
-                    return NULL;
+                    return RAISE(PyExc_ZeroDivisionError, "division by zero");
                 }
                 ret->coords[i] = floor(vec->coords[i] / other_coords[i]);
             }
@@ -4060,10 +4012,8 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_FLOOR_DIV | OP_ARG_VECTOR | OP_ARG_REVERSE:
             for (i = 0; i < vec->dim; i++) {
                 if (vec->coords[i] == 0) {
-                    PyErr_SetString(PyExc_ZeroDivisionError,
-                                    "division by zero");
                     Py_DECREF(ret);
-                    return NULL;
+                    return RAISE(PyExc_ZeroDivisionError, "division by zero");
                 }
                 ret->coords[i] = floor(other_coords[i] / vec->coords[i]);
             }
@@ -4071,10 +4021,8 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_FLOOR_DIV | OP_ARG_NUMBER | OP_ARG_REVERSE:
             for (i = 0; i < vec->dim; i++) {
                 if (vec->coords[i] == 0) {
-                    PyErr_SetString(PyExc_ZeroDivisionError,
-                                    "division by zero");
                     Py_DECREF(ret);
-                    return NULL;
+                    return RAISE(PyExc_ZeroDivisionError, "division by zero");
                 }
                 ret->coords[i] = floor(other_value / vec->coords[i]);
             }
@@ -4082,10 +4030,8 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_MOD | OP_ARG_VECTOR:
             for (i = 0; i < vec->dim; i++) {
                 if (other_coords[i] == 0) {
-                    PyErr_SetString(PyExc_ZeroDivisionError,
-                                    "division by zero");
                     Py_DECREF(ret);
-                    return NULL;
+                    return RAISE(PyExc_ZeroDivisionError, "division by zero");
                 }
                 mod = fmod(vec->coords[i], other_coords[i]);
                 /* note: checking mod*value < 0 is incorrect -- underflows
@@ -4099,10 +4045,8 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_MOD | OP_ARG_VECTOR | OP_ARG_REVERSE:
             for (i = 0; i < vec->dim; i++) {
                 if (vec->coords[i] == 0) {
-                    PyErr_SetString(PyExc_ZeroDivisionError,
-                                    "division by zero");
                     Py_DECREF(ret);
-                    return NULL;
+                    return RAISE(PyExc_ZeroDivisionError, "division by zero");
                 }
                 mod = fmod(other_coords[i], vec->coords[i]);
                 /* note: see above */
@@ -4114,9 +4058,8 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
             break;
         case OP_MOD | OP_ARG_NUMBER:
             if (other_value == 0) {
-                PyErr_SetString(PyExc_ZeroDivisionError, "division by zero");
                 Py_DECREF(ret);
-                return NULL;
+                return RAISE(PyExc_ZeroDivisionError, "division by zero");
             }
             for (i = 0; i < vec->dim; i++) {
                 mod = fmod(vec->coords[i], other_value);
@@ -4130,10 +4073,8 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_MOD | OP_ARG_NUMBER | OP_ARG_REVERSE:
             for (i = 0; i < vec->dim; i++) {
                 if (vec->coords[i] == 0) {
-                    PyErr_SetString(PyExc_ZeroDivisionError,
-                                    "division by zero");
                     Py_DECREF(ret);
-                    return NULL;
+                    return RAISE(PyExc_ZeroDivisionError, "division by zero");
                 }
                 mod = fmod(other_value, vec->coords[i]);
                 /* note: see above */
@@ -4269,9 +4210,9 @@ vector_elementwiseproxy_pow(PyObject *baseObj, PyObject *expoObj,
             /* raising a negative number to a fractional power returns a
              * complex in python-3.x. we do not allow this. */
             if (!PyErr_Occurred()) {
-                PyErr_SetString(PyExc_ValueError,
-                                "negative number "
-                                "cannot be raised to a fractional power");
+                RAISE(
+                    PyExc_ValueError,
+                    "negative number cannot be raised to a fractional power");
             }
             Py_XDECREF(result);
             Py_DECREF(ret);

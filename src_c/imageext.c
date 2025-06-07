@@ -471,8 +471,7 @@ MODINIT_DEFINE(imageext)
     #ifdef WITH_THREAD
         _pg_img_mutex = SDL_CreateMutex();
         if (!_pg_img_mutex) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
-            return NULL;
+            return RAISE(pgExc_SDLError, SDL_GetError());
         }
     #endif
     */

@@ -34,12 +34,12 @@
 
 #define PyBUF_HAS_FLAG(f, F) (((f) & (F)) == (F))
 
-#define CHECK_CHUNK_VALID(CHUNK, RET)                                      \
-    if ((CHUNK) == NULL) {                                                 \
-        PyErr_SetString(PyExc_RuntimeError,                                \
-                        "__init__() was not called on Sound object so it " \
-                        "failed to setup correctly.");                     \
-        return (RET);                                                      \
+#define CHECK_CHUNK_VALID(CHUNK, RET)                                         \
+    if ((CHUNK) == NULL) {                                                    \
+        RAISERETURN(PyExc_RuntimeError,                                       \
+                    "__init__() was not called on Sound object so it failed " \
+                    "to setup correctly.",                                    \
+                    RET);                                                     \
     }
 
 /* The SDL audio format constants are not defined for anything larger
@@ -156,8 +156,7 @@ _format_view_to_audio(Py_buffer *view)
     }
     fstr_len = strlen(view->format);
     if (fstr_len < 1 || fstr_len > 2) {
-        PyErr_SetString(PyExc_ValueError, "Array has unsupported item format");
-        return 0;
+        RAISERETURN(PyExc_ValueError, "Array has unsupported item format", 0);
     }
     if (fstr_len == 1) {
         format |= PG_SAMPLE_NATIVE_ENDIAN;
@@ -184,9 +183,8 @@ _format_view_to_audio(Py_buffer *view)
                 break;
 
             default:
-                PyErr_SetString(PyExc_ValueError,
-                                "Array has unsupported item format");
-                return 0;
+                RAISERETURN(PyExc_ValueError,
+                            "Array has unsupported item format", 0);
         }
         ++index;
     }
@@ -965,9 +963,8 @@ snd_getbuffer(PyObject *obj, Py_buffer *view, int flags)
         return -1;
     }
     if (channels != 1 && PyBUF_HAS_FLAG(flags, PyBUF_F_CONTIGUOUS)) {
-        PyErr_SetString(pgExc_BufferError,
-                        "polyphonic sound is not Fortran contiguous");
-        return -1;
+        RAISERETURN(pgExc_BufferError,
+                    "polyphonic sound is not Fortran contiguous", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_ND)) {
         ndim = channels > 1 ? 2 : 1;
@@ -1380,12 +1377,10 @@ static int
 _channel_init(pgChannelObject *self, int channelnum)
 {
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
-        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
-        return -1;
+        RAISERETURN(pgExc_SDLError, "mixer not initialized", -1);
     }
     if (channelnum < 0 || channelnum >= Mix_GroupCount(-1)) {
-        PyErr_SetString(PyExc_IndexError, "invalid channel index");
-        return -1;
+        RAISERETURN(PyExc_IndexError, "invalid channel index", -1);
     }
     self->chan = channelnum;
     return 0;
@@ -1677,29 +1672,25 @@ _chunk_from_array(void *buf, PG_sample_format_t view_format, int ndim,
     Py_ssize_t loop1, loop2, step1, step2, length, length2 = 0;
 
     if (!Mix_QuerySpec(&freq, &format, &channels)) {
-        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
-        return -1;
+        RAISERETURN(pgExc_SDLError, "mixer not initialized", -1);
     }
 
     /* Check for compatible values.
      */
     if (channels == 1) {
         if (ndim != 1) {
-            PyErr_SetString(PyExc_ValueError,
-                            "Array must be 1-dimensional for mono mixer");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "Array must be 1-dimensional for mono mixer", -1);
         }
     }
     else {
         if (ndim != 2) {
-            PyErr_SetString(PyExc_ValueError,
-                            "Array must be 2-dimensional for stereo mixer");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "Array must be 2-dimensional for stereo mixer", -1);
         }
         if (shape[1] != channels) {
-            PyErr_SetString(PyExc_ValueError,
-                            "Array depth must match number of mixer channels");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "Array depth must match number of mixer channels", -1);
         }
     }
     itemsize = _format_itemsize(format);
@@ -1829,8 +1820,7 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
 
     /* Similar to MIXER_INIT_CHECK(), but different return value. */
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
-        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
-        return -1;
+        RAISERETURN(pgExc_SDLError, "mixer not initialized", -1);
     }
 
     /* Process arguments, returning cleaner error messages than
@@ -1839,8 +1829,7 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
     if (arg != NULL && PyTuple_GET_SIZE(arg)) {
         if ((kwarg != NULL && PyDict_Size(kwarg)) || /* conditional and */
             PyTuple_GET_SIZE(arg) != 1) {
-            PyErr_SetString(PyExc_TypeError, arg_cnt_err_msg);
-            return -1;
+            RAISERETURN(PyExc_TypeError, arg_cnt_err_msg, -1);
         }
         obj = PyTuple_GET_ITEM(arg, 0);
 
@@ -1856,8 +1845,7 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     else if (kwarg != NULL) {
         if (PyDict_Size(kwarg) != 1) {
-            PyErr_SetString(PyExc_TypeError, arg_cnt_err_msg);
-            return -1;
+            RAISERETURN(PyExc_TypeError, arg_cnt_err_msg, -1);
         }
         if ((file = PyDict_GetItemString(kwarg, "file")) == NULL &&
             (buffer = PyDict_GetItemString(kwarg, "buffer")) == NULL &&
@@ -1879,14 +1867,12 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
             return -1;
         }
         if (buffer != NULL && PyUnicode_Check(buffer)) { /* conditional and */
-            PyErr_SetString(PyExc_TypeError,
-                            "Unicode object not allowed as buffer object");
-            return -1;
+            RAISERETURN(PyExc_TypeError,
+                        "Unicode object not allowed as buffer object", -1);
         }
     }
     else {
-        PyErr_SetString(PyExc_TypeError, arg_cnt_err_msg);
-        return -1;
+        RAISERETURN(PyExc_TypeError, arg_cnt_err_msg, -1);
     }
 
     if (file != NULL) {
@@ -1908,8 +1894,7 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
 #endif
         Py_END_ALLOW_THREADS;
         if (chunk == NULL) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
-            return -1;
+            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
     }
 
@@ -1968,7 +1953,7 @@ LOAD_BUFFER:
 
     if (chunk == NULL) {
         if (obj == NULL) {
-            PyErr_SetString(PyExc_TypeError, "Unrecognized argument");
+            RAISERETURN(PyExc_TypeError, "Unrecognized argument", -1);
         }
         else {
             PyErr_Format(PyExc_TypeError, "Unrecognized argument (type %s)",

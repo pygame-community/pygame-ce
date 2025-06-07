@@ -718,9 +718,8 @@ static int
 pg_EnableKeyRepeat(int delay, int interval)
 {
     if (delay < 0 || interval < 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "delay and interval must equal at least 0");
-        return -1;
+        RAISERETURN(PyExc_ValueError,
+                    "delay and interval must equal at least 0", -1);
     }
     PG_LOCK_EVFILTER_MUTEX
     pg_key_repeat_delay = delay;
@@ -1677,8 +1676,7 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (type < 0 || type >= PG_NUMEVENTS) {
-        PyErr_SetString(PyExc_ValueError, "event type out of range");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "event type out of range", -1);
     }
 
     if (!dict) {
@@ -1705,10 +1703,9 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (PyDict_GetItemString(dict, "type")) {
-        PyErr_SetString(PyExc_ValueError,
-                        "redundant type field in event dict");
         Py_DECREF(dict);
-        return -1;
+        RAISERETURN(PyExc_ValueError, "redundant type field in event dict",
+                    -1);
     }
 
     self->type = _pg_pgevent_deproxify(type);
@@ -1939,13 +1936,11 @@ _pg_eventtype_from_seq(PyObject *seq, int ind)
 {
     int val = 0;
     if (!pg_IntFromObjIndex(seq, ind, &val)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "type sequence must contain valid event types");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "type sequence must contain valid event types", -1);
     }
     if (val < 0 || val >= PG_NUMEVENTS) {
-        PyErr_SetString(PyExc_ValueError, "event type out of range");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "event type out of range", -1);
     }
     return val;
 }
@@ -2101,7 +2096,7 @@ _pg_get_all_events_except(PyObject *obj)
         do {
             ret = PG_PEEP_EVENT(&event, 1, SDL_GETEVENT, type);
             if (ret < 0) {
-                PyErr_SetString(pgExc_SDLError, SDL_GetError());
+                RAISE(pgExc_SDLError, SDL_GetError());
                 goto error;
             }
             else if (ret > 0) {
@@ -2125,7 +2120,7 @@ _pg_get_all_events_except(PyObject *obj)
             ret = PG_PEEP_EVENT(&event, 1, SDL_GETEVENT,
                                 _pg_pgevent_proxify(type));
             if (ret < 0) {
-                PyErr_SetString(pgExc_SDLError, SDL_GetError());
+                RAISE(pgExc_SDLError, SDL_GetError());
                 goto error;
             }
             else if (ret > 0) {
@@ -2151,7 +2146,7 @@ _pg_get_all_events_except(PyObject *obj)
     do {
         len = PG_PEEP_EVENT_ALL(eventbuf, PG_GET_LIST_LEN, SDL_GETEVENT);
         if (len == -1) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            RAISE(pgExc_SDLError, SDL_GetError());
             goto error;
         }
 
@@ -2191,7 +2186,7 @@ _pg_get_all_events(void)
     while (len == PG_GET_LIST_LEN) {
         len = PG_PEEP_EVENT_ALL(eventbuf, PG_GET_LIST_LEN, SDL_GETEVENT);
         if (len == -1) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            RAISE(pgExc_SDLError, SDL_GetError());
             goto error;
         }
 
@@ -2235,7 +2230,7 @@ _pg_get_seq_events(PyObject *obj)
         do {
             ret = PG_PEEP_EVENT(&event, 1, SDL_GETEVENT, type);
             if (ret < 0) {
-                PyErr_SetString(pgExc_SDLError, SDL_GetError());
+                RAISE(pgExc_SDLError, SDL_GetError());
                 goto error;
             }
             else if (ret > 0) {
@@ -2248,7 +2243,7 @@ _pg_get_seq_events(PyObject *obj)
             ret = PG_PEEP_EVENT(&event, 1, SDL_GETEVENT,
                                 _pg_pgevent_proxify(type));
             if (ret < 0) {
-                PyErr_SetString(pgExc_SDLError, SDL_GetError());
+                RAISE(pgExc_SDLError, SDL_GetError());
                 goto error;
             }
             else if (ret > 0) {

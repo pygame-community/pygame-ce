@@ -27,6 +27,7 @@
 #undef _POSIX_C_SOURCE
 #endif
 
+#include "pygame.h"
 #include <Python.h>
 
 /* Handle clipboard text and data in arbitrary formats */
@@ -54,10 +55,10 @@ typedef enum {
 /**
  * Macro for initialization checks.
  */
-#define PYGAME_SCRAP_INIT_CHECK()                                             \
-    if (!pygame_scrap_initialized())                                          \
-    return (PyErr_SetString(pgExc_SDLError, "scrap system not initialized."), \
-            NULL)
+#define PYGAME_SCRAP_INIT_CHECK()                                      \
+    if (!pygame_scrap_initialized()) {                                 \
+        return RAISE(pgExc_SDLError, "scrap system not initialized."); \
+    }
 
 /**
  * \brief Checks, whether the pygame scrap module was initialized.

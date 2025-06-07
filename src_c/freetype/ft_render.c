@@ -126,10 +126,10 @@ _PGFT_BuildRenderMode(FreeTypeInstance *ft, pgFontObject *fontobj,
 {
     if (face_size.x == 0) {
         if (fontobj->face_size.x == 0) {
-            PyErr_SetString(PyExc_ValueError,
-                            "No font point size specified"
-                            " and no default font size in typeface");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "No font point size specified and no default font "
+                        "size in typeface",
+                        -1);
         }
 
         face_size = fontobj->face_size;
@@ -141,16 +141,14 @@ _PGFT_BuildRenderMode(FreeTypeInstance *ft, pgFontObject *fontobj,
     }
     else {
         if (_PGFT_CheckStyle((FT_UInt32)style)) {
-            PyErr_SetString(PyExc_ValueError, "Invalid style value");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "Invalid style value", -1);
         }
 
         mode->style = (FT_UInt16)style;
     }
     if ((mode->style & FT_STYLES_SCALABLE_ONLY) && !fontobj->is_scalable) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Unsupported style(s) for a bitmap font");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "Unsupported style(s) for a bitmap font",
+                    -1);
     }
     mode->strength = DBL_TO_FX16(fontobj->strength);
     mode->underline_adjustment = DBL_TO_FX16(fontobj->underline_adjustment);
@@ -160,34 +158,29 @@ _PGFT_BuildRenderMode(FreeTypeInstance *ft, pgFontObject *fontobj,
 
     if (mode->rotation_angle != 0) {
         if (!fontobj->is_scalable) {
-            PyErr_SetString(PyExc_ValueError,
-                            "rotated text is unsupported for a bitmap font");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "rotated text is unsupported for a bitmap font", -1);
         }
         if (mode->style & FT_STYLE_WIDE) {
-            PyErr_SetString(PyExc_ValueError,
-                            "the wide style is unsupported for rotated text");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "the wide style is unsupported for rotated text", -1);
         }
         if (mode->style & FT_STYLE_UNDERLINE) {
-            PyErr_SetString(
-                PyExc_ValueError,
-                "the underline style is unsupported for rotated text");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "the underline style is unsupported for rotated text",
+                        -1);
         }
         if (mode->render_flags & FT_RFLAG_PAD) {
-            PyErr_SetString(PyExc_ValueError,
-                            "padding is unsupported for rotated text");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "padding is unsupported for rotated text", -1);
         }
     }
 
     if (mode->render_flags & FT_RFLAG_VERTICAL) {
         if (mode->style & FT_STYLE_UNDERLINE) {
-            PyErr_SetString(
-                PyExc_ValueError,
-                "the underline style is unsupported for vertical text");
-            return -1;
+            RAISERETURN(PyExc_ValueError,
+                        "the underline style is unsupported for vertical text",
+                        -1);
         }
     }
 
@@ -195,8 +188,7 @@ _PGFT_BuildRenderMode(FreeTypeInstance *ft, pgFontObject *fontobj,
         FT_Face font = _PGFT_GetFontSized(ft, fontobj, mode->face_size);
 
         if (!font) {
-            PyErr_SetString(pgExc_SDLError, _PGFT_GetError(ft));
-            return -1;
+            RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), -1);
         }
 
         if (!FT_HAS_KERNING(font)) {
@@ -288,8 +280,7 @@ _PGFT_Render_ExistingSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
     if (SDL_MUSTLOCK(surface)) {
         if (!PG_LockSurface(surface)) {
             SDL_FreeSurface(surface);
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
-            return -1;
+            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
         locked = 1;
     }
@@ -337,8 +328,7 @@ _PGFT_Render_ExistingSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
 
     if (!PG_SURF_BytesPerPixel(surface)) {
         // This should never happen, error to make static analyzer happy
-        PyErr_SetString(pgExc_SDLError, "Got surface of invalid format");
-        return -1;
+        RAISERETURN(pgExc_SDLError, "Got surface of invalid format", -1);
     }
 
     /*
@@ -440,15 +430,13 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
     }
     surface = PG_CreateSurface(width, height, pixelformat);
     if (!surface) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return 0;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
     }
 
     if (SDL_MUSTLOCK(surface)) {
         if (!PG_LockSurface(surface)) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(surface);
-            return 0;
+            RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
         }
         locked = 1;
     }

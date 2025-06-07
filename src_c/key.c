@@ -99,9 +99,8 @@ pg_scancodewrapper_subscript(pgScancodeWrapper *self, PyObject *item)
 static PyObject *
 pg_iter_raise(PyObject *self)
 {
-    PyErr_SetString(PyExc_TypeError,
-                    "Iterating over key states is not supported");
-    return NULL;
+    return RAISE(PyExc_TypeError,
+                 "Iterating over key states is not supported");
 }
 
 /**

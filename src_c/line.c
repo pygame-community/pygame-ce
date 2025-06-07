@@ -50,10 +50,10 @@ static int
 pg_line_init(pgLineObject *self, PyObject *args, PyObject *kwds)
 {
     if (!pgLine_FromObject(args, &self->line)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Invalid line end points, expected 4 "
-                        "numbers or 2 sequences of 2 numbers");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "Invalid line end points, expected 4 numbers or 2 "
+                    "sequences of 2 numbers",
+                    -1);
     }
     return 0;
 }
@@ -147,14 +147,12 @@ _line_scale_helper(pgLineBase *line, double factor, double origin)
         return 1;
     }
     else if (factor <= 0.0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Can only scale by a positive non zero number");
-        return 0;
+        RAISERETURN(PyExc_ValueError,
+                    "Can only scale by a positive non zero number", 0);
     }
 
     if (origin < 0.0 || origin > 1.0) {
-        PyErr_SetString(PyExc_ValueError, "Origin must be between 0 and 1");
-        return 0;
+        RAISERETURN(PyExc_ValueError, "Origin must be between 0 and 1", 0);
     }
 
     double ax = line->ax;
@@ -291,8 +289,7 @@ pg_line_str(pgLineObject *self)
             self->line.name = val;                                        \
             return 0;                                                     \
         }                                                                 \
-        PyErr_SetString(PyExc_TypeError, "Expected a number");            \
-        return -1;                                                        \
+        RAISERETURN(PyExc_TypeError, "Expected a number", -1);            \
     }
 
 __LINE_GETSET_NAME(ax)
@@ -317,8 +314,7 @@ pg_line_seta(pgLineObject *self, PyObject *value, void *closure)
         self->line.ay = y;
         return 0;
     }
-    PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
-    return -1;
+    RAISERETURN(PyExc_TypeError, "Expected a sequence of 2 numbers", -1);
 }
 
 static PyObject *
@@ -337,8 +333,7 @@ pg_line_setb(pgLineObject *self, PyObject *value, void *closure)
         self->line.by = y;
         return 0;
     }
-    PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
-    return -1;
+    RAISERETURN(PyExc_TypeError, "Expected a sequence of 2 numbers", -1);
 }
 
 static PyObject *

@@ -2201,7 +2201,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (Py_None != setsurfobj) {
         if (!pgSurface_Check(setsurfobj)) {
-            PyErr_SetString(PyExc_TypeError, "invalid setsurface argument");
+            RAISE(PyExc_TypeError, "invalid setsurface argument");
             goto to_surface_error;
         }
 
@@ -2209,9 +2209,9 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
         if (0 == check_surface_pixel_format(surf, setsurf)) {
             /* Needs to have the same format settings as surface. */
-            PyErr_SetString(PyExc_ValueError,
-                            "setsurface needs to have same "
-                            "bytesize/bitsize/alpha format as surface");
+            RAISE(PyExc_ValueError,
+                  "setsurface needs to have same bytesize/bitsize/alpha "
+                  "format as surface");
             goto to_surface_error;
         }
         else if ((setsurf->h <= 0) || (setsurf->w <= 0)) {
@@ -2225,7 +2225,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (Py_None != unsetsurfobj) {
         if (!pgSurface_Check(unsetsurfobj)) {
-            PyErr_SetString(PyExc_TypeError, "invalid unsetsurface argument");
+            RAISE(PyExc_TypeError, "invalid unsetsurface argument");
             goto to_surface_error;
         }
 
@@ -2233,9 +2233,9 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
         if (0 == check_surface_pixel_format(surf, unsetsurf)) {
             /* Needs to have the same format settings as surface. */
-            PyErr_SetString(PyExc_ValueError,
-                            "unsetsurface needs to have same "
-                            "bytesize/bitsize/alpha format as surface");
+            RAISE(PyExc_ValueError,
+                  "unsetsurface needs to have same bytesize/bitsize/alpha "
+                  "format as surface");
             goto to_surface_error;
         }
         else if ((unsetsurf->h <= 0) || (unsetsurf->w <= 0)) {
@@ -2285,21 +2285,21 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
                 y_dest = dest_rect->y;
             }
             else {
-                PyErr_SetString(PyExc_TypeError, "invalid dest argument");
+                RAISE(PyExc_TypeError, "invalid dest argument");
                 goto to_surface_error;
             }
         }
     }
 
     if (!pgSurface_Lock((pgSurfaceObject *)surfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot lock surface");
+        RAISE(PyExc_RuntimeError, "cannot lock surface");
         goto to_surface_error;
     }
 
     /* Only lock the setsurface if it is being used.
      * i.e. setsurf is non-NULL */
     if (NULL != setsurf && !pgSurface_Lock((pgSurfaceObject *)setsurfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot lock setsurface");
+        RAISE(PyExc_RuntimeError, "cannot lock setsurface");
         goto to_surface_error;
     }
 
@@ -2307,7 +2307,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
      * i.e.. unsetsurf is non-NULL. */
     if (NULL != unsetsurf &&
         !pgSurface_Lock((pgSurfaceObject *)unsetsurfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot lock unsetsurface");
+        RAISE(PyExc_RuntimeError, "cannot lock unsetsurface");
         goto to_surface_error;
     }
 
@@ -2321,17 +2321,17 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (NULL != unsetsurf &&
         !pgSurface_Unlock((pgSurfaceObject *)unsetsurfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot unlock unsetsurface");
+        RAISE(PyExc_RuntimeError, "cannot unlock unsetsurface");
         goto to_surface_error;
     }
 
     if (NULL != setsurf && !pgSurface_Unlock((pgSurfaceObject *)setsurfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot unlock setsurface");
+        RAISE(PyExc_RuntimeError, "cannot unlock setsurface");
         goto to_surface_error;
     }
 
     if (!pgSurface_Unlock((pgSurfaceObject *)surfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot unlock surface");
+        RAISE(PyExc_RuntimeError, "cannot unlock surface");
         goto to_surface_error;
     }
 
@@ -2488,22 +2488,19 @@ mask_init(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(size, &w, &h)) {
-        PyErr_SetString(PyExc_TypeError, "size must be two numbers");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "size must be two numbers", -1);
     }
 
     if (w < 0 || h < 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "cannot create mask with negative size");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "cannot create mask with negative size",
+                    -1);
     }
 
     bitmask = bitmask_create(w, h);
 
     if (NULL == bitmask) {
-        PyErr_SetString(PyExc_MemoryError,
-                        "cannot allocate memory for bitmask");
-        return -1;
+        RAISERETURN(PyExc_MemoryError, "cannot allocate memory for bitmask",
+                    -1);
     }
 
     if (fill) {

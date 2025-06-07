@@ -523,8 +523,7 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     }
     renderer = SDL_CreateRenderer(window->_win, index, flags);
     if (!renderer) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     self->renderer = renderer;
     self->window = window;

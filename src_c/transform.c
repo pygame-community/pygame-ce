@@ -139,74 +139,63 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         SDL_Palette *surf_palette = PG_GetSurfacePalette(surf);
 
         if (newsurf_palette == NULL) {
-            PyErr_SetString(
-                pgExc_SDLError,
-                "Palette expected (newsurf) but no palette found.");
             SDL_FreeSurface(newsurf);
-            return NULL;
+            return RAISE(pgExc_SDLError,
+                         "Palette expected (newsurf) but no palette found.");
         }
 
         if (surf_palette == NULL) {
-            PyErr_SetString(pgExc_SDLError,
-                            "Palette expected (surf) but no palette found.");
             SDL_FreeSurface(newsurf);
-            return NULL;
+            return RAISE(pgExc_SDLError,
+                         "Palette expected (surf) but no palette found.");
         }
 
         if (!PG_SetPaletteColors(newsurf_palette, surf_palette->colors, 0,
                                  surf_palette->ncolors)) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
-            return NULL;
+            return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
 
     if (!PG_GetSurfaceAlphaMod(surf, &alpha)) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
         SDL_FreeSurface(newsurf);
-        return NULL;
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
     if (alpha != 255) {
         if (!PG_SetSurfaceAlphaMod(newsurf, alpha)) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
-            return NULL;
+            return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
 
     isalpha = _PgSurface_SrcAlpha(surf);
     if (isalpha == 1) {
         if (!PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND)) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
-            return NULL;
+            return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
     else if (isalpha == -1) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
         SDL_FreeSurface(newsurf);
-        return NULL;
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
     else {
         if (!PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE)) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
-            return NULL;
+            return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
 
     if (SDL_HasColorKey(surf)) {
         SDL_GetColorKey(surf, &colorkey);
         if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
-            return NULL;
+            return RAISE(pgExc_SDLError, SDL_GetError());
         }
         if (PG_SurfaceHasRLE(surf) &&
             SDL_SetSurfaceRLE(newsurf, SDL_TRUE) != 0) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
-            return NULL;
+            return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
 
@@ -966,8 +955,7 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
     newsurf = rotozoomSurface(surf32, angle, scale, 1);
     Py_END_ALLOW_THREADS;
     if (newsurf == NULL) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return NULL;
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     if (surf32 == surf) {

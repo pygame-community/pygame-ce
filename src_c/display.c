@@ -448,7 +448,7 @@ pg_GetVideoInfo(pg_VideoInfo *info)
             SDL_FreeFormat(tempformat);
         }
         else {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            RAISE(pgExc_SDLError, SDL_GetError());
             return (pg_VideoInfo *)NULL;
         }
     }
@@ -1218,7 +1218,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 state->gl_context = SDL_GL_CreateContext(win);
                 if (!state->gl_context) {
                     _display_state_cleanup(state);
-                    PyErr_SetString(pgExc_SDLError, SDL_GetError());
+                    RAISE(pgExc_SDLError, SDL_GetError());
                     goto DESTROY_WINDOW;
                 }
                 /* SDL_GetWindowSurface can not be used when using GL.
@@ -1246,19 +1246,16 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                for the whole desktop because of wayland GL compositing. */
             if (vsync == -1) {
                 if (SDL_GL_SetSwapInterval(-1) != 0) {
-                    PyErr_SetString(pgExc_SDLError,
-                                    "adaptive vsync for OpenGL not "
-                                    "available");
-
+                    RAISE(pgExc_SDLError,
+                          "adaptive vsync for OpenGL not available");
                     _display_state_cleanup(state);
                     goto DESTROY_WINDOW;
                 }
             }
             else if (vsync == 1) {
                 if (SDL_GL_SetSwapInterval(1) != 0) {
-                    PyErr_SetString(pgExc_SDLError,
-                                    "regular vsync for OpenGL not "
-                                    "available");
+                    RAISE(pgExc_SDLError,
+                          "regular vsync for OpenGL not available");
                     _display_state_cleanup(state);
                     goto DESTROY_WINDOW;
                 }
@@ -1317,8 +1314,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                     SDL_GetRendererInfo(pg_renderer, &info);
                     if (vsync && !(info.flags & SDL_RENDERER_PRESENTVSYNC)) {
-                        PyErr_SetString(pgExc_SDLError,
-                                        "could not enable vsync");
+                        RAISE(pgExc_SDLError, "could not enable vsync");
                         _display_state_cleanup(state);
                         goto DESTROY_WINDOW;
                     }
@@ -1352,22 +1348,21 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 _display_state_cleanup(state);
 
                 /* Recover error, then destroy the window */
-                PyErr_SetString(pgExc_SDLError, SDL_GetError());
+                RAISE(pgExc_SDLError, SDL_GetError());
                 goto DESTROY_WINDOW;
             }
         }
 
         if (state->using_gl && pg_renderer != NULL) {
             _display_state_cleanup(state);
-            PyErr_SetString(
-                pgExc_SDLError,
-                "GL context and SDL_Renderer created at the same time");
+            RAISE(pgExc_SDLError,
+                  "GL context and SDL_Renderer created at the same time");
             goto DESTROY_WINDOW;
         }
 
         if (!surf) {
             _display_state_cleanup(state);
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            RAISE(pgExc_SDLError, SDL_GetError());
             goto DESTROY_WINDOW;
         }
         if (!surface) {
@@ -1497,8 +1492,7 @@ _pg_get_default_display_masks(int bpp, Uint32 *Rmask, Uint32 *Gmask,
             *Bmask = 0xFF;
             break;
         default:
-            PyErr_SetString(PyExc_ValueError, "nonstandard bit depth given");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "nonstandard bit depth given", -1);
     }
     return 0;
 }
@@ -1696,13 +1690,11 @@ pg_flip_internal(_DisplayState *state)
     /* Same check as VIDEO_INIT_CHECK() but returns -1 instead of NULL on
      * fail. */
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
-        PyErr_SetString(pgExc_SDLError, "video system not initialized");
-        return -1;
+        RAISERETURN(pgExc_SDLError, "video system not initialized", -1);
     }
 
     if (!win) {
-        PyErr_SetString(pgExc_SDLError, "Display mode not set");
-        return -1;
+        RAISERETURN(pgExc_SDLError, "Display mode not set", -1);
     }
 
     Py_BEGIN_ALLOW_THREADS;
@@ -1735,8 +1727,7 @@ pg_flip_internal(_DisplayState *state)
     Py_END_ALLOW_THREADS;
 
     if (status < 0) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     return 0;
@@ -2066,18 +2057,15 @@ pg_convert_to_uint16(PyObject *python_array, Uint16 *c_uint16_array)
     PyObject *item;
 
     if (!c_uint16_array) {
-        PyErr_SetString(PyExc_RuntimeError,
-                        "Memory not allocated for c_uint16_array.");
-        return 0;
+        RAISERETURN(PyExc_RuntimeError,
+                    "Memory not allocated for c_uint16_array.", 0);
     }
     if (!PySequence_Check(python_array)) {
-        PyErr_SetString(PyExc_TypeError, "Array must be sequence type");
-        return 0;
+        RAISERETURN(PyExc_TypeError, "Array must be sequence type", 0);
     }
     if (PySequence_Size(python_array) != 256) {
-        PyErr_SetString(PyExc_ValueError,
-                        "gamma ramp must be 256 elements long");
-        return 0;
+        RAISERETURN(PyExc_ValueError, "gamma ramp must be 256 elements long",
+                    0);
     }
     for (i = 0; i < 256; i++) {
         long ret;
@@ -2086,9 +2074,8 @@ pg_convert_to_uint16(PyObject *python_array, Uint16 *c_uint16_array)
             return 0;
         }
         if (!PyLong_Check(item)) {
-            PyErr_SetString(PyExc_ValueError,
-                            "gamma ramp must contain integer elements");
-            return 0;
+            RAISERETURN(PyExc_ValueError,
+                        "gamma ramp must contain integer elements", 0);
         }
         ret = PyLong_AsLong(item);
         Py_XDECREF(item);
@@ -2097,10 +2084,9 @@ pg_convert_to_uint16(PyObject *python_array, Uint16 *c_uint16_array)
                 /* Happens when PyLong_AsLong overflows */
                 return 0;
             }
-            PyErr_SetString(
-                PyExc_ValueError,
-                "integers in gamma ramp must be between 0 and 0xFFFF");
-            return 0;
+            RAISERETURN(PyExc_ValueError,
+                        "integers in gamma ramp must be between 0 and 0xFFFF",
+                        0);
         }
         c_uint16_array[i] = (Uint16)ret;
     }
@@ -2973,16 +2959,14 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
         msgbox_data.numbuttons = 1;
 
         if (-1 > return_button_index || return_button_index >= 1) {
-            PyErr_SetString(PyExc_IndexError,
-                            "return_button index out of range");
+            RAISE(PyExc_IndexError, "return_button index out of range");
             goto error;
         }
         buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
 
         if (escape_button_used) {
             if (-1 > escape_button_index || escape_button_index >= 1) {
-                PyErr_SetString(PyExc_IndexError,
-                                "escape_button index out of range");
+                RAISE(PyExc_IndexError, "escape_button index out of range");
                 goto error;
             }
             buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
@@ -3030,8 +3014,8 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
             }
 
             if (!PyUnicode_Check(btn_name_obj)) {
-                PyErr_SetString(PyExc_TypeError,
-                                "'buttons' should be a sequence of string");
+                RAISE(PyExc_TypeError,
+                      "'buttons' should be a sequence of string");
                 goto error;
             }
 
@@ -3060,7 +3044,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
     int clicked_button_id;
 
     if (SDL_ShowMessageBox(&msgbox_data, &clicked_button_id)) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        RAISE(pgExc_SDLError, SDL_GetError());
         goto error;
     }
 

@@ -93,8 +93,7 @@ _validate_view_format(const char *format)
             /* default: unrecognized character; raise error later */
     }
     if (format[i] != '\0') {
-        PyErr_SetString(PyExc_ValueError, "Unsupported array item type");
-        return -1;
+        RAISERETURN(PyExc_ValueError, "Unsupported array item type", -1);
     }
 
     return 0;
@@ -125,17 +124,15 @@ _view_kind(PyObject *obj, void *view_kind_vptr)
 
     if (PyUnicode_Check(obj)) {
         if (PyUnicode_GET_LENGTH(obj) != 1) {
-            PyErr_SetString(PyExc_TypeError,
-                            "expected a length 1 string for argument 3");
-            return 0;
+            RAISERETURN(PyExc_TypeError,
+                        "expected a length 1 string for argument 3", 0);
         }
         ch = PyUnicode_READ_CHAR(obj, 0);
     }
     else if (PyBytes_Check(obj)) {
         if (PyBytes_GET_SIZE(obj) != 1) {
-            PyErr_SetString(PyExc_TypeError,
-                            "expected a length 1 string for argument 3");
-            return 0;
+            RAISERETURN(PyExc_TypeError,
+                        "expected a length 1 string for argument 3", 0);
         }
         ch = *PyBytes_AS_STRING(obj);
     }
@@ -288,13 +285,11 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
         return -1;
     }
     if (!PG_GetSurfaceBlendMode(surf, &mode)) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     /* Select appropriate color plane element within the pixel */
@@ -423,8 +418,7 @@ _copy_unmapped(Py_buffer *view_p, SDL_Surface *surf)
     SDL_Palette *palette;
 
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     for (x = 0; x < w; ++x) {
@@ -826,11 +820,10 @@ surface_to_array(PyObject *self, PyObject *args, PyObject *kwds)
     }
     else if (view_p->ndim == 3) {
         if (view_kind != VIEWKIND_RGB) {
-            PyErr_SetString(PyExc_ValueError,
-                            "color planes only supported for 2d targets");
             pgBuffer_Release(&pg_view);
             pgSurface_Unlock(surfobj);
-            return 0;
+            RAISERETURN(PyExc_ValueError,
+                        "color planes only supported for 2d targets", 0);
         }
         if (_copy_unmapped(view_p, surf)) {
             pgBuffer_Release(&pg_view);
@@ -911,7 +904,7 @@ map_array(PyObject *self, PyObject *args)
     tar_view_p = (Py_buffer *)&tar_pg_view;
     tar = (Uint8 *)tar_view_p->buf;
     if (_validate_view_format(tar_view_p->format)) {
-        PyErr_SetString(PyExc_ValueError, "expected an integer target array");
+        RAISE(PyExc_ValueError, "expected an integer target array");
         goto fail;
     }
     ndim = tar_view_p->ndim;
@@ -919,7 +912,7 @@ map_array(PyObject *self, PyObject *args)
     shape = tar_view_p->shape;
     tar_strides = tar_view_p->strides;
     if (ndim < 1) {
-        PyErr_SetString(PyExc_ValueError, "target array must be at least 1D");
+        RAISE(PyExc_ValueError, "target array must be at least 1D");
         goto fail;
     }
     if (ndim > PIXELCOPY_MAX_DIM) {
@@ -938,7 +931,7 @@ map_array(PyObject *self, PyObject *args)
     src = (Uint8 *)src_view_p->buf;
     src_ndim = src_view_p->ndim;
     if (src_ndim < 1) {
-        PyErr_SetString(PyExc_ValueError, "source array must be at least 1D");
+        RAISE(PyExc_ValueError, "source array must be at least 1D");
         goto fail;
     }
     if (src_view_p->shape[src_ndim - 1] != 3) {
@@ -992,8 +985,8 @@ map_array(PyObject *self, PyObject *args)
 
     pix_bytesize = PG_FORMAT_BytesPerPixel(format);
     if (tar_itemsize < pix_bytesize) {
-        PyErr_SetString(PyExc_ValueError,
-                        "target array itemsize is too small for pixel format");
+        RAISE(PyExc_ValueError,
+              "target array itemsize is too small for pixel format");
         goto fail;
     }
     src_green = (int)src_view_p->strides[src_ndim - 1];
@@ -1093,9 +1086,8 @@ map_array(PyObject *self, PyObject *args)
             --dim;
             if (dim < 0) {
                 /* Should not happen, but handle case for extra safety */
-                PyErr_SetString(
-                    PyExc_RuntimeError,
-                    "internal pygame error in pixelcopy map_array");
+                RAISE(PyExc_RuntimeError,
+                      "internal pygame error in pixelcopy map_array");
                 goto fail;
             }
             tar += tar_advances[dim];
@@ -1207,9 +1199,8 @@ make_surface(PyObject *self, PyObject *arg)
          *          */
         if (!PG_SetPaletteColors(palette, default_palette_colors, 0,
                                  default_palette_size - 1)) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(surf);
-            return 0;
+            RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
         }
     }
     surfobj = pgSurface_New(surf);

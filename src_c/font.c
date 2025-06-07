@@ -536,18 +536,16 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
 
     long val = PyLong_AsLong(value);
     if (val == -1 && PyErr_Occurred()) {
-        PyErr_SetString(
-            PyExc_TypeError,
-            "font.align must be an integer. "
-            "Must correspond with FONT_LEFT, FONT_CENTER, or FONT_RIGHT.");
-        return -1;
+        RAISERETURN(PyExc_TypeError,
+                    "font.align must be an integer. Must correspond with "
+                    "FONT_LEFT, FONT_CENTER, or FONT_RIGHT.",
+                    -1);
     }
 
     if (val < 0 || val > 2) {
-        PyErr_SetString(pgExc_SDLError,
-                        "font.align must be FONT_LEFT, FONT_CENTER, or "
-                        "FONT_RIGHT.");
-        return -1;
+        RAISERETURN(
+            pgExc_SDLError,
+            "font.align must be FONT_LEFT, FONT_CENTER, or FONT_RIGHT.", -1);
     }
 
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
@@ -557,10 +555,10 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
 #endif
     return 0;
 #else
-    PyErr_SetString(pgExc_SDLError,
-                    "pygame.font not compiled with a new enough SDL_ttf "
-                    "version. Needs SDL_ttf 2.20.0 or above.");
-    return -1;
+    RAISERETURN(pgExc_SDLError,
+                "pygame.font not compiled with a new enough SDL_ttf version. "
+                "Needs SDL_ttf 2.20.0 or above.",
+                -1);
 #endif
 }
 
@@ -823,9 +821,8 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
     }
 
     if (val <= 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "point_size cannot be equal to, or less than 0");
-        return -1;
+        RAISERETURN(PyExc_ValueError,
+                    "point_size cannot be equal to, or less than 0", -1);
     }
 
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
@@ -835,16 +832,14 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
     if (TTF_SetFontSize(font, val) == -1)
 #endif
     {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     self->ptsize = val;
 
     return 0;
 #else
-    PyErr_SetString(pgExc_SDLError,
-                    "Incorrect SDL_TTF version (requires 2.0.18)");
-    return -1;
+    RAISERETURN(pgExc_SDLError, "Incorrect SDL_TTF version (requires 2.0.18)",
+                -1);
 #endif
 }
 
@@ -1243,8 +1238,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (!font_initialized) {
-        PyErr_SetString(pgExc_SDLError, "font not initialized");
-        return -1;
+        RAISERETURN(pgExc_SDLError, "font not initialized", -1);
     }
 
     /* Incref obj, needs to be decref'd later */

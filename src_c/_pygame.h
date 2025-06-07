@@ -580,8 +580,7 @@ typedef enum {
 #define DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value)                           \
     do {                                                                      \
         if (!value) {                                                         \
-            PyErr_SetString(PyExc_AttributeError, "Cannot delete attribute"); \
-            return -1;                                                        \
+            RAISERETURN(PyExc_AttributeError, "Cannot delete attribute", -1); \
         }                                                                     \
     } while (0)
 
