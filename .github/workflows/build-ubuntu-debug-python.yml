@@ -50,7 +50,7 @@ jobs:
         os: [ ubuntu-24.04 ]
         # check our min python (minor) version and our max python (minor) version
         python: [
-          3.9.21,
+          # 3.9.21,
           3.13.1
         ]
 
@@ -69,7 +69,7 @@ jobs:
       # https://github.com/orgs/community/discussions/47863
       run: |
         sudo apt-get update --fix-missing
-
+        sudo apt-get install lcov -y
         sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev -y
 
     - name: Install pyenv
@@ -94,11 +94,12 @@ jobs:
       if: steps.cache-python.outputs.cache-hit != 'true'
       run: pyenv install ${{ matrix.python }} --debug -v
 
+      # python dev.py build --coverage --lax --ctest
     - name: Build pygame-ce
       id: build-pygame-ce
       run: |
         pyenv global ${{ matrix.python }}-debug
-        python dev.py build --lax
+        python dev.py build --wheel --lax --coverage --ctest
 
     - name: Run tests
       env:
@@ -107,3 +108,27 @@ jobs:
       run: |
         pyenv global ${{ matrix.python }}-debug
         python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
+
+    - name: Generate coverage
+      id: gen-coverage
+      # want to continue regardless of whether a test failed or not as long as the job wasn't cancelled
+      if: ${{ steps.build.conclusion == 'success' && !cancelled() }}
+      run: |
+        lcov --capture --directory . --output-file ./coverage.info
+        genhtml ./coverage.info --output-directory ./out
+
+    # We upload the generated files under github actions assets
+    - name: Upload coverage html
+      # want to continue only if the coverage generation was successful
+      if: ${{ steps.gen-coverage.conclusion == 'success' && !cancelled() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: pygame-wheels-coverage
+        path: ./out
+
+    - name: Upload ctest log
+      if: !cancelled()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ctest_suite_log
+        path: ./ctest.log

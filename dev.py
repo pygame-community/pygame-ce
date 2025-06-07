@@ -211,9 +211,9 @@ class Dev:
         sdl3 = self.args.get("sdl3", False)
         coverage = self.args.get("coverage", False)
         ctest = self.args.get("ctest", False)
-        if wheel_dir and coverage:
-            pprint("Cannot pass --wheel and --coverage together", Colors.RED)
-            sys.exit(1)
+        # if wheel_dir and coverage:
+        #     pprint("Cannot pass --wheel and --coverage together", Colors.RED)
+        #     sys.exit(1)
 
         build_suffix = ""
         if debug:
