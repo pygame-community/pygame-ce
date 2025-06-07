@@ -134,7 +134,7 @@ jobs:
       if: ${{ steps.build-pygame-ce.conclusion == 'success' && !cancelled() }}
       uses: actions/upload-artifact@v4
       with:
-        name: ctest_suite_log
+        name: ctest_suite_log-{ matrix.os }-{ matrix.python }
         path: ./ctest.log
 
   # Run cppcheck static analysis on src_c changes
