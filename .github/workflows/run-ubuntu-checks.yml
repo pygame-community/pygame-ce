@@ -130,13 +130,6 @@ jobs:
         name: pygame-coverage-${{ matrix.os }}-${{ matrix.python }}
         path: ./out
 
-    - name: Upload ctest log
-      if: ${{ steps.build-pygame-ce.conclusion == 'success' && !cancelled() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: ctest_suite_log-{ matrix.os }-{ matrix.python }
-        path: ./ctest.log
-
   # Run cppcheck static analysis on src_c changes
   run-cppcheck:
     runs-on: ubuntu-24.04
