@@ -365,9 +365,9 @@ PyInit_pygame_static()
 #undef pgSurface_Type
 #undef pgSurface_SetSurface
 
-#include "surface.c"
-#include "simd_blitters_avx2.c"
-#include "simd_blitters_sse2.c"
+#include "surface/surface.c"
+#include "surface/simd_blitters_avx2.c"
+#include "surface/simd_blitters_sse2.c"
 
 #include "window.c"
 
@@ -430,9 +430,9 @@ PyInit_pygame_static()
 
 #include "gfxdraw.c"
 
-#include "alphablit.c"
+#include "surface/alphablit.c"
 
-#include "surface_fill.c"
+#include "surface/surface_fill.c"
 #include "pixelarray.c"
 #include "pixelcopy.c"
 #include "newbuffer.c"

@@ -35,7 +35,7 @@
 #include <SDL.h>
 #endif
 
-#include "pygame.h"
+#include "../pygame.h"
 
 /* Blend modes */
 #define PYGAME_BLEND_ADD 0x1
