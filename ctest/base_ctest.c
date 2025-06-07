@@ -52,7 +52,7 @@ static PyObject *test__pg_is_int_tuple_floats(PyObject *self, PyObject *_null) {
   PyObject *arg2 = Py_BuildValue("(ddd)", -1.1, -2.2, -3.3);
   PyObject *arg3 = Py_BuildValue("(ddd)", 1.0, -2.0, -3.1);
 
-  TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg1));
+  TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg1));
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg2));
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg3));
 
