@@ -98,12 +98,12 @@ jobs:
       if: steps.cache-python.outputs.cache-hit != 'true'
       run: pyenv install ${{ matrix.python }} --debug -v
 
+      # python dev.py build --coverage --lax --ctest
     - name: Build pygame-ce
       id: build-pygame-ce
       run: |
         pyenv global ${{ matrix.python }}-debug
-        python dev.py build --lax --coverage --sanitize undefined
-
+        python dev.py build --lax --coverage --ctest --sanitize undefined
     - name: Run tests
       env:
         SDL_VIDEODRIVER: "dummy"
@@ -128,6 +128,13 @@ jobs:
       with:
         name: pygame-coverage-${{ matrix.os }}-${{ matrix.python }}
         path: ./out
+
+    - name: Upload ctest log
+      if: ${{ steps.build-pygame-ce.conclusion == 'success' && !cancelled() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ctest_suite_log
+        path: ./ctest.log
 
   # Run cppcheck static analysis on src_c changes
   run-cppcheck:
