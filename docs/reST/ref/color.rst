@@ -300,7 +300,7 @@
       Creates a Color object from the given Hexadecimal components. Refer to :attr:`Color.hex`
       for more information.
 
-      .. versionadded:: 2.5.5
+      .. versionadded:: 2.5.6
 
       .. ## Color.from_hex ##
 
