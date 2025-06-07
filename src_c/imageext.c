@@ -69,6 +69,7 @@
 static SDL_mutex *_pg_img_mutex = 0;
 #endif
 */
+static PyTypeObject *animation_frame_type = NULL;
 
 static char *
 iext_find_extension(char *fullname)
@@ -254,22 +255,29 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     for (int i = 0; i < surfs->count; i++) {
+        PyObject *delay_obj = PyFloat_FromDouble((double)surfs->delays[i]);
+        if (!delay_obj) {
+            goto error;
+        }
         PyObject *frame = (PyObject *)pgSurface_New(surfs->frames[i]);
         if (!frame) {
             /* IMG_FreeAnimation takes care of freeing of member SDL surfaces
              */
+            Py_DECREF(delay_obj);
             goto error;
         }
         /* The python surface object now "owns" the sdl surface, so set it
          * to null in the animation to prevent double free */
         surfs->frames[i] = NULL;
-
-        PyObject *listentry =
-            Py_BuildValue("(Od)", frame, (double)surfs->delays[i]);
-        Py_DECREF(frame);
+        PyObject *listentry = PyStructSequence_New(animation_frame_type);
         if (!listentry) {
+            Py_DECREF(frame);
+            Py_DECREF(delay_obj);
             goto error;
         }
+
+        PyStructSequence_SetItem(listentry, 0, frame);
+        PyStructSequence_SetItem(listentry, 1, delay_obj);
         PyList_SET_ITEM(ret, i, listentry);
     }
     IMG_FreeAnimation(surfs);
@@ -438,6 +446,16 @@ static PyMethodDef _imageext_methods[] = {
 /*DOC*/ static char _imageext_doc[] =
     /*DOC*/ "additional image loaders";
 
+static PyStructSequence_Field _namedtuple_fields[] = {
+    {"surface", NULL}, {"delay_ms", NULL}, {NULL, NULL}};
+
+static struct PyStructSequence_Desc _namedtuple_descr = {
+    .name = "_AnimationFrame",
+    .doc = NULL,
+    .fields = _namedtuple_fields,
+    .n_in_sequence = 2,
+};
+
 MODINIT_DEFINE(imageext)
 {
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
@@ -462,7 +480,6 @@ MODINIT_DEFINE(imageext)
         return NULL;
     }
     import_pygame_rwobject();
-
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -476,6 +493,11 @@ MODINIT_DEFINE(imageext)
         }
     #endif
     */
+
+    animation_frame_type = PyStructSequence_NewType(&_namedtuple_descr);
+    if (animation_frame_type == NULL) {
+        return NULL;  // exception set
+    }
 
     /* create the module */
     return PyModule_Create(&_module);
