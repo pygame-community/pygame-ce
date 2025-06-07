@@ -51,6 +51,9 @@
 
 #define TWO_PI (2. * M_PI)
 
+#define RAD_TO_DEG (180.0 / M_PI)
+#define DEG_TO_RAD (M_PI / 180.0)
+
 #ifndef M_PI_2
 #define M_PI_2 (M_PI / 2.0)
 #endif /* M_PI_2 */
@@ -142,6 +145,8 @@ _vector_coords_from_string(PyObject *str, char **delimiter, double *coords,
 static void
 _vector_move_towards_helper(Py_ssize_t dim, double *origin_coords,
                             double *target_coords, double max_distance);
+static double
+_pg_atan2(double y, double x);
 
 /* generic vector functions */
 static PyObject *
@@ -201,6 +206,10 @@ static int
 vector_sety(pgVector *self, PyObject *value, void *closure);
 static int
 vector_setz(pgVector *self, PyObject *value, void *closure);
+static PyObject *
+vector_get_angle(pgVector *self, void *closure);
+static PyObject *
+vector_get_angle_rad(pgVector *self, void *closure);
 static PyObject *
 vector_richcompare(PyObject *o1, PyObject *o2, int op);
 static PyObject *
@@ -635,6 +644,40 @@ vector_dealloc(pgVector *self)
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
+/*
+ *Returns rhe arctangent of the quotient y / x, in radians, considering the
+ *following special cases: atan2((anything), NaN ) is NaN; atan2(NAN ,
+ *(anything) ) is NaN; atan2(+-0, +(anything but NaN)) is +-0  ; atan2(+-0,
+ *-(anything but NaN)) is +-pi ; atan2(+-(anything but 0 and NaN), 0) is
+ *+-pi/2; atan2(+-(anything but INF and NaN), +INF) is +-0 ; atan2(+-(anything
+ *but INF and NaN), -INF) is +-pi; atan2(+-INF,+INF ) is +-pi/4 ;
+ *      atan2(+-INF,-INF ) is +-3pi/4;
+ *      atan2(+-INF, (anything but,0,NaN, and INF)) is +-pi/2;
+ *
+ */
+static double
+_pg_atan2(double y, double x)
+{
+    if (Py_IS_NAN(x) || Py_IS_NAN(y)) {
+        return Py_NAN;
+    }
+
+    if (Py_IS_INFINITY(y)) {
+        if (Py_IS_INFINITY(x)) {
+            return copysign((copysign(1., x) == 1.) ? 0.25 * Py_MATH_PI
+                                                    : 0.75 * Py_MATH_PI,
+                            y);
+        }
+        return copysign(0.5 * Py_MATH_PI, y);
+    }
+
+    if (Py_IS_INFINITY(x) || y == 0.) {
+        return copysign((copysign(1., x) == 1.) ? 0. : Py_MATH_PI, y);
+    }
+
+    return atan2(y, x);
+}
+
 /**********************************************
  * Generic vector PyNumber emulation routines
  **********************************************/
@@ -645,7 +688,7 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
     Py_ssize_t i, dim;
     double *vec_coords;
     double other_coords[VECTOR_MAX_SIZE] = {0};
-    double tmp;
+    double tmp = 0.0;
     PyObject *other;
     pgVector *vec, *ret = NULL;
     if (pgVector_Check(o1)) {
@@ -669,11 +712,15 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
     if (pg_VectorCoordsFromObj(other, dim, other_coords)) {
         op |= OP_ARG_VECTOR;
     }
-    else if (RealNumber_Check(other)) {
-        op |= OP_ARG_NUMBER;
-    }
     else {
-        op |= OP_ARG_UNKNOWN;
+        tmp = PyFloat_AsDouble(other);
+        if (tmp == -1.0 && PyErr_Occurred()) {
+            PyErr_Clear();
+            op |= OP_ARG_UNKNOWN;
+        }
+        else {
+            op |= OP_ARG_NUMBER;
+        }
     }
 
     if (op & OP_INPLACE) {
@@ -718,14 +765,12 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_MUL | OP_ARG_NUMBER:
         case OP_MUL | OP_ARG_NUMBER | OP_ARG_REVERSE:
         case OP_MUL | OP_ARG_NUMBER | OP_INPLACE:
-            tmp = PyFloat_AsDouble(other);
             for (i = 0; i < dim; i++) {
                 ret->coords[i] = vec_coords[i] * tmp;
             }
             break;
         case OP_DIV | OP_ARG_NUMBER:
         case OP_DIV | OP_ARG_NUMBER | OP_INPLACE:
-            tmp = PyFloat_AsDouble(other);
             if (tmp == 0.) {
                 PyErr_SetString(PyExc_ZeroDivisionError, "division by zero");
                 Py_DECREF(ret);
@@ -738,7 +783,6 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
             break;
         case OP_FLOOR_DIV | OP_ARG_NUMBER:
         case OP_FLOOR_DIV | OP_ARG_NUMBER | OP_INPLACE:
-            tmp = PyFloat_AsDouble(other);
             if (tmp == 0.) {
                 PyErr_SetString(PyExc_ZeroDivisionError, "division by zero");
                 Py_DECREF(ret);
@@ -1301,6 +1345,23 @@ static int
 vector_setz(pgVector *self, PyObject *value, void *closure)
 {
     return vector_set_component(self, value, 2);
+}
+
+static PyObject *
+vector_get_angle_rad(pgVector *self, void *closure)
+{
+    double angle_rad = _pg_atan2(self->coords[1], self->coords[0]);
+
+    return PyFloat_FromDouble(angle_rad);
+}
+
+static PyObject *
+vector_get_angle(pgVector *self, void *closure)
+{
+    double angle_rad = _pg_atan2(self->coords[1], self->coords[0]);
+    double angle_deg = angle_rad * RAD_TO_DEG;
+
+    return PyFloat_FromDouble(angle_deg);
 }
 
 static PyObject *
@@ -2280,19 +2341,23 @@ static int
 _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
 {
     if (xOrSequence) {
-        if (RealNumber_Check(xOrSequence)) {
-            self->coords[0] = PyFloat_AsDouble(xOrSequence);
-            /* scalar constructor. */
-            if (y == NULL) {
-                self->coords[1] = self->coords[0];
-                return 0;
-            }
-        }
-        else if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
+        if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
             if (!PySequence_AsVectorCoords(xOrSequence, self->coords, 2)) {
                 return -1;
             }
             else {
+                return 0;
+            }
+        }
+        else if (RealNumber_Check(xOrSequence)) {
+            self->coords[0] = PyFloat_AsDouble(xOrSequence);
+            if (self->coords[0] == -1.0 && PyErr_Occurred()) {
+                return -1;
+            }
+
+            /* scalar constructor. */
+            if (y == NULL) {
+                self->coords[1] = self->coords[0];
                 return 0;
             }
         }
@@ -2323,6 +2388,9 @@ _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
 
     if (RealNumber_Check(y)) {
         self->coords[1] = PyFloat_AsDouble(y);
+        if (self->coords[1] == -1.0 && PyErr_Occurred()) {
+            return -1;
+        }
     }
     else {
         goto error;
@@ -2668,6 +2736,9 @@ static PyMethodDef vector2_methods[] = {
 static PyGetSetDef vector2_getsets[] = {
     {"x", (getter)vector_getx, (setter)vector_setx, NULL, NULL},
     {"y", (getter)vector_gety, (setter)vector_sety, NULL, NULL},
+    {"angle", (getter)vector_get_angle, NULL, DOC_MATH_VECTOR2_ANGLE, NULL},
+    {"angle_rad", (getter)vector_get_angle_rad, NULL,
+     DOC_MATH_VECTOR2_ANGLERAD, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
@@ -2718,20 +2789,24 @@ static int
 _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
 {
     if (xOrSequence) {
-        if (RealNumber_Check(xOrSequence)) {
-            self->coords[0] = PyFloat_AsDouble(xOrSequence);
-            /* scalar constructor. */
-            if (y == NULL && z == NULL) {
-                self->coords[1] = self->coords[0];
-                self->coords[2] = self->coords[0];
-                return 0;
-            }
-        }
-        else if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
+        if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
             if (!PySequence_AsVectorCoords(xOrSequence, self->coords, 3)) {
                 return -1;
             }
             else {
+                return 0;
+            }
+        }
+        else if (RealNumber_Check(xOrSequence)) {
+            self->coords[0] = PyFloat_AsDouble(xOrSequence);
+            if (self->coords[0] == -1.0 && PyErr_Occurred()) {
+                return -1;
+            }
+
+            /* scalar constructor. */
+            if (y == NULL && z == NULL) {
+                self->coords[1] = self->coords[0];
+                self->coords[2] = self->coords[0];
                 return 0;
             }
         }
@@ -2764,7 +2839,14 @@ _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
     else if (y && z) {
         if (RealNumber_Check(y) && RealNumber_Check(z)) {
             self->coords[1] = PyFloat_AsDouble(y);
+            if (self->coords[1] == -1.0 && PyErr_Occurred()) {
+                return -1;
+            }
+
             self->coords[2] = PyFloat_AsDouble(z);
+            if (self->coords[2] == -1.0 && PyErr_Occurred()) {
+                return -1;
+            }
         }
         else {
             goto error;
@@ -3651,7 +3733,6 @@ static PyTypeObject pgVectorIter_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.math.VectorIterator",
     .tp_basicsize = sizeof(vectoriter),
     .tp_dealloc = (destructor)vectoriter_dealloc,
-    .tp_getattro = PyObject_GenericGetAttr,
     /* VectorIterator is not subtypable for now, no Py_TPFLAGS_BASETYPE */
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_iter = PyObject_SelfIter,
@@ -3890,12 +3971,15 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
             return NULL;
         }
     }
-    else if (RealNumber_Check(other)) {
-        op |= OP_ARG_NUMBER;
-        other_value = PyFloat_AsDouble(other);
-    }
     else {
-        op |= OP_ARG_UNKNOWN;
+        other_value = PyFloat_AsDouble(other);
+        if (other_value == -1.0 && PyErr_Occurred()) {
+            PyErr_Clear();
+            op |= OP_ARG_UNKNOWN;
+        }
+        else {
+            op |= OP_ARG_NUMBER;
+        }
     }
 
     ret = _vector_subtype_new(vec);
@@ -4544,9 +4628,7 @@ MODINIT_DEFINE(pg_math)
 MODINIT_DEFINE(math)
 #endif
 {
-    PyObject *module, *apiobj;
-    static void *c_api[PYGAMEAPI_MATH_NUMSLOTS];
-
+    PyObject *module;
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "math",
                                          DOC_MATH,
@@ -4557,14 +4639,6 @@ MODINIT_DEFINE(math)
                                          NULL,
                                          NULL};
 
-    /* initialize the extension types */
-    if ((PyType_Ready(&pgVector2_Type) < 0) ||
-        (PyType_Ready(&pgVector3_Type) < 0) ||
-        (PyType_Ready(&pgVectorIter_Type) < 0) ||
-        (PyType_Ready(&pgVectorElementwiseProxy_Type) < 0)) {
-        return NULL;
-    }
-
     /* initialize the module */
     module = PyModule_Create(&_module);
 
@@ -4573,45 +4647,10 @@ MODINIT_DEFINE(math)
     }
 
     /* add extension types to module */
-    Py_INCREF(&pgVector2_Type);
-    Py_INCREF(&pgVector3_Type);
-    Py_INCREF(&pgVectorIter_Type);
-    Py_INCREF(&pgVectorElementwiseProxy_Type);
-    if ((PyModule_AddObject(module, "Vector2", (PyObject *)&pgVector2_Type) !=
-         0) ||
-        (PyModule_AddObject(module, "Vector3", (PyObject *)&pgVector3_Type) !=
-         0) ||
-        (PyModule_AddObject(module, "VectorElementwiseProxy",
-                            (PyObject *)&pgVectorElementwiseProxy_Type) !=
-         0) ||
-        (PyModule_AddObject(module, "VectorIterator",
-                            (PyObject *)&pgVectorIter_Type) != 0)) {
-        if (!PyObject_HasAttrString(module, "Vector2")) {
-            Py_DECREF(&pgVector2_Type);
-        }
-        if (!PyObject_HasAttrString(module, "Vector3")) {
-            Py_DECREF(&pgVector3_Type);
-        }
-        if (!PyObject_HasAttrString(module, "VectorElementwiseProxy")) {
-            Py_DECREF(&pgVectorElementwiseProxy_Type);
-        }
-        if (!PyObject_HasAttrString(module, "VectorIterator")) {
-            Py_DECREF(&pgVectorIter_Type);
-        }
-        Py_DECREF(module);
-        return NULL;
-    }
-
-    /* export the C api */
-    c_api[0] = &pgVector2_Type;
-    c_api[1] = &pgVector3_Type;
-    /*
-    c_api[2] = pgVector_NEW;
-    c_api[3] = pgVectorCompatible_Check;
-    */
-    apiobj = encapsulate_api(c_api, "math");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
+    if ((PyModule_AddType(module, &pgVector2_Type) < 0) ||
+        (PyModule_AddType(module, &pgVector3_Type) < 0) ||
+        (PyModule_AddType(module, &pgVectorElementwiseProxy_Type) < 0) ||
+        (PyModule_AddType(module, &pgVectorIter_Type) < 0)) {
         Py_DECREF(module);
         return NULL;
     }

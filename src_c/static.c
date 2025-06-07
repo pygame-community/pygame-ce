@@ -7,6 +7,7 @@
 #define PYGAMEAPI_JOYSTICK_INTERNAL
 #define PYGAMEAPI_BASE_INTERNAL
 #define PYGAMEAPI_SURFACE_INTERNAL
+#define PYGAMEAPI_BUFFERPROXY_INTERNAL
 #define PYGAMEAPI_WINDOW_INTERNAL
 #define PYGAMEAPI_RENDER_INTERNAL
 
@@ -355,7 +356,7 @@ PyInit_pygame_static()
 
 #include "color.c"
 
-#undef pgBufproxy_New
+#undef pgBufferProxy_New
 
 #include "bufferproxy.c"
 
@@ -369,7 +370,6 @@ PyInit_pygame_static()
 #include "simd_blitters_sse2.c"
 
 #include "window.c"
-#include "render.c"
 
 #undef pgVidInfo_Type
 #undef pgVidInfo_New
@@ -388,6 +388,7 @@ PyInit_pygame_static()
 #include "rwobject.c"
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
+#include "render.c"
 #include "image.c"
 
 #include "imageext.c"

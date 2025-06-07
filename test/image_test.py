@@ -1,15 +1,17 @@
 import array
 import binascii
+import glob
 import io
 import os
+import pathlib
 import tempfile
 import unittest
-import glob
-import pathlib
 from concurrent.futures import ThreadPoolExecutor
 
+import pygame
+import pygame.image
+import pygame.pkgdata
 from pygame.tests.test_utils import example_path, png, tostring
-import pygame, pygame.image, pygame.pkgdata
 
 sdl_image_svg_jpeg_save_bug = False
 _sdl_image_ver = pygame.image.get_sdl_image_version()
@@ -1367,7 +1369,7 @@ class ImageModuleTest(unittest.TestCase):
     def test_load_animation(self):
         # test loading from a file
         SAMPLE_FRAMES = 10
-        SAMPLE_DELAY = 150
+        SAMPLE_DELAY = 150.0
         SAMPLE_SIZE = (312, 312)
         gif_path = pathlib.Path(example_path("data/animated_sample.gif"))
         for inp in (
@@ -1388,7 +1390,7 @@ class ImageModuleTest(unittest.TestCase):
                     frame, delay = val
                     self.assertIsInstance(frame, pygame.Surface)
                     self.assertEqual(frame.size, SAMPLE_SIZE)
-                    self.assertIsInstance(delay, int)
+                    self.assertIsInstance(delay, float)
                     self.assertEqual(delay, SAMPLE_DELAY)
 
     def test_load_pathlib(self):

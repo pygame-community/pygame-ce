@@ -1,10 +1,10 @@
 from typing import Optional, Union
-from typing_extensions import deprecated  # added in 3.13
 
-from pygame.typing import Point, RectLike
 from pygame.locals import WINDOWPOS_UNDEFINED
 from pygame.rect import Rect
 from pygame.surface import Surface
+from pygame.typing import Point, RectLike
+from typing_extensions import deprecated  # added in 3.13
 
 def get_grabbed_window() -> Optional[Window]: ...
 

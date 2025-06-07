@@ -48,7 +48,7 @@ del chimpancé para ti mismo en el directorio de ejemplos.
 
    (no, este no es un anuncio, es una captura de pantalla)
 
-   .. image:: ../assets/chimpshot.gif
+   .. image:: ../assets/chimpshot.webp
       :alt: chimp game banner
 
    :doc:`Full Source <../chimp.py>`

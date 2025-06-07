@@ -1,12 +1,11 @@
 from collections.abc import Callable, Iterable
 from typing import Any, Optional, Union
-from typing_extensions import deprecated # added in 3.13
 
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
-
 from pygame.typing import ColorLike, FileLike, RectLike
+from typing_extensions import deprecated  # added in 3.13
 
 def get_error() -> str: ...
 def get_version(linked: bool = True) -> tuple[int, int, int]: ...

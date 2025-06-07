@@ -1,4 +1,5 @@
 import unittest
+
 import pygame
 import pygame.gfxdraw
 from pygame.locals import *

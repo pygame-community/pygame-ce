@@ -676,10 +676,8 @@ MODINIT_DEFINE(joystick)
         return NULL;
     }
 
-    Py_INCREF(&pgJoystick_Type);
-    if (PyModule_AddObject(module, "JoystickType",
-                           (PyObject *)&pgJoystick_Type)) {
-        Py_DECREF(&pgJoystick_Type);
+    if (PyModule_AddObjectRef(module, "JoystickType",
+                              (PyObject *)&pgJoystick_Type)) {
         Py_DECREF(module);
         return NULL;
     }

@@ -12,7 +12,7 @@ with Advanced OUTPUT – Buttons
 
 Even if KEYDOWN event is used, it seems like this is not entirely GUI game because GUI of this game is only used for output(=print), not input. Input for GUI means caring mouse event for specific location. How about making two buttons to increase or decrease HP?
 
-.. image:: ../../../assets/AdvancedInputOutput1.gif
+.. image:: ../../../assets/AdvancedInputOutput1.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -27,7 +27,7 @@ Even if KEYDOWN event is used, it seems like this is not entirely GUI game becau
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedInputOutput1.gif")
+   ball = pygame.image.load("AdvancedInputOutput1.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -44,7 +44,7 @@ Even if KEYDOWN event is used, it seems like this is not entirely GUI game becau
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: ../../../assets/AdvancedInputOutput2.gif
+.. image:: ../../../assets/AdvancedInputOutput2.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -59,7 +59,7 @@ Even if KEYDOWN event is used, it seems like this is not entirely GUI game becau
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedInputOutput2.gif")
+   ball = pygame.image.load("AdvancedInputOutput2.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -78,7 +78,7 @@ Even if KEYDOWN event is used, it seems like this is not entirely GUI game becau
 
 Okay, making two buttons is simple. Look at the button, they have unique visual shape. How can it be? Simple as previous idea: First, draw **big square**. Second, draw **smaller square** which has small width (this square doesn’t have inner color so color of big square can be displayed) so inner square and outer square seems like separated. But these buttons are still for output only. We need to make click area for this.
 
-.. image:: ../../../assets/AdvancedInputOutput3.gif
+.. image:: ../../../assets/AdvancedInputOutput3.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -93,7 +93,7 @@ Okay, making two buttons is simple. Look at the button, they have unique visual 
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedInputOutput3.gif")
+   ball = pygame.image.load("AdvancedInputOutput3.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -110,7 +110,7 @@ Okay, making two buttons is simple. Look at the button, they have unique visual 
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: ../../../assets/AdvancedInputOutput4.gif
+.. image:: ../../../assets/AdvancedInputOutput4.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -125,7 +125,7 @@ Okay, making two buttons is simple. Look at the button, they have unique visual 
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedInputOutput4.gif")
+   ball = pygame.image.load("AdvancedInputOutput4.webp")
    ballrect = ball.get_rect()
 
    while True:

@@ -184,7 +184,7 @@ typedef struct pg_bufferinfo_s {
     (*(int (*)(void))PYGAMEAPI_GET_SLOT(base, 23))
 
 #define pg_GetDefaultConvertFormat \
-    (*(PG_PixelFormatEnum(*)(void))PYGAMEAPI_GET_SLOT(base, 27))
+    (*(PG_PixelFormatEnum (*)(void))PYGAMEAPI_GET_SLOT(base, 27))
 
 #define pg_SetDefaultConvertFormat \
     (*(void (*)(Uint32))PYGAMEAPI_GET_SLOT(base, 28))
@@ -453,6 +453,34 @@ typedef struct pgEventObject pgEventObject;
 #endif /* PYGAMEAPI_PIXELARRAY_INTERNAL */
 
 /*
+ * BufferProxy module
+ */
+typedef struct {
+    PyObject_HEAD PyObject *obj; /* Wrapped object (parent)     */
+    pg_buffer *pg_view_p;        /* For array interface export  */
+    getbufferproc get_buffer;    /* pg_buffer get callback      */
+    PyObject *dict;              /* Allow arbitrary attributes  */
+    PyObject *weakrefs;          /* Reference cycles can happen */
+} pgBufferProxyObject;
+
+#ifndef PYGAMEAPI_BUFFERPROXY_INTERNAL
+#define pgBufferProxy_Type \
+    (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(bufferproxy, 0))
+
+#define pgBufferProxy_Check(x) ((x)->ob_type == &pgBufferProxy_Type)
+#define pgBufferProxy_New                         \
+    (*(PyObject * (*)(PyObject *, getbufferproc)) \
+         PYGAMEAPI_GET_SLOT(bufferproxy, 1))
+
+#define pgBufferProxy_GetParent \
+    (*(PyObject * (*)(PyObject *)) PYGAMEAPI_GET_SLOT(bufferproxy, 2))
+#define pgBufferProxy_Trip \
+    (*(int (*)(PyObject *))PYGAMEAPI_GET_SLOT(bufferproxy, 3))
+
+#define import_pygame_bufferproxy() _IMPORT_PYGAME_MODULE(bufferproxy)
+#endif /* ~PYGAMEAPI_BUFFERPROXY_INTERNAL */
+
+/*
  * Color module
  */
 typedef struct pgColorObject pgColorObject;
@@ -481,26 +509,10 @@ typedef struct pgColorObject pgColorObject;
 #endif /* PYGAMEAPI_COLOR_INTERNAL */
 
 /*
- * Math module
+ * Geometry module
  */
-#ifndef PYGAMEAPI_MATH_INTERNAL
-#define pgVector2_Check(x) \
-    ((x)->ob_type == (PyTypeObject *)PYGAMEAPI_GET_SLOT(math, 0))
-
-#define pgVector3_Check(x) \
-    ((x)->ob_type == (PyTypeObject *)PYGAMEAPI_GET_SLOT(math, 1))
-/*
-#define pgVector2_New                                             \
-    (*(PyObject*(*))  \
-        PYGAMEAPI_GET_SLOT(PyGAME_C_API, 1))
-*/
-#define import_pygame_math() IMPORT_PYGAME_MODULE(math)
-#endif /* PYGAMEAPI_MATH_INTERNAL */
-
 #ifndef PYGAMEAPI_GEOMETRY_INTERNAL
-
 #define import_pygame_geometry() IMPORT_PYGAME_MODULE(geometry)
-
 #endif /* ~PYGAMEAPI_GEOMETRY_INTERNAL */
 
 /*
@@ -580,6 +592,7 @@ PYGAMEAPI_DEFINE_SLOTS(surflock);
 PYGAMEAPI_DEFINE_SLOTS(event);
 PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
+PYGAMEAPI_DEFINE_SLOTS(bufferproxy);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
 PYGAMEAPI_DEFINE_SLOTS(window);
@@ -595,6 +608,7 @@ PYGAMEAPI_EXTERN_SLOTS(surflock);
 PYGAMEAPI_EXTERN_SLOTS(event);
 PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
+PYGAMEAPI_EXTERN_SLOTS(bufferproxy);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
 PYGAMEAPI_EXTERN_SLOTS(window);
