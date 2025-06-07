@@ -674,8 +674,7 @@ Named Colors
     </style>
 
 :doc:`color` lets you specify any of these named colors when creating a new
-``pygame.Color`` (taken from the
-`colordict module <https://github.com/pygame-community/pygame-ce/blob/main/src_py/colordict.py>`_).
+``pygame.Color``
 
 .. role:: aliceblue
 .. role:: antiquewhite

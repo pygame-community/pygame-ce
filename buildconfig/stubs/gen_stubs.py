@@ -40,7 +40,6 @@ PG_AUTOIMPORT_SUBMODS = [
     "base",
     "bufferproxy",
     "color",
-    "colordict",
     "mixer_music",
     "pixelarray",
     "rect",
