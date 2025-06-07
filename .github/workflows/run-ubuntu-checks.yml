@@ -140,8 +140,9 @@ jobs:
       id: check-changes
       run: |
         git fetch origin ${{ github.base_ref }} --depth=1 || true
+        git checkout ${{ github.base_ref }}
         CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
-        echo "$CHANGED_FILES" | grep '^src_c/' || echo "::set-output name=skip::true"
+        echo "$CHANGED_FILES" | grep '^src_c/' || echo "skip=true" >> "$GITHUB_OUTPUT"
 
     - name: Install cppcheck
       if: steps.check-changes.outputs.skip != 'true'
