@@ -53,20 +53,16 @@ class Surface:
     the most suitable format is chosen for the current platform.
 
     One way to control the pixel format/charateristics is providing a bitmask of flags:
-       * ``SRCALPHA``: If it is possible the Surface will include an alpha channel.
+       * ``SRCALPHA``: The Surface will include an alpha channel.
        * ``HWSURFACE``: Creates the image in video memory but is obsolete in pygame 2.
 
     Otherwise The pixel format can be controlled in different ways:
        * Providing another ``Surface`` after the flags argument. In this case that Surface's
          format will be used.
-       * Providing a bit depth (describing the data used by one pixel). If alpha is
-         requested, only bit depths of ``16`` and ``24`` are allowed, resulting in ``ARGB4444``
-         and ``ARGB8888`` formats. With no alpha channels, the following bit depths are
-         allowed producing the corresponding formats: ``8``:``indexed``, ``12``:``XRGB4444``,
-         ``15``:``XRGB1555``, ``16``:``RGB565``, ``24``:``RGB/BGR24``, ``32``: ``XRGB8888``.
-       * Providing a bit depth and also a sequence of four integers describing the
-         bitmasks that will result in a precise format. Normal Surfaces don't require
-         masks as they are intended for advanced pixel Surface control.
+       * Advanced users can provide a bit depth and masks to precisely control how the
+         pixel's channels are organized in memory. If no masks are provided they will
+         be selected optimally from the bit depth. Normal usage of Surfaces should
+         only use the default format.
 
     An indexed format requires a palette for its colors. While pygame provides a default
     palette, it can also be controlled with the appropriate methods.
@@ -729,31 +725,22 @@ class Surface:
         flags bitmask. Typical flags are ``RLEACCEL``, ``SRCALPHA``, and
         ``SRCCOLORKEY``.
 
-        Here is a more complete list of flags. A full list can be found in
-        ``SDL_video.h``
-
-        ::
-            SRCALPHA       0x00010000    # Blit uses source alpha blending
-            SWSURFACE      0x00000000    # Surface is in system memory
+        Here is a more complete list of flags:
+           * ``SRCALPHA``: Blit uses source alpha blending
+           * ``SWSURFACE``: Surface is in system memory
+           * ``HWACCEL``: Blit uses hardware acceleration
+           * ``SRCCOLORKEY``: Blit uses a source color key
+           * ``RLEACCELOK``: Private flag
+           * ``RLEACCEL``: Surface is RLE encoded
+           * ``PREALLOC``: Surface uses preallocated memory
 
         See :func:`pygame.display.set_mode()` for flags exclusive to the
         display Surface.
 
-        Used internally (read-only)
-
-        ::
-
-            HWACCEL        0x00000100    # Blit uses hardware acceleration
-            SRCCOLORKEY    0x00001000    # Blit uses a source color key
-            RLEACCELOK     0x00002000    # Private flag
-            RLEACCEL       0x00004000    # Surface is RLE encoded
-            PREALLOC       0x01000000    # Surface uses preallocated memory
-
         Obsolete flags:
 
-        ::
-            HWSURFACE      0x00000001    # (obsolete in pygame 2) Surface is in video memory
-            ASYNCBLIT      0x00000004    # (obsolete in pygame 2) Use asynchronous blits if possible
+           * ``HWSURFACE``: (obsolete in pygame 2) Surface is in video memory
+           * ``ASYNCBLIT``: (obsolete in pygame 2) Use asynchronous blits if possible
         """
 
     def get_pitch(self) -> int:
