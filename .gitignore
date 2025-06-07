@@ -35,6 +35,10 @@
 # Ruff
 .ruff_cache
 
+# Meson subprojects
+subprojects/*
+!subprojects/*.wrap
+
 # Other
 envdev*
 .virtualenv*
@@ -48,6 +52,7 @@ dist
 __pycache__
 _headers/*
 buildconfig/win_dll_dirs.json
+*.log
 
 # cython generated files
 src_c/_sdl2/*.c
