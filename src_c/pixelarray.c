@@ -1941,7 +1941,6 @@ MODINIT_DEFINE(pixelarray)
         Py_DECREF(module);
         return NULL;
     }
-    pgPixelArray_Type.tp_getattro = PyObject_GenericGetAttr;
 
     c_api[0] = &pgPixelArray_Type;
     c_api[1] = pgPixelArray_New;

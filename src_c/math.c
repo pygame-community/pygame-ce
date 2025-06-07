@@ -3732,7 +3732,6 @@ static PyTypeObject pgVectorIter_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.math.VectorIterator",
     .tp_basicsize = sizeof(vectoriter),
     .tp_dealloc = (destructor)vectoriter_dealloc,
-    .tp_getattro = PyObject_GenericGetAttr,
     /* VectorIterator is not subtypable for now, no Py_TPFLAGS_BASETYPE */
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_iter = PyObject_SelfIter,
