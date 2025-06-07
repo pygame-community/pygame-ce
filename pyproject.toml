@@ -80,6 +80,11 @@ skip = "*-musllinux_*"
 # build[uv] is verbose by default, so below flag is not needed here
 # build-verbosity = 3
 
+# In CIBW 2, defaults to pypy-enabled, but is throwing warnings about the
+# default changing in CIBW 3. So since we use pypy, lets explicitly enable it.
+# https://cibuildwheel.pypa.io/en/stable/options/#enable
+enable = ["pypy"]
+
 environment = { SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="disk" }
 test-command = "python -m pygame.tests -v --exclude opengl,music,timing --time_out 300"
 test-requires = ["numpy"]
