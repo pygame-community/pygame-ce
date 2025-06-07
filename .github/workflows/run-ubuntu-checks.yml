@@ -97,12 +97,11 @@ jobs:
       if: steps.cache-python.outputs.cache-hit != 'true'
       run: pyenv install ${{ matrix.python }} --debug -v
 
-      # python dev.py build --coverage --lax --ctest
     - name: Build pygame-ce
       id: build-pygame-ce
       run: |
         pyenv global ${{ matrix.python }}-debug
-        python dev.py build --lax --coverage
+        python dev.py build --lax --coverage --ctest
 
     - name: Run tests
       env:
@@ -126,14 +125,14 @@ jobs:
       if: ${{ steps.gen-coverage.conclusion == 'success' && !cancelled() }}
       uses: actions/upload-artifact@v4
       with:
-        name: pygame-wheels-coverage
+        name: pygame-wheels-coverage-{ matrix.os }-{ matrix.python }
         path: ./out
 
     - name: Upload ctest log
       if: !cancelled()
       uses: actions/upload-artifact@v4
       with:
-        name: ctest_suite_log
+        name: ctest_suite_log-{ matrix.os }-{ matrix.python }
         path: ./ctest.log
 
   # Run cppcheck static analysis on src_c changes
