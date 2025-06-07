@@ -487,6 +487,9 @@ solves no longer exists, it will likely be removed in the future.
       advance), ...]. None is entered in the list for each unrecognized
       character.
 
+      .. versionchanged:: 2.5.4 This function now supports all unicode codepoints.
+         Previously, only a subset that was representable in UCS-2 was supported.
+
       .. ## Font.metrics ##
 
    .. method:: get_italic
@@ -511,6 +514,19 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.get_linesize ##
 
+   .. method:: set_linesize
+
+      | :sl:`set the line space of the font text`
+      | :sg:`set_linesize(linesize) -> None`
+
+      Set the height in pixels for a line of text with the font. When rendering
+      multiple lines of text this refers to the amount of space between lines.
+      The value must be non-negative.
+
+      .. versionadded:: 2.5.4
+
+      .. ## Font.set_linesize ##
+
    .. method:: get_height
 
       | :sl:`get the height of the font`
@@ -524,7 +540,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_point_size
 
       | :sl:`set the point size of the font`
-      | :sg:`set_point_size(size, /) -> int`
+      | :sg:`set_point_size(size, /) -> None`
 
       Sets the point size of the font, which is the value that was used to
       initialize this font.

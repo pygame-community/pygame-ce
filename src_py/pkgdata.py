@@ -18,31 +18,20 @@ object (such as StringIO).
 """
 
 __all__ = ["getResource"]
-import sys
 import os
+import sys
 
 try:
-    if sys.version_info[:2] > (3, 8):
-        from importlib.resources import files
+    from importlib.resources import files
 
-        def resource_exists(_package_or_requirement, _resource_name):
-            _package_or_requirement = _package_or_requirement.split(".")[0]
-            return files(_package_or_requirement).joinpath(_resource_name).is_file()
+    def resource_exists(_package_or_requirement, _resource_name):
+        _package_or_requirement = _package_or_requirement.split(".")[0]
+        return files(_package_or_requirement).joinpath(_resource_name).is_file()
 
-        def resource_stream(_package_or_requirement, _resource_name):
-            _package_or_requirement = _package_or_requirement.split(".")[0]
-            ref = files(_package_or_requirement).joinpath(_resource_name)
-            return ref.open('rb')
-    else:
-        from importlib import resources
-
-        def resource_exists(_package_or_requirement, _resource_name):
-            _package_or_requirement = _package_or_requirement.split(".")[0]
-            return resources.is_resource(_package_or_requirement, _resource_name)  # pylint: disable=deprecated-method
-
-        def resource_stream(_package_or_requirement, _resource_name):
-            _package_or_requirement = _package_or_requirement.split(".")[0]
-            return resources.open_binary(_package_or_requirement, _resource_name)  # pylint: disable=deprecated-method
+    def resource_stream(_package_or_requirement, _resource_name):
+        _package_or_requirement = _package_or_requirement.split(".")[0]
+        ref = files(_package_or_requirement).joinpath(_resource_name)
+        return ref.open("rb")
 
 except ImportError:
 

@@ -12,23 +12,13 @@ __all__ = [
     "IntPoint",
 ]
 
-import sys
 from abc import abstractmethod
-from typing import IO, Callable, Tuple, Union, TypeVar, Protocol
+from collections.abc import Callable
+from os import PathLike as _PathProtocol
+from typing import IO, Protocol, TypeVar, Union
 
 from pygame.color import Color
-from pygame.rect import Rect, FRect
-
-
-if sys.version_info >= (3, 9):
-    from os import PathLike as _PathProtocol
-else:
-    _AnyStr_co = TypeVar("_AnyStr_co", str, bytes, covariant=True)
-
-    class _PathProtocol(Protocol[_AnyStr_co]):
-        @abstractmethod
-        def __fspath__(self) -> _AnyStr_co: ...
-
+from pygame.rect import FRect, Rect
 
 # For functions that take a file name
 _PathLike = Union[str, bytes, _PathProtocol[str], _PathProtocol[bytes]]
@@ -74,14 +64,12 @@ RectLike = Union[
 
 # cleanup namespace
 del (
-    sys,
     abstractmethod,
     Color,
     Rect,
     FRect,
     IO,
     Callable,
-    Tuple,
     Union,
     TypeVar,
     Protocol,

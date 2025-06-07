@@ -16,6 +16,7 @@ but usually you'd have a custom surface that needs intact corners.
 """
 
 import os
+
 import pygame
 
 SCREEN_SIZE = pygame.Vector2(600, 500)
@@ -44,7 +45,7 @@ def ninepatch_scale(
         )  # when alpha is False the flags become 0
 
     # aliases
-    ret_w, ret_h = size  # non-sequence argument catched by python
+    ret_w, ret_h = size  # non-sequence argument caught by python
     src_w, src_h = surface.size
     c = corner_size
     scale_func = pygame.transform.smoothscale if smooth else pygame.transform.scale
@@ -110,7 +111,7 @@ def main():
     font = pygame.Font(None, 30)
 
     main_dir = os.path.split(os.path.abspath(__file__))[0]
-    example_image = pygame.image.load(os.path.join(main_dir, "data", "frame.png"))
+    example_image = pygame.image.load(os.path.join(main_dir, "data", "frame.webp"))
 
     original_surface = pygame.Surface((100, 100), pygame.SRCALPHA)
     pygame.draw.rect(

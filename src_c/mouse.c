@@ -35,8 +35,9 @@ mouse_set_pos(PyObject *self, PyObject *args)
 {
     int x, y;
 
-    if (!pg_TwoIntsFromObj(args, &x, &y))
+    if (!pg_TwoIntsFromObj(args, &x, &y)) {
         return RAISE(PyExc_TypeError, "invalid position argument for set_pos");
+    }
 
     VIDEO_INIT_CHECK();
 
@@ -65,13 +66,21 @@ mouse_set_pos(PyObject *self, PyObject *args)
 static PyObject *
 mouse_get_pos(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* SDL3 changed the mouse API to deal with float coordinates, for now we
+     * still truncate the result to int before returning to python side.
+     * This can be changed in a breaking release in the future if needed. */
+    float x, y;
+#else
     int x, y;
+#endif
     int desktop = 0;
 
     static char *kwids[] = {"desktop", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &desktop))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &desktop)) {
         return NULL;
+    }
     VIDEO_INIT_CHECK();
 
     if (desktop == 1) {
@@ -90,31 +99,66 @@ mouse_get_pos(PyObject *self, PyObject *args, PyObject *kwargs)
                 SDL_RenderGetScale(sdlRenderer, &scalex, &scaley);
                 SDL_RenderGetViewport(sdlRenderer, &vprect);
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                x = x / scalex;
+                y = y / scaley;
+#else
                 x = (int)(x / scalex);
                 y = (int)(y / scaley);
+#endif
 
                 x -= vprect.x;
                 y -= vprect.y;
 
-                if (x < 0)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                if (x < 0) {
                     x = 0;
-                if (x >= vprect.w)
-                    x = vprect.w - 1;
-                if (y < 0)
+                }
+                if (x >= vprect.w) {
+                    x = (float)vprect.w - 1;
+                }
+                if (y < 0) {
                     y = 0;
-                if (y >= vprect.h)
+                }
+                if (y >= vprect.h) {
+                    y = (float)vprect.h - 1;
+                }
+#else
+                if (x < 0) {
+                    x = 0;
+                }
+                if (x >= vprect.w) {
+                    x = vprect.w - 1;
+                }
+                if (y < 0) {
+                    y = 0;
+                }
+                if (y >= vprect.h) {
                     y = vprect.h - 1;
+                }
+#endif
             }
         }
     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    return pg_tuple_couple_from_values_int((int)x, (int)y);
+#else
     return pg_tuple_couple_from_values_int(x, y);
+#endif
 }
 
 static PyObject *
 mouse_get_rel(PyObject *self, PyObject *_null)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* SDL3 changed the mouse API to deal with float coordinates, for now we
+     * still truncate the result to int before returning to python side.
+     * This can be changed in a breaking release in the future if needed. */
+    float x, y;
+#else
     int x, y;
+#endif
 
     VIDEO_INIT_CHECK();
 
@@ -132,7 +176,11 @@ mouse_get_rel(PyObject *self, PyObject *_null)
             y/=scaley;
         }
     */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    return pg_tuple_couple_from_values_int((int)x, (int)y);
+#else
     return pg_tuple_couple_from_values_int(x, y);
+#endif
 }
 
 static PyObject *
@@ -146,19 +194,22 @@ mouse_get_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
     static char *kwids[] = {"num_buttons", "desktop", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ip", kwids, &num_buttons,
-                                     &desktop))
+                                     &desktop)) {
         return NULL;
+    }
     VIDEO_INIT_CHECK();
 
-    if (num_buttons != 3 && num_buttons != 5)
+    if (num_buttons != 3 && num_buttons != 5) {
         return RAISE(PyExc_ValueError,
                      "Number of buttons needs to be 3 or 5.");
+    }
 
     state = desktop ? SDL_GetGlobalMouseState(NULL, NULL)
                     : SDL_GetMouseState(NULL, NULL);
 
-    if (!(tuple = PyTuple_New(num_buttons)))
+    if (!(tuple = PyTuple_New(num_buttons))) {
         return NULL;
+    }
 
     PyTuple_SET_ITEM(tuple, 0,
                      PyBool_FromLong((state & SDL_BUTTON_LMASK) != 0));
@@ -184,8 +235,9 @@ mouse_get_just_pressed(PyObject *self, PyObject *_null)
     VIDEO_INIT_CHECK();
 
     char *pressed_buttons = pgEvent_GetMouseButtonDownInfo();
-    if (!(tuple = PyTuple_New(5)))
+    if (!(tuple = PyTuple_New(5))) {
         return NULL;
+    }
 
     for (int i = 0; i < 5; i++) {
         PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(pressed_buttons[i]));
@@ -201,8 +253,9 @@ mouse_get_just_released(PyObject *self, PyObject *_null)
     VIDEO_INIT_CHECK();
 
     char *released_buttons = pgEvent_GetMouseButtonUpInfo();
-    if (!(tuple = PyTuple_New(5)))
+    if (!(tuple = PyTuple_New(5))) {
         return NULL;
+    }
 
     for (int i = 0; i < 5; i++) {
         PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(released_buttons[i]));
@@ -216,14 +269,19 @@ mouse_set_visible(PyObject *self, PyObject *args)
 {
     int toggle, prevstate;
     SDL_Window *win = NULL;
-    Uint32 window_flags = 0;
+    SDL_WindowFlags window_flags = 0;
 
-    if (!PyArg_ParseTuple(args, "i", &toggle))
+    if (!PyArg_ParseTuple(args, "i", &toggle)) {
         return NULL;
+    }
     VIDEO_INIT_CHECK();
 
     win = pg_GetDefaultWindow();
     if (win) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_SetWindowRelativeMouseMode(win,
+                                       SDL_GetWindowMouseGrab(win) && !toggle);
+#else
         int mode = SDL_GetWindowGrab(win);
         if ((mode == SDL_ENABLE) & !toggle) {
             SDL_SetRelativeMouseMode(1);
@@ -231,6 +289,7 @@ mouse_set_visible(PyObject *self, PyObject *args)
         else {
             SDL_SetRelativeMouseMode(0);
         }
+#endif
         window_flags = SDL_GetWindowFlags(win);
         if (!toggle && (window_flags & PG_WINDOW_FULLSCREEN_INCLUSIVE)) {
             SDL_SetHint(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, "0");
@@ -263,7 +322,13 @@ mouse_get_visible(PyObject *self, PyObject *_null)
 
     VIDEO_INIT_CHECK();
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_Window *win = pg_GetDefaultWindow();
+    result =
+        win ? (PG_CursorVisible() && !SDL_GetWindowRelativeMouseMode(win)) : 0;
+#else
     result = (PG_CursorVisible() && !SDL_GetRelativeMouseMode());
+#endif
 
     if (0 > result) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -310,23 +375,28 @@ _set_bitmap_cursor(int w, int h, int spotx, int spoty, PyObject *xormask,
     int xorsize, andsize, loop, val;
     SDL_Cursor *lastcursor, *cursor = NULL;
 
-    if (!PySequence_Check(xormask) || !PySequence_Check(andmask))
+    if (!PySequence_Check(xormask) || !PySequence_Check(andmask)) {
         return RAISE(PyExc_TypeError, "xormask and andmask must be sequences");
+    }
 
-    if (w % 8)
+    if (w % 8) {
         return RAISE(PyExc_ValueError, "Cursor width must be divisible by 8.");
+    }
 
     xorsize = (int)PySequence_Length(xormask);
-    if (xorsize < 0)
+    if (xorsize < 0) {
         return NULL;
+    }
 
     andsize = (int)PySequence_Length(andmask);
-    if (andsize < 0)
+    if (andsize < 0) {
         return NULL;
+    }
 
-    if (xorsize != w * h / 8 || andsize != w * h / 8)
+    if (xorsize != w * h / 8 || andsize != w * h / 8) {
         return RAISE(PyExc_ValueError,
                      "bitmasks must be sized width*height/8");
+    }
 
 #ifdef _MSC_VER
     /* Suppress false analyzer report */
@@ -344,11 +414,13 @@ _set_bitmap_cursor(int w, int h, int spotx, int spoty, PyObject *xormask,
     }
 
     for (loop = 0; loop < xorsize; ++loop) {
-        if (!pg_IntFromObjIndex(xormask, loop, &val))
+        if (!pg_IntFromObjIndex(xormask, loop, &val)) {
             goto interror;
+        }
         xordata[loop] = (Uint8)val;
-        if (!pg_IntFromObjIndex(andmask, loop, &val))
+        if (!pg_IntFromObjIndex(andmask, loop, &val)) {
             goto interror;
+        }
         anddata[loop] = (Uint8)val;
     }
 
@@ -358,8 +430,9 @@ _set_bitmap_cursor(int w, int h, int spotx, int spoty, PyObject *xormask,
     xordata = NULL;
     anddata = NULL;
 
-    if (!cursor)
+    if (!cursor) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 
     lastcursor = SDL_GetCursor();
     SDL_SetCursor(cursor);
@@ -383,10 +456,12 @@ _set_bitmap_cursor(int w, int h, int spotx, int spoty, PyObject *xormask,
     Py_RETURN_NONE;
 
 interror:
-    if (xordata)
+    if (xordata) {
         free(xordata);
-    if (anddata)
+    }
+    if (anddata) {
         free(anddata);
+    }
     return RAISE(PyExc_TypeError, "Invalid number in mask array");
 }
 
@@ -423,8 +498,9 @@ _set_color_cursor(int spotx, int spoty, pgSurfaceObject *surfobj)
     surf = pgSurface_AsSurface(surfobj);
 
     cursor = SDL_CreateColorCursor(surf, spotx, spoty);
-    if (!cursor)
+    if (!cursor) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 
     lastcursor = SDL_GetCursor();
     SDL_SetCursor(cursor);
@@ -527,7 +603,12 @@ mouse_get_cursor(PyObject *self, PyObject *_null)
 static PyObject *
 mouse_get_relative_mode(PyObject *self)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_Window *win = pg_GetDefaultWindow();
+    return PyBool_FromLong(win ? SDL_GetWindowRelativeMouseMode(win) : 0);
+#else
     return PyBool_FromLong(SDL_GetRelativeMouseMode());
+#endif
 }
 
 static PyObject *
@@ -537,9 +618,20 @@ mouse_set_relative_mode(PyObject *self, PyObject *arg)
     if (mode == -1) {
         return NULL;
     }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_Window *win = pg_GetDefaultWindow();
+    if (!win) {
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+    if (!SDL_SetWindowRelativeMouseMode(win, (bool)mode)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+#else
     if (SDL_SetRelativeMouseMode((SDL_bool)mode)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
+#endif
     Py_RETURN_NONE;
 }
 

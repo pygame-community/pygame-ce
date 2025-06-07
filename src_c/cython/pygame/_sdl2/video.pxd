@@ -107,6 +107,7 @@ cdef extern from "SDL.h" nogil:
         SDL_BLENDMODE_BLEND = 0x00000001,
         SDL_BLENDMODE_ADD = 0x00000002,
         SDL_BLENDMODE_MOD = 0x00000004,
+        SDL_BLENDMODE_MUL = 0x00000008,
         SDL_BLENDMODE_INVALID = 0x7FFFFFFF
 
     # https://wiki.libsdl.org/SDL_MessageBoxData
