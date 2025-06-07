@@ -23,7 +23,7 @@ Each sample is an 8-bit or 16-bit integer, depending on the data format. A
 stereo sound file has two values per sample, while a mono sound file only has
 one.
 
-.. versionchanged:: 2.5.4 sndarray module is lazily loaded to avoid an expensive NumPy import when unnecessary
+.. versionchanged:: 2.5.6 sndarray module is lazily loaded to avoid an expensive NumPy import when unnecessary
 
 .. function:: array
 
