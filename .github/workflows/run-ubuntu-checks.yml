@@ -127,7 +127,11 @@ jobs:
       if: ${{ steps.gen-coverage.conclusion == 'success' && !cancelled() }}
       uses: actions/upload-artifact@v4
       with:
+<<<<<<< HEAD
         name: pygame-coverage-${{ matrix.os }}-${{ matrix.python }}
+=======
+        name: pygame-wheels-coverage-${{ matrix.os }}-${{ matrix.python }}
+>>>>>>> a9b0e9863 (Properly reference matrix vars)
         path: ./out
 
   # Run cppcheck static analysis on src_c changes
