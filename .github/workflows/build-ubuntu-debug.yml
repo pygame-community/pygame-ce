@@ -1,10 +1,17 @@
 # This workflow runs a build with a python version that has debug symbols
+# Also generates coverage information from unit tests
+#
+# Note that for intrinsics, it only runs what gets compiled
+# -# and would naturally run. It also is limited to what can run in
+# -# a CI environment
+# -# IMPORTANT: binaries are not to be uploaded from this workflow!
+#
 # Update this workflow when our min/max python minor versions update
 # This workflow is necessary to ensure that we can build and run with
 # a debug python build without too much worrying about SIGABRT being thrown
 # IMPORTANT: binaries are not to be uploaded from this workflow!
 
-name: Ubuntu debug python
+name: Ubuntu debug
 defaults:
   run:
     shell: bash -leo pipefail {0}
@@ -23,7 +30,7 @@ on:
       - '*.md'
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
-      - '!.github/workflows/build-ubuntu-debug-python.yml'
+      - '!.github/workflows/build-ubuntu-debug.yml'
 
   pull_request:
     branches: main
@@ -35,14 +42,14 @@ on:
       - '*.md'
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
-      - '!.github/workflows/build-ubuntu-debug-python.yml'
+      - '!.github/workflows/build-ubuntu-debug.yml'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-ubuntu-debug-python
+  group: ${{ github.workflow }}-${{ github.ref }}-ubuntu-debug
   cancel-in-progress: true
 
 jobs:
-  debug_python:
+  debug:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
@@ -50,7 +57,7 @@ jobs:
         os: [ ubuntu-24.04 ]
         # check our min python (minor) version and our max python (minor) version
         python: [
-          # 3.9.21,
+          3.9.21,
           3.13.1
         ]
 
