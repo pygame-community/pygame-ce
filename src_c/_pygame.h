@@ -403,8 +403,6 @@ typedef enum {
 
     PGE_MIDIIN,
     PGE_MIDIOUT,
-    PGE_KEYREPEAT, /* Special internal pygame event, for managing key-presses
-                    */
 
     /* DO NOT CHANGE THE ORDER OF EVENTS HERE */
     PGE_WINDOWSHOWN,
