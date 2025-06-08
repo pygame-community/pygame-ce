@@ -100,7 +100,7 @@ pgSurface_LockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
         pgSurface_Prep(surfobj);
     }
     if (!PG_LockSurface(surf->surf)) {
-        RAISERETURN(PyExc_RuntimeError, "error locking surface", 0);
+        return RAISERETURN(PyExc_RuntimeError, "error locking surface", 0);
     }
     return 1;
 }

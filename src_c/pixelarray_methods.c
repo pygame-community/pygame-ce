@@ -319,8 +319,9 @@ _get_weights(PyObject *weights, float *wr, float *wg, float *wb)
         *wb = rgb[2];
         if ((*wr < 0 || *wg < 0 || *wb < 0) ||
             (*wr == 0 && *wg == 0 && *wb == 0)) {
-            RAISERETURN(PyExc_ValueError,
-                        "weights must be positive and greater than 0", 0);
+            return RAISERETURN(PyExc_ValueError,
+                               "weights must be positive and greater than 0",
+                               0);
         }
         /* Build the average weight values. */
         sum = *wr + *wg + *wb;
@@ -808,7 +809,7 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
 
     if (other_array->shape[0] != dim0 || other_array->shape[1] != dim1) {
         /* Bounds do not match. */
-        RAISERETURN(PyExc_ValueError, "array sizes do not match", 0);
+        return RAISERETURN(PyExc_ValueError, "array sizes do not match", 0);
     }
 
     other_surf = pgSurface_AsSurface(other_array->surface);
@@ -827,7 +828,7 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     if (PG_FORMAT_BytesPerPixel(other_format) != bpp) {
         /* bpp do not match. We cannot guarantee that the padding and co
          * would be set correctly. */
-        RAISERETURN(PyExc_ValueError, "bit depths do not match", 0);
+        return RAISERETURN(PyExc_ValueError, "bit depths do not match", 0);
     }
 
     other_stride0 = other_array->strides[0];

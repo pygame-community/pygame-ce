@@ -718,8 +718,8 @@ static int
 pg_EnableKeyRepeat(int delay, int interval)
 {
     if (delay < 0 || interval < 0) {
-        RAISERETURN(PyExc_ValueError,
-                    "delay and interval must equal at least 0", -1);
+        return RAISERETURN(PyExc_ValueError,
+                           "delay and interval must equal at least 0", -1);
     }
     PG_LOCK_EVFILTER_MUTEX
     pg_key_repeat_delay = delay;
@@ -1676,7 +1676,7 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (type < 0 || type >= PG_NUMEVENTS) {
-        RAISERETURN(PyExc_ValueError, "event type out of range", -1);
+        return RAISERETURN(PyExc_ValueError, "event type out of range", -1);
     }
 
     if (!dict) {
@@ -1704,8 +1704,8 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
 
     if (PyDict_GetItemString(dict, "type")) {
         Py_DECREF(dict);
-        RAISERETURN(PyExc_ValueError, "redundant type field in event dict",
-                    -1);
+        return RAISERETURN(PyExc_ValueError,
+                           "redundant type field in event dict", -1);
     }
 
     self->type = _pg_pgevent_deproxify(type);
@@ -1936,11 +1936,11 @@ _pg_eventtype_from_seq(PyObject *seq, int ind)
 {
     int val = 0;
     if (!pg_IntFromObjIndex(seq, ind, &val)) {
-        RAISERETURN(PyExc_TypeError,
-                    "type sequence must contain valid event types", -1);
+        return RAISERETURN(PyExc_TypeError,
+                           "type sequence must contain valid event types", -1);
     }
     if (val < 0 || val >= PG_NUMEVENTS) {
-        RAISERETURN(PyExc_ValueError, "event type out of range", -1);
+        return RAISERETURN(PyExc_ValueError, "event type out of range", -1);
     }
     return val;
 }

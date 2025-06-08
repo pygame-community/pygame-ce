@@ -878,7 +878,8 @@ RectExport_init(RectObject *self, PyObject *args, PyObject *kwds)
     InnerRect *argrect, temp;
 
     if (!(argrect = RectFromObject(args, &temp))) {
-        RAISERETURN(PyExc_TypeError, "Argument must be rect style object", -1);
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", -1);
     }
 
     self->r = *argrect;
@@ -2147,7 +2148,8 @@ RectExport_assItem(RectObject *self, Py_ssize_t i, PyObject *v)
     PrimitiveType *data = (PrimitiveType *)&self->r;
 
     if (!v) {
-        RAISERETURN(PyExc_TypeError, "item deletion is not supported", -1);
+        return RAISERETURN(PyExc_TypeError, "item deletion is not supported",
+                           -1);
     }
 
     if (i < 0 || i > 3) {
@@ -2155,11 +2157,11 @@ RectExport_assItem(RectObject *self, Py_ssize_t i, PyObject *v)
             i += 4;
         }
         else {
-            RAISERETURN(PyExc_IndexError, "Invalid rect Index", -1);
+            return RAISERETURN(PyExc_IndexError, "Invalid rect Index", -1);
         }
     }
     if (!PrimitiveFromObj(v, &val)) {
-        RAISERETURN(PyExc_TypeError, "Must assign numeric values", -1);
+        return RAISERETURN(PyExc_TypeError, "Must assign numeric values", -1);
     }
     data[i] = val;
     return 0;
@@ -2216,7 +2218,8 @@ static int
 RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
 {
     if (!value) {
-        RAISERETURN(PyExc_TypeError, "item deletion is not supported", -1);
+        return RAISERETURN(PyExc_TypeError, "item deletion is not supported",
+                           -1);
     }
     if (PyIndex_Check(op)) {
         Py_ssize_t i = PyNumber_AsSsize_t(op, NULL);
@@ -2248,7 +2251,8 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
             Py_ssize_t i;
 
             if (PySequence_Size(value) != 4) {
-                RAISERETURN(PyExc_TypeError, "Expect a length 4 sequence", -1);
+                return RAISERETURN(PyExc_TypeError,
+                                   "Expect a length 4 sequence", -1);
             }
             for (i = 0; i < 4; ++i) {
                 item = PySequence_ITEM(value, i);
@@ -2264,8 +2268,8 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
             self->r.h = values[3];
         }
         else {
-            RAISERETURN(PyExc_TypeError, "Expected an integer or sequence",
-                        -1);
+            return RAISERETURN(PyExc_TypeError,
+                               "Expected an integer or sequence", -1);
         }
     }
     else if (PySlice_Check(op)) {
@@ -2309,12 +2313,12 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
             }
         }
         else {
-            RAISERETURN(PyExc_TypeError, "Expected an integer or sequence",
-                        -1);
+            return RAISERETURN(PyExc_TypeError,
+                               "Expected an integer or sequence", -1);
         }
     }
     else {
-        RAISERETURN(PyExc_TypeError, "Invalid Rect slice", -1);
+        return RAISERETURN(PyExc_TypeError, "Invalid Rect slice", -1);
     }
     return 0;
 }
@@ -2393,11 +2397,11 @@ RectExport_setwidth(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.w = val1;
     return 0;
@@ -2417,11 +2421,11 @@ RectExport_setheight(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.h = val1;
     return 0;
@@ -2441,11 +2445,11 @@ RectExport_settop(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.y = val1;
     return 0;
@@ -2465,11 +2469,11 @@ RectExport_setleft(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1;
     return 0;
@@ -2489,11 +2493,11 @@ RectExport_setright(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1 - self->r.w;
     return 0;
@@ -2513,11 +2517,11 @@ RectExport_setbottom(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.y = val1 - self->r.h;
     return 0;
@@ -2537,11 +2541,11 @@ RectExport_setcenterx(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1 - (self->r.w / 2);
     return 0;
@@ -2561,11 +2565,11 @@ RectExport_setcentery(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.y = val1 - (self->r.h / 2);
     return 0;
@@ -2585,11 +2589,11 @@ RectExport_settopleft(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1;
     self->r.y = val2;
@@ -2610,11 +2614,11 @@ RectExport_settopright(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1 - self->r.w;
     self->r.y = val2;
@@ -2635,11 +2639,11 @@ RectExport_setbottomleft(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1;
     self->r.y = val2 - self->r.h;
@@ -2661,11 +2665,11 @@ RectExport_setbottomright(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1 - self->r.w;
     self->r.y = val2 - self->r.h;
@@ -2686,11 +2690,11 @@ RectExport_setmidtop(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x += val1 - (self->r.x + (self->r.w / 2));
     self->r.y = val2;
@@ -2711,11 +2715,11 @@ RectExport_setmidleft(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1;
     self->r.y += val2 - (self->r.y + (self->r.h / 2));
@@ -2737,11 +2741,11 @@ RectExport_setmidbottom(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x += val1 - (self->r.x + (self->r.w / 2));
     self->r.y = val2 - self->r.h;
@@ -2763,11 +2767,11 @@ RectExport_setmidright(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1 - self->r.w;
     self->r.y += val2 - (self->r.y + (self->r.h / 2));
@@ -2789,11 +2793,11 @@ RectExport_setcenter(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x += val1 - (self->r.x + (self->r.w / 2));
     self->r.y += val2 - (self->r.y + (self->r.h / 2));
@@ -2814,11 +2818,11 @@ RectExport_setsize(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.w = val1;
     self->r.h = val2;

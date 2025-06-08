@@ -99,7 +99,7 @@ _PGFT_Font_IsFixedWidth(FreeTypeInstance *ft, pgFontObject *fontobj)
     FT_Face font = _PGFT_GetFont(ft, fontobj);
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), -1);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), -1);
     }
     return FT_IS_FIXED_WIDTH(font) ? 1 : 0;
 }
@@ -110,7 +110,7 @@ _PGFT_Font_NumFixedSizes(FreeTypeInstance *ft, pgFontObject *fontobj)
     FT_Face font = _PGFT_GetFont(ft, fontobj);
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), -1);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), -1);
     }
     return FT_HAS_FIXED_SIZES(font) ? font->num_fixed_sizes : 0;
 }
@@ -124,7 +124,7 @@ _PGFT_Font_GetAvailableSize(FreeTypeInstance *ft, pgFontObject *fontobj,
     FT_Bitmap_Size *bitmap_size_p;
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), -1);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), -1);
     }
     if (!FT_HAS_FIXED_SIZES(font) ||
         n > font->num_fixed_sizes) /* cond. or */ {
@@ -146,7 +146,7 @@ _PGFT_Font_GetName(FreeTypeInstance *ft, pgFontObject *fontobj)
     font = _PGFT_GetFont(ft, fontobj);
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
     }
     return font->family_name ? font->family_name : "";
 }
@@ -158,7 +158,7 @@ _PGFT_Font_GetStyleName(FreeTypeInstance *ft, pgFontObject *fontobj)
     font = _PGFT_GetFont(ft, fontobj);
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
     }
     return font->style_name ? font->style_name : "";
 }
@@ -172,7 +172,7 @@ _PGFT_Font_GetHeight(FreeTypeInstance *ft, pgFontObject *fontobj)
     FT_Face font = _PGFT_GetFont(ft, fontobj);
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
     }
     return (long)font->height;
 }
@@ -184,7 +184,7 @@ _PGFT_Font_GetHeightSized(FreeTypeInstance *ft, pgFontObject *fontobj,
     FT_Face font = _PGFT_GetFontSized(ft, fontobj, face_size);
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
     }
     return (long)FX6_TRUNC(FX6_CEIL(font->size->metrics.height));
 }
@@ -195,7 +195,7 @@ _PGFT_Font_GetAscender(FreeTypeInstance *ft, pgFontObject *fontobj)
     FT_Face font = _PGFT_GetFont(ft, fontobj);
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
     }
     return (long)font->ascender;
 }
@@ -207,7 +207,7 @@ _PGFT_Font_GetAscenderSized(FreeTypeInstance *ft, pgFontObject *fontobj,
     FT_Face font = _PGFT_GetFontSized(ft, fontobj, face_size);
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
     }
     return (long)FX6_TRUNC(FX6_CEIL(font->size->metrics.ascender));
 }
@@ -218,7 +218,7 @@ _PGFT_Font_GetDescender(FreeTypeInstance *ft, pgFontObject *fontobj)
     FT_Face font = _PGFT_GetFont(ft, fontobj);
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
     }
     return (long)font->descender;
 }
@@ -230,7 +230,7 @@ _PGFT_Font_GetDescenderSized(FreeTypeInstance *ft, pgFontObject *fontobj,
     FT_Face font = _PGFT_GetFontSized(ft, fontobj, face_size);
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
     }
     return (long)FX6_TRUNC(FX6_FLOOR(font->size->metrics.descender));
 }
@@ -246,7 +246,7 @@ _PGFT_Font_GetGlyphHeightSized(FreeTypeInstance *ft, pgFontObject *fontobj,
     FT_Size_Metrics *metrics;
 
     if (!font) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
     }
     metrics = &font->size->metrics;
     return (long)FX6_TRUNC(FX6_CEIL(metrics->ascender) -
@@ -386,7 +386,7 @@ ft_wrap_init(FreeTypeInstance *ft, pgFontObject *fontobj)
 
     font = _PGFT_GetFont(ft, fontobj);
     if (!font) {
-        RAISERETURN(PyExc_FileNotFoundError, _PGFT_GetError(ft), -1);
+        return RAISERETURN(PyExc_FileNotFoundError, _PGFT_GetError(ft), -1);
     }
     fontobj->is_scalable = FT_IS_SCALABLE(font) ? ~0 : 0;
 
@@ -478,7 +478,8 @@ _PGFT_TryLoadFont_RWops(FreeTypeInstance *ft, pgFontObject *fontobj,
 
     position = SDL_RWtell(src);
     if (position < 0) {
-        RAISERETURN(pgExc_SDLError, "Failed to seek in font stream", -1);
+        return RAISERETURN(pgExc_SDLError, "Failed to seek in font stream",
+                           -1);
     }
 
     stream = _PGFT_calloc(1, sizeof(*stream));

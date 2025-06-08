@@ -1492,7 +1492,8 @@ _pg_get_default_display_masks(int bpp, Uint32 *Rmask, Uint32 *Gmask,
             *Bmask = 0xFF;
             break;
         default:
-            RAISERETURN(PyExc_ValueError, "nonstandard bit depth given", -1);
+            return RAISERETURN(PyExc_ValueError, "nonstandard bit depth given",
+                               -1);
     }
     return 0;
 }
@@ -1690,11 +1691,11 @@ pg_flip_internal(_DisplayState *state)
     /* Same check as VIDEO_INIT_CHECK() but returns -1 instead of NULL on
      * fail. */
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
-        RAISERETURN(pgExc_SDLError, "video system not initialized", -1);
+        return RAISERETURN(pgExc_SDLError, "video system not initialized", -1);
     }
 
     if (!win) {
-        RAISERETURN(pgExc_SDLError, "Display mode not set", -1);
+        return RAISERETURN(pgExc_SDLError, "Display mode not set", -1);
     }
 
     Py_BEGIN_ALLOW_THREADS;
@@ -1727,7 +1728,7 @@ pg_flip_internal(_DisplayState *state)
     Py_END_ALLOW_THREADS;
 
     if (status < 0) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     return 0;
@@ -2057,15 +2058,15 @@ pg_convert_to_uint16(PyObject *python_array, Uint16 *c_uint16_array)
     PyObject *item;
 
     if (!c_uint16_array) {
-        RAISERETURN(PyExc_RuntimeError,
-                    "Memory not allocated for c_uint16_array.", 0);
+        return RAISERETURN(PyExc_RuntimeError,
+                           "Memory not allocated for c_uint16_array.", 0);
     }
     if (!PySequence_Check(python_array)) {
-        RAISERETURN(PyExc_TypeError, "Array must be sequence type", 0);
+        return RAISERETURN(PyExc_TypeError, "Array must be sequence type", 0);
     }
     if (PySequence_Size(python_array) != 256) {
-        RAISERETURN(PyExc_ValueError, "gamma ramp must be 256 elements long",
-                    0);
+        return RAISERETURN(PyExc_ValueError,
+                           "gamma ramp must be 256 elements long", 0);
     }
     for (i = 0; i < 256; i++) {
         long ret;
@@ -2074,8 +2075,8 @@ pg_convert_to_uint16(PyObject *python_array, Uint16 *c_uint16_array)
             return 0;
         }
         if (!PyLong_Check(item)) {
-            RAISERETURN(PyExc_ValueError,
-                        "gamma ramp must contain integer elements", 0);
+            return RAISERETURN(PyExc_ValueError,
+                               "gamma ramp must contain integer elements", 0);
         }
         ret = PyLong_AsLong(item);
         Py_XDECREF(item);
@@ -2084,9 +2085,9 @@ pg_convert_to_uint16(PyObject *python_array, Uint16 *c_uint16_array)
                 /* Happens when PyLong_AsLong overflows */
                 return 0;
             }
-            RAISERETURN(PyExc_ValueError,
-                        "integers in gamma ramp must be between 0 and 0xFFFF",
-                        0);
+            return RAISERETURN(
+                PyExc_ValueError,
+                "integers in gamma ramp must be between 0 and 0xFFFF", 0);
         }
         c_uint16_array[i] = (Uint16)ret;
     }

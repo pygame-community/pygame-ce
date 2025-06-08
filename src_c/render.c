@@ -25,9 +25,9 @@ static PyTypeObject pgImage_Type;
         return RAISE(pgExc_SDLError, SDL_GetError()); \
     }
 
-#define RENDERER_PROPERTY_ERROR_CHECK(x)                 \
-    if (x < 0) {                                         \
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1); \
+#define RENDERER_PROPERTY_ERROR_CHECK(x)                        \
+    if (x < 0) {                                                \
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1); \
     }
 
 #define PARSE_POINT(obj, x, y, name)                                 \
@@ -416,7 +416,7 @@ renderer_set_draw_blend_mode(pgRendererObject *self, PyObject *arg,
                              void *closure)
 {
     if (!PyLong_Check(arg)) {
-        RAISERETURN(PyExc_TypeError, "Draw blend mode must be int", -1);
+        return RAISERETURN(PyExc_TypeError, "Draw blend mode must be int", -1);
     }
     RENDERER_PROPERTY_ERROR_CHECK(
         SDL_SetRenderDrawBlendMode(self->renderer, (int)PyLong_AsLong(arg)))
@@ -436,7 +436,7 @@ renderer_set_logical_size(pgRendererObject *self, PyObject *arg, void *closure)
 {
     int w, h;
     if (!pg_TwoIntsFromObj(arg, &w, &h)) {
-        RAISERETURN(PyExc_TypeError, "invalid logical size", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid logical size", -1);
     }
     RENDERER_PROPERTY_ERROR_CHECK(
         SDL_RenderSetLogicalSize(self->renderer, w, h))
@@ -456,7 +456,7 @@ renderer_set_scale(pgRendererObject *self, PyObject *arg, void *closure)
 {
     float x, y;
     if (!pg_TwoFloatsFromObj(arg, &x, &y)) {
-        RAISERETURN(PyExc_TypeError, "invalid scale", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid scale", -1);
     }
     RENDERER_PROPERTY_ERROR_CHECK(SDL_RenderSetScale(self->renderer, x, y))
     return 0;
@@ -488,8 +488,8 @@ renderer_set_target(pgRendererObject *self, PyObject *arg, void *closure)
         return 0;
     }
     else {
-        RAISERETURN(PyExc_TypeError, "target must be Texture object or None",
-                    -1);
+        return RAISERETURN(PyExc_TypeError,
+                           "target must be Texture object or None", -1);
     }
 }
 
@@ -523,7 +523,7 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     }
     renderer = SDL_CreateRenderer(window->_win, index, flags);
     if (!renderer) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     self->renderer = renderer;
     self->window = window;

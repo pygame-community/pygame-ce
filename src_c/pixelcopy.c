@@ -93,7 +93,8 @@ _validate_view_format(const char *format)
             /* default: unrecognized character; raise error later */
     }
     if (format[i] != '\0') {
-        RAISERETURN(PyExc_ValueError, "Unsupported array item type", -1);
+        return RAISERETURN(PyExc_ValueError, "Unsupported array item type",
+                           -1);
     }
 
     return 0;
@@ -124,15 +125,15 @@ _view_kind(PyObject *obj, void *view_kind_vptr)
 
     if (PyUnicode_Check(obj)) {
         if (PyUnicode_GET_LENGTH(obj) != 1) {
-            RAISERETURN(PyExc_TypeError,
-                        "expected a length 1 string for argument 3", 0);
+            return RAISERETURN(PyExc_TypeError,
+                               "expected a length 1 string for argument 3", 0);
         }
         ch = PyUnicode_READ_CHAR(obj, 0);
     }
     else if (PyBytes_Check(obj)) {
         if (PyBytes_GET_SIZE(obj) != 1) {
-            RAISERETURN(PyExc_TypeError,
-                        "expected a length 1 string for argument 3", 0);
+            return RAISERETURN(PyExc_TypeError,
+                               "expected a length 1 string for argument 3", 0);
         }
         ch = *PyBytes_AS_STRING(obj);
     }
@@ -285,11 +286,11 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
         return -1;
     }
     if (!PG_GetSurfaceBlendMode(surf, &mode)) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     /* Select appropriate color plane element within the pixel */
@@ -418,7 +419,7 @@ _copy_unmapped(Py_buffer *view_p, SDL_Surface *surf)
     SDL_Palette *palette;
 
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     for (x = 0; x < w; ++x) {
@@ -822,8 +823,9 @@ surface_to_array(PyObject *self, PyObject *args, PyObject *kwds)
         if (view_kind != VIEWKIND_RGB) {
             pgBuffer_Release(&pg_view);
             pgSurface_Unlock(surfobj);
-            RAISERETURN(PyExc_ValueError,
-                        "color planes only supported for 2d targets", 0);
+            return RAISERETURN(PyExc_ValueError,
+                               "color planes only supported for 2d targets",
+                               0);
         }
         if (_copy_unmapped(view_p, surf)) {
             pgBuffer_Release(&pg_view);
@@ -1200,7 +1202,7 @@ make_surface(PyObject *self, PyObject *arg)
         if (!PG_SetPaletteColors(palette, default_palette_colors, 0,
                                  default_palette_size - 1)) {
             SDL_FreeSurface(surf);
-            RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
         }
     }
     surfobj = pgSurface_New(surf);

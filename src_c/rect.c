@@ -323,8 +323,8 @@ four_ints_from_obj(PyObject *obj, int *val1, int *val2, int *val3, int *val4)
         Py_DECREF(item);
 
         if (!result) {
-            RAISERETURN(PyExc_TypeError,
-                        "number pair expected for first argument", 0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number pair expected for first argument", 0);
         }
 
         /* Get the other end of the line. */
@@ -338,29 +338,29 @@ four_ints_from_obj(PyObject *obj, int *val1, int *val2, int *val3, int *val4)
         Py_DECREF(item);
 
         if (!result) {
-            RAISERETURN(PyExc_TypeError,
-                        "number pair expected for second argument", 0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number pair expected for second argument", 0);
         }
     }
     else if (length == 4) {
         if (!pg_IntFromObjIndex(obj, 0, val1)) {
-            RAISERETURN(PyExc_TypeError, "number expected for first argument",
-                        0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for first argument", 0);
         }
 
         if (!pg_IntFromObjIndex(obj, 1, val2)) {
-            RAISERETURN(PyExc_TypeError, "number expected for second argument",
-                        0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for second argument", 0);
         }
 
         if (!pg_IntFromObjIndex(obj, 2, val3)) {
-            RAISERETURN(PyExc_TypeError, "number expected for third argument",
-                        0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for third argument", 0);
         }
 
         if (!pg_IntFromObjIndex(obj, 3, val4)) {
-            RAISERETURN(PyExc_TypeError, "number expected for fourth argument",
-                        0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for fourth argument", 0);
         }
     }
     else {
@@ -396,8 +396,8 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
         Py_DECREF(item);
 
         if (!result) {
-            RAISERETURN(PyExc_TypeError,
-                        "number pair expected for first argument", 0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number pair expected for first argument", 0);
         }
 
         /* Get the other end of the line. */
@@ -411,29 +411,29 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
         Py_DECREF(item);
 
         if (!result) {
-            RAISERETURN(PyExc_TypeError,
-                        "number pair expected for second argument", 0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number pair expected for second argument", 0);
         }
     }
     else if (length == 4) {
         if (!pg_FloatFromObjIndex(obj, 0, val1)) {
-            RAISERETURN(PyExc_TypeError, "number expected for first argument",
-                        0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for first argument", 0);
         }
 
         if (!pg_FloatFromObjIndex(obj, 1, val2)) {
-            RAISERETURN(PyExc_TypeError, "number expected for second argument",
-                        0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for second argument", 0);
         }
 
         if (!pg_FloatFromObjIndex(obj, 2, val3)) {
-            RAISERETURN(PyExc_TypeError, "number expected for third argument",
-                        0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for third argument", 0);
         }
 
         if (!pg_FloatFromObjIndex(obj, 3, val4)) {
-            RAISERETURN(PyExc_TypeError, "number expected for fourth argument",
-                        0);
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for fourth argument", 0);
         }
     }
     else {

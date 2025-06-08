@@ -78,7 +78,7 @@ int
 pygame_scrap_put(char *type, Py_ssize_t srclen, char *src)
 {
     if (!pygame_scrap_initialized()) {
-        RAISERETURN(pgExc_SDLError, "scrap system not initialized.", 0);
+        return RAISERETURN(pgExc_SDLError, "scrap system not initialized.", 0);
     }
 
     if (strcmp(type, pygame_scrap_plaintext_type) == 0) {

@@ -86,15 +86,15 @@ _pg_is_exception_class(PyObject *obj, void **optr)
         !PyObject_IsSubclass(obj, PyExc_BaseException)) {
         oname = PyObject_Str(obj);
         if (oname == NULL) {
-            RAISERETURN(PyExc_TypeError, "invalid exception class argument",
-                        0);
+            return RAISERETURN(PyExc_TypeError,
+                               "invalid exception class argument", 0);
         }
         tmp = PyUnicode_AsEncodedString(oname, "ascii", "replace");
         Py_DECREF(oname);
 
         if (tmp == NULL) {
-            RAISERETURN(PyExc_TypeError, "invalid exception class argument",
-                        0);
+            return RAISERETURN(PyExc_TypeError,
+                               "invalid exception class argument", 0);
         }
 
         oname = tmp;
@@ -129,7 +129,7 @@ fetch_object_methods(pgRWHelper *helper, PyObject *obj)
         }
     }
     if (!helper->read && !helper->write) {
-        RAISERETURN(PyExc_TypeError, "not a file object", -1);
+        return RAISERETURN(PyExc_TypeError, "not a file object", -1);
     }
     if (PyObject_HasAttrString(obj, "seek")) {
         helper->seek = PyObject_GetAttrString(obj, "seek");

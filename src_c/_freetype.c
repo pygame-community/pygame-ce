@@ -201,13 +201,13 @@ free_string(PGFT_String *);
                      "." FONT_TYPE_NAME " instance is not initialized"); \
     }
 
-#define PGFT_CHECK_BOOL(_pyobj, _var)                                      \
-    if (_pyobj) {                                                          \
-        if (!PyBool_Check(_pyobj)) {                                       \
-            RAISERETURN(PyExc_TypeError, #_var " must be a boolean value", \
-                        0);                                                \
-        }                                                                  \
-        _var = PyObject_IsTrue(_pyobj);                                    \
+#define PGFT_CHECK_BOOL(_pyobj, _var)                                \
+    if (_pyobj) {                                                    \
+        if (!PyBool_Check(_pyobj)) {                                 \
+            return RAISERETURN(PyExc_TypeError,                      \
+                               #_var " must be a boolean value", 0); \
+        }                                                            \
+        _var = PyObject_IsTrue(_pyobj);                              \
     }
 
 #define DEFAULT_FONT_NAME "freesansbold.ttf"
@@ -220,7 +220,7 @@ static unsigned int current_freetype_generation = 0;
     (((pgFontObject *)(x))->init_generation == current_freetype_generation)
 
 #define RAISE_FREETYPE_QUIT_ERROR(r)                                       \
-    RAISERETURN(                                                           \
+    return RAISERETURN(                                                    \
         pgExc_SDLError,                                                    \
         "Invalid freetype font (freetype module quit since freetype font " \
         "created)",                                                        \
@@ -305,7 +305,8 @@ parse_dest(PyObject *dest, int *x, int *y)
     if (!pg_IntFromObj(oi, &i) || !pg_IntFromObj(oj, &j)) {
         Py_DECREF(oi);
         Py_DECREF(oj);
-        RAISERETURN(PyExc_TypeError, "dest expects a pair of numbers", -1);
+        return RAISERETURN(PyExc_TypeError, "dest expects a pair of numbers",
+                           -1);
     }
     Py_DECREF(oi);
     Py_DECREF(oj);
@@ -424,8 +425,8 @@ build_scale(PyObject *x, PyObject *y, Scale_t *size)
         }
     }
     if (sz_x == 0 && sz_y != 0) {
-        RAISERETURN(PyExc_ValueError,
-                    "expected zero size height when width is zero", 0);
+        return RAISERETURN(PyExc_ValueError,
+                           "expected zero size height when width is zero", 0);
     }
     size->x = sz_x;
     size->y = sz_y;
@@ -875,19 +876,21 @@ _ftfont_setstyle_flag(pgFontObject *self, PyObject *value, void *closure)
     const intptr_t style_flag = (intptr_t)closure;
 
     if (!PyBool_Check(value)) {
-        RAISERETURN(PyExc_TypeError, "The style value must be a boolean", -1);
+        return RAISERETURN(PyExc_TypeError,
+                           "The style value must be a boolean", -1);
     }
 
     if ((style_flag & FT_STYLES_SCALABLE_ONLY) && !self->is_scalable) {
         if (pgFont_IS_ALIVE(self)) {
-            RAISERETURN(PyExc_AttributeError,
-                        "this style is unsupported for a bitmap font", -1);
+            return RAISERETURN(PyExc_AttributeError,
+                               "this style is unsupported for a bitmap font",
+                               -1);
         }
         else {
-            RAISERETURN(PyExc_RuntimeError,
-                        MODULE_NAME "." FONT_TYPE_NAME
-                                    " instance is not initialized",
-                        -1);
+            return RAISERETURN(PyExc_RuntimeError,
+                               MODULE_NAME "." FONT_TYPE_NAME
+                                           " instance is not initialized",
+                               -1);
         }
     }
     if (PyObject_IsTrue(value)) {
@@ -921,7 +924,7 @@ _ftfont_setstyle(pgFontObject *self, PyObject *value, void *closure)
     FT_UInt32 style;
 
     if (!PyLong_Check(value)) {
-        RAISERETURN(
+        return RAISERETURN(
             PyExc_TypeError,
             "The style value must be an integer from the FT constants module",
             -1);
@@ -941,14 +944,15 @@ _ftfont_setstyle(pgFontObject *self, PyObject *value, void *closure)
     }
     if ((style & FT_STYLES_SCALABLE_ONLY) && !self->is_scalable) {
         if (pgFont_IS_ALIVE(self)) {
-            RAISERETURN(PyExc_AttributeError,
-                        "this style is unsupported for a bitmap font", -1);
+            return RAISERETURN(PyExc_AttributeError,
+                               "this style is unsupported for a bitmap font",
+                               -1);
         }
         else {
-            RAISERETURN(PyExc_RuntimeError,
-                        MODULE_NAME "." FONT_TYPE_NAME
-                                    " instance is not initialized",
-                        -1);
+            return RAISERETURN(PyExc_RuntimeError,
+                               MODULE_NAME "." FONT_TYPE_NAME
+                                           " instance is not initialized",
+                               -1);
         }
     }
 
@@ -1129,7 +1133,7 @@ _ftfont_getpath(pgFontObject *self, void *closure)
     PyObject *path = ((pgFontObject *)self)->path;
 
     if (!path) {
-        RAISERETURN(PyExc_AttributeError, "path unavailable", 0);
+        return RAISERETURN(PyExc_AttributeError, "path unavailable", 0);
     }
     Py_INCREF(path);
     return path;
@@ -1201,7 +1205,8 @@ _ftfont_setrender_flag(pgFontObject *self, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
 
     if (!PyBool_Check(value)) {
-        RAISERETURN(PyExc_TypeError, "The style value must be a boolean", -1);
+        return RAISERETURN(PyExc_TypeError,
+                           "The style value must be a boolean", -1);
     }
 
     if (PyObject_IsTrue(value)) {
@@ -1247,14 +1252,15 @@ _ftfont_setrotation(pgFontObject *self, PyObject *value, void *closure)
 
     if (!self->is_scalable) {
         if (pgFont_IS_ALIVE(self)) {
-            RAISERETURN(PyExc_AttributeError,
-                        "rotation is unsupported for a bitmap font", -1);
+            return RAISERETURN(PyExc_AttributeError,
+                               "rotation is unsupported for a bitmap font",
+                               -1);
         }
         else {
-            RAISERETURN(PyExc_RuntimeError,
-                        MODULE_NAME "." FONT_TYPE_NAME
-                                    " instance is not initialized",
-                        -1);
+            return RAISERETURN(PyExc_RuntimeError,
+                               MODULE_NAME "." FONT_TYPE_NAME
+                                           " instance is not initialized",
+                               -1);
         }
     }
     return obj_to_rotation(value, &self->rotation) ? 0 : -1;
@@ -1414,7 +1420,7 @@ get_metrics(FontRenderMode *render, pgFontObject *font, PGFT_String *text)
     Py_ssize_t i;
 
     if (!_PGFT_GetFontSized(font->freetype, font, render->face_size)) {
-        RAISERETURN(pgExc_SDLError, _PGFT_GetError(font->freetype), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(font->freetype), 0);
     }
     list = PyList_New(length);
     if (!list) {
@@ -1519,10 +1525,11 @@ _ftfont_getsizedascender(pgFontObject *self, PyObject *args)
 
     if (face_size.x == 0) {
         if (self->face_size.x == 0) {
-            RAISERETURN(PyExc_ValueError,
-                        "No font point size specified and no default font "
-                        "size in typefont",
-                        0);
+            return RAISERETURN(
+                PyExc_ValueError,
+                "No font point size specified and no default font "
+                "size in typefont",
+                0);
         }
         face_size = self->face_size;
     }
@@ -1549,10 +1556,11 @@ _ftfont_getsizeddescender(pgFontObject *self, PyObject *args)
 
     if (face_size.x == 0) {
         if (self->face_size.x == 0) {
-            RAISERETURN(PyExc_ValueError,
-                        "No font point size specified and no default font "
-                        "size in typefont",
-                        0);
+            return RAISERETURN(
+                PyExc_ValueError,
+                "No font point size specified and no default font "
+                "size in typefont",
+                0);
         }
         face_size = self->face_size;
     }
@@ -1580,10 +1588,11 @@ _ftfont_getsizedheight(pgFontObject *self, PyObject *args)
 
     if (face_size.x == 0) {
         if (self->face_size.x == 0) {
-            RAISERETURN(PyExc_ValueError,
-                        "No font point size specified and no default font "
-                        "size in typeface",
-                        0);
+            return RAISERETURN(
+                PyExc_ValueError,
+                "No font point size specified and no default font "
+                "size in typeface",
+                0);
         }
         face_size = self->face_size;
     }
@@ -1610,10 +1619,11 @@ _ftfont_getsizedglyphheight(pgFontObject *self, PyObject *args)
 
     if (face_size.x == 0) {
         if (self->face_size.x == 0) {
-            RAISERETURN(PyExc_ValueError,
-                        "No font point size specified and no default font "
-                        "size in typeface",
-                        0);
+            return RAISERETURN(
+                PyExc_ValueError,
+                "No font point size specified and no default font "
+                "size in typeface",
+                0);
         }
         face_size = self->face_size;
     }

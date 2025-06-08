@@ -2548,19 +2548,19 @@ mask_init(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(size, &w, &h)) {
-        RAISERETURN(PyExc_TypeError, "size must be two numbers", -1);
+        return RAISERETURN(PyExc_TypeError, "size must be two numbers", -1);
     }
 
     if (w < 0 || h < 0) {
-        RAISERETURN(PyExc_ValueError, "cannot create mask with negative size",
-                    -1);
+        return RAISERETURN(PyExc_ValueError,
+                           "cannot create mask with negative size", -1);
     }
 
     bitmask = bitmask_create(w, h);
 
     if (NULL == bitmask) {
-        RAISERETURN(PyExc_MemoryError, "cannot allocate memory for bitmask",
-                    -1);
+        return RAISERETURN(PyExc_MemoryError,
+                           "cannot allocate memory for bitmask", -1);
     }
 
     if (fill) {

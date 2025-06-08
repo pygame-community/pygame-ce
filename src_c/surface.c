@@ -348,7 +348,7 @@ static int
 pgSurface_SetSurface(pgSurfaceObject *self, SDL_Surface *s, int owner)
 {
     if (!s) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     if (s == self->surf) {
         self->owner = owner;
@@ -499,17 +499,20 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     if (PySequence_Check(size) && PySequence_Length(size) == 2) {
         if ((!pg_IntFromObjIndex(size, 0, &width)) ||
             (!pg_IntFromObjIndex(size, 1, &height))) {
-            RAISERETURN(PyExc_ValueError,
-                        "size needs to be (number width, number height)", -1);
+            return RAISERETURN(
+                PyExc_ValueError,
+                "size needs to be (number width, number height)", -1);
         }
     }
     else {
-        RAISERETURN(PyExc_ValueError,
-                    "size needs to be (number width, number height)", -1);
+        return RAISERETURN(PyExc_ValueError,
+                           "size needs to be (number width, number height)",
+                           -1);
     }
 
     if (width < 0 || height < 0) {
-        RAISERETURN(pgExc_SDLError, "Invalid resolution for Surface", -1);
+        return RAISERETURN(pgExc_SDLError, "Invalid resolution for Surface",
+                           -1);
     }
 
     surface_cleanup(self);
@@ -518,31 +521,33 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     if (depth && masks) { /* all info supplied, most errorchecking
                            * needed */
         if (pgSurface_Check(depth)) {
-            RAISERETURN(PyExc_ValueError,
-                        "cannot pass surface for depth and color masks", -1);
+            return RAISERETURN(PyExc_ValueError,
+                               "cannot pass surface for depth and color masks",
+                               -1);
         }
         if (!pg_IntFromObj(depth, &bpp)) {
-            RAISERETURN(PyExc_ValueError,
-                        "invalid bits per pixel depth argument", -1);
+            return RAISERETURN(PyExc_ValueError,
+                               "invalid bits per pixel depth argument", -1);
         }
         if (!PySequence_Check(masks) || PySequence_Length(masks) != 4) {
-            RAISERETURN(PyExc_ValueError,
-                        "masks argument must be sequence of four numbers", -1);
+            return RAISERETURN(
+                PyExc_ValueError,
+                "masks argument must be sequence of four numbers", -1);
         }
         if (!pg_UintFromObjIndex(masks, 0, &Rmask) ||
             !pg_UintFromObjIndex(masks, 1, &Gmask) ||
             !pg_UintFromObjIndex(masks, 2, &Bmask) ||
             !pg_UintFromObjIndex(masks, 3, &Amask)) {
-            RAISERETURN(PyExc_ValueError,
-                        "invalid mask values in masks sequence", -1);
+            return RAISERETURN(PyExc_ValueError,
+                               "invalid mask values in masks sequence", -1);
         }
 
         format = SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, Amask);
     }
     else if (depth && PyNumber_Check(depth)) { /* use default masks */
         if (!pg_IntFromObj(depth, &bpp)) {
-            RAISERETURN(PyExc_ValueError,
-                        "invalid bits per pixel depth argument", -1);
+            return RAISERETURN(PyExc_ValueError,
+                               "invalid bits per pixel depth argument", -1);
         }
         if (flags & PGS_SRCALPHA) {
             switch (bpp) {
@@ -553,10 +558,11 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
                     format = SDL_PIXELFORMAT_ARGB8888;
                     break;
                 default:
-                    RAISERETURN(PyExc_ValueError,
-                                "no standard masks exist for given bitdepth "
-                                "with alpha",
-                                -1);
+                    return RAISERETURN(
+                        PyExc_ValueError,
+                        "no standard masks exist for given bitdepth "
+                        "with alpha",
+                        -1);
             }
         }
         else {
@@ -584,8 +590,8 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
                     format = SDL_PIXELFORMAT_XRGB8888;
                     break;
                 default:
-                    RAISERETURN(PyExc_ValueError,
-                                "nonstandard bit depth given", -1);
+                    return RAISERETURN(PyExc_ValueError,
+                                       "nonstandard bit depth given", -1);
             }
         }
     }
@@ -613,21 +619,22 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
                     format = SDL_PIXELFORMAT_ARGB8888;
                     break;
                 default:
-                    RAISERETURN(PyExc_ValueError,
-                                "no standard masks exist for given bitdepth "
-                                "with alpha",
-                                -1);
+                    return RAISERETURN(
+                        PyExc_ValueError,
+                        "no standard masks exist for given bitdepth "
+                        "with alpha",
+                        -1);
             }
         }
     }
 
     if (format == SDL_PIXELFORMAT_UNKNOWN) {
-        RAISERETURN(PyExc_ValueError, "Invalid mask values", -1);
+        return RAISERETURN(PyExc_ValueError, "Invalid mask values", -1);
     }
 
     surface = PG_CreateSurface(width, height, format);
     if (!surface) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     if (!(flags & PGS_SRCALPHA)) {
@@ -646,7 +653,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         SDL_Palette *surf_palette;
         if (!PG_GetSurfaceDetails(surface, &surf_format, &surf_palette)) {
             SDL_FreeSurface(surface);
-            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
 
         if (surf_format->Amask != 0) {
@@ -662,36 +669,38 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         if (!PG_SetPaletteColors(surf_palette, default_palette_colors, 0,
                                  default_palette_size - 1)) {
             SDL_FreeSurface(surface);
-            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
     }
 #else
     if (depth && masks) { /* all info supplied, most errorchecking
                            * needed */
         if (pgSurface_Check(depth)) {
-            RAISERETURN(PyExc_ValueError,
-                        "cannot pass surface for depth and color masks", -1);
+            return RAISERETURN(PyExc_ValueError,
+                               "cannot pass surface for depth and color masks",
+                               -1);
         }
         if (!pg_IntFromObj(depth, &bpp)) {
-            RAISERETURN(PyExc_ValueError,
-                        "invalid bits per pixel depth argument", -1);
+            return RAISERETURN(PyExc_ValueError,
+                               "invalid bits per pixel depth argument", -1);
         }
         if (!PySequence_Check(masks) || PySequence_Length(masks) != 4) {
-            RAISERETURN(PyExc_ValueError,
-                        "masks argument must be sequence of four numbers", -1);
+            return RAISERETURN(
+                PyExc_ValueError,
+                "masks argument must be sequence of four numbers", -1);
         }
         if (!pg_UintFromObjIndex(masks, 0, &Rmask) ||
             !pg_UintFromObjIndex(masks, 1, &Gmask) ||
             !pg_UintFromObjIndex(masks, 2, &Bmask) ||
             !pg_UintFromObjIndex(masks, 3, &Amask)) {
-            RAISERETURN(PyExc_ValueError,
-                        "invalid mask values in masks sequence", -1);
+            return RAISERETURN(PyExc_ValueError,
+                               "invalid mask values in masks sequence", -1);
         }
     }
     else if (depth && PyNumber_Check(depth)) { /* use default masks */
         if (!pg_IntFromObj(depth, &bpp)) {
-            RAISERETURN(PyExc_ValueError,
-                        "invalid bits per pixel depth argument", -1);
+            return RAISERETURN(PyExc_ValueError,
+                               "invalid bits per pixel depth argument", -1);
         }
         if (flags & PGS_SRCALPHA) {
             switch (bpp) {
@@ -708,10 +717,11 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
                     Amask = 0xFF << 24;
                     break;
                 default:
-                    RAISERETURN(PyExc_ValueError,
-                                "no standard masks exist for given bitdepth "
-                                "with alpha",
-                                -1);
+                    return RAISERETURN(
+                        PyExc_ValueError,
+                        "no standard masks exist for given bitdepth "
+                        "with alpha",
+                        -1);
             }
         }
         else {
@@ -744,8 +754,8 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
                     Bmask = 0xFF;
                     break;
                 default:
-                    RAISERETURN(PyExc_ValueError,
-                                "nonstandard bit depth given", -1);
+                    return RAISERETURN(PyExc_ValueError,
+                                       "nonstandard bit depth given", -1);
             }
         }
     }
@@ -786,10 +796,11 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
                     Amask = 0xFF << 24;
                     break;
                 default:
-                    RAISERETURN(PyExc_ValueError,
-                                "no standard masks exist for given bitdepth "
-                                "with alpha",
-                                -1);
+                    return RAISERETURN(
+                        PyExc_ValueError,
+                        "no standard masks exist for given bitdepth "
+                        "with alpha",
+                        -1);
             }
         }
         else {
@@ -803,12 +814,12 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     Uint32 pxformat =
         SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, Amask);
     if (pxformat == SDL_PIXELFORMAT_UNKNOWN) {
-        RAISERETURN(PyExc_ValueError, "Invalid mask values", -1);
+        return RAISERETURN(PyExc_ValueError, "Invalid mask values", -1);
     }
 
     surface = PG_CreateSurface(width, height, pxformat);
     if (!surface) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     if (!(flags & PGS_SRCALPHA)) {
@@ -836,7 +847,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
                                  default_palette_colors, 0,
                                  default_palette_size - 1)) {
             SDL_FreeSurface(surface);
-            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
     }
 #endif
@@ -2941,7 +2952,7 @@ _PgSurface_SrcAlpha(SDL_Surface *surf)
 {
     SDL_BlendMode mode;
     if (!PG_GetSurfaceBlendMode(surf, &mode)) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     return (mode != SDL_BLENDMODE_NONE);
 }
@@ -3608,15 +3619,15 @@ surf_get_view(PyObject *self, PyObject *args)
 
         case VIEWKIND_0D:
             if (surface->pitch != bpp * surface->w) {
-                RAISERETURN(PyExc_ValueError, "Surface data is not contiguous",
-                            0);
+                return RAISERETURN(PyExc_ValueError,
+                                   "Surface data is not contiguous", 0);
             }
             get_buffer = _get_buffer_0D;
             break;
         case VIEWKIND_1D:
             if (surface->pitch != bpp * surface->w) {
-                RAISERETURN(PyExc_ValueError, "Surface data is not contiguous",
-                            0);
+                return RAISERETURN(PyExc_ValueError,
+                                   "Surface data is not contiguous", 0);
             }
             get_buffer = _get_buffer_1D;
             break;
@@ -3866,28 +3877,29 @@ _get_buffer_2D(PyObject *obj, Py_buffer *view_p, int flags)
     view_p->obj = 0;
     if (!PyBUF_HAS_FLAG(flags, PyBUF_ND)) {
         if (surface->pitch != surface->w * itemsize) {
-            RAISERETURN(pgExc_BufferError,
-                        "A 2D surface view is not C contiguous", -1);
+            return RAISERETURN(pgExc_BufferError,
+                               "A 2D surface view is not C contiguous", -1);
         }
         return _get_buffer_1D(obj, view_p, flags);
     }
     if (!PyBUF_HAS_FLAG(flags, PyBUF_STRIDES)) {
-        RAISERETURN(pgExc_BufferError,
-                    "A 2D surface view is not C contiguous: need strides", -1);
+        return RAISERETURN(
+            pgExc_BufferError,
+            "A 2D surface view is not C contiguous: need strides", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_C_CONTIGUOUS)) {
-        RAISERETURN(pgExc_BufferError, "A 2D surface view is not C contiguous",
-                    -1);
+        return RAISERETURN(pgExc_BufferError,
+                           "A 2D surface view is not C contiguous", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_F_CONTIGUOUS) &&
         surface->pitch != surface->w * itemsize) {
-        RAISERETURN(pgExc_BufferError,
-                    "This 2D surface view is not F contiguous", -1);
+        return RAISERETURN(pgExc_BufferError,
+                           "This 2D surface view is not F contiguous", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_ANY_CONTIGUOUS) &&
         surface->pitch != surface->w * itemsize) {
-        RAISERETURN(pgExc_BufferError,
-                    "This 2D surface view is not contiguous", -1);
+        return RAISERETURN(pgExc_BufferError,
+                           "This 2D surface view is not contiguous", -1);
     }
     if (_init_buffer(obj, view_p, flags)) {
         return -1;
@@ -3946,18 +3958,19 @@ _get_buffer_3D(PyObject *obj, Py_buffer *view_p, int flags)
 
     view_p->obj = 0;
     if (!PyBUF_HAS_FLAG(flags, PyBUF_STRIDES)) {
-        RAISERETURN(pgExc_BufferError,
-                    "A 3D surface view is not contiguous: needs strides", -1);
+        return RAISERETURN(
+            pgExc_BufferError,
+            "A 3D surface view is not contiguous: needs strides", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_C_CONTIGUOUS) ||
         PyBUF_HAS_FLAG(flags, PyBUF_F_CONTIGUOUS) ||
         PyBUF_HAS_FLAG(flags, PyBUF_ANY_CONTIGUOUS)) {
-        RAISERETURN(pgExc_BufferError, "A 3D surface view is not contiguous",
-                    -1);
+        return RAISERETURN(pgExc_BufferError,
+                           "A 3D surface view is not contiguous", -1);
     }
     PG_PixelFormat *surface_format = PG_GetSurfaceFormat(surface);
     if (surface_format == NULL) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     if (_init_buffer(obj, view_p, flags)) {
@@ -4024,7 +4037,7 @@ _get_buffer_red(PyObject *obj, Py_buffer *view_p, int flags)
     PG_PixelFormat *surface_format =
         PG_GetSurfaceFormat(pgSurface_AsSurface(obj));
     if (surface_format == NULL) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     return _get_buffer_colorplane(obj, view_p, flags, "red",
@@ -4037,7 +4050,7 @@ _get_buffer_green(PyObject *obj, Py_buffer *view_p, int flags)
     PG_PixelFormat *surface_format =
         PG_GetSurfaceFormat(pgSurface_AsSurface(obj));
     if (surface_format == NULL) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     return _get_buffer_colorplane(obj, view_p, flags, "green",
@@ -4050,7 +4063,7 @@ _get_buffer_blue(PyObject *obj, Py_buffer *view_p, int flags)
     PG_PixelFormat *surface_format =
         PG_GetSurfaceFormat(pgSurface_AsSurface(obj));
     if (surface_format == NULL) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     return _get_buffer_colorplane(obj, view_p, flags, "blue",
@@ -4063,7 +4076,7 @@ _get_buffer_alpha(PyObject *obj, Py_buffer *view_p, int flags)
     PG_PixelFormat *surface_format =
         PG_GetSurfaceFormat(pgSurface_AsSurface(obj));
     if (surface_format == NULL) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     return _get_buffer_colorplane(obj, view_p, flags, "alpha",
@@ -4080,15 +4093,15 @@ _get_buffer_colorplane(PyObject *obj, Py_buffer *view_p, int flags, char *name,
 
     view_p->obj = 0;
     if (!PyBUF_HAS_FLAG(flags, PyBUF_STRIDES)) {
-        RAISERETURN(
+        return RAISERETURN(
             pgExc_BufferError,
             "A surface color plane view is not contiguous: need strides", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_C_CONTIGUOUS) ||
         PyBUF_HAS_FLAG(flags, PyBUF_F_CONTIGUOUS) ||
         PyBUF_HAS_FLAG(flags, PyBUF_ANY_CONTIGUOUS)) {
-        RAISERETURN(pgExc_BufferError,
-                    "A surface color plane view is not contiguous", -1);
+        return RAISERETURN(pgExc_BufferError,
+                           "A surface color plane view is not contiguous", -1);
     }
     switch (mask) {
         /* This switch statement is exhaustive over possible mask value,
@@ -4238,15 +4251,15 @@ _view_kind(PyObject *obj, void *view_kind_vptr)
 
     if (PyUnicode_Check(obj)) {
         if (PyUnicode_GET_LENGTH(obj) != 1) {
-            RAISERETURN(PyExc_TypeError,
-                        "expected a length 1 string for argument 1", 0);
+            return RAISERETURN(PyExc_TypeError,
+                               "expected a length 1 string for argument 1", 0);
         }
         ch = PyUnicode_READ_CHAR(obj, 0);
     }
     else if (PyBytes_Check(obj)) {
         if (PyBytes_GET_SIZE(obj) != 1) {
-            RAISERETURN(PyExc_TypeError,
-                        "expected a length 1 string for argument 1", 0);
+            return RAISERETURN(PyExc_TypeError,
+                               "expected a length 1 string for argument 1", 0);
         }
         ch = *PyBytes_AS_STRING(obj);
     }

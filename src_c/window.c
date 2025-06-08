@@ -236,10 +236,11 @@ _window_opengl_set_viewport(SDL_Window *window, SDL_GLContext context,
     if (SDL_GL_MakeCurrent(window, context) < 0)
 #endif
     {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     if (p_glViewport == NULL) {
-        RAISERETURN(pgExc_SDLError, "glViewport function is unavailable", -1);
+        return RAISERETURN(pgExc_SDLError,
+                           "glViewport function is unavailable", -1);
     }
     p_glViewport(0, 0, wnew, hnew);
     return 0;
@@ -576,8 +577,8 @@ window_set_title(pgWindowObject *self, PyObject *arg, void *v)
 {
     const char *title;
     if (!PyUnicode_Check(arg)) {
-        RAISERETURN(PyExc_TypeError, "Argument to set_title must be a str.",
-                    -1);
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument to set_title must be a str.", -1);
     }
     title = PyUnicode_AsUTF8(arg);
     SDL_SetWindowTitle(self->_win, title);
@@ -675,15 +676,16 @@ window_set_mouse_rect(pgWindowObject *self, PyObject *arg, void *v)
     SDL_Rect tmp_rect;
     SDL_Rect *mouse_rect_p = pgRect_FromObject(arg, &tmp_rect);
     if (mouse_rect_p == NULL && arg != Py_None) {
-        RAISERETURN(PyExc_TypeError,
-                    "mouse_rect should be a Rect-like object or None", -1);
+        return RAISERETURN(PyExc_TypeError,
+                           "mouse_rect should be a Rect-like object or None",
+                           -1);
     }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_SetWindowMouseRect(self->_win, mouse_rect_p)) {
 #else
     if (SDL_SetWindowMouseRect(self->_win, mouse_rect_p) < 0) {
 #endif
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 #else
     if (PyErr_WarnEx(PyExc_Warning,
@@ -718,13 +720,13 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
     int w, h;
 
     if (!pg_TwoIntsFromObj(arg, &w, &h)) {
-        RAISERETURN(PyExc_TypeError, "invalid size argument", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid size argument", -1);
     }
 
     if (w <= 0 || h <= 0) {
-        RAISERETURN(PyExc_ValueError,
-                    "width or height should not be less than or equal to zero",
-                    -1);
+        return RAISERETURN(
+            PyExc_ValueError,
+            "width or height should not be less than or equal to zero", -1);
     }
 
     SDL_SetWindowSize(self->_win, w, h);
@@ -760,21 +762,22 @@ window_set_minimum_size(pgWindowObject *self, PyObject *arg, void *v)
     int max_w, max_h;
 
     if (!pg_TwoIntsFromObj(arg, &w, &h)) {
-        RAISERETURN(PyExc_TypeError, "invalid size argument", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid size argument", -1);
     }
 
     if (w < 0 || h < 0) {
-        RAISERETURN(PyExc_ValueError,
-                    "minimum width or height should not be less than zero",
-                    -1);
+        return RAISERETURN(
+            PyExc_ValueError,
+            "minimum width or height should not be less than zero", -1);
     }
 
     SDL_GetWindowMaximumSize(self->_win, &max_w, &max_h);
     if ((max_w > 0 && max_h > 0) && (w > max_w || h > max_h)) {
-        RAISERETURN(PyExc_ValueError,
-                    "minimum width or height should not be greater than "
-                    "maximum width or height respectively",
-                    -1);
+        return RAISERETURN(
+            PyExc_ValueError,
+            "minimum width or height should not be greater than "
+            "maximum width or height respectively",
+            -1);
     }
 
     SDL_SetWindowMinimumSize(self->_win, w, h);
@@ -798,21 +801,22 @@ window_set_maximum_size(pgWindowObject *self, PyObject *arg, void *v)
     int min_w, min_h;
 
     if (!pg_TwoIntsFromObj(arg, &w, &h)) {
-        RAISERETURN(PyExc_TypeError, "invalid size argument", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid size argument", -1);
     }
 
     if (w < 0 || h < 0) {
-        RAISERETURN(PyExc_ValueError,
-                    "maximum width or height should not be less than zero",
-                    -1);
+        return RAISERETURN(
+            PyExc_ValueError,
+            "maximum width or height should not be less than zero", -1);
     }
 
     SDL_GetWindowMinimumSize(self->_win, &min_w, &min_h);
     if (w < min_w || h < min_h) {
-        RAISERETURN(PyExc_ValueError,
-                    "maximum width or height should not be less than minimum "
-                    "width or height respectively",
-                    -1);
+        return RAISERETURN(
+            PyExc_ValueError,
+            "maximum width or height should not be less than minimum "
+            "width or height respectively",
+            -1);
     }
 
     SDL_SetWindowMaximumSize(self->_win, w, h);
@@ -837,11 +841,12 @@ window_set_position(pgWindowObject *self, PyObject *arg, void *v)
     if (PyLong_Check(arg)) {
         x = y = PyLong_AsLong(arg);
         if (x != SDL_WINDOWPOS_CENTERED && x != SDL_WINDOWPOS_UNDEFINED) {
-            RAISERETURN(PyExc_TypeError, "invalid position argument", -1);
+            return RAISERETURN(PyExc_TypeError, "invalid position argument",
+                               -1);
         }
     }
     else if (!pg_TwoIntsFromObj(arg, &x, &y)) {
-        RAISERETURN(PyExc_TypeError, "invalid position argument", -1);
+        return RAISERETURN(PyExc_TypeError, "invalid position argument", -1);
     }
 
     SDL_SetWindowPosition(self->_win, x, y);
@@ -867,7 +872,7 @@ window_set_opacity(pgWindowObject *self, PyObject *arg, void *v)
         return -1;
     }
     if (SDL_SetWindowOpacity(self->_win, opacity)) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     return 0;
 }
@@ -1002,7 +1007,8 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     if (kwargs) {
         while (PyDict_Next(kwargs, &dict_pos, &_key, &_value)) {
             if (!PyUnicode_Check(_key)) {
-                RAISERETURN(PyExc_TypeError, "keywords must be strings", -1);
+                return RAISERETURN(PyExc_TypeError, "keywords must be strings",
+                                   -1);
             }
 
             _key_str = PyUnicode_AsUTF8(_key);
@@ -1168,12 +1174,12 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 
     if (size) {
         if (!pg_TwoIntsFromObj(size, &size_w, &size_h)) {
-            RAISERETURN(PyExc_TypeError, "invalid size argument", -1);
+            return RAISERETURN(PyExc_TypeError, "invalid size argument", -1);
         }
     }
 
     if (size_w <= 0 || size_h <= 0) {
-        RAISERETURN(
+        return RAISERETURN(
             PyExc_ValueError,
             "width or height should not be less than or equal to zero.", -1);
     }
@@ -1183,22 +1189,24 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
             pos_x = pos_y = PyLong_AsLong(position);
             if (pos_x != SDL_WINDOWPOS_CENTERED &&
                 pos_x != SDL_WINDOWPOS_UNDEFINED) {
-                RAISERETURN(PyExc_TypeError, "invalid position argument", -1);
+                return RAISERETURN(PyExc_TypeError,
+                                   "invalid position argument", -1);
             }
         }
         else if (!pg_TwoIntsFromObj(position, &pos_x, &pos_y)) {
-            RAISERETURN(PyExc_TypeError, "invalid position argument", -1);
+            return RAISERETURN(PyExc_TypeError, "invalid position argument",
+                               -1);
         }
     }
 
     _win = PG_CreateWindow(title, pos_x, pos_y, size_w, size_h, flags);
     if (!_win) {
-        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     if (fullscreen_non_desktop) {
         if (!pg_window_set_fullscreen(_win, 0)) {
-            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
     }
 #endif
@@ -1209,7 +1217,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     if (flags & SDL_WINDOW_OPENGL) {
         SDL_GLContext context = SDL_GL_CreateContext(self->_win);
         if (context == NULL) {
-            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
         /* As stated in the 'Remarks' of the docs
          * (https://wiki.libsdl.org/SDL2/SDL_GL_GetProcAddress) on Windows
@@ -1236,7 +1244,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         if (SDL_SetColorKey(pgSurface_AsSurface(icon), SDL_TRUE,
                             icon_colorkey) < 0) {
 #endif
-            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
     }
     SDL_SetWindowIcon(self->_win, pgSurface_AsSurface(icon));

@@ -139,7 +139,7 @@ _PGFT_LoadLayout(FreeTypeInstance *ft, pgFontObject *fontobj,
         copy_mode(&ftext->mode, mode);
         font = _PGFT_GetFontSized(ft, fontobj, mode->face_size);
         if (!font) {
-            RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+            return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
         }
     }
 
@@ -212,7 +212,7 @@ size_text(Layout *ftext, FreeTypeInstance *ft, TextContext *context,
                                    &slots[length].kerning);
             if (error) {
                 _PGFT_SetError(ft, "Loading glyphs", error);
-                RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), -1);
+                return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), -1);
             }
         }
         prev_id = id;

@@ -202,7 +202,7 @@ int
 pygame_scrap_lost(void)
 {
     if (!pygame_scrap_initialized()) {
-        RAISERETURN(pgExc_SDLError, "scrap system not initialized.", 0);
+        return RAISERETURN(pgExc_SDLError, "scrap system not initialized.", 0);
     }
     return (GetClipboardOwner() != window_handle);
 }
@@ -215,7 +215,7 @@ pygame_scrap_put(char *type, Py_ssize_t srclen, char *src)
     HANDLE hMem;
 
     if (!pygame_scrap_initialized()) {
-        RAISERETURN(pgExc_SDLError, "scrap system not initialized.", 0);
+        return RAISERETURN(pgExc_SDLError, "scrap system not initialized.", 0);
     }
 
     format = _convert_internal_type(type);

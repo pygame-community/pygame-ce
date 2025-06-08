@@ -565,9 +565,7 @@ typedef enum {
 } PygameScrollSurfaceFlags;
 
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
-#define RAISERETURN(x, y, r)   \
-    PyErr_SetString((x), (y)); \
-    return r;
+#define RAISERETURN(x, y, r) (PyErr_SetString((x), (y)), r)
 #define DEL_ATTR_NOT_SUPPORTED_CHECK(name, value)                            \
     do {                                                                     \
         if (!value) {                                                        \
@@ -577,11 +575,12 @@ typedef enum {
         }                                                                    \
     } while (0)
 
-#define DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value)                           \
-    do {                                                                      \
-        if (!value) {                                                         \
-            RAISERETURN(PyExc_AttributeError, "Cannot delete attribute", -1); \
-        }                                                                     \
+#define DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value)            \
+    do {                                                       \
+        if (!value) {                                          \
+            return RAISERETURN(PyExc_AttributeError,           \
+                               "Cannot delete attribute", -1); \
+        }                                                      \
     } while (0)
 
 /*

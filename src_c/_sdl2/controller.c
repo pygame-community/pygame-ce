@@ -485,7 +485,7 @@ controller_init(pgControllerObject *self, PyObject *args, PyObject *kwargs)
     if (self->controller == NULL) {
         controller = SDL_GameControllerOpen(self->id);
         if (controller == NULL) {
-            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
         self->controller = controller;
     }

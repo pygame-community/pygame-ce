@@ -1890,8 +1890,8 @@ camera_init(pgCameraObject *self, PyObject *arg, PyObject *kwargs)
     p = windows_device_from_name(dev_name);
 
     if (!p) {
-        RAISERETURN(PyExc_ValueError, "Couldn't find a camera with that name",
-                    -1);
+        return RAISERETURN(PyExc_ValueError,
+                           "Couldn't find a camera with that name", -1);
     }
 
     if (color) {
@@ -1927,8 +1927,8 @@ camera_init(pgCameraObject *self, PyObject *arg, PyObject *kwargs)
 
     return 0;
 #else
-    RAISERETURN(PyExc_RuntimeError,
-                "_camera backend not available on your platform", -1);
+    return RAISERETURN(PyExc_RuntimeError,
+                       "_camera backend not available on your platform", -1);
 #endif
 }
 
