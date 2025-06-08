@@ -1137,7 +1137,7 @@ _ftfont_getpath(pgFontObject *self, void *closure)
     PyObject *path = ((pgFontObject *)self)->path;
 
     if (!path) {
-        return RAISERETURN(PyExc_AttributeError, "path unavailable", 0);
+        return RAISERETURN(PyExc_AttributeError, "path unavailable", NULL);
     }
     Py_INCREF(path);
     return path;
@@ -1424,7 +1424,8 @@ get_metrics(FontRenderMode *render, pgFontObject *font, PGFT_String *text)
     Py_ssize_t i;
 
     if (!_PGFT_GetFontSized(font->freetype, font, render->face_size)) {
-        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(font->freetype), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(font->freetype),
+                           NULL);
     }
     list = PyList_New(length);
     if (!list) {
@@ -1533,7 +1534,7 @@ _ftfont_getsizedascender(pgFontObject *self, PyObject *args)
                 PyExc_ValueError,
                 "No font point size specified and no default font "
                 "size in typefont",
-                0);
+                NULL);
         }
         face_size = self->face_size;
     }
@@ -1564,7 +1565,7 @@ _ftfont_getsizeddescender(pgFontObject *self, PyObject *args)
                 PyExc_ValueError,
                 "No font point size specified and no default font "
                 "size in typefont",
-                0);
+                NULL);
         }
         face_size = self->face_size;
     }
@@ -1596,7 +1597,7 @@ _ftfont_getsizedheight(pgFontObject *self, PyObject *args)
                 PyExc_ValueError,
                 "No font point size specified and no default font "
                 "size in typeface",
-                0);
+                NULL);
         }
         face_size = self->face_size;
     }
@@ -1627,7 +1628,7 @@ _ftfont_getsizedglyphheight(pgFontObject *self, PyObject *args)
                 PyExc_ValueError,
                 "No font point size specified and no default font "
                 "size in typeface",
-                0);
+                NULL);
         }
         face_size = self->face_size;
     }
@@ -2094,7 +2095,7 @@ pgFont_New(const char *filename, long font_index)
     pgFontObject *font;
 
     FreeTypeInstance *ft;
-    ASSERT_GRAB_FREETYPE(ft, 0);
+    ASSERT_GRAB_FREETYPE(ft, NULL);
 
     if (!filename) {
         return 0;
@@ -2195,7 +2196,7 @@ static PyObject *
 _ft_get_error(PyObject *self, PyObject *_null)
 {
     FreeTypeInstance *ft;
-    ASSERT_GRAB_FREETYPE(ft, 0);
+    ASSERT_GRAB_FREETYPE(ft, NULL);
 
     if (ft->_error_msg[0]) {
         return PyUnicode_FromString(ft->_error_msg);

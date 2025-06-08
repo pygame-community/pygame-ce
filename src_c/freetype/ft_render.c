@@ -434,13 +434,13 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
     }
     surface = PG_CreateSurface(width, height, pixelformat);
     if (!surface) {
-        return RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     if (SDL_MUSTLOCK(surface)) {
         if (!PG_LockSurface(surface)) {
             SDL_FreeSurface(surface);
-            return RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         locked = 1;
     }

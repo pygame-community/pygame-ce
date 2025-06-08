@@ -139,7 +139,7 @@ _PGFT_LoadLayout(FreeTypeInstance *ft, pgFontObject *fontobj,
         copy_mode(&ftext->mode, mode);
         font = _PGFT_GetFontSized(ft, fontobj, mode->face_size);
         if (!font) {
-            return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+            return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), NULL);
         }
     }
 

@@ -308,7 +308,7 @@ buffer_get_buffer(BufferObject *self, PyObject *args, PyObject *kwds)
     }
     if (bufobj_flags & BUFOBJ_FILLED) {
         return RAISERETURN(PyExc_ValueError,
-                           "The Py_buffer struct is already filled in", 0);
+                           "The Py_buffer struct is already filled in", NULL);
     }
     self->flags = BUFOBJ_MUTABLE & bufobj_flags;
     if (!self->view_p) {
@@ -750,7 +750,7 @@ Buffer_New(Py_buffer *view_p, int filled, int preserve)
 static PyObject *
 mixin__get_buffer(PyObject *self, PyObject *args)
 {
-    return RAISERETURN(PyExc_NotImplementedError, "abstract method", 0);
+    return RAISERETURN(PyExc_NotImplementedError, "abstract method", NULL);
 }
 
 static PyObject *

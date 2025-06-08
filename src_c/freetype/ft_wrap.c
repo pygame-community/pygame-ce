@@ -146,7 +146,7 @@ _PGFT_Font_GetName(FreeTypeInstance *ft, pgFontObject *fontobj)
     font = _PGFT_GetFont(ft, fontobj);
 
     if (!font) {
-        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), NULL);
     }
     return font->family_name ? font->family_name : "";
 }
@@ -158,7 +158,7 @@ _PGFT_Font_GetStyleName(FreeTypeInstance *ft, pgFontObject *fontobj)
     font = _PGFT_GetFont(ft, fontobj);
 
     if (!font) {
-        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), 0);
+        return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), NULL);
     }
     return font->style_name ? font->style_name : "";
 }

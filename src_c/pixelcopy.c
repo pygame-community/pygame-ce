@@ -833,7 +833,7 @@ surface_to_array(PyObject *self, PyObject *args, PyObject *kwds)
             pgSurface_Unlock(surfobj);
             return RAISERETURN(PyExc_ValueError,
                                "color planes only supported for 2d targets",
-                               0);
+                               NULL);
         }
         if (_copy_unmapped(view_p, surf)) {
             pgBuffer_Release(&pg_view);
@@ -1211,7 +1211,7 @@ make_surface(PyObject *self, PyObject *arg)
         if (!PG_SetPaletteColors(palette, default_palette_colors, 0,
                                  default_palette_size - 1)) {
             SDL_FreeSurface(surf);
-            return RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     }
     surfobj = pgSurface_New(surf);
