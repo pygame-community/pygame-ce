@@ -1,3 +1,4 @@
+
 /*
   pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
@@ -269,7 +270,7 @@ pg_get_sdl_version(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_VERSION(&version);
 #endif
 
-    char *keywords[] = {"linked", NULL};
+    static char *keywords[] = {"linked", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", keywords, &linked)) {
         return NULL; /* Exception already set. */
@@ -1196,7 +1197,7 @@ _pg_buffer_is_byteswapped(Py_buffer *view)
         switch (view->format[0]) {
             case '<':
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                /* Use macros to make analyzer happy */
+                /* Use macros to make static analyzer happy */
                 return 0;
 #else
                 return 1;
@@ -1204,7 +1205,7 @@ _pg_buffer_is_byteswapped(Py_buffer *view)
             case '>':
             case '!':
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-                /* Use macros to make analyzer happy */
+                /* Use macros to make static analyzer happy */
                 return 0;
 #else
                 return 1;
@@ -2011,7 +2012,7 @@ pygame_parachute(int sig)
 #endif
 }
 
-int fatal_signals[] = {
+static int fatal_signals[] = {
     SIGSEGV,
 #ifdef SIGBUS
     SIGBUS,
@@ -2083,7 +2084,7 @@ load_submodule(const char *parent, PyObject *mod, const char *alias);
 
 /* bind functions to python */
 
-PyMethodDef _base_methods[] = {
+static PyMethodDef _base_methods[] = {
     {"init", (PyCFunction)pg_init, METH_NOARGS, DOC_INIT},
     {"quit", (PyCFunction)pg_quit, METH_NOARGS, DOC_QUIT},
     {"get_init", (PyCFunction)pg_base_get_init, METH_NOARGS, DOC_GETINIT},
