@@ -54,6 +54,10 @@ typedef struct pg_view_internals_s {
     Py_ssize_t imem[1];
 } pgViewInternals;
 
+extern PG_PixelFormatEnum pg_default_convert_format;
+extern SDL_Window *pg_default_window;
+extern pgSurfaceObject *pg_default_screen;
+
 void
 pg_install_parachute(void);
 void
@@ -74,7 +78,7 @@ void
 pgBuffer_Release(pg_buffer *);
 int
 pgObject_GetBuffer(PyObject *, pg_buffer *, int);
-extern inline PyObject *
+static inline PyObject *
 pgObject_getRectHelper(PyObject *, PyObject *const *, Py_ssize_t, PyObject *,
                        char *);
 int
@@ -181,14 +185,14 @@ int
 pg_FloatFromObjIndex(PyObject *obj, int _index, float *val);
 int
 pg_TwoFloatsFromObj(PyObject *obj, float *val1, float *val2);
-extern inline int
+static inline int
 pg_DoubleFromObj(PyObject *obj, double *val);
 /*Assumes obj is a Sequence, internal or conscious use only*/
-extern inline int
+static inline int
 _pg_DoubleFromObjIndex(PyObject *obj, int index, double *val);
-extern inline int
+static inline int
 pg_TwoDoublesFromObj(PyObject *obj, double *val1, double *val2);
-extern inline int
+static inline int
 pg_TwoDoublesFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
                               double *val1, double *val2);
 int
@@ -202,14 +206,143 @@ PyObject *
 pg_get_error(PyObject *self, PyObject *_null);
 PyObject *
 pg_set_error(PyObject *s, PyObject *args);
+
 /*error signal handlers(replacing SDL parachute)*/
 void
 pygame_parachute(int sig);
+
 void
 pg_SetDefaultConvertFormat(PG_PixelFormatEnum format);
+
 PG_PixelFormatEnum
 pg_GetDefaultConvertFormat(void);
 
 MODINIT_DEFINE(base);
+
+/*=======static inline function definitions=======*/
+static inline PyObject *
+pgObject_getRectHelper(PyObject *rect, PyObject *const *args, Py_ssize_t nargs,
+                       PyObject *kwnames, char *type)
+{
+    if (nargs > 0) {
+        Py_DECREF(rect);
+        return PyErr_Format(PyExc_TypeError,
+                            "get_%s only accepts keyword arguments", type);
+    }
+
+    if (rect && kwnames) {
+        Py_ssize_t i, sequence_len;
+        PyObject **sequence_items;
+        sequence_items = PySequence_Fast_ITEMS(kwnames);
+        sequence_len = PyTuple_GET_SIZE(kwnames);
+
+        for (i = 0; i < sequence_len; ++i) {
+            if ((PyObject_SetAttr(rect, sequence_items[i], args[i]) == -1)) {
+                Py_DECREF(rect);
+                return NULL;
+            }
+        }
+    }
+    return rect;
+}
+
+static inline int
+pg_DoubleFromObj(PyObject *obj, double *val)
+{
+    if (PyFloat_Check(obj)) {
+        *val = PyFloat_AS_DOUBLE(obj);
+        return 1;
+    }
+
+    *val = (double)PyLong_AsLong(obj);
+    if (PyErr_Occurred()) {
+        PyErr_Clear();
+        return 0;
+    }
+
+    return 1;
+}
+
+/*Assumes obj is a Sequence, internal or conscious use only*/
+static inline int
+_pg_DoubleFromObjIndex(PyObject *obj, int index, double *val)
+{
+    int result = 0;
+
+    PyObject *item = PySequence_ITEM(obj, index);
+    if (!item) {
+        PyErr_Clear();
+        return 0;
+    }
+    result = pg_DoubleFromObj(item, val);
+    Py_DECREF(item);
+
+    return result;
+}
+
+static inline int
+pg_TwoDoublesFromObj(PyObject *obj, double *val1, double *val2)
+{
+    Py_ssize_t length;
+    /*Faster path for tuples and lists*/
+    if (pgSequenceFast_Check(obj)) {
+        length = PySequence_Fast_GET_SIZE(obj);
+        PyObject **f_arr = PySequence_Fast_ITEMS(obj);
+        if (length == 2) {
+            if (!pg_DoubleFromObj(f_arr[0], val1) ||
+                !pg_DoubleFromObj(f_arr[1], val2)) {
+                return 0;
+            }
+        }
+        else if (length == 1) {
+            /* Handle case of ((x, y), ) 'nested sequence' */
+            return pg_TwoDoublesFromObj(f_arr[0], val1, val2);
+        }
+        else {
+            return 0;
+        }
+    }
+    else if (PySequence_Check(obj)) {
+        length = PySequence_Length(obj);
+        if (length == 2) {
+            if (!_pg_DoubleFromObjIndex(obj, 0, val1)) {
+                return 0;
+            }
+            if (!_pg_DoubleFromObjIndex(obj, 1, val2)) {
+                return 0;
+            }
+        }
+        else if (length == 1 && !PyUnicode_Check(obj)) {
+            /* Handle case of ((x, y), ) 'nested sequence' */
+            PyObject *tmp = PySequence_ITEM(obj, 0);
+            int ret = pg_TwoDoublesFromObj(tmp, val1, val2);
+            Py_DECREF(tmp);
+            return ret;
+        }
+        else {
+            PyErr_Clear();
+            return 0;
+        }
+    }
+    else {
+        return 0;
+    }
+
+    return 1;
+}
+
+static inline int
+pg_TwoDoublesFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
+                              double *val1, double *val2)
+{
+    if (nargs == 1 && pg_TwoDoublesFromObj(args[0], val1, val2)) {
+        return 1;
+    }
+    else if (nargs == 2 && pg_DoubleFromObj(args[0], val1) &&
+             pg_DoubleFromObj(args[1], val2)) {
+        return 1;
+    }
+    return 0;
+}
 
 #endif  // #ifndef BASE_H
