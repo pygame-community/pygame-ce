@@ -26,9 +26,6 @@ from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.typing import Point, RectLike
 
-# generic for _HasRect, used in sprite collide functions
-_THasRect = TypeVar("_THasRect", bound=_HasRect)
-
 # non-generic Group, used in Sprite
 _Group = AbstractGroup[_SupportsSprite]
 
@@ -265,6 +262,9 @@ class collide_circle_ratio:
 # argument to collide_mask must either have mask or have image attribute, in
 # addition to mandatorily having a rect attribute
 _SupportsCollideMask = Union[_HasImageAndRect, _HasMaskAndRect]
+
+# generic for _HasRect, used in sprite collide functions
+_THasRect = TypeVar("_THasRect", bound=_HasRect)
 
 def collide_mask(
     left: _SupportsCollideMask, right: _SupportsCollideMask
