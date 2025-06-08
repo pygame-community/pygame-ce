@@ -28,6 +28,9 @@ from pygame.typing import Point, RectLike
 
 from typing_extensions import deprecated  # added in 3.13
 
+# generic for _HasRect, used in sprite collide functions
+_THasRect = TypeVar("_THasRect", bound=_HasRect)
+
 # non-generic Group, used in Sprite
 _Group = AbstractGroup[_SpriteSupportsGroup]
 
@@ -291,10 +294,10 @@ def collide_mask(
     left: _SupportsCollideMask, right: _SupportsCollideMask
 ) -> Optional[tuple[int, int]]: ...
 def spritecollide(
-    sprite: _HasRect,
+    sprite: _THasRect,
     group: AbstractGroup[_TSprite],
     dokill: bool,
-    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
+    collided: Optional[Callable[[_THasRect, _TSprite], Any]] = None,
 ) -> list[_TSprite]: ...
 def groupcollide(
     groupa: AbstractGroup[_TSprite],
@@ -304,7 +307,7 @@ def groupcollide(
     collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> dict[_TSprite, list[_TSprite2]]: ...
 def spritecollideany(
-    sprite: _HasRect,
+    sprite: _THasRect,
     group: AbstractGroup[_TSprite],
-    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
+    collided: Optional[Callable[[_THasRect, _TSprite], Any]] = None,
 ) -> Optional[_TSprite]: ...
