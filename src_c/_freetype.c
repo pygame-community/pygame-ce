@@ -195,10 +195,12 @@ free_string(PGFT_String *);
 /*
  * Auxiliary defines
  */
-#define ASSERT_SELF_IS_ALIVE(s)                                          \
-    if (!pgFont_IS_ALIVE(s)) {                                           \
-        return RAISE(PyExc_RuntimeError, MODULE_NAME                     \
-                     "." FONT_TYPE_NAME " instance is not initialized"); \
+#define ASSERT_SELF_IS_ALIVE(s)                                        \
+    if (!pgFont_IS_ALIVE(s)) {                                         \
+        return RAISERETURN(PyExc_RuntimeError,                         \
+                           MODULE_NAME "." FONT_TYPE_NAME              \
+                                       " instance is not initialized", \
+                           NULL);                                      \
     }
 
 #define PGFT_CHECK_BOOL(_pyobj, _var)                                \
@@ -1105,7 +1107,8 @@ _ftfont_getname(pgFontObject *self, void *closure)
         return name ? PyUnicode_FromString(name) : 0;
     }
 
-    return RAISE(PyExc_AttributeError, "<uninitialized Font object>");
+    return RAISERETURN(PyExc_AttributeError, "<uninitialized Font object>",
+                       NULL);
 }
 
 static PyObject *
@@ -1120,7 +1123,8 @@ _ftfont_getstylename(pgFontObject *self, void *closure)
         return stylename ? PyUnicode_FromString(stylename) : 0;
     }
 
-    return RAISE(PyExc_AttributeError, "<uninitialized Font object>");
+    return RAISERETURN(PyExc_AttributeError, "<uninitialized Font object>",
+                       NULL);
 }
 
 static PyObject *
@@ -2138,8 +2142,8 @@ _ft_autoinit(PyObject *self, PyObject *_null)
         }
 
         if (_PGFT_Init(&(FREETYPE_MOD_STATE(self)->freetype), cache_size)) {
-            return RAISE(PyExc_RuntimeError,
-                         "Failed to initialize freetype library");
+            return RAISERETURN(PyExc_RuntimeError,
+                               "Failed to initialize freetype library", NULL);
         }
 
         FREETYPE_MOD_STATE(self)->cache_size = cache_size;
@@ -2228,8 +2232,8 @@ _ft_get_version(PyObject *self, PyObject *args, PyObject *kwargs)
         int err = FT_Init_FreeType(&lib);
         if (err) {
             FT_Done_FreeType(lib);
-            return RAISE(PyExc_RuntimeError,
-                         "FreeType could not be initialized");
+            return RAISERETURN(PyExc_RuntimeError,
+                               "FreeType could not be initialized", NULL);
         }
         FT_Int major, minor, patch;
         FT_Library_Version(lib, &major, &minor, &patch);

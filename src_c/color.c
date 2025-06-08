@@ -833,7 +833,8 @@ _color_lerp(pgColorObject *self, PyObject *args, PyObject *kw)
     */
     static const double TOLERANCE = 1e-6;
     if ((amt < -TOLERANCE) || (amt > (1.0 + TOLERANCE))) {
-        return RAISE(PyExc_ValueError, "Argument 2 must be in range [0, 1]");
+        return RAISERETURN(PyExc_ValueError,
+                           "Argument 2 must be in range [0, 1]", NULL);
     }
 
     for (int i = 0; i < 4; i++) {
@@ -882,8 +883,8 @@ _color_update(pgColorObject *self, PyObject *const *args, Py_ssize_t nargs)
         }
     }
     else {
-        return RAISE(PyExc_TypeError,
-                     "update can take only 1, 3 or 4 arguments");
+        return RAISERETURN(PyExc_TypeError,
+                           "update can take only 1, 3 or 4 arguments", NULL);
     }
     Py_RETURN_NONE;
 }
@@ -1757,7 +1758,8 @@ _color_set_length(pgColorObject *color, PyObject *args)
     }
 
     if (clength > 4 || clength < 1) {
-        return RAISE(PyExc_ValueError, "Length needs to be 1,2,3, or 4.");
+        return RAISERETURN(PyExc_ValueError, "Length needs to be 1,2,3, or 4.",
+                           NULL);
     }
 
     color->len = clength;
@@ -1772,7 +1774,7 @@ static PyObject *
 _color_item(pgColorObject *color, Py_ssize_t _index)
 {
     if ((_index > (color->len - 1))) {
-        return RAISE(PyExc_IndexError, "invalid index");
+        return RAISERETURN(PyExc_IndexError, "invalid index", NULL);
     }
 
     switch (_index) {
@@ -1785,7 +1787,7 @@ _color_item(pgColorObject *color, Py_ssize_t _index)
         case 3:
             return PyLong_FromLong(color->data[3]);
         default:
-            return RAISE(PyExc_IndexError, "invalid index");
+            return RAISERETURN(PyExc_IndexError, "invalid index", NULL);
     }
 }
 
@@ -1821,7 +1823,8 @@ _color_subscript(pgColorObject *self, PyObject *item)
             return _color_slice(self, start, stop);
         }
         else {
-            return RAISE(PyExc_TypeError, "slice steps not supported");
+            return RAISERETURN(PyExc_TypeError, "slice steps not supported",
+                               NULL);
         }
     }
     else {

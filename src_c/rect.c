@@ -608,8 +608,8 @@ pg_frect_repr(pgFRectObject *self)
     int ret = PyOS_snprintf(str, 256, "FRect(%f, %f, %f, %f)", self->r.x,
                             self->r.y, self->r.w, self->r.h);
     if (ret < 0 || ret >= 256) {
-        return RAISE(PyExc_RuntimeError,
-                     "Internal PyOS_snprintf call failed!");
+        return RAISERETURN(PyExc_RuntimeError,
+                           "Internal PyOS_snprintf call failed!", NULL);
     }
 
     return PyUnicode_FromString(str);

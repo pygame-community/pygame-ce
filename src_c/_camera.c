@@ -104,7 +104,8 @@ surf_colorspace(PyObject *self, PyObject *arg)
         cspace = HSV_OUT;
     }
     else {
-        return RAISE(PyExc_ValueError, "Incorrect colorspace value");
+        return RAISERETURN(PyExc_ValueError, "Incorrect colorspace value",
+                           NULL);
     }
 
     surf = pgSurface_AsSurface(surfobj);
@@ -121,18 +122,19 @@ surf_colorspace(PyObject *self, PyObject *arg)
 
     /* check to see if the size is the same. */
     if (newsurf->w != surf->w || newsurf->h != surf->h) {
-        return RAISE(PyExc_ValueError,
-                     "Surfaces not the same width and height.");
+        return RAISERETURN(PyExc_ValueError,
+                           "Surfaces not the same width and height.", NULL);
     }
 
     /* check to see if the format of the surface is the same. */
     if (PG_SURF_BitsPerPixel(surf) != PG_SURF_BitsPerPixel(newsurf)) {
-        return RAISE(PyExc_ValueError, "Surfaces not the same depth");
+        return RAISERETURN(PyExc_ValueError, "Surfaces not the same depth",
+                           NULL);
     }
 
     PG_PixelFormat *src_fmt = PG_GetSurfaceFormat(surf);
     if (!src_fmt) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     SDL_LockSurface(newsurf);
@@ -413,8 +415,9 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
     }
 
     if (surf->w != self->width || surf->h != self->height) {
-        return RAISE(PyExc_ValueError,
-                     "Destination surface not the correct width or height.");
+        return RAISERETURN(
+            PyExc_ValueError,
+            "Destination surface not the correct width or height.", NULL);
     }
 
     Py_BEGIN_ALLOW_THREADS;
@@ -428,7 +431,7 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
                          strerror(errno_code));
             return NULL;
         }
-        return RAISE(PyExc_SystemError, "image processing error");
+        return RAISERETURN(PyExc_SystemError, "image processing error", NULL);
     }
 
     if (surfobj) {
@@ -461,8 +464,9 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
     }
 
     if (surf->w != self->width || surf->h != self->height) {
-        return RAISE(PyExc_ValueError,
-                     "Destination surface not the correct width or height.");
+        return RAISERETURN(
+            PyExc_ValueError,
+            "Destination surface not the correct width or height.", NULL);
     }
 
     if (!windows_read_frame(self, surf)) {

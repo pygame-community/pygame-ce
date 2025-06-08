@@ -944,8 +944,9 @@ pgArrayStruct_AsDict(PyArrayInterface *inter_p)
     if (inter_p->flags & PAI_ARR_HAS_DESCR) {
         if (!inter_p->descr) {
             Py_DECREF(dictobj);
-            return RAISE(PyExc_ValueError,
-                         "Array struct has descr flag set  but no descriptor");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Array struct has descr flag set  but no descriptor", NULL);
         }
         if (PyDict_SetItemString(dictobj, "descr", inter_p->descr)) {
             Py_DECREF(dictobj);

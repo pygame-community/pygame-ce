@@ -55,9 +55,10 @@ typedef enum {
 /**
  * Macro for initialization checks.
  */
-#define PYGAME_SCRAP_INIT_CHECK()                                      \
-    if (!pygame_scrap_initialized()) {                                 \
-        return RAISE(pgExc_SDLError, "scrap system not initialized."); \
+#define PYGAME_SCRAP_INIT_CHECK()                                           \
+    if (!pygame_scrap_initialized()) {                                      \
+        return RAISERETURN(pgExc_SDLError, "scrap system not initialized.", \
+                           NULL);                                           \
     }
 
 /**

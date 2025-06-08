@@ -20,9 +20,9 @@ static PyTypeObject pgImage_Type;
 
 #define pgImage_Check(x) (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
 
-#define RENDERER_ERROR_CHECK(x)                       \
-    if (x < 0) {                                      \
-        return RAISE(pgExc_SDLError, SDL_GetError()); \
+#define RENDERER_ERROR_CHECK(x)                                   \
+    if (x < 0) {                                                  \
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL); \
     }
 
 #define RENDERER_PROPERTY_ERROR_CHECK(x)                        \
@@ -30,9 +30,10 @@ static PyTypeObject pgImage_Type;
         return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1); \
     }
 
-#define PARSE_POINT(obj, x, y, name)                                 \
-    if (!pg_TwoFloatsFromObj(obj, &x, &y)) {                         \
-        return RAISE(PyExc_TypeError, "invalid " #name " argument"); \
+#define PARSE_POINT(obj, x, y, name)                                      \
+    if (!pg_TwoFloatsFromObj(obj, &x, &y)) {                              \
+        return RAISERETURN(PyExc_TypeError, "invalid " #name " argument", \
+                           NULL);                                         \
     }
 
 static void
@@ -58,12 +59,12 @@ renderer_from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
         self->_is_borrowed = SDL_TRUE;
     }
     else {
-        return RAISE(pgExc_SDLError,
-                     "Window is not created from display module");
+        return RAISERETURN(pgExc_SDLError,
+                           "Window is not created from display module", NULL);
     }
     self->renderer = SDL_GetRenderer(self->window->_win);
     if (!self->renderer) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     self->target = NULL;
     Py_INCREF(self);
@@ -80,7 +81,7 @@ renderer_draw_point(pgRendererObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     if (!pg_TwoFloatsFromObj(point, &pos.x, &pos.y)) {
-        return RAISE(PyExc_TypeError, "invalid argument");
+        return RAISERETURN(PyExc_TypeError, "invalid argument", NULL);
     }
     RENDERER_ERROR_CHECK(SDL_RenderDrawPointF(self->renderer, pos.x, pos.y))
     Py_RETURN_NONE;
@@ -113,7 +114,7 @@ renderer_draw_rect(pgRendererObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     if (!(rect = pgFRect_FromObject(rectobj, &temp))) {
-        return RAISE(PyExc_TypeError, "rect argument is invalid");
+        return RAISERETURN(PyExc_TypeError, "rect argument is invalid", NULL);
     }
     RENDERER_ERROR_CHECK(SDL_RenderDrawRectF(self->renderer, rect))
     Py_RETURN_NONE;
@@ -129,7 +130,7 @@ renderer_fill_rect(pgRendererObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     if (!(rect = pgFRect_FromObject(rectobj, &temp))) {
-        return RAISE(PyExc_TypeError, "rect argument is invalid");
+        return RAISERETURN(PyExc_TypeError, "rect argument is invalid", NULL);
     }
     RENDERER_ERROR_CHECK(SDL_RenderFillRectF(self->renderer, rect))
     Py_RETURN_NONE;
@@ -178,8 +179,8 @@ renderer_fill_triangle(pgRendererObject *self, PyObject *args,
         SDL_RenderGeometry(self->renderer, NULL, vertices, 3, NULL, 0))
     Py_RETURN_NONE;
 #else
-    RAISE(PyExc_TypeError, "fill_triangle() requires SDL 2.0.18 or newer");
-    Py_RETURN_NONE;
+    return RAISERETURN(PyExc_TypeError,
+                       "fill_triangle() requires SDL 2.0.18 or newer", NULL);
 #endif
 }
 
@@ -228,8 +229,8 @@ renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
         SDL_RenderGeometry(self->renderer, NULL, vertices, 4, indices, 6))
     Py_RETURN_NONE;
 #else
-    RAISE(PyExc_TypeError, "fill_quad() requires SDL 2.0.18 or newer");
-    Py_RETURN_NONE;
+    return RAISERETURN(PyExc_TypeError,
+                       "fill_quad() requires SDL 2.0.18 or newer", NULL);
 #endif
 }
 
@@ -269,7 +270,8 @@ renderer_set_viewport(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     }
     else {
         if (!(rect = pgRect_FromObject(rectobj, &temp))) {
-            return RAISE(PyExc_TypeError, "area must be rectangle or None");
+            return RAISERETURN(PyExc_TypeError,
+                               "area must be rectangle or None", NULL);
         }
         RENDERER_ERROR_CHECK(SDL_RenderSetViewport(self->renderer, rect))
     }
@@ -308,7 +310,8 @@ renderer_to_surface(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     }
     if (!Py_IsNone(rectobj)) {
         if (!(rect = pgRect_FromObject(rectobj, &temp))) {
-            return RAISE(PyExc_TypeError, "area must be None or a rect");
+            return RAISERETURN(PyExc_TypeError, "area must be None or a rect",
+                               NULL);
         }
         SDL_RenderGetViewport(self->renderer, &viewport);
         SDL_IntersectRect(rect, &viewport, rect);
@@ -320,25 +323,27 @@ renderer_to_surface(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     }
     if (!Py_IsNone(surfobj)) {
         if (!(pgSurface_Check(surfobj))) {
-            return RAISE(PyExc_TypeError, "surface must be None or a Surface");
+            return RAISERETURN(PyExc_TypeError,
+                               "surface must be None or a Surface", NULL);
         }
         surface = (pgSurfaceObject *)surfobj;
         Py_INCREF(surface);
         surf = surface->surf;
         if (surf->w < rect->w || surf->h < rect->h) {
-            return RAISE(PyExc_ValueError, "the surface is too small");
+            return RAISERETURN(PyExc_ValueError, "the surface is too small",
+                               NULL);
         }
         format = surf->format->format;
     }
     else {
         format = SDL_GetWindowPixelFormat(self->window->_win);
         if (format == SDL_PIXELFORMAT_UNKNOWN) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         surf = SDL_CreateRGBSurfaceWithFormat(
             0, rect->w, rect->h, SDL_BITSPERPIXEL(format), format);
         if (surf == NULL) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         surface = pgSurface_New(surf);
     }

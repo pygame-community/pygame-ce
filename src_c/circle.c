@@ -112,7 +112,8 @@ pg_circle_move(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
     double Dx, Dy;
 
     if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &Dx, &Dy)) {
-        return RAISE(PyExc_TypeError, "move requires a pair of numbers");
+        return RAISERETURN(PyExc_TypeError, "move requires a pair of numbers",
+                           NULL);
     }
 
     return _pg_circle_subtype_new3(Py_TYPE(self), self->circle.x + Dx,
@@ -126,7 +127,8 @@ pg_circle_move_ip(pgCircleObject *self, PyObject *const *args,
     double Dx, Dy;
 
     if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &Dx, &Dy)) {
-        return RAISE(PyExc_TypeError, "move_ip requires a pair of numbers");
+        return RAISERETURN(PyExc_TypeError,
+                           "move_ip requires a pair of numbers", NULL);
     }
 
     self->circle.x += Dx;
@@ -139,8 +141,9 @@ static PyObject *
 pg_circle_update(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     if (!pgCircle_FromObjectFastcall(args, nargs, &self->circle)) {
-        return RAISE(PyExc_TypeError,
-                     "Circle.update requires a circle or CircleLike object");
+        return RAISERETURN(
+            PyExc_TypeError,
+            "Circle.update requires a circle or CircleLike object", NULL);
     }
     Py_RETURN_NONE;
 }
@@ -152,9 +155,9 @@ pg_circle_collidepoint(pgCircleObject *self, PyObject *const *args,
     double px, py;
 
     if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &px, &py)) {
-        return RAISE(
+        return RAISERETURN(
             PyExc_TypeError,
-            "Circle.collidepoint requires a point or PointLike object");
+            "Circle.collidepoint requires a point or PointLike object", NULL);
     }
 
     return PyBool_FromLong(pgCollision_CirclePoint(&self->circle, px, py));
@@ -167,7 +170,8 @@ pg_circle_collidecircle(pgCircleObject *self, PyObject *const *args,
     pgCircleBase other_circle;
 
     if (!pgCircle_FromObjectFastcall(args, nargs, &other_circle)) {
-        return RAISE(PyExc_TypeError, "A CircleType object was expected");
+        return RAISERETURN(PyExc_TypeError, "A CircleType object was expected",
+                           NULL);
     }
 
     return PyBool_FromLong(
@@ -183,9 +187,11 @@ pg_circle_colliderect(pgCircleObject *self, PyObject *const *args,
     if (nargs == 1) {
         SDL_FRect temp, *tmp;
         if (!(tmp = pgFRect_FromObject(args[0], &temp))) {
-            return RAISE(PyExc_TypeError,
-                         "Invalid rect, must be RectType or sequence of 4 "
-                         "numbers");
+            return RAISERETURN(
+                PyExc_TypeError,
+                "Invalid rect, must be RectType or sequence of 4 "
+                "numbers",
+                NULL);
         }
         x = (double)tmp->x;
         y = (double)tmp->y;
@@ -195,15 +201,17 @@ pg_circle_colliderect(pgCircleObject *self, PyObject *const *args,
     else if (nargs == 2) {
         if (!pg_TwoDoublesFromObj(args[0], &x, &y) ||
             !pg_TwoDoublesFromObj(args[1], &w, &h)) {
-            return RAISE(PyExc_TypeError,
-                         "Invalid rect, all 4 fields must be numeric");
+            return RAISERETURN(PyExc_TypeError,
+                               "Invalid rect, all 4 fields must be numeric",
+                               NULL);
         }
     }
     else if (nargs == 4) {
         if (!pg_DoubleFromObj(args[0], &x) || !pg_DoubleFromObj(args[1], &y) ||
             !pg_DoubleFromObj(args[2], &w) || !pg_DoubleFromObj(args[3], &h)) {
-            return RAISE(PyExc_TypeError,
-                         "Invalid rect, all 4 fields must be numeric");
+            return RAISERETURN(PyExc_TypeError,
+                               "Invalid rect, all 4 fields must be numeric",
+                               NULL);
         }
     }
     else {
@@ -241,7 +249,8 @@ static PyObject *
 pg_circle_rotate(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     if (!nargs || nargs > 2) {
-        return RAISE(PyExc_TypeError, "rotate requires 1 or 2 arguments");
+        return RAISERETURN(PyExc_TypeError, "rotate requires 1 or 2 arguments",
+                           NULL);
     }
 
     pgCircleBase *circle = &self->circle;
@@ -251,8 +260,8 @@ pg_circle_rotate(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
     ry = circle->y;
 
     if (!pg_DoubleFromObj(args[0], &angle)) {
-        return RAISE(PyExc_TypeError,
-                     "Invalid angle argument, must be numeric");
+        return RAISERETURN(PyExc_TypeError,
+                           "Invalid angle argument, must be numeric", NULL);
     }
 
     if (nargs != 2) {
@@ -260,9 +269,11 @@ pg_circle_rotate(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (!pg_TwoDoublesFromObj(args[1], &rx, &ry)) {
-        return RAISE(PyExc_TypeError,
-                     "Invalid rotation point argument, must be a sequence of "
-                     "2 numbers");
+        return RAISERETURN(
+            PyExc_TypeError,
+            "Invalid rotation point argument, must be a sequence of "
+            "2 numbers",
+            NULL);
     }
 
     PyObject *circle_obj = _pg_circle_subtype_new(Py_TYPE(self), circle);
@@ -280,7 +291,8 @@ pg_circle_rotate_ip(pgCircleObject *self, PyObject *const *args,
                     Py_ssize_t nargs)
 {
     if (!nargs || nargs > 2) {
-        return RAISE(PyExc_TypeError, "rotate requires 1 or 2 arguments");
+        return RAISERETURN(PyExc_TypeError, "rotate requires 1 or 2 arguments",
+                           NULL);
     }
 
     pgCircleBase *circle = &self->circle;
@@ -290,8 +302,8 @@ pg_circle_rotate_ip(pgCircleObject *self, PyObject *const *args,
     ry = circle->y;
 
     if (!pg_DoubleFromObj(args[0], &angle)) {
-        return RAISE(PyExc_TypeError,
-                     "Invalid angle argument, must be numeric");
+        return RAISERETURN(PyExc_TypeError,
+                           "Invalid angle argument, must be numeric", NULL);
     }
 
     if (nargs != 2) {
@@ -300,9 +312,11 @@ pg_circle_rotate_ip(pgCircleObject *self, PyObject *const *args,
     }
 
     if (!pg_TwoDoublesFromObj(args[1], &rx, &ry)) {
-        return RAISE(PyExc_TypeError,
-                     "Invalid rotation point argument, must be a sequence "
-                     "of 2 numbers");
+        return RAISERETURN(
+            PyExc_TypeError,
+            "Invalid rotation point argument, must be a sequence "
+            "of 2 numbers",
+            NULL);
     }
 
     _pg_rotate_circle_helper(circle, angle, rx, ry);
@@ -367,7 +381,8 @@ pg_circle_collidelist(pgCircleObject *self, PyObject *arg)
     int colliding;
 
     if (!PySequence_Check(arg)) {
-        return RAISE(PyExc_TypeError, "colliders argument must be a sequence");
+        return RAISERETURN(PyExc_TypeError,
+                           "colliders argument must be a sequence", NULL);
     }
 
     /* fast path */
@@ -416,7 +431,8 @@ pg_circle_collidelistall(pgCircleObject *self, PyObject *arg)
     int colliding;
 
     if (!PySequence_Check(arg)) {
-        return RAISE(PyExc_TypeError, "Argument must be a sequence");
+        return RAISERETURN(PyExc_TypeError, "Argument must be a sequence",
+                           NULL);
     }
 
     ret = PyList_New(0);
@@ -562,9 +578,11 @@ pg_circle_contains(pgCircleObject *self, PyObject *arg)
         result = pgCollision_CirclePoint(scirc, x, y);
     }
     else {
-        return RAISE(PyExc_TypeError,
-                     "Invalid shape argument, must be a Circle, Rect / Frect "
-                     "or a coordinate");
+        return RAISERETURN(
+            PyExc_TypeError,
+            "Invalid shape argument, must be a Circle, Rect / Frect "
+            "or a coordinate",
+            NULL);
     }
 
     return PyBool_FromLong(result);

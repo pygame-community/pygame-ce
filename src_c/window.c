@@ -170,8 +170,9 @@ window_get_surface(pgWindowObject *self, PyObject *_null)
     if (self->_is_borrowed) {
         surf = (PyObject *)pg_GetDefaultWindowSurface();
         if (!surf) {
-            return RAISE(pgExc_SDLError,
-                         "display.set_mode has not been called yet.");
+            return RAISERETURN(pgExc_SDLError,
+                               "display.set_mode has not been called yet.",
+                               NULL);
         }
         Py_INCREF(surf);
         return surf;
@@ -179,7 +180,7 @@ window_get_surface(pgWindowObject *self, PyObject *_null)
 
     _surf = SDL_GetWindowSurface(self->_win);
     if (!_surf) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     if (pg_GetDefaultConvertFormat() == 0) {
@@ -205,16 +206,18 @@ window_flip(pgWindowObject *self, PyObject *_null)
 
     if (self->context == NULL) {
         if (!self->surf) {
-            return RAISE(pgExc_SDLError,
-                         "the Window has no surface associated with it, did "
-                         "you forget to call Window.get_surface()");
+            return RAISERETURN(
+                pgExc_SDLError,
+                "the Window has no surface associated with it, did "
+                "you forget to call Window.get_surface()",
+                NULL);
         }
 
         Py_BEGIN_ALLOW_THREADS;
         result = SDL_UpdateWindowSurface(self->_win);
         Py_END_ALLOW_THREADS;
         if (result) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     }
     else {
@@ -301,7 +304,7 @@ static PyObject *
 window_set_windowed(pgWindowObject *self, PyObject *_null)
 {
     if (SDL_SetWindowFullscreen(self->_win, 0)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     Py_RETURN_NONE;
 }
@@ -351,13 +354,13 @@ window_set_fullscreen(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     if (!pg_window_set_fullscreen(self->_win, desktop)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 #else
     if (SDL_SetWindowFullscreen(self->_win, desktop
                                                 ? SDL_WINDOW_FULLSCREEN_DESKTOP
                                                 : SDL_WINDOW_FULLSCREEN)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 #endif
     Py_RETURN_NONE;
@@ -383,7 +386,7 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
         if (SDL_SetWindowInputFocus(self->_win)) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     }
     else {
@@ -465,11 +468,12 @@ static PyObject *
 window_set_modal_for(pgWindowObject *self, PyObject *arg)
 {
     if (!pgWindow_Check(arg)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument to set_modal_for must be a Window.");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument to set_modal_for must be a Window.",
+                           NULL);
     }
     if (!PG_SetWindowModalFor(self->_win, ((pgWindowObject *)arg)->_win)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     Py_RETURN_NONE;
 }
@@ -478,8 +482,8 @@ static PyObject *
 window_set_icon(pgWindowObject *self, PyObject *arg)
 {
     if (!pgSurface_Check(arg)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument to set_icon must be a Surface.");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument to set_icon must be a Surface.", NULL);
     }
     SDL_SetWindowIcon(self->_win, pgSurface_AsSurface(arg));
     Py_RETURN_NONE;
@@ -664,7 +668,7 @@ window_get_window_id(pgWindowObject *self, PyObject *_null)
 {
     Uint32 window_id = SDL_GetWindowID(self->_win);
     if (!window_id) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     return PyLong_FromLong(window_id);
 }
@@ -883,12 +887,12 @@ window_get_opacity(pgWindowObject *self, void *v)
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     float opacity = SDL_GetWindowOpacity(self->_win);
     if (opacity < 0) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 #else
     float opacity;
     if (SDL_GetWindowOpacity(self->_win, &opacity)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 #endif
     return PyFloat_FromDouble((double)opacity);
@@ -1271,8 +1275,8 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
 
     SDL_Window *window = pg_GetDefaultWindow();
     if (!window) {
-        return RAISE(pgExc_SDLError,
-                     "display.set_mode has not been called yet.");
+        return RAISERETURN(pgExc_SDLError,
+                           "display.set_mode has not been called yet.", NULL);
     }
 
     pgWindowObject *self = (pgWindowObject *)pg_get_pg_window(window);
@@ -1294,15 +1298,18 @@ window_flash(pgWindowObject *self, PyObject *arg)
 #if SDL_VERSION_ATLEAST(2, 0, 16)
     long operation = PyLong_AsLong(arg);
     if (operation == -1 && PyErr_Occurred()) {
-        return RAISE(PyExc_TypeError,
-                     "'operation' must be an integer. "
-                     "Must correspond with FLASH_CANCEL, FLASH_BRIEFLY, or "
-                     "FLASH_UNTIL_FOCUSED.");
+        return RAISERETURN(
+            PyExc_TypeError,
+            "'operation' must be an integer. "
+            "Must correspond with FLASH_CANCEL, FLASH_BRIEFLY, or "
+            "FLASH_UNTIL_FOCUSED.",
+            NULL);
     }
 
     if (operation != SDL_FLASH_CANCEL && operation != SDL_FLASH_BRIEFLY &&
         operation != SDL_FLASH_UNTIL_FOCUSED) {
-        return RAISE(PyExc_ValueError, "Unsupported window flash operation.");
+        return RAISERETURN(PyExc_ValueError,
+                           "Unsupported window flash operation.", NULL);
     }
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -1310,11 +1317,12 @@ window_flash(pgWindowObject *self, PyObject *arg)
 #else
     if (SDL_FlashWindow(self->_win, operation) < 0) {
 #endif
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     Py_RETURN_NONE;
 #else
-    return RAISE(pgExc_SDLError, "'Window.flash' requires SDL 2.0.16+");
+    return RAISERETURN(pgExc_SDLError, "'Window.flash' requires SDL 2.0.16+",
+                       NULL);
 #endif /* SDL_VERSION_ATLEAST(2, 0, 16) */
 }
 
@@ -1334,7 +1342,7 @@ window_repr(pgWindowObject *self)
     title = SDL_GetWindowTitle(self->_win);
     win_id = SDL_GetWindowID(self->_win);
     if (win_id == 0) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     return PyUnicode_FromFormat("<Window(title='%s', id=%d)>", title, win_id);

@@ -75,8 +75,9 @@ static PyObject *
 pg_line_update(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     if (!pgLine_FromObjectFastcall(args, nargs, &self->line)) {
-        return RAISE(PyExc_TypeError,
-                     "Line.update requires a line or LineLike object");
+        return RAISERETURN(PyExc_TypeError,
+                           "Line.update requires a line or LineLike object",
+                           NULL);
     }
     Py_RETURN_NONE;
 }
@@ -87,7 +88,8 @@ pg_line_move(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
     double Dx, Dy;
 
     if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &Dx, &Dy)) {
-        return RAISE(PyExc_TypeError, "move requires a pair of numbers");
+        return RAISERETURN(PyExc_TypeError, "move requires a pair of numbers",
+                           NULL);
     }
 
     return _pg_line_subtype_new4(Py_TYPE(self), self->line.ax + Dx,
@@ -101,7 +103,8 @@ pg_line_move_ip(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
     double Dx, Dy;
 
     if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &Dx, &Dy)) {
-        return RAISE(PyExc_TypeError, "move_ip requires a pair of numbers");
+        return RAISERETURN(PyExc_TypeError,
+                           "move_ip requires a pair of numbers", NULL);
     }
 
     self->line.ax += Dx;
@@ -184,8 +187,8 @@ pg_line_scale(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
     double factor, origin;
 
     if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &factor, &origin)) {
-        return RAISE(PyExc_TypeError,
-                     "scale requires a sequence of two numbers");
+        return RAISERETURN(PyExc_TypeError,
+                           "scale requires a sequence of two numbers", NULL);
     }
 
     PyObject *line;
@@ -207,8 +210,9 @@ pg_line_scale_ip(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
     double factor, origin;
 
     if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &factor, &origin)) {
-        return RAISE(PyExc_TypeError,
-                     "scale_ip requires a sequence of two numbers");
+        return RAISERETURN(PyExc_TypeError,
+                           "scale_ip requires a sequence of two numbers",
+                           NULL);
     }
 
     if (!_line_scale_helper(&pgLine_AsLine(self), factor, origin)) {

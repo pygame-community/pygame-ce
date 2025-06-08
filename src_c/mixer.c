@@ -372,8 +372,8 @@ _init(int freq, int size, int channels, int chunk, char *devicename,
             case 6:
                 break;
             default:
-                return RAISE(PyExc_ValueError,
-                             "'channels' must be 1, 2, 4, or 6");
+                return RAISERETURN(PyExc_ValueError,
+                                   "'channels' must be 1, 2, 4, or 6", NULL);
         }
     }
 
@@ -445,13 +445,13 @@ _init(int freq, int size, int channels, int chunk, char *devicename,
         }
 
         if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
 
         if (Mix_OpenAudioDevice(freq, fmt, channels, chunk, devicename,
                                 allowedchanges) == -1) {
             SDL_QuitSubSystem(SDL_INIT_AUDIO);
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         Mix_ChannelFinished(endsound_callback);
         Mix_VolumeMusic(127);
@@ -1099,8 +1099,8 @@ chan_queue(PyObject *self, PyObject *sound)
     Mix_Chunk *chunk;
 
     if (!pgSound_Check(sound)) {
-        return RAISE(PyExc_TypeError,
-                     "The argument must be an instance of Sound");
+        return RAISERETURN(PyExc_TypeError,
+                           "The argument must be an instance of Sound", NULL);
     }
 
     chunk = pgSound_AsChunk(sound);
@@ -1202,8 +1202,8 @@ chan_set_source_location(PyObject *self, PyObject *args)
     angle = (Sint16)roundf(fmodf(angle_f, 360));
     distance_f = roundf(distance_f);
     if (0 > distance_f || 256 <= distance_f) {
-        return RAISE(PyExc_ValueError,
-                     "distance out of range, expected (0, 255)");
+        return RAISERETURN(PyExc_ValueError,
+                           "distance out of range, expected (0, 255)", NULL);
     }
     distance = (Uint8)distance_f;
 
@@ -1211,7 +1211,7 @@ chan_set_source_location(PyObject *self, PyObject *args)
     _save = PyEval_SaveThread();
     if (!Mix_SetPosition(channelnum, angle, distance)) {
         PyEval_RestoreThread(_save);
-        return RAISE(pgExc_SDLError, Mix_GetError());
+        return RAISERETURN(pgExc_SDLError, Mix_GetError(), NULL);
     }
     PyEval_RestoreThread(_save);
     Py_RETURN_NONE;
@@ -1242,7 +1242,7 @@ chan_set_volume(PyObject *self, PyObject *args)
         _save = PyEval_SaveThread();
         if (!Mix_SetPanning(channelnum, left, right)) {
             PyEval_RestoreThread(_save);
-            return RAISE(pgExc_SDLError, Mix_GetError());
+            return RAISERETURN(pgExc_SDLError, Mix_GetError(), NULL);
         }
         PyEval_RestoreThread(_save);
     }
@@ -1258,7 +1258,7 @@ chan_set_volume(PyObject *self, PyObject *args)
         _save = PyEval_SaveThread();
         if (!Mix_SetPanning(channelnum, left, right)) {
             PyEval_RestoreThread(_save);
-            return RAISE(pgExc_SDLError, Mix_GetError());
+            return RAISERETURN(pgExc_SDLError, Mix_GetError(), NULL);
         }
         PyEval_RestoreThread(_save);
 
@@ -1516,8 +1516,8 @@ mixer_set_soundfont(PyObject *self, PyObject *args)
         string_path = PyUnicode_AsUTF8(path);
     }
     else if (!Py_IsNone(path)) {
-        return RAISE(PyExc_TypeError,
-                     "Must pass string or None to set_soundfont");
+        return RAISERETURN(PyExc_TypeError,
+                           "Must pass string or None to set_soundfont", NULL);
     }
 
     if (strlen(string_path) == 0) {
@@ -1528,7 +1528,7 @@ mixer_set_soundfont(PyObject *self, PyObject *args)
     }
 
     if (paths_set == 0) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     Py_RETURN_NONE;
@@ -2014,7 +2014,8 @@ pgSound_New(Mix_Chunk *chunk)
     pgSoundObject *soundobj;
 
     if (!chunk) {
-        return RAISE(PyExc_RuntimeError, "unable to create sound.");
+        return RAISERETURN(PyExc_RuntimeError, "unable to create sound.",
+                           NULL);
     }
 
     soundobj = (pgSoundObject *)pgSound_Type.tp_new(&pgSound_Type, NULL, NULL);

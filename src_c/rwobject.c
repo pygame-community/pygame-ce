@@ -224,9 +224,10 @@ pg_EncodeString(PyObject *obj, const char *encoding, const char *errors,
         else if (encoding == pg_default_encoding &&
                  errors == pg_default_errors) {
             /* The default encoding and error handling should not fail */
-            return RAISE(PyExc_SystemError,
-                         "Pygame bug (in pg_EncodeString):"
-                         " unexpected encoding error");
+            return RAISERETURN(PyExc_SystemError,
+                               "Pygame bug (in pg_EncodeString):"
+                               " unexpected encoding error",
+                               NULL);
         }
         PyErr_Clear();
         Py_RETURN_NONE;
@@ -483,7 +484,8 @@ pgRWops_FromFileObject(PyObject *obj)
     pgRWHelper *helper;
 
     if (obj == NULL) {
-        return (SDL_RWops *)RAISE(PyExc_TypeError, "Invalid filetype object");
+        return (SDL_RWops *)RAISERETURN(PyExc_TypeError,
+                                        "Invalid filetype object", NULL);
     }
 
     helper = PyMem_New(pgRWHelper, 1);
@@ -511,18 +513,18 @@ pgRWops_FromFileObject(PyObject *obj)
     if (rw == NULL) {
         iface.close(helper);
         PyMem_Free(helper);
-        return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
+        return (SDL_RWops *)RAISERETURN(PyExc_IOError, SDL_GetError(), NULL);
     }
 
     SDL_PropertiesID props = SDL_GetIOProperties(rw);
     if (!props) {
         PyMem_Free(helper);
-        return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
+        return (SDL_RWops *)RAISERETURN(PyExc_IOError, SDL_GetError(), NULL);
     }
 
     if (!SDL_SetBooleanProperty(props, "_pygame_is_file_object", 1)) {
         PyMem_Free(helper);
-        return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
+        return (SDL_RWops *)RAISERETURN(PyExc_IOError, SDL_GetError(), NULL);
     }
 
 #else
@@ -772,7 +774,8 @@ again:
 
 fail:
     if (retry) {
-        return RAISE(PyExc_RuntimeError, "can't access resource on platform");
+        return RAISERETURN(PyExc_RuntimeError,
+                           "can't access resource on platform", NULL);
     }
 
     retry = 1;

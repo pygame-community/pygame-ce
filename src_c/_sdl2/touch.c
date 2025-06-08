@@ -33,15 +33,15 @@ pg_touch_get_device(PyObject *self, PyObject *index)
 {
     SDL_TouchID touchid;
     if (!PyLong_Check(index)) {
-        return RAISE(PyExc_TypeError,
+        return RAISERETURN(PyExc_TypeError,
                      "index must be an integer "
-                     "specifying a device to get the ID for");
+                     "specifying a device to get the ID for", NULL);
     }
 
     touchid = SDL_GetTouchDevice(PyLong_AsLong(index));
     if (touchid == 0) {
         /* invalid index */
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     return PyLong_FromLongLong(touchid);
 }
@@ -51,16 +51,16 @@ pg_touch_num_fingers(PyObject *self, PyObject *device_id)
 {
     int fingercount;
     if (!PyLong_Check(device_id)) {
-        return RAISE(PyExc_TypeError,
+        return RAISERETURN(PyExc_TypeError,
                      "device_id must be an integer "
-                     "specifying a touch device");
+                     "specifying a touch device", NULL);
     }
 
     VIDEO_INIT_CHECK();
 
     fingercount = SDL_GetNumTouchFingers(PyLong_AsLongLong(device_id));
     if (fingercount == 0) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     return PyLong_FromLong(fingercount);
 }

@@ -564,7 +564,7 @@ typedef enum {
     PGS_SCROLL_ERASE = 0x00000004
 } PygameScrollSurfaceFlags;
 
-#define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
+#define RAISE(x, y) (PyErr_SetString((x), (y)))
 #define RAISERETURN(x, y, r) (PyErr_SetString((x), (y)), r)
 #define DEL_ATTR_NOT_SUPPORTED_CHECK(name, value)                            \
     do {                                                                     \
@@ -587,13 +587,17 @@ typedef enum {
  * Initialization checks
  */
 
-#define VIDEO_INIT_CHECK()            \
-    if (!SDL_WasInit(SDL_INIT_VIDEO)) \
-    return RAISE(pgExc_SDLError, "video system not initialized")
+#define VIDEO_INIT_CHECK()                                                 \
+    if (!SDL_WasInit(SDL_INIT_VIDEO)) {                                    \
+        return RAISERETURN(pgExc_SDLError, "video system not initialized", \
+                           NULL);                                          \
+    }
 
-#define JOYSTICK_INIT_CHECK()            \
-    if (!SDL_WasInit(SDL_INIT_JOYSTICK)) \
-    return RAISE(pgExc_SDLError, "joystick system not initialized")
+#define JOYSTICK_INIT_CHECK()                                                 \
+    if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {                                    \
+        return RAISERETURN(pgExc_SDLError, "joystick system not initialized", \
+                           NULL);                                             \
+    }
 
 /* thread check */
 #ifdef WITH_THREAD

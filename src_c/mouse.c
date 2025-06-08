@@ -36,7 +36,8 @@ mouse_set_pos(PyObject *self, PyObject *args)
     int x, y;
 
     if (!pg_TwoIntsFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "invalid position argument for set_pos");
+        return RAISERETURN(PyExc_TypeError,
+                           "invalid position argument for set_pos", NULL);
     }
 
     VIDEO_INIT_CHECK();
@@ -200,8 +201,8 @@ mouse_get_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
     VIDEO_INIT_CHECK();
 
     if (num_buttons != 3 && num_buttons != 5) {
-        return RAISE(PyExc_ValueError,
-                     "Number of buttons needs to be 3 or 5.");
+        return RAISERETURN(PyExc_ValueError,
+                           "Number of buttons needs to be 3 or 5.", NULL);
     }
 
     state = desktop ? SDL_GetGlobalMouseState(NULL, NULL)
@@ -331,7 +332,7 @@ mouse_get_visible(PyObject *self, PyObject *_null)
 #endif
 
     if (0 > result) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     return PyBool_FromLong(result);
@@ -376,11 +377,13 @@ _set_bitmap_cursor(int w, int h, int spotx, int spoty, PyObject *xormask,
     SDL_Cursor *lastcursor, *cursor = NULL;
 
     if (!PySequence_Check(xormask) || !PySequence_Check(andmask)) {
-        return RAISE(PyExc_TypeError, "xormask and andmask must be sequences");
+        return RAISERETURN(PyExc_TypeError,
+                           "xormask and andmask must be sequences", NULL);
     }
 
     if (w % 8) {
-        return RAISE(PyExc_ValueError, "Cursor width must be divisible by 8.");
+        return RAISERETURN(PyExc_ValueError,
+                           "Cursor width must be divisible by 8.", NULL);
     }
 
     xorsize = (int)PySequence_Length(xormask);
@@ -394,8 +397,8 @@ _set_bitmap_cursor(int w, int h, int spotx, int spoty, PyObject *xormask,
     }
 
     if (xorsize != w * h / 8 || andsize != w * h / 8) {
-        return RAISE(PyExc_ValueError,
-                     "bitmasks must be sized width*height/8");
+        return RAISERETURN(PyExc_ValueError,
+                           "bitmasks must be sized width*height/8", NULL);
     }
 
 #ifdef _MSC_VER
@@ -431,7 +434,7 @@ _set_bitmap_cursor(int w, int h, int spotx, int spoty, PyObject *xormask,
     anddata = NULL;
 
     if (!cursor) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     lastcursor = SDL_GetCursor();
@@ -462,7 +465,7 @@ interror:
     if (anddata) {
         free(anddata);
     }
-    return RAISE(PyExc_TypeError, "Invalid number in mask array");
+    return RAISERETURN(PyExc_TypeError, "Invalid number in mask array", NULL);
 }
 
 static PyObject *
@@ -470,15 +473,16 @@ _set_system_cursor(int constant)
 {
     SDL_Cursor *lastcursor, *cursor = NULL;
     if (constant < 0 || constant >= SDL_NUM_SYSTEM_CURSORS) {
-        return RAISE(pgExc_SDLError,
-                     "System cursor constant value out of range");
+        return RAISERETURN(pgExc_SDLError,
+                           "System cursor constant value out of range", NULL);
     }
 
     cursor = SDL_CreateSystemCursor(constant);
     if (!cursor) {
         // SDL_GetError() wasn't returning relevant stuff when this function
         // fails
-        return RAISE(pgExc_SDLError, "Error while creating system cursor");
+        return RAISERETURN(pgExc_SDLError,
+                           "Error while creating system cursor", NULL);
     }
 
     lastcursor = SDL_GetCursor();
@@ -499,7 +503,7 @@ _set_color_cursor(int spotx, int spoty, pgSurfaceObject *surfobj)
 
     cursor = SDL_CreateColorCursor(surf, spotx, spoty);
     if (!cursor) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     lastcursor = SDL_GetCursor();
@@ -575,8 +579,8 @@ mouse_set_cursor(PyObject *self, PyObject *args, PyObject *kwds)
     else if (surfobj) {
         return _set_color_cursor(spotx, spoty, surfobj);
     }
-    return RAISE(PyExc_ValueError,
-                 "Invalid cursor format: no valid template found");
+    return RAISERETURN(PyExc_ValueError,
+                       "Invalid cursor format: no valid template found", NULL);
 }
 
 // mouse.get_cursor goes through a python layer first, see cursors.py
@@ -597,7 +601,7 @@ mouse_get_cursor(PyObject *self, PyObject *_null)
         return Py_BuildValue("(ii)O", cursor_data.spotx, cursor_data.spoty,
                              cursor_data.surfobj);
     }
-    return RAISE(pgExc_SDLError, "Cursor not found");
+    return RAISERETURN(pgExc_SDLError, "Cursor not found", NULL);
 }
 
 static PyObject *
@@ -621,15 +625,15 @@ mouse_set_relative_mode(PyObject *self, PyObject *arg)
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_Window *win = pg_GetDefaultWindow();
     if (!win) {
-        return RAISE(pgExc_SDLError,
-                     "display.set_mode has not been called yet.");
+        return RAISERETURN(pgExc_SDLError,
+                           "display.set_mode has not been called yet.", NULL);
     }
     if (!SDL_SetWindowRelativeMouseMode(win, (bool)mode)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 #else
     if (SDL_SetRelativeMouseMode((SDL_bool)mode)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 #endif
     Py_RETURN_NONE;
