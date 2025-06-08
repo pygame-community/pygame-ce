@@ -11,6 +11,7 @@ from typing import (
     Union,
 )
 
+# use typing_extensions for compatibility with older Python versions
 if sys.version_info >= (3, 13):
     from warnings import deprecated
 else:
@@ -25,9 +26,6 @@ from pygame.mask import Mask
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.typing import Point, RectLike
-
-# generic Group, used in Sprite
-_TGroup = TypeVar("_TGroup", bound=AbstractGroup)
 
 # define some useful protocols first, which sprite functions accept
 # sprite functions don't need all sprite attributes to be present in the
@@ -49,7 +47,11 @@ class _HasMaskAndRect(_HasRect, Protocol):
 class _HasRadiusAndRect(_HasRect, Protocol):
     radius: float
 
+# generic Group, used in Sprite
+_TGroup = TypeVar("_TGroup", bound=AbstractGroup)
+
 # protocol helps with structural subtyping for typevars in sprite group generics
+# and allows the use of any class with the required attributes and methods
 class _SupportsSprite(Generic[_TGroup], _HasImageAndRect, Protocol):
     def __class_getitem__(cls, item: type[AbstractGroup], /) -> types.GenericAlias: ...
     @property
@@ -125,27 +127,8 @@ _TSprite2 = TypeVar("_TSprite2", bound=_SupportsSprite)
 # almost the same as _TSprite but bound to DirtySprite
 _TDirtySprite = TypeVar("_TDirtySprite", bound=_SupportsDirtySprite)
 
+# typevar for sprite or iterable of sprites, used in Group init, add and remove
 _SpriteOrIterable = Union[_TSprite, Iterable[_SpriteOrIterable]]
-
-# Below code demonstrates the advantages of the _SupportsSprite protocol
-
-# typechecker should error, regular Sprite does not support Group.draw due to
-# missing image and rect attributes
-# a = Group(Sprite())
-
-# typechecker should error, other Sprite attributes are also needed for Group
-# class MySprite:
-#     image: Surface
-#     rect: Rect
-#
-# b = Group(MySprite())
-
-# typechecker should pass
-# class MySprite(Sprite):
-#     image: Surface
-#     rect: Rect
-#
-# b = Group(MySprite())
 
 class AbstractGroup(Generic[_TSprite]):
     spritedict: dict[_TSprite, Optional[Union[FRect, Rect]]]
@@ -223,9 +206,7 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def repaint_rect(self, screen_rect: RectLike) -> None: ...
     def set_clip(self, screen_rect: Optional[RectLike] = None) -> None: ...
     def get_clip(self) -> Union[FRect, Rect]: ...
-    def set_timing_threshold(
-        self, time_ms: SupportsFloat
-    ) -> None: ...  # This actually accept any value
+    def set_timing_threshold(self, time_ms: SupportsFloat) -> None: ...
     @deprecated(
         "since 2.1.1. Use `pygame.sprite.LayeredDirty.set_timing_threshold` instead"
     )
@@ -261,12 +242,13 @@ class collide_circle_ratio:
 # addition to mandatorily having a rect attribute
 _SupportsCollideMask = Union[_HasImageAndRect, _HasMaskAndRect]
 
-# generic for _HasRect, used in sprite collide functions
-_THasRect = TypeVar("_THasRect", bound=_HasRect)
-
 def collide_mask(
     left: _SupportsCollideMask, right: _SupportsCollideMask
 ) -> Optional[tuple[int, int]]: ...
+
+# generic for _HasRect, used in sprite collide functions
+_THasRect = TypeVar("_THasRect", bound=_HasRect)
+
 def spritecollide(
     sprite: _THasRect,
     group: AbstractGroup[_TSprite],
