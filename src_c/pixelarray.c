@@ -305,7 +305,7 @@ _pxarray_new_internal(PyTypeObject *type, pgSurfaceObject *surface,
                 PyExc_SystemError,
                 "Pygame internal error in _pxarray_new_internal: no "
                 "parent or surface.",
-                0);
+                (pgPixelArrayObject *)NULL);
         }
         self->parent = 0;
         self->surface = surface;

@@ -817,7 +817,7 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
 
     if (other_array->shape[0] != dim0 || other_array->shape[1] != dim1) {
         /* Bounds do not match. */
-        return RAISERETURN(PyExc_ValueError, "array sizes do not match", 0);
+        return RAISERETURN(PyExc_ValueError, "array sizes do not match", NULL);
     }
 
     other_surf = pgSurface_AsSurface(other_array->surface);
@@ -836,7 +836,7 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     if (PG_FORMAT_BytesPerPixel(other_format) != bpp) {
         /* bpp do not match. We cannot guarantee that the padding and co
          * would be set correctly. */
-        return RAISERETURN(PyExc_ValueError, "bit depths do not match", 0);
+        return RAISERETURN(PyExc_ValueError, "bit depths do not match", NULL);
     }
 
     other_stride0 = other_array->strides[0];
