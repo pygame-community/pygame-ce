@@ -3664,14 +3664,14 @@ surf_get_view(PyObject *self, PyObject *args)
         case VIEWKIND_0D:
             if (surface->pitch != bpp * surface->w) {
                 return RAISERETURN(PyExc_ValueError,
-                                   "Surface data is not contiguous", 0);
+                                   "Surface data is not contiguous", NULL);
             }
             get_buffer = _get_buffer_0D;
             break;
         case VIEWKIND_1D:
             if (surface->pitch != bpp * surface->w) {
                 return RAISERETURN(PyExc_ValueError,
-                                   "Surface data is not contiguous", 0);
+                                   "Surface data is not contiguous", NULL);
             }
             get_buffer = _get_buffer_1D;
             break;
