@@ -30,10 +30,30 @@ from pygame.typing import Point, RectLike
 _THasRect = TypeVar("_THasRect", bound=_HasRect)
 
 # non-generic Group, used in Sprite
-_Group = AbstractGroup[_SpriteSupportsGroup]
+_Group = AbstractGroup[_SupportsSprite]
+
+# define some useful protocols first, which sprite functions accept
+# sprite functions don't need all sprite attributes to be present in the
+# arguments passed, they only use a few which are marked in the below protocols
+class _HasRect(Protocol):
+    @property
+    def rect(self) -> Optional[Union[FRect, Rect]]: ...
+
+# image in addition to rect
+class _HasImageAndRect(_HasRect, Protocol):
+    @property
+    def image(self) -> Optional[Surface]: ...
+
+# mask in addition to rect
+class _HasMaskAndRect(_HasRect, Protocol):
+    mask: Mask
+
+# radius in addition to rect
+class _HasRadiusAndRect(_HasRect, Protocol):
+    radius: float
 
 # protocol helps with structural subtyping for typevars in sprite group generics
-class _SupportsSprite(Protocol):
+class _SupportsSprite(_HasImageAndRect, Protocol):
     @property
     def image(self) -> Optional[Surface]: ...
     @image.setter
@@ -102,40 +122,17 @@ class DirtySprite(_SupportsDirtySprite):
 # used as a workaround for typing.Self because it is added in python 3.11
 _TGroup = TypeVar("_TGroup", bound=AbstractGroup)
 
-# define some useful protocols first, which sprite functions accept
-# sprite functions don't need all sprite attributes to be present in the
-# arguments passed, they only use a few which are marked in the below protocols
-class _HasRect(Protocol):
-    @property
-    def rect(self) -> Optional[Union[FRect, Rect]]: ...
-
-# image in addition to rect
-class _HasImageAndRect(_HasRect, Protocol):
-    @property
-    def image(self) -> Optional[Surface]: ...
-
-# mask in addition to rect
-class _HasMaskAndRect(_HasRect, Protocol):
-    mask: Mask
-
-# radius in addition to rect
-class _HasRadiusAndRect(_HasRect, Protocol):
-    radius: float
-
-class _SpriteSupportsGroup(_SupportsSprite, _HasImageAndRect, Protocol): ...
-class _DirtySpriteSupportsGroup(_SupportsDirtySprite, _HasImageAndRect, Protocol): ...
-
-# typevar bound to Sprite, _SpriteSupportsGroup Protocol ensures sprite
+# typevar bound to Sprite, _SupportsSprite Protocol ensures sprite
 # subclass passed to group has image and rect attributes
-_TSprite = TypeVar("_TSprite", bound=_SpriteSupportsGroup)
-_TSprite2 = TypeVar("_TSprite2", bound=_SpriteSupportsGroup)
+_TSprite = TypeVar("_TSprite", bound=_SupportsSprite)
+_TSprite2 = TypeVar("_TSprite2", bound=_SupportsSprite)
 
 # almost the same as _TSprite but bound to DirtySprite
-_TDirtySprite = TypeVar("_TDirtySprite", bound=_DirtySpriteSupportsGroup)
+_TDirtySprite = TypeVar("_TDirtySprite", bound=_SupportsDirtySprite)
 
 _SpriteOrIterable = Union[_TSprite, Iterable[_SpriteOrIterable]]
 
-# Below code demonstrates the advantages of the _SpriteSupportsGroup protocol
+# Below code demonstrates the advantages of the _SupportsSprite protocol
 
 # typechecker should error, regular Sprite does not support Group.draw due to
 # missing image and rect attributes
@@ -159,7 +156,7 @@ class AbstractGroup(Generic[_TSprite]):
     spritedict: dict[_TSprite, Optional[Union[FRect, Rect]]]
     lostsprites: list[Union[FRect, Rect]]
     def __class_getitem__(
-        cls, item: type[_SupportsSpriteGroup], /
+        cls, item: type[_SupportsSprite], /
     ) -> types.GenericAlias: ...
     def __init__(self) -> None: ...
     def __len__(self) -> int: ...
