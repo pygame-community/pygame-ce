@@ -28,7 +28,7 @@
 PG_PixelFormatEnum pg_default_convert_format = 0;
 
 /* Custom exceptions */
-static PyObject *pgExc_BufferError = NULL;
+PyObject *pgExc_BufferError = NULL;
 
 /* Only one instance of the state per process. */
 static PyObject *pg_quit_functions = NULL;
@@ -2080,13 +2080,6 @@ static PyMethodDef _base_methods[] = {
     {"get_array_interface", (PyCFunction)pg_get_array_interface, METH_O,
      "return an array struct interface as an interface dictionary"},
     {NULL, NULL, 0, NULL}};
-
-#if defined(BUILD_STATIC) && defined(NO_PYGAME_C_API)
-// in case of wasm+dynamic loading it could be a trampoline in the globals
-// generated at runtime.
-// when building static make global accessible symbol directly.
-static PyObject *pgExc_SDLError;
-#endif
 
 MODINIT_DEFINE(base)
 {

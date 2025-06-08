@@ -55,6 +55,7 @@ typedef struct pg_view_internals_s {
 } pgViewInternals;
 
 extern PG_PixelFormatEnum pg_default_convert_format;
+extern PyObject *pgExc_BufferError;
 extern SDL_Window *pg_default_window;
 extern pgSurfaceObject *pg_default_screen;
 
@@ -216,6 +217,13 @@ pg_SetDefaultConvertFormat(PG_PixelFormatEnum format);
 
 PG_PixelFormatEnum
 pg_GetDefaultConvertFormat(void);
+
+#if defined(BUILD_STATIC) && defined(NO_PYGAME_C_API)
+// in case of wasm+dynamic loading it could be a trampoline in the globals
+// generated at runtime.
+// when building static make global accessible symbol directly.
+extern PyObject *pgExc_SDLError;
+#endif
 
 MODINIT_DEFINE(base);
 
