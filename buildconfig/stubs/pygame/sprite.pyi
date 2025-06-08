@@ -117,9 +117,6 @@ class DirtySprite(Sprite[_TGroup], _SupportsDirtySprite[_TGroup]):
     def _set_visible(self, val: int) -> None: ...
     def _get_visible(self) -> int: ...
 
-# used as a workaround for typing.Self because it is added in python 3.11
-_TGroup = TypeVar("_TGroup", bound=AbstractGroup)
-
 # typevar bound to Sprite, _SupportsSprite Protocol ensures sprite
 # subclass passed to group has image and rect attributes
 _TSprite = TypeVar("_TSprite", bound=_SupportsSprite)
