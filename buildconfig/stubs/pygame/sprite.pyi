@@ -26,8 +26,6 @@ from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.typing import Point, RectLike
 
-from typing_extensions import deprecated  # added in 3.13
-
 # generic for _HasRect, used in sprite collide functions
 _THasRect = TypeVar("_THasRect", bound=_HasRect)
 
