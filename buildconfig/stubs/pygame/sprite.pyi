@@ -1,3 +1,4 @@
+import sys
 import types
 from collections.abc import Callable, Iterable, Iterator
 from typing import (
@@ -10,10 +11,21 @@ from typing import (
     Union,
 )
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
 from pygame.mask import Mask
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.typing import Point, RectLike
+
 from typing_extensions import deprecated  # added in 3.13
 
 # non-generic Group, used in Sprite
@@ -152,7 +164,7 @@ class AbstractGroup(Generic[_TSprite]):
     def add_internal(self, sprite: _TSprite, layer: None = None) -> None: ...
     def remove_internal(self, sprite: _TSprite) -> None: ...
     def has_internal(self, sprite: _TSprite) -> bool: ...
-    def copy(self: _TGroup) -> _TGroup: ...  # typing.Self is py3.11+
+    def copy(self) -> Self: ...
     def sprites(self) -> list[_TSprite]: ...
     def add(
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
