@@ -1,3 +1,4 @@
+
 /*
   pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
@@ -19,111 +20,23 @@
   Pete Shinners
   pete@shinners.org
 */
+#define NO_PYGAME_C_API
+#define PYGAMEAPI_BASE_INTERNAL
+
 #include "base.h"
 
+PG_PixelFormatEnum pg_default_convert_format = 0;
+
 /* Custom exceptions */
-PyObject *pgExc_BufferError = NULL;
+static PyObject *pgExc_BufferError = NULL;
 
 /* Only one instance of the state per process. */
-PyObject *pg_quit_functions = NULL;
-int pg_is_init = 0;
-int pg_sdl_was_init = 0;
+static PyObject *pg_quit_functions = NULL;
+static int pg_is_init = 0;
+static int pg_sdl_was_init = 0;
 SDL_Window *pg_default_window = NULL;
 pgSurfaceObject *pg_default_screen = NULL;
-int pg_env_blend_alpha_SDL2 = 0;
-
-void
-pg_install_parachute(void);
-void
-pg_uninstall_parachute(void);
-void
-pg_atexit_quit(void);
-int
-pgGetArrayStruct(PyObject *, PyObject **, PyArrayInterface **);
-PyObject *
-pgArrayStruct_AsDict(PyArrayInterface *);
-PyObject *
-pgBuffer_AsArrayInterface(Py_buffer *);
-PyObject *
-pgBuffer_AsArrayStruct(Py_buffer *);
-int
-_pg_buffer_is_byteswapped(Py_buffer *);
-void
-pgBuffer_Release(pg_buffer *);
-int
-pgObject_GetBuffer(PyObject *, pg_buffer *, int);
-inline PyObject *
-pgObject_getRectHelper(PyObject *, PyObject *const *, Py_ssize_t, PyObject *,
-                       char *);
-int
-pgGetArrayInterface(PyObject **, PyObject *);
-int
-pgArrayStruct_AsBuffer(pg_buffer *, PyObject *, PyArrayInterface *, int);
-int
-_pg_arraystruct_as_buffer(Py_buffer *, PyObject *, PyArrayInterface *, int);
-int
-_pg_arraystruct_to_format(char *, PyArrayInterface *, int);
-int
-pgDict_AsBuffer(pg_buffer *, PyObject *, int);
-int
-_pg_shape_check(PyObject *);
-int
-_pg_typestr_check(PyObject *);
-int
-_pg_strides_check(PyObject *);
-int
-_pg_data_check(PyObject *);
-int
-_pg_is_int_tuple(PyObject *);
-int
-_pg_values_as_buffer(Py_buffer *, int, PyObject *, PyObject *, PyObject *,
-                     PyObject *);
-int
-_pg_int_tuple_as_ssize_arr(PyObject *, Py_ssize_t *);
-int
-_pg_typestr_as_format(PyObject *, char *, Py_ssize_t *);
-PyObject *
-pg_view_get_typestr_obj(Py_buffer *);
-PyObject *
-pg_view_get_shape_obj(Py_buffer *);
-PyObject *
-pg_view_get_strides_obj(Py_buffer *);
-PyObject *
-pg_view_get_data_obj(Py_buffer *);
-char
-_pg_as_arrayinter_typekind(Py_buffer *);
-char
-_pg_as_arrayinter_byteorder(Py_buffer *);
-int
-_pg_as_arrayinter_flags(Py_buffer *);
-pgCapsuleInterface *
-_pg_new_capsuleinterface(Py_buffer *);
-void
-_pg_capsule_PyMem_Free(PyObject *);
-PyObject *
-_pg_shape_as_tuple(PyArrayInterface *);
-PyObject *
-_pg_typekind_as_str(PyArrayInterface *);
-PyObject *
-_pg_strides_as_tuple(PyArrayInterface *);
-PyObject *
-_pg_data_as_tuple(PyArrayInterface *);
-PyObject *
-pg_get_array_interface(PyObject *, PyObject *);
-void
-_pg_release_buffer_array(Py_buffer *);
-void
-_pg_release_buffer_generic(Py_buffer *);
-SDL_Window *
-pg_GetDefaultWindow(void);
-void
-pg_SetDefaultWindow(SDL_Window *);
-pgSurfaceObject *
-pg_GetDefaultWindowSurface(void);
-void
-pg_SetDefaultWindowSurface(pgSurfaceObject *);
-int
-pg_EnvShouldBlendAlphaSDL2(void);
+static int pg_env_blend_alpha_SDL2 = 0;
 
 /* compare compiled to linked, raise python error on incompatibility */
 int
@@ -347,7 +260,7 @@ pg_get_sdl_version(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_VERSION(&version);
 #endif
 
-    char *keywords[] = {"linked", NULL};
+    static char *keywords[] = {"linked", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", keywords, &linked)) {
         return NULL; /* Exception already set. */
@@ -643,105 +556,6 @@ pg_TwoFloatsFromObj(PyObject *obj, float *val1, float *val2)
     Py_DECREF(item1);
     Py_DECREF(item2);
     return 1;
-}
-
-inline int
-pg_DoubleFromObj(PyObject *obj, double *val)
-{
-    if (PyFloat_Check(obj)) {
-        *val = PyFloat_AS_DOUBLE(obj);
-        return 1;
-    }
-
-    *val = (double)PyLong_AsLong(obj);
-    if (PyErr_Occurred()) {
-        PyErr_Clear();
-        return 0;
-    }
-
-    return 1;
-}
-
-/*Assumes obj is a Sequence, internal or conscious use only*/
-inline int
-_pg_DoubleFromObjIndex(PyObject *obj, int index, double *val)
-{
-    int result = 0;
-
-    PyObject *item = PySequence_ITEM(obj, index);
-    if (!item) {
-        PyErr_Clear();
-        return 0;
-    }
-    result = pg_DoubleFromObj(item, val);
-    Py_DECREF(item);
-
-    return result;
-}
-
-inline int
-pg_TwoDoublesFromObj(PyObject *obj, double *val1, double *val2)
-{
-    Py_ssize_t length;
-    /*Faster path for tuples and lists*/
-    if (pgSequenceFast_Check(obj)) {
-        length = PySequence_Fast_GET_SIZE(obj);
-        PyObject **f_arr = PySequence_Fast_ITEMS(obj);
-        if (length == 2) {
-            if (!pg_DoubleFromObj(f_arr[0], val1) ||
-                !pg_DoubleFromObj(f_arr[1], val2)) {
-                return 0;
-            }
-        }
-        else if (length == 1) {
-            /* Handle case of ((x, y), ) 'nested sequence' */
-            return pg_TwoDoublesFromObj(f_arr[0], val1, val2);
-        }
-        else {
-            return 0;
-        }
-    }
-    else if (PySequence_Check(obj)) {
-        length = PySequence_Length(obj);
-        if (length == 2) {
-            if (!_pg_DoubleFromObjIndex(obj, 0, val1)) {
-                return 0;
-            }
-            if (!_pg_DoubleFromObjIndex(obj, 1, val2)) {
-                return 0;
-            }
-        }
-        else if (length == 1 && !PyUnicode_Check(obj)) {
-            /* Handle case of ((x, y), ) 'nested sequence' */
-            PyObject *tmp = PySequence_ITEM(obj, 0);
-            int ret = pg_TwoDoublesFromObj(tmp, val1, val2);
-            Py_DECREF(tmp);
-            return ret;
-        }
-        else {
-            PyErr_Clear();
-            return 0;
-        }
-    }
-    else {
-        return 0;
-    }
-
-    return 1;
-}
-
-inline int
-pg_TwoDoublesFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
-                              double *val1, double *val2)
-{
-    if (nargs == 1 && pg_TwoDoublesFromObj(args[0], val1, val2)) {
-        return 1;
-    }
-    else if (nargs == 2 && pg_DoubleFromObj(args[0], val1) &&
-             pg_DoubleFromObj(args[1], val2)) {
-        return 1;
-    }
-    return 0;
 }
 
 int
@@ -1334,32 +1148,6 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
     return 0;
 }
 
-inline PyObject *
-pgObject_getRectHelper(PyObject *rect, PyObject *const *args, Py_ssize_t nargs,
-                       PyObject *kwnames, char *type)
-{
-    if (nargs > 0) {
-        Py_DECREF(rect);
-        return PyErr_Format(PyExc_TypeError,
-                            "get_%s only accepts keyword arguments", type);
-    }
-
-    if (rect && kwnames) {
-        Py_ssize_t i, sequence_len;
-        PyObject **sequence_items;
-        sequence_items = PySequence_Fast_ITEMS(kwnames);
-        sequence_len = PyTuple_GET_SIZE(kwnames);
-
-        for (i = 0; i < sequence_len; ++i) {
-            if ((PyObject_SetAttr(rect, sequence_items[i], args[i]) == -1)) {
-                Py_DECREF(rect);
-                return NULL;
-            }
-        }
-    }
-    return rect;
-}
-
 void
 pgBuffer_Release(pg_buffer *pg_view_p)
 {
@@ -1399,7 +1187,7 @@ _pg_buffer_is_byteswapped(Py_buffer *view)
         switch (view->format[0]) {
             case '<':
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                /* Use macros to make analyzer happy */
+                /* Use macros to make static analyzer happy */
                 return 0;
 #else
                 return 1;
@@ -1407,7 +1195,7 @@ _pg_buffer_is_byteswapped(Py_buffer *view)
             case '>':
             case '!':
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-                /* Use macros to make analyzer happy */
+                /* Use macros to make static analyzer happy */
                 return 0;
 #else
                 return 1;
@@ -2154,8 +1942,6 @@ pg_SetDefaultWindowSurface(pgSurfaceObject *screen)
     pg_default_screen = screen;
 }
 
-PG_PixelFormatEnum pg_default_convert_format = 0;
-
 PG_PixelFormatEnum
 pg_GetDefaultConvertFormat(void)
 {
@@ -2216,7 +2002,7 @@ pygame_parachute(int sig)
 #endif
 }
 
-int fatal_signals[] = {
+static int fatal_signals[] = {
     SIGSEGV,
 #ifdef SIGBUS
     SIGBUS,
@@ -2230,7 +2016,7 @@ int fatal_signals[] = {
     0 /*end of list*/
 };
 
-int parachute_installed = 0;
+static int parachute_installed = 0;
 void
 pg_install_parachute(void)
 {
@@ -2279,7 +2065,7 @@ pg_uninstall_parachute(void)
 
 /* bind functions to python */
 
-PyMethodDef _base_methods[] = {
+static PyMethodDef _base_methods[] = {
     {"init", (PyCFunction)pg_init, METH_NOARGS, DOC_INIT},
     {"quit", (PyCFunction)pg_quit, METH_NOARGS, DOC_QUIT},
     {"get_init", (PyCFunction)pg_base_get_init, METH_NOARGS, DOC_GETINIT},
@@ -2298,8 +2084,8 @@ PyMethodDef _base_methods[] = {
 #if defined(BUILD_STATIC) && defined(NO_PYGAME_C_API)
 // in case of wasm+dynamic loading it could be a trampoline in the globals
 // generated at runtime.
-// when building make global accessible symbol directly.
-PyObject *pgExc_SDLError;
+// when building static make global accessible symbol directly.
+static PyObject *pgExc_SDLError;
 #endif
 
 MODINIT_DEFINE(base)
@@ -2310,17 +2096,17 @@ MODINIT_DEFINE(base)
     // only pointer via C-api will be used, no need to keep global.
     PyObject *pgExc_SDLError;
 #endif
-    void *c_api[PYGAMEAPI_BASE_NUMSLOTS];
+    static void *c_api[PYGAMEAPI_BASE_NUMSLOTS];
 
-    struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
-                                  "base",
-                                  "",
-                                  -1,
-                                  _base_methods,
-                                  NULL,
-                                  NULL,
-                                  NULL,
-                                  NULL};
+    static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
+                                         "base",
+                                         "",
+                                         -1,
+                                         _base_methods,
+                                         NULL,
+                                         NULL,
+                                         NULL,
+                                         NULL};
 
     /* import need modules. Do this first so if there is an error
         the module is not loaded.
