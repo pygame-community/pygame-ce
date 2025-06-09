@@ -13,78 +13,72 @@ void tearDown(void) {}
 /**
  * @brief Tests _pg_is_int_tuple when passed a tuple of ints
  */
-PG_CTEST(test__pg_is_int_tuple_nominal)
-{
-    PyObject *arg1 = Py_BuildValue("(iii)", 1, 2, 3);
-    PyObject *arg2 = Py_BuildValue("(iii)", -1, -2, -3);
-    PyObject *arg3 = Py_BuildValue("(iii)", 1, -2, -3);
+PG_CTEST(test__pg_is_int_tuple_nominal) {
+  PyObject *arg1 = Py_BuildValue("(iii)", 1, 2, 3);
+  PyObject *arg2 = Py_BuildValue("(iii)", -1, -2, -3);
+  PyObject *arg3 = Py_BuildValue("(iii)", 1, -2, -3);
 
-    TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg1));
-    TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg2));
-    TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg3));
+  TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg1));
+  TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg2));
+  TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg3));
 
-    Py_RETURN_NONE;
+  Py_RETURN_NONE;
 }
 
 /**
  * @brief Tests _pg_is_int_tuple when passed a tuple of non-numeric values
  */
-PG_CTEST(test__pg_is_int_tuple_failureModes)
-{
-    PyObject *arg1 =
-        Py_BuildValue("(sss)", (char *)"Larry", (char *)"Moe", (char *)"Curly");
-    PyObject *arg2 = Py_BuildValue("(sss)", (char *)NULL, (char *)NULL,
-                                   (char *)NULL); // tuple of None's
-    PyObject *arg3 = Py_BuildValue("(OOO)", arg1, arg2, arg1);
+PG_CTEST(test__pg_is_int_tuple_failureModes) {
+  PyObject *arg1 =
+      Py_BuildValue("(sss)", (char *)"Larry", (char *)"Moe", (char *)"Curly");
+  PyObject *arg2 = Py_BuildValue("(sss)", (char *)NULL, (char *)NULL,
+                                 (char *)NULL); // tuple of None's
+  PyObject *arg3 = Py_BuildValue("(OOO)", arg1, arg2, arg1);
 
-    TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg1));
-    TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg2));
-    TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg3));
+  TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg1));
+  TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg2));
+  TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg3));
 
-    Py_RETURN_NONE;
+  Py_RETURN_NONE;
 }
 
 /**
  * @brief Tests _pg_is_int_tuple when passed a tuple of floats
  */
-PG_CTEST(test__pg_is_int_tuple_floats)
-{
-    PyObject *arg1 = Py_BuildValue("(ddd)", 1.0, 2.0, 3.0);
-    PyObject *arg2 = Py_BuildValue("(ddd)", -1.1, -2.2, -3.3);
-    PyObject *arg3 = Py_BuildValue("(ddd)", 1.0, -2.0, -3.1);
+PG_CTEST(test__pg_is_int_tuple_floats) {
+  PyObject *arg1 = Py_BuildValue("(ddd)", 1.0, 2.0, 3.0);
+  PyObject *arg2 = Py_BuildValue("(ddd)", -1.1, -2.2, -3.3);
+  PyObject *arg3 = Py_BuildValue("(ddd)", 1.0, -2.0, -3.1);
 
-    TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg1));
-    TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg2));
-    TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg3));
+  TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg1));
+  TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg2));
+  TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg3));
 
-    Py_RETURN_NONE;
+  Py_RETURN_NONE;
 }
 
 /*=======Test Reset Option=====*/
 /* This must be void(void) */
-void resetTest(void)
-{
-    tearDown();
-    setUp();
+void resetTest(void) {
+  tearDown();
+  setUp();
 }
 
 /*=======Exposed Test Reset Option=====*/
-static PyObject *reset_test(PyObject *self, PyObject *_null)
-{
-    resetTest();
+static PyObject *reset_test(PyObject *self, PyObject *_null) {
+  resetTest();
 
-    Py_RETURN_NONE;
+  Py_RETURN_NONE;
 }
 
 /*=======Run The Tests=======*/
-static PyObject *run_tests(PyObject *self, PyObject *_null)
-{
-    UnityBegin("base_ctest.c");
-    RUN_TEST_PG_INTERNAL(test__pg_is_int_tuple_nominal);
-    RUN_TEST_PG_INTERNAL(test__pg_is_int_tuple_failureModes);
-    RUN_TEST_PG_INTERNAL(test__pg_is_int_tuple_floats);
+static PyObject *run_tests(PyObject *self, PyObject *_null) {
+  UnityBegin("base_ctest.c");
+  RUN_TEST_PG_INTERNAL(test__pg_is_int_tuple_nominal);
+  RUN_TEST_PG_INTERNAL(test__pg_is_int_tuple_failureModes);
+  RUN_TEST_PG_INTERNAL(test__pg_is_int_tuple_floats);
 
-    return PyLong_FromLong(UnityEnd());
+  return PyLong_FromLong(UnityEnd());
 }
 
 static PyMethodDef base_test_methods[] = {
@@ -103,27 +97,25 @@ static PyMethodDef base_test_methods[] = {
      "Runs all the tests in this test wuite"},
     {NULL, NULL, 0, NULL}};
 
-MODINIT_DEFINE(base_ctest)
-{
-    PyObject *module;
+MODINIT_DEFINE(base_ctest) {
+  PyObject *module;
 
-    static struct PyModuleDef _module = {
-        PyModuleDef_HEAD_INIT,
-        "base_ctest",
-        "C unit tests for the pygame.base internal implementation",
-        -1,
-        base_test_methods,
-        NULL,
-        NULL,
-        NULL,
-        NULL};
+  static struct PyModuleDef _module = {
+      PyModuleDef_HEAD_INIT,
+      "base_ctest",
+      "C unit tests for the pygame.base internal implementation",
+      -1,
+      base_test_methods,
+      NULL,
+      NULL,
+      NULL,
+      NULL};
 
-    /* create the module */
-    module = PyModule_Create(&_module);
-    if (!module)
-    {
-        return NULL;
-    }
+  /* create the module */
+  module = PyModule_Create(&_module);
+  if (!module) {
+    return NULL;
+  }
 
-    return module;
+  return module;
 }

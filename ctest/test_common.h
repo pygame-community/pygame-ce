@@ -5,10 +5,9 @@
 #ifndef TEST_COMMON_H
 #define TEST_COMMON_H
 
-struct TestCase
-{
-    char *test_name;
-    int line_num;
+struct TestCase {
+  char *test_name;
+  int line_num;
 };
 
 /*
@@ -23,25 +22,23 @@ struct TestCase
     case that we tell it about and automatically populates the unity fields
     with the requisite data.
 */
-#define PG_CTEST(TestFunc)                                          \
-    static struct TestCase meta_##TestFunc = {#TestFunc, __LINE__}; \
-    static PyObject *TestFunc##(PyObject * self, PyObject * _null)
+#define PG_CTEST(TestFunc)                                                     \
+  static struct TestCase meta_##TestFunc = {#TestFunc, __LINE__};              \
+  static PyObject *TestFunc##(PyObject * self, PyObject * _null)
 
-#define RUN_TEST_PG_INTERNAL(TestFunc)                          \
-    {                                                           \
-        Unity.CurrentTestName = meta_##TestFunc.test_name;      \
-        Unity.CurrentTestLineNumber = meta_##TestFunc.line_num; \
-        Unity.NumberOfTests++;                                  \
-        if (TEST_PROTECT())                                     \
-        {                                                       \
-            setUp();                                            \
-            TestFunc(self, _null);                              \
-        }                                                       \
-        if (TEST_PROTECT())                                     \
-        {                                                       \
-            tearDown();                                         \
-        }                                                       \
-        UnityConcludeTest();                                    \
-    }
+#define RUN_TEST_PG_INTERNAL(TestFunc)                                         \
+  {                                                                            \
+    Unity.CurrentTestName = meta_##TestFunc.test_name;                         \
+    Unity.CurrentTestLineNumber = meta_##TestFunc.line_num;                    \
+    Unity.NumberOfTests++;                                                     \
+    if (TEST_PROTECT()) {                                                      \
+      setUp();                                                                 \
+      TestFunc(self, _null);                                                   \
+    }                                                                          \
+    if (TEST_PROTECT()) {                                                      \
+      tearDown();                                                              \
+    }                                                                          \
+    UnityConcludeTest();                                                       \
+  }
 
 #endif // #ifndef TEST_COMMON_H
