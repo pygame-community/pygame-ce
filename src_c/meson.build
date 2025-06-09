@@ -196,6 +196,7 @@ bufferproxy = py.extension_module(
 pixelarray = py.extension_module(
     'pixelarray',
     'pixelarray.c',
+    include_directories: 'surface',
     c_args: warnings_error,
     dependencies: pg_base_deps,
     install: true,
