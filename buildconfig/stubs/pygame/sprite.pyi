@@ -128,7 +128,7 @@ _TSprite2 = TypeVar("_TSprite2", bound=_SupportsSprite)
 _TDirtySprite = TypeVar("_TDirtySprite", bound=_SupportsDirtySprite)
 
 # typevar for sprite or iterable of sprites, used in Group init, add and remove
-_SpriteOrIterable = Union[_TSprite, Iterable[_SpriteOrIterable]]
+_SpriteOrIterable = Union[_TSprite, Iterable[_SpriteOrIterable[_TSprite]]]
 
 class AbstractGroup(Generic[_TSprite]):
     spritedict: dict[_TSprite, Optional[Union[FRect, Rect]]]
