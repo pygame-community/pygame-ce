@@ -84,6 +84,7 @@ rwobject = py.extension_module(
     subdir: pg,
 )
 
+# TODO: support SDL3
 if sdl_api != 3
     subdir('surface')
 endif
