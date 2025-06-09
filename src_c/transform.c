@@ -33,7 +33,7 @@
 #include <math.h>
 #include <string.h>
 
-#include "include/simd_shared.h"
+#include "simd_shared.h"
 #include "simd_transform.h"
 #include "scale.h"
 

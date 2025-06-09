@@ -84,7 +84,9 @@ rwobject = py.extension_module(
     subdir: pg,
 )
 
-subdir('surface')
+if sdl_api != 3
+    subdir('surface')
+endif
 
 surflock = py.extension_module(
     'surflock',
@@ -164,6 +166,7 @@ endif
 transform = py.extension_module(
     'transform',
     transform_sources,
+    include_directories: 'include',
     c_args: warnings_error,
     link_with: [simd_transform_avx2, simd_transform_sse2],
     objects: transform_objs,
@@ -211,6 +214,7 @@ math = py.extension_module(
 pixelcopy = py.extension_module(
     'pixelcopy',
     'pixelcopy.c',
+    include_directories: 'include',
     c_args: warnings_error,
     dependencies: pg_base_deps,
     install: true,
