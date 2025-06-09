@@ -2448,7 +2448,7 @@ alphablit_alpha(SDL_BlitInfo *info)
     int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
     int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
-    int dRi, dGi, dBi, dAi, sRi, sGi, sBi, sAi;
+    Uint32 dRi, dGi, dBi, dAi, sRi, sGi, sBi, sAi;
     Uint32 modulateA = info->src_blanket_alpha;
     Uint32 pixel;
 

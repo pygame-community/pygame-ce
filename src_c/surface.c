@@ -717,16 +717,16 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         if (flags & PGS_SRCALPHA) {
             switch (bpp) {
                 case 16:
-                    Rmask = 0xF << 8;
-                    Gmask = 0xF << 4;
-                    Bmask = 0xF;
-                    Amask = 0xF << 12;
+                    Rmask = 0xFu << 8;
+                    Gmask = 0xFu << 4;
+                    Bmask = 0xFu;
+                    Amask = 0xFu << 12;
                     break;
                 case 32:
-                    Rmask = 0xFF << 16;
-                    Gmask = 0xFF << 8;
-                    Bmask = 0xFF;
-                    Amask = 0xFF << 24;
+                    Rmask = 0xFFu << 16;
+                    Gmask = 0xFFu << 8;
+                    Bmask = 0xFFu;
+                    Amask = 0xFFu << 24;
                     break;
                 default:
                     PyErr_SetString(
@@ -793,20 +793,20 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         if (flags & PGS_SRCALPHA) {
             switch (bpp) {
                 case 16:
-                    Rmask = 0xF << 8;
-                    Gmask = 0xF << 4;
-                    Bmask = 0xF;
-                    Amask = 0xF << 12;
+                    Rmask = 0xFu << 8;
+                    Gmask = 0xFu << 4;
+                    Bmask = 0xFu;
+                    Amask = 0xFu << 12;
                     break;
                 case 24:
                     bpp = 32;
                     // we automatically step up to 32 if video is 24, fall
                     // through to case below
                 case 32:
-                    Rmask = 0xFF << 16;
-                    Gmask = 0xFF << 8;
-                    Bmask = 0xFF;
-                    Amask = 0xFF << 24;
+                    Rmask = 0xFFu << 16;
+                    Gmask = 0xFFu << 8;
+                    Bmask = 0xFFu;
+                    Amask = 0xFFu << 24;
                     break;
                 default:
                     PyErr_SetString(
