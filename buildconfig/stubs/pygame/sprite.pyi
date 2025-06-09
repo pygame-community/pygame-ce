@@ -118,14 +118,14 @@ class DirtySprite(Sprite, _SupportsDirtySprite):
     def _set_visible(self, val: int) -> None: ...
     def _get_visible(self) -> int: ...
 
-# typevar bound to Sprite, _SupportsSprite Protocol ensures sprite
+# covariant typevar bound to Sprite, _SupportsSprite Protocol ensures sprite
 # subclass passed to group has image and rect attributes
-_TSprite = TypeVar("_TSprite", bound=_SupportsSprite)
+# covariant is required for _Group to work with any AbstractGroup
+# otherwise Sprite.add/remove do not accept AbstractGroup as arguments
 _TSprite_co = TypeVar("_TSprite_co", bound=_SupportsSprite, covariant=True)
-_TSprite2 = TypeVar("_TSprite2", bound=_SupportsSprite)
-
-# almost the same as _TSprite but bound to DirtySprite
-_TDirtySprite_co = TypeVar("_TDirtySprite_co", bound=_SupportsDirtySprite, covariant=True)
+_TDirtySprite_co = TypeVar(
+    "_TDirtySprite_co", bound=_SupportsDirtySprite, covariant=True
+)
 
 # typevar for sprite or iterable of sprites, used in Group init, add and remove
 _SpriteOrIterable = Union[_TSprite_co, Iterable[_SpriteOrIterable[_TSprite_co]]]
@@ -210,9 +210,9 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite_co]):
     )
     def set_timing_treshold(self, time_ms: SupportsFloat) -> None: ...
 
-class GroupSingle(AbstractGroup[_TSprite]):
-    sprite: _TSprite
-    def __init__(self, sprite: Optional[_TSprite] = None) -> None: ...
+class GroupSingle(AbstractGroup[_TSprite_co]):
+    sprite: _TSprite_co
+    def __init__(self, sprite: Optional[_TSprite_co] = None) -> None: ...
 
 # argument to collide_rect must have rect attribute
 def collide_rect(left: _HasRect, right: _HasRect) -> bool: ...
@@ -244,7 +244,9 @@ def collide_mask(
     left: _SupportsCollideMask, right: _SupportsCollideMask
 ) -> Optional[tuple[int, int]]: ...
 
-# generic for _HasRect, used in sprite collide functions
+# typevars for sprite collide functions
+_TSprite = TypeVar("_TSprite", bound=_SupportsSprite)
+_TSprite2 = TypeVar("_TSprite2", bound=_SupportsSprite)
 _THasRect = TypeVar("_THasRect", bound=_HasRect)
 
 def spritecollide(
