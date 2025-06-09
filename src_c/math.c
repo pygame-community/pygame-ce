@@ -688,7 +688,7 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
     Py_ssize_t i, dim;
     double *vec_coords;
     double other_coords[VECTOR_MAX_SIZE] = {0};
-    double tmp;
+    double tmp = 0.0;
     PyObject *other;
     pgVector *vec, *ret = NULL;
     if (pgVector_Check(o1)) {
@@ -712,11 +712,15 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
     if (pg_VectorCoordsFromObj(other, dim, other_coords)) {
         op |= OP_ARG_VECTOR;
     }
-    else if (RealNumber_Check(other)) {
-        op |= OP_ARG_NUMBER;
-    }
     else {
-        op |= OP_ARG_UNKNOWN;
+        tmp = PyFloat_AsDouble(other);
+        if (tmp == -1.0 && PyErr_Occurred()) {
+            PyErr_Clear();
+            op |= OP_ARG_UNKNOWN;
+        }
+        else {
+            op |= OP_ARG_NUMBER;
+        }
     }
 
     if (op & OP_INPLACE) {
@@ -761,14 +765,12 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
         case OP_MUL | OP_ARG_NUMBER:
         case OP_MUL | OP_ARG_NUMBER | OP_ARG_REVERSE:
         case OP_MUL | OP_ARG_NUMBER | OP_INPLACE:
-            tmp = PyFloat_AsDouble(other);
             for (i = 0; i < dim; i++) {
                 ret->coords[i] = vec_coords[i] * tmp;
             }
             break;
         case OP_DIV | OP_ARG_NUMBER:
         case OP_DIV | OP_ARG_NUMBER | OP_INPLACE:
-            tmp = PyFloat_AsDouble(other);
             if (tmp == 0.) {
                 PyErr_SetString(PyExc_ZeroDivisionError, "division by zero");
                 Py_DECREF(ret);
@@ -781,7 +783,6 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
             break;
         case OP_FLOOR_DIV | OP_ARG_NUMBER:
         case OP_FLOOR_DIV | OP_ARG_NUMBER | OP_INPLACE:
-            tmp = PyFloat_AsDouble(other);
             if (tmp == 0.) {
                 PyErr_SetString(PyExc_ZeroDivisionError, "division by zero");
                 Py_DECREF(ret);
@@ -2340,13 +2341,8 @@ static int
 _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
 {
     if (xOrSequence) {
-        if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
-            if (!PySequence_AsVectorCoords(xOrSequence, self->coords, 2)) {
-                return -1;
-            }
-            else {
-                return 0;
-            }
+        if (pg_VectorCoordsFromObj(xOrSequence, 2, self->coords)) {
+            return 0;
         }
         else if (RealNumber_Check(xOrSequence)) {
             self->coords[0] = PyFloat_AsDouble(xOrSequence);
@@ -2788,13 +2784,8 @@ static int
 _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
 {
     if (xOrSequence) {
-        if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
-            if (!PySequence_AsVectorCoords(xOrSequence, self->coords, 3)) {
-                return -1;
-            }
-            else {
-                return 0;
-            }
+        if (pg_VectorCoordsFromObj(xOrSequence, 3, self->coords)) {
+            return 0;
         }
         else if (RealNumber_Check(xOrSequence)) {
             self->coords[0] = PyFloat_AsDouble(xOrSequence);
@@ -3732,7 +3723,6 @@ static PyTypeObject pgVectorIter_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.math.VectorIterator",
     .tp_basicsize = sizeof(vectoriter),
     .tp_dealloc = (destructor)vectoriter_dealloc,
-    .tp_getattro = PyObject_GenericGetAttr,
     /* VectorIterator is not subtypable for now, no Py_TPFLAGS_BASETYPE */
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_iter = PyObject_SelfIter,
@@ -3971,12 +3961,15 @@ vector_elementwiseproxy_generic_math(PyObject *o1, PyObject *o2, int op)
             return NULL;
         }
     }
-    else if (RealNumber_Check(other)) {
-        op |= OP_ARG_NUMBER;
-        other_value = PyFloat_AsDouble(other);
-    }
     else {
-        op |= OP_ARG_UNKNOWN;
+        other_value = PyFloat_AsDouble(other);
+        if (other_value == -1.0 && PyErr_Occurred()) {
+            PyErr_Clear();
+            op |= OP_ARG_UNKNOWN;
+        }
+        else {
+            op |= OP_ARG_NUMBER;
+        }
     }
 
     ret = _vector_subtype_new(vec);

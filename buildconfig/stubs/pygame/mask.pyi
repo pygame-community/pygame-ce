@@ -53,6 +53,7 @@ class Mask:
         setcolor: Optional[ColorLike] = (255, 255, 255, 255),
         unsetcolor: Optional[ColorLike] = (0, 0, 0, 255),
         dest: Union[RectLike, Point] = (0, 0),
+        area: Optional[RectLike] = None,
     ) -> Surface: ...
     if sys.version_info >= (3, 12):
         def __buffer__(self, flags: int, /) -> memoryview[int]: ...
