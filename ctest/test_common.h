@@ -21,10 +21,14 @@ struct TestCase {
     The RUN_TEST_PG_INTERNAL macro then references that struct for each test
     case that we tell it about and automatically populates the unity fields
     with the requisite data.
+
+    Note that the arguments to the test function must be *exactly*
+    (PyObject * self, PyObject * _null), but due to gcc throwing a fit, I
+    cannot just use token pasting to have the macro generate that part for me
 */
 #define PG_CTEST(TestFunc)                                                     \
   static struct TestCase meta_##TestFunc = {#TestFunc, __LINE__};              \
-  static PyObject *TestFunc##(PyObject * self, PyObject * _null)
+  static PyObject *TestFunc
 
 #define RUN_TEST_PG_INTERNAL(TestFunc)                                         \
   {                                                                            \

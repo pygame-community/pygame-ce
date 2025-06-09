@@ -13,7 +13,7 @@ void tearDown(void) {}
 /**
  * @brief Tests _pg_is_int_tuple when passed a tuple of ints
  */
-PG_CTEST(test__pg_is_int_tuple_nominal) {
+PG_CTEST(test__pg_is_int_tuple_nominal)(PyObject *self, PyObject *_null) {
   PyObject *arg1 = Py_BuildValue("(iii)", 1, 2, 3);
   PyObject *arg2 = Py_BuildValue("(iii)", -1, -2, -3);
   PyObject *arg3 = Py_BuildValue("(iii)", 1, -2, -3);
@@ -28,7 +28,7 @@ PG_CTEST(test__pg_is_int_tuple_nominal) {
 /**
  * @brief Tests _pg_is_int_tuple when passed a tuple of non-numeric values
  */
-PG_CTEST(test__pg_is_int_tuple_failureModes) {
+PG_CTEST(test__pg_is_int_tuple_failureModes)(PyObject *self, PyObject *_null) {
   PyObject *arg1 =
       Py_BuildValue("(sss)", (char *)"Larry", (char *)"Moe", (char *)"Curly");
   PyObject *arg2 = Py_BuildValue("(sss)", (char *)NULL, (char *)NULL,
@@ -45,7 +45,7 @@ PG_CTEST(test__pg_is_int_tuple_failureModes) {
 /**
  * @brief Tests _pg_is_int_tuple when passed a tuple of floats
  */
-PG_CTEST(test__pg_is_int_tuple_floats) {
+PG_CTEST(test__pg_is_int_tuple_floats)(PyObject *self, PyObject *_null) {
   PyObject *arg1 = Py_BuildValue("(ddd)", 1.0, 2.0, 3.0);
   PyObject *arg2 = Py_BuildValue("(ddd)", -1.1, -2.2, -3.3);
   PyObject *arg3 = Py_BuildValue("(ddd)", 1.0, -2.0, -3.1);
