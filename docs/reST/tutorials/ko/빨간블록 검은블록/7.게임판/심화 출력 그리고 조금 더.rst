@@ -12,7 +12,7 @@ Contact: rumia0601@gmail.com
 
 사실, 모든 것들이 게임 같아 보이진 않는다. 이제, 이 프로그램에 규칙을 추가하려 한다. 그러면, 이 프로그램은 게임이 된다. 규칙은 간단하다: 5x5 2차원 배열에서 빨간 블록, 검은 블록의 수를 세고, 더 많은 색상의 블록을 고르는 것이다! 정답이라면 HP는 증가하고 오답이라면, HP는 감소한다. 그 다음, 다음 문제를 위한 새로운 2차원 배열이 그려진다! 대단히 단순하지만 이 튜토리얼 내에서 만들어 질 수 있는 게임이다. 우선, 2차원 배열을 만들고 출력해야 한다. 어떻게? 우리는 정수 데이터(0차원 배열과 같음)나 두 버튼(1차원 배열과 같음)을 출력하는 법을 알 고 있다. 2차원 배열은 요소 하나만 더 추가되면 된다.
 
-.. image:: ../../../assets/AdvancedOutputAlpha1.gif
+.. image:: ../../../assets/AdvancedOutputAlpha1.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -27,7 +27,7 @@ Contact: rumia0601@gmail.com
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedOutputAlpha1.gif")
+   ball = pygame.image.load("AdvancedOutputAlpha1.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -44,7 +44,7 @@ Contact: rumia0601@gmail.com
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: ../../../assets/AdvancedOutputAlpha2.gif
+.. image:: ../../../assets/AdvancedOutputAlpha2.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -59,7 +59,7 @@ Contact: rumia0601@gmail.com
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedOutputAlpha2.gif")
+   ball = pygame.image.load("AdvancedOutputAlpha2.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -76,7 +76,7 @@ Contact: rumia0601@gmail.com
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: ../../../assets/AdvancedOutputAlpha3.gif
+.. image:: ../../../assets/AdvancedOutputAlpha3.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -91,7 +91,7 @@ Contact: rumia0601@gmail.com
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedOutputAlpha3.gif")
+   ball = pygame.image.load("AdvancedOutputAlpha3.webp")
    ballrect = ball.get_rect()
 
    while True:

@@ -24,8 +24,8 @@ Keyboard Controls
 
 """
 
-import math
 import ctypes
+import math
 
 import pygame
 
@@ -37,7 +37,7 @@ except ImportError:
     raise SystemExit
 
 try:
-    from numpy import array, dot, eye, zeros, float32, uint32
+    from numpy import array, dot, eye, float32, uint32, zeros
 except ImportError:
     print("numpy missing. The GLCUBE example requires: pyopengl numpy")
     raise SystemExit

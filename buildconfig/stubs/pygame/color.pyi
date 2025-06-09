@@ -1,8 +1,9 @@
+import sys
 from collections.abc import Collection, Iterator
 from typing import Any, ClassVar, SupportsIndex, Union, overload
-from typing_extensions import deprecated  # added in 3.13
 
 from pygame.typing import ColorLike
+from typing_extensions import deprecated  # added in 3.13
 
 THECOLORS: dict[str, tuple[int, int, int, int]]
 
@@ -18,9 +19,12 @@ class Color(Collection[int]):
     hsla: tuple[float, float, float, float]
     i1i2i3: tuple[float, float, float]
     normalized: tuple[float, float, float, float]
+    hex: str
     __hash__: ClassVar[None]  # type: ignore[assignment]
     @property
     def __array_struct__(self) -> Any: ...
+    if sys.version_info >= (3, 12):
+        def __buffer__(self, flags: int, /) -> memoryview[int]: ...
     @overload
     def __init__(self, r: int, g: int, b: int, a: int = 255) -> None: ...
     @overload
@@ -74,6 +78,8 @@ class Color(Collection[int]):
     @overload
     @classmethod
     def from_normalized(cls, r: float, g: float, b: float, a: float, /) -> Color: ...
+    @classmethod
+    def from_hex(cls, hex: str, /) -> Color: ...
     def normalize(self) -> tuple[float, float, float, float]: ...
     def correct_gamma(self, gamma: float, /) -> Color: ...
     @deprecated("since 2.1.3. Use unpacking instead")

@@ -1936,14 +1936,11 @@ MODINIT_DEFINE(pixelarray)
     if (!module) {
         return NULL;
     }
-    Py_INCREF(&pgPixelArray_Type);
-    if (PyModule_AddObject(module, "PixelArray",
-                           (PyObject *)&pgPixelArray_Type)) {
-        Py_DECREF((PyObject *)&pgPixelArray_Type);
+    if (PyModule_AddObjectRef(module, "PixelArray",
+                              (PyObject *)&pgPixelArray_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    pgPixelArray_Type.tp_getattro = PyObject_GenericGetAttr;
 
     c_api[0] = &pgPixelArray_Type;
     c_api[1] = pgPixelArray_New;

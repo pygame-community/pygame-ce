@@ -871,6 +871,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     SDL_Surface *newownedsurf = NULL;
     int depth = 0;
     int flags = 0;
+    int zero_size = 0;
     int w, h, w_actual, h_actual;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
@@ -988,6 +989,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
            desktop resolution without breaking compatibility. */
             w = display_mode.w;
             h = display_mode.h;
+            zero_size = 1;
         }
 
         if (flags & PGS_FULLSCREEN) {
@@ -1432,16 +1434,16 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
      * be respected enough that we don't need to issue a warning
      */
     if (!state->using_gl && ((flags & (PGS_SCALED | PGS_FULLSCREEN)) == 0) &&
-        !vsync) {
+        !vsync && (((flags & PGS_RESIZABLE) == 0) || !zero_size)) {
         if (((surface->surf->w != w_actual) ||
              (surface->surf->h != h_actual)) &&
             ((surface->surf->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)) {
             char buffer[150];
             char *format_string =
-                "Requested window size was smaller than minimum supported "
-                "window size on platform. Using (%d, %d) instead.";
-            snprintf(buffer, sizeof(buffer), format_string, surface->surf->w,
-                     surface->surf->h);
+                "Requested window was forcibly resized by the OS.\n\t"
+                "Requested window size: (%d, %d)\n\tNew window size: (%d, %d)";
+            snprintf(buffer, sizeof(buffer), format_string, w_actual, h_actual,
+                     surface->surf->w, surface->surf->h);
             if (PyErr_WarnEx(PyExc_RuntimeWarning, buffer, 1) != 0) {
                 return NULL;
             }

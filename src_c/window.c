@@ -1578,9 +1578,7 @@ MODINIT_DEFINE(window)
         return NULL;
     }
 
-    Py_INCREF(&pgWindow_Type);
-    if (PyModule_AddObject(module, "Window", (PyObject *)&pgWindow_Type)) {
-        Py_DECREF(&pgWindow_Type);
+    if (PyModule_AddObjectRef(module, "Window", (PyObject *)&pgWindow_Type)) {
         Py_DECREF(module);
         return NULL;
     }

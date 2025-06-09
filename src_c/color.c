@@ -116,6 +116,7 @@ COLOR_FROM_SPACE(hsla);
 COLOR_FROM_SPACE(cmy);
 COLOR_FROM_SPACE(i1i2i3);
 COLOR_FROM_SPACE(normalized);
+COLOR_FROM_SPACE(hex);
 #undef COLOR_FROM_SPACE
 
 /* Getters/setters */
@@ -155,6 +156,10 @@ static PyObject *
 _color_get_normalized(pgColorObject *, void *);
 static int
 _color_set_normalized(pgColorObject *, PyObject *, void *);
+static PyObject *
+_color_get_hex(pgColorObject *, void *);
+static int
+_color_set_hex(pgColorObject *, PyObject *, void *);
 static PyObject *
 _color_get_arraystruct(pgColorObject *, void *);
 
@@ -236,6 +241,8 @@ static PyMethodDef _color_methods[] = {
      DOC_COLOR_FROMI1I2I3},
     {"from_normalized", (PyCFunction)_color_from_normalized,
      METH_CLASS | METH_VARARGS, DOC_COLOR_FROMNORMALIZED},
+    {"from_hex", (PyCFunction)_color_from_hex, METH_CLASS | METH_VARARGS,
+     DOC_COLOR_FROMHEX},
     {"normalize", (PyCFunction)_color_normalize, METH_NOARGS,
      DOC_COLOR_NORMALIZE},
     {"correct_gamma", (PyCFunction)_color_correct_gamma, METH_VARARGS,
@@ -269,6 +276,8 @@ static PyGetSetDef _color_getsets[] = {
      NULL},
     {"normalized", (getter)_color_get_normalized,
      (setter)_color_set_normalized, DOC_COLOR_NORMALIZED, NULL},
+    {"hex", (getter)_color_get_hex, (setter)_color_set_hex, DOC_COLOR_HEX,
+     NULL},
     {"__array_struct__", (getter)_color_get_arraystruct, NULL,
      "array structure interface, read only", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
@@ -716,6 +725,9 @@ _color_from_space(char *space, PyObject *args)
     }
     else if (strcmp(space, "normalized") == 0) {
         set_success = _color_set_normalized(color, args, NULL);
+    }
+    else if (strcmp(space, "hex") == 0) {
+        set_success = _color_set_hex(color, args, NULL);
     }
 
     if (set_success != 0) {
@@ -1540,6 +1552,36 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
     color->data[2] = (Uint8)round(frgba[2] * 255.0);
     color->data[3] = (Uint8)round(frgba[3] * 255.0);
 
+    return 0;
+}
+
+static PyObject *
+_color_get_hex(pgColorObject *color, void *closure)
+{
+    return PyUnicode_FromFormat("#%02x%02x%02x%02x", color->data[0],
+                                color->data[1], color->data[2],
+                                color->data[3]);
+}
+
+static int
+_color_set_hex(pgColorObject *color, PyObject *value, void *closure)
+{
+    DEL_ATTR_NOT_SUPPORTED_CHECK("hex", value);
+
+    if (!PyUnicode_Check(value)) {
+        PyErr_SetString(PyExc_TypeError, "hex color must be a string");
+        return -1;
+    }
+
+    switch (_hexcolor(value, color->data)) {
+        case TRISTATE_FAIL:
+            PyErr_SetString(PyExc_ValueError, "invalid hex string");
+            return -1;
+        case TRISTATE_ERROR:
+            return -1; /* forward python error */
+        default:
+            return 0;
+    }
     return 0;
 }
 
@@ -2485,15 +2527,10 @@ MODINIT_DEFINE(color)
         goto error;
     }
 
-    Py_INCREF(&pgColor_Type);
-    if (PyModule_AddObject(module, "Color", (PyObject *)&pgColor_Type)) {
-        Py_DECREF(&pgColor_Type);
+    if (PyModule_AddObjectRef(module, "Color", (PyObject *)&pgColor_Type)) {
         goto error;
     }
-    Py_INCREF(_COLORDICT);
-    if (PyModule_AddObject(module, "THECOLORS", _COLORDICT)) {
-        /* Yes, _COLORDICT is decref'd twice here and we want that */
-        Py_DECREF(_COLORDICT);
+    if (PyModule_AddObjectRef(module, "THECOLORS", _COLORDICT)) {
         goto error;
     }
 

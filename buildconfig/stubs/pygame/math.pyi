@@ -4,16 +4,16 @@ from typing import (
     ClassVar,
     Generic,
     Literal,
+    Optional,
     SupportsIndex,
     TypeVar,
     Union,
     final,
     overload,
-    Optional
 )
-from typing_extensions import deprecated # added in 3.13
 
 from pygame.typing import SequenceLike
+from typing_extensions import deprecated  # added in 3.13
 
 def clamp(value: float, min: float, max: float, /) -> float: ...
 
@@ -29,7 +29,9 @@ class _GenericVector(Collection[float]):
     @overload
     def __setitem__(self, key: int, value: float) -> None: ...
     @overload
-    def __setitem__(self, key: slice, value: Union[SequenceLike[float], _TVec]) -> None: ...
+    def __setitem__(
+        self, key: slice, value: Union[SequenceLike[float], _TVec]
+    ) -> None: ...
     @overload
     def __getitem__(self, i: SupportsIndex) -> float: ...
     @overload
@@ -70,37 +72,31 @@ class _GenericVector(Collection[float]):
     def is_normalized(self) -> bool: ...
     def scale_to_length(self, value: float, /) -> None: ...
     def reflect(self: _TVec, other: Union[SequenceLike[float], _TVec], /) -> _TVec: ...
-    def reflect_ip(self: _TVec, other: Union[SequenceLike[float], _TVec], /) -> None: ...
-    def distance_to(self: _TVec, other: Union[SequenceLike[float], _TVec], /) -> float: ...
+    def reflect_ip(
+        self: _TVec, other: Union[SequenceLike[float], _TVec], /
+    ) -> None: ...
+    def distance_to(
+        self: _TVec, other: Union[SequenceLike[float], _TVec], /
+    ) -> float: ...
     def distance_squared_to(
         self: _TVec, other: Union[SequenceLike[float], _TVec], /
     ) -> float: ...
     def lerp(
-        self: _TVec,
-        other: Union[SequenceLike[float], _TVec],
-        value: float, /
+        self: _TVec, other: Union[SequenceLike[float], _TVec], value: float, /
     ) -> _TVec: ...
     def slerp(
-        self: _TVec,
-        other: Union[SequenceLike[float], _TVec],
-        value: float, /
+        self: _TVec, other: Union[SequenceLike[float], _TVec], value: float, /
     ) -> _TVec: ...
     def smoothstep(
-        self: _TVec,
-        other: Union[SequenceLike[float], _TVec],
-        value: float, /
+        self: _TVec, other: Union[SequenceLike[float], _TVec], value: float, /
     ) -> _TVec: ...
     def elementwise(self: _TVec) -> VectorElementwiseProxy[_TVec]: ...
     def angle_to(self: _TVec, other: Union[SequenceLike[float], _TVec], /) -> float: ...
     def move_towards(
-        self: _TVec,
-        target: Union[SequenceLike[float], _TVec],
-        max_distance: float, /
+        self: _TVec, target: Union[SequenceLike[float], _TVec], max_distance: float, /
     ) -> _TVec: ...
     def move_towards_ip(
-        self: _TVec,
-        target: Union[SequenceLike[float], _TVec],
-        max_distance: float, /
+        self: _TVec, target: Union[SequenceLike[float], _TVec], max_distance: float, /
     ) -> None: ...
     @overload
     def clamp_magnitude(self: _TVec, max_length: float, /) -> _TVec: ...
@@ -213,6 +209,10 @@ class Vector2(_GenericVector):
     xy: Vector2
     yx: Vector2
     yy: Vector2
+    @property
+    def angle(self) -> float: ...
+    @property
+    def angle_rad(self) -> float: ...
     @overload
     def __init__(
         self: _TVec,
@@ -331,12 +331,12 @@ class Vector3(_GenericVector):
     @overload
     def update(self, x: int, y: int, z: int) -> None: ...
 
-
 def lerp(a: float, b: float, value: float, do_clamp: bool = True, /) -> float: ...
 def invlerp(a: float, b: float, value: float, /) -> float: ...
-def remap(i_min: float, i_max: float, o_min: float, o_max: float, value: float, /) -> float: ...
+def remap(
+    i_min: float, i_max: float, o_min: float, o_max: float, value: float, /
+) -> float: ...
 def smoothstep(a: float, b: float, weight: float, /) -> float: ...
-
 @deprecated("Functionality is removed")
 def enable_swizzling() -> None: ...
 @deprecated("Functionality is removed")
