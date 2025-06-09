@@ -1829,8 +1829,7 @@ static void
 drawvertlineclipbounding(SDL_Surface *surf, SDL_Rect surf_clip_rect,
                          Uint32 color, int y1, int x1, int y2, int *pts)
 {
-    if (x1 < surf->clip_rect.x ||
-        x1 >= surf->clip_rect.x + surf->clip_rect.w) {
+    if (x1 < surf_clip_rect.x || x1 >= surf_clip_rect.x + surf_clip_rect.w) {
         return;
     }
 
@@ -1840,11 +1839,10 @@ drawvertlineclipbounding(SDL_Surface *surf, SDL_Rect surf_clip_rect,
         y2 = temp;
     }
 
-    y1 = MAX(y1, surf->clip_rect.y);
-    y2 = MIN(y2, surf->clip_rect.y + surf->clip_rect.h - 1);
+    y1 = MAX(y1, surf_clip_rect.y);
+    y2 = MIN(y2, surf_clip_rect.y + surf_clip_rect.h - 1);
 
-    if (y2 < surf->clip_rect.y ||
-        y1 >= surf->clip_rect.y + surf->clip_rect.h) {
+    if (y2 < surf_clip_rect.y || y1 >= surf_clip_rect.y + surf_clip_rect.h) {
         return;
     }
 
@@ -2061,10 +2059,10 @@ draw_aaline_width(SDL_Surface *surf, SDL_Rect surf_clip_rect,
     /* To draw correctly the pixels at the border of the clipping area when
      * the line crosses it, we need to clip it one pixel wider in all four
      * directions, and add width */
-    clip_left = (float)surf->clip_rect.x - 1.0f;
-    clip_right = (float)clip_left + surf->clip_rect.w + 1.0f;
-    clip_top = (float)surf->clip_rect.y - 1.0f;
-    clip_bottom = (float)clip_top + surf->clip_rect.h + 1.0f;
+    clip_left = (float)surf_clip_rect.x - 1.0f;
+    clip_right = (float)clip_left + surf_clip_rect.w + 1.0f;
+    clip_top = (float)surf_clip_rect.y - 1.0f;
+    clip_bottom = (float)clip_top + surf_clip_rect.h + 1.0f;
 
     if (steep) {
         swap(&from_x, &from_y);
