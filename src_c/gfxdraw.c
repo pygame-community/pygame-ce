@@ -34,8 +34,6 @@
 
 #include "doc/gfxdraw_doc.h"
 
-#include "surface/surface.h"
-
 #include "pgcompat.h"
 
 #include "SDL_gfx/SDL_gfxPrimitives.h"
