@@ -136,6 +136,7 @@ image = py.extension_module(
 simd_transform_avx2 = static_library(
     'simd_transform_avx2',
     'simd_transform_avx2.c',
+    include_directories: 'surface',
     dependencies: pg_base_deps,
     c_args: simd_avx2_flags + warnings_error,
 )
@@ -143,6 +144,7 @@ simd_transform_avx2 = static_library(
 simd_transform_sse2 = static_library(
     'simd_transform_sse2',
     'simd_transform_sse2.c',
+    include_directories: 'surface',
     dependencies: pg_base_deps,
     c_args: simd_sse2_neon_flags + warnings_error,
 )
@@ -166,7 +168,7 @@ endif
 transform = py.extension_module(
     'transform',
     transform_sources,
-    include_directories: 'include',
+    include_directories: ['include', 'surface'],
     c_args: warnings_error,
     link_with: [simd_transform_avx2, simd_transform_sse2],
     objects: transform_objs,
