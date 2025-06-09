@@ -135,13 +135,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4.2.2
+      with:
+        fetch-depth: 0  # fetch full history
 
     - name: Check if any src_c files changed
       id: check-changes
+      continue-on-error: true
       run: |
-        git fetch origin ${{ github.base_ref }} --depth=1 || true
-        git checkout ${{ github.base_ref }}
-        CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+        else
+          CHANGED_FILES=$(git diff --name-only HEAD^1...HEAD)
+        fi
+        echo "Changed files: $CHANGED_FILES"
         echo "$CHANGED_FILES" | grep '^src_c/' || echo "skip=true" >> "$GITHUB_OUTPUT"
 
     - name: Install cppcheck
