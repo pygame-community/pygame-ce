@@ -7,7 +7,9 @@
 #define PYGAMEAPI_JOYSTICK_INTERNAL
 #define PYGAMEAPI_BASE_INTERNAL
 #define PYGAMEAPI_SURFACE_INTERNAL
+#define PYGAMEAPI_BUFFERPROXY_INTERNAL
 #define PYGAMEAPI_WINDOW_INTERNAL
+#define PYGAMEAPI_RENDER_INTERNAL
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) \
@@ -187,6 +189,9 @@ PyInit_pixelarray(void);
 PyMODINIT_FUNC
 PyInit_window(void);
 
+PyMODINIT_FUNC
+PyInit__render(void);
+
 // pygame_static module
 
 void
@@ -320,6 +325,7 @@ PyInit_pygame_static()
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
 
     load_submodule("pygame", PyInit_window(), "window");
+    load_submodule("pygame", PyInit__render(), "_render");
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
@@ -350,7 +356,7 @@ PyInit_pygame_static()
 
 #include "color.c"
 
-#undef pgBufproxy_New
+#undef pgBufferProxy_New
 
 #include "bufferproxy.c"
 
@@ -382,6 +388,7 @@ PyInit_pygame_static()
 #include "rwobject.c"
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
+#include "render.c"
 #include "image.c"
 
 #include "imageext.c"

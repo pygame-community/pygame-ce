@@ -109,10 +109,10 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         )
     endif
 
-    sdl_ver = (sdl_api == 3) ? '3.1.6' : '2.30.10'
-    sdl_image_ver = '2.8.3'
-    sdl_mixer_ver = '2.8.0'
-    sdl_ttf_ver = '2.22.0'
+    sdl_ver = (sdl_api == 3) ? '3.2.10' : '2.32.8'
+    sdl_image_ver = (sdl_api == 3) ? '3.2.4' : '2.8.8'
+    sdl_mixer_ver = '2.8.1'
+    sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
 
     dlls = []
 
@@ -131,12 +131,18 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         pg_lib_dirs += sdl_image_lib_dir
         dlls += [
             sdl_image_lib_dir / '@0@.dll'.format(sdl_image),
-            sdl_image_lib_dir / 'optional' / 'libjpeg-62.dll',
-            sdl_image_lib_dir / 'optional' / 'libpng16-16.dll',
-            sdl_image_lib_dir / 'optional' / 'libtiff-5.dll',
+            sdl_image_lib_dir / 'optional' / (sdl_api == 3 ? 'libtiff-6.dll' : 'libtiff-5.dll'),
             sdl_image_lib_dir / 'optional' / 'libwebp-7.dll',
             sdl_image_lib_dir / 'optional' / 'libwebpdemux-2.dll',
         ]
+        # temporary solution to get things compiling under SDL3_image. In the future
+        # we would want to have libpng and libjpeg on SDL3_image as well.
+        if sdl_api != 3
+            dlls += [
+                sdl_image_lib_dir / 'optional' / 'libjpeg-62.dll',
+                sdl_image_lib_dir / 'optional' / 'libpng16-16.dll',
+            ]
+        endif
     endif
 
     # SDL_mixer

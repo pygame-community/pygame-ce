@@ -2,7 +2,7 @@ import math
 import unittest
 from collections.abc import Collection, Sequence
 
-from pygame import Vector2, FRect, Rect as IRect
+from pygame import FRect, Rect as IRect, Vector2
 from pygame.tests import test_utils
 
 Rect = IRect
@@ -51,6 +51,50 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual((r.centerx, r.bottom), r.midbottom)
         self.assertEqual((r.left, r.centery), r.midleft)
         self.assertEqual((r.right, r.centery), r.midright)
+
+    def testAttributes(self):
+        """Checks that all the attributes are initialized correctly."""
+        r = Rect(1, 2, 3, 4)
+
+        self.assertEqual(1, r.left)
+        self.assertEqual(2, r.top)
+        self.assertEqual(4, r.right)
+        self.assertEqual(6, r.bottom)
+
+        self.assertEqual(1, r.x)
+        self.assertEqual(2, r.y)
+
+        self.assertEqual(3, r.w)
+        self.assertEqual(4, r.h)
+
+        self.assertEqual((1, 2), r.topleft)
+        self.assertEqual((4, 2), r.topright)
+        self.assertEqual((1, 6), r.bottomleft)
+        self.assertEqual((4, 6), r.bottomright)
+
+        self.assertEqual((3, 4), r.size)
+        self.assertEqual(3, r.width)
+        self.assertEqual(4, r.height)
+
+        if isinstance(r, FRect):
+            self.assertEqual(2.5, r.centerx)
+            self.assertEqual(4, r.centery)
+            self.assertEqual((2.5, 4), r.center)
+
+            self.assertEqual((2.5, 2), r.midtop)
+            self.assertEqual((2.5, 6), r.midbottom)
+            self.assertEqual((1, 4), r.midleft)
+            self.assertEqual((4, 4), r.midright)
+
+        elif isinstance(r, Rect):
+            self.assertEqual(2, r.centerx)
+            self.assertEqual(4, r.centery)
+            self.assertEqual((2, 4), r.center)
+
+            self.assertEqual((2, 2), r.midtop)
+            self.assertEqual((2, 6), r.midbottom)
+            self.assertEqual((1, 4), r.midleft)
+            self.assertEqual((4, 4), r.midright)
 
     def testRepr(self):
         rect = Rect(12, 34, 56, 78)
@@ -777,13 +821,13 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(4, 6)
 
-        self.assertEqual(r.center, r2.center)
-        self.assertEqual(r.left - 2, r2.left)
-        self.assertEqual(r.top - 3, r2.top)
-        self.assertEqual(r.right + 2, r2.right)
-        self.assertEqual(r.bottom + 3, r2.bottom)
-        self.assertEqual(r.width + 4, r2.width)
-        self.assertEqual(r.height + 6, r2.height)
+        self.assertEqual(r2.center, (5, 8))
+        self.assertEqual(r2.left, 0)
+        self.assertEqual(r2.top, 1)
+        self.assertEqual(r2.right, 10)
+        self.assertEqual(r2.bottom, 15)
+        self.assertEqual(r2.width, 10)
+        self.assertEqual(r2.height, 14)
 
     def test_inflate__smaller(self):
         """Ensures deflating a rect keeps its center the same
@@ -791,13 +835,13 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(-4, -6)
 
-        self.assertEqual(r.center, r2.center)
-        self.assertEqual(r.left + 2, r2.left)
-        self.assertEqual(r.top + 3, r2.top)
-        self.assertEqual(r.right - 2, r2.right)
-        self.assertEqual(r.bottom - 3, r2.bottom)
-        self.assertEqual(r.width - 4, r2.width)
-        self.assertEqual(r.height - 6, r2.height)
+        self.assertEqual((5, 8), r2.center)
+        self.assertEqual(4, r2.left)
+        self.assertEqual(7, r2.top)
+        self.assertEqual(6, r2.right)
+        self.assertEqual(9, r2.bottom)
+        self.assertEqual(2, r2.width)
+        self.assertEqual(2, r2.height)
 
     def test_inflate_ip__larger(self):
         """Ensures inflating a rect in place keeps its center the same
@@ -806,13 +850,13 @@ class RectTypeTest(unittest.TestCase):
         r2 = Rect(r)
         r2.inflate_ip(4, 6)
 
-        self.assertEqual(r.center, r2.center)
-        self.assertEqual(r.left - 2, r2.left)
-        self.assertEqual(r.top - 3, r2.top)
-        self.assertEqual(r.right + 2, r2.right)
-        self.assertEqual(r.bottom + 3, r2.bottom)
-        self.assertEqual(r.width + 4, r2.width)
-        self.assertEqual(r.height + 6, r2.height)
+        self.assertEqual(r2.center, (5, 8))
+        self.assertEqual(r2.left, 0)
+        self.assertEqual(r2.top, 1)
+        self.assertEqual(r2.right, 10)
+        self.assertEqual(r2.bottom, 15)
+        self.assertEqual(r2.width, 10)
+        self.assertEqual(r2.height, 14)
 
     def test_inflate_ip__smaller(self):
         """Ensures deflating a rect in place keeps its center the same
@@ -821,13 +865,13 @@ class RectTypeTest(unittest.TestCase):
         r2 = Rect(r)
         r2.inflate_ip(-4, -6)
 
-        self.assertEqual(r.center, r2.center)
-        self.assertEqual(r.left + 2, r2.left)
-        self.assertEqual(r.top + 3, r2.top)
-        self.assertEqual(r.right - 2, r2.right)
-        self.assertEqual(r.bottom - 3, r2.bottom)
-        self.assertEqual(r.width - 4, r2.width)
-        self.assertEqual(r.height - 6, r2.height)
+        self.assertEqual(r2.center, (5, 8))
+        self.assertEqual(r2.left, 4)
+        self.assertEqual(r2.top, 7)
+        self.assertEqual(r2.right, 6)
+        self.assertEqual(r2.bottom, 9)
+        self.assertEqual(r2.width, 2)
+        self.assertEqual(r2.height, 2)
 
     def test_scale_by__larger_single_argument(self):
         """The scale method scales around the center of the rectangle"""

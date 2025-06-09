@@ -124,7 +124,7 @@ The angle is measured in radians, and will give you the direction in which the b
 moves. So by using this vector, we can determine the direction and speed of the ball, and therefore how much it will move on the x and
 y axes:
 
-.. image:: ../assets/tom_radians.png
+.. image:: ../assets/tom_radians.webp
 
 The diagram above illustrates the basic maths behind vectors. In the left hand diagram, you can see the ball's projected movement
 represented by the blue line. The length of that line (z) represents its speed, and the angle is the direction in which
@@ -139,4 +139,4 @@ trigonometry, and can be done with the formulae shown in the diagram.
 If you've studied elementary trigonometry before, none of this should be news to you. But just in case you're forgetful, here are some
 useful formulae to remember, that will help you visualise the angles (I find it easier to visualise angles in degrees than in radians!)
 
-.. image:: ../assets/tom_formulae.png
+.. image:: ../assets/tom_formulae.webp

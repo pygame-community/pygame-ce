@@ -17,7 +17,7 @@ fi
 
 # pin versions for stability (remember to keep updated)
 python3 -m pip install $PG_PIP_EXTRA_FLAGS \
-    setuptools==75.1.0 cmake==3.30.3 meson==1.5.2 ninja==1.11.1.1
+    setuptools==75.8.0 cmake==3.31.4 meson==1.7.0 ninja==1.11.1.3
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     cp /root/.local/bin/* /usr/bin

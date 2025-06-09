@@ -1,6 +1,24 @@
 #define NO_PYGAME_C_API
 #include "_surface.h"
 
+/* TODO: This compat code should probably go in some place like simd_shared.h
+ * That header file however is inconsistently used at the moment and not
+ * included wherever it should be.
+ * this block will be needed by simd_blitters and simd_fill */
+
+#if PG_SDL3
+// SDL3 no longer includes intrinsics by default, we need to do it explicitly
+#include <SDL3/SDL_intrin.h>
+
+/* If SDL_AVX2_INTRINSICS is defined by SDL3, we need to set macros that our
+ * code checks for avx2 build time support */
+#ifdef SDL_AVX2_INTRINSICS
+#ifndef HAVE_IMMINTRIN_H
+#define HAVE_IMMINTRIN_H 1
+#endif /* HAVE_IMMINTRIN_H*/
+#endif /* SDL_AVX2_INTRINSICS*/
+#endif /* PG_SDL3 */
+
 /**
  * MACRO borrowed from SSE2NEON - useful for making the shuffling family of
  * intrinsics easier to understand by indicating clearly what will go where.
@@ -26,7 +44,8 @@
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
 
 void
-grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf);
+grayscale_sse2(SDL_Surface *src, PG_PixelFormat *src_fmt,
+               SDL_Surface *newsurf);
 // smoothscale filters
 void
 filter_shrink_X_SSE2(Uint8 *srcpix, Uint8 *dstpix, int height, int srcpitch,
@@ -41,12 +60,13 @@ void
 filter_expand_Y_SSE2(Uint8 *srcpix, Uint8 *dstpix, int width, int srcpitch,
                      int dstpitch, int srcheight, int dstheight);
 void
-invert_sse2(SDL_Surface *src, SDL_Surface *newsurf);
+invert_sse2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf);
 
 #endif /* (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)) */
 
 // AVX2 functions
 void
-grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf);
+grayscale_avx2(SDL_Surface *src, PG_PixelFormat *src_fmt,
+               SDL_Surface *newsurf);
 void
-invert_avx2(SDL_Surface *src, SDL_Surface *newsurf);
+invert_avx2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf);
