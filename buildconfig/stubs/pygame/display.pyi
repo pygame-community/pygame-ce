@@ -399,6 +399,7 @@ def get_wm_info() -> dict[str, int]:
     key with the value set to the system id for the current display.
 
     .. versionaddedold:: 1.7.1
+    .. versionchanged:: 2.X.X added a new key ``subsystem`` used to identify windowing system - exists in most cases.
     """
 
 def get_desktop_sizes() -> list[tuple[int, int]]:

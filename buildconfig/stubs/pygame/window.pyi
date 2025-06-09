@@ -487,4 +487,17 @@ class Window:
 
         .. versionadded:: 2.5.2
         """
+
+    def get_info(self) -> dict[str, int | str]:
+        """Return system-specific information about a given window.
+
+        Creates a dictionary filled with string keys. It's empty if failed to query the system
+        info (eg.: the window was destroyed). Otherwise it contains at least one key ``subsystem``
+        containing the name of the window's subsystem. The rest of values are integes.
+        Names of the rest keys and meaning of their values is system-dependent,
+        but most platforms will return a "window" key with the value
+        set to the system id for the current window.
+
+        .. versionadded:: 2.X.X
+        """
     relative_mouse: bool

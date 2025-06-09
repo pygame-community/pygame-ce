@@ -8,6 +8,11 @@
 #include "doc/sdl2_video_doc.h"
 #include "doc/window_doc.h"
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#else /* !SDL_VERSION_ATLEAST(3, 0, 0) */
+#include <SDL_syswm.h>
+#endif
+
 static int is_window_mod_init = 0;
 
 #if !defined(__APPLE__)
@@ -196,6 +201,225 @@ window_get_surface(pgWindowObject *self, PyObject *_null)
 
     Py_INCREF(self->surf);
     return (PyObject *)self->surf;
+}
+
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+static char *
+decode_syswm_type(SDL_SYSWM_TYPE type)
+{
+    switch (type) {
+        case SDL_SYSWM_ANDROID:
+            return "android";
+        case SDL_SYSWM_WINDOWS:
+            return "windows";
+        case SDL_SYSWM_WINRT:
+            return "winrt";
+        case SDL_SYSWM_X11:
+            return "x11";
+        case SDL_SYSWM_DIRECTFB:
+            return "directfb";
+        case SDL_SYSWM_COCOA:
+            return "cocoa";
+        case SDL_SYSWM_UIKIT:
+            return "uikit";
+        case SDL_SYSWM_WAYLAND:
+            return "wayland";
+        case SDL_SYSWM_VIVANTE:
+            return "vivante";
+        case SDL_SYSWM_UNKNOWN:
+        default:
+            return "unknown";
+    }
+}
+#endif
+
+static PyObject *
+pgWindow_GetInfo(SDL_Window *window)
+{
+    // TODO: support more platforms
+
+    PyObject *dict = PyDict_New();
+    if (!dict) {
+        return NULL;
+    }
+
+    if (!window) {
+        return dict;
+    }
+
+    PyObject *tmp;
+
+#if SDL_VERSION_ATLEAST(3, 1, 3)
+
+#define _LOAD_PROP_FLOAT(name, loc)                                    \
+    if (SDL_HasProperty(info, name)) {                                 \
+        tmp = PyFloat_FromDouble(SDL_GetFloatProperty(info, name, 0)); \
+        PyDict_SetItemString(dict, loc, tmp);                          \
+        Py_DECREF(tmp);                                                \
+    }
+#define _LOAD_PROP_NUMBER(name, loc)                                 \
+    if (SDL_HasProperty(info, name)) {                               \
+        tmp = PyLong_FromLong(SDL_GetNumberProperty(info, name, 0)); \
+        PyDict_SetItemString(dict, loc, tmp);                        \
+        Py_DECREF(tmp);                                              \
+    }
+#define _LOAD_PROP_STRING(name, loc)                                       \
+    if (SDL_HasProperty(info, name)) {                                     \
+        tmp = PyUnicode_FromString(SDL_GetStringProperty(info, name, "")); \
+        PyDict_SetItemString(dict, loc, tmp);                              \
+        Py_DECREF(tmp);                                                    \
+    }
+#define _LOAD_PROP_BOOLEAN(name, loc)                                 \
+    if (SDL_HasProperty(info, name)) {                                \
+        tmp = PyBool_FromLong(SDL_GetBooleanProperty(info, name, 0)); \
+        PyDict_SetItemString(dict, loc, tmp);                         \
+        Py_DECREF(tmp);                                               \
+    }
+#define _LOAD_PROP_POINTER(name, loc)                          \
+    if (SDL_HasProperty(info, name)) {                         \
+        tmp = PyLong_FromLongLong(                             \
+            (long long)SDL_GetPointerProperty(info, name, 0)); \
+        PyDict_SetItemString(dict, loc, tmp);                  \
+        Py_DECREF(tmp);                                        \
+    }
+#define _LOAD_PROP(name, type, loc) \
+    _LOAD_PROP_##type(SDL_PROP_WINDOW_##name##_##type, loc)
+
+    SDL_PropertiesID info = SDL_GetWindowProperties(window);
+    const char *driver_name = SDL_GetCurrentVideoDriver();
+    if (driver_name == NULL) {
+        driver_name = "unknown";
+    }
+
+    tmp = PyUnicode_FromString(driver_name);
+    PyDict_SetItemString(dict, "subsystem", tmp);
+    Py_DECREF(tmp);
+
+    // SDL_VIDEO_DRIVER_WINDOWS
+    _LOAD_PROP(WIN32_HWND, POINTER, "window")
+    _LOAD_PROP(WIN32_HDC, POINTER, "hdc")
+    _LOAD_PROP(WIN32_INSTANCE, POINTER, "hinstance")
+
+    // SDL_VIDEO_DRIVER_WINRT - REMOVED from SDL3
+
+    // SDL_VIDEO_DRIVER_X11
+    _LOAD_PROP(X11_WINDOW, NUMBER, "window")
+    _LOAD_PROP(X11_DISPLAY, POINTER, "display")
+    _LOAD_PROP(X11_SCREEN, NUMBER, "screen")
+
+    // SDL_VIDEO_DRIVER_WAYLAND
+    _LOAD_PROP(WAYLAND_DISPLAY, POINTER, "display")
+    _LOAD_PROP(WAYLAND_SURFACE, POINTER, "surface")
+    // _LOAD_PROP(WAYLAND_SHELL_SURFACE, POINTER, "shell_surface") -
+    // nonexistant
+
+    // SDL_VIDEO_DRIVER_DIRECTFB - REMOVED from SDL3
+
+    // SDL_VIDEO_DRIVER_COCOA
+    _LOAD_PROP(COCOA_WINDOW, POINTER, "window")
+
+    // SDL_VIDEO_DRIVER_UIKIT
+    _LOAD_PROP(UIKIT_WINDOW, POINTER, "window")
+    _LOAD_PROP(UIKIT_OPENGL_FRAMEBUFFER, NUMBER, "framebuffer")
+    _LOAD_PROP(UIKIT_OPENGL_RENDERBUFFER, NUMBER, "renderbuffer")
+    // _LOAD_PROP(UIKIT_OPENGL_COLORBUFFER, NUMBER, "colorbuffer") -
+    // nonexistant
+    _LOAD_PROP(UIKIT_OPENGL_RESOLVE_FRAMEBUFFER, NUMBER, "resolveFramebuffer")
+
+    // SDL_VIDEO_DRIVER_ANDROID
+    _LOAD_PROP(ANDROID_WINDOW, POINTER, "window")
+    _LOAD_PROP(ANDROID_SURFACE, POINTER, "surface")
+
+    // SDL_VIDEO_DRIVER_VIVANTE
+    _LOAD_PROP(VIVANTE_WINDOW, POINTER, "window")
+    _LOAD_PROP(VIVANTE_DISPLAY, POINTER, "display")
+    _LOAD_PROP(VIVANTE_SURFACE, POINTER, "surface")
+
+#undef _LOAD_PROP_FLOAT
+#undef _LOAD_PROP_NUMBER
+#undef _LOAD_PROP_STRING
+#undef _LOAD_PROP_BOOLEAN
+#undef _LOAD_PROP_POINTER
+#undef _LOAD_PROP
+
+#else /* !SDL_VERSION_ATLEAST(3, 1, 3) */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+
+#else
+
+#define _LOAD_NUM(from, prop)                                        \
+    {                                                                \
+        tmp = PyLong_FromLongLong((long long)(info.info.from.prop)); \
+        PyDict_SetItemString(dict, #prop, tmp);                      \
+        Py_DECREF(tmp);                                              \
+    }
+#define _LOAD_PTR(from, prop)                                        \
+    {                                                                \
+        tmp = PyLong_FromLongLong((long long)(info.info.from.prop)); \
+        PyDict_SetItemString(dict, #prop, tmp);                      \
+        Py_DECREF(tmp);                                              \
+    }
+
+    SDL_SysWMinfo info;
+    SDL_VERSION(&(info.version))
+
+    if (!SDL_GetWindowWMInfo(window, &info)) {
+        return dict;
+    }
+
+    tmp = PyUnicode_FromString(decode_syswm_type(info.subsystem));
+    PyDict_SetItemString(dict, "subsystem", tmp);
+    Py_DECREF(tmp);
+
+#if defined(SDL_VIDEO_DRIVER_WINDOWS)
+    _LOAD_NUM(win, window)
+    _LOAD_NUM(win, hdc)
+    _LOAD_NUM(win, hinstance)
+#endif
+#if defined(SDL_VIDEO_DRIVER_WINRT)
+    _LOAD_PTR(winrt, window)
+#endif
+#if defined(SDL_VIDEO_DRIVER_X11)
+    _LOAD_NUM(x11, window)
+    _LOAD_PTR(x11, display)
+#endif
+#if defined(SDL_VIDEO_DRIVER_DIRECTFB)
+    _LOAD_PTR(dfb, dfb)
+    _LOAD_PTR(dfb, window)
+    _LOAD_PTR(dfb, surface)
+#endif
+#if defined(SDL_VIDEO_DRIVER_COCOA)
+    _LOAD_PTR(cocoa, window)
+#endif
+#if defined(SDL_VIDEO_DRIVER_UIKIT)
+    _LOAD_PTR(uikit, window)
+    _LOAD_NUM(uikit, framebuffer)
+    _LOAD_NUM(uikit, colorbuffer)
+    _LOAD_NUM(uikit, resolveFramebuffer)
+#endif
+#if defined(SDL_VIDEO_DRIVER_WAYLAND)
+    _LOAD_PTR(wl, display)
+    _LOAD_PTR(wl, surface)
+    _LOAD_PTR(wl, shell_surface)
+#endif
+#if defined(SDL_VIDEO_DRIVER_ANDROID)
+    _LOAD_PTR(android, window)
+    _LOAD_NUM(android, surface)
+#endif
+#if defined(SDL_VIDEO_DRIVER_VIVANTE)
+    _LOAD_NUM(vivante, display)
+    _LOAD_NUM(vivante, window)
+#endif
+
+#endif /* !SDL_VERSION_ATLEAST(3, 0, 0) */
+#endif
+    return dict;
+}
+
+static PyObject *
+window_get_info(pgWindowObject *self, PyObject *_null)
+{
+    return pgWindow_GetInfo(self->_win);
 }
 
 static PyObject *
@@ -1396,6 +1620,7 @@ static PyMethodDef window_methods[] = {
     {"flip", (PyCFunction)window_flip, METH_NOARGS, DOC_WINDOW_FLIP},
     {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
      DOC_WINDOW_GETSURFACE},
+    {"get_info", (PyCFunction)window_get_info, METH_NOARGS, "TODO"},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_WINDOW_FROMDISPLAYMODULE},
     {"flash", (PyCFunction)window_flash, METH_O, DOC_WINDOW_FLASH},
@@ -1508,7 +1733,11 @@ MODINIT_DEFINE(window)
         return NULL;
     }
 
+    /* export the c api */
+    assert(PYGAMEAPI_WINDOW_NUMSLOTS == 2);
     c_api[0] = &pgWindow_Type;
+    c_api[1] = &pgWindow_GetInfo;
+
     apiobj = encapsulate_api(c_api, "window");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);

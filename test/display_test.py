@@ -182,6 +182,7 @@ class DisplayModuleTest(unittest.TestCase):
         self.assertIsNone(surface)
 
     def test_get_wm_info(self):
+        pygame.display.set_mode((1, 1))
         wm_info = display.get_wm_info()
         # Assert function returns a dictionary type
         self.assertIsInstance(wm_info, dict)
@@ -200,6 +201,7 @@ class DisplayModuleTest(unittest.TestCase):
             "lock_func",
             "resolveFramebuffer",
             "shell_surface",
+            "subsystem",
             "surface",
             "taskHandle",
             "unlock_func",

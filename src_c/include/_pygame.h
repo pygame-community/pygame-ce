@@ -546,6 +546,8 @@ typedef struct {
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
 #define import_pygame_window() IMPORT_PYGAME_MODULE(window)
+#define pgWindow_GetInfo \
+    (*(PyObject * (*)(SDL_Window *)) PYGAMEAPI_GET_SLOT(window, 1))
 #endif
 
 typedef struct pgTextureObject pgTextureObject;
