@@ -257,11 +257,11 @@ pgWindow_GetInfo(SDL_Window *window)
         PyDict_SetItemString(dict, loc, tmp);                          \
         Py_DECREF(tmp);                                                \
     }
-#define _LOAD_PROP_NUMBER(name, loc)                                 \
-    if (SDL_HasProperty(info, name)) {                               \
-        tmp = PyLong_FromLong(SDL_GetNumberProperty(info, name, 0)); \
-        PyDict_SetItemString(dict, loc, tmp);                        \
-        Py_DECREF(tmp);                                              \
+#define _LOAD_PROP_NUMBER(name, loc)                                     \
+    if (SDL_HasProperty(info, name)) {                                   \
+        tmp = PyLong_FromLongLong(SDL_GetNumberProperty(info, name, 0)); \
+        PyDict_SetItemString(dict, loc, tmp);                            \
+        Py_DECREF(tmp);                                                  \
     }
 #define _LOAD_PROP_STRING(name, loc)                                       \
     if (SDL_HasProperty(info, name)) {                                     \
@@ -275,12 +275,12 @@ pgWindow_GetInfo(SDL_Window *window)
         PyDict_SetItemString(dict, loc, tmp);                         \
         Py_DECREF(tmp);                                               \
     }
-#define _LOAD_PROP_POINTER(name, loc)                          \
-    if (SDL_HasProperty(info, name)) {                         \
-        tmp = PyLong_FromLongLong(                             \
-            (long long)SDL_GetPointerProperty(info, name, 0)); \
-        PyDict_SetItemString(dict, loc, tmp);                  \
-        Py_DECREF(tmp);                                        \
+#define _LOAD_PROP_POINTER(name, loc)                         \
+    if (SDL_HasProperty(info, name)) {                        \
+        tmp = PyLong_FromLongLong(                            \
+            (intptr_t)SDL_GetPointerProperty(info, name, 0)); \
+        PyDict_SetItemString(dict, loc, tmp);                 \
+        Py_DECREF(tmp);                                       \
     }
 #define _LOAD_PROP(name, type, loc) \
     _LOAD_PROP_##type(SDL_PROP_WINDOW_##name##_##type, loc)
@@ -353,11 +353,11 @@ pgWindow_GetInfo(SDL_Window *window)
         PyDict_SetItemString(dict, #prop, tmp);                      \
         Py_DECREF(tmp);                                              \
     }
-#define _LOAD_PTR(from, prop)                                        \
-    {                                                                \
-        tmp = PyLong_FromLongLong((long long)(info.info.from.prop)); \
-        PyDict_SetItemString(dict, #prop, tmp);                      \
-        Py_DECREF(tmp);                                              \
+#define _LOAD_PTR(from, prop)                                       \
+    {                                                               \
+        tmp = PyLong_FromLongLong((intptr_t)(info.info.from.prop)); \
+        PyDict_SetItemString(dict, #prop, tmp);                     \
+        Py_DECREF(tmp);                                             \
     }
 
     SDL_SysWMinfo info;
