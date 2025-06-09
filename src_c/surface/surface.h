@@ -29,12 +29,6 @@
 #undef _POSIX_C_SOURCE
 #endif
 
-#ifdef PG_SDL3
-#include <SDL3/SDL.h>
-#else
-#include <SDL.h>
-#endif
-
 #include "../pygame.h"
 
 /* Blend modes */

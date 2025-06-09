@@ -1,5 +1,5 @@
 #define NO_PYGAME_C_API
-#include "_surface.h"
+#include "surface.h"
 #include "_blit_info.h"
 
 #if !defined(PG_ENABLE_ARM_NEON) && defined(__aarch64__)
