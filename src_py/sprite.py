@@ -109,8 +109,6 @@ class Sprite:
 
     """
 
-    __class_getitem__ = classmethod(types.GenericAlias)
-
     def __init__(self, *groups):
         self.__g = {}  # The groups the sprite is in
         self.__image: Optional[pygame.surface.Surface] = None
