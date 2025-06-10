@@ -24,7 +24,7 @@
 #undef WITH_THREAD
 #endif
 
-#if 1 // defined(BUILD_STATIC)
+#if defined(BUILD_STATIC)
 #undef import_pygame_base
 #undef import_pygame_rect
 #undef import_pygame_surface
