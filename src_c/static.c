@@ -33,83 +33,88 @@
 #undef import_pygame_bufferproxy
 #undef import_pygame_rwobject
 #undef import_pygame_event
-#undef import_pygame_imageext
-#undef import_pygame_image
-#undef import_pygame_font
 
 void
 import_pygame_base(void)
 {
-    puts("import_pygame_base");
 }
 
 void
 import_pygame_rect(void)
 {
-    puts("import_pygame_rect");
 }
 
 void
 import_pygame_surface(void)
 {
-    puts("import_pygame_surface");
 }
 
 
 void
 import_pygame_window(void)
 {
-    puts("import_pygame_window");
 }
 
 void
 import_pygame_geometry(void)
 {
-    puts("import_pygame_geometry");
 }
 
 void
 import_pygame_color(void)
 {
-puts("import_pygame_color");
 }
 
 void
 import_pygame_font(void)
 {
-    puts("import_pygame_font");
 }
 
 void
 import_pygame_freetype(void)
 {
-    puts("import_pygame_freetype");
 }
 
 
 void
 import_pygame_bufferproxy(void)
 {
-    puts("import_pygame_bufferproxy");
 }
 
 void
 import_pygame_rwobject(void)
 {
-    puts("import_pygame_rwobject");
 }
 
 void
 import_pygame_event(void)
 {
-    puts("import_pygame_event");
 }
 
 void
 import_pygame_joystick(void)
 {
-    puts("import_pygame_joystick");
 }
+
+#undef import_pygame_imageext
+#undef import_pygame_render
+#undef import_pygame_pixelarray
+
+void
+import_pygame_imageext(void)
+{
+}
+
+void
+import_pygame_render(void)
+{
+}
+
+void
+import_pygame_pixelarray(void)
+{
+}
+
 
 
 PyMODINIT_FUNC
