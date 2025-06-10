@@ -116,14 +116,13 @@ if sys.platform in ("wasi", "emscripten"):
 
         # pygame.Color = pygame.color.Color
 
-        #Vector2 = pygame.math.Vector2
-        #Vector3 = pygame.math.Vector3
-        #Rect = pygame.rect.Rect
-        #BufferProxy = pygame.bufferproxy.BufferProxy
+        # Vector2 = pygame.math.Vector2
+        # Vector3 = pygame.math.Vector3
+        # Rect = pygame.rect.Rect
+        # BufferProxy = pygame.bufferproxy.BufferProxy
 
         # for pygame.surface.Surface type in sprite.py ?
         # surface = sys.modules["pygame.surface"]
-
 
         # cython modules use multiphase initialisation when not in builtin Inittab.
 
@@ -150,17 +149,21 @@ from pygame.rwobject import encode_string, encode_file_path
 
 
 import pygame.rect
+
 Rect = pygame.rect.Rect
 FRect = pygame.rect.FRect
 
 
 import pygame.color
+
 Color = pygame.color.Color
 
 import pygame.bufferproxy
+
 BufferProxy = pygame.bufferproxy.BufferProxy
 
 import pygame.math
+
 Vector2 = pygame.math.Vector2
 Vector3 = pygame.math.Vector3
 
@@ -214,6 +217,7 @@ except (ImportError, OSError):
 
     def Cursor(*args):  # pylint: disable=unused-argument
         _attribute_undefined("pygame.Cursor")
+
 
 try:
     import pygame.pixelcopy

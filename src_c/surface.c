@@ -4721,11 +4721,13 @@ MODINIT_DEFINE(surface)
     PyObject *apiobj;
     static void *c_api[PYGAMEAPI_SURFACE_NUMSLOTS];
 
-    if (PyModule_AddObjectRef(module, "SurfaceType", (PyObject *)&pgSurface_Type)) {
+    if (PyModule_AddObjectRef(module, "SurfaceType",
+                              (PyObject *)&pgSurface_Type)) {
         return NULL;
     }
 
-    if (PyModule_AddObjectRef(module, "Surface", (PyObject *)&pgSurface_Type)) {
+    if (PyModule_AddObjectRef(module, "Surface",
+                              (PyObject *)&pgSurface_Type)) {
         return NULL;
     }
 
