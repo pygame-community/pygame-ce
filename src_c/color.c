@@ -1737,7 +1737,7 @@ _color_inv(pgColorObject *color)
 static PyObject *
 _color_int(pgColorObject *color)
 {
-    Uint32 tmp = (color->data[0] << 24) + (color->data[1] << 16) +
+    Uint32 tmp = ((Uint32)color->data[0] << 24) + (color->data[1] << 16) +
                  (color->data[2] << 8) + color->data[3];
     return PyLong_FromUnsignedLong(tmp);
 }
@@ -1748,7 +1748,7 @@ _color_int(pgColorObject *color)
 static PyObject *
 _color_float(pgColorObject *color)
 {
-    Uint32 tmp = ((color->data[0] << 24) + (color->data[1] << 16) +
+    Uint32 tmp = (((Uint32)color->data[0] << 24) + (color->data[1] << 16) +
                   (color->data[2] << 8) + color->data[3]);
     return PyFloat_FromDouble((double)tmp);
 }
