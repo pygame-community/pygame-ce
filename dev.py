@@ -15,6 +15,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Union
 
+from buildconfig.get_version import version
+
 MOD_NAME = "pygame-ce"
 DIST_DIR = "dist"
 
@@ -259,8 +261,9 @@ class Dev:
                 [self.py, "-m", "pip", "wheel", "-v", "-w", wheel_dir, *install_args]
             )
             pprint("Installing wheel")
+            mod_name = f"{MOD_NAME}=={version}"
             pip_install(
-                self.py, ["--no-index", "--force", "--find-links", wheel_dir, MOD_NAME]
+                self.py, ["--no-index", "--force", "--find-links", wheel_dir, mod_name]
             )
         else:
             pprint(f"Installing in editable mode ({info_str})")
