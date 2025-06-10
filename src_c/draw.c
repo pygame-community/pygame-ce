@@ -44,16 +44,17 @@ draw_line_width(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
 static void
 draw_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
           int y2, Uint32 color, int *drawn_area);
-void
-line_width_corners(float from_x, float from_y, float to_x, float to_y,
-                   int width, float *x1, float *y1, float *x2, float *y2,
-                   float *x3, float *y3, float *x4, float *y4);
 static void
 draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect,
             PG_PixelFormat *surf_format, Uint32 color, float startx,
             float starty, float endx, float endy, int *drawn_area,
             int disable_first_endpoint, int disable_second_endpoint,
             int extra_pixel_for_aalines);
+static void
+draw_aaline_width(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                  PG_PixelFormat *surf_format, Uint32 color, float from_x,
+                  float from_y, float to_x, float to_y, int width,
+                  int *drawn_area);
 static void
 draw_arc(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x_center,
          int y_center, int radius1, int radius2, int width, double angle_start,
@@ -188,15 +189,8 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (width > 1) {
-        float x1, y1, x2, y2, x3, y3, x4, y4;
-        line_width_corners(startx, starty, endx, endy, width, &x1, &y1, &x2,
-                           &y2, &x3, &y3, &x4, &y4);
-        draw_line_width(surf, surf_clip_rect, color, (int)startx, (int)starty,
-                        (int)endx, (int)endy, width, drawn_area);
-        draw_aaline(surf, surf_clip_rect, surf_format, color, x1, y1, x2, y2,
-                    drawn_area, 0, 0, 0);
-        draw_aaline(surf, surf_clip_rect, surf_format, color, x3, y3, x4, y4,
-                    drawn_area, 0, 0, 0);
+        draw_aaline_width(surf, surf_clip_rect, surf_format, color, startx,
+                          starty, endx, endy, width, drawn_area);
     }
     else {
         draw_aaline(surf, surf_clip_rect, surf_format, color, startx, starty,
@@ -1831,6 +1825,37 @@ drawhorzlineclipbounding(SDL_Surface *surf, SDL_Rect surf_clip_rect,
     drawhorzline(surf, color, x1, y1, x2);
 }
 
+static void
+drawvertlineclipbounding(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                         Uint32 color, int y1, int x1, int y2, int *pts)
+{
+    if (x1 < surf_clip_rect.x || x1 >= surf_clip_rect.x + surf_clip_rect.w) {
+        return;
+    }
+
+    if (y2 < y1) {
+        int temp = y1;
+        y1 = y2;
+        y2 = temp;
+    }
+
+    y1 = MAX(y1, surf_clip_rect.y);
+    y2 = MIN(y2, surf_clip_rect.y + surf_clip_rect.h - 1);
+
+    if (y2 < surf_clip_rect.y || y1 >= surf_clip_rect.y + surf_clip_rect.h) {
+        return;
+    }
+
+    if (y1 == y2) {
+        set_and_check_rect(surf, surf_clip_rect, x1, y1, color, pts);
+        return;
+    }
+
+    add_line_to_drawn_list(x1, y1, x1, y2, pts);
+
+    drawvertline(surf, color, y1, x1, y2);
+}
+
 void
 swap_coordinates(int *x1, int *y1, int *x2, int *y2)
 {
@@ -1986,36 +2011,295 @@ draw_line_width(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
     }
 }
 
-// Calculates 4 points, representing corners of draw_line_width()
-// first two points assemble left line and second two - right line
-void
-line_width_corners(float from_x, float from_y, float to_x, float to_y,
-                   int width, float *x1, float *y1, float *x2, float *y2,
-                   float *x3, float *y3, float *x4, float *y4)
+static void
+draw_aaline_width(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                  PG_PixelFormat *surf_format, Uint32 color, float from_x,
+                  float from_y, float to_x, float to_y, int width,
+                  int *drawn_area)
 {
-    float aa_width = (float)width / 2;
-    float extra_width = (1.0f - (width % 2)) / 2;
-    int steep = fabs(to_x - from_x) <= fabs(to_y - from_y);
+    float gradient, dx, dy, intersect_y, brightness;
+    int x, x_pixel_start, x_pixel_end, start_draw, end_draw;
+    Uint32 pixel_color;
+    float y_endpoint, clip_left, clip_right, clip_top, clip_bottom;
+    int steep, y;
+    int extra_width = 1 - (width % 2);
+
+    width = (width / 2);
+
+    dx = to_x - from_x;
+    dy = to_y - from_y;
+    steep = fabs(dx) < fabs(dy);
+
+    /* Single point.
+     * A line with length 0 is drawn as a single pixel at full brightness. */
+    if (fabs(dx) < 0.0001 && fabs(dy) < 0.0001) {
+        x = (int)floor(from_x + 0.5);
+        y = (int)floor(from_y + 0.5);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x, y, color, 1);
+        set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
+                           drawn_area);
+        if (dx != 0 && dy != 0) {
+            if (steep) {
+                start_draw = (int)(x - width + extra_width);
+                end_draw = (int)(x + width) - 1;
+                drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                         start_draw, y, end_draw, drawn_area);
+            }
+            else {
+                start_draw = (int)(y - width + extra_width);
+                end_draw = (int)(y + width) - 1;
+                drawvertlineclipbounding(surf, surf_clip_rect, color,
+                                         start_draw, x, end_draw, drawn_area);
+            }
+        }
+        return;
+    }
+
+    /* To draw correctly the pixels at the border of the clipping area when
+     * the line crosses it, we need to clip it one pixel wider in all four
+     * directions, and add width */
+    clip_left = (float)surf_clip_rect.x - 1.0f;
+    clip_right = (float)clip_left + surf_clip_rect.w + 1.0f;
+    clip_top = (float)surf_clip_rect.y - 1.0f;
+    clip_bottom = (float)clip_top + surf_clip_rect.h + 1.0f;
 
     if (steep) {
-        *x1 = from_x + extra_width + aa_width;
-        *y1 = from_y;
-        *x2 = to_x + extra_width + aa_width;
-        *y2 = to_y;
-        *x3 = from_x + extra_width - aa_width;
-        *y3 = from_y;
-        *x4 = to_x + extra_width - aa_width;
-        *y4 = to_y;
+        swap(&from_x, &from_y);
+        swap(&to_x, &to_y);
+        swap(&dx, &dy);
+        swap(&clip_left, &clip_top);
+        swap(&clip_right, &clip_bottom);
+    }
+    if (dx < 0) {
+        swap(&from_x, &to_x);
+        swap(&from_y, &to_y);
+        dx = -dx;
+        dy = -dy;
+    }
+
+    if (to_x <= clip_left || from_x >= clip_right) {
+        /* The line is completely to the side of the surface */
+        return;
+    }
+
+    /* Note. There is no need to guard against a division by zero here. If dx
+     * was zero then either we had a single point (and we've returned) or it
+     * has been swapped with a non-zero dy. */
+    gradient = dy / dx;
+
+    /* No need to waste CPU cycles on pixels not on the surface. */
+    if (from_x < clip_left + 1) {
+        from_y += gradient * (clip_left + 1 - from_x);
+        from_x = clip_left + 1;
+    }
+    if (to_x > clip_right - 1) {
+        to_y += gradient * (clip_right - 1 - to_x);
+        to_x = clip_right - 1;
+    }
+
+    if (gradient > 0.0f) {
+        if (from_x < clip_left + 1) {
+            /* from_ is the topmost endpoint */
+            if (to_y <= clip_top || from_y >= clip_bottom) {
+                /* The line does not enter the surface */
+                return;
+            }
+            if (from_y < clip_top - width) {
+                from_x += (clip_top - width - from_y) / gradient;
+                from_y = clip_top - width;
+            }
+            if (to_y > clip_bottom + width) {
+                to_x += (clip_bottom + width - to_y) / gradient;
+                to_y = clip_bottom + width;
+            }
+        }
     }
     else {
-        *x1 = from_x;
-        *y1 = from_y + extra_width + aa_width;
-        *x2 = to_x;
-        *y2 = to_y + extra_width + aa_width;
-        *x3 = from_x;
-        *y3 = from_y + extra_width - aa_width;
-        *x4 = to_x;
-        *y4 = to_y + extra_width - aa_width;
+        if (to_x > clip_right - 1) {
+            /* to_ is the topmost endpoint */
+            if (from_y <= clip_top || to_y >= clip_bottom) {
+                /* The line does not enter the surface */
+                return;
+            }
+            if (to_y < clip_top - width) {
+                to_x += (clip_top - width - to_y) / gradient;
+                to_y = clip_top - width;
+            }
+            if (from_y > clip_bottom + width) {
+                from_x += (clip_bottom + width - from_y) / gradient;
+                from_y = clip_bottom + width;
+            }
+        }
+    }
+
+    /* By moving the points one pixel down, we can assume y is never negative.
+     * That permit us to use (int)y to round down instead of having to use
+     * floor(y). We then draw the pixels one higher.*/
+    from_y += 1.0f;
+    to_y += 1.0f;
+
+    /* Handle endpoints separately */
+    /* First endpoint */
+    x_pixel_start = (int)from_x;
+    y_endpoint = intersect_y = from_y + gradient * (x_pixel_start - from_x);
+    if (to_x > clip_left + 1.0f) {
+        brightness = y_endpoint - (int)y_endpoint;
+        if (steep) {
+            x = (int)y_endpoint;
+            y = x_pixel_start;
+        }
+        else {
+            x = x_pixel_start;
+            y = (int)y_endpoint;
+        }
+        if ((int)y_endpoint < y_endpoint) {
+            if (steep) {
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                          x + width, y, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x + width, y,
+                                   pixel_color, drawn_area);
+            }
+            else {
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y + width, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x, y + width,
+                                   pixel_color, drawn_area);
+            }
+        }
+        brightness = 1 - brightness;
+        if (steep) {
+            pixel_color =
+                get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                      x - width, y, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect,
+                               x - width + extra_width - 1, y, pixel_color,
+                               drawn_area);
+            start_draw = (int)(x - width + extra_width);
+            end_draw = (int)(x + width) - 1;
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     y, end_draw, drawn_area);
+        }
+        else {
+            pixel_color = get_antialiased_color(
+                surf, surf_clip_rect, surf_format, x,
+                y - width + extra_width - 1, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect, x,
+                               y - width + extra_width - 1, pixel_color,
+                               drawn_area);
+            start_draw = (int)(y - width + extra_width);
+            end_draw = (int)(y + width) - 1;
+            drawvertlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     x, end_draw, drawn_area);
+        }
+        intersect_y += gradient;
+        x_pixel_start++;
+    }
+
+    /* Second endpoint */
+    x_pixel_end = (int)ceil(to_x);
+    if (from_x < clip_right - 1.0f) {
+        y_endpoint = to_y + gradient * (x_pixel_end - to_x);
+        brightness = y_endpoint - (int)y_endpoint;
+        if (steep) {
+            x = (int)y_endpoint;
+            y = x_pixel_end;
+        }
+        else {
+            x = x_pixel_end;
+            y = (int)y_endpoint;
+        }
+        if ((int)y_endpoint < y_endpoint) {
+            if (steep) {
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                          x + width, y, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x + width, y,
+                                   pixel_color, drawn_area);
+            }
+            else {
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y + width, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x, y + width,
+                                   pixel_color, drawn_area);
+            }
+        }
+        brightness = 1 - brightness;
+        if (steep) {
+            pixel_color = get_antialiased_color(
+                surf, surf_clip_rect, surf_format, x - width + extra_width - 1,
+                y, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect,
+                               x - width + extra_width - 1, y, pixel_color,
+                               drawn_area);
+            start_draw = (int)(x - width);
+            end_draw = (int)(x + width) - 1;
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     y, end_draw, drawn_area);
+        }
+        else {
+            pixel_color = get_antialiased_color(
+                surf, surf_clip_rect, surf_format, x,
+                y - width + extra_width - 1, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect, x,
+                               y - width + extra_width - 1, pixel_color,
+                               drawn_area);
+            start_draw = (int)(y - width + extra_width);
+            end_draw = (int)(y + width) - 1;
+            drawvertlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     x, end_draw, drawn_area);
+        }
+    }
+
+    /* main line drawing loop */
+    for (x = x_pixel_start; x < x_pixel_end; x++) {
+        y = (int)intersect_y;
+        if (steep) {
+            brightness = 1 - intersect_y + y;
+            pixel_color = get_antialiased_color(
+                surf, surf_clip_rect, surf_format, y - width + extra_width - 1,
+                x, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect,
+                               y - width + extra_width - 1, x, pixel_color,
+                               drawn_area);
+            if (y < intersect_y) {
+                brightness = 1 - brightness;
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                          y + width, x, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, y + width, x,
+                                   pixel_color, drawn_area);
+            }
+            start_draw = (int)(y - width + extra_width);
+            end_draw = (int)(y + width) - 1;
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     x, end_draw, drawn_area);
+        }
+        else {
+            brightness = 1 - intersect_y + y;
+            pixel_color = get_antialiased_color(
+                surf, surf_clip_rect, surf_format, x,
+                y - width + extra_width - 1, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect, x,
+                               y - width + extra_width - 1, pixel_color,
+                               drawn_area);
+            if (y < intersect_y) {
+                brightness = 1 - brightness;
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y + width, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x, y + width,
+                                   pixel_color, drawn_area);
+            }
+            start_draw = (int)(y - width + extra_width);
+            end_draw = (int)(y + width) - 1;
+            drawvertlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     x, end_draw, drawn_area);
+        }
+        intersect_y += gradient;
     }
 }
 

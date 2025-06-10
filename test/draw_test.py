@@ -2878,20 +2878,22 @@ class AALineMixin(BaseLineMixin):
                 pos = (x, 0)
                 self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
 
-    def test_line__gaps_with_thickness(self):
+    def test_aaline__gaps_with_thickness(self):
         """Ensures a thick aaline is drawn without any gaps."""
-        expected_color = (255, 255, 255)
+        background_color = (0, 0, 0)
         thickness = 5
         for surface in self._create_surfaces():
             width = surface.get_width() - 1
             h = width // 5
             w = h * 5
-            self.draw_aaline(surface, expected_color, (0, 5), (w, 5 + h), thickness)
+            self.draw_aaline(surface, (255, 255, 255), (0, 5), (w, 5 + h), thickness)
 
             for x in range(w + 1):
                 for y in range(3, 8):
                     pos = (x, y + ((x + 2) // 5))
-                    self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
+                    self.assertNotEqual(
+                        surface.get_at(pos), background_color, f"pos={pos}"
+                    )
 
     def test_aaline__bounding_rect(self):
         """Ensures draw aaline returns the correct bounding rect.
@@ -2939,9 +2941,7 @@ class AALineMixin(BaseLineMixin):
                         self.assertEqual(
                             bounding_rect,
                             expected_rect,
-                            "start={}, end={}, size={}, thickness={}".format(
-                                start, end, size, thickness
-                            ),
+                            f"start={start}, end={end}, size={size}, thickness={thickness}",
                         )
 
     def test_aaline__surface_clip(self):
@@ -2961,6 +2961,8 @@ class AALineMixin(BaseLineMixin):
             # drawing the aaline over the clip_rect's bounds.
             for center in rect_corners_mids_and_center(clip_rect):
                 pos_rect.center = center
+                start = pos_rect.midtop
+                end = pos_rect.midbottom
 
                 # Get the expected points by drawing the aaline without the
                 # clip area set.
@@ -2969,8 +2971,8 @@ class AALineMixin(BaseLineMixin):
                 self.draw_aaline(
                     surface,
                     aaline_color,
-                    pos_rect.midtop,
-                    pos_rect.midbottom,
+                    start,
+                    end,
                     thickness,
                 )
 
@@ -2986,8 +2988,8 @@ class AALineMixin(BaseLineMixin):
                 self.draw_aaline(
                     surface,
                     aaline_color,
-                    pos_rect.midtop,
-                    pos_rect.midbottom,
+                    start,
+                    end,
                     thickness,
                 )
 
@@ -2997,9 +2999,17 @@ class AALineMixin(BaseLineMixin):
                 # are not surface_color.
                 for pt in ((x, y) for x in range(surfw) for y in range(surfh)):
                     if pt in expected_pts:
-                        self.assertNotEqual(surface.get_at(pt), surface_color, pt)
+                        self.assertNotEqual(
+                            surface.get_at(pt),
+                            surface_color,
+                            f"start={start}, end={end}, thickness={thickness}, point={pt}",
+                        )
                     else:
-                        self.assertEqual(surface.get_at(pt), surface_color, pt)
+                        self.assertEqual(
+                            surface.get_at(pt),
+                            surface_color,
+                            f"start={start}, end={end}, thickness={thickness}, point={pt}",
+                        )
 
                 surface.unlock()
 
