@@ -526,7 +526,7 @@ The following file formats are supported
       This simply returns the channel id used to create the ``Channel`` instance
       as a read-only attribute
 
-      ..versionadded:: 2.4.0
+      .. versionadded:: 2.4.0
 
       .. ## Channel.id ##
 

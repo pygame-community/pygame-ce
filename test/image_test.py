@@ -268,6 +268,11 @@ class ImageModuleTest(unittest.TestCase):
             del reader
             os.remove(f_path)
 
+    @unittest.skipIf(
+        "PG_DEPS_FROM_SYSTEM" in os.environ,
+        "If we are using system dependencies, we don't know the backend used "
+        "for PNG saving, and this test only works with libpng.",
+    )
     def testSavePaletteAsPNG8(self):
         """see if we can save a png with color values in the proper channels."""
         # Create a PNG file with known colors
