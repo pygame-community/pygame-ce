@@ -6,9 +6,8 @@ A little "console" where you can write in text.
 Shows how to use the TEXTEDITING and TEXTINPUT events.
 """
 
-from typing import Tuple, List
-import sys
 import os
+import sys
 
 import pygame
 
@@ -39,8 +38,8 @@ class TextInput:
     def __init__(
         self,
         prompt: str,
-        pos: Tuple[int, int],
-        screen_dimensions: Tuple[int, int],
+        pos: tuple[int, int],
+        screen_dimensions: tuple[int, int],
         print_event: bool,
         text_color="white",
         fps: int = 50,
@@ -77,7 +76,7 @@ class TextInput:
 
         print("Using font: " + self.font.name)
 
-    def update(self, events: List[pygame.Event]) -> None:
+    def update(self, events: list[pygame.Event]) -> None:
         """
         Updates the text input widget
         """
@@ -195,13 +194,13 @@ class TextInput:
         """
         if self._ime_editing_text:
             return (
-                f"{self._ime_text[0: self._ime_text_pos]}"
+                f"{self._ime_text[0 : self._ime_text_pos]}"
                 f"[{self._ime_editing_text}]"
-                f"{self._ime_text[self._ime_text_pos:]}"
+                f"{self._ime_text[self._ime_text_pos :]}"
             )
         return (
-            f"{self._ime_text[0: self._ime_text_pos]}"
-            f"{self._ime_text[self._ime_text_pos:]}"
+            f"{self._ime_text[0 : self._ime_text_pos]}"
+            f"{self._ime_text[self._ime_text_pos :]}"
         )
 
     def draw(self, screen: pygame.Surface) -> None:

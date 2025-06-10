@@ -1,7 +1,8 @@
 import os
-import pygame
 import sys
 import tempfile
+
+import pygame
 
 ###############################################################################
 

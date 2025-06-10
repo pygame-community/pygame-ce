@@ -16,7 +16,7 @@ Basic PROCESS
 Previous project looks like a single image instead of game. Because there is no input neither process to control output. Of course, clicking exit button on window is not counted because it is just shutting down the entire program. First, we will let text “Hello World!” to move automatically (and now project will be looks like an animation rather than single image), which means adding first processing logic on this project. How to move text? We know that location of text is initialized in Initial statement. So, location of text should be updated in Always statement, with adding some variable to process something.
 
 
-.. image:: ../../../assets/Bagic-PROCESS-sourcecode.png
+.. image:: ../../../assets/Bagic-PROCESS-sourcecode.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -31,7 +31,7 @@ Previous project looks like a single image instead of game. Because there is no 
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Bagic-PROCESS-sourcecode.png")
+   ball = pygame.image.load("Bagic-PROCESS-sourcecode.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -49,7 +49,7 @@ Previous project looks like a single image instead of game. Because there is no 
        pygame.display.flip()
 
 
-.. image:: ../../../assets/Bagic-PROCESS-resultscreen.png
+.. image:: ../../../assets/Bagic-PROCESS-resultscreen.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -64,7 +64,7 @@ Previous project looks like a single image instead of game. Because there is no 
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Bagic-PROCESS-resultscreen.png")
+   ball = pygame.image.load("Bagic-PROCESS-resultscreen.webp")
    ballrect = ball.get_rect()
 
    while True:

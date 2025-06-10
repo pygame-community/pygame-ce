@@ -1,6 +1,5 @@
 from pygame.surface import Surface
-
-from pygame.typing import ColorLike, Coordinate, RectLike, SequenceLike
+from pygame.typing import ColorLike, Point, RectLike, SequenceLike
 
 def pixel(surface: Surface, x: int, y: int, color: ColorLike, /) -> None: ...
 def hline(surface: Surface, x1: int, x2: int, y: int, color: ColorLike, /) -> None: ...
@@ -31,7 +30,8 @@ def arc(
     r: int,
     start_angle: int,
     atp_angle: int,
-    color: ColorLike, /
+    color: ColorLike,
+    /,
 ) -> None: ...
 def pie(
     surface: Surface,
@@ -40,7 +40,8 @@ def pie(
     r: int,
     start_angle: int,
     atp_angle: int,
-    color: ColorLike, /
+    color: ColorLike,
+    /,
 ) -> None: ...
 def trigon(
     surface: Surface,
@@ -50,7 +51,8 @@ def trigon(
     y2: int,
     x3: int,
     y3: int,
-    color: ColorLike, /
+    color: ColorLike,
+    /,
 ) -> None: ...
 def aatrigon(
     surface: Surface,
@@ -60,7 +62,8 @@ def aatrigon(
     y2: int,
     x3: int,
     y3: int,
-    color: ColorLike, /
+    color: ColorLike,
+    /,
 ) -> None: ...
 def filled_trigon(
     surface: Surface,
@@ -70,20 +73,21 @@ def filled_trigon(
     y2: int,
     x3: int,
     y3: int,
-    color: ColorLike, /
+    color: ColorLike,
+    /,
 ) -> None: ...
 def polygon(
-    surface: Surface, points: SequenceLike[Coordinate], color: ColorLike, /
+    surface: Surface, points: SequenceLike[Point], color: ColorLike, /
 ) -> None: ...
 def aapolygon(
-    surface: Surface, points: SequenceLike[Coordinate], color: ColorLike, /
+    surface: Surface, points: SequenceLike[Point], color: ColorLike, /
 ) -> None: ...
 def filled_polygon(
-    surface: Surface, points: SequenceLike[Coordinate], color: ColorLike, /
+    surface: Surface, points: SequenceLike[Point], color: ColorLike, /
 ) -> None: ...
 def textured_polygon(
-    surface: Surface, points: SequenceLike[Coordinate], texture: Surface, tx: int, ty: int, /
+    surface: Surface, points: SequenceLike[Point], texture: Surface, tx: int, ty: int, /
 ) -> None: ...
 def bezier(
-    surface: Surface, points: SequenceLike[Coordinate], steps: int, color: ColorLike, /
+    surface: Surface, points: SequenceLike[Point], steps: int, color: ColorLike, /
 ) -> None: ...

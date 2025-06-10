@@ -1,11 +1,15 @@
 #define NO_PYGAME_C_API
 
+#define CONTROLLER_NOPYX
+
 #define PYGAMEAPI_RECT_INTERNAL
 #define PYGAMEAPI_EVENT_INTERNAL
 #define PYGAMEAPI_JOYSTICK_INTERNAL
 #define PYGAMEAPI_BASE_INTERNAL
 #define PYGAMEAPI_SURFACE_INTERNAL
+#define PYGAMEAPI_BUFFERPROXY_INTERNAL
 #define PYGAMEAPI_WINDOW_INTERNAL
+#define PYGAMEAPI_RENDER_INTERNAL
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) \
@@ -150,11 +154,13 @@ PyInit_mixer(void);
 PyMODINIT_FUNC
 PyInit_system(void);
 
+#if defined(CONTROLLER_NOPYX)
 PyMODINIT_FUNC
 PyInit_controller(void);
-
+#else
 PyMODINIT_FUNC
 PyInit_controller_old(void);
+#endif
 
 PyMODINIT_FUNC
 PyInit_transform(void);
@@ -182,6 +188,9 @@ PyInit_pixelarray(void);
 
 PyMODINIT_FUNC
 PyInit_window(void);
+
+PyMODINIT_FUNC
+PyInit__render(void);
 
 // pygame_static module
 
@@ -216,36 +225,30 @@ load_submodule_mphase(const char *parent, PyObject *mdef, PyObject *spec,
 {
     char fqn[1024];
     snprintf(fqn, sizeof(fqn), "%s.%s", parent, alias);
-
     PyObject *modules = PyImport_GetModuleDict();
 
     Py_DECREF(PyObject_GetAttrString(spec, "name"));
-
     PyObject_SetAttrString(spec, "name", PyUnicode_FromString(alias));
-
     PyObject *pmod = PyDict_GetItemString(modules, parent);
-
     PyObject *mod = PyModule_FromDefAndSpec((PyModuleDef *)mdef, spec);
-
     PyDict_SetItemString(PyModule_GetDict(mod), "__package__",
                          PyUnicode_FromString(parent));
-
     // TODO SET PACKAGE
-
     PyModule_ExecDef(mod, (PyModuleDef *)mdef);
 
-    if (!pmod) {
-        snprintf(fqn, sizeof(fqn), "ERROR: %s.%s", parent, alias);
-        puts(fqn);
-        PyErr_Print();
-        PyErr_Clear();
-    }
-    else {
+    if (pmod) {
         PyDict_SetItemString(modules, fqn, mod);
         PyDict_SetItemString(PyModule_GetDict(mod), "__name__",
                              PyUnicode_FromString(fqn));
         PyModule_AddObjectRef(pmod, alias, mod);
         Py_XDECREF(mod);
+    }
+    if (!pmod || PyErr_Occurred()) {
+        snprintf(fqn, sizeof(fqn), "Error after init in : %s.%s\n", parent,
+                 alias);
+        fputs(fqn, stderr);
+        PyErr_Print();
+        PyErr_Clear();
     }
 }
 
@@ -254,10 +257,12 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
 {
     load_submodule_mphase("pygame._sdl2", PyInit_sdl2(), spec, "sdl2");
     load_submodule_mphase("pygame._sdl2", PyInit_mixer(), spec, "mixer");
+#if defined(CONTROLLER_NOPYX)
+    load_submodule("pygame._sdl2", PyInit_controller(), "controller");
+#else
     load_submodule_mphase("pygame._sdl2", PyInit_controller_old(), spec,
                           "controller_old");
-    load_submodule_mphase("pygame._sdl2", PyInit_controller(), spec,
-                          "controller");
+#endif
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
 
@@ -320,6 +325,7 @@ PyInit_pygame_static()
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
 
     load_submodule("pygame", PyInit_window(), "window");
+    load_submodule("pygame", PyInit__render(), "_render");
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
@@ -350,7 +356,7 @@ PyInit_pygame_static()
 
 #include "color.c"
 
-#undef pgBufproxy_New
+#undef pgBufferProxy_New
 
 #include "bufferproxy.c"
 
@@ -382,6 +388,7 @@ PyInit_pygame_static()
 #include "rwobject.c"
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
+#include "render.c"
 #include "image.c"
 
 #include "imageext.c"

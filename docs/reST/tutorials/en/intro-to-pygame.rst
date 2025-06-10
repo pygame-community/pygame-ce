@@ -62,7 +62,7 @@ animation with 7 lines of code. Let's take a look at a friendlier
 version of that same thing. This should be simple enough to follow
 along, and a complete breakdown follows.
 
-.. image:: ../assets/intro_ball.gif
+.. image:: ../assets/intro_ball.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -77,7 +77,7 @@ along, and a complete breakdown follows.
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("intro_ball.gif")
+   ball = pygame.image.load("intro_ball.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -118,8 +118,8 @@ returns us a Surface with the ball data. The Surface will keep any
 colorkey or alpha transparency from the file. After loading the ball
 image we create a variable named ballrect. Pygame comes with a
 convenient utility object type named :class:`Rect <pygame.Rect>`,
-which represents a rectangular area. Later, in the animation part of
-the code, we will see what the *Rect* objects can do.
+which represents a rectangular area (which can be used to manage the position of an
+object in the screen).
 
 At this point, :clr:`line 13`,
 our program is initialized and ready to run. Inside an infinite loop we
@@ -152,7 +152,7 @@ Drawing of images is handled by the
 :meth:`Surface.blit() <pygame.Surface.blit>` method.
 A blit basically means copying pixel colors from one image to another.
 We pass the blit method a source :class:`Surface <pygame.Surface>`
-to copy from, and a position to place the source onto the destination.
+to copy from, and a position (which can be a :class:`Rect <pygame.Rect>` object or a pair of numbers e.g. (50.0, 25.0)), to place the source onto the destination.
 
 The last thing we need to do is actually update the visible display.
 Pygame manages the display with a double buffer. When we are finished

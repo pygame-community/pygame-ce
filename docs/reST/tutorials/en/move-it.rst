@@ -210,7 +210,7 @@ pygame is very straightforward. We'll pretend we have loaded some pretty
 graphics and named them "terrain1", "terrain2", and "hero". Where before
 we assigned numbers to a list, we now blit graphics to the screen. Another
 big change, instead of using positions as a single index (0 through 5), we
-now need a two dimensional coordinate. We'll pretend each of the graphics
+now need a two dimensional point. We'll pretend each of the graphics
 in our game is 10 pixels wide. ::
 
   >>> background = [terrain1, terrain1, terrain2, terrain2, terrain2, terrain1]
@@ -246,9 +246,9 @@ Screen Coordinates
 ------------------
 
 To position an object on the screen, we need to tell the blit() function
-where to put the image. In pygame we always pass positions as an (X,Y) coordinate.
+where to put the image. In pygame we always pass positions as (X,Y) coordinates.
 This represents the number of pixels to the right, and the number of pixels
-down to place the image. The top-left corner of a Surface is coordinate (0,
+down to place the image. The top-left corner of a Surface is coordinates (0,
 0). Moving to the right a little would be (10, 0), and then moving down just
 as much would be (10, 10). When blitting, the position argument represents
 where the topleft corner of the source should be placed on the destination.
@@ -339,7 +339,7 @@ and reference. The pygame.image module has a load() function which will do
 what we want. The lines to load the images should become this. ::
 
   >>> player = pygame.image.load('player.bmp').convert()
-  >>> background = pygame.image.load('liquid.bmp').convert()
+  >>> background = pygame.image.load('liquid.webp').convert()
 
 
 We can see that's pretty simple, the load function just takes a filename

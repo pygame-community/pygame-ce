@@ -1,8 +1,8 @@
-import unittest
-import pygame
 import os
 import platform
+import unittest
 
+import pygame
 from pygame import Window
 from pygame.version import SDL
 
@@ -288,6 +288,11 @@ class WindowTypeTest(unittest.TestCase):
         # test resizable
         win = Window(resizable=True)
         self.assertTrue(win.resizable)
+        win.destroy()
+
+        # test utility
+        win = Window(utility=True)
+        self.assertTrue(win.utility)
         win.destroy()
 
         # should raise a TypeError if keyword is random

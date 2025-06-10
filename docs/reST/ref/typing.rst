@@ -11,7 +11,7 @@
 .. versionadded:: 2.5.2
 
 A lot of pygame functions and methods allow the user to provide different types
-for the same value like colors or coordinates. This module exports the most common
+for the same value like colors or points. This module exports the most common
 type aliases for proper typehint annotations.
 
    .. data:: FileLike
@@ -38,7 +38,7 @@ type aliases for proper typehint annotations.
       Being a generic, subscribing it will signal further precision such as
       ``SequenceLike[str]`` or ``SequenceLike[float]``.
 
-   .. data:: Coordinate
+   .. data:: Point
 
       A sequence of two numbers (floats or ints), i.e:
 
@@ -46,7 +46,7 @@ type aliases for proper typehint annotations.
         * ``[a, b]``
         * ``(a, b)``
 
-   .. data:: IntCoordinate
+   .. data:: IntPoint
 
       A sequence of strictly two integers such as ``[a, b]`` or ``(a, b)``.
 
@@ -60,17 +60,18 @@ type aliases for proper typehint annotations.
         * ``(r, g, b)``
         * ``(r, g, b, a)``
         * ``[r, g, b, a]``
-        * ``"green"``
+        * ``"green"`` (:doc:`color_list`)
+        * ``"#rrggbbaa"``
         * ``0`` (mapped color)
 
    .. data:: RectLike
 
-      An object representing a rect such as a sequence of numbers or coordinates
+      An object representing a rect such as a sequence of numbers or points
       or an object with a rect attribute or a method returning a rect. These types
       are supported by every function accepting a rect as argument. i.e.:
 
         * ``(x, y, w, h)``
-        * ``(Coordinate, Coordinate)``
+        * ``(Point, Point)``
         * ``pygame.Rect(RectLike)``
         * Any object with a ``.rect`` attribute which is a ``RectLike`` or a function
           returning a ``RectLike``

@@ -1,4 +1,5 @@
 #include "circle.c"
+#include "line.c"
 #include "geometry_common.c"
 
 static PyMethodDef geometry_methods[] = {{NULL, NULL, 0, NULL}};
@@ -30,19 +31,27 @@ MODINIT_DEFINE(geometry)
         return NULL;
     }
 
+    if (PyType_Ready(&pgLine_Type) < 0) {
+        return NULL;
+    }
+
     module = PyModule_Create(&_module);
     if (!module) {
         return NULL;
     }
 
-    Py_INCREF(&pgCircle_Type);
-    if (PyModule_AddObject(module, "Circle", (PyObject *)&pgCircle_Type)) {
-        Py_DECREF(&pgCircle_Type);
+    if (PyModule_AddObjectRef(module, "Circle", (PyObject *)&pgCircle_Type)) {
+        Py_DECREF(module);
+        return NULL;
+    }
+
+    if (PyModule_AddObjectRef(module, "Line", (PyObject *)&pgLine_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
     c_api[0] = &pgCircle_Type;
+    c_api[1] = &pgLine_Type;
     apiobj = encapsulate_api(c_api, "geometry");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);
