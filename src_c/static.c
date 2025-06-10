@@ -114,8 +114,6 @@ import_pygame_pixelarray(void)
 }
 
 PyMODINIT_FUNC
-PyInit_base(void);
-PyMODINIT_FUNC
 PyInit_color(void);
 PyMODINIT_FUNC
 PyInit_constants(void);
@@ -324,9 +322,6 @@ PyInit_pygame_static()
     // for correct input in wasm worker
     SDL_SetHint("SDL_EMSCRIPTEN_KEYBOARD_ELEMENT", "1");
 
-    load_submodule("pygame", PyInit_base(), "base");
-
-    //
     load_submodule("pygame", PyInit_constants(), "constants");
     //
     load_submodule("pygame", PyInit_pg_math(), "math");
