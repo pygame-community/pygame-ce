@@ -4595,7 +4595,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
 }
 
 static PyMethodDef _surface_methods[] = {{NULL, NULL, 0, NULL}};
-#if !defined(BUILD_STATIC)
+
 int
 exec_surface(PyObject *module)
 {
@@ -4630,11 +4630,11 @@ exec_surface(PyObject *module)
 
     PyObject *apiobj;
     static void *c_api[PYGAMEAPI_SURFACE_NUMSLOTS];
-
+#ifndef BUILD_STATIC
     if (pg_warn_simd_at_runtime_but_uncompiled() < 0) {
         return -1;
     }
-
+#endif
     if (PyModule_AddObjectRef(module, "SurfaceType",
                               (PyObject *)&pgSurface_Type)) {
         return -1;
@@ -4664,6 +4664,7 @@ exec_surface(PyObject *module)
 
 MODINIT_DEFINE(surface)
 {
+#ifndef BUILD_STATIC
     static PyModuleDef_Slot surf_slots[] = {
         {Py_mod_exec, &exec_surface},
 #if PY_VERSION_HEX >= 0x030c0000
@@ -4675,76 +4676,32 @@ MODINIT_DEFINE(surface)
         {Py_mod_gil, Py_MOD_GIL_USED},  // TODO: support this later
 #endif
         {0, NULL}};
-
+#endif
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "surface",
                                          DOC_SURFACE,
                                          0,
                                          _surface_methods,
+#ifndef BUILD_STATIC
                                          surf_slots,
-                                         NULL,
-                                         NULL,
-                                         NULL};
-
-    return PyModuleDef_Init(&_module);
-}
 #else
-MODINIT_DEFINE(surface)
-{
-    PyObject *module;
-
-    static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
-                                         "surface",
-                                         DOC_SURFACE,
-                                         -1,
-                                         _surface_methods,
                                          NULL,
+#endif
                                          NULL,
                                          NULL,
                                          NULL};
-
-    module = PyModule_Create(&_module);
-    if (module == NULL) {
-        return NULL;
+#ifndef BUILD_STATIC
+    return PyModuleDef_Init(&_module);
+#else
+    // in static mode with want surface module to be ready before python types
+    // are evaluated eg pygame.surface.Surface in sprite.py
+    PyObject *module = PyModule_Create(&_module);
+    if (module) {
+        if (exec_surface(module) != 0) {
+            Py_DECREF(module);
+            return NULL;
+        }
     }
-
-    _IMPORT_PYGAME_MODULE(surflock);
-    if (PyErr_Occurred()) {
-        return NULL;
-    }
-
-    /* type preparation */
-    if (PyType_Ready(&pgSurface_Type) < 0) {
-        return NULL;
-    }
-
-    PyObject *apiobj;
-    static void *c_api[PYGAMEAPI_SURFACE_NUMSLOTS];
-
-    if (PyModule_AddObjectRef(module, "SurfaceType",
-                              (PyObject *)&pgSurface_Type)) {
-        return NULL;
-    }
-
-    if (PyModule_AddObjectRef(module, "Surface",
-                              (PyObject *)&pgSurface_Type)) {
-        return NULL;
-    }
-
-    /* export the c api */
-    c_api[0] = &pgSurface_Type;
-    c_api[1] = pgSurface_New2;
-    c_api[2] = pgSurface_Blit;
-    c_api[3] = pgSurface_SetSurface;
-    apiobj = encapsulate_api(c_api, "surface");
-    if (PyModule_Add(module, PYGAMEAPI_LOCAL_ENTRY, apiobj) < 0) {
-        return NULL;
-    }
-
-    if (PyModule_AddObjectRef(module, "_dict", pgSurface_Type.tp_dict)) {
-        return NULL;
-    }
-
     return module;
-}
 #endif
+}
