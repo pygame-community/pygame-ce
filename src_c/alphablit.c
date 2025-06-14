@@ -621,146 +621,165 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 
 /* --------------------------------------------------------- */
 
-#define BLIT_BLEND_RGBA_OP(operation, tmp_variable, blend_function, code)   \
-    static void blit_blend_rgba_##operation(SDL_BlitInfo *info)             \
-    {                                                                       \
-        SETUP_BLIT_BLEND(tmp_variable)                                      \
-        if (!dstppa) {                                                      \
-            blit_blend_##operation(info);                                   \
-            return;                                                         \
-        }                                                                   \
-        if (srcbpp == 4 && dstbpp == 4 && srcfmt->Rmask == dstfmt->Rmask && \
-            srcfmt->Gmask == dstfmt->Gmask &&                               \
-            srcfmt->Bmask == dstfmt->Bmask &&                               \
-            srcfmt->Amask == dstfmt->Amask &&                               \
-            info->src_blend != SDL_BLENDMODE_NONE) {                        \
-            int incr = srcpxskip > 0 ? 1 : -1;                              \
-            if (incr < 0) {                                                 \
-                src += 3;                                                   \
-                dst += 3;                                                   \
-            }                                                               \
-            while (height--) {                                              \
-                LOOP_UNROLLED4(                                             \
-                    {                                                       \
-                        REPEAT_4({                                          \
-                            code src += incr;                               \
-                            dst += incr;                                    \
-                        });                                                 \
-                    },                                                      \
-                    n, width);                                              \
-                src += srcskip;                                             \
-                dst += dstskip;                                             \
-            }                                                               \
-            return;                                                         \
-        }                                                                   \
-        if (srcbpp == 1) {                                                  \
-            if (dstbpp == 1) {                                              \
-                while (height--) {                                          \
-                    LOOP_UNROLLED4(                                         \
-                        {                                                   \
-                            GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);   \
-                            GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);   \
-                            blend_function;                                 \
-                            CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp,       \
-                                         dstfmt);                           \
-                            src += srcpxskip;                               \
-                            dst += dstpxskip;                               \
-                        },                                                  \
-                        n, width);                                          \
-                    src += srcskip;                                         \
-                    dst += dstskip;                                         \
-                }                                                           \
-            }                                                               \
-            else /* dstbpp > 1 */                                           \
-            {                                                               \
-                while (height--) {                                          \
-                    LOOP_UNROLLED4(                                         \
-                        {                                                   \
-                            GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);   \
-                            GET_PIXEL(pixel, dstbpp, dst);                  \
-                            GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt,    \
-                                          dstpal, dstppa);                  \
-                            blend_function;                                 \
-                            CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp,       \
-                                         dstfmt);                           \
-                            src += srcpxskip;                               \
-                            dst += dstpxskip;                               \
-                        },                                                  \
-                        n, width);                                          \
-                    src += srcskip;                                         \
-                    dst += dstskip;                                         \
-                }                                                           \
-            }                                                               \
-        }                                                                   \
-        else /* srcbpp > 1 */                                               \
-        {                                                                   \
-            if (dstbpp == 1) {                                              \
-                while (height--) {                                          \
-                    LOOP_UNROLLED4(                                         \
-                        {                                                   \
-                            GET_PIXEL(pixel, srcbpp, src);                  \
-                            GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt,    \
-                                          srcpal, srcppa);                  \
-                            GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);   \
-                            blend_function;                                 \
-                            CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp,       \
-                                         dstfmt);                           \
-                            src += srcpxskip;                               \
-                            dst += dstpxskip;                               \
-                        },                                                  \
-                        n, width);                                          \
-                    src += srcskip;                                         \
-                    dst += dstskip;                                         \
-                }                                                           \
-            }                                                               \
-            else /* dstbpp > 1 */                                           \
-            {                                                               \
-                while (height--) {                                          \
-                    LOOP_UNROLLED4(                                         \
-                        {                                                   \
-                            GET_PIXEL(pixel, srcbpp, src);                  \
-                            GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt,    \
-                                          srcpal, srcppa);                  \
-                            GET_PIXEL(pixel, dstbpp, dst);                  \
-                            GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt,    \
-                                          dstpal, dstppa);                  \
-                            blend_function;                                 \
-                            CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp,       \
-                                         dstfmt);                           \
-                            src += srcpxskip;                               \
-                            dst += dstpxskip;                               \
-                        },                                                  \
-                        n, width);                                          \
-                    src += srcskip;                                         \
-                    dst += dstskip;                                         \
-                }                                                           \
-            }                                                               \
-        }                                                                   \
+#define BLIT_BLEND_RGBA_OP(operation, tmp_variable, blend_function, code)    \
+    SETUP_BLIT_BLEND(tmp_variable)                                           \
+    if (!dstppa) {                                                           \
+        blit_blend_##operation(info);                                        \
+        return;                                                              \
+    }                                                                        \
+    if (srcbpp == 4 && dstbpp == 4 && srcfmt->Rmask == dstfmt->Rmask &&      \
+        srcfmt->Gmask == dstfmt->Gmask && srcfmt->Bmask == dstfmt->Bmask &&  \
+        srcfmt->Amask == dstfmt->Amask &&                                    \
+        info->src_blend != SDL_BLENDMODE_NONE) {                             \
+        int incr = srcpxskip > 0 ? 1 : -1;                                   \
+        if (incr < 0) {                                                      \
+            src += 3;                                                        \
+            dst += 3;                                                        \
+        }                                                                    \
+        while (height--) {                                                   \
+            LOOP_UNROLLED4(                                                  \
+                {                                                            \
+                    REPEAT_4({                                               \
+                        code;                                                \
+                        src += incr;                                         \
+                        dst += incr;                                         \
+                    });                                                      \
+                },                                                           \
+                n, width);                                                   \
+            src += srcskip;                                                  \
+            dst += dstskip;                                                  \
+        }                                                                    \
+        return;                                                              \
+    }                                                                        \
+    if (srcbpp == 1) {                                                       \
+        if (dstbpp == 1) {                                                   \
+            while (height--) {                                               \
+                LOOP_UNROLLED4(                                              \
+                    {                                                        \
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);        \
+                        GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);        \
+                        blend_function;                                      \
+                        CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
+                        src += srcpxskip;                                    \
+                        dst += dstpxskip;                                    \
+                    },                                                       \
+                    n, width);                                               \
+                src += srcskip;                                              \
+                dst += dstskip;                                              \
+            }                                                                \
+        }                                                                    \
+        else /* dstbpp > 1 */                                                \
+        {                                                                    \
+            while (height--) {                                               \
+                LOOP_UNROLLED4(                                              \
+                    {                                                        \
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);        \
+                        GET_PIXEL(pixel, dstbpp, dst);                       \
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
+                                      dstppa);                               \
+                        blend_function;                                      \
+                        CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
+                        src += srcpxskip;                                    \
+                        dst += dstpxskip;                                    \
+                    },                                                       \
+                    n, width);                                               \
+                src += srcskip;                                              \
+                dst += dstskip;                                              \
+            }                                                                \
+        }                                                                    \
+    }                                                                        \
+    else /* srcbpp > 1 */                                                    \
+    {                                                                        \
+        if (dstbpp == 1) {                                                   \
+            while (height--) {                                               \
+                LOOP_UNROLLED4(                                              \
+                    {                                                        \
+                        GET_PIXEL(pixel, srcbpp, src);                       \
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal, \
+                                      srcppa);                               \
+                        GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);        \
+                        blend_function;                                      \
+                        CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
+                        src += srcpxskip;                                    \
+                        dst += dstpxskip;                                    \
+                    },                                                       \
+                    n, width);                                               \
+                src += srcskip;                                              \
+                dst += dstskip;                                              \
+            }                                                                \
+        }                                                                    \
+        else /* dstbpp > 1 */                                                \
+        {                                                                    \
+            while (height--) {                                               \
+                LOOP_UNROLLED4(                                              \
+                    {                                                        \
+                        GET_PIXEL(pixel, srcbpp, src);                       \
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal, \
+                                      srcppa);                               \
+                        GET_PIXEL(pixel, dstbpp, dst);                       \
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
+                                      dstppa);                               \
+                        blend_function;                                      \
+                        CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
+                        src += srcpxskip;                                    \
+                        dst += dstpxskip;                                    \
+                    },                                                       \
+                    n, width);                                               \
+                src += srcskip;                                              \
+                dst += dstskip;                                              \
+            }                                                                \
+        }                                                                    \
     }
 
-BLIT_BLEND_RGBA_OP(add, Uint32 tmp,
-                   BLEND_RGBA_ADD(tmp, sR, sG, sB, sA, dR, dG, dB, dA),
-                   tmp = (*dst) + (*src);
-                   (*dst) = (tmp <= 255 ? tmp : 255););
+static void
+blit_blend_rgba_add(SDL_BlitInfo *info)
+{
+    BLIT_BLEND_RGBA_OP(add, Uint32 tmp,
+                       BLEND_RGBA_ADD(tmp, sR, sG, sB, sA, dR, dG, dB, dA), {
+                           tmp = (*dst) + (*src);
+                           (*dst) = (tmp <= 255 ? tmp : 255);
+                       });
+}
 
-BLIT_BLEND_RGBA_OP(sub, Sint32 tmp,
-                   BLEND_RGBA_SUB(tmp, sR, sG, sB, sA, dR, dG, dB, dA),
-                   tmp = (*dst) - (*src);
-                   (*dst) = (tmp >= 0 ? tmp : 0););
+static void
+blit_blend_rgba_sub(SDL_BlitInfo *info)
+{
+    BLIT_BLEND_RGBA_OP(sub, Sint32 tmp,
+                       BLEND_RGBA_SUB(tmp, sR, sG, sB, sA, dR, dG, dB, dA), {
+                           tmp = (*dst) - (*src);
+                           (*dst) = (tmp >= 0 ? tmp : 0);
+                       });
+}
 
-BLIT_BLEND_RGBA_OP(mul, Uint32 tmp,
-                   BLEND_RGBA_MULT(sR, sG, sB, sA, dR, dG, dB, dA),
-                   tmp = ((*dst) && (*src)) ? (((*dst) * (*src)) + 255) >> 8
-                                            : 0;
-                   (*dst) = (tmp <= 255 ? tmp : 255););
+static void
+blit_blend_rgba_mul(SDL_BlitInfo *info)
+{
+    BLIT_BLEND_RGBA_OP(
+        mul, Sint32 tmp, BLEND_RGBA_MULT(sR, sG, sB, sA, dR, dG, dB, dA), {
+            tmp = ((*dst) && (*src)) ? (((*dst) * (*src)) + 255) >> 8 : 0;
+            (*dst) = (tmp <= 255 ? tmp : 255);
+        });
+}
 
-BLIT_BLEND_RGBA_OP(
-    min, , BLEND_RGBA_MIN(sR, sG, sB, sA, dR, dG, dB, dA),
-    if ((*src) < (*dst)) { (*dst) = (*src); });
+static void
+blit_blend_rgba_min(SDL_BlitInfo *info)
+{
+    BLIT_BLEND_RGBA_OP(min, , BLEND_RGBA_MIN(sR, sG, sB, sA, dR, dG, dB, dA), {
+        if ((*src) < (*dst)) {
+            (*dst) = (*src);
+        }
+    });
+}
 
-BLIT_BLEND_RGBA_OP(
-    max, , BLEND_RGBA_MAX(sR, sG, sB, sA, dR, dG, dB, dA),
-    if ((*src) > (*dst)) { (*dst) = (*src); });
+static void
+blit_blend_rgba_max(SDL_BlitInfo *info)
+{
+    BLIT_BLEND_RGBA_OP(max, , BLEND_RGBA_MAX(sR, sG, sB, sA, dR, dG, dB, dA), {
+        if ((*src) > (*dst)) {
+            (*dst) = (*src);
+        }
+    });
+}
 
 static void
 blit_blend_premultiplied(SDL_BlitInfo *info)
@@ -956,236 +975,260 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
 /* --------------------------------------------------------- */
 
 #define BLIT_BLEND_OP(operation, tmp_variable, blend_function, code)         \
-    static void blit_blend_##operation(SDL_BlitInfo *info)                   \
-    {                                                                        \
-        int n;                                                               \
-        int width = info->width;                                             \
-        int height = info->height;                                           \
-        Uint8 *src = info->s_pixels;                                         \
-        int srcpxskip = info->s_pxskip;                                      \
-        int srcskip = info->s_skip;                                          \
-        Uint8 *dst = info->d_pixels;                                         \
-        int dstpxskip = info->d_pxskip;                                      \
-        int dstskip = info->d_skip;                                          \
-        PG_PixelFormat *srcfmt = info->src;                                  \
-        SDL_Palette *srcpal = info->src_palette;                             \
-        PG_PixelFormat *dstfmt = info->dst;                                  \
-        SDL_Palette *dstpal = info->dst_palette;                             \
-        int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);                        \
-        int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);                        \
-        Uint8 dR, dG, dB, dA, sR, sG, sB, sA;                                \
-        Uint32 pixel;                                                        \
-        tmp_variable;                                                        \
-        int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask; \
-        int dstppa = info->dst_blend != SDL_BLENDMODE_NONE && dstfmt->Amask; \
-        if (srcbpp >= 3 && dstbpp >= 3 &&                                    \
-            info->src_blend == SDL_BLENDMODE_NONE) {                         \
-            size_t srcoffsetR, srcoffsetG, srcoffsetB;                       \
-            size_t dstoffsetR, dstoffsetG, dstoffsetB;                       \
-            if (srcbpp == 3) {                                               \
-                SET_OFFSETS_24(srcoffsetR, srcoffsetG, srcoffsetB, srcfmt);  \
-            }                                                                \
-            else {                                                           \
-                SET_OFFSETS_32(srcoffsetR, srcoffsetG, srcoffsetB, srcfmt);  \
-            }                                                                \
-            if (dstbpp == 3) {                                               \
-                SET_OFFSETS_24(dstoffsetR, dstoffsetG, dstoffsetB, dstfmt);  \
-            }                                                                \
-            else {                                                           \
-                SET_OFFSETS_32(dstoffsetR, dstoffsetG, dstoffsetB, dstfmt);  \
-            }                                                                \
+    int n;                                                                   \
+    int width = info->width;                                                 \
+    int height = info->height;                                               \
+    Uint8 *src = info->s_pixels;                                             \
+    int srcpxskip = info->s_pxskip;                                          \
+    int srcskip = info->s_skip;                                              \
+    Uint8 *dst = info->d_pixels;                                             \
+    int dstpxskip = info->d_pxskip;                                          \
+    int dstskip = info->d_skip;                                              \
+    PG_PixelFormat *srcfmt = info->src;                                      \
+    SDL_Palette *srcpal = info->src_palette;                                 \
+    PG_PixelFormat *dstfmt = info->dst;                                      \
+    SDL_Palette *dstpal = info->dst_palette;                                 \
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);                            \
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);                            \
+    Uint8 dR, dG, dB, dA, sR, sG, sB, sA;                                    \
+    Uint32 pixel;                                                            \
+    tmp_variable;                                                            \
+    int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask;     \
+    int dstppa = info->dst_blend != SDL_BLENDMODE_NONE && dstfmt->Amask;     \
+    if (srcbpp >= 3 && dstbpp >= 3 &&                                        \
+        info->src_blend == SDL_BLENDMODE_NONE) {                             \
+        size_t srcoffsetR, srcoffsetG, srcoffsetB;                           \
+        size_t dstoffsetR, dstoffsetG, dstoffsetB;                           \
+        if (srcbpp == 3) {                                                   \
+            SET_OFFSETS_24(srcoffsetR, srcoffsetG, srcoffsetB, srcfmt);      \
+        }                                                                    \
+        else {                                                               \
+            SET_OFFSETS_32(srcoffsetR, srcoffsetG, srcoffsetB, srcfmt);      \
+        }                                                                    \
+        if (dstbpp == 3) {                                                   \
+            SET_OFFSETS_24(dstoffsetR, dstoffsetG, dstoffsetB, dstfmt);      \
+        }                                                                    \
+        else {                                                               \
+            SET_OFFSETS_32(dstoffsetR, dstoffsetG, dstoffsetB, dstfmt);      \
+        }                                                                    \
+        while (height--) {                                                   \
+            LOOP_UNROLLED4(                                                  \
+                {                                                            \
+                    code;                                                    \
+                    src += srcpxskip;                                        \
+                    dst += dstpxskip;                                        \
+                },                                                           \
+                n, width);                                                   \
+            src += srcskip;                                                  \
+            dst += dstskip;                                                  \
+        }                                                                    \
+        return;                                                              \
+    }                                                                        \
+    if (srcbpp == 1) {                                                       \
+        if (dstbpp == 1) {                                                   \
             while (height--) {                                               \
                 LOOP_UNROLLED4(                                              \
                     {                                                        \
-                        code src += srcpxskip;                               \
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);        \
+                        GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);        \
+                        blend_function;                                      \
+                        SET_PIXELVAL(dst, dstfmt, dstpal, dR, dG, dB, dA);   \
+                        src += srcpxskip;                                    \
                         dst += dstpxskip;                                    \
                     },                                                       \
                     n, width);                                               \
                 src += srcskip;                                              \
                 dst += dstskip;                                              \
             }                                                                \
-            return;                                                          \
         }                                                                    \
-        if (srcbpp == 1) {                                                   \
-            if (dstbpp == 1) {                                               \
-                while (height--) {                                           \
-                    LOOP_UNROLLED4(                                          \
-                        {                                                    \
-                            GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);    \
-                            GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);    \
-                            blend_function;                                  \
-                            SET_PIXELVAL(dst, dstfmt, dstpal, dR, dG, dB,    \
-                                         dA);                                \
-                            src += srcpxskip;                                \
-                            dst += dstpxskip;                                \
-                        },                                                   \
-                        n, width);                                           \
-                    src += srcskip;                                          \
-                    dst += dstskip;                                          \
-                }                                                            \
-            }                                                                \
-            else if (dstbpp == 3) {                                          \
-                size_t offsetR, offsetG, offsetB;                            \
-                SET_OFFSETS_24(offsetR, offsetG, offsetB, dstfmt);           \
-                while (height--) {                                           \
-                    LOOP_UNROLLED4(                                          \
-                        {                                                    \
-                            GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);    \
-                            GET_PIXEL(pixel, dstbpp, dst);                   \
-                            GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt,     \
-                                          dstpal, dstppa);                   \
-                            blend_function;                                  \
-                            dst[offsetR] = dR;                               \
-                            dst[offsetG] = dG;                               \
-                            dst[offsetB] = dB;                               \
-                            src += srcpxskip;                                \
-                            dst += dstpxskip;                                \
-                        },                                                   \
-                        n, width);                                           \
-                    src += srcskip;                                          \
-                    dst += dstskip;                                          \
-                }                                                            \
-            }                                                                \
-            else /* even dstbpp */                                           \
-            {                                                                \
-                while (height--) {                                           \
-                    LOOP_UNROLLED4(                                          \
-                        {                                                    \
-                            GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);    \
-                            GET_PIXEL(pixel, dstbpp, dst);                   \
-                            GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt,     \
-                                          dstpal, dstppa);                   \
-                            blend_function;                                  \
-                            CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp,        \
-                                         dstfmt);                            \
-                            src += srcpxskip;                                \
-                            dst += dstpxskip;                                \
-                        },                                                   \
-                        n, width);                                           \
-                    src += srcskip;                                          \
-                    dst += dstskip;                                          \
-                }                                                            \
+        else if (dstbpp == 3) {                                              \
+            size_t offsetR, offsetG, offsetB;                                \
+            SET_OFFSETS_24(offsetR, offsetG, offsetB, dstfmt);               \
+            while (height--) {                                               \
+                LOOP_UNROLLED4(                                              \
+                    {                                                        \
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);        \
+                        GET_PIXEL(pixel, dstbpp, dst);                       \
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
+                                      dstppa);                               \
+                        blend_function;                                      \
+                        dst[offsetR] = dR;                                   \
+                        dst[offsetG] = dG;                                   \
+                        dst[offsetB] = dB;                                   \
+                        src += srcpxskip;                                    \
+                        dst += dstpxskip;                                    \
+                    },                                                       \
+                    n, width);                                               \
+                src += srcskip;                                              \
+                dst += dstskip;                                              \
             }                                                                \
         }                                                                    \
-        else /* srcbpp > 1 */                                                \
+        else /* even dstbpp */                                               \
         {                                                                    \
-            if (dstbpp == 1) {                                               \
-                while (height--) {                                           \
-                    LOOP_UNROLLED4(                                          \
-                        {                                                    \
-                            GET_PIXEL(pixel, srcbpp, src);                   \
-                            GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt,     \
-                                          srcpal, srcppa);                   \
-                            GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);    \
-                            blend_function;                                  \
-                            SET_PIXELVAL(dst, dstfmt, dstpal, dR, dG, dB,    \
-                                         dA);                                \
-                            src += srcpxskip;                                \
-                            dst += dstpxskip;                                \
-                        },                                                   \
-                        n, width);                                           \
-                    src += srcskip;                                          \
-                    dst += dstskip;                                          \
-                }                                                            \
+            while (height--) {                                               \
+                LOOP_UNROLLED4(                                              \
+                    {                                                        \
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);        \
+                        GET_PIXEL(pixel, dstbpp, dst);                       \
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
+                                      dstppa);                               \
+                        blend_function;                                      \
+                        CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
+                        src += srcpxskip;                                    \
+                        dst += dstpxskip;                                    \
+                    },                                                       \
+                    n, width);                                               \
+                src += srcskip;                                              \
+                dst += dstskip;                                              \
             }                                                                \
-            else if (dstbpp == 3) {                                          \
-                size_t offsetR, offsetG, offsetB;                            \
-                SET_OFFSETS_24(offsetR, offsetG, offsetB, dstfmt);           \
-                while (height--) {                                           \
-                    LOOP_UNROLLED4(                                          \
-                        {                                                    \
-                            GET_PIXEL(pixel, srcbpp, src);                   \
-                            GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt,     \
-                                          srcpal, srcppa);                   \
-                            GET_PIXEL(pixel, dstbpp, dst);                   \
-                            GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt,     \
-                                          dstpal, dstppa);                   \
-                            blend_function;                                  \
-                            dst[offsetR] = dR;                               \
-                            dst[offsetG] = dG;                               \
-                            dst[offsetB] = dB;                               \
-                            src += srcpxskip;                                \
-                            dst += dstpxskip;                                \
-                        },                                                   \
-                        n, width);                                           \
-                    src += srcskip;                                          \
-                    dst += dstskip;                                          \
-                }                                                            \
+        }                                                                    \
+    }                                                                        \
+    else /* srcbpp > 1 */                                                    \
+    {                                                                        \
+        if (dstbpp == 1) {                                                   \
+            while (height--) {                                               \
+                LOOP_UNROLLED4(                                              \
+                    {                                                        \
+                        GET_PIXEL(pixel, srcbpp, src);                       \
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal, \
+                                      srcppa);                               \
+                        GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);        \
+                        blend_function;                                      \
+                        SET_PIXELVAL(dst, dstfmt, dstpal, dR, dG, dB, dA);   \
+                        src += srcpxskip;                                    \
+                        dst += dstpxskip;                                    \
+                    },                                                       \
+                    n, width);                                               \
+                src += srcskip;                                              \
+                dst += dstskip;                                              \
             }                                                                \
-            else /* even dstbpp */                                           \
-            {                                                                \
-                while (height--) {                                           \
-                    LOOP_UNROLLED4(                                          \
-                        {                                                    \
-                            GET_PIXEL(pixel, srcbpp, src);                   \
-                            GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt,     \
-                                          srcpal, srcppa);                   \
-                            GET_PIXEL(pixel, dstbpp, dst);                   \
-                            GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt,     \
-                                          dstpal, dstppa);                   \
-                            blend_function;                                  \
-                            CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp,        \
-                                         dstfmt);                            \
-                            src += srcpxskip;                                \
-                            dst += dstpxskip;                                \
-                        },                                                   \
-                        n, width);                                           \
-                    src += srcskip;                                          \
-                    dst += dstskip;                                          \
-                }                                                            \
+        }                                                                    \
+        else if (dstbpp == 3) {                                              \
+            size_t offsetR, offsetG, offsetB;                                \
+            SET_OFFSETS_24(offsetR, offsetG, offsetB, dstfmt);               \
+            while (height--) {                                               \
+                LOOP_UNROLLED4(                                              \
+                    {                                                        \
+                        GET_PIXEL(pixel, srcbpp, src);                       \
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal, \
+                                      srcppa);                               \
+                        GET_PIXEL(pixel, dstbpp, dst);                       \
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
+                                      dstppa);                               \
+                        blend_function;                                      \
+                        dst[offsetR] = dR;                                   \
+                        dst[offsetG] = dG;                                   \
+                        dst[offsetB] = dB;                                   \
+                        src += srcpxskip;                                    \
+                        dst += dstpxskip;                                    \
+                    },                                                       \
+                    n, width);                                               \
+                src += srcskip;                                              \
+                dst += dstskip;                                              \
+            }                                                                \
+        }                                                                    \
+        else /* even dstbpp */                                               \
+        {                                                                    \
+            while (height--) {                                               \
+                LOOP_UNROLLED4(                                              \
+                    {                                                        \
+                        GET_PIXEL(pixel, srcbpp, src);                       \
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal, \
+                                      srcppa);                               \
+                        GET_PIXEL(pixel, dstbpp, dst);                       \
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
+                                      dstppa);                               \
+                        blend_function;                                      \
+                        CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
+                        src += srcpxskip;                                    \
+                        dst += dstpxskip;                                    \
+                    },                                                       \
+                    n, width);                                               \
+                src += srcskip;                                              \
+                dst += dstskip;                                              \
             }                                                                \
         }                                                                    \
     }
 
-BLIT_BLEND_OP(add, Uint32 tmp, BLEND_ADD(tmp, sR, sG, sB, sA, dR, dG, dB, dA),
-              tmp = dst[dstoffsetR] + src[srcoffsetR];
-              dst[dstoffsetR] = (tmp <= 255 ? tmp : 255);
-              tmp = dst[dstoffsetG] + src[srcoffsetG];
-              dst[dstoffsetG] = (tmp <= 255 ? tmp : 255);
-              tmp = dst[dstoffsetB] + src[srcoffsetB];
-              dst[dstoffsetB] = (tmp <= 255 ? tmp : 255););
+static void
+blit_blend_add(SDL_BlitInfo *info)
+{
+    BLIT_BLEND_OP(add, Uint32 tmp,
+                  BLEND_ADD(tmp, sR, sG, sB, sA, dR, dG, dB, dA), {
+                      tmp = dst[dstoffsetR] + src[srcoffsetR];
+                      dst[dstoffsetR] = (tmp <= 255 ? tmp : 255);
+                      tmp = dst[dstoffsetG] + src[srcoffsetG];
+                      dst[dstoffsetG] = (tmp <= 255 ? tmp : 255);
+                      tmp = dst[dstoffsetB] + src[srcoffsetB];
+                      dst[dstoffsetB] = (tmp <= 255 ? tmp : 255);
+                  });
+}
 
-BLIT_BLEND_OP(sub, Sint32 tmp, BLEND_SUB(tmp, sR, sG, sB, sA, dR, dG, dB, dA),
-              tmp = dst[dstoffsetR] - src[srcoffsetR];
-              dst[dstoffsetR] = (tmp >= 0 ? tmp : 0);
-              tmp = dst[dstoffsetG] - src[srcoffsetG];
-              dst[dstoffsetG] = (tmp >= 0 ? tmp : 0);
-              tmp = dst[dstoffsetB] - src[srcoffsetB];
-              dst[dstoffsetB] = (tmp >= 0 ? tmp : 0););
+static void
+blit_blend_sub(SDL_BlitInfo *info)
+{
+    BLIT_BLEND_OP(sub, Sint32 tmp,
+                  BLEND_SUB(tmp, sR, sG, sB, sA, dR, dG, dB, dA), {
+                      tmp = dst[dstoffsetR] - src[srcoffsetR];
+                      dst[dstoffsetR] = (tmp >= 0 ? tmp : 0);
+                      tmp = dst[dstoffsetG] - src[srcoffsetG];
+                      dst[dstoffsetG] = (tmp >= 0 ? tmp : 0);
+                      tmp = dst[dstoffsetB] - src[srcoffsetB];
+                      dst[dstoffsetB] = (tmp >= 0 ? tmp : 0);
+                  });
+}
 
-BLIT_BLEND_OP(mul, Uint32 tmp, BLEND_MULT(sR, sG, sB, sA, dR, dG, dB, dA),
-              tmp = ((dst[dstoffsetR] && src[srcoffsetR])
-                         ? ((dst[dstoffsetR] * src[srcoffsetR]) + 255) >> 8
-                         : 0);
-              dst[dstoffsetR] = (tmp <= 255 ? tmp : 255);
-              tmp = ((dst[dstoffsetG] && src[srcoffsetG])
-                         ? ((dst[dstoffsetG] * src[srcoffsetG]) + 255) >> 8
-                         : 0);
-              dst[dstoffsetG] = (tmp <= 255 ? tmp : 255);
-              tmp = ((dst[dstoffsetB] && src[srcoffsetB])
-                         ? ((dst[dstoffsetB] * src[srcoffsetB]) + 255) >> 8
-                         : 0);
-              dst[dstoffsetB] = (tmp <= 255 ? tmp : 255););
+static void
+blit_blend_mul(SDL_BlitInfo *info)
+{
+    BLIT_BLEND_OP(
+        mul, Sint32 tmp, BLEND_MULT(sR, sG, sB, sA, dR, dG, dB, dA), {
+            tmp = ((dst[dstoffsetR] && src[srcoffsetR])
+                       ? ((dst[dstoffsetR] * src[srcoffsetR]) + 255) >> 8
+                       : 0);
+            dst[dstoffsetR] = (tmp <= 255 ? tmp : 255);
+            tmp = ((dst[dstoffsetG] && src[srcoffsetG])
+                       ? ((dst[dstoffsetG] * src[srcoffsetG]) + 255) >> 8
+                       : 0);
+            dst[dstoffsetG] = (tmp <= 255 ? tmp : 255);
+            tmp = ((dst[dstoffsetB] && src[srcoffsetB])
+                       ? ((dst[dstoffsetB] * src[srcoffsetB]) + 255) >> 8
+                       : 0);
+            dst[dstoffsetB] = (tmp <= 255 ? tmp : 255);
+        });
+}
 
-BLIT_BLEND_OP(
-    min, , BLEND_MIN(sR, sG, sB, sA, dR, dG, dB, dA),
-    if (src[srcoffsetR] < dst[dstoffsetR]) {
-        dst[dstoffsetR] = src[srcoffsetR];
-    } if (src[srcoffsetG] < dst[dstoffsetG]) {
-        dst[dstoffsetG] = src[srcoffsetG];
-    } if (src[srcoffsetB] < dst[dstoffsetB]) {
-        dst[dstoffsetB] = src[srcoffsetB];
+static void
+blit_blend_min(SDL_BlitInfo *info)
+{
+    BLIT_BLEND_OP(min, , BLEND_MIN(sR, sG, sB, sA, dR, dG, dB, dA), {
+        if (src[srcoffsetR] < dst[dstoffsetR]) {
+            dst[dstoffsetR] = src[srcoffsetR];
+        }
+        if (src[srcoffsetG] < dst[dstoffsetG]) {
+            dst[dstoffsetG] = src[srcoffsetG];
+        }
+        if (src[srcoffsetB] < dst[dstoffsetB]) {
+            dst[dstoffsetB] = src[srcoffsetB];
+        }
     });
+}
 
-BLIT_BLEND_OP(
-    max, , BLEND_MAX(sR, sG, sB, sA, dR, dG, dB, dA),
-    if (src[srcoffsetR] > dst[dstoffsetR]) {
-        dst[dstoffsetR] = src[srcoffsetR];
-    } if (src[srcoffsetG] > dst[dstoffsetG]) {
-        dst[dstoffsetG] = src[srcoffsetG];
-    } if (src[srcoffsetB] > dst[dstoffsetB]) {
-        dst[dstoffsetB] = src[srcoffsetB];
+static void
+blit_blend_max(SDL_BlitInfo *info)
+{
+    BLIT_BLEND_OP(min, , BLEND_MAX(sR, sG, sB, sA, dR, dG, dB, dA), {
+        if (src[srcoffsetR] > dst[dstoffsetR]) {
+            dst[dstoffsetR] = src[srcoffsetR];
+        }
+        if (src[srcoffsetG] > dst[dstoffsetG]) {
+            dst[dstoffsetG] = src[srcoffsetG];
+        }
+        if (src[srcoffsetB] > dst[dstoffsetB]) {
+            dst[dstoffsetB] = src[srcoffsetB];
+        }
     });
+}
 
 /* --------------------------------------------------------- */
 
