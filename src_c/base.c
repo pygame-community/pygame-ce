@@ -2404,9 +2404,7 @@ MODINIT_DEFINE(base)
     pgExc_BufferError =
         PyErr_NewException("pygame.BufferError", PyExc_BufferError, NULL);
     /* Because we need a reference to BufferError in the base module */
-    Py_XINCREF(pgExc_BufferError);
-    if (PyModule_AddObject(module, "BufferError", pgExc_BufferError)) {
-        Py_XDECREF(pgExc_BufferError);
+    if (PyModule_AddObjectRef(module, "BufferError", pgExc_BufferError)) {
         goto error;
     }
 

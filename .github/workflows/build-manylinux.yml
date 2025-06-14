@@ -1,32 +1,13 @@
 name: ManyLinux
 
 # Run CI only when a release is created, on changes to main branch, or any PR
-# to main. Do not run CI on any other branch. Also, skip any non-source changes
-# from running on CI
+# to main.
 on:
   push:
     branches: main
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-      - '.gitignore'
-      - '*.rst'
-      - '*.md'
-      - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/build-manylinux.yml'
 
   pull_request:
     branches: main
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-      - '.gitignore'
-      - '*.rst'
-      - '*.md'
-      - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/build-manylinux.yml'
 
   # the github release drafter can call this workflow
   workflow_call:
@@ -75,7 +56,7 @@ jobs:
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
+      uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}

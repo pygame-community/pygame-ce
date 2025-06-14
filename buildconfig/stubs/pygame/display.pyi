@@ -310,7 +310,8 @@ def update(rectangles: Iterable[Optional[RectLike]], /) -> None: ...
 @overload
 def update(x: float, y: float, w: float, h: float, /) -> None: ...
 @overload
-def update(xy: Point, wh: Point, /) -> None:
+def update(xy: Point, wh: Point, /) -> None: ...
+def update(*args):  # type: ignore
     """Update all, or a portion, of the display. For non-OpenGL displays.
 
     For non OpenGL display Surfaces, this function is very similar to
@@ -729,6 +730,8 @@ def get_window_position() -> tuple[int, int]:
     Coordinates could be negative or outside the desktop size bounds. The
     position is relative to the topleft of the primary monitor and the y coordinate
     ignores the window frame.
+
+    .. versionadded:: 2.5.0
     """
 
 def set_window_position(position: Point) -> None:
@@ -741,6 +744,8 @@ def set_window_position(position: Point) -> None:
     ignore the window frame (y = 0 means the frame is hidden). The user will
     still be able to move the window after this call. See also
     :func:`pygame.display.get_window_position()`.
+
+    .. versionadded:: 2.5.0
     """
 
 def get_allow_screensaver() -> bool:

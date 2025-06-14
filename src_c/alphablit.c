@@ -80,7 +80,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
     /* Lock the destination if it's in hardware */
     dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (!PG_LockSurface(dst)) {
             okay = 0;
         }
         else {
@@ -90,7 +90,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
     /* Lock the source if it's in hardware */
     src_locked = 0;
     if (SDL_MUSTLOCK(src)) {
-        if (SDL_LockSurface(src) < 0) {
+        if (!PG_LockSurface(src)) {
             okay = 0;
         }
         else {
@@ -127,8 +127,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
         if ((info.src_has_colorkey = SDL_HasColorKey(src))) {
             SDL_GetColorKey(src, &info.src_colorkey);
         }
-        if (SDL_GetSurfaceBlendMode(src, &info.src_blend) ||
-            SDL_GetSurfaceBlendMode(dst, &info.dst_blend)) {
+        if (!PG_GetSurfaceBlendMode(src, &info.src_blend) ||
+            !PG_GetSurfaceBlendMode(dst, &info.dst_blend)) {
             okay = 0;
         }
         if (okay) {

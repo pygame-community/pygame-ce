@@ -385,6 +385,35 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(isinstance(linesize, int))
         self.assertTrue(linesize > 0)
 
+    @unittest.skipIf(
+        pygame.font.get_sdl_ttf_version() < (2, 24, 0),
+        "supported in SDL_ttf 2.24.0 onwards",
+    )
+    def test_set_linesize(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont thing
+
+        f = pygame_font.Font(None, 20)
+        linesize = f.get_linesize()
+
+        # check increasing linesize
+        f.set_linesize(linesize + 1)
+        self.assertEqual(f.get_linesize(), linesize + 1)
+
+        # check random linesize
+        expected_linesizes = [30, 1, 22, 34, 5, 10, 0]
+        for expected_size in expected_linesizes:
+            f.set_linesize(expected_size)
+            self.assertEqual(f.get_linesize(), expected_size)
+
+        # check invalid linesize
+        with self.assertRaises(ValueError):
+            f.set_linesize(-1)
+        with self.assertRaises(OverflowError):
+            f.set_linesize(2**100)
+        with self.assertRaises(TypeError):
+            f.set_linesize(12.0)
+
     def test_metrics(self):
         # Ensure bytes decoding works correctly. Can only compare results
         # with unicode for now.
@@ -911,6 +940,11 @@ class FontTypeTest(unittest.TestCase):
                 skip_methods.add("get_point_size")
                 skip_methods.add("set_point_size")
                 skip_methods.add("point_size")
+
+            if version >= (2, 24, 0):
+                methods.append(("set_linesize", (2,)))
+            else:
+                skip_methods.add("set_linesize")
 
             if version < (2, 20, 0):
                 skip_methods.add("align")
