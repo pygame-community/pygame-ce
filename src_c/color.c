@@ -2516,18 +2516,13 @@ MODINIT_DEFINE(color)
         return NULL;
     }
 
-    /* type preparation */
-    if (PyType_Ready(&pgColor_Type) < 0) {
-        goto error;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
         goto error;
     }
 
-    if (PyModule_AddObjectRef(module, "Color", (PyObject *)&pgColor_Type)) {
+    if (PyModule_AddType(module, &pgColor_Type)) {
         goto error;
     }
     if (PyModule_AddObjectRef(module, "THECOLORS", _COLORDICT)) {

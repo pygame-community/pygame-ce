@@ -743,18 +743,13 @@ MODINIT_DEFINE(time)
         return NULL;
     }
 
-    /* type preparation */
-    if (PyType_Ready(&PyClock_Type) < 0) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
         return NULL;
     }
 
-    if (PyModule_AddObjectRef(module, "Clock", (PyObject *)&PyClock_Type)) {
+    if (PyModule_AddType(module, &PyClock_Type)) {
         Py_DECREF(module);
         return NULL;
     }
