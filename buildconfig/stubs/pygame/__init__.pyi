@@ -27,7 +27,6 @@ from . import (
     base as base,
     bufferproxy as bufferproxy,
     color as color,
-    colordict as colordict,
     mixer_music as mixer_music,
     pixelarray as pixelarray,
     rect as rect,
