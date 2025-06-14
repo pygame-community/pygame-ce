@@ -878,8 +878,8 @@ RectExport_init(RectObject *self, PyObject *args, PyObject *kwds)
     InnerRect *argrect, temp;
 
     if (!(argrect = RectFromObject(args, &temp))) {
-        PyErr_SetString(PyExc_TypeError, "Argument must be rect style object");
-        return -1;
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", -1);
     }
 
     self->r = *argrect;
@@ -1027,13 +1027,15 @@ RectExport_moveTo(RectObject *self, PyObject *const *args, Py_ssize_t nargs,
 
     if (nargs > 0) {
         Py_DECREF(rect);
-        return RAISE(PyExc_TypeError, "move_to takes no positional arguments");
+        return RAISERETURN(PyExc_TypeError,
+                           "move_to takes no positional arguments", NULL);
     }
 
     if (!kwnames) {
         Py_DECREF(rect);
-        return RAISE(PyExc_TypeError,
-                     "move_to cannot be called without keyword arguments");
+        return RAISERETURN(
+            PyExc_TypeError,
+            "move_to cannot be called without keyword arguments", NULL);
     }
 
     Py_ssize_t i, sequence_len;
@@ -1057,7 +1059,8 @@ RectExport_inflate(RectObject *self, PyObject *args)
     PrimitiveType x, y;
 
     if (!twoPrimitivesFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+        return RAISERETURN(PyExc_TypeError,
+                           "argument must contain two numbers", NULL);
     }
 
     return RectExport_subtypeNew4(Py_TYPE(self), self->r.x - x / 2,
@@ -1071,7 +1074,8 @@ RectExport_inflateIp(RectObject *self, PyObject *args)
     PrimitiveType x, y;
 
     if (!twoPrimitivesFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+        return RAISERETURN(PyExc_TypeError,
+                           "argument must contain two numbers", NULL);
     }
     self->r.x -= x / 2;
     self->r.y -= y / 2;
@@ -1088,13 +1092,16 @@ RectExport_scalebyIp(RectObject *self, PyObject *args, PyObject *kwargs)
         kwargs ? PyDict_GetItemString(kwargs, "scale_by") : NULL;
     if (scale_by) {
         if (PyDict_Size(kwargs) > 1) {
-            return RAISE(PyExc_TypeError,
-                         "The 'scale_by' keyword cannot be combined with "
-                         "other arguments.");
+            return RAISERETURN(
+                PyExc_TypeError,
+                "The 'scale_by' keyword cannot be combined with "
+                "other arguments.",
+                NULL);
         }
         if (!pg_TwoFloatsFromObj(scale_by, &factor_x, &factor_y)) {
-            return RAISE(PyExc_TypeError,
-                         "The 'scale_by' argument must be a number pair");
+            return RAISERETURN(PyExc_TypeError,
+                               "The 'scale_by' argument must be a number pair",
+                               NULL);
         }
     }
     else {
@@ -1107,16 +1114,19 @@ RectExport_scalebyIp(RectObject *self, PyObject *args, PyObject *kwargs)
         if (!pg_TwoFloatsFromObj(arg_x, &factor_x, &factor_y)) {
             /* Not a sequence, so try handling int separately */
             if (!pg_FloatFromObj(arg_x, &factor_x)) {
-                return RAISE(PyExc_TypeError, "Argument 'x' must be a number");
+                return RAISERETURN(PyExc_TypeError,
+                                   "Argument 'x' must be a number", NULL);
             }
             if (arg_y && !pg_FloatFromObj(arg_y, &factor_y)) {
-                return RAISE(PyExc_TypeError, "Argument 'y' must be a number");
+                return RAISERETURN(PyExc_TypeError,
+                                   "Argument 'y' must be a number", NULL);
             }
         }
         else if (arg_y) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_TypeError,
-                "Cannot pass argument 'y' after passing a sequence scale");
+                "Cannot pass argument 'y' after passing a sequence scale",
+                NULL);
         }
     }
 
@@ -1153,7 +1163,8 @@ RectExport_update(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     InnerRect *argrect, temp;
 
     if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", NULL);
     }
 
     self->r = *argrect;
@@ -1168,7 +1179,8 @@ RectExport_union(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     PrimitiveType x, y, w, h;
 
     if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", NULL);
     }
     x = MIN(self->r.x, argrect->x);
     y = MIN(self->r.y, argrect->y);
@@ -1184,7 +1196,8 @@ RectExport_unionIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     PrimitiveType x, y, w, h;
 
     if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", NULL);
     }
 
     x = MIN(self->r.x, argrect->x);
@@ -1207,8 +1220,9 @@ RectExport_unionall(RectObject *self, PyObject *arg)
     PrimitiveType t, l, b, r;
 
     if (!PySequence_Check(arg)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument must be a sequence of rectstyle objects.");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be a sequence of rectstyle objects.",
+                           NULL);
     }
 
     l = self->r.x;
@@ -1227,9 +1241,9 @@ RectExport_unionall(RectObject *self, PyObject *arg)
 
         for (loop = 0; loop < size; ++loop) {
             if (!(argrect = RectFromObject(items[loop], &temp))) {
-                return RAISE(
+                return RAISERETURN(
                     PyExc_TypeError,
-                    "Argument must be a sequence of rectstyle objects.");
+                    "Argument must be a sequence of rectstyle objects.", NULL);
             }
             l = MIN(l, argrect->x);
             t = MIN(t, argrect->y);
@@ -1252,9 +1266,9 @@ RectExport_unionall(RectObject *self, PyObject *arg)
             obj = PySequence_ITEM(arg, loop);
             if (!obj || !(argrect = RectFromObject(obj, &temp))) {
                 Py_XDECREF(obj);
-                return RAISE(
+                return RAISERETURN(
                     PyExc_TypeError,
-                    "Argument must be a sequence of rectstyle objects.");
+                    "Argument must be a sequence of rectstyle objects.", NULL);
             }
             l = MIN(l, argrect->x);
             t = MIN(t, argrect->y);
@@ -1276,8 +1290,9 @@ RectExport_unionallIp(RectObject *self, PyObject *arg)
     PrimitiveType t, l, b, r;
 
     if (!PySequence_Check(arg)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument must be a sequence of rectstyle objects.");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be a sequence of rectstyle objects.",
+                           NULL);
     }
 
     l = self->r.x;
@@ -1296,9 +1311,9 @@ RectExport_unionallIp(RectObject *self, PyObject *arg)
 
         for (loop = 0; loop < size; ++loop) {
             if (!(argrect = RectFromObject(items[loop], &temp))) {
-                return RAISE(
+                return RAISERETURN(
                     PyExc_TypeError,
-                    "Argument must be a sequence of rectstyle objects.");
+                    "Argument must be a sequence of rectstyle objects.", NULL);
             }
             l = MIN(l, argrect->x);
             t = MIN(t, argrect->y);
@@ -1321,9 +1336,9 @@ RectExport_unionallIp(RectObject *self, PyObject *arg)
             obj = PySequence_ITEM(arg, loop);
             if (!obj || !(argrect = RectFromObject(obj, &temp))) {
                 Py_XDECREF(obj);
-                return RAISE(
+                return RAISERETURN(
                     PyExc_TypeError,
-                    "Argument must be a sequence of rectstyle objects.");
+                    "Argument must be a sequence of rectstyle objects.", NULL);
             }
             l = MIN(l, argrect->x);
             t = MIN(t, argrect->y);
@@ -1366,7 +1381,8 @@ RectExport_colliderect(RectObject *self, PyObject *const *args,
     InnerRect *argrect, temp;
 
     if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", NULL);
     }
 
     return PyBool_FromLong(_pg_do_rects_intersect(&self->r, argrect));
@@ -1407,8 +1423,9 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
     }
 
     if (!PySequence_Check(arg)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument must be a sequence of rectstyle objects.");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be a sequence of rectstyle objects.",
+                           NULL);
     }
 
     OPTIMIZED_COLLIDERECT_SETUP;
@@ -1419,9 +1436,9 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
         PyObject **items = PySequence_Fast_ITEMS(arg);
         for (loop = 0; loop < PySequence_Fast_GET_SIZE(arg); loop++) {
             if (!(argrect = RectFromObject(items[loop], &temp))) {
-                return RAISE(
+                return RAISERETURN(
                     PyExc_TypeError,
-                    "Argument must be a sequence of rectstyle objects.");
+                    "Argument must be a sequence of rectstyle objects.", NULL);
             }
 
             if (OPTIMIZED_COLLIDERECT(argrect)) {
@@ -1437,9 +1454,9 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
 
             if (!obj || !(argrect = RectFromObject(obj, &temp))) {
                 Py_XDECREF(obj);
-                return RAISE(
+                return RAISERETURN(
                     PyExc_TypeError,
-                    "Argument must be a sequence of rectstyle objects.");
+                    "Argument must be a sequence of rectstyle objects.", NULL);
             }
 
             Py_DECREF(obj);
@@ -1461,8 +1478,9 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
     PyObject *ret = NULL;
 
     if (!PySequence_Check(arg)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument must be a sequence of rectstyle objects.");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be a sequence of rectstyle objects.",
+                           NULL);
     }
 
     if (!(ret = PyList_New(0))) {
@@ -1484,9 +1502,9 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
         for (loop = 0; loop < PySequence_Fast_GET_SIZE(arg); loop++) {
             if (!(argrect = RectFromObject(items[loop], &temp))) {
                 Py_DECREF(ret);
-                return RAISE(
+                return RAISERETURN(
                     PyExc_TypeError,
-                    "Argument must be a sequence of rectstyle objects.");
+                    "Argument must be a sequence of rectstyle objects.", NULL);
             }
 
             if (OPTIMIZED_COLLIDERECT(argrect)) {
@@ -1512,9 +1530,9 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
             if (!obj || !(argrect = RectFromObject(obj, &temp))) {
                 Py_XDECREF(obj);
                 Py_DECREF(ret);
-                return RAISE(
+                return RAISERETURN(
                     PyExc_TypeError,
-                    "Argument must be a sequence of rectstyle objects.");
+                    "Argument must be a sequence of rectstyle objects.", NULL);
             }
 
             Py_DECREF(obj);
@@ -1551,16 +1569,18 @@ RectExport_RectFromObjectAndKeyFunc(PyObject *obj, PyObject *keyfunc,
         InnerRect *ret = RectFromObject(obj_with_rect, temp);
         Py_DECREF(obj_with_rect);
         if (!ret) {
-            return RAISE(PyExc_TypeError,
-                         "Key function must return rect or rect-like objects");
+            return RAISERETURN(
+                PyExc_TypeError,
+                "Key function must return rect or rect-like objects", NULL);
         }
         return ret;
     }
     else {
         InnerRect *ret = RectFromObject(obj, temp);
         if (!ret) {
-            return RAISE(PyExc_TypeError,
-                         "Sequence must contain rect or rect-like objects");
+            return RAISERETURN(
+                PyExc_TypeError,
+                "Sequence must contain rect or rect-like objects", NULL);
         }
         return ret;
     }
@@ -1585,8 +1605,8 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
     }
 
     if (!PySequence_Check(list)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument must be a sequence of objects.");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be a sequence of objects.", NULL);
     }
 
     if (keyfunc == Py_None) {
@@ -1594,8 +1614,9 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
     }
 
     if (keyfunc && !PyCallable_Check(keyfunc)) {
-        return RAISE(PyExc_TypeError,
-                     "Key function must be callable with one argument.");
+        return RAISERETURN(PyExc_TypeError,
+                           "Key function must be callable with one argument.",
+                           NULL);
     }
 
     ret = PyList_New(0);
@@ -1662,8 +1683,8 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!PySequence_Check(list)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument must be a sequence of objects.");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be a sequence of objects.", NULL);
     }
 
     if (keyfunc == Py_None) {
@@ -1671,8 +1692,9 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (keyfunc && !PyCallable_Check(keyfunc)) {
-        return RAISE(PyExc_TypeError,
-                     "Key function must be callable with one argument.");
+        return RAISERETURN(PyExc_TypeError,
+                           "Key function must be callable with one argument.",
+                           NULL);
     }
 
     /* If the calling rect has 0 width or height, it cannot collide with
@@ -1727,7 +1749,8 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!PyDict_Check(dict)) {
-        return RAISE(PyExc_TypeError, "first argument must be a dict");
+        return RAISERETURN(PyExc_TypeError, "first argument must be a dict",
+                           NULL);
     }
 
     /* If the calling rect has 0 width or height, it cannot collide with
@@ -1741,13 +1764,14 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
     while (PyDict_Next(dict, &loop, &key, &val)) {
         if (values) {
             if (!(argrect = RectFromObject(val, &temp))) {
-                return RAISE(PyExc_TypeError,
-                             "dict must have rectstyle values");
+                return RAISERETURN(PyExc_TypeError,
+                                   "dict must have rectstyle values", NULL);
             }
         }
         else {
             if (!(argrect = RectFromObject(key, &temp))) {
-                return RAISE(PyExc_TypeError, "dict must have rectstyle keys");
+                return RAISERETURN(PyExc_TypeError,
+                                   "dict must have rectstyle keys", NULL);
             }
         }
 
@@ -1780,7 +1804,8 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!PyDict_Check(dict)) {
-        return RAISE(PyExc_TypeError, "first argument must be a dict");
+        return RAISERETURN(PyExc_TypeError, "first argument must be a dict",
+                           NULL);
     }
 
     ret = PyList_New(0);
@@ -1800,14 +1825,15 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
         if (values) {
             if (!(argrect = RectFromObject(val, &temp))) {
                 Py_DECREF(ret);
-                return RAISE(PyExc_TypeError,
-                             "dict must have rectstyle values");
+                return RAISERETURN(PyExc_TypeError,
+                                   "dict must have rectstyle values", NULL);
             }
         }
         else {
             if (!(argrect = RectFromObject(key, &temp))) {
                 Py_DECREF(ret);
-                return RAISE(PyExc_TypeError, "dict must have rectstyle keys");
+                return RAISERETURN(PyExc_TypeError,
+                                   "dict must have rectstyle keys", NULL);
             }
         }
 
@@ -1837,7 +1863,8 @@ RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     A = &self->r;
     if (!(B = RectFromFastcallArgs(args, nargs, &temp))) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", NULL);
     }
 
     x = MAX(A->x, B->x);
@@ -1883,36 +1910,39 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     else if (nargs == 2) {
         /* Handles format: clipline((x1, y1), (x2, y2)) */
         if (!twoPrimitivesFromObj(args[0], &x1, &y1)) {
-            return RAISE(PyExc_TypeError,
-                         "number pair expected for first argument");
+            return RAISERETURN(PyExc_TypeError,
+                               "number pair expected for first argument",
+                               NULL);
         }
         /* Get the other end of the line. */
         if (!twoPrimitivesFromObj(args[1], &x2, &y2)) {
-            return RAISE(PyExc_TypeError,
-                         "number pair expected for second argument");
+            return RAISERETURN(PyExc_TypeError,
+                               "number pair expected for second argument",
+                               NULL);
         }
     }
     else if (nargs == 4) {
         /* Handles format: clipline(x1, y1, x2, y2) */
         if (!PrimitiveFromObj(args[0], &x1)) {
-            return RAISE(PyExc_TypeError,
-                         "number expected for first argument");
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for first argument", NULL);
         }
         if (!PrimitiveFromObj(args[1], &y1)) {
-            return RAISE(PyExc_TypeError,
-                         "number expected for second argument");
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for second argument", NULL);
         }
         if (!PrimitiveFromObj(args[2], &x2)) {
-            return RAISE(PyExc_TypeError,
-                         "number expected for third argument");
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for third argument", NULL);
         }
         if (!PrimitiveFromObj(args[3], &y2)) {
-            return RAISE(PyExc_TypeError,
-                         "number expected for fourth argument");
+            return RAISERETURN(PyExc_TypeError,
+                               "number expected for fourth argument", NULL);
         }
     }
     else {
-        return RAISE(PyExc_TypeError, "clipline() takes 1, 2, or 4 arguments");
+        return RAISERETURN(PyExc_TypeError,
+                           "clipline() takes 1, 2, or 4 arguments", NULL);
     }
 
     if ((self->r.w < 0) || (self->r.h < 0)) {
@@ -1920,7 +1950,8 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
         rect_copy = &pgRectAsRect(RectExport_RectNew(&self->r));
 
         if (rect_copy == NULL) {
-            return RAISE(PyExc_MemoryError, "cannot allocate memory for rect");
+            return RAISERETURN(PyExc_MemoryError,
+                               "cannot allocate memory for rect", NULL);
         }
 
         RectExport_Normalize(rect_copy);
@@ -1980,7 +2011,8 @@ RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     int result = RectExport_contains_internal(self, args, nargs);
     if (result == -1) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", NULL);
     }
     return PyBool_FromLong(result);
 }
@@ -1995,9 +2027,9 @@ RectExport_containsSeq(RectObject *self, PyObject *arg)
     }
     int ret = RectExport_contains_internal(self, (PyObject *const *)&arg, 1);
     if (ret < 0) {
-        PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
-                                         ">' requires rect style object"
-                                         " or int as left operand");
+        RAISE(PyExc_TypeError,
+              "'in <" ObjectName
+              ">' requires rect style object or int as left operand");
     }
     return ret;
 }
@@ -2009,7 +2041,8 @@ RectExport_clamp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     PrimitiveType x, y;
 
     if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", NULL);
     }
 
     if (self->r.w >= argrect->w) {
@@ -2049,7 +2082,8 @@ RectExport_fit(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     float xratio, yratio, maxratio;
 
     if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", NULL);
     }
 
     xratio = (float)self->r.w / (float)argrect->w;
@@ -2072,7 +2106,8 @@ RectExport_clampIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     PrimitiveType x, y;
 
     if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
+        return RAISERETURN(PyExc_TypeError,
+                           "Argument must be rect style object", NULL);
     }
 
     if (self->r.w >= argrect->w) {
@@ -2135,7 +2170,7 @@ RectExport_item(RectObject *self, Py_ssize_t i)
             i += 4;
         }
         else {
-            return RAISE(PyExc_IndexError, "Invalid rect Index");
+            return RAISERETURN(PyExc_IndexError, "Invalid rect Index", NULL);
         }
     }
     return PythonNumberFromPrimitiveType(data[i]);
@@ -2148,8 +2183,8 @@ RectExport_assItem(RectObject *self, Py_ssize_t i, PyObject *v)
     PrimitiveType *data = (PrimitiveType *)&self->r;
 
     if (!v) {
-        PyErr_SetString(PyExc_TypeError, "item deletion is not supported");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "item deletion is not supported",
+                           -1);
     }
 
     if (i < 0 || i > 3) {
@@ -2157,13 +2192,11 @@ RectExport_assItem(RectObject *self, Py_ssize_t i, PyObject *v)
             i += 4;
         }
         else {
-            PyErr_SetString(PyExc_IndexError, "Invalid rect Index");
-            return -1;
+            return RAISERETURN(PyExc_IndexError, "Invalid rect Index", -1);
         }
     }
     if (!PrimitiveFromObj(v, &val)) {
-        PyErr_SetString(PyExc_TypeError, "Must assign numeric values");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "Must assign numeric values", -1);
     }
     data[i] = val;
     return 0;
@@ -2213,15 +2246,15 @@ RectExport_subscript(RectObject *self, PyObject *op)
         return slice;
     }
 
-    return RAISE(PyExc_TypeError, "Invalid Rect slice");
+    return RAISERETURN(PyExc_TypeError, "Invalid Rect slice", NULL);
 }
 
 static int
 RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
 {
     if (!value) {
-        PyErr_SetString(PyExc_TypeError, "item deletion is not supported");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "item deletion is not supported",
+                           -1);
     }
     if (PyIndex_Check(op)) {
         Py_ssize_t i = PyNumber_AsSsize_t(op, NULL);
@@ -2253,8 +2286,8 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
             Py_ssize_t i;
 
             if (PySequence_Size(value) != 4) {
-                PyErr_SetString(PyExc_TypeError, "Expect a length 4 sequence");
-                return -1;
+                return RAISERETURN(PyExc_TypeError,
+                                   "Expect a length 4 sequence", -1);
             }
             for (i = 0; i < 4; ++i) {
                 item = PySequence_ITEM(value, i);
@@ -2270,9 +2303,8 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
             self->r.h = values[3];
         }
         else {
-            PyErr_SetString(PyExc_TypeError,
-                            "Expected an integer or sequence");
-            return -1;
+            return RAISERETURN(PyExc_TypeError,
+                               "Expected an integer or sequence", -1);
         }
     }
     else if (PySlice_Check(op)) {
@@ -2316,14 +2348,12 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
             }
         }
         else {
-            PyErr_SetString(PyExc_TypeError,
-                            "Expected an integer or sequence");
-            return -1;
+            return RAISERETURN(PyExc_TypeError,
+                               "Expected an integer or sequence", -1);
         }
     }
     else {
-        PyErr_SetString(PyExc_TypeError, "Invalid Rect slice");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "Invalid Rect slice", -1);
     }
     return 0;
 }
@@ -2402,13 +2432,11 @@ RectExport_setwidth(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.w = val1;
     return 0;
@@ -2428,13 +2456,11 @@ RectExport_setheight(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.h = val1;
     return 0;
@@ -2454,13 +2480,11 @@ RectExport_settop(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.y = val1;
     return 0;
@@ -2480,13 +2504,11 @@ RectExport_setleft(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1;
     return 0;
@@ -2506,13 +2528,11 @@ RectExport_setright(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1 - self->r.w;
     return 0;
@@ -2532,13 +2552,11 @@ RectExport_setbottom(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.y = val1 - self->r.h;
     return 0;
@@ -2558,13 +2576,11 @@ RectExport_setcenterx(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1 - (self->r.w / 2);
     return 0;
@@ -2584,13 +2600,11 @@ RectExport_setcentery(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.y = val1 - (self->r.h / 2);
     return 0;
@@ -2610,13 +2624,11 @@ RectExport_settopleft(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1;
     self->r.y = val2;
@@ -2637,13 +2649,11 @@ RectExport_settopright(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1 - self->r.w;
     self->r.y = val2;
@@ -2664,13 +2674,11 @@ RectExport_setbottomleft(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1;
     self->r.y = val2 - self->r.h;
@@ -2692,13 +2700,11 @@ RectExport_setbottomright(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1 - self->r.w;
     self->r.y = val2 - self->r.h;
@@ -2719,13 +2725,11 @@ RectExport_setmidtop(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x += val1 - (self->r.x + (self->r.w / 2));
     self->r.y = val2;
@@ -2746,13 +2750,11 @@ RectExport_setmidleft(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1;
     self->r.y += val2 - (self->r.y + (self->r.h / 2));
@@ -2774,13 +2776,11 @@ RectExport_setmidbottom(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x += val1 - (self->r.x + (self->r.w / 2));
     self->r.y = val2 - self->r.h;
@@ -2802,13 +2802,11 @@ RectExport_setmidright(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x = val1 - self->r.w;
     self->r.y += val2 - (self->r.y + (self->r.h / 2));
@@ -2830,13 +2828,11 @@ RectExport_setcenter(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.x += val1 - (self->r.x + (self->r.w / 2));
     self->r.y += val2 - (self->r.y + (self->r.h / 2));
@@ -2857,13 +2853,11 @@ RectExport_setsize(RectObject *self, PyObject *value, void *closure)
 
     if (NULL == value) {
         /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+        return RAISERETURN(PyExc_AttributeError, "can't delete attribute", -1);
     }
 
     if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "invalid rect assignment", -1);
     }
     self->r.w = val1;
     self->r.h = val2;

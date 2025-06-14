@@ -18,6 +18,7 @@
     License along with this library; if not, write to the Free
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+#include "scrap.h"
 #include <Windows.h>
 
 #if !defined(CF_DIBV5)
@@ -201,8 +202,7 @@ int
 pygame_scrap_lost(void)
 {
     if (!pygame_scrap_initialized()) {
-        PyErr_SetString(pgExc_SDLError, "scrap system not initialized.");
-        return 0;
+        return RAISERETURN(pgExc_SDLError, "scrap system not initialized.", 0);
     }
     return (GetClipboardOwner() != window_handle);
 }
@@ -215,8 +215,7 @@ pygame_scrap_put(char *type, Py_ssize_t srclen, char *src)
     HANDLE hMem;
 
     if (!pygame_scrap_initialized()) {
-        PyErr_SetString(pgExc_SDLError, "scrap system not initialized.");
-        return 0;
+        return RAISERETURN(pgExc_SDLError, "scrap system not initialized.", 0);
     }
 
     format = _convert_internal_type(type);
@@ -271,7 +270,8 @@ pygame_scrap_get(char *type, size_t *count)
     char *retval = NULL;
 
     if (!pygame_scrap_initialized()) {
-        return RAISE(pgExc_SDLError, "scrap system not initialized.");
+        return RAISERETURN(pgExc_SDLError, "scrap system not initialized.",
+                           NULL);
     }
 
     if (!pygame_scrap_lost()) {

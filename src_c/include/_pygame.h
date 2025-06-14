@@ -624,11 +624,12 @@ PYGAMEAPI_EXTERN_SLOTS(geometry);
  *  functions in Python 3.
  */
 
-#define SURF_INIT_CHECK(surf)                                           \
-    {                                                                   \
-        if (!surf) {                                                    \
-            return RAISE(pgExc_SDLError, "Surface is not initialized"); \
-        }                                                               \
+#define SURF_INIT_CHECK(surf)                                                \
+    {                                                                        \
+        if (!surf) {                                                         \
+            return RAISERETURN(pgExc_SDLError, "Surface is not initialized", \
+                               NULL);                                        \
+        }                                                                    \
     }
 
 static PG_INLINE PyObject *
@@ -729,7 +730,8 @@ static PG_INLINE PyObject *
 pg_PointList_FromArrayDouble(double const *array, int arr_length)
 {
     if (arr_length % 2) {
-        return RAISE(PyExc_ValueError, "array length must be even");
+        return RAISERETURN(PyExc_ValueError, "array length must be even",
+                           NULL);
     }
 
     int num_points = arr_length / 2;

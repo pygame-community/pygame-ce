@@ -1,3 +1,4 @@
+#include "pygame.h"
 #ifdef PG_SDL3
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_clipboard.h>
@@ -25,7 +26,8 @@ pygame_scrap_get(char *type, size_t *count)
     char *clipboard = NULL;
 
     if (!pygame_scrap_initialized()) {
-        return RAISE(pgExc_SDLError, "scrap system not initialized.");
+        return RAISERETURN(pgExc_SDLError, "scrap system not initialized.",
+                           NULL);
     }
 
     if (strcmp(type, pygame_scrap_plaintext_type) == 0) {
@@ -44,8 +46,8 @@ char **
 pygame_scrap_get_types(void)
 {
     if (!pygame_scrap_initialized()) {
-        PyErr_SetString(pgExc_SDLError, "scrap system not initialized.");
-        return NULL;
+        return RAISERETURN(pgExc_SDLError, "scrap system not initialized.",
+                           NULL);
     }
 
     return pygame_scrap_types;
@@ -78,8 +80,7 @@ int
 pygame_scrap_put(char *type, Py_ssize_t srclen, char *src)
 {
     if (!pygame_scrap_initialized()) {
-        PyErr_SetString(pgExc_SDLError, "scrap system not initialized.");
-        return 0;
+        return RAISERETURN(pgExc_SDLError, "scrap system not initialized.", 0);
     }
 
     if (strcmp(type, pygame_scrap_plaintext_type) == 0) {
