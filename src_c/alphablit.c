@@ -1189,16 +1189,16 @@ BLIT_BLEND_OP(
 
 /* --------------------------------------------------------- */
 
-#define SETUP_ALPHABLIT()                  \
-    SETUP_BASE()                           \
-    int dRi, dGi, dBi, dAi, sRi, sGi, sBi; \
+#define SETUP_ALPHABLIT()                     \
+    SETUP_BASE()                              \
+    Uint32 dRi, dGi, dBi, dAi, sRi, sGi, sBi; \
     int alpha = info->src_blanket_alpha;
 
 static void
 alphablit_alpha(SDL_BlitInfo *info)
 {
     SETUP_ALPHABLIT()
-    int sAi;
+    Uint32 sAi;
 
     if (srcbpp == 1) {
         if (dstbpp == 1) {
@@ -1292,7 +1292,7 @@ static void
 alphablit_colorkey(SDL_BlitInfo *info)
 {
     SETUP_ALPHABLIT()
-    int sAi;
+    Uint32 sAi;
     Uint32 colorkey = info->src_colorkey;
 
     assert(info->src_has_colorkey);
