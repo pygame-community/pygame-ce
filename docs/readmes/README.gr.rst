@@ -11,16 +11,16 @@
 `English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ **Ελληνικά**
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Pygame_ είναι μια ελεύθερη και ανοικτού κώδικα βιβλιοθήκη πολλαπλών πλατφορμών.
+To Pygame_ είναι μια ελεύθερη και ανοικτού κώδικα βιβλιοθήκη πολλαπλών πλατφορμών.
 Χρησιμοποιεί το `Simple DirectMedia Layer library`_ και πολλές άλλες
 δημοφιλείς βιβλιοθήκες για να χρησιμοποιήσει αφαιρετικά τις περισσότερες βασικές συναρτήσεις,
 κάνοντας έτσι τη γραφή αυτών των προγραμμάτων μια πιο διαισθητική εργασία.
 
-Αυτή η διανομή ονομάζεται **'pygame - Community Edition'** ('pygame-ce' για συντομία).
+Αυτή η διανομή(distribution) ονομάζεται **'pygame - Community Edition'** ('pygame-ce' για συντομία).
 
-Είναι μια διακλάδωση από το αποθετήριο προέλευσης του έργου pygame από τους πρώην κεντρικούς προγραμματιστές,
-και δημιουργήθηκε μετά από απίθανες προκλήσεις που τους απέτρεψαν να συνεχίσουν την ανάπτυξη στο αποθετήριο προέλευσης.
-Η νέα διανομή στοχεύει στο να προσφέρει πιο συνεχή εκδόσεις, πολλαπλές διορθώσεις προβλημάτων και βελτιώσεις,
+Είναι μια διακλάδωση(fork) από το αποθετήριο προέλευσης(upstream) του project pygame από τους πρώην κεντρικούς προγραμματιστές,
+και δημιουργήθηκε μετά από απίθανες προκλήσεις που τους απέτρεψαν να συνεχίσουν την ανάπτυξη στο αποθετήριο προέλευσης(upstream).
+Η νέα διανομή(distribution) στοχεύει στο να προσφέρει πιο συνεχή εκδόσεις, πολλαπλές διορθώσεις σφαλμάτων και βελτιώσεις,
 και ένα πιο δημοκρατικό μοντέλο διακυβέρνησης.
 
 Νέοι συνεισφέροντες είναι ευπρόσδεκτοι!
@@ -37,44 +37,45 @@ Pygame_ είναι μια ελεύθερη και ανοικτού κώδικα 
 Βοήθεια
 ----
 
-If you are just getting started with pygame, you should be able to
-get started fairly quickly.  Pygame comes with many tutorials and
-introductions.  There is also full reference documentation for the
-entire library. Browse the documentation on the `docs page`_. You
-can also browse the documentation locally by running
-``python -m pygame.docs`` in your terminal. If the docs aren't found
-locally, it'll launch the online website instead.
+Αν μόλις ξεκινάτε με το pygame, θα πρέπει να
+ξεκινήσετε σχετικά εύκολα. Το pygame έρχεται με αρκετά βοηθητικά υλικά
+και εισαγωγές. Επίσης υπάρχουν αρκετές αναφορές στις τεκμηριώσεις
+όλης της βιβλιοθήκης. Ξεφυλλίστε τις τεκμηριώσεις στο `docs page`_. Επιπλέον
+μπορείτε να ξεφυλλίσετε τις τεκμηριώσεις τοπικά εκτελώντας
+``python -m pygame.docs`` στο τερματικό σας. Αν οι τεκμηριώσεις δεν βρεθούν
+τοπικά, θα ανοίξει την διαδικτυακή ιστοσελίδα.
 
-The online documentation stays up to date with the development version
-of pygame on github.  This may be a bit newer than the version of pygame
-you are using. To upgrade to the latest full release, run
-``pip install pygame-ce --upgrade`` in your terminal.
+Η διαδικτυακή τεκμηρίωση παραμένει ενημερωμένη με την έκδοση ανάπτυξης
+του pygame στο github. Ίσως είναι λίγο νεότερη από την έκδοση του pygame
+που χρησιμοποιείς. Για να αναβαθμίσεις στην τελευταία έκδοση, εκτελέστε
+``pip install pygame-ce --upgrade`` στο τερματικό σας.
 
-Best of all, the examples directory has many playable small programs
-which can get you started playing with the code right away.
+Το καλύτερο από όλα, ο κατάλογος με τα παραδείγματα έχει αρκετά εκτελέσιμα μικρά προγράμματα.
+όπου μπορούν να σε κάνουν να αρχίσεις να ασχολείσαι κατευθείαν με τον κώδικα.
 
 
-Building From Source
+Μεταγλώττιση από τον πηγαίο κώδικα
 --------------------
 
-If you want to use features that are currently in development,
-or you want to contribute to pygame-ce, you will need to build pygame-ce
-locally from its source code, rather than pip installing it.
+Αν θέλεις να χρησιμοποιείς χαρακτηριστικά τα οποία είναι σε ανάπτυξη
+ή θέλεις να συνεισφέρεις στο pygame-ce, θα πρέπει να μεταγλωττίσεις το pygame-ce
+τοπικά από τον πηγαίο κώδικα, αντί για την εγκατάσταση μέσω pip.
 
-Installing from source is fairly automated. The most work will
-involve compiling and installing all the pygame dependencies.  Once
-that is done, run the ``setup.py`` script which will attempt to
-auto-configure, build, and install pygame.
+Η εγκατάσταση απο τον πηγαίο κώδικα είναι κυρίος αυτοματοποίημένη. Η περισώτερη δουλέια θα
+εμπλέκει μεταγλώττιση και εγκατάσταση των εξαρτήσεων του pygame. Μόλις
+ολοκληρωθεί, τρέξτε το setup.py script που θα προσπαθήσει να
+προσαρμοστή αυτόματα, μεταγλωττίσει και εγκαταστήσει το pygame.
 
-Much more information about installing and compiling is available
-on the `Compilation wiki page`_.
+Περισσότερες πληροφορίες σχετικά με την εγκατάσταση και τη μεταγλώττιση είναι διαθέσιμες
+στο `Compilation wiki page`_.
 
 
-Credits
+Ευχαριστίες
 -------
 
-Thanks to everyone who has helped contribute to this library.
-Special thanks are also in order.
+Ευχαριστούμε όλους όσους έχουν βοηθήσει συνεισφέροντας στην βιβλιοθήκη.
+Ιδιαίτερες ευχαριστίες είναι επίσης στη σειρά.
+
 
 * Marcus Von Appen: many changes, and fixes, 1.7.1+ freebsd maintainer
 * Lenard Lindstrom: the 1.8+ windows maintainer, many changes, and fixes
@@ -96,7 +97,7 @@ Special thanks are also in order.
 * Nicholas Dudfield: many test improvements
 * Alex Folkner for pygame-ctypes
 
-Thanks to those sending in patches and fixes: Niki Spahiev, Gordon
+Ευχαριστούμε όσους στέλνουν διορθώσεις και επιδιορθώσεις: Niki Spahiev, Gordon
 Tyler, Nathaniel Pryce, Dave Wallace, John Popplewell, Michael Urman,
 Andrew Straw, Michael Hudson, Ole Martin Bjoerndalen, Herve Cauwelier,
 James Mazer, Lalo Martins, Timothy Stranex, Chad Lester, Matthias
@@ -107,34 +108,35 @@ Frankie Robertson, John Krukoff, Lorenz Quack, Nick Irvine,
 Michael George, Saul Spatz, Thomas Ibbotson, Tom Rothamel, Evan Kroske,
 Cambell Barton.
 
-And our bug hunters above and beyond: Angus, Guillaume Proux, Frank
+Και στους κυνηγούς σφαλμάτων μας που ξεπερνούν κάθε προσδοκία: Angus, Guillaume Proux, Frank
 Raiser, Austin Henry, Kaweh Kazemi, Arturo Aldama, Mike Mulcheck,
 Michael Benfield, David Lau
 
-There's many more folks out there who've submitted helpful ideas, kept
-this project going, and basically made our life easier.  Thanks!
+Είναι αρκετοί άλλοι που έχουν υποβάλει βοηθητικές ιδέες, κρατώντας
+το project να συνεχίσει, και βασικά έχουν κάνει τη ζωή μας πιο εύκολη. Ευχαριστούμε!
 
-Many thank you's for people making documentation comments, and adding to the
-`pygame documentation`_ and the `pygame-ce documentation`_.
+Πολλές ευχαριστίες σε όσους κάνουν σχόλια στην τεκμηρίωση και προσθέτουν στο
+`pygame documentation`_ και στο `pygame-ce documentation`_.
 
-Also many thanks for people creating games and putting them on the
-pygame.org website for others to learn from and enjoy.
+Επίσης πολλές ευχαριστίες σε όσους δημιουργούν παιχνίδια και τα ανεβάζουν στην
+pygame.org ιστοσελίδα ώστε άλλοι να μάθουν και να τα απολαύσουν.
 
-Lots of thanks to James Paige for hosting the pygame bugzilla.
+Πολλές ευχαριστίες στον James Paige για τη φιλοξενία του pygame bugzilla.
 
-Also a big thanks to Roger Dingledine and the crew at SEUL.ORG for our
-excellent hosting.
+Επίσης ένα μεγάλο ευχαριστώ στον Roger Dingledine και την ομάδα στο SEUL.ORG για την εξαιρετική
+φιλοξενία μας.
 
-Dependencies
+
+Εξαρτήσεις
 ------------
 
-Pygame is obviously strongly dependent on SDL and Python. It also
-links to and embeds several other smaller libraries. The font
-module relies on SDL_ttf, which is dependent on freetype. The mixer
-(and mixer.music) modules depend on SDL_mixer. The image module
-depends on SDL_image. Transform.rotozoom has an embedded version
-of SDL_rotozoom, and gfxdraw has an embedded version of SDL_gfx.
-Dependency versions:
+Το pygame είναι προφανώς δυνατά εξαρτημένο από SDL και Python. Επίσης
+συνδέει και ενσωματώνει διάφορες άλλες μικρές βιβλιοθήκες. Το πρόγραμμα
+της γραμματοσειράς βασίζεται στο SDL_ttf, το οποίο είναι εξαρτημένο από το freetype. Τα mixer
+(και mixer.music) προγράμματα βασίζονται στο SDL_mixer. Το πρόγραμμα της εικόνας
+βασίζεται στο SDL_image. Το Transform.rotozoom έχει μια ενσωματωμένη έκδοση
+του SDL_rotozoom, και το gfxdraw έχει μια ενσωματωμένη έκδοση του SDL_gfx.
+Έκδοσεις εξαρτήσεων:
 
 
 +----------+------------------------+
@@ -149,35 +151,35 @@ Dependency versions:
 | SDL_ttf  | >= 2.0.15              |
 +----------+------------------------+
 
-How to Contribute
+Πώς να συνεισφέρεται
 -----------------
-First of all, thank you for considering contributing to pygame-ce! It's people like you that make pygame-ce a great library. Please follow these steps to get started:
+Πρώτα απ’ όλα, σας ευχαριστούμε που σκέφτεστε να συνεισφέρετε στο pygame-ce! Είναι άνθρωποι σαν κι εσάς που κάνουν το pygame-ce μια εξαιρετική βιβλιοθήκη. Παρακαλούμε ακολουθήστε τα παρακάτω βήματα για να ξεκινήσετε:
 
-1. Read the `Contribution Guidelines`_ and the `Many Ways to Contribute`_ wiki pages.
-2. Read the documentataion on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
-3. Read how to `label and link reported issues`_.
-4. Check the `issue tracker`_ for open issues that interest you or open a new issue to start a discussion about your idea.
+1. Διαβάστε τις `Contribution Guidelines`_ και `Many Ways to Contribute`_ wiki σελίδες.
+2. Διαβάστε τις τεκμηριώσεις στο `Opening A Pull Request`_ και `Opening a Great Pull Request`_.
+3. Διαβάστε το πως να `label and link reported issues`_.
+4. Τσεκάρετε το `issue tracker`_ για ανοιχτά προβλήματα που σας ενδιαφέρουν ή ανοίξτε δικό σας πρόβλημα για να ξεκινήσετε μια συζήτηση σχετικά με την ιδέα σας.
 
-There are many more resources throughout the `wiki pages`_ that can help you get started.
+Υπάρχουν πολλά ακόμα μέσα στο `wiki pages`_ που μπορούν να σας βοηθήσουν να ξεκινήσετε.
 
-If you have any questions, please feel free to ask in the `Pygame Community Discord Server`_ or open an issue.
+Αν έχετε οποιεσδήποτε ερωτήσεις, μη διστάσετε να ρωτήσετε στο `Pygame Community Discord Server`_ ή να ανοίξετε ένα θέμα.
 
-License
+Άδεια
 -------
 **License Identifier:** LGPL-2.1-or-later
 
-This library is distributed under `GNU LGPL version 2.1`_, which can
-be found in the file ``docs/LGPL.txt``.  We reserve the right to place
-future versions of this library under a different license.
+Αυτή η βιβλιοθήκη διανέμεται υπό την άδεια `GNU LGPL version 2.1`_, η οποία
+βρίσκεται στο αρχείο ``docs/LGPL.txt``.  Διατηρούμε το δικαίωμα να θέσουμε
+μελλοντικές εκδόσεις αυτής της βιβλιοθήκης υπό διαφορετική άδεια.
 
-This basically means you can use pygame in any project you want,
-but if you make any changes or additions to pygame itself, those
-must be released with a compatible license (preferably submitted
-back to the pygame-ce project).  Closed source and commercial games are fine.
+Αυτό σημαίνει ουσιαστικά ότι μπορείτε να χρησιμοποιείτε το pygame σε οποιοδήποτε project θέλετε,
+αλλά αν κάνετε οποιεσδήποτε αλλαγές ή προσθήκες στο ίδιο το pygame, αυτές πρέπει να
+κυκλοφορήσουν με συμβατή άδεια (κατά προτίμηση να υποβληθούν πίσω στο pygame-ce project). Τα
+κλειστά προγράμματα και τα εμπορικά παιχνίδια είναι αποδεκτά.
 
-The programs in the ``examples`` subdirectory are in the public domain.
+Τα προγράμματα στο ``examples`` υποφάκελο βρίσκονται στο δημόσιο τομέα.
 
-See docs/licenses for licenses of dependencies.
+Δείτε τα docs/licenses για τις άδειες των εξαρτήσεων.
 
 
 .. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
