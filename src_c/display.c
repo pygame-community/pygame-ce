@@ -707,6 +707,16 @@ _get_video_window_pos(int *x, int *y, int *center_window)
     return 0;
 }
 
+static void
+_check_window_resized(SDL_Window *window)
+{
+    SDL_Surface *sdl_surface = SDL_GetWindowSurface(window);
+    pgSurfaceObject *old_surface = pg_GetDefaultWindowSurface();
+    if (sdl_surface != old_surface->surf) {
+        old_surface->surf = sdl_surface;
+    }
+}
+
 static int SDLCALL
 pg_ResizeEventWatch(void *userdata, SDL_Event *event)
 {
@@ -786,11 +796,7 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     }
 
     if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-        SDL_Surface *sdl_surface = SDL_GetWindowSurface(window);
-        pgSurfaceObject *old_surface = pg_GetDefaultWindowSurface();
-        if (sdl_surface != old_surface->surf) {
-            old_surface->surf = sdl_surface;
-        }
+        _check_window_resized(window);
     }
     return 0;
 }
@@ -1374,6 +1380,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
             surface = pgSurface_New2(surf, newownedsurf != NULL);
         }
         else {
+            _check_window_resized(win);
             pgSurface_SetSurface(surface, surf, newownedsurf != NULL);
             Py_INCREF(surface);
         }
