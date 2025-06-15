@@ -97,7 +97,8 @@ mask_copy(PyObject *self, PyObject *_null)
     bitmask_t *new_bitmask = bitmask_copy(pgMask_AsBitmap(self));
 
     if (NULL == new_bitmask) {
-        return RAISE(PyExc_MemoryError, "cannot allocate memory for bitmask");
+        return RAISERETURN(PyExc_MemoryError,
+                           "cannot allocate memory for bitmask", NULL);
     }
 
     return (PyObject *)create_mask_using_bitmask_and_type(new_bitmask,
@@ -136,14 +137,15 @@ mask_get_rect(PyObject *self, PyObject *args, PyObject *kwargs)
     bitmask_t *bitmask = pgMask_AsBitmap(self);
 
     if (0 != PyTuple_GET_SIZE(args)) {
-        return RAISE(PyExc_TypeError,
-                     "get_rect only supports keyword arguments");
+        return RAISERETURN(PyExc_TypeError,
+                           "get_rect only supports keyword arguments", NULL);
     }
 
     rect = pgRect_New4(0, 0, bitmask->w, bitmask->h);
 
     if (NULL == rect) {
-        return RAISE(PyExc_MemoryError, "cannot allocate memory for rect");
+        return RAISERETURN(PyExc_MemoryError,
+                           "cannot allocate memory for rect", NULL);
     }
 
     if (NULL != kwargs) {
@@ -174,7 +176,7 @@ mask_get_at(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(pos, &x, &y)) {
-        return RAISE(PyExc_TypeError, "pos must be two numbers");
+        return RAISERETURN(PyExc_TypeError, "pos must be two numbers", NULL);
     }
 
     if (x >= 0 && x < mask->w && y >= 0 && y < mask->h) {
@@ -202,7 +204,7 @@ mask_set_at(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(pos, &x, &y)) {
-        return RAISE(PyExc_TypeError, "pos must be two numbers");
+        return RAISERETURN(PyExc_TypeError, "pos must be two numbers", NULL);
     }
 
     if (x >= 0 && x < mask->w && y >= 0 && y < mask->h) {
@@ -240,7 +242,8 @@ mask_overlap(PyObject *self, PyObject *args, PyObject *kwargs)
     othermask = pgMask_AsBitmap(maskobj);
 
     if (!pg_TwoIntsFromObj(offset, &x, &y)) {
-        return RAISE(PyExc_TypeError, "offset must be two numbers");
+        return RAISERETURN(PyExc_TypeError, "offset must be two numbers",
+                           NULL);
     }
 
     val = bitmask_overlap_pos(mask, othermask, x, y, &xp, &yp);
@@ -271,7 +274,8 @@ mask_overlap_area(PyObject *self, PyObject *args, PyObject *kwargs)
     othermask = pgMask_AsBitmap(maskobj);
 
     if (!pg_TwoIntsFromObj(offset, &x, &y)) {
-        return RAISE(PyExc_TypeError, "offset must be two numbers");
+        return RAISERETURN(PyExc_TypeError, "offset must be two numbers",
+                           NULL);
     }
 
     val = bitmask_overlap_area(mask, othermask, x, y);
@@ -296,7 +300,8 @@ mask_overlap_mask(PyObject *self, PyObject *args, PyObject *kwargs)
     output_maskobj = CREATE_MASK_OBJ(bitmask->w, bitmask->h, 0);
 
     if (!pg_TwoIntsFromObj(offset, &x, &y)) {
-        return RAISE(PyExc_TypeError, "offset must be two numbers");
+        return RAISERETURN(PyExc_TypeError, "offset must be two numbers",
+                           NULL);
     }
 
     if (NULL == output_maskobj) {
@@ -352,17 +357,19 @@ mask_scale(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(scale, &x, &y)) {
-        return RAISE(PyExc_TypeError, "scale must be two numbers");
+        return RAISERETURN(PyExc_TypeError, "scale must be two numbers", NULL);
     }
 
     if (x < 0 || y < 0) {
-        return RAISE(PyExc_ValueError, "cannot scale mask to negative size");
+        return RAISERETURN(PyExc_ValueError,
+                           "cannot scale mask to negative size", NULL);
     }
 
     bitmask = bitmask_scale(pgMask_AsBitmap(self), x, y);
 
     if (NULL == bitmask) {
-        return RAISE(PyExc_MemoryError, "cannot allocate memory for bitmask");
+        return RAISERETURN(PyExc_MemoryError,
+                           "cannot allocate memory for bitmask", NULL);
     }
 
     return (PyObject *)create_mask_using_bitmask(bitmask);
@@ -384,7 +391,8 @@ mask_draw(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(offset, &x, &y)) {
-        return RAISE(PyExc_TypeError, "offset must be two numbers");
+        return RAISERETURN(PyExc_TypeError, "offset must be two numbers",
+                           NULL);
     }
 
     othermask = pgMask_AsBitmap(maskobj);
@@ -410,7 +418,8 @@ mask_erase(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(offset, &x, &y)) {
-        return RAISE(PyExc_TypeError, "offset must be two numbers");
+        return RAISERETURN(PyExc_TypeError, "offset must be two numbers",
+                           NULL);
     }
 
     othermask = pgMask_AsBitmap(maskobj);
@@ -518,8 +527,8 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
 
     plist = PyList_New(0);
     if (!plist) {
-        return RAISE(PyExc_MemoryError,
-                     "outline cannot allocate memory for list");
+        return RAISERETURN(PyExc_MemoryError,
+                           "outline cannot allocate memory for list", NULL);
     }
 
     if (!c->w || !c->h) {
@@ -530,8 +539,8 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
     m = bitmask_create(c->w + 2, c->h + 2);
     if (!m) {
         Py_DECREF(plist);
-        return RAISE(PyExc_MemoryError,
-                     "outline cannot allocate memory for mask");
+        return RAISERETURN(PyExc_MemoryError,
+                           "outline cannot allocate memory for mask", NULL);
     }
 
     bitmask_draw(m, c, 1, 1);
@@ -683,7 +692,8 @@ mask_convolve(PyObject *aobj, PyObject *args, PyObject *kwargs)
     }
 
     if (offset && !pg_TwoIntsFromObj(offset, &xoffset, &yoffset)) {
-        return RAISE(PyExc_TypeError, "offset must be two numbers");
+        return RAISERETURN(PyExc_TypeError, "offset must be two numbers",
+                           NULL);
     }
 
     a = pgMask_AsBitmap(aobj);
@@ -906,15 +916,15 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
 
     if (surf->w < 0 || surf->h < 0) {
-        return RAISE(PyExc_ValueError,
-                     "cannot create mask with negative size");
+        return RAISERETURN(PyExc_ValueError,
+                           "cannot create mask with negative size", NULL);
     }
 
     PG_PixelFormat *surf_format;
     SDL_Palette *surf_palette;
 
     if (!PG_GetSurfaceDetails(surf, &surf_format, &surf_palette)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     maskobj = CREATE_MASK_OBJ(surf->w, surf->h, 0);
@@ -930,7 +940,7 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (!pgSurface_Lock(surfobj)) {
         Py_DECREF((PyObject *)maskobj);
-        return RAISE(PyExc_RuntimeError, "cannot lock surface");
+        return RAISERETURN(PyExc_RuntimeError, "cannot lock surface", NULL);
     }
 
     Py_BEGIN_ALLOW_THREADS; /* Release the GIL. */
@@ -948,7 +958,7 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (!pgSurface_Unlock(surfobj)) {
         Py_DECREF((PyObject *)maskobj);
-        return RAISE(PyExc_RuntimeError, "cannot unlock surface");
+        return RAISERETURN(PyExc_RuntimeError, "cannot unlock surface", NULL);
     }
 
     return (PyObject *)maskobj;
@@ -1147,13 +1157,13 @@ mask_from_threshold(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!PG_GetSurfaceDetails(surf, &surf_format, &surf_palette)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     if (surf2) {
         surf2_format = PG_GetSurfaceFormat(surf2);
         if (!surf2_format) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     }
 
@@ -1557,8 +1567,9 @@ mask_get_bounding_rects(PyObject *self, PyObject *_null)
 
     if (r == -2) {
         /* memory out failure */
-        return RAISE(PyExc_MemoryError,
-                     "Not enough memory to get bounding rects. \n");
+        return RAISERETURN(PyExc_MemoryError,
+                           "Not enough memory to get bounding rects. \n",
+                           NULL);
     }
 
     rect_list = PyList_New(0);
@@ -1578,8 +1589,9 @@ mask_get_bounding_rects(PyObject *self, PyObject *_null)
             Py_DECREF(rect_list);
             free(regions);
 
-            return RAISE(PyExc_MemoryError,
-                         "cannot allocate memory for bounding rects");
+            return RAISERETURN(PyExc_MemoryError,
+                               "cannot allocate memory for bounding rects",
+                               NULL);
         }
 
         if (0 != PyList_Append(rect_list, rect)) {
@@ -1744,8 +1756,9 @@ mask_connected_components(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_END_ALLOW_THREADS;
 
     if (num_components == -2) {
-        return RAISE(PyExc_MemoryError,
-                     "cannot allocate memory for connected components");
+        return RAISERETURN(PyExc_MemoryError,
+                           "cannot allocate memory for connected components",
+                           NULL);
     }
 
     mask_list = PyList_New(0);
@@ -1903,7 +1916,8 @@ mask_connected_component(PyObject *self, PyObject *args, PyObject *kwargs)
         }
 
         if (!pg_TwoIntsFromObj(pos, &x, &y)) {
-            return RAISE(PyExc_TypeError, "pos must be two numbers");
+            return RAISERETURN(PyExc_TypeError, "pos must be two numbers",
+                               NULL);
         }
 
         if (x < 0 || x >= input->w || y < 0 || y >= input->h) {
@@ -1924,8 +1938,9 @@ mask_connected_component(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!args_exist || bitmask_getbit(input, x, y)) {
         if (largest_connected_comp(input, output_maskobj->mask, x, y) == -2) {
             Py_DECREF(output_maskobj);
-            return RAISE(PyExc_MemoryError,
-                         "cannot allocate memory for connected component");
+            return RAISERETURN(
+                PyExc_MemoryError,
+                "cannot allocate memory for connected component", NULL);
         }
     }
 
@@ -2206,7 +2221,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
                 y_dest = dest_rect->y;
             }
             else {
-                PyErr_SetString(PyExc_TypeError, "invalid dest argument");
+                RAISE(PyExc_TypeError, "invalid dest argument");
                 goto to_surface_error;
             }
         }
@@ -2214,7 +2229,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (areaobj && areaobj != Py_None) {
         if (!(area_rect = pgRect_FromObject(areaobj, &temp_rect))) {
-            PyErr_SetString(PyExc_TypeError, "invalid rectstyle argument");
+            RAISE(PyExc_TypeError, "invalid rectstyle argument");
             goto to_surface_error;
         }
 
@@ -2254,7 +2269,8 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
         if (NULL == surfobj) {
             if (!PyErr_Occurred()) {
-                return RAISE(PyExc_RuntimeError, "unable to create surface");
+                return RAISERETURN(PyExc_RuntimeError,
+                                   "unable to create surface", NULL);
             }
             return NULL;
         }
@@ -2262,14 +2278,14 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
         created_surfobj = 1;
     }
     else if (!pgSurface_Check(surfobj)) {
-        return RAISE(PyExc_TypeError, "invalid surface argument");
+        return RAISERETURN(PyExc_TypeError, "invalid surface argument", NULL);
     }
 
     surf = pgSurface_AsSurface(surfobj);
 
     if (Py_None != setsurfobj) {
         if (!pgSurface_Check(setsurfobj)) {
-            PyErr_SetString(PyExc_TypeError, "invalid setsurface argument");
+            RAISE(PyExc_TypeError, "invalid setsurface argument");
             goto to_surface_error;
         }
 
@@ -2277,9 +2293,9 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
         if (0 == check_surface_pixel_format(surf, setsurf)) {
             /* Needs to have the same format settings as surface. */
-            PyErr_SetString(PyExc_ValueError,
-                            "setsurface needs to have same "
-                            "bytesize/bitsize/alpha format as surface");
+            RAISE(PyExc_ValueError,
+                  "setsurface needs to have same bytesize/bitsize/alpha "
+                  "format as surface");
             goto to_surface_error;
         }
         else if ((setsurf->h <= 0) || (setsurf->w <= 0)) {
@@ -2293,7 +2309,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (Py_None != unsetsurfobj) {
         if (!pgSurface_Check(unsetsurfobj)) {
-            PyErr_SetString(PyExc_TypeError, "invalid unsetsurface argument");
+            RAISE(PyExc_TypeError, "invalid unsetsurface argument");
             goto to_surface_error;
         }
 
@@ -2301,9 +2317,9 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
         if (0 == check_surface_pixel_format(surf, unsetsurf)) {
             /* Needs to have the same format settings as surface. */
-            PyErr_SetString(PyExc_ValueError,
-                            "unsetsurface needs to have same "
-                            "bytesize/bitsize/alpha format as surface");
+            RAISE(PyExc_ValueError,
+                  "unsetsurface needs to have same bytesize/bitsize/alpha "
+                  "format as surface");
             goto to_surface_error;
         }
         else if ((unsetsurf->h <= 0) || (unsetsurf->w <= 0)) {
@@ -2335,14 +2351,14 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock((pgSurfaceObject *)surfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot lock surface");
+        RAISE(PyExc_RuntimeError, "cannot lock surface");
         goto to_surface_error;
     }
 
     /* Only lock the setsurface if it is being used.
      * i.e. setsurf is non-NULL */
     if (NULL != setsurf && !pgSurface_Lock((pgSurfaceObject *)setsurfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot lock setsurface");
+        RAISE(PyExc_RuntimeError, "cannot lock setsurface");
         goto to_surface_error;
     }
 
@@ -2350,7 +2366,7 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
      * i.e.. unsetsurf is non-NULL. */
     if (NULL != unsetsurf &&
         !pgSurface_Lock((pgSurfaceObject *)unsetsurfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot lock unsetsurface");
+        RAISE(PyExc_RuntimeError, "cannot lock unsetsurface");
         goto to_surface_error;
     }
 
@@ -2382,17 +2398,17 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (NULL != unsetsurf &&
         !pgSurface_Unlock((pgSurfaceObject *)unsetsurfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot unlock unsetsurface");
+        RAISE(PyExc_RuntimeError, "cannot unlock unsetsurface");
         goto to_surface_error;
     }
 
     if (NULL != setsurf && !pgSurface_Unlock((pgSurfaceObject *)setsurfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot unlock setsurface");
+        RAISE(PyExc_RuntimeError, "cannot unlock setsurface");
         goto to_surface_error;
     }
 
     if (!pgSurface_Unlock((pgSurfaceObject *)surfobj)) {
-        PyErr_SetString(PyExc_RuntimeError, "cannot unlock surface");
+        RAISE(PyExc_RuntimeError, "cannot unlock surface");
         goto to_surface_error;
     }
 
@@ -2491,8 +2507,8 @@ create_mask_using_bitmask_and_type(bitmask_t *bitmask, PyTypeObject *ob_type)
         (pgMaskObject *)pgMask_Type.tp_new(ob_type, NULL, NULL);
 
     if (NULL == maskobj) {
-        return (pgMaskObject *)RAISE(PyExc_MemoryError,
-                                     "cannot allocate memory for mask");
+        return (pgMaskObject *)RAISERETURN(
+            PyExc_MemoryError, "cannot allocate memory for mask", NULL);
     }
 
     maskobj->mask = bitmask;
@@ -2526,7 +2542,8 @@ mask_new(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
     pgMaskObject *maskobj = (pgMaskObject *)subtype->tp_alloc(subtype, 0);
 
     if (NULL == maskobj) {
-        return RAISE(PyExc_MemoryError, "cannot allocate memory for mask");
+        return RAISERETURN(PyExc_MemoryError,
+                           "cannot allocate memory for mask", NULL);
     }
 
     maskobj->mask = NULL;
@@ -2549,22 +2566,19 @@ mask_init(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(size, &w, &h)) {
-        PyErr_SetString(PyExc_TypeError, "size must be two numbers");
-        return -1;
+        return RAISERETURN(PyExc_TypeError, "size must be two numbers", -1);
     }
 
     if (w < 0 || h < 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "cannot create mask with negative size");
-        return -1;
+        return RAISERETURN(PyExc_ValueError,
+                           "cannot create mask with negative size", -1);
     }
 
     bitmask = bitmask_create(w, h);
 
     if (NULL == bitmask) {
-        PyErr_SetString(PyExc_MemoryError,
-                        "cannot allocate memory for bitmask");
-        return -1;
+        return RAISERETURN(PyExc_MemoryError,
+                           "cannot allocate memory for bitmask", -1);
     }
 
     if (fill) {

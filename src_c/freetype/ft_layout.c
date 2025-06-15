@@ -139,8 +139,7 @@ _PGFT_LoadLayout(FreeTypeInstance *ft, pgFontObject *fontobj,
         copy_mode(&ftext->mode, mode);
         font = _PGFT_GetFontSized(ft, fontobj, mode->face_size);
         if (!font) {
-            PyErr_SetString(pgExc_SDLError, _PGFT_GetError(ft));
-            return 0;
+            return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), NULL);
         }
     }
 
@@ -213,8 +212,7 @@ size_text(Layout *ftext, FreeTypeInstance *ft, TextContext *context,
                                    &slots[length].kerning);
             if (error) {
                 _PGFT_SetError(ft, "Loading glyphs", error);
-                PyErr_SetString(pgExc_SDLError, _PGFT_GetError(ft));
-                return -1;
+                return RAISERETURN(pgExc_SDLError, _PGFT_GetError(ft), -1);
             }
         }
         prev_id = id;

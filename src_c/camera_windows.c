@@ -97,13 +97,14 @@ _check_integrity(pgCameraObject *self)
     if (FAILED(self->t_error)) {
         /* MF_E_HW_MFT_FAILED_START_STREAMING */
         if (self->t_error == (HRESULT)-1072875772) {
-            PyErr_SetString(PyExc_SystemError,
-                            "Camera already in use (Capture Thread Quit)");
+            return RAISERETURN(PyExc_SystemError,
+                               "Camera already in use (Capture Thread Quit)",
+                               0);
         }
         /* MF_E_VIDEO_RECORDING_DEVICE_INVALIDATED */
         else if (self->t_error == (HRESULT)-1072873822) {
-            PyErr_SetString(PyExc_SystemError,
-                            "Camera disconnected (Capture Thread Quit)");
+            return RAISERETURN(PyExc_SystemError,
+                               "Camera disconnected (Capture Thread Quit)", 0);
         }
         else {
             T_FORMATHR(self->t_error, self->t_error_line)
@@ -321,9 +322,8 @@ _select_source_type(pgCameraObject *self, IMFMediaType **mp)
     }
 
     if (!type_count) {
-        PyErr_SetString(pgExc_SDLError,
-                        "Could not find any video types on this camera");
-        return 0;
+        return RAISERETURN(pgExc_SDLError,
+                           "Could not find any video types on this camera", 0);
     }
 
     native_types = malloc(sizeof(IMFMediaType *) * type_count);
@@ -382,9 +382,8 @@ _select_source_type(pgCameraObject *self, IMFMediaType **mp)
     }
 
     if (index == -1) {
-        PyErr_SetString(pgExc_SDLError,
-                        "Could not find a valid video type in any supported"
-                        " format");
+        RAISE(pgExc_SDLError,
+              "Could not find a valid video type in any supported format");
         hr = HR_UPSTREAM_FAILURE;
         goto cleanup;
     }
@@ -803,9 +802,8 @@ windows_read_frame(pgCameraObject *self, SDL_Surface *surf)
     HRESULT hr;
 
     if (!self->open) {
-        PyErr_SetString(pgExc_SDLError,
-                        "Camera needs to be started to read data");
-        return 0;
+        return RAISERETURN(pgExc_SDLError,
+                           "Camera needs to be started to read data", 0);
     }
 
     if (!_check_integrity(self)) {
@@ -839,9 +837,8 @@ windows_frame_ready(pgCameraObject *self, int *result)
     *result = self->buffer_ready;
 
     if (!self->open) {
-        PyErr_SetString(pgExc_SDLError,
-                        "Camera needs to be started to read data");
-        return 0;
+        return RAISERETURN(pgExc_SDLError,
+                           "Camera needs to be started to read data", 0);
     }
 
     if (!_check_integrity(self)) {
@@ -858,9 +855,8 @@ windows_read_raw(pgCameraObject *self)
     HRESULT hr;
 
     if (!self->open) {
-        PyErr_SetString(pgExc_SDLError,
-                        "Camera needs to be started to read data");
-        return 0;
+        return RAISERETURN(pgExc_SDLError,
+                           "Camera needs to be started to read data", 0);
     }
 
     if (!_check_integrity(self)) {
@@ -877,9 +873,8 @@ windows_read_raw(pgCameraObject *self)
 
         data = PyBytes_FromStringAndSize(buf_data, buf_length);
         if (!data) {
-            PyErr_SetString(pgExc_SDLError,
-                            "Error constructing bytes from data");
-            return 0;
+            return RAISERETURN(pgExc_SDLError,
+                               "Error constructing bytes from data", 0);
         }
 
         hr = self->raw_buf->lpVtbl->Unlock(self->raw_buf);

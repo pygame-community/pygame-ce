@@ -59,7 +59,8 @@ _get_single_pixel(pgPixelArrayObject *array, Py_ssize_t x, Py_ssize_t y)
     Uint32 pixel;
 
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
     pixel_p = (array->pixels + x * array->strides[0] + y * array->strides[1]);
     surf = pgSurface_AsSurface(array->surface);
@@ -119,7 +120,8 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     Uint8 *new_pixel_p;
 
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
 
     surf = pgSurface_AsSurface(array->surface);
@@ -132,7 +134,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     if (!same_dims) {
         if (!(temp_surf = PG_CreateSurface((int)dim0, (int)dim1,
                                            PG_SURF_FORMATENUM(surf)))) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     }
 
@@ -143,7 +145,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     }
 
     if (!new_surf) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     new_surface = pgSurface_New(new_surf);
@@ -257,12 +259,11 @@ _get_weights(PyObject *weights, float *wr, float *wg, float *wb)
     }
 
     if (!PySequence_Check(weights)) {
-        PyErr_SetString(PyExc_TypeError, "weights must be a sequence");
+        RAISE(PyExc_TypeError, "weights must be a sequence");
         success = 0;
     }
     else if (PySequence_Size(weights) < 3) {
-        PyErr_SetString(PyExc_TypeError,
-                        "weights must contain at least 3 values");
+        RAISE(PyExc_TypeError, "weights must contain at least 3 values");
         success = 0;
     }
     else {
@@ -302,7 +303,7 @@ _get_weights(PyObject *weights, float *wr, float *wg, float *wb)
                 }
             }
             else {
-                PyErr_SetString(PyExc_TypeError, "invalid weights");
+                RAISE(PyExc_TypeError, "invalid weights");
                 success = 0;
             }
             Py_XDECREF(item);
@@ -320,9 +321,9 @@ _get_weights(PyObject *weights, float *wr, float *wg, float *wb)
         *wb = rgb[2];
         if ((*wr < 0 || *wg < 0 || *wb < 0) ||
             (*wr == 0 && *wg == 0 && *wb == 0)) {
-            PyErr_SetString(PyExc_ValueError,
-                            "weights must be positive and greater than 0");
-            return 0;
+            return RAISERETURN(PyExc_ValueError,
+                               "weights must be positive and greater than 0",
+                               0);
         }
         /* Build the average weight values. */
         sum = *wr + *wg + *wb;
@@ -360,7 +361,8 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     static char *keys[] = {"color", "repcolor", "distance", "weights", NULL};
 
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
     surf = pgSurface_AsSurface(array->surface);
 
@@ -370,14 +372,15 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     }
 
     if (distance < 0 || distance > 1) {
-        return RAISE(PyExc_ValueError,
-                     "distance must be in the range from 0.0 to 1.0");
+        return RAISERETURN(PyExc_ValueError,
+                           "distance must be in the range from 0.0 to 1.0",
+                           NULL);
     }
 
     PG_PixelFormat *format;
     SDL_Palette *palette;
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     bpp = PG_FORMAT_BytesPerPixel(format);
@@ -548,7 +551,8 @@ _extract_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     static char *keys[] = {"color", "distance", "weights", NULL};
 
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|fO", keys, &excolor,
@@ -557,8 +561,9 @@ _extract_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     }
 
     if (distance < 0 || distance > 1) {
-        return RAISE(PyExc_ValueError,
-                     "distance must be in the range from 0.0 to 1.0");
+        return RAISERETURN(PyExc_ValueError,
+                           "distance must be in the range from 0.0 to 1.0",
+                           NULL);
     }
 
     if (!_get_weights(weights, &wr, &wg, &wb)) {
@@ -582,7 +587,7 @@ _extract_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     PG_PixelFormat *format;
     SDL_Palette *palette;
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     bpp = PG_FORMAT_BytesPerPixel(format);
@@ -789,7 +794,8 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     static char *keys[] = {"array", "distance", "weights", NULL};
 
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
     surf = pgSurface_AsSurface(array->surface);
 
@@ -800,8 +806,9 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     }
 
     if (distance < 0.0 || distance > 1.0) {
-        return RAISE(PyExc_ValueError,
-                     "distance must be in the range from 0.0 to 1.0");
+        return RAISERETURN(PyExc_ValueError,
+                           "distance must be in the range from 0.0 to 1.0",
+                           NULL);
     }
 
     if (!_get_weights(weights, &wr, &wg, &wb)) {
@@ -810,8 +817,7 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
 
     if (other_array->shape[0] != dim0 || other_array->shape[1] != dim1) {
         /* Bounds do not match. */
-        PyErr_SetString(PyExc_ValueError, "array sizes do not match");
-        return 0;
+        return RAISERETURN(PyExc_ValueError, "array sizes do not match", NULL);
     }
 
     other_surf = pgSurface_AsSurface(other_array->surface);
@@ -819,10 +825,10 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     PG_PixelFormat *format, *other_format;
     SDL_Palette *palette, *other_palette;
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     if (!PG_GetSurfaceDetails(other_surf, &other_format, &other_palette)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     bpp = PG_SURF_BytesPerPixel(surf);
@@ -830,8 +836,7 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     if (PG_FORMAT_BytesPerPixel(other_format) != bpp) {
         /* bpp do not match. We cannot guarantee that the padding and co
          * would be set correctly. */
-        PyErr_SetString(PyExc_ValueError, "bit depths do not match");
-        return 0;
+        return RAISERETURN(PyExc_ValueError, "bit depths do not match", NULL);
     }
 
     other_stride0 = other_array->strides[0];
@@ -1048,7 +1053,8 @@ static PyObject *
 _transpose(pgPixelArrayObject *array, PyObject *args)
 {
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
 
     SDL_Surface *surf = pgSurface_AsSurface(array->surface);
@@ -1073,7 +1079,8 @@ static PyObject *
 _close_array(pgPixelArrayObject *array, PyObject *args)
 {
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
     _cleanup_array(array);
     Py_RETURN_NONE;

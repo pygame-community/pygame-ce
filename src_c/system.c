@@ -76,7 +76,7 @@ pg_system_get_pref_path(PyObject *self, PyObject *args, PyObject *kwargs)
 
     char *path = SDL_GetPrefPath(org, project);
     if (path == NULL) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     PyObject *ret = PyUnicode_FromString(path);
@@ -245,7 +245,8 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
     }
 
     if (!PowerState_class) {
-        return RAISE(PyExc_SystemError, "PowerState class is not imported.");
+        return RAISERETURN(PyExc_SystemError,
+                           "PowerState class is not imported.", NULL);
     }
 
     return PyObject_Call(PowerState_class, return_args, return_kwargs);

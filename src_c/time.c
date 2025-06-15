@@ -186,7 +186,7 @@ pg_time_autoinit(PyObject *self, PyObject *_null)
     if (!pg_timer_mutex) {
         pg_timer_mutex = SDL_CreateMutex();
         if (!pg_timer_mutex) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     }
 #endif
@@ -326,8 +326,7 @@ accurate_delay(Sint64 ticks)
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
         if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
-            return -1;
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
     }
 #endif
@@ -364,7 +363,8 @@ time_delay(PyObject *self, PyObject *arg)
 {
     Sint64 ticks;
     if (!PyLong_Check(arg)) {
-        return RAISE(PyExc_TypeError, "delay requires one integer argument");
+        return RAISERETURN(PyExc_TypeError,
+                           "delay requires one integer argument", NULL);
     }
 
     ticks = PyLong_AsLongLong(arg);
@@ -384,13 +384,14 @@ time_wait(PyObject *self, PyObject *arg)
 {
     Sint64 ticks, start;
     if (!PyLong_Check(arg)) {
-        return RAISE(PyExc_TypeError, "wait requires one integer argument");
+        return RAISERETURN(PyExc_TypeError,
+                           "wait requires one integer argument", NULL);
     }
 
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
         if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     }
 #endif
@@ -422,8 +423,8 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
     /* do not allow set_timer to work on WASM for now... this needs some more
      * testing and fixes that are WIP on other PRs */
 #if defined(__EMSCRIPTEN__) || defined(__wasi__)
-    return RAISE(PyExc_NotImplementedError,
-                 "set_timer is not implemented on WASM yet");
+    return RAISERETURN(PyExc_NotImplementedError,
+                       "set_timer is not implemented on WASM yet", NULL);
 #endif
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oi|i", kwids, &obj, &ticks,
@@ -438,7 +439,8 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
                 /* happens if PyLong_AsLong overflows, error is already set */
                 return NULL;
             }
-            return RAISE(PyExc_ValueError, "event type out of range");
+            return RAISERETURN(PyExc_ValueError, "event type out of range",
+                               NULL);
         }
     }
     else if (pgEvent_Check(obj)) {
@@ -447,13 +449,14 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
         ev_dict = e->dict;
     }
     else {
-        return RAISE(PyExc_TypeError,
-                     "first argument must be an event type or event object");
+        return RAISERETURN(
+            PyExc_TypeError,
+            "first argument must be an event type or event object", NULL);
     }
 
 #ifndef __EMSCRIPTEN__
     if (!pg_timer_mutex) {
-        return RAISE(pgExc_SDLError, "pygame is not initialized");
+        return RAISERETURN(pgExc_SDLError, "pygame is not initialized", NULL);
     }
 #endif /* emscripten */
 
@@ -511,15 +514,16 @@ end_no_mutex:
         case PG_TIMER_NO_ERROR:
             Py_RETURN_NONE;
         case PG_TIMER_SDL_ERROR:
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         case PG_TIMER_MEMORY_ERROR:
             return PyErr_NoMemory();
         default:
-            return RAISE(
+            return RAISERETURN(
                 pgExc_SDLError,
                 "Unknown and unhandled internal error occurred while handling "
                 "errors in time_set_timer! If you are seeing this message "
-                "report this to pygame devs");
+                "report this to pygame devs",
+                NULL);
     }
 }
 
@@ -550,7 +554,7 @@ clock_tick_base(pgClockObject *self, PyObject *arg, int use_accurate_delay)
         /*just doublecheck that timer is initialized*/
         if (!SDL_WasInit(SDL_INIT_TIMER)) {
             if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
-                return RAISE(pgExc_SDLError, SDL_GetError());
+                return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
             }
         }
 #endif
@@ -651,8 +655,8 @@ clock_str(pgClockObject *self)
 
     int ret = PyOS_snprintf(str, 64, "<Clock(fps=%.2f)>", self->fps);
     if (ret < 0 || ret >= 64) {
-        return RAISE(PyExc_RuntimeError,
-                     "Internal PyOS_snprintf call failed!");
+        return RAISERETURN(PyExc_RuntimeError,
+                           "Internal PyOS_snprintf call failed!", NULL);
     }
 
     return PyUnicode_FromString(str);
@@ -672,7 +676,7 @@ clock_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
         if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     }
 #endif

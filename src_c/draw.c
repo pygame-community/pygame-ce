@@ -162,22 +162,23 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     SDL_Rect surf_clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
     if (surf_format == NULL) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     CHECK_LOAD_COLOR(colorobj)
 
     if (!pg_TwoFloatsFromObj(start, &startx, &starty)) {
-        return RAISE(PyExc_TypeError, "invalid start_pos argument");
+        return RAISERETURN(PyExc_TypeError, "invalid start_pos argument",
+                           NULL);
     }
 
     if (!pg_TwoFloatsFromObj(end, &endx, &endy)) {
-        return RAISE(PyExc_TypeError, "invalid end_pos argument");
+        return RAISERETURN(PyExc_TypeError, "invalid end_pos argument", NULL);
     }
 
     if (width < 1) {
@@ -185,7 +186,7 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error locking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error locking surface", NULL);
     }
 
     if (width > 1) {
@@ -198,7 +199,8 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pgSurface_Unlock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error unlocking surface",
+                           NULL);
     }
 
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
@@ -247,17 +249,18 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     SDL_Rect surf_clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     CHECK_LOAD_COLOR(colorobj)
 
     if (!pg_TwoIntsFromObj(start, &startx, &starty)) {
-        return RAISE(PyExc_TypeError, "invalid start_pos argument");
+        return RAISERETURN(PyExc_TypeError, "invalid start_pos argument",
+                           NULL);
     }
 
     if (!pg_TwoIntsFromObj(end, &endx, &endy)) {
-        return RAISE(PyExc_TypeError, "invalid end_pos argument");
+        return RAISERETURN(PyExc_TypeError, "invalid end_pos argument", NULL);
     }
 
     if (width < 1) {
@@ -265,14 +268,15 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error locking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error locking surface", NULL);
     }
 
     draw_line_width(surf, surf_clip_rect, color, startx, starty, endx, endy,
                     width, drawn_area);
 
     if (!pgSurface_Unlock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error unlocking surface",
+                           NULL);
     }
 
     /* Compute return rect. */
@@ -342,26 +346,28 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     SDL_Rect surf_clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
     if (surf_format == NULL) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     CHECK_LOAD_COLOR(colorobj)
 
     if (!PySequence_Check(points)) {
-        return RAISE(PyExc_TypeError,
-                     "points argument must be a sequence of number pairs");
+        return RAISERETURN(
+            PyExc_TypeError,
+            "points argument must be a sequence of number pairs", NULL);
     }
 
     length = PySequence_Length(points);
 
     if (length < 2) {
-        return RAISE(PyExc_ValueError,
-                     "points argument must contain 2 or more points");
+        return RAISERETURN(PyExc_ValueError,
+                           "points argument must contain 2 or more points",
+                           NULL);
     }
 
     // Allocate bytes for the xlist and ylist at once to reduce allocations.
@@ -370,8 +376,8 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     float *ylist = points_buf + length;
 
     if (points_buf == NULL) {
-        return RAISE(PyExc_MemoryError,
-                     "cannot allocate memory to draw aalines");
+        return RAISERETURN(PyExc_MemoryError,
+                           "cannot allocate memory to draw aalines", NULL);
     }
 
     for (loop = 0; loop < length; ++loop) {
@@ -385,7 +391,8 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
 
         if (!result) {
             PyMem_Free(points_buf);
-            return RAISE(PyExc_TypeError, "points must be number pairs");
+            return RAISERETURN(PyExc_TypeError, "points must be number pairs",
+                               NULL);
         }
 
         xlist[loop] = x;
@@ -394,7 +401,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (!pgSurface_Lock(surfobj)) {
         PyMem_Free(points_buf);
-        return RAISE(PyExc_RuntimeError, "error locking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error locking surface", NULL);
     }
 
     /* first line - if open, add endpoint pixels.*/
@@ -494,7 +501,8 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyMem_Free(points_buf);
 
     if (!pgSurface_Unlock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error unlocking surface",
+                           NULL);
     }
 
     /* Compute return rect. */
@@ -547,21 +555,23 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     SDL_Rect surf_clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     CHECK_LOAD_COLOR(colorobj)
 
     if (!PySequence_Check(points)) {
-        return RAISE(PyExc_TypeError,
-                     "points argument must be a sequence of number pairs");
+        return RAISERETURN(
+            PyExc_TypeError,
+            "points argument must be a sequence of number pairs", NULL);
     }
 
     length = PySequence_Length(points);
 
     if (length < 2) {
-        return RAISE(PyExc_ValueError,
-                     "points argument must contain 2 or more points");
+        return RAISERETURN(PyExc_ValueError,
+                           "points argument must contain 2 or more points",
+                           NULL);
     }
 
     xlist = PyMem_New(int, length);
@@ -574,8 +584,8 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
         if (ylist) {
             PyMem_Free(ylist);
         }
-        return RAISE(PyExc_MemoryError,
-                     "cannot allocate memory to draw lines");
+        return RAISERETURN(PyExc_MemoryError,
+                           "cannot allocate memory to draw lines", NULL);
     }
 
     for (loop = 0; loop < length; ++loop) {
@@ -586,7 +596,8 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
         if (!result) {
             PyMem_Free(xlist);
             PyMem_Free(ylist);
-            return RAISE(PyExc_TypeError, "points must be number pairs");
+            return RAISERETURN(PyExc_TypeError, "points must be number pairs",
+                               NULL);
         }
 
         xlist[loop] = x;
@@ -605,7 +616,7 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     if (!pgSurface_Lock(surfobj)) {
         PyMem_Free(xlist);
         PyMem_Free(ylist);
-        return RAISE(PyExc_RuntimeError, "error locking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error locking surface", NULL);
     }
 
     for (loop = 1; loop < length; ++loop) {
@@ -624,7 +635,8 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyMem_Free(ylist);
 
     if (!pgSurface_Unlock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error unlocking surface",
+                           NULL);
     }
 
     /* Compute return rect. */
@@ -663,7 +675,7 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
     rect = pgRect_FromObject(rectobj, &temp);
 
     if (!rect) {
-        return RAISE(PyExc_TypeError, "rect argument is invalid");
+        return RAISERETURN(PyExc_TypeError, "rect argument is invalid", NULL);
     }
 
     surf = pgSurface_AsSurface(surfobj);
@@ -677,7 +689,7 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     SDL_Rect surf_clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -696,7 +708,7 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error locking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error locking surface", NULL);
     }
 
     width = MIN(width, MIN(rect->w, rect->h) / 2);
@@ -706,7 +718,8 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
              angle_start, angle_stop, color, drawn_area);
 
     if (!pgSurface_Unlock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error unlocking surface",
+                           NULL);
     }
 
     /* Compute return rect. */
@@ -743,7 +756,7 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     rect = pgRect_FromObject(rectobj, &temp);
 
     if (!rect) {
-        return RAISE(PyExc_TypeError, "rect argument is invalid");
+        return RAISERETURN(PyExc_TypeError, "rect argument is invalid", NULL);
     }
 
     surf = pgSurface_AsSurface(surfobj);
@@ -757,7 +770,7 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     SDL_Rect surf_clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -767,7 +780,7 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error locking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error locking surface", NULL);
     }
 
     if (!width ||
@@ -781,7 +794,8 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pgSurface_Unlock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error unlocking surface",
+                           NULL);
     }
 
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
@@ -827,14 +841,13 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(posobj, &posx, &posy)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "center argument must be a pair of numbers");
-        return 0;
+        return RAISERETURN(PyExc_TypeError,
+                           "center argument must be a pair of numbers", NULL);
     }
 
     if (!pg_IntFromObj(radiusobj, &radius)) {
-        PyErr_SetString(PyExc_TypeError, "radius argument must be a number");
-        return 0;
+        return RAISERETURN(PyExc_TypeError, "radius argument must be a number",
+                           NULL);
     }
 
     surf = pgSurface_AsSurface(surfobj);
@@ -848,7 +861,7 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
 
     SDL_Rect surf_clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -869,7 +882,7 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error locking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error locking surface", NULL);
     }
 
     if ((top_right == 0 && top_left == 0 && bottom_left == 0 &&
@@ -894,7 +907,8 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pgSurface_Unlock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error unlocking surface",
+                           NULL);
     }
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
         drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
@@ -939,12 +953,13 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(posobj, &posx, &posy)) {
-        return RAISE(PyExc_TypeError,
-                     "center argument must be a pair of numbers");
+        return RAISERETURN(PyExc_TypeError,
+                           "center argument must be a pair of numbers", NULL);
     }
 
     if (!pg_IntFromObj(radiusobj, &radius)) {
-        return RAISE(PyExc_TypeError, "radius argument must be a number");
+        return RAISERETURN(PyExc_TypeError, "radius argument must be a number",
+                           NULL);
     }
 
     surf = pgSurface_AsSurface(surfobj);
@@ -958,12 +973,12 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
 
     SDL_Rect surf_clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
     if (surf_format == NULL) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -984,7 +999,7 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error locking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error locking surface", NULL);
     }
 
     if ((top_right == 0 && top_left == 0 && bottom_left == 0 &&
@@ -1028,7 +1043,8 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pgSurface_Unlock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error unlocking surface",
+                           NULL);
     }
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
         drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
@@ -1086,21 +1102,23 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     SDL_Rect surf_clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     CHECK_LOAD_COLOR(colorobj)
 
     if (!PySequence_Check(points)) {
-        return RAISE(PyExc_TypeError,
-                     "points argument must be a sequence of number pairs");
+        return RAISERETURN(
+            PyExc_TypeError,
+            "points argument must be a sequence of number pairs", NULL);
     }
 
     length = PySequence_Length(points);
 
     if (length < 3) {
-        return RAISE(PyExc_ValueError,
-                     "points argument must contain more than 2 points");
+        return RAISERETURN(PyExc_ValueError,
+                           "points argument must contain more than 2 points",
+                           NULL);
     }
 
     // Allocate bytes for the xlist and ylist at once to reduce allocations.
@@ -1109,8 +1127,8 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     int *ylist = points_buf + length;
 
     if (points_buf == NULL) {
-        return RAISE(PyExc_MemoryError,
-                     "cannot allocate memory to draw polygon");
+        return RAISERETURN(PyExc_MemoryError,
+                           "cannot allocate memory to draw polygon", NULL);
     }
 
     for (loop = 0; loop < length; ++loop) {
@@ -1124,7 +1142,8 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
 
         if (!result) {
             PyMem_Free(points_buf);
-            return RAISE(PyExc_TypeError, "points must be number pairs");
+            return RAISERETURN(PyExc_TypeError, "points must be number pairs",
+                               NULL);
         }
 
         xlist[loop] = x;
@@ -1133,7 +1152,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (!pgSurface_Lock(surfobj)) {
         PyMem_Free(points_buf);
-        return RAISE(PyExc_RuntimeError, "error locking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error locking surface", NULL);
     }
 
     if (length != 3) {
@@ -1146,7 +1165,8 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyMem_Free(points_buf);
 
     if (!pgSurface_Unlock(surfobj)) {
-        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        return RAISERETURN(PyExc_RuntimeError, "error unlocking surface",
+                           NULL);
     }
 
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
@@ -1193,7 +1213,7 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!(rect = pgRect_FromObject(rectobj, &temp))) {
-        return RAISE(PyExc_TypeError, "rect argument is invalid");
+        return RAISERETURN(PyExc_TypeError, "rect argument is invalid", NULL);
     }
 
     surf = pgSurface_AsSurface(surfobj);
@@ -1207,7 +1227,7 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
 
     SDL_Rect surf_clip_rect;
     if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -1245,14 +1265,15 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
             pgSurface_Unlock(surfobj);
             pgSurface_Unprep(surfobj);
             if (!success) {
-                return RAISE(pgExc_SDLError, SDL_GetError());
+                return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
             }
         }
         return pgRect_New(&clipped);
     }
     else {
         if (!pgSurface_Lock(surfobj)) {
-            return RAISE(PyExc_RuntimeError, "error locking surface");
+            return RAISERETURN(PyExc_RuntimeError, "error locking surface",
+                               NULL);
         }
 
         /* Little bit to normalize the rect: this matters for the rounded
@@ -1275,7 +1296,8 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
                         width, color, top_left_radius, top_right_radius,
                         bottom_left_radius, bottom_right_radius, drawn_area);
         if (!pgSurface_Unlock(surfobj)) {
-            return RAISE(PyExc_RuntimeError, "error unlocking surface");
+            return RAISERETURN(PyExc_RuntimeError, "error unlocking surface",
+                               NULL);
         }
     }
 

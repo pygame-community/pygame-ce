@@ -91,7 +91,7 @@ music_play(PyObject *self, PyObject *args, PyObject *keywds)
 
     MIXER_INIT_CHECK();
     if (!current_music) {
-        return RAISE(pgExc_SDLError, "music not loaded");
+        return RAISERETURN(pgExc_SDLError, "music not loaded", NULL);
     }
 
     Py_BEGIN_ALLOW_THREADS;
@@ -106,7 +106,7 @@ music_play(PyObject *self, PyObject *args, PyObject *keywds)
     Mix_VolumeMusic(volume);
     Py_END_ALLOW_THREADS;
     if (val == -1) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     Py_RETURN_NONE;
@@ -236,7 +236,8 @@ music_set_pos(PyObject *self, PyObject *arg)
     double pos = PyFloat_AsDouble(arg);
     if (pos == -1 && PyErr_Occurred()) {
         PyErr_Clear();
-        return RAISE(PyExc_TypeError, "set_pos expects 1 float argument");
+        return RAISERETURN(PyExc_TypeError, "set_pos expects 1 float argument",
+                           NULL);
     }
 
     MIXER_INIT_CHECK();
@@ -246,7 +247,7 @@ music_set_pos(PyObject *self, PyObject *arg)
     Py_END_ALLOW_THREADS;
 
     if (position_set == -1) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     Py_RETURN_NONE;
@@ -409,7 +410,7 @@ _load_music(PyObject *obj, char *namehint)
     }
 
     if (!new_music) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     return new_music;
@@ -530,9 +531,10 @@ music_get_metadata(PyObject *self, PyObject *args, PyObject *keywds)
         }
     }
     else if (namehint) {
-        return RAISE(
+        return RAISERETURN(
             pgExc_SDLError,
-            "'namehint' specified without specifying 'filename' or 'fileobj'");
+            "'namehint' specified without specifying 'filename' or 'fileobj'",
+            NULL);
     }
 
     const char *title = "";
@@ -548,7 +550,7 @@ music_get_metadata(PyObject *self, PyObject *args, PyObject *keywds)
 #endif
 
     if (!music) {
-        return RAISE(pgExc_SDLError, "music not loaded");
+        return RAISERETURN(pgExc_SDLError, "music not loaded", NULL);
     }
 
     meta_dict = Py_BuildValue("{ss ss ss ss}", "title", title, "album", album,

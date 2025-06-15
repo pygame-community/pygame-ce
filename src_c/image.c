@@ -91,7 +91,7 @@ image_load_basic(PyObject *self, PyObject *obj)
     Py_END_ALLOW_THREADS;
 
     if (surf == NULL) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     final = (PyObject *)pgSurface_New(surf);
@@ -105,8 +105,9 @@ static PyObject *
 image_load_extended(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     if (extloadobj == NULL) {
-        return RAISE(PyExc_NotImplementedError,
-                     "loading images of extended format is not available");
+        return RAISERETURN(
+            PyExc_NotImplementedError,
+            "loading images of extended format is not available", NULL);
     }
     else {
         return PyObject_Call(extloadobj, arg, kwarg);
@@ -142,8 +143,9 @@ static PyObject *
 image_save_extended(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     if (extsaveobj == NULL) {
-        return RAISE(PyExc_NotImplementedError,
-                     "saving images of extended format is not available");
+        return RAISERETURN(PyExc_NotImplementedError,
+                           "saving images of extended format is not available",
+                           NULL);
     }
     else {
         return PyObject_Call(extsaveobj, arg, kwarg);
@@ -236,11 +238,11 @@ image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     if (result == -1) {
         /* SDL error: translate to Python error */
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     if (result == 1) {
         /* Should never get here */
-        return RAISE(pgExc_SDLError, "Unrecognized image type");
+        return RAISERETURN(pgExc_SDLError, "Unrecognized image type", NULL);
     }
 
     Py_RETURN_NONE;
@@ -555,7 +557,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     const SDL_PixelFormatDetails *format_details =
         SDL_GetPixelFormatDetails(surf->format);
     if (!format_details) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     SDL_Palette *surf_palette = SDL_GetSurfacePalette(surf);
     Rloss = format_details->Rbits;
@@ -581,9 +583,9 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
 
     if (!strcmp(format, "P")) {
         if (PG_SURF_BytesPerPixel(surf) != 1) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Can only create \"P\" format data with 8bit Surfaces");
+                "Can only create \"P\" format data with 8bit Surfaces", NULL);
         }
         byte_width = surf->w;
     }
@@ -603,14 +605,16 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     else if (!strcmp(format, "RGBA_PREMULT") ||
              !strcmp(format, "ARGB_PREMULT")) {
         if (PG_SURF_BytesPerPixel(surf) == 1 || Amask == 0) {
-            return RAISE(PyExc_ValueError,
-                         "Can only create pre-multiplied alpha bytes if "
-                         "the surface has per-pixel alpha");
+            return RAISERETURN(PyExc_ValueError,
+                               "Can only create pre-multiplied alpha bytes if "
+                               "the surface has per-pixel alpha",
+                               NULL);
         }
         byte_width = surf->w * 4;
     }
     else {
-        return RAISE(PyExc_ValueError, "Unrecognized type of format");
+        return RAISERETURN(PyExc_ValueError, "Unrecognized type of format",
+                           NULL);
     }
 
     if (pitch == -1) {
@@ -618,9 +622,10 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
         padding = 0;
     }
     else if (pitch < byte_width) {
-        return RAISE(PyExc_ValueError,
-                     "Pitch must be greater than or equal to the width "
-                     "as per the format");
+        return RAISERETURN(PyExc_ValueError,
+                           "Pitch must be greater than or equal to the width "
+                           "as per the format",
+                           NULL);
     }
     else {
         padding = pitch - byte_width;
@@ -1176,8 +1181,8 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
     }
 
     if (w < 1 || h < 1) {
-        return RAISE(PyExc_ValueError,
-                     "Resolution must be nonzero positive values");
+        return RAISERETURN(PyExc_ValueError,
+                           "Resolution must be nonzero positive values", NULL);
     }
 
     PyBytes_AsStringAndSize(bytes, &data, &len);
@@ -1187,20 +1192,23 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w;
         }
         else if (pitch < w) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width "
-                         "as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width "
+                "as per the format",
+                NULL);
         }
 
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
+                "Bytes length does not equal format and resolution size",
+                NULL);
         }
 
         surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_INDEX8);
         if (!surf) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         SDL_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
@@ -1214,15 +1222,18 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w * 3;
         }
         else if (pitch < w * 3) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "3 as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width * "
+                "3 as per the format",
+                NULL);
         }
 
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
+                "Bytes length does not equal format and resolution size",
+                NULL);
         }
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
@@ -1231,7 +1242,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_RGB24);
 #endif
         if (!surf) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         SDL_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
@@ -1260,22 +1271,25 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w * 4;
         }
         else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width * "
+                "4 as per the format",
+                NULL);
         }
 
         int alphamult = !strcmp(format, "RGBA");
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
+                "Bytes length does not equal format and resolution size",
+                NULL);
         }
         surf = PG_CreateSurface(
             w, h,
             (alphamult ? SDL_PIXELFORMAT_RGBA32 : PG_PIXELFORMAT_RGBX32));
         if (!surf) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         SDL_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
@@ -1291,19 +1305,22 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w * 4;
         }
         else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width * "
+                "4 as per the format",
+                NULL);
         }
 
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
+                "Bytes length does not equal format and resolution size",
+                NULL);
         }
         surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_BGRA32);
         if (!surf) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         SDL_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
@@ -1319,19 +1336,22 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w * 4;
         }
         else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width * "
+                "4 as per the format",
+                NULL);
         }
 
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
+                "Bytes length does not equal format and resolution size",
+                NULL);
         }
         surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_ARGB32);
         if (!surf) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         SDL_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
@@ -1347,19 +1367,22 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w * 4;
         }
         else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width * "
+                "4 as per the format",
+                NULL);
         }
 
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
+                "Bytes length does not equal format and resolution size",
+                NULL);
         }
         surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_ABGR32);
         if (!surf) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         SDL_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
@@ -1371,7 +1394,8 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         SDL_UnlockSurface(surf);
     }
     else {
-        return RAISE(PyExc_ValueError, "Unrecognized type of format");
+        return RAISERETURN(PyExc_ValueError, "Unrecognized type of format",
+                           NULL);
     }
 
     return (PyObject *)pgSurface_New(surf);
@@ -1452,8 +1476,8 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
     }
 
     if (w < 1 || h < 1) {
-        return RAISE(PyExc_ValueError,
-                     "Resolution must be nonzero positive values");
+        return RAISERETURN(PyExc_ValueError,
+                           "Resolution must be nonzero positive values", NULL);
     }
 
     /* breaking constness here, we should really not change this string */
@@ -1466,15 +1490,18 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w;
         }
         else if (pitch < w) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width "
-                         "as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width "
+                "as per the format",
+                NULL);
         }
 
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
+                "Buffer length does not equal format and resolution size",
+                NULL);
         }
 
         surf = PG_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_INDEX8, data, pitch);
@@ -1484,15 +1511,18 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w * 3;
         }
         else if (pitch < w * 3) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "3 as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width * "
+                "3 as per the format",
+                NULL);
         }
 
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
+                "Buffer length does not equal format and resolution size",
+                NULL);
         }
         surf = PG_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGB24, data, pitch);
     }
@@ -1501,15 +1531,18 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w * 3;
         }
         else if (pitch < w * 3) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "3 as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width * "
+                "3 as per the format",
+                NULL);
         }
 
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
+                "Buffer length does not equal format and resolution size",
+                NULL);
         }
         surf = PG_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_BGR24, data, pitch);
     }
@@ -1518,15 +1551,18 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w * 4;
         }
         else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width * "
+                "4 as per the format",
+                NULL);
         }
 
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
+                "Buffer length does not equal format and resolution size",
+                NULL);
         }
         surf = PG_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_BGRA32, data, pitch);
     }
@@ -1535,16 +1571,19 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w * 4;
         }
         else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width * "
+                "4 as per the format",
+                NULL);
         }
 
         int alphamult = !strcmp(format, "RGBA");
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
+                "Buffer length does not equal format and resolution size",
+                NULL);
         }
         surf = PG_CreateSurfaceFrom(
             w, h, (alphamult ? SDL_PIXELFORMAT_RGBA32 : PG_PIXELFORMAT_RGBX32),
@@ -1555,24 +1594,28 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
             pitch = w * 4;
         }
         else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
+            return RAISERETURN(
+                PyExc_ValueError,
+                "Pitch must be greater than or equal to the width * "
+                "4 as per the format",
+                NULL);
         }
 
         if (len != (Py_ssize_t)pitch * h) {
-            return RAISE(
+            return RAISERETURN(
                 PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
+                "Buffer length does not equal format and resolution size",
+                NULL);
         }
         surf = PG_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_ARGB32, data, pitch);
     }
     else {
-        return RAISE(PyExc_ValueError, "Unrecognized type of format");
+        return RAISERETURN(PyExc_ValueError, "Unrecognized type of format",
+                           NULL);
     }
 
     if (!surf) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     surfobj = (pgSurfaceObject *)pgSurface_New(surf);
     Py_INCREF(buffer);
@@ -1882,8 +1925,9 @@ image_load_sized_svg(PyObject *self, PyObject *args, PyObject *kwargs)
         return PyObject_Call(ext_load_sized_svg, args, kwargs);
     }
 
-    return RAISE(PyExc_NotImplementedError,
-                 "Support for sized svg image loading was not compiled in.");
+    return RAISERETURN(
+        PyExc_NotImplementedError,
+        "Support for sized svg image loading was not compiled in.", NULL);
 }
 
 static PyObject *
@@ -1893,8 +1937,9 @@ image_load_animation(PyObject *self, PyObject *args, PyObject *kwargs)
         return PyObject_Call(ext_load_animation, args, kwargs);
     }
 
-    return RAISE(PyExc_NotImplementedError,
-                 "Support for animation loading was not compiled in.");
+    return RAISERETURN(PyExc_NotImplementedError,
+                       "Support for animation loading was not compiled in.",
+                       NULL);
 }
 
 static PyMethodDef _image_methods[] = {

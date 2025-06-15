@@ -145,7 +145,7 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
 
     if (surf == NULL) {
-        return RAISE(pgExc_SDLError, IMG_GetError());
+        return RAISERETURN(pgExc_SDLError, IMG_GetError(), NULL);
     }
 
     final = (PyObject *)pgSurface_New(surf);
@@ -170,12 +170,12 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(size, &width, &height)) {
-        return RAISE(PyExc_TypeError, "size must be two numbers");
+        return RAISERETURN(PyExc_TypeError, "size must be two numbers", NULL);
     }
 
     if (width <= 0 || height <= 0) {
-        return RAISE(PyExc_ValueError,
-                     "both components of size must be positive");
+        return RAISERETURN(PyExc_ValueError,
+                           "both components of size must be positive", NULL);
     }
 
     rw = pgRWops_FromObject(obj, NULL);
@@ -192,7 +192,7 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
     SDL_RWclose(rw);
     Py_END_ALLOW_THREADS;
     if (surf == NULL) {
-        return RAISE(pgExc_SDLError, IMG_GetError());
+        return RAISERETURN(pgExc_SDLError, IMG_GetError(), NULL);
     }
     final = (PyObject *)pgSurface_New(surf);
     if (final == NULL) {
@@ -200,9 +200,10 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
     return final;
 #else  /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
-    return RAISE(
+    return RAISERETURN(
         pgExc_SDLError,
-        "pygame must be compiled with SDL_image 2.6.0+ to use this function");
+        "pygame must be compiled with SDL_image 2.6.0+ to use this function",
+        NULL);
 #endif /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
 }
 
@@ -245,7 +246,7 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (surfs == NULL) {
-        return RAISE(pgExc_SDLError, IMG_GetError());
+        return RAISERETURN(pgExc_SDLError, IMG_GetError(), NULL);
     }
 
     ret = PyList_New(surfs->count);
@@ -279,9 +280,10 @@ error:
     IMG_FreeAnimation(surfs);
     return NULL;
 #else  /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
-    return RAISE(
+    return RAISERETURN(
         pgExc_SDLError,
-        "pygame must be compiled with SDL_image 2.6.0+ to use this function");
+        "pygame must be compiled with SDL_image 2.6.0+ to use this function",
+        NULL);
 #endif /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
 }
 
@@ -367,10 +369,10 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     if (result == -1) {
         /* SDL error: translate to Python error */
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     if (result == 1) {
-        return RAISE(pgExc_SDLError, "Unrecognized image type");
+        return RAISERETURN(pgExc_SDLError, "Unrecognized image type", NULL);
     }
 
     Py_RETURN_NONE;
@@ -471,8 +473,7 @@ MODINIT_DEFINE(imageext)
     #ifdef WITH_THREAD
         _pg_img_mutex = SDL_CreateMutex();
         if (!_pg_img_mutex) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
-            return NULL;
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     #endif
     */
