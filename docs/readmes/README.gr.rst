@@ -216,6 +216,7 @@ See docs/licenses for licenses of dependencies.
 .. _简体中文: README.zh-cn.rst
 .. _繁體中文: README.zh-tw.rst
 .. _English: ./../../README.rst
+.. _Français: README.fr.rst
 .. _فارسی: README.fa.rst
 .. _Español: README.es.rst
 .. _日本語: README.ja.rst
