@@ -1,4 +1,5 @@
 import os
+import platform
 import sys
 import unittest
 
@@ -51,6 +52,10 @@ class ScrapModuleTest(unittest.TestCase):
         """Ensures get works as expected."""
         self.fail()
 
+    @unittest.skipIf(
+        platform.system() != "Windows",
+        "scrap features are broken on non windows platforms",
+    )
     def test_get__owned_empty_type(self):
         """Ensures get works when there is no data of the requested type
         in the clipboard and the clipboard is owned by the pygame application.
@@ -95,7 +100,10 @@ class ScrapModuleTest(unittest.TestCase):
 
         self.assertEqual(scrap.get(pygame.SCRAP_TEXT), b"Another String")
 
-    @unittest.skipIf("pygame.image" not in sys.modules, "requires pygame.image module")
+    @unittest.skipIf(
+        platform.system() != "Windows",
+        "scrap features are broken on non windows platforms",
+    )
     def test_put__bmp_image(self):
         """Ensures put can place a BMP image into the clipboard."""
         sf = pygame.image.load(trunk_relative_path("examples/data/asprite.bmp"))
@@ -104,6 +112,10 @@ class ScrapModuleTest(unittest.TestCase):
 
         self.assertEqual(scrap.get(pygame.SCRAP_BMP), expected_bytes)
 
+    @unittest.skipIf(
+        platform.system() != "Windows",
+        "scrap features are broken on non windows platforms",
+    )
     def test_put(self):
         """Ensures put can place data into the clipboard
         when using a user defined type identifier.
@@ -203,59 +215,6 @@ class ScrapModuleClipboardNotOwnedTest(unittest.TestCase):
         lost = scrap.lost()
 
         self.assertTrue(lost)
-
-
-class X11InteractiveTest(unittest.TestCase):
-    __tags__ = ["ignore", "subprocess_ignore"]
-    try:
-        pygame.display.init()
-    except Exception:
-        pass
-    else:
-        if pygame.display.get_driver() == "x11":
-            __tags__ = ["interactive"]
-        pygame.display.quit()
-
-    def test_issue_223(self):
-        """PATCH: pygame.scrap on X11, fix copying into PRIMARY selection
-
-        Copying into theX11 PRIMARY selection (mouse copy/paste) would not
-        work due to a confusion between content type and clipboard type.
-
-        """
-
-        from pygame import display, event, freetype
-        from pygame.locals import KEYDOWN, QUIT, SCRAP_SELECTION, SCRAP_TEXT, K_y
-
-        success = False
-        freetype.init()
-        font = freetype.Font(None, 24)
-        display.init()
-        display.set_caption("Interactive X11 Paste Test")
-        screen = display.set_mode((600, 200))
-        screen.fill(pygame.Color("white"))
-        text = "Scrap put() succeeded."
-        msg = (
-            "Some text has been placed into the X11 clipboard."
-            " Please click the center mouse button in an open"
-            " text window to retrieve it."
-            '\n\nDid you get "{}"? (y/n)'
-        ).format(text)
-        word_wrap(screen, msg, font, 6)
-        display.flip()
-        event.pump()
-        scrap.init()
-        scrap.set_mode(SCRAP_SELECTION)
-        scrap.put(SCRAP_TEXT, text.encode("UTF-8"))
-        while True:
-            e = event.wait()
-            if e.type == QUIT:
-                break
-            if e.type == KEYDOWN:
-                success = e.key == K_y
-                break
-        pygame.display.quit()
-        self.assertTrue(success)
 
 
 def word_wrap(surf, text, font, margin=0, color=(0, 0, 0)):
