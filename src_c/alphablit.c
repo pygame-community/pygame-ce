@@ -594,7 +594,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 
 /* --------------------------------------------------------- */
 
-#define SETUP_BASE()                              \
+#define SETUP_BASE                                \
     int n;                                        \
     int width = info->width;                      \
     int height = info->height;                    \
@@ -613,16 +613,15 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;         \
     Uint32 pixel;
 
-#define SETUP_BLIT_BLEND(...)                                            \
-    SETUP_BASE()                                                         \
-    __VA_ARGS__;                                                         \
+#define SETUP_BLIT_BLEND                                                 \
+    SETUP_BASE                                                           \
     int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask; \
     int dstppa = info->dst_blend != SDL_BLENDMODE_NONE && dstfmt->Amask;
 
 /* --------------------------------------------------------- */
 
-#define BLIT_BLEND_RGBA_OP(operation, tmp_variable, blend_function, code)    \
-    SETUP_BLIT_BLEND(tmp_variable)                                           \
+#define BLIT_BLEND_RGBA_OP(operation, blend_function, code)                  \
+    SETUP_BLIT_BLEND                                                         \
     if (!dstppa) {                                                           \
         blit_blend_##operation(info);                                        \
         return;                                                              \
@@ -734,7 +733,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 static void
 blit_blend_rgba_add(SDL_BlitInfo *info)
 {
-    BLIT_BLEND_RGBA_OP(add, Uint32 tmp,
+    Uint32 tmp;
+    BLIT_BLEND_RGBA_OP(add,
                        BLEND_RGBA_ADD(tmp, sR, sG, sB, sA, dR, dG, dB, dA), {
                            tmp = (*dst) + (*src);
                            (*dst) = (tmp <= 255 ? tmp : 255);
@@ -744,7 +744,8 @@ blit_blend_rgba_add(SDL_BlitInfo *info)
 static void
 blit_blend_rgba_sub(SDL_BlitInfo *info)
 {
-    BLIT_BLEND_RGBA_OP(sub, Sint32 tmp,
+    Sint32 tmp;
+    BLIT_BLEND_RGBA_OP(sub,
                        BLEND_RGBA_SUB(tmp, sR, sG, sB, sA, dR, dG, dB, dA), {
                            tmp = (*dst) - (*src);
                            (*dst) = (tmp >= 0 ? tmp : 0);
@@ -754,17 +755,17 @@ blit_blend_rgba_sub(SDL_BlitInfo *info)
 static void
 blit_blend_rgba_mul(SDL_BlitInfo *info)
 {
-    BLIT_BLEND_RGBA_OP(
-        mul, Sint32 tmp, BLEND_RGBA_MULT(sR, sG, sB, sA, dR, dG, dB, dA), {
-            tmp = ((*dst) && (*src)) ? (((*dst) * (*src)) + 255) >> 8 : 0;
-            (*dst) = (tmp <= 255 ? tmp : 255);
-        });
+    Sint32 tmp;
+    BLIT_BLEND_RGBA_OP(mul, BLEND_RGBA_MULT(sR, sG, sB, sA, dR, dG, dB, dA), {
+        tmp = ((*dst) && (*src)) ? (((*dst) * (*src)) + 255) >> 8 : 0;
+        (*dst) = (tmp <= 255 ? tmp : 255);
+    });
 }
 
 static void
 blit_blend_rgba_min(SDL_BlitInfo *info)
 {
-    BLIT_BLEND_RGBA_OP(min, , BLEND_RGBA_MIN(sR, sG, sB, sA, dR, dG, dB, dA), {
+    BLIT_BLEND_RGBA_OP(min, BLEND_RGBA_MIN(sR, sG, sB, sA, dR, dG, dB, dA), {
         if ((*src) < (*dst)) {
             (*dst) = (*src);
         }
@@ -774,7 +775,7 @@ blit_blend_rgba_min(SDL_BlitInfo *info)
 static void
 blit_blend_rgba_max(SDL_BlitInfo *info)
 {
-    BLIT_BLEND_RGBA_OP(max, , BLEND_RGBA_MAX(sR, sG, sB, sA, dR, dG, dB, dA), {
+    BLIT_BLEND_RGBA_OP(max, BLEND_RGBA_MAX(sR, sG, sB, sA, dR, dG, dB, dA), {
         if ((*src) > (*dst)) {
             (*dst) = (*src);
         }
@@ -784,7 +785,7 @@ blit_blend_rgba_max(SDL_BlitInfo *info)
 static void
 blit_blend_premultiplied(SDL_BlitInfo *info)
 {
-    SETUP_BLIT_BLEND()
+    SETUP_BLIT_BLEND
     if (srcbpp >= 3 && dstbpp >= 3 && info->src_blend == SDL_BLENDMODE_NONE) {
         size_t srcoffsetR, srcoffsetG, srcoffsetB;
         size_t dstoffsetR, dstoffsetG, dstoffsetB;
@@ -974,7 +975,7 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
 
 /* --------------------------------------------------------- */
 
-#define BLIT_BLEND_OP(operation, tmp_variable, blend_function, code)         \
+#define BLIT_BLEND_OP(blend_function, code)                                  \
     int n;                                                                   \
     int width = info->width;                                                 \
     int height = info->height;                                               \
@@ -992,7 +993,6 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
     int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);                            \
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;                                    \
     Uint32 pixel;                                                            \
-    tmp_variable;                                                            \
     int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask;     \
     int dstppa = info->dst_blend != SDL_BLENDMODE_NONE && dstfmt->Amask;     \
     if (srcbpp >= 3 && dstbpp >= 3 &&                                        \
@@ -1153,55 +1153,55 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
 static void
 blit_blend_add(SDL_BlitInfo *info)
 {
-    BLIT_BLEND_OP(add, Uint32 tmp,
-                  BLEND_ADD(tmp, sR, sG, sB, sA, dR, dG, dB, dA), {
-                      tmp = dst[dstoffsetR] + src[srcoffsetR];
-                      dst[dstoffsetR] = (tmp <= 255 ? tmp : 255);
-                      tmp = dst[dstoffsetG] + src[srcoffsetG];
-                      dst[dstoffsetG] = (tmp <= 255 ? tmp : 255);
-                      tmp = dst[dstoffsetB] + src[srcoffsetB];
-                      dst[dstoffsetB] = (tmp <= 255 ? tmp : 255);
-                  });
+    Uint32 tmp;
+    BLIT_BLEND_OP(BLEND_ADD(tmp, sR, sG, sB, sA, dR, dG, dB, dA), {
+        tmp = dst[dstoffsetR] + src[srcoffsetR];
+        dst[dstoffsetR] = (tmp <= 255 ? tmp : 255);
+        tmp = dst[dstoffsetG] + src[srcoffsetG];
+        dst[dstoffsetG] = (tmp <= 255 ? tmp : 255);
+        tmp = dst[dstoffsetB] + src[srcoffsetB];
+        dst[dstoffsetB] = (tmp <= 255 ? tmp : 255);
+    });
 }
 
 static void
 blit_blend_sub(SDL_BlitInfo *info)
 {
-    BLIT_BLEND_OP(sub, Sint32 tmp,
-                  BLEND_SUB(tmp, sR, sG, sB, sA, dR, dG, dB, dA), {
-                      tmp = dst[dstoffsetR] - src[srcoffsetR];
-                      dst[dstoffsetR] = (tmp >= 0 ? tmp : 0);
-                      tmp = dst[dstoffsetG] - src[srcoffsetG];
-                      dst[dstoffsetG] = (tmp >= 0 ? tmp : 0);
-                      tmp = dst[dstoffsetB] - src[srcoffsetB];
-                      dst[dstoffsetB] = (tmp >= 0 ? tmp : 0);
-                  });
+    Sint32 tmp;
+    BLIT_BLEND_OP(BLEND_SUB(tmp, sR, sG, sB, sA, dR, dG, dB, dA), {
+        tmp = dst[dstoffsetR] - src[srcoffsetR];
+        dst[dstoffsetR] = (tmp >= 0 ? tmp : 0);
+        tmp = dst[dstoffsetG] - src[srcoffsetG];
+        dst[dstoffsetG] = (tmp >= 0 ? tmp : 0);
+        tmp = dst[dstoffsetB] - src[srcoffsetB];
+        dst[dstoffsetB] = (tmp >= 0 ? tmp : 0);
+    });
 }
 
 static void
 blit_blend_mul(SDL_BlitInfo *info)
 {
-    BLIT_BLEND_OP(
-        mul, Sint32 tmp, BLEND_MULT(sR, sG, sB, sA, dR, dG, dB, dA), {
-            tmp = ((dst[dstoffsetR] && src[srcoffsetR])
-                       ? ((dst[dstoffsetR] * src[srcoffsetR]) + 255) >> 8
-                       : 0);
-            dst[dstoffsetR] = (tmp <= 255 ? tmp : 255);
-            tmp = ((dst[dstoffsetG] && src[srcoffsetG])
-                       ? ((dst[dstoffsetG] * src[srcoffsetG]) + 255) >> 8
-                       : 0);
-            dst[dstoffsetG] = (tmp <= 255 ? tmp : 255);
-            tmp = ((dst[dstoffsetB] && src[srcoffsetB])
-                       ? ((dst[dstoffsetB] * src[srcoffsetB]) + 255) >> 8
-                       : 0);
-            dst[dstoffsetB] = (tmp <= 255 ? tmp : 255);
-        });
+    Sint32 tmp;
+    BLIT_BLEND_OP(BLEND_MULT(sR, sG, sB, sA, dR, dG, dB, dA), {
+        tmp = ((dst[dstoffsetR] && src[srcoffsetR])
+                   ? ((dst[dstoffsetR] * src[srcoffsetR]) + 255) >> 8
+                   : 0);
+        dst[dstoffsetR] = (tmp <= 255 ? tmp : 255);
+        tmp = ((dst[dstoffsetG] && src[srcoffsetG])
+                   ? ((dst[dstoffsetG] * src[srcoffsetG]) + 255) >> 8
+                   : 0);
+        dst[dstoffsetG] = (tmp <= 255 ? tmp : 255);
+        tmp = ((dst[dstoffsetB] && src[srcoffsetB])
+                   ? ((dst[dstoffsetB] * src[srcoffsetB]) + 255) >> 8
+                   : 0);
+        dst[dstoffsetB] = (tmp <= 255 ? tmp : 255);
+    });
 }
 
 static void
 blit_blend_min(SDL_BlitInfo *info)
 {
-    BLIT_BLEND_OP(min, , BLEND_MIN(sR, sG, sB, sA, dR, dG, dB, dA), {
+    BLIT_BLEND_OP(BLEND_MIN(sR, sG, sB, sA, dR, dG, dB, dA), {
         if (src[srcoffsetR] < dst[dstoffsetR]) {
             dst[dstoffsetR] = src[srcoffsetR];
         }
@@ -1217,7 +1217,7 @@ blit_blend_min(SDL_BlitInfo *info)
 static void
 blit_blend_max(SDL_BlitInfo *info)
 {
-    BLIT_BLEND_OP(min, , BLEND_MAX(sR, sG, sB, sA, dR, dG, dB, dA), {
+    BLIT_BLEND_OP(BLEND_MAX(sR, sG, sB, sA, dR, dG, dB, dA), {
         if (src[srcoffsetR] > dst[dstoffsetR]) {
             dst[dstoffsetR] = src[srcoffsetR];
         }
@@ -1232,15 +1232,15 @@ blit_blend_max(SDL_BlitInfo *info)
 
 /* --------------------------------------------------------- */
 
-#define SETUP_ALPHABLIT()                     \
-    SETUP_BASE()                              \
+#define SETUP_ALPHABLIT                       \
+    SETUP_BASE                                \
     Uint32 dRi, dGi, dBi, dAi, sRi, sGi, sBi; \
     int alpha = info->src_blanket_alpha;
 
 static void
 alphablit_alpha(SDL_BlitInfo *info)
 {
-    SETUP_ALPHABLIT()
+    SETUP_ALPHABLIT
     Uint32 sAi;
 
     if (srcbpp == 1) {
@@ -1334,7 +1334,7 @@ alphablit_alpha(SDL_BlitInfo *info)
 static void
 alphablit_colorkey(SDL_BlitInfo *info)
 {
-    SETUP_ALPHABLIT()
+    SETUP_ALPHABLIT
     Uint32 sAi;
     Uint32 colorkey = info->src_colorkey;
 
@@ -1463,7 +1463,7 @@ alphablit_colorkey(SDL_BlitInfo *info)
 static void
 alphablit_solid(SDL_BlitInfo *info)
 {
-    SETUP_ALPHABLIT()
+    SETUP_ALPHABLIT
 
     if (srcbpp == 1) {
         if (dstbpp == 1) {
