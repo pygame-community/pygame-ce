@@ -620,7 +620,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 
 /* --------------------------------------------------------- */
 
-#define BLIT_BLEND_RGBA_OP(operation, blend_function, code)                  \
+#define BLIT_BLEND_RGBA_OP(operation, BLEND_CODE,                            \
+                           BLEND_CODE_32BIT_SPECIALIZED)                     \
     SETUP_BLIT_BLEND                                                         \
     if (!dstppa) {                                                           \
         blit_blend_##operation(info);                                        \
@@ -639,7 +640,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
             LOOP_UNROLLED4(                                                  \
                 {                                                            \
                     REPEAT_4({                                               \
-                        code;                                                \
+                        BLEND_CODE_32BIT_SPECIALIZED                         \
                         src += incr;                                         \
                         dst += incr;                                         \
                     });                                                      \
@@ -657,7 +658,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                     {                                                        \
                         GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);        \
                         GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);        \
-                        blend_function;                                      \
+                        BLEND_CODE                                           \
                         CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
                         src += srcpxskip;                                    \
                         dst += dstpxskip;                                    \
@@ -676,7 +677,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         GET_PIXEL(pixel, dstbpp, dst);                       \
                         GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
                                       dstppa);                               \
-                        blend_function;                                      \
+                        BLEND_CODE                                           \
                         CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
                         src += srcpxskip;                                    \
                         dst += dstpxskip;                                    \
@@ -697,7 +698,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal, \
                                       srcppa);                               \
                         GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);        \
-                        blend_function;                                      \
+                        BLEND_CODE                                           \
                         CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
                         src += srcpxskip;                                    \
                         dst += dstpxskip;                                    \
@@ -718,7 +719,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         GET_PIXEL(pixel, dstbpp, dst);                       \
                         GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
                                       dstppa);                               \
-                        blend_function;                                      \
+                        BLEND_CODE                                           \
                         CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
                         src += srcpxskip;                                    \
                         dst += dstpxskip;                                    \
@@ -975,7 +976,7 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
 
 /* --------------------------------------------------------- */
 
-#define BLIT_BLEND_OP(blend_function, code)                                  \
+#define BLIT_BLEND_OP(BLEND_CODE, BLEND_CODE_32BIT_SPECIALIZED)              \
     int n;                                                                   \
     int width = info->width;                                                 \
     int height = info->height;                                               \
@@ -1014,7 +1015,7 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
         while (height--) {                                                   \
             LOOP_UNROLLED4(                                                  \
                 {                                                            \
-                    code;                                                    \
+                    BLEND_CODE_32BIT_SPECIALIZED                             \
                     src += srcpxskip;                                        \
                     dst += dstpxskip;                                        \
                 },                                                           \
@@ -1031,7 +1032,7 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
                     {                                                        \
                         GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);        \
                         GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);        \
-                        blend_function;                                      \
+                        BLEND_CODE                                           \
                         SET_PIXELVAL(dst, dstfmt, dstpal, dR, dG, dB, dA);   \
                         src += srcpxskip;                                    \
                         dst += dstpxskip;                                    \
@@ -1051,7 +1052,7 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
                         GET_PIXEL(pixel, dstbpp, dst);                       \
                         GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
                                       dstppa);                               \
-                        blend_function;                                      \
+                        BLEND_CODE                                           \
                         dst[offsetR] = dR;                                   \
                         dst[offsetG] = dG;                                   \
                         dst[offsetB] = dB;                                   \
@@ -1072,7 +1073,7 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
                         GET_PIXEL(pixel, dstbpp, dst);                       \
                         GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
                                       dstppa);                               \
-                        blend_function;                                      \
+                        BLEND_CODE                                           \
                         CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
                         src += srcpxskip;                                    \
                         dst += dstpxskip;                                    \
@@ -1093,7 +1094,7 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
                         GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal, \
                                       srcppa);                               \
                         GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);        \
-                        blend_function;                                      \
+                        BLEND_CODE                                           \
                         SET_PIXELVAL(dst, dstfmt, dstpal, dR, dG, dB, dA);   \
                         src += srcpxskip;                                    \
                         dst += dstpxskip;                                    \
@@ -1115,7 +1116,7 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
                         GET_PIXEL(pixel, dstbpp, dst);                       \
                         GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
                                       dstppa);                               \
-                        blend_function;                                      \
+                        BLEND_CODE                                           \
                         dst[offsetR] = dR;                                   \
                         dst[offsetG] = dG;                                   \
                         dst[offsetB] = dB;                                   \
@@ -1138,7 +1139,7 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
                         GET_PIXEL(pixel, dstbpp, dst);                       \
                         GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal, \
                                       dstppa);                               \
-                        blend_function;                                      \
+                        BLEND_CODE                                           \
                         CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);   \
                         src += srcpxskip;                                    \
                         dst += dstpxskip;                                    \
