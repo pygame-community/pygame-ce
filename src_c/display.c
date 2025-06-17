@@ -242,7 +242,7 @@ pg_display_init(PyObject *self, PyObject *_null)
             return NULL;
         }
 
-        if (SDL_InitSubSystem(SDL_INIT_VIDEO)) {
+        if (!PG_InitSubSystem(SDL_INIT_VIDEO)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
