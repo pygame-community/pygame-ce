@@ -548,10 +548,19 @@ joy_set_led(PyObject *self, PyObject *arg)
                      "set_led must be passed in a Color-compatible argument");
     }
 
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (SDL_JoystickSetLED(joy, colors[0], colors[1], colors[2]) < 0) {
         Py_RETURN_FALSE;
     }
     Py_RETURN_TRUE;
+#else
+    // SDL3 renames the function and sets an error message on failure
+    bool result = SDL_SetJoystickLED(joy, colors[0], colors[1], colors[2]);
+    if (!result) {
+        printf("%s\n", SDL_GetError());
+    }
+    return PyBool_FromLong(result);
+#endif
 }
 
 static PyMethodDef joy_methods[] = {
