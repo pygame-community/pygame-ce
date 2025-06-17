@@ -531,6 +531,29 @@ joy_get_hat(PyObject *self, PyObject *args)
     return pg_tuple_couple_from_values_int(px, py);
 }
 
+static PyObject *
+joy_set_led(PyObject *self, PyObject *arg)
+{
+    SDL_Joystick *joy = pgJoystick_AsSDL(self);
+
+    JOYSTICK_INIT_CHECK();
+    if (!joy) {
+        return RAISE(pgExc_SDLError, "Joystick not initialized");
+    }
+
+    Uint8 colors[4] = {0, 0, 0, 0};
+
+    if (!pg_RGBAFromObj(arg, colors)) {
+        return RAISE(PyExc_TypeError,
+                     "set_led must be passed in a Color-compatible argument");
+    }
+
+    if (SDL_JoystickSetLED(joy, colors[0], colors[1], colors[2]) < 0) {
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_TRUE;
+}
+
 static PyMethodDef joy_methods[] = {
     {"init", joy_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_INIT},
     {"quit", joy_quit, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_QUIT},
@@ -560,6 +583,7 @@ static PyMethodDef joy_methods[] = {
     {"get_numhats", joy_get_numhats, METH_NOARGS,
      DOC_JOYSTICK_JOYSTICK_GETNUMHATS},
     {"get_hat", joy_get_hat, METH_VARARGS, DOC_JOYSTICK_JOYSTICK_GETHAT},
+    {"set_led", joy_set_led, METH_O, DOC_JOYSTICK_JOYSTICK_SETLED},
 
     {NULL, NULL, 0, NULL}};
 

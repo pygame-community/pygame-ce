@@ -356,6 +356,21 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
 
       .. ## Joystick.stop_rumble ##
 
+   .. method:: set_led
+
+      | :sl:`Set the LED color of the joystick`
+      | :sg:`set_led(color_arg) -> bool`
+
+      Set the color of the LED on the joystick. The argument is a ``pygame.Color``
+      instance or a tuple of RGB(A) values (alpha being ignored). The color
+      will be set to the joystick's LED, if it has one. If the joystick does
+      not have an LED, then this method will do nothing and return False.
+      Returns True if the LED was set successfully.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Joystick.set_led ##
+
    .. ## pygame.joystick.Joystick ##
 
 .. ## pygame.joystick ##
