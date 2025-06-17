@@ -393,6 +393,9 @@ surface_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->weakreflist = NULL;
         self->dependency = NULL;
         self->locklist = NULL;
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+        memset(&(self->mutex), 0, sizeof(PyMutex));
+#endif
     }
     return (PyObject *)self;
 }
@@ -911,6 +914,11 @@ surf_get_at(PyObject *self, PyObject *position)
     }
 
     if (!pgSurface_Lock((pgSurfaceObject *)self)) {
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
+        PyErr_SetString(pgExc_SDLError, "Failed to lock surface");
         return NULL;
     }
 
@@ -943,6 +951,11 @@ surf_get_at(PyObject *self, PyObject *position)
             break;
     }
     if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
+        PyErr_SetString(pgExc_SDLError, "Failed to unlock surface in get_at");
         return NULL;
     }
 
@@ -991,6 +1004,7 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     if (x < clip_rect.x || x >= clip_rect.x + clip_rect.w || y < clip_rect.y ||
         y >= clip_rect.y + clip_rect.h) {
         /* out of clip area */
+
         Py_RETURN_NONE;
     }
 
@@ -999,6 +1013,12 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (!pgSurface_Lock((pgSurfaceObject *)self)) {
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
+        PyErr_SetString(pgExc_SDLError, "Failed to lock surface");
+
         return NULL;
     }
     pixels = (Uint8 *)surf->pixels;
@@ -1036,6 +1056,12 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
+        PyErr_SetString(pgExc_SDLError, "Failed to unlock surface in set_at");
+
         return NULL;
     }
 
@@ -4672,9 +4698,9 @@ MODINIT_DEFINE(surface)
                                                        // be supported later
 #endif
 #if PY_VERSION_HEX >= 0x030d0000
-        {Py_mod_gil, Py_MOD_GIL_USED},  // TODO: support this later
+        DISABLE_GIL_MULTIPHASE_INITIALIZATION("surface")
 #endif
-        {0, NULL}};
+            {0, NULL}};
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "surface",
