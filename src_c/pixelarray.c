@@ -301,10 +301,11 @@ _pxarray_new_internal(PyTypeObject *type, pgSurfaceObject *surface,
     if (!parent) {
         if (!surface) {
             Py_TYPE(self)->tp_free((PyObject *)self);
-            PyErr_SetString(PyExc_SystemError,
-                            "Pygame internal error in _pxarray_new_internal: "
-                            "no parent or surface.");
-            return 0;
+            return RAISERETURN(
+                PyExc_SystemError,
+                "Pygame internal error in _pxarray_new_internal: no "
+                "parent or surface.",
+                (pgPixelArrayObject *)NULL);
         }
         self->parent = 0;
         self->surface = surface;
@@ -356,12 +357,13 @@ _pxarray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     stride1 = (Py_ssize_t)surf->pitch;
     pixels = surf->pixels;
     if (pixels == NULL) {
-        return RAISE(PyExc_ValueError,
-                     "Cannot create pixelarray on zero-sized Surface");
+        return RAISERETURN(PyExc_ValueError,
+                           "Cannot create pixelarray on zero-sized Surface",
+                           NULL);
     }
     if (stride0 < 1 || stride0 > 4) {
-        return RAISE(PyExc_ValueError,
-                     "unsupported bit depth for reference array");
+        return RAISERETURN(PyExc_ValueError,
+                           "unsupported bit depth for reference array", NULL);
     }
 
     return (PyObject *)_pxarray_new_internal(type, surfobj, 0, pixels, dim0,
@@ -427,7 +429,8 @@ static pgSurfaceObject *
 _pxarray_get_surface(pgPixelArrayObject *self, void *closure)
 {
     if (self->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
     Py_INCREF(self->surface);
     return self->surface;
@@ -441,7 +444,8 @@ static PyObject *
 _pxarray_get_itemsize(pgPixelArrayObject *self, void *closure)
 {
     if (self->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
 
     SDL_Surface *surf = pgSurface_AsSurface(self->surface);
@@ -540,8 +544,8 @@ _pxarray_getbuffer(pgPixelArrayObject *self, Py_buffer *view_p, int flags)
     Py_ssize_t len;
 
     if (self->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
-        return -1;
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           -1);
     }
 
     itemsize = PG_SURF_BytesPerPixel(pgSurface_AsSurface(self->surface));
@@ -550,21 +554,18 @@ _pxarray_getbuffer(pgPixelArrayObject *self, Py_buffer *view_p, int flags)
     view_p->obj = 0;
     if (PyBUF_HAS_FLAG(flags, PyBUF_C_CONTIGUOUS) &&
         !array_is_contiguous(self, 'C')) {
-        PyErr_SetString(pgExc_BufferError,
-                        "this pixel array is not C contiguous");
-        return -1;
+        return RAISERETURN(pgExc_BufferError,
+                           "this pixel array is not C contiguous", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_F_CONTIGUOUS) &&
         !array_is_contiguous(self, 'F')) {
-        PyErr_SetString(pgExc_BufferError,
-                        "this pixel array is not F contiguous");
-        return -1;
+        return RAISERETURN(pgExc_BufferError,
+                           "this pixel array is not F contiguous", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_ANY_CONTIGUOUS) &&
         !array_is_contiguous(self, 'A')) {
-        PyErr_SetString(pgExc_BufferError,
-                        "this pixel array is not contiguous");
-        return -1;
+        return RAISERETURN(pgExc_BufferError,
+                           "this pixel array is not contiguous", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_ND)) {
         shape = self->shape;
@@ -572,19 +573,18 @@ _pxarray_getbuffer(pgPixelArrayObject *self, Py_buffer *view_p, int flags)
             strides = self->strides;
         }
         else if (!array_is_contiguous(self, 'C')) {
-            PyErr_SetString(
+            return RAISERETURN(
                 pgExc_BufferError,
-                "this pixel array is not contiguous: need strides");
-            return -1;
+                "this pixel array is not contiguous: need strides", -1);
         }
     }
     else if (array_is_contiguous(self, 'F')) {
         ndim = 0;
     }
     else {
-        PyErr_SetString(pgExc_BufferError,
-                        "this pixel array is not C contiguous: need strides");
-        return -1;
+        return RAISERETURN(
+            pgExc_BufferError,
+            "this pixel array is not C contiguous: need strides", -1);
     }
     if (PyBUF_HAS_FLAG(flags, PyBUF_FORMAT)) {
         /* Find the appropriate format for given pixel size */
@@ -658,7 +658,8 @@ _pxarray_repr(pgPixelArrayObject *array)
     Uint8 *pixel_p;
 
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
 
     surf = pgSurface_AsSurface(array->surface);
@@ -815,7 +816,8 @@ _pxarray_subscript_internal(pgPixelArrayObject *array, Py_ssize_t xstart,
     Py_ssize_t dy = ystop - ystart;
 
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
 
     if (!array->shape[1]) {
@@ -857,14 +859,15 @@ _array_slice_internal(pgPixelArrayObject *array, Py_ssize_t start,
                       Py_ssize_t end, Py_ssize_t step)
 {
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
     if (end == start) {
-        return RAISE(PyExc_IndexError, "array size must not be 0");
+        return RAISERETURN(PyExc_IndexError, "array size must not be 0", NULL);
     }
 
     if (start >= array->shape[0]) {
-        return RAISE(PyExc_IndexError, "array index out of range");
+        return RAISERETURN(PyExc_IndexError, "array index out of range", NULL);
     }
     return _pxarray_subscript_internal(array, start, end, step, 0,
                                        array->shape[1], 1);
@@ -888,16 +891,18 @@ static PyObject *
 _pxarray_item(pgPixelArrayObject *array, Py_ssize_t index)
 {
     if (array->surface == NULL) {
-        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           NULL);
     }
     if (index < 0) {
         index = array->shape[0] - index;
         if (index < 0) {
-            return RAISE(PyExc_IndexError, "array index out of range");
+            return RAISERETURN(PyExc_IndexError, "array index out of range",
+                               NULL);
         }
     }
     if (index >= array->shape[0]) {
-        return RAISE(PyExc_IndexError, "array index out of range");
+        return RAISERETURN(PyExc_IndexError, "array index out of range", NULL);
     }
     return _pxarray_subscript_internal(array, index, 0, 0, 0, array->shape[1],
                                        1);
@@ -931,8 +936,8 @@ _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
     int sizes_match = 0;
 
     if (array->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
-        return -1;
+        return RAISERETURN(PyExc_ValueError, "Operation on closed PixelArray.",
+                           -1);
     }
 
     surf = pgSurface_AsSurface(array->surface);
@@ -959,8 +964,7 @@ _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
     }
     if (!sizes_match) {
         /* Bounds do not match. */
-        PyErr_SetString(PyExc_ValueError, "array sizes do not match");
-        return -1;
+        return RAISERETURN(PyExc_ValueError, "array sizes do not match", -1);
     }
 
     bpp = PG_SURF_BytesPerPixel(surf);
@@ -968,15 +972,13 @@ _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
     if (val_bpp != bpp) {
         /* bpp do not match. We cannot guarantee that the padding and columns
          * would be set correctly. */
-        PyErr_SetString(PyExc_ValueError, "bit depths do not match");
-        return -1;
+        return RAISERETURN(PyExc_ValueError, "bit depths do not match", -1);
     }
 
     PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
     PG_PixelFormat *val_surf_format = PG_GetSurfaceFormat(val_surf);
     if (surf_format == NULL || val_surf_format == NULL) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     /* If we reassign the same array, we need to copy the pixels
@@ -1103,14 +1105,12 @@ _array_assign_sequence(pgPixelArrayObject *array, Py_ssize_t low,
     PyObject *item;
 
     if (val_dim0 != dim0) {
-        PyErr_SetString(PyExc_ValueError, "sequence size mismatch");
-        return -1;
+        return RAISERETURN(PyExc_ValueError, "sequence size mismatch", -1);
     }
 
     PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
     if (surf_format == NULL) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     bpp = PG_FORMAT_BytesPerPixel(surf_format);
@@ -1223,8 +1223,7 @@ _array_assign_slice(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
 
     PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
     if (surf_format == NULL) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     bpp = PG_FORMAT_BytesPerPixel(surf_format);
@@ -1340,10 +1339,9 @@ _pxarray_ass_item(pgPixelArrayObject *array, Py_ssize_t index, PyObject *value)
                 return -1;
             }
             if (!pgPixelArrayObject_Check(tmparray)) {
-                PyErr_SetString(
+                return RAISERETURN(
                     PyExc_ValueError,
-                    "cannot assign a pixel sequence to a single pixel");
-                return -1;
+                    "cannot assign a pixel sequence to a single pixel", -1);
             }
             retval =
                 _array_assign_sequence(tmparray, 0, tmparray->shape[0], value);
@@ -1358,13 +1356,12 @@ _pxarray_ass_item(pgPixelArrayObject *array, Py_ssize_t index, PyObject *value)
     if (index < 0) {
         index += dim0;
         if (index < 0) {
-            PyErr_SetString(PyExc_IndexError, "array index out of range");
-            return -1;
+            return RAISERETURN(PyExc_IndexError, "array index out of range",
+                               -1);
         }
     }
     if (index >= dim0) {
-        PyErr_SetString(PyExc_IndexError, "array index out of range");
-        return -1;
+        return RAISERETURN(PyExc_IndexError, "array index out of range", -1);
     }
     pixels += index * stride0;
 
@@ -1375,8 +1372,7 @@ _pxarray_ass_item(pgPixelArrayObject *array, Py_ssize_t index, PyObject *value)
 
     PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
     if (surf_format == NULL) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     Py_BEGIN_ALLOW_THREADS;
@@ -1588,8 +1584,7 @@ _get_subslice(PyObject *op, Py_ssize_t length, Py_ssize_t *start,
             *start += length;
         }
         if (*start >= length || *start < 0) {
-            PyErr_SetString(PyExc_IndexError, "invalid index");
-            return -1;
+            return RAISERETURN(PyExc_IndexError, "invalid index", -1);
         }
         *stop = (*start) + 1;
         *step = 0;
@@ -1624,7 +1619,8 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
             return (PyObject *)array;
         }
         if (size > 2 || (size == 2 && !dim1)) {
-            return RAISE(PyExc_IndexError, "too many indices for the array");
+            return RAISERETURN(PyExc_IndexError,
+                               "too many indices for the array", NULL);
         }
 
         obj = PyTuple_GET_ITEM(op, 0);
@@ -1685,7 +1681,8 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
             return 0;
         }
         if (slicelen < 0) {
-            return RAISE(PyExc_IndexError, "Unable to handle negative slice");
+            return RAISERETURN(PyExc_IndexError,
+                               "Unable to handle negative slice", NULL);
         }
         if (slicelen == 0) {
             Py_RETURN_NONE;
@@ -1703,13 +1700,14 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
             i += dim0;
         }
         if (i < 0 || i >= dim0) {
-            return RAISE(PyExc_IndexError, "array index out of range");
+            return RAISERETURN(PyExc_IndexError, "array index out of range",
+                               NULL);
         }
         return _pxarray_subscript_internal(array, i, i + 1, 0, 0, dim1, 1);
     }
 
-    return RAISE(PyExc_TypeError,
-                 "index must be an integer, sequence or slice");
+    return RAISERETURN(PyExc_TypeError,
+                       "index must be an integer, sequence or slice", NULL);
 }
 
 static int
@@ -1735,9 +1733,8 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
         int retval;
 
         if (size > 2 || (size == 2 && !dim1)) {
-            PyErr_SetString(PyExc_IndexError,
-                            "too many indices for the array");
-            return -1;
+            return RAISERETURN(PyExc_IndexError,
+                               "too many indices for the array", -1);
         }
 
         obj = PyTuple_GET_ITEM(op, 0);
@@ -1832,9 +1829,8 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
             return -1;
         }
         if (slicelen < 0) {
-            PyErr_SetString(PyExc_IndexError,
-                            "Unable to handle negative slice");
-            return -1;
+            return RAISERETURN(PyExc_IndexError,
+                               "Unable to handle negative slice", -1);
         }
         if (slicelen == 0) {
             return 0;
@@ -1857,10 +1853,8 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
         }
         return _pxarray_ass_item(array, i, value);
     }
-
-    PyErr_SetString(PyExc_TypeError,
-                    "index must be an integer, sequence or slice");
-    return -1;
+    return RAISERETURN(PyExc_TypeError,
+                       "index must be an integer, sequence or slice", -1);
 }
 
 /**** C API interfaces ****/
@@ -1875,7 +1869,7 @@ pgPixelArray_New(PyObject *surfobj)
     Uint8 *pixels;
 
     if (!pgSurface_Check(surfobj)) {
-        return RAISE(PyExc_TypeError, "argument is not a Surface");
+        return RAISERETURN(PyExc_TypeError, "argument is not a Surface", NULL);
     }
 
     surf = pgSurface_AsSurface(surfobj);
@@ -1885,8 +1879,8 @@ pgPixelArray_New(PyObject *surfobj)
     stride1 = (Py_ssize_t)surf->pitch;
     pixels = surf->pixels;
     if (stride0 < 1 || stride0 > 4) {
-        return RAISE(PyExc_ValueError,
-                     "unsupported bit depth for reference array");
+        return RAISERETURN(PyExc_ValueError,
+                           "unsupported bit depth for reference array", NULL);
     }
 
     return (PyObject *)_pxarray_new_internal(

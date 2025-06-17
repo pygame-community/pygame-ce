@@ -38,15 +38,16 @@
 #include "structmember.h"
 
 #define RAISE_TEXT_TYPE_ERROR() \
-    RAISE(PyExc_TypeError, "text must be a unicode or bytes");
+    RAISERETURN(PyExc_TypeError, "text must be a unicode or bytes", NULL);
 
-#define RAISE_FONT_QUIT_ERROR_RETURN(r) \
-    RAISERETURN(pgExc_SDLError,         \
-                "Invalid font (font module quit since font created)", r)
+#define RAISE_FONT_QUIT_ERROR_RETURN(r)                                      \
+    return RAISERETURN(pgExc_SDLError,                                       \
+                       "Invalid font (font module quit since font created)", \
+                       r)
 
 #define RAISE_FONT_QUIT_ERROR() \
-    RAISE(pgExc_SDLError,       \
-          "Invalid font (font module quit since font created)");
+    RAISERETURN(pgExc_SDLError, \
+                "Invalid font (font module quit since font created)", NULL);
 
 /* For filtering out UCS-4 and larger characters when Python is
  * built with Py_UNICODE_WIDE.
@@ -141,7 +142,7 @@ fontmodule_init(PyObject *self, PyObject *_null)
         if (TTF_Init())
 #endif
         {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         font_initialized = 1;
     }
@@ -237,7 +238,8 @@ font_set_linesize(PyObject *self, PyObject *arg)
     TTF_Font *font = PyFont_AsFont(self);
 
     if (!PyLong_Check(arg)) {
-        return RAISE(PyExc_TypeError, "linesize must be an integer");
+        return RAISERETURN(PyExc_TypeError, "linesize must be an integer",
+                           NULL);
     }
     int linesize = PyLong_AsLong(arg);
     if (linesize == -1 && PyErr_Occurred()) {
@@ -245,16 +247,17 @@ font_set_linesize(PyObject *self, PyObject *arg)
     }
 
     if (linesize < 0) {
-        return RAISE(PyExc_ValueError, "linesize must be >= 0");
+        return RAISERETURN(PyExc_ValueError, "linesize must be >= 0", NULL);
     }
 
     TTF_SetFontLineSkip(font, linesize);
 
     Py_RETURN_NONE;
 #else
-    return RAISE(
+    return RAISERETURN(
         PyExc_NotImplementedError,
-        "TTF_SetFontLineSkip is not available in this version of SDL_ttf");
+        "TTF_SetFontLineSkip is not available in this version of SDL_ttf",
+        NULL);
 #endif
 }
 
@@ -515,9 +518,11 @@ font_getter_align(PyObject *self, void *closure)
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_GetFontWrappedAlign(font));
 #else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.20.0 or above.");
+    return RAISERETURN(
+        pgExc_SDLError,
+        "pygame.font not compiled with a new enough SDL_ttf version. "
+        "Needs SDL_ttf 2.20.0 or above.",
+        NULL);
 #endif
 }
 
@@ -536,18 +541,17 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
 
     long val = PyLong_AsLong(value);
     if (val == -1 && PyErr_Occurred()) {
-        PyErr_SetString(
+        return RAISERETURN(
             PyExc_TypeError,
-            "font.align must be an integer. "
-            "Must correspond with FONT_LEFT, FONT_CENTER, or FONT_RIGHT.");
-        return -1;
+            "font.align must be an integer. Must correspond with "
+            "FONT_LEFT, FONT_CENTER, or FONT_RIGHT.",
+            -1);
     }
 
     if (val < 0 || val > 2) {
-        PyErr_SetString(pgExc_SDLError,
-                        "font.align must be FONT_LEFT, FONT_CENTER, or "
-                        "FONT_RIGHT.");
-        return -1;
+        return RAISERETURN(
+            pgExc_SDLError,
+            "font.align must be FONT_LEFT, FONT_CENTER, or FONT_RIGHT.", -1);
     }
 
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
@@ -557,10 +561,11 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
 #endif
     return 0;
 #else
-    PyErr_SetString(pgExc_SDLError,
-                    "pygame.font not compiled with a new enough SDL_ttf "
-                    "version. Needs SDL_ttf 2.20.0 or above.");
-    return -1;
+    return RAISERETURN(
+        pgExc_SDLError,
+        "pygame.font not compiled with a new enough SDL_ttf version. "
+        "Needs SDL_ttf 2.20.0 or above.",
+        -1);
 #endif
 }
 
@@ -645,8 +650,8 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (wraplength < 0) {
-        return RAISE(PyExc_ValueError,
-                     "wraplength parameter must be positive");
+        return RAISERETURN(PyExc_ValueError,
+                           "wraplength parameter must be positive", NULL);
     }
 
     if (PyUnicode_Check(text)) {
@@ -656,8 +661,8 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
             return NULL;
         }
         if (strlen(astring) != (size_t)_size) {
-            return RAISE(PyExc_ValueError,
-                         "A null character was found in the text");
+            return RAISERETURN(PyExc_ValueError,
+                               "A null character was found in the text", NULL);
         }
     }
 
@@ -732,7 +737,7 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (surf == NULL) {
-        return RAISE(pgExc_SDLError, TTF_GetError());
+        return RAISERETURN(pgExc_SDLError, TTF_GetError(), NULL);
     }
 
     final = (PyObject *)pgSurface_New(surf);
@@ -772,7 +777,7 @@ font_size(PyObject *self, PyObject *text)
 #endif
         Py_DECREF(bytes);
         if (ecode) {
-            return RAISE(pgExc_SDLError, TTF_GetError());
+            return RAISERETURN(pgExc_SDLError, TTF_GetError(), NULL);
         }
     }
     else if (PyBytes_Check(text)) {
@@ -783,7 +788,7 @@ font_size(PyObject *self, PyObject *text)
         if (TTF_SizeText(font, string, &w, &h))
 #endif
         {
-            return RAISE(pgExc_SDLError, TTF_GetError());
+            return RAISERETURN(pgExc_SDLError, TTF_GetError(), NULL);
         }
     }
     else {
@@ -802,8 +807,8 @@ font_getter_point_size(PyFontObject *self, void *closure)
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(self->ptsize);
 #else
-    return RAISE(pgExc_SDLError,
-                 "Incorrect SDL_TTF version (requires 2.0.18)");
+    return RAISERETURN(pgExc_SDLError,
+                       "Incorrect SDL_TTF version (requires 2.0.18)", NULL);
 #endif
 }
 
@@ -823,9 +828,9 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
     }
 
     if (val <= 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "point_size cannot be equal to, or less than 0");
-        return -1;
+        return RAISERETURN(PyExc_ValueError,
+                           "point_size cannot be equal to, or less than 0",
+                           -1);
     }
 
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
@@ -835,16 +840,14 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
     if (TTF_SetFontSize(font, val) == -1)
 #endif
     {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     self->ptsize = val;
 
     return 0;
 #else
-    PyErr_SetString(pgExc_SDLError,
-                    "Incorrect SDL_TTF version (requires 2.0.18)");
-    return -1;
+    return RAISERETURN(pgExc_SDLError,
+                       "Incorrect SDL_TTF version (requires 2.0.18)", -1);
 #endif
 }
 
@@ -858,8 +861,8 @@ font_get_ptsize(PyObject *self, PyObject *args)
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(((PyFontObject *)self)->ptsize);
 #else
-    return RAISE(pgExc_SDLError,
-                 "Incorrect SDL_TTF version (requires 2.0.18)");
+    return RAISERETURN(pgExc_SDLError,
+                       "Incorrect SDL_TTF version (requires 2.0.18)", NULL);
 #endif
 }
 
@@ -879,8 +882,9 @@ font_set_ptsize(PyObject *self, PyObject *arg)
     }
 
     if (val <= 0) {
-        return RAISE(PyExc_ValueError,
-                     "point_size cannot be equal to, or less than 0");
+        return RAISERETURN(PyExc_ValueError,
+                           "point_size cannot be equal to, or less than 0",
+                           NULL);
     }
 
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
@@ -890,14 +894,14 @@ font_set_ptsize(PyObject *self, PyObject *arg)
     if (TTF_SetFontSize(font, val) == -1)
 #endif
     {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     ((PyFontObject *)self)->ptsize = val;
 
     Py_RETURN_NONE;
 #else
-    return RAISE(pgExc_SDLError,
-                 "Incorrect SDL_TTF version (requires 2.0.18)");
+    return RAISERETURN(pgExc_SDLError,
+                       "Incorrect SDL_TTF version (requires 2.0.18)", NULL);
 #endif
 }
 
@@ -1042,14 +1046,15 @@ font_set_script(PyObject *self, PyObject *arg)
     const char *script_code;
 
     if (!PyUnicode_Check(arg)) {
-        return RAISE(PyExc_TypeError, "script code must be a string");
+        return RAISERETURN(PyExc_TypeError, "script code must be a string",
+                           NULL);
     }
 
     script_code = PyUnicode_AsUTF8AndSize(arg, &size);
 
     if (size != 4) {
-        return RAISE(PyExc_ValueError,
-                     "script code must be exactly 4 characters");
+        return RAISERETURN(PyExc_ValueError,
+                           "script code must be exactly 4 characters", NULL);
     }
 
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
@@ -1059,12 +1064,14 @@ font_set_script(PyObject *self, PyObject *arg)
     if (TTF_SetFontScriptName(font, script_code) < 0)
 #endif
     {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 #else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.20.0 or above.");
+    return RAISERETURN(
+        pgExc_SDLError,
+        "pygame.font not compiled with a new enough SDL_ttf version. "
+        "Needs SDL_ttf 2.20.0 or above.",
+        NULL);
 #endif
     Py_RETURN_NONE;
 }
@@ -1086,8 +1093,9 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
 
     if (direction < 0 || direction > 3) {
-        return RAISE(PyExc_ValueError,
-                     "invalid input parameter for Font.set_direction");
+        return RAISERETURN(PyExc_ValueError,
+                           "invalid input parameter for Font.set_direction",
+                           NULL);
     }
 
     TTF_Direction dir;
@@ -1130,10 +1138,12 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
 
         default: {
             // should NEVER reach this point
-            return RAISE(PyExc_RuntimeError,
-                         "Something went wrong in Font.set_direction. Please "
-                         "report this"
-                         " to https://github.com/pygame-community/pygame-ce");
+            return RAISERETURN(
+                PyExc_RuntimeError,
+                "Something went wrong in Font.set_direction. Please "
+                "report this"
+                " to https://github.com/pygame-community/pygame-ce",
+                NULL);
         }
     }
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
@@ -1142,13 +1152,15 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
     if (TTF_SetFontDirection(font, dir))
 #endif
     {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
 #else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.20.0 or above.");
+    return RAISERETURN(
+        pgExc_SDLError,
+        "pygame.font not compiled with a new enough SDL_ttf version. "
+        "Needs SDL_ttf 2.20.0 or above.",
+        NULL);
 #endif
     Py_RETURN_NONE;
 }
@@ -1243,8 +1255,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (!font_initialized) {
-        PyErr_SetString(pgExc_SDLError, "font not initialized");
-        return -1;
+        return RAISERETURN(pgExc_SDLError, "font not initialized", -1);
     }
 
     /* Incref obj, needs to be decref'd later */
@@ -1398,7 +1409,7 @@ PyFont_New(TTF_Font *font)
     PyFontObject *fontobj;
 
     if (!font) {
-        return RAISE(PyExc_RuntimeError, "unable to load font.");
+        return RAISERETURN(PyExc_RuntimeError, "unable to load font.", NULL);
     }
     fontobj = (PyFontObject *)PyFont_Type.tp_new(&PyFont_Type, NULL, NULL);
 

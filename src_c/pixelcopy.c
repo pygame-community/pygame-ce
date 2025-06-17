@@ -93,8 +93,8 @@ _validate_view_format(const char *format)
             /* default: unrecognized character; raise error later */
     }
     if (format[i] != '\0') {
-        PyErr_SetString(PyExc_ValueError, "Unsupported array item type");
-        return -1;
+        return RAISERETURN(PyExc_ValueError, "Unsupported array item type",
+                           -1);
     }
 
     return 0;
@@ -125,17 +125,15 @@ _view_kind(PyObject *obj, void *view_kind_vptr)
 
     if (PyUnicode_Check(obj)) {
         if (PyUnicode_GET_LENGTH(obj) != 1) {
-            PyErr_SetString(PyExc_TypeError,
-                            "expected a length 1 string for argument 3");
-            return 0;
+            return RAISERETURN(PyExc_TypeError,
+                               "expected a length 1 string for argument 3", 0);
         }
         ch = PyUnicode_READ_CHAR(obj, 0);
     }
     else if (PyBytes_Check(obj)) {
         if (PyBytes_GET_SIZE(obj) != 1) {
-            PyErr_SetString(PyExc_TypeError,
-                            "expected a length 1 string for argument 3");
-            return 0;
+            return RAISERETURN(PyExc_TypeError,
+                               "expected a length 1 string for argument 3", 0);
         }
         ch = *PyBytes_AS_STRING(obj);
     }
@@ -288,13 +286,11 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
         return -1;
     }
     if (!PG_GetSurfaceBlendMode(surf, &mode)) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     /* Select appropriate color plane element within the pixel */
@@ -423,8 +419,7 @@ _copy_unmapped(Py_buffer *view_p, SDL_Surface *surf)
     SDL_Palette *palette;
 
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     for (x = 0; x < w; ++x) {
@@ -500,11 +495,13 @@ array_to_surface(PyObject *self, PyObject *arg)
     }
 
     if (!(view_p->ndim == 2 || (view_p->ndim == 3 && view_p->shape[2] == 3))) {
-        return RAISE(PyExc_ValueError, "must be a valid 2d or 3d array\n");
+        return RAISERETURN(PyExc_ValueError,
+                           "must be a valid 2d or 3d array\n", NULL);
     }
 
     if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4) {
-        return RAISE(PyExc_ValueError, "unsupported bit depth for surface");
+        return RAISERETURN(PyExc_ValueError,
+                           "unsupported bit depth for surface", NULL);
     }
 
     stridex = view_p->strides[0];
@@ -523,7 +520,7 @@ array_to_surface(PyObject *self, PyObject *arg)
     PG_PixelFormat *format;
     SDL_Palette *palette;
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     Rshift = format->Rshift;
@@ -547,7 +544,8 @@ array_to_surface(PyObject *self, PyObject *arg)
 
     if (sizex != surf->w || sizey != surf->h) {
         pgBuffer_Release(&pg_view);
-        return RAISE(PyExc_ValueError, "array must match surface dimensions");
+        return RAISERETURN(PyExc_ValueError,
+                           "array must match surface dimensions", NULL);
     }
     if (!pgSurface_LockBy(surfobj, arrayobj)) {
         pgBuffer_Release(&pg_view);
@@ -577,8 +575,9 @@ array_to_surface(PyObject *self, PyObject *arg)
                         if (!pgSurface_UnlockBy(surfobj, arrayobj)) {
                             return NULL;
                         }
-                        return RAISE(PyExc_ValueError,
-                                     "unsupported datatype for array\n");
+                        return RAISERETURN(PyExc_ValueError,
+                                           "unsupported datatype for array\n",
+                                           NULL);
                 }
             }
             else {
@@ -586,8 +585,8 @@ array_to_surface(PyObject *self, PyObject *arg)
                 if (!pgSurface_UnlockBy(surfobj, arrayobj)) {
                     return NULL;
                 }
-                return RAISE(PyExc_ValueError,
-                             "unsupported datatype for array\n");
+                return RAISERETURN(PyExc_ValueError,
+                                   "unsupported datatype for array\n", NULL);
             }
             break;
         case 2:
@@ -607,8 +606,9 @@ array_to_surface(PyObject *self, PyObject *arg)
                         if (!pgSurface_UnlockBy(surfobj, arrayobj)) {
                             return NULL;
                         }
-                        return RAISE(PyExc_ValueError,
-                                     "unsupported datatype for array\n");
+                        return RAISERETURN(PyExc_ValueError,
+                                           "unsupported datatype for array\n",
+                                           NULL);
                 }
             }
             else {
@@ -634,8 +634,9 @@ array_to_surface(PyObject *self, PyObject *arg)
                         if (!pgSurface_UnlockBy(surfobj, arrayobj)) {
                             return NULL;
                         }
-                        return RAISE(PyExc_ValueError,
-                                     "unsupported datatype for array\n");
+                        return RAISERETURN(PyExc_ValueError,
+                                           "unsupported datatype for array\n",
+                                           NULL);
                 }
             }
             break;
@@ -709,8 +710,8 @@ array_to_surface(PyObject *self, PyObject *arg)
                 if (!pgSurface_UnlockBy(surfobj, arrayobj)) {
                     return NULL;
                 }
-                return RAISE(PyExc_ValueError,
-                             "unsupported datatype for array\n");
+                return RAISERETURN(PyExc_ValueError,
+                                   "unsupported datatype for array\n", NULL);
             }
             break;
         case 4:
@@ -727,8 +728,9 @@ array_to_surface(PyObject *self, PyObject *arg)
                         if (!pgSurface_UnlockBy(surfobj, arrayobj)) {
                             return NULL;
                         }
-                        return RAISE(PyExc_ValueError,
-                                     "unsupported datatype for array\n");
+                        return RAISERETURN(PyExc_ValueError,
+                                           "unsupported datatype for array\n",
+                                           NULL);
                 }
             }
             else {
@@ -754,8 +756,9 @@ array_to_surface(PyObject *self, PyObject *arg)
                         if (!pgSurface_UnlockBy(surfobj, arrayobj)) {
                             return NULL;
                         }
-                        return RAISE(PyExc_ValueError,
-                                     "unsupported datatype for array\n");
+                        return RAISERETURN(PyExc_ValueError,
+                                           "unsupported datatype for array\n",
+                                           NULL);
                 }
             }
             break;
@@ -764,8 +767,8 @@ array_to_surface(PyObject *self, PyObject *arg)
             if (!pgSurface_UnlockBy(surfobj, arrayobj)) {
                 return NULL;
             }
-            return RAISE(PyExc_RuntimeError,
-                         "unsupported bit depth for image");
+            return RAISERETURN(PyExc_RuntimeError,
+                               "unsupported bit depth for image", NULL);
     }
 
     pgBuffer_Release(&pg_view);
@@ -826,11 +829,11 @@ surface_to_array(PyObject *self, PyObject *args, PyObject *kwds)
     }
     else if (view_p->ndim == 3) {
         if (view_kind != VIEWKIND_RGB) {
-            PyErr_SetString(PyExc_ValueError,
-                            "color planes only supported for 2d targets");
             pgBuffer_Release(&pg_view);
             pgSurface_Unlock(surfobj);
-            return 0;
+            return RAISERETURN(PyExc_ValueError,
+                               "color planes only supported for 2d targets",
+                               NULL);
         }
         if (_copy_unmapped(view_p, surf)) {
             pgBuffer_Release(&pg_view);
@@ -911,7 +914,7 @@ map_array(PyObject *self, PyObject *args)
     tar_view_p = (Py_buffer *)&tar_pg_view;
     tar = (Uint8 *)tar_view_p->buf;
     if (_validate_view_format(tar_view_p->format)) {
-        PyErr_SetString(PyExc_ValueError, "expected an integer target array");
+        RAISE(PyExc_ValueError, "expected an integer target array");
         goto fail;
     }
     ndim = tar_view_p->ndim;
@@ -919,7 +922,7 @@ map_array(PyObject *self, PyObject *args)
     shape = tar_view_p->shape;
     tar_strides = tar_view_p->strides;
     if (ndim < 1) {
-        PyErr_SetString(PyExc_ValueError, "target array must be at least 1D");
+        RAISE(PyExc_ValueError, "target array must be at least 1D");
         goto fail;
     }
     if (ndim > PIXELCOPY_MAX_DIM) {
@@ -938,7 +941,7 @@ map_array(PyObject *self, PyObject *args)
     src = (Uint8 *)src_view_p->buf;
     src_ndim = src_view_p->ndim;
     if (src_ndim < 1) {
-        PyErr_SetString(PyExc_ValueError, "source array must be at least 1D");
+        RAISE(PyExc_ValueError, "source array must be at least 1D");
         goto fail;
     }
     if (src_view_p->shape[src_ndim - 1] != 3) {
@@ -987,13 +990,13 @@ map_array(PyObject *self, PyObject *args)
     SDL_Palette *palette;
     if (!PG_GetSurfaceDetails(pgSurface_AsSurface(format_surf), &format,
                               &palette)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     pix_bytesize = PG_FORMAT_BytesPerPixel(format);
     if (tar_itemsize < pix_bytesize) {
-        PyErr_SetString(PyExc_ValueError,
-                        "target array itemsize is too small for pixel format");
+        RAISE(PyExc_ValueError,
+              "target array itemsize is too small for pixel format");
         goto fail;
     }
     src_green = (int)src_view_p->strides[src_ndim - 1];
@@ -1093,9 +1096,8 @@ map_array(PyObject *self, PyObject *args)
             --dim;
             if (dim < 0) {
                 /* Should not happen, but handle case for extra safety */
-                PyErr_SetString(
-                    PyExc_RuntimeError,
-                    "internal pygame error in pixelcopy map_array");
+                RAISE(PyExc_RuntimeError,
+                      "internal pygame error in pixelcopy map_array");
                 goto fail;
             }
             tar += tar_advances[dim];
@@ -1176,7 +1178,8 @@ make_surface(PyObject *self, PyObject *arg)
 
     if (!(view_p->ndim == 2 || (view_p->ndim == 3 && view_p->shape[2] == 3))) {
         pgBuffer_Release(&pg_view);
-        return RAISE(PyExc_ValueError, "must be a valid 2d or 3d array\n");
+        return RAISERETURN(PyExc_ValueError,
+                           "must be a valid 2d or 3d array\n", NULL);
     }
     if (_validate_view_format(view_p->format)) {
         pgBuffer_Release(&pg_view);
@@ -1195,7 +1198,7 @@ make_surface(PyObject *self, PyObject *arg)
     surf = PG_CreateSurface(sizex, sizey, pixelformat);
     if (!surf) {
         pgBuffer_Release(&pg_view);
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_Palette *palette = SDL_GetSurfacePalette(surf);
@@ -1207,9 +1210,8 @@ make_surface(PyObject *self, PyObject *arg)
          *          */
         if (!PG_SetPaletteColors(palette, default_palette_colors, 0,
                                  default_palette_size - 1)) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(surf);
-            return 0;
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     }
     surfobj = pgSurface_New(surf);

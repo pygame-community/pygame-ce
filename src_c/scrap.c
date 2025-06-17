@@ -119,10 +119,10 @@ _scrap_init(PyObject *self, PyObject *args)
      * anything.
      * Here is old SDL1 code for future reference
      * if (!SDL_GetVideoSurface())
-     *     return RAISE(pgExc_SDLError, "No display mode is set");
+     *     return RAISERETURN(pgExc_SDLError, "No display mode is set", NULL);
      */
     if (!pygame_scrap_init()) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     Py_RETURN_NONE;
@@ -327,8 +327,8 @@ _scrap_put_scrap(PyObject *self, PyObject *args)
 
     /* Set it in the clipboard. */
     if (!pygame_scrap_put(scrap_type, scraplen, scrap)) {
-        return RAISE(pgExc_SDLError,
-                     "content could not be placed in clipboard.");
+        return RAISERETURN(pgExc_SDLError,
+                           "content could not be placed in clipboard.", NULL);
     }
 
     /* Add or replace the set value. */
@@ -390,7 +390,7 @@ _scrap_set_mode(PyObject *self, PyObject *args)
     }
 
     if (_currentmode != SCRAP_CLIPBOARD && _currentmode != SCRAP_SELECTION) {
-        return RAISE(PyExc_ValueError, "invalid clipboard mode");
+        return RAISERETURN(PyExc_ValueError, "invalid clipboard mode", NULL);
     }
 
     /* Force the clipboard, if not in a X11 environment. */
@@ -416,7 +416,7 @@ _scrap_get_text(PyObject *self, PyObject *args)
     // vs just an empty string in the clipboard
     if (*text == '\0' && hasText == SDL_TRUE) {
         SDL_free(text);
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     PyObject *returnValue = PyUnicode_FromString(text);
@@ -442,7 +442,7 @@ _scrap_put_text(PyObject *self, PyObject *args)
     }
 
     if (SDL_SetClipboardText(text)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     Py_RETURN_NONE;

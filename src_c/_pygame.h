@@ -564,10 +564,8 @@ typedef enum {
     PGS_SCROLL_ERASE = 0x00000004
 } PygameScrollSurfaceFlags;
 
-#define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
-#define RAISERETURN(x, y, r)   \
-    PyErr_SetString((x), (y)); \
-    return r;
+#define RAISE(x, y) (PyErr_SetString((x), (y)))
+#define RAISERETURN(x, y, r) (PyErr_SetString((x), (y)), r)
 #define DEL_ATTR_NOT_SUPPORTED_CHECK(name, value)                            \
     do {                                                                     \
         if (!value) {                                                        \
@@ -577,25 +575,29 @@ typedef enum {
         }                                                                    \
     } while (0)
 
-#define DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value)                           \
-    do {                                                                      \
-        if (!value) {                                                         \
-            PyErr_SetString(PyExc_AttributeError, "Cannot delete attribute"); \
-            return -1;                                                        \
-        }                                                                     \
+#define DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value)            \
+    do {                                                       \
+        if (!value) {                                          \
+            return RAISERETURN(PyExc_AttributeError,           \
+                               "Cannot delete attribute", -1); \
+        }                                                      \
     } while (0)
 
 /*
  * Initialization checks
  */
 
-#define VIDEO_INIT_CHECK()            \
-    if (!SDL_WasInit(SDL_INIT_VIDEO)) \
-    return RAISE(pgExc_SDLError, "video system not initialized")
+#define VIDEO_INIT_CHECK()                                                 \
+    if (!SDL_WasInit(SDL_INIT_VIDEO)) {                                    \
+        return RAISERETURN(pgExc_SDLError, "video system not initialized", \
+                           NULL);                                          \
+    }
 
-#define JOYSTICK_INIT_CHECK()            \
-    if (!SDL_WasInit(SDL_INIT_JOYSTICK)) \
-    return RAISE(pgExc_SDLError, "joystick system not initialized")
+#define JOYSTICK_INIT_CHECK()                                                 \
+    if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {                                    \
+        return RAISERETURN(pgExc_SDLError, "joystick system not initialized", \
+                           NULL);                                             \
+    }
 
 /* thread check */
 #ifdef WITH_THREAD

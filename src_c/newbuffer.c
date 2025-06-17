@@ -307,9 +307,8 @@ buffer_get_buffer(BufferObject *self, PyObject *args, PyObject *kwds)
         return 0;
     }
     if (bufobj_flags & BUFOBJ_FILLED) {
-        PyErr_SetString(PyExc_ValueError,
-                        "The Py_buffer struct is already filled in");
-        return 0;
+        return RAISERETURN(PyExc_ValueError,
+                           "The Py_buffer struct is already filled in", NULL);
     }
     self->flags = BUFOBJ_MUTABLE & bufobj_flags;
     if (!self->view_p) {
@@ -751,8 +750,7 @@ Buffer_New(Py_buffer *view_p, int filled, int preserve)
 static PyObject *
 mixin__get_buffer(PyObject *self, PyObject *args)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "abstract method");
-    return 0;
+    return RAISERETURN(PyExc_NotImplementedError, "abstract method", NULL);
 }
 
 static PyObject *
@@ -788,9 +786,9 @@ mixin_getbuffer(PyObject *self, Py_buffer *view_p, int flags)
             Py_DECREF(py_rval);
         }
         else if (py_rval) {
-            PyErr_SetString(PyExc_ValueError,
-                            "_get_buffer method return value was not None");
             Py_DECREF(py_rval);
+            RAISE(PyExc_ValueError,
+                  "_get_buffer method return value was not None");
         }
     }
     return rval;

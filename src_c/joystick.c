@@ -40,7 +40,7 @@ init(PyObject *self, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
         if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
         PG_SetJoystickEventsEnabled(SDL_TRUE);
     }
@@ -117,7 +117,7 @@ get_count(PyObject *self, PyObject *_null)
     int ret;
     SDL_JoystickID *joysticks = SDL_GetJoysticks(&ret);
     if (!joysticks) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
     SDL_free(joysticks);
     return PyLong_FromLong(ret);
@@ -143,7 +143,7 @@ joy_init(PyObject *self, PyObject *_null)
     if (!jstick->joy) {
         jstick->joy = SDL_JoystickOpen(jstick->id);
         if (!jstick->joy) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
         }
     }
 
@@ -193,7 +193,7 @@ joy_get_instance_id(PyObject *self, PyObject *_null)
 
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
 
     return PyLong_FromLong(SDL_JoystickInstanceID(joy));
@@ -212,7 +212,8 @@ joy_get_guid(PyObject *self, PyObject *_null)
     }
     else {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        return RAISE(pgExc_SDLError, "Invalid/closed joystick object");
+        return RAISERETURN(pgExc_SDLError, "Invalid/closed joystick object",
+                           NULL);
 #else
         guid = SDL_JoystickGetDeviceGUID(pgJoystick_AsID(self));
 #endif
@@ -284,7 +285,7 @@ joy_get_power_level(PyObject *self, PyObject *_null)
 
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
 
     leveltext = _pg_powerlevel_string(joy);
@@ -313,7 +314,7 @@ joy_rumble(pgJoystickObject *self, PyObject *args, PyObject *kwargs)
 
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
 
     if (lowf < 0) {
@@ -363,7 +364,7 @@ joy_get_numaxes(PyObject *self, PyObject *_null)
     SDL_Joystick *joy = pgJoystick_AsSDL(self);
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
 
     return PyLong_FromLong(SDL_JoystickNumAxes(joy));
@@ -381,10 +382,10 @@ joy_get_axis(PyObject *self, PyObject *args)
 
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
     if (axis < 0 || axis >= SDL_JoystickNumAxes(joy)) {
-        return RAISE(pgExc_SDLError, "Invalid joystick axis");
+        return RAISERETURN(pgExc_SDLError, "Invalid joystick axis", NULL);
     }
 
     value = SDL_JoystickGetAxis(joy, axis);
@@ -402,7 +403,7 @@ joy_get_numbuttons(PyObject *self, PyObject *_null)
 
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
 
     return PyLong_FromLong(SDL_JoystickNumButtons(joy));
@@ -420,10 +421,10 @@ joy_get_button(PyObject *self, PyObject *args)
 
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
     if (_index < 0 || _index >= SDL_JoystickNumButtons(joy)) {
-        return RAISE(pgExc_SDLError, "Invalid joystick button");
+        return RAISERETURN(pgExc_SDLError, "Invalid joystick button", NULL);
     }
 
     value = SDL_JoystickGetButton(joy, _index);
@@ -440,7 +441,7 @@ joy_get_numballs(PyObject *self, PyObject *_null)
 
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
 
     return PyLong_FromLong(SDL_JoystickNumBalls(joy));
@@ -459,14 +460,14 @@ joy_get_ball(PyObject *self, PyObject *args)
 
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
     value = SDL_JoystickNumBalls(joy);
 #ifdef DEBUG
     /*printf("SDL_JoystickNumBalls value:%d:\n", value);*/
 #endif
     if (_index < 0 || _index >= value) {
-        return RAISE(pgExc_SDLError, "Invalid joystick trackball");
+        return RAISERETURN(pgExc_SDLError, "Invalid joystick trackball", NULL);
     }
 
     SDL_JoystickGetBall(joy, _index, &dx, &dy);
@@ -481,7 +482,7 @@ joy_get_numhats(PyObject *self, PyObject *_null)
 
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
 
     value = SDL_JoystickNumHats(joy);
@@ -504,10 +505,10 @@ joy_get_hat(PyObject *self, PyObject *args)
 
     JOYSTICK_INIT_CHECK();
     if (!joy) {
-        return RAISE(pgExc_SDLError, "Joystick not initialized");
+        return RAISERETURN(pgExc_SDLError, "Joystick not initialized", NULL);
     }
     if (_index < 0 || _index >= SDL_JoystickNumHats(joy)) {
-        return RAISE(pgExc_SDLError, "Invalid joystick hat");
+        return RAISERETURN(pgExc_SDLError, "Invalid joystick hat", NULL);
     }
 
     px = py = 0;
@@ -598,12 +599,13 @@ pgJoystick_New(int id)
     /* This check should be redundant because SDL_JoystickOpen already checks
      * and errors if id is out of bounds on SDL3 */
     if (id >= SDL_NumJoysticks()) {
-        return RAISE(pgExc_SDLError, "Invalid joystick device number");
+        return RAISERETURN(pgExc_SDLError, "Invalid joystick device number",
+                           NULL);
     }
 #endif
     joy = SDL_JoystickOpen(id);
     if (!joy) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 
     /* Search existing joystick objects to see if we already have this stick.

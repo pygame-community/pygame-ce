@@ -99,9 +99,8 @@ pg_scancodewrapper_subscript(pgScancodeWrapper *self, PyObject *item)
 static PyObject *
 pg_iter_raise(PyObject *self)
 {
-    PyErr_SetString(PyExc_TypeError,
-                    "Iterating over key states is not supported");
-    return NULL;
+    return RAISERETURN(PyExc_TypeError,
+                       "Iterating over key states is not supported", NULL);
 }
 
 /**
@@ -491,7 +490,7 @@ key_code(PyObject *self, PyObject *args, PyObject *kwargs)
 
     code = _pg_get_key_from_name(name);
     if (code == SDLK_UNKNOWN) {
-        return RAISE(PyExc_ValueError, "unknown key name");
+        return RAISERETURN(PyExc_ValueError, "unknown key name", NULL);
     }
     return PyLong_FromLong(code);
 }
@@ -535,11 +534,11 @@ key_start_text_input(PyObject *self, PyObject *_null)
      * just does backcompat */
     SDL_Window *win = pg_GetDefaultWindow();
     if (!win) {
-        return RAISE(pgExc_SDLError,
-                     "display.set_mode has not been called yet.");
+        return RAISERETURN(pgExc_SDLError,
+                           "display.set_mode has not been called yet.", NULL);
     }
     if (!SDL_StartTextInput(win)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 #else
     /* https://wiki.libsdl.org/SDL_StartTextInput */
@@ -556,11 +555,11 @@ key_stop_text_input(PyObject *self, PyObject *_null)
      * just does backcompat */
     SDL_Window *win = pg_GetDefaultWindow();
     if (!win) {
-        return RAISE(pgExc_SDLError,
-                     "display.set_mode has not been called yet.");
+        return RAISERETURN(pgExc_SDLError,
+                           "display.set_mode has not been called yet.", NULL);
     }
     if (!SDL_StopTextInput(win)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISERETURN(pgExc_SDLError, SDL_GetError(), NULL);
     }
 #else
     /* https://wiki.libsdl.org/SDL_StopTextInput */
@@ -582,7 +581,7 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
     }
     rect = pgRect_FromObject(obj, &temp);
     if (!rect) {
-        return RAISE(PyExc_TypeError, "Invalid rect argument");
+        return RAISERETURN(PyExc_TypeError, "Invalid rect argument", NULL);
     }
 
     if (sdlRenderer != NULL) {

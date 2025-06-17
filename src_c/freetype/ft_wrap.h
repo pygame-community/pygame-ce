@@ -241,12 +241,12 @@ extern _FreeTypeState _modstate;
 #define FREETYPE_STATE FREETYPE_MOD_STATE(0)
 #endif /* defined(PYPY_VERSION) */
 
-#define ASSERT_GRAB_FREETYPE(ft_ptr, rvalue)                               \
-    ft_ptr = FREETYPE_STATE->freetype;                                     \
-    if (!ft_ptr) {                                                         \
-        PyErr_SetString(PyExc_RuntimeError,                                \
-                        "The FreeType 2 library hasn't been initialized"); \
-        return (rvalue);                                                   \
+#define ASSERT_GRAB_FREETYPE(ft_ptr, rvalue)                                 \
+    ft_ptr = FREETYPE_STATE->freetype;                                       \
+    if (!ft_ptr) {                                                           \
+        return RAISERETURN(PyExc_RuntimeError,                               \
+                           "The FreeType 2 library hasn't been initialized", \
+                           rvalue);                                          \
     }
 
 /**********************************************************

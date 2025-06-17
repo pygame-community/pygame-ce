@@ -349,8 +349,8 @@ proxy_get_raw(pgBufferProxyObject *self, PyObject *closure)
     }
     if (!PyBuffer_IsContiguous(view_p, 'A')) {
         _proxy_release_view(self);
-        PyErr_SetString(PyExc_ValueError, "the bytes are not contiguous");
-        return 0;
+        return RAISERETURN(PyExc_ValueError, "the bytes are not contiguous",
+                           NULL);
     }
     py_raw = PyBytes_FromStringAndSize((char *)view_p->buf, view_p->len);
     if (!py_raw) {
@@ -414,22 +414,19 @@ proxy_write(pgBufferProxyObject *self, PyObject *args, PyObject *kwds)
     if (!PyBuffer_IsContiguous(&view, 'A')) {
         proxy_releasebuffer(self, &view);
         Py_DECREF(self);
-        PyErr_SetString(PyExc_ValueError,
-                        "the BufferProxy bytes are not contiguous");
-        return 0;
+        return RAISERETURN(PyExc_ValueError,
+                           "the BufferProxy bytes are not contiguous", NULL);
     }
     if (buflen > view.len) {
         proxy_releasebuffer(self, &view);
         Py_DECREF(self);
-        PyErr_SetString(PyExc_ValueError,
-                        "'buffer' object length is too large");
-        return 0;
+        return RAISERETURN(PyExc_ValueError,
+                           "'buffer' object length is too large", NULL);
     }
     if (offset < 0 || buflen + offset > view.len) {
         proxy_releasebuffer(self, &view);
         Py_DECREF(self);
-        PyErr_SetString(PyExc_IndexError, "'offset' is out of range");
-        return 0;
+        return RAISERETURN(PyExc_IndexError, "'offset' is out of range", NULL);
     }
     memcpy((char *)view.buf + offset, buf, (size_t)buflen);
     proxy_releasebuffer(self, &view);
@@ -534,10 +531,11 @@ pgBufferProxy_New(PyObject *obj, getbufferproc get_buffer)
 {
     if (!get_buffer) {
         if (!obj) {
-            PyErr_SetString(PyExc_ValueError,
-                            "One of arguments 'obj' or 'get_buffer' is "
-                            "required: both NULL instead");
-            return 0;
+            return RAISERETURN(
+                PyExc_ValueError,
+                "One of arguments 'obj' or 'get_buffer' is required: "
+                "both NULL instead",
+                NULL);
         }
         get_buffer = (getbufferproc)pgObject_GetBuffer;
     }
