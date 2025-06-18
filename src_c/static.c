@@ -50,12 +50,27 @@ import_pygame_surface(void)
 }
 
 void
+import_pygame_window(void)
+{
+}
+
+void
 import_pygame_geometry(void)
 {
 }
 
 void
 import_pygame_color(void)
+{
+}
+
+void
+import_pygame_font(void)
+{
+}
+
+void
+import_pygame_freetype(void)
 {
 }
 
@@ -79,8 +94,22 @@ import_pygame_joystick(void)
 {
 }
 
+#undef import_pygame_imageext
+#undef import_pygame_render
+#undef import_pygame_pixelarray
+
 void
-import_pygame_window(void)
+import_pygame_imageext(void)
+{
+}
+
+void
+import_pygame_render(void)
+{
+}
+
+void
+import_pygame_pixelarray(void)
 {
 }
 
@@ -198,24 +227,30 @@ void
 load_submodule(const char *parent, PyObject *mod, const char *alias)
 {
     char fqn[1024];
-    snprintf(fqn, sizeof(fqn), "%s.%s", parent, alias);
-
-    PyObject *modules = PyImport_GetModuleDict();
-
-    PyObject *pmod = PyDict_GetItemString(modules, parent);
-
     if (!mod) {
-        snprintf(fqn, sizeof(fqn), "ERROR: %s.%s", parent, alias);
+        snprintf(fqn, sizeof(fqn), "ERROR: PyInit_%s failed for %s.%s", alias,
+                 parent, alias);
         puts(fqn);
         PyErr_Print();
         PyErr_Clear();
     }
     else {
-        PyDict_SetItemString(modules, fqn, mod);
-        PyDict_SetItemString(PyModule_GetDict(mod), "__name__",
-                             PyUnicode_FromString(fqn));
-        PyModule_AddObjectRef(pmod, alias, mod);
-        Py_XDECREF(mod);
+        snprintf(fqn, sizeof(fqn), "%s.%s", parent, alias);
+        PyObject *modules = PyImport_GetModuleDict();
+
+        PyObject *pmod = PyDict_GetItemString(modules, parent);
+        if (!pmod) {
+            snprintf(fqn, sizeof(fqn), "ERROR: Parent %s not found for %s.%s",
+                     parent, parent, alias);
+            puts(fqn);
+        }
+        else {
+            PyDict_SetItemString(modules, fqn, mod);
+            PyDict_SetItemString(PyModule_GetDict(mod), "__name__",
+                                 PyUnicode_FromString(fqn));
+            PyModule_AddObjectRef(pmod, alias, mod);
+            Py_XDECREF(mod);
+        }
     }
 }
 
@@ -225,6 +260,7 @@ load_submodule_mphase(const char *parent, PyObject *mdef, PyObject *spec,
 {
     char fqn[1024];
     snprintf(fqn, sizeof(fqn), "%s.%s", parent, alias);
+
     PyObject *modules = PyImport_GetModuleDict();
 
     Py_DECREF(PyObject_GetAttrString(spec, "name"));
@@ -256,6 +292,7 @@ static PyObject *
 mod_pygame_import_cython(PyObject *self, PyObject *spec)
 {
     load_submodule_mphase("pygame._sdl2", PyInit_sdl2(), spec, "sdl2");
+
     load_submodule_mphase("pygame._sdl2", PyInit_mixer(), spec, "mixer");
 #if defined(CONTROLLER_NOPYX)
     load_submodule("pygame._sdl2", PyInit_controller(), "controller");
@@ -288,46 +325,71 @@ PyInit_pygame_static()
     SDL_SetHint("SDL_EMSCRIPTEN_KEYBOARD_ELEMENT", "1");
 
     load_submodule("pygame", PyInit_base(), "base");
+
+    //
     load_submodule("pygame", PyInit_constants(), "constants");
-    load_submodule("pygame", PyInit_surflock(), "surflock");
-    load_submodule("pygame", PyInit_rwobject(), "rwobject");
+    //
     load_submodule("pygame", PyInit_pg_math(), "math");
-    load_submodule("pygame", PyInit_display(), "display");
-    load_submodule("pygame", PyInit_surface(), "surface");
-    load_submodule("pygame", PyInit_system(), "system");
-    load_submodule("pygame", PyInit_key(), "key");
 
+    // base, pygame.colordict
+    load_submodule("pygame", PyInit_color(), "color");
+
+    // base
     load_submodule("pygame", PyInit_rect(), "rect");
+
+    // base, rect
     load_submodule("pygame", PyInit_geometry(), "geometry");
-    load_submodule("pygame", PyInit_gfxdraw(), "gfxdraw");
-    load_submodule("pygame", PyInit_pg_time(), "time");
-    load_submodule("pygame", PyInit__freetype(), "_freetype");
 
+    load_submodule("pygame", PyInit_bufferproxy(), "bufferproxy");
+    load_submodule("pygame", PyInit_surflock(), "surflock");
+
+    // base, color, rect, bufferproxy, surflock
+    load_submodule("pygame", PyInit_surface(), "surface");
+
+    load_submodule("pygame", PyInit_rwobject(), "rwobject");
+
+    // base, color, rect, bufferproxy, surflock, surface, rwobject
     load_submodule("pygame", PyInit_imageext(), "imageext");
-
+    // base, color, rect, bufferproxy, surflock, surface, rwobject
     load_submodule("pygame", PyInit_image(), "image");
+
+    load_submodule("pygame", PyInit__freetype(), "_freetype");
     load_submodule("pygame", PyInit_font(), "font");
     load_submodule("pygame", PyInit_pixelcopy(), "pixelcopy");
     load_submodule("pygame", PyInit_newbuffer(), "newbuffer");
 
-    load_submodule("pygame", PyInit_color(), "color");
-    load_submodule("pygame", PyInit_bufferproxy(), "bufferproxy");
+    // base
+    load_submodule("pygame", PyInit_joystick(), "joystick");
+    // base, joystick
+    load_submodule("pygame", PyInit_event(), "event");
+
+    // base, rect, event
+    load_submodule("pygame", PyInit_key(), "key");
+    // base, event
+    load_submodule("pygame", PyInit_pg_time(), "time");
 
     load_submodule("pygame", PyInit_transform(), "transform");
     load_submodule("pygame", PyInit_draw(), "draw");
 
     load_submodule("pygame", PyInit_mask(), "mask");
     load_submodule("pygame", PyInit_mouse(), "mouse");
-    load_submodule("pygame", PyInit_event(), "event");
-    load_submodule("pygame", PyInit_joystick(), "joystick");
 
     load_submodule("pygame", PyInit_pg_mixer(), "mixer");
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
 
+    // base, color, rect, bufferproxy, surflock, surface
     load_submodule("pygame", PyInit_window(), "window");
+
+    // base, color, rect, surflock, surface, window
+    load_submodule("pygame", PyInit_display(), "display");
     load_submodule("pygame", PyInit__render(), "_render");
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
+
+    // base, color, rect, bufferproxy, surflock, surface
+    load_submodule("pygame", PyInit_gfxdraw(), "gfxdraw");
+
+    load_submodule("pygame", PyInit_system(), "system");
 
     return PyModule_Create(&mod_pygame_static);
 }

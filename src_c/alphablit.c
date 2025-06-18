@@ -61,10 +61,6 @@ blit_blend_premultiplied(SDL_BlitInfo *info);
 static int
 SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                SDL_Rect *dstrect, int blend_flags);
-extern int
-SDL_RLESurface(SDL_Surface *surface);
-extern void
-SDL_UnRLESurface(SDL_Surface *surface, int recode);
 
 static int
 SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
