@@ -458,6 +458,46 @@ class WindowTypeTest(unittest.TestCase):
         window = pygame.Window()
         self.assertIsInstance(window.focused, bool)
 
+    def test_get_info(self):
+        info = self.win.get_info()
+        # Assert function returns a dictionary type
+        self.assertIsInstance(info, dict)
+
+        wm_info_potential_keys = {
+            "colorbuffer",
+            "connection",
+            "data",
+            "dfb",
+            "display",
+            "framebuffer",
+            "fswindow",
+            "hdc",
+            "hglrc",
+            "hinstance",
+            "lock_func",
+            "resolveFramebuffer",
+            "shell_surface",
+            "subsystem",
+            "surface",
+            "taskHandle",
+            "unlock_func",
+            "wimpVersion",
+            "window",
+            "wmwindow",
+        }
+
+        # If any unexpected dict keys are present, they
+        # will be stored in set wm_info_remaining_keys
+        wm_info_remaining_keys = set(info.keys()).difference(wm_info_potential_keys)
+
+        # Assert set is empty (& therefore does not
+        # contain unexpected dict keys)
+        self.assertFalse(wm_info_remaining_keys)
+
+        # Test for destroyed window
+        self.win.destroy()
+        self.assertFalse(self.win.get_info())
+
     def tearDown(self):
         self.win.destroy()
 
