@@ -23,7 +23,7 @@
 */
 
 #define NO_PYGAME_C_API
-#include "_surface.h"
+#include "surface.h"
 #include "simd_shared.h"
 #include "simd_blitters.h"
 
