@@ -78,7 +78,7 @@ static PyObject *pgExc_BufferError = NULL;
 /* Only one instance of the state per process. */
 static PyObject *pg_quit_functions = NULL;
 static int pg_is_init = 0;
-static int pg_sdl_was_init = 0;
+static bool pg_sdl_was_init = 0;
 SDL_Window *pg_default_window = NULL;
 pgSurfaceObject *pg_default_screen = NULL;
 static int pg_env_blend_alpha_SDL2 = 0;
@@ -348,10 +348,10 @@ pg_init(PyObject *self, PyObject *_null)
 
     /*nice to initialize timer, so startup time will reflec pg_init() time*/
 #if defined(WITH_THREAD) && !defined(MS_WIN32) && defined(SDL_INIT_EVENTTHREAD)
-    pg_sdl_was_init = SDL_Init(SDL_INIT_EVENTTHREAD | PG_INIT_TIMER |
-                               PG_INIT_NOPARACHUTE) == 0;
+    pg_sdl_was_init = PG_InitSubSystem(SDL_INIT_EVENTTHREAD | PG_INIT_TIMER |
+                                       PG_INIT_NOPARACHUTE);
 #else
-    pg_sdl_was_init = SDL_Init(PG_INIT_TIMER | PG_INIT_NOPARACHUTE) == 0;
+    pg_sdl_was_init = PG_InitSubSystem(PG_INIT_TIMER | PG_INIT_NOPARACHUTE);
 #endif
 
     pg_env_blend_alpha_SDL2 = SDL_getenv("PYGAME_BLEND_ALPHA_SDL2") != NULL;
@@ -382,7 +382,7 @@ pg_atexit_quit(void)
        successful SDL_Init.
     */
     if (pg_sdl_was_init) {
-        pg_sdl_was_init = 0;
+        pg_sdl_was_init = false;
         SDL_Quit();
     }
 }

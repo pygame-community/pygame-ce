@@ -26,7 +26,7 @@ static PyObject *
 controller_module_init(PyObject *module, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER)) {
-        if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
+        if (!PG_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }

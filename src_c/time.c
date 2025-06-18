@@ -325,7 +325,7 @@ accurate_delay(Sint64 ticks)
 
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
-        if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
+        if (!PG_InitSubSystem(SDL_INIT_TIMER)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             return -1;
         }
@@ -389,7 +389,7 @@ time_wait(PyObject *self, PyObject *arg)
 
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
-        if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
+        if (!PG_InitSubSystem(SDL_INIT_TIMER)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
@@ -479,7 +479,7 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     /* just doublecheck that timer is initialized */
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
-        if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
+        if (!PG_InitSubSystem(SDL_INIT_TIMER)) {
             ecode = PG_TIMER_SDL_ERROR;
             goto end;
         }
@@ -549,7 +549,7 @@ clock_tick_base(pgClockObject *self, PyObject *arg, int use_accurate_delay)
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
         /*just doublecheck that timer is initialized*/
         if (!SDL_WasInit(SDL_INIT_TIMER)) {
-            if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
+            if (!PG_InitSubSystem(SDL_INIT_TIMER)) {
                 return RAISE(pgExc_SDLError, SDL_GetError());
             }
         }
@@ -671,7 +671,7 @@ clock_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
 
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
-        if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
+        if (!PG_InitSubSystem(SDL_INIT_TIMER)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
