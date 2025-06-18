@@ -101,7 +101,7 @@ jobs:
       id: build-pygame-ce
       run: |
         pyenv global ${{ matrix.python }}-debug
-        python dev.py build --lax --coverage
+        python dev.py build --lax --coverage --sanitize undefined
 
     - name: Run tests
       env:

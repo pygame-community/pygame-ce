@@ -1491,17 +1491,13 @@ MODINIT_DEFINE(window)
         return NULL;
     }
 
-    if (PyType_Ready(&pgWindow_Type) < 0) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (module == 0) {
         return NULL;
     }
 
-    if (PyModule_AddObjectRef(module, "Window", (PyObject *)&pgWindow_Type)) {
+    if (PyModule_AddType(module, &pgWindow_Type)) {
         Py_DECREF(module);
         return NULL;
     }
