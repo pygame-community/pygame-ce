@@ -2447,18 +2447,26 @@ class AALineMixin(BaseLineMixin):
 
     def test_aaline__blend_warning(self):
         """Using the blend argument should raise a DeprecationWarning"""
-        faulty_blend_values = [0, 1, True, False, None, "", [], type]
+        faulty_blend_values = [0, 1, True, False]
         with warnings.catch_warnings(record=True) as w:
             for count, blend in enumerate(faulty_blend_values):
                 # Cause all warnings to always be triggered.
                 warnings.simplefilter("always")
                 # Trigger DeprecationWarning.
-                self.draw_aaline(
-                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), 1, blend
+                bounding1 = self.draw_aaline(
+                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), blend=blend
+                )
+                # Doesn't trigger DeprecationWarning, interepreted as width
+                bounding2 = self.draw_aaline(
+                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), blend
                 )
                 # Check if there is only one warning and is a DeprecationWarning.
                 self.assertEqual(len(w), count + 1)
                 self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
+
+                # check that the line gets drawn
+                self.assertEqual(bounding1, bounding2)
+                self.assertEqual(bounding1, (0, 0, 2, 2))
 
     def test_aaline__kwargs(self):
         """Ensures draw aaline accepts the correct kwargs"""
@@ -2681,11 +2689,10 @@ class AALineMixin(BaseLineMixin):
         for width in (-100, -10, -1, 0, 1, 10, 100):
             surface.fill(surface_color)  # Clear for each test.
             kwargs["width"] = width
-            expected_color = line_color if width > 0 else surface_color
 
             bounds_rect = self.draw_aaline(**kwargs)
 
-            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertEqual(surface.get_at(pos), line_color)
             self.assertIsInstance(bounds_rect, pygame.Rect)
 
     def test_aaline__valid_start_pos_formats(self):
@@ -2928,15 +2935,9 @@ class AALineMixin(BaseLineMixin):
                             surface, line_color, start, end, thickness
                         )
 
-                        if 0 < thickness:
-                            # Calculating the expected_rect after the line is
-                            # drawn (it uses what is actually drawn).
-                            expected_rect = create_bounding_rect(
-                                surface, surf_color, start
-                            )
-                        else:
-                            # Nothing drawn.
-                            expected_rect = pygame.Rect(start, (0, 0))
+                        # Calculating the expected_rect after the line is
+                        # drawn (it uses what is actually drawn).
+                        expected_rect = create_bounding_rect(surface, surf_color, start)
 
                         self.assertEqual(
                             bounding_rect,
