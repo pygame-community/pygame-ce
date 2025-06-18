@@ -543,7 +543,7 @@ joy_set_led(PyObject *self, PyObject *arg)
 
     Uint8 colors[4] = {0, 0, 0, 0};
 
-    if (!pg_RGBAFromObj(arg, colors)) {
+    if (!pg_RGBAFromObjEx(arg, colors, PG_COLOR_HANDLE_ALL)) {
         return RAISE(PyExc_TypeError,
                      "set_led must be passed in a Color-compatible argument");
     }
@@ -557,7 +557,9 @@ joy_set_led(PyObject *self, PyObject *arg)
     // SDL3 renames the function and sets an error message on failure
     bool result = SDL_SetJoystickLED(joy, colors[0], colors[1], colors[2]);
     if (!result) {
-        printf("%s\n", SDL_GetError());
+        // Clear the SDL error message that SDL set, for example if it didn't
+        // have an addressable LED
+        (void)SDL_GetError();
     }
     return PyBool_FromLong(result);
 #endif
@@ -694,6 +696,11 @@ MODINIT_DEFINE(joystick)
        the module is not loaded.
     */
     import_pygame_base();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    import_pygame_color();
     if (PyErr_Occurred()) {
         return NULL;
     }
