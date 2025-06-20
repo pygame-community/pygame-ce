@@ -52,16 +52,24 @@ cc = meson.get_compiler('c')
 
 fs = import('fs')
 
-py = import('python').find_installation(pure: false)
-py_dep = py.dependency()
+# remove all traces of meson-python, use external framework path instead of finding the host python
+# py = import('python').find_installation(pure: false)
+# py_dep = py.dependency()
 
-is_pypy = py.get_variable('implementation_lower', '') == 'pypy'
+# is_pypy = py.get_variable('implementation_lower', '') == 'pypy'
 
-if not cc.has_header('Python.h', dependencies: py_dep)
-    error(
-        'Cannot use `Python.h`. Perhaps you need to install python-dev|python-devel',
-    )
-endif
+# if not cc.has_header('Python.h', dependencies: py_dep)
+#     error(
+#         'Cannot use `Python.h`. Perhaps you need to install python-dev|python-devel',
+#     )
+# endif
+
+py_framework_dir = '/Users/luke/dev/python/pygame-ios/pygameios/build/pygameios/ios/xcode/Support/Python.xcframework/ios-arm64'
+py_framework_path = py_framework_dir + '/Python.framework'
+py_dep = declare_dependency(
+    include_directories: include_directories(py_framework_path + '/Headers'),
+    link_args: ['-F' + py_framework_dir, '-framework', 'Python']
+)
 
 if get_option('coverage')
     if cc.has_argument('--coverage')
@@ -76,7 +84,7 @@ if get_option('coverage')
     endif
 endif
 
-pg_dir = py.get_install_dir() / pg
+# pg_dir = py.get_install_dir() / pg
 
 sdl_api = get_option('sdl_api')
 sdl = 'SDL@0@'.format(sdl_api)
@@ -90,241 +98,221 @@ endif
 
 pg_inc_dirs = []
 pg_lib_dirs = []
-if plat == 'win' and host_machine.cpu_family().startswith('x86')
-    # yes, this is a bit ugly and hardcoded but it is what it is
-    # TODO (middle-term goal) - Should migrate away from this
-    # consider meson wraps? Hopefully can also get the same build path as below
-    arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
-    base_dir = meson.current_source_dir()
-    prebuilt_dir = base_dir / 'prebuilt-' + arch_suffix
 
-    # download prebuilts (uses legacy builconfig code)
-    if not fs.is_dir(prebuilt_dir)
-        run_command(
-            [
-                find_program('python3', 'python'),
-                'buildconfig/download_win_prebuilt.py',
-            ],
-            check: true,
-        )
-    endif
+# all system lib checking, not needed for iOS
+# if plat == 'win' and host_machine.cpu_family().startswith('x86')
+#     # yes, this is a bit ugly and hardcoded but it is what it is
+#     # TODO (middle-term goal) - Should migrate away from this
+#     # consider meson wraps? Hopefully can also get the same build path as below
+#     arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
+#     base_dir = meson.current_source_dir()
+#     prebuilt_dir = base_dir / 'prebuilt-' + arch_suffix
 
-    sdl_ver = (sdl_api == 3) ? '3.2.10' : '2.32.8'
-    sdl_image_ver = (sdl_api == 3) ? '3.2.4' : '2.8.8'
-    sdl_mixer_ver = '2.8.1'
-    sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
+#     # download prebuilts (uses legacy builconfig code)
+#     if not fs.is_dir(prebuilt_dir)
+#         run_command(
+#             [
+#                 find_program('python3', 'python'),
+#                 'buildconfig/download_win_prebuilt.py',
+#             ],
+#             check: true,
+#         )
+#     endif
 
-    dlls = []
+#     sdl_ver = (sdl_api == 3) ? '3.2.10' : '2.32.8'
+#     sdl_image_ver = (sdl_api == 3) ? '3.2.4' : '2.8.8'
+#     sdl_mixer_ver = '2.8.1'
+#     sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
 
-    # SDL
-    sdl_dir = prebuilt_dir / '@0@-@1@'.format(sdl, sdl_ver)
-    sdl_lib_dir = sdl_dir / 'lib' / arch_suffix
-    pg_inc_dirs += fs.relative_to(sdl_dir / 'include', base_dir)
-    pg_lib_dirs += sdl_lib_dir
-    dlls += sdl_lib_dir / '@0@.dll'.format(sdl)
+#     dlls = []
 
-    # SDL_image
-    if get_option('image').enabled()
-        sdl_image_dir = prebuilt_dir / '@0@-@1@'.format(sdl_image, sdl_image_ver)
-        sdl_image_lib_dir = sdl_image_dir / 'lib' / arch_suffix
-        pg_inc_dirs += fs.relative_to(sdl_image_dir / 'include', base_dir)
-        pg_lib_dirs += sdl_image_lib_dir
-        dlls += [
-            sdl_image_lib_dir / '@0@.dll'.format(sdl_image),
-            sdl_image_lib_dir / 'optional' / (sdl_api == 3 ? 'libtiff-6.dll' : 'libtiff-5.dll'),
-            sdl_image_lib_dir / 'optional' / 'libwebp-7.dll',
-            sdl_image_lib_dir / 'optional' / 'libwebpdemux-2.dll',
-        ]
-        # temporary solution to get things compiling under SDL3_image. In the future
-        # we would want to have libpng and libjpeg on SDL3_image as well.
-        if sdl_api != 3
-            dlls += [
-                sdl_image_lib_dir / 'optional' / 'libjpeg-62.dll',
-                sdl_image_lib_dir / 'optional' / 'libpng16-16.dll',
-            ]
-        endif
-    endif
+#     # SDL
+#     sdl_dir = prebuilt_dir / '@0@-@1@'.format(sdl, sdl_ver)
+#     sdl_lib_dir = sdl_dir / 'lib' / arch_suffix
+#     pg_inc_dirs += fs.relative_to(sdl_dir / 'include', base_dir)
+#     pg_lib_dirs += sdl_lib_dir
+#     dlls += sdl_lib_dir / '@0@.dll'.format(sdl)
 
-    # SDL_mixer
-    if get_option('mixer').enabled()
-        sdl_mixer_dir = prebuilt_dir / '@0@-@1@'.format(sdl_mixer, sdl_mixer_ver)
-        sdl_mixer_lib_dir = sdl_mixer_dir / 'lib' / arch_suffix
-        pg_inc_dirs += fs.relative_to(sdl_mixer_dir / 'include', base_dir)
-        pg_lib_dirs += sdl_mixer_lib_dir
-        dlls += [
-            sdl_mixer_lib_dir / '@0@.dll'.format(sdl_mixer),
-            sdl_mixer_lib_dir / 'optional' / 'libogg-0.dll',
-            sdl_mixer_lib_dir / 'optional' / 'libopus-0.dll',
-            sdl_mixer_lib_dir / 'optional' / 'libopusfile-0.dll',
-            sdl_mixer_lib_dir / 'optional' / 'libwavpack-1.dll',
-            sdl_mixer_lib_dir / 'optional' / 'libxmp.dll',
-        ]
-    endif
+#     # SDL_image
+#     if get_option('image').enabled()
+#         sdl_image_dir = prebuilt_dir / '@0@-@1@'.format(sdl_image, sdl_image_ver)
+#         sdl_image_lib_dir = sdl_image_dir / 'lib' / arch_suffix
+#         pg_inc_dirs += fs.relative_to(sdl_image_dir / 'include', base_dir)
+#         pg_lib_dirs += sdl_image_lib_dir
+#         dlls += [
+#             sdl_image_lib_dir / '@0@.dll'.format(sdl_image),
+#             sdl_image_lib_dir / 'optional' / (sdl_api == 3 ? 'libtiff-6.dll' : 'libtiff-5.dll'),
+#             sdl_image_lib_dir / 'optional' / 'libwebp-7.dll',
+#             sdl_image_lib_dir / 'optional' / 'libwebpdemux-2.dll',
+#         ]
+#         # temporary solution to get things compiling under SDL3_image. In the future
+#         # we would want to have libpng and libjpeg on SDL3_image as well.
+#         if sdl_api != 3
+#             dlls += [
+#                 sdl_image_lib_dir / 'optional' / 'libjpeg-62.dll',
+#                 sdl_image_lib_dir / 'optional' / 'libpng16-16.dll',
+#             ]
+#         endif
+#     endif
 
-    # SDL_ttf
-    if get_option('font').enabled()
-        sdl_ttf_dir = prebuilt_dir / '@0@-@1@'.format(sdl_ttf, sdl_ttf_ver)
-        sdl_ttf_lib_dir = sdl_ttf_dir / 'lib' / arch_suffix
-        pg_inc_dirs += fs.relative_to(sdl_ttf_dir / 'include', base_dir)
-        pg_lib_dirs += sdl_ttf_lib_dir
-        dlls += sdl_ttf_lib_dir / '@0@.dll'.format(sdl_ttf)
-    endif
+#     # SDL_mixer
+#     if get_option('mixer').enabled()
+#         sdl_mixer_dir = prebuilt_dir / '@0@-@1@'.format(sdl_mixer, sdl_mixer_ver)
+#         sdl_mixer_lib_dir = sdl_mixer_dir / 'lib' / arch_suffix
+#         pg_inc_dirs += fs.relative_to(sdl_mixer_dir / 'include', base_dir)
+#         pg_lib_dirs += sdl_mixer_lib_dir
+#         dlls += [
+#             sdl_mixer_lib_dir / '@0@.dll'.format(sdl_mixer),
+#             sdl_mixer_lib_dir / 'optional' / 'libogg-0.dll',
+#             sdl_mixer_lib_dir / 'optional' / 'libopus-0.dll',
+#             sdl_mixer_lib_dir / 'optional' / 'libopusfile-0.dll',
+#             sdl_mixer_lib_dir / 'optional' / 'libwavpack-1.dll',
+#             sdl_mixer_lib_dir / 'optional' / 'libxmp.dll',
+#         ]
+#     endif
 
-    # freetype, portmidi and porttime
-    if get_option('freetype').enabled() and get_option('midi').enabled()
-        common_lib_dir = prebuilt_dir / 'lib'
-        pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
-        pg_lib_dirs += common_lib_dir
-        dlls += [common_lib_dir / 'freetype.dll', common_lib_dir / 'portmidi.dll']
-    endif
+#     # SDL_ttf
+#     if get_option('font').enabled()
+#         sdl_ttf_dir = prebuilt_dir / '@0@-@1@'.format(sdl_ttf, sdl_ttf_ver)
+#         sdl_ttf_lib_dir = sdl_ttf_dir / 'lib' / arch_suffix
+#         pg_inc_dirs += fs.relative_to(sdl_ttf_dir / 'include', base_dir)
+#         pg_lib_dirs += sdl_ttf_lib_dir
+#         dlls += sdl_ttf_lib_dir / '@0@.dll'.format(sdl_ttf)
+#     endif
 
-    # clean unneeded file that causes build issues
-    unneeded_file = common_lib_dir / 'libportmidi.dll.a'
-    if fs.exists(unneeded_file)
-        run_command(
-            [
-                find_program('python3', 'python'),
-                '-c',
-                'import os; os.remove("@0@")'.format(unneeded_file),
-            ],
-            check: true,
-        )
-    endif
+#     # freetype, portmidi and porttime
+#     if get_option('freetype').enabled() and get_option('midi').enabled()
+#         common_lib_dir = prebuilt_dir / 'lib'
+#         pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
+#         pg_lib_dirs += common_lib_dir
+#         dlls += [common_lib_dir / 'freetype.dll', common_lib_dir / 'portmidi.dll']
+#     endif
 
-    run_command(
-        [
-            find_program('python3', 'python'),
-            base_dir / 'buildconfig' / '_meson_win_dll.py',
-            dlls,
-        ],
-        check: true,
-    )
+#     # clean unneeded file that causes build issues
+#     unneeded_file = common_lib_dir / 'libportmidi.dll.a'
+#     if fs.exists(unneeded_file)
+#         run_command(
+#             [
+#                 find_program('python3', 'python'),
+#                 '-c',
+#                 'import os; os.remove("@0@")'.format(unneeded_file),
+#             ],
+#             check: true,
+#         )
+#     endif
 
-    foreach lib : dlls
-        if not fs.exists(lib)
-            error(f'''
-            File "@lib@" does not exist.
-            Please try to delete "prebuilt_downloads/", "prebuilt-x64/" and "prebuilt-x86/" directories, and retry the installation.
-            ''')
-        endif
-    endforeach
+#     run_command(
+#         [
+#             find_program('python3', 'python'),
+#             base_dir / 'buildconfig' / '_meson_win_dll.py',
+#             dlls,
+#         ],
+#         check: true,
+#     )
 
-    # put dlls in root of install
-    install_data(dlls, install_dir: pg_dir, install_tag: 'pg-tag')
+#     foreach lib : dlls
+#         if not fs.exists(lib)
+#             error(f'''
+#             File "@lib@" does not exist.
+#             Please try to delete "prebuilt_downloads/", "prebuilt-x64/" and "prebuilt-x86/" directories, and retry the installation.
+#             ''')
+#         endif
+#     endforeach
 
-else
-    bases = ['/usr/local', '/usr', '/opt/homebrew', '/opt/local']
-    foreach inc_dir : bases
-        foreach sub_inc : [
-            '',
-            '/@0@'.format(sdl),
-            '/freetype2',
-        ]
-            full_inc = inc_dir / 'include' + sub_inc
-            if fs.exists(full_inc)
-                pg_inc_dirs += full_inc
-            endif
-        endforeach
-    endforeach
+#     # put dlls in root of install
+#     install_data(dlls, install_dir: pg_dir, install_tag: 'pg-tag')
 
-    foreach lib_dir : bases
-        foreach sub_lib : ['lib', 'lib64']
-            full_lib = lib_dir / sub_lib
-            if fs.exists(full_lib)
-                pg_lib_dirs += full_lib
-            endif
-        endforeach
-    endforeach
-endif
+# else
+#     bases = ['/usr/local', '/usr', '/opt/homebrew', '/opt/local']
+#     foreach inc_dir : bases
+#         foreach sub_inc : [
+#             '',
+#             '/@0@'.format(sdl),
+#             '/freetype2',
+#         ]
+#             full_inc = inc_dir / 'include' + sub_inc
+#             if fs.exists(full_inc)
+#                 pg_inc_dirs += full_inc
+#             endif
+#         endforeach
+#     endforeach
 
-# TODO: add version constraints?
-sdl_dep = dependency(sdl, required: false)
-if not sdl_dep.found()
-    sdl_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(sdl, dirs: pg_lib_dirs),
-    )
-endif
+#     foreach lib_dir : bases
+#         foreach sub_lib : ['lib', 'lib64']
+#             full_lib = lib_dir / sub_lib
+#             if fs.exists(full_lib)
+#                 pg_lib_dirs += full_lib
+#             endif
+#         endforeach
+#     endforeach
+# endif
 
-# optional
-sdl_image_dep = dependency(sdl_image, required: false)
-if not sdl_image_dep.found()
-    sdl_image_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            sdl_image,
-            dirs: pg_lib_dirs,
-            required: get_option('image'),
-        ),
-    )
-endif
+# SDL deps need to be pointed to a specific path instead of the system
+sdl_dep = declare_dependency(
+    include_directories: ['/Users/luke/Downloads/SDL-release-2.32.8/include'],
+    link_args: ['-F/Users/luke/dev/python/sdl-libs', '-framework', 'SDL2'] # only works on iOS!
+)
 
-sdl_mixer_dep = dependency(sdl_mixer, required: false)
-if not sdl_mixer_dep.found()
-    sdl_mixer_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            sdl_mixer,
-            dirs: pg_lib_dirs,
-            required: get_option('mixer'),
-        ),
-    )
-endif
+sdl_image_dep = declare_dependency(
+    include_directories: ['/Users/luke/Downloads/SDL_image-release-2.8.8/include'],
+    link_args: ['-F/Users/luke/dev/python/sdl-libs', '-framework', 'SDL2_image'] # only works on iOS!
+)
 
-sdl_ttf_dep = dependency(sdl_ttf, required: false)
-if not sdl_ttf_dep.found()
-    sdl_ttf_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            sdl_ttf,
-            dirs: pg_lib_dirs,
-            required: get_option('font'),
-        ),
-    )
-endif
+sdl_mixer_dep = declare_dependency(
+    include_directories: ['/Users/luke/Downloads/SDL_mixer-release-2.8.1/include'],
+    link_args: ['-F/Users/luke/dev/python/sdl-libs', '-framework', 'SDL2_mixer'] # only works on iOS!
+)
 
-freetype_dep = dependency('freetype2', required: false)
-if not freetype_dep.found()
-    freetype_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            'freetype',
-            dirs: pg_lib_dirs,
-            required: get_option('freetype'),
-        ),
-    )
-endif
+sdl_ttf_dep = declare_dependency(
+    include_directories: ['/Users/luke/Downloads/SDL_ttf-release-2.24.0'],
+    link_args: ['-F/Users/luke/dev/python/sdl-libs', '-framework', 'SDL2_ttf'] # only works on iOS!
+)
 
-portmidi_dep = dependency('portmidi', required: false)
-if not portmidi_dep.found()
-    portmidi_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            'portmidi',
-            dirs: pg_lib_dirs,
-            required: get_option('midi'),
-        ),
-    )
-endif
+# SDL_ttf includes freetype, this is not needed
+# freetype_dep = dependency('freetype2', required: false)
+# if not freetype_dep.found()
+#     freetype_dep = declare_dependency(
+#         include_directories: pg_inc_dirs,
+#         dependencies: cc.find_library(
+#             'freetype',
+#             dirs: pg_lib_dirs,
+#             required: get_option('freetype'),
+#         ),
+#     )
+# endif
 
-portmidi_deps = [portmidi_dep]
+# portmidi and porttime are not available yet
+# TODO: fix dependency summary below when these get added
+# portmidi_dep = dependency('portmidi', required: false)
+# if not portmidi_dep.found()
+#     portmidi_dep = declare_dependency(
+#         include_directories: pg_inc_dirs,
+#         dependencies: cc.find_library(
+#             'portmidi',
+#             dirs: pg_lib_dirs,
+#             required: get_option('midi'),
+#         ),
+#     )
+# endif
 
-if portmidi_dep.found()
-    # porttime can be a separate library, or be inbuilt in portmidi.
-    # So if it is available as a separate library, include it as a dependency
-    porttime_dep = dependency('porttime', required: false)
-    if not porttime_dep.found()
-        porttime_dep = cc.find_library(
-            'porttime',
-            dirs: pg_lib_dirs,
-            required: false,
-        )
-    endif
+# portmidi_deps = [portmidi_dep]
 
-    if porttime_dep.found()
-        portmidi_deps += porttime_dep
-    endif
-endif
+# if portmidi_dep.found()
+#     # porttime can be a separate library, or be inbuilt in portmidi.
+#     # So if it is available as a separate library, include it as a dependency
+#     porttime_dep = dependency('porttime', required: false)
+#     if not porttime_dep.found()
+#         porttime_dep = cc.find_library(
+#             'porttime',
+#             dirs: pg_lib_dirs,
+#             required: false,
+#         )
+#     endif
+
+#     if porttime_dep.found()
+#         portmidi_deps += porttime_dep
+#     endif
+# endif
 
 pg_base_deps = [sdl_dep, py_dep]
 
@@ -334,9 +322,10 @@ summary(
         sdl_image: sdl_image_dep.found(),
         sdl_mixer: sdl_mixer_dep.found(),
         sdl_ttf: sdl_ttf_dep.found(),
-        'freetype2': freetype_dep.found(),
-        'portmidi': portmidi_dep.found(),
-        'porttime': portmidi_dep.found() ? porttime_dep.found() : false,
+        # all below are technically not being linked here, freetype is being linked to SDL_ttf
+        'freetype2': false,
+        'portmidi': false,
+        'porttime': false,
     },
     section: 'Dependencies',
 )
@@ -418,22 +407,26 @@ else
 endif
 
 subdir('src_c')
-subdir('src_py')
 
-if not get_option('stripped')
-    # run make_docs and make docs
-    if not fs.is_dir('docs/generated')
-        make_docs = files('buildconfig/make_docs.py')
-        res = run_command(
-            [find_program('python3', 'python'), make_docs],
-            check: false,
-        )
-        message(res.stdout().strip())
-        message(res.stderr().strip())
-    endif
-    subdir('docs')
-    subdir('test')
-    subdir('buildconfig/stubs')
-    install_subdir('examples', install_dir: pg_dir, install_tag: 'pg-tag')
-    # TODO: install headers? not really important though
-endif
+# the python source is copied directly into the Xcode project
+# subdir('src_py')
+
+# tries to use meson-python to install extra stuff that isn't needed
+# unit tests can be run on iOS separately
+# if not get_option('stripped')
+#     # run make_docs and make docs
+#     if not fs.is_dir('docs/generated')
+#         make_docs = files('buildconfig/make_docs.py')
+#         res = run_command(
+#             [find_program('python3', 'python'), make_docs],
+#             check: false,
+#         )
+#         message(res.stdout().strip())
+#         message(res.stderr().strip())
+#     endif
+#     subdir('docs')
+#     subdir('test')
+#     subdir('buildconfig/stubs')
+#     install_subdir('examples', install_dir: pg_dir, install_tag: 'pg-tag')
+#     # TODO: install headers? not really important though
+# endif
