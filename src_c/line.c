@@ -260,8 +260,7 @@ _line_project_helper(pgLineBase *line, double *point, int clamp)
         }
         else if (projection[0] * projection[0] +
                      projection[1] * projection[1] >
-                 line_vector[0] * line_vector[0] +
-                     line_vector[1] * line_vector[1]) {
+                 squared_line_length) {
             projection[0] = line_vector[0];
             projection[1] = line_vector[1];
         }
