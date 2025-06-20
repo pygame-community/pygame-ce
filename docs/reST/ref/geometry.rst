@@ -764,6 +764,6 @@
 
             WARNING: This method has to have some length or the clamp parameter must be true for it to work and not throw a `ValueError`
 
-         .. versionadded:: 2.5.4
+         .. versionadded:: 2.5.6
 
       .. ## Line.project ##
