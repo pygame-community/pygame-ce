@@ -1,87 +1,80 @@
 # first the "required" modules
 
-base = py.extension_module(
+# replace all instances of py.extension_module with shared_module
+
+base = shared_module(
     'base',
     'base.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-color = py.extension_module(
+color = shared_module(
     'color',
     'color.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-constants = py.extension_module(
+constants = shared_module(
     'constants',
     'constants.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
 # TODO: support SDL3
 if sdl_api != 3
-display = py.extension_module(
+display = shared_module(
     'display',
     'display.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 endif
 
-event = py.extension_module(
+event = shared_module(
     'event',
     'event.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-key = py.extension_module(
+key = shared_module(
     'key',
     'key.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-mouse = py.extension_module(
+mouse = shared_module(
     'mouse',
     'mouse.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-rect = py.extension_module(
+rect = shared_module(
     'rect',
     ['rect.c', 'pgcompat_rect.c'],
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-rwobject = py.extension_module(
+rwobject = shared_module(
     'rwobject',
     'rwobject.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
 # TODO: support SDL3
@@ -114,7 +107,7 @@ simd_surface_fill_sse2 = static_library(
     c_args: simd_sse2_neon_flags + warnings_error,
 )
 
-surface = py.extension_module(
+surface = shared_module(
     'surface',
     [
         'surface.c',
@@ -129,54 +122,48 @@ surface = py.extension_module(
         simd_surface_fill_sse2,
     ],
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 endif
 
-surflock = py.extension_module(
+surflock = shared_module(
     'surflock',
     'surflock.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-time = py.extension_module(
+time = shared_module(
     'time',
     'time.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-joystick = py.extension_module(
+joystick = shared_module(
     'joystick',
     'joystick.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-draw = py.extension_module(
+draw = shared_module(
     'draw',
     'draw.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-image = py.extension_module(
+image = shared_module(
     'image',
     'image.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
 simd_transform_avx2 = static_library(
@@ -209,120 +196,108 @@ else
     transform_sources += 'scale_mmx.c'
 endif
 
-transform = py.extension_module(
+transform = shared_module(
     'transform',
     transform_sources,
     c_args: warnings_error,
     link_with: [simd_transform_avx2, simd_transform_sse2],
     objects: transform_objs,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-mask = py.extension_module(
+mask = shared_module(
     'mask',
     ['mask.c', 'bitmask.c'],
     c_args: warnings_error + warnings_temp_mask,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-bufferproxy = py.extension_module(
+bufferproxy = shared_module(
     'bufferproxy',
     'bufferproxy.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-pixelarray = py.extension_module(
+pixelarray = shared_module(
     'pixelarray',
     'pixelarray.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-math = py.extension_module(
+math = shared_module(
     'math',
     'math.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-pixelcopy = py.extension_module(
+pixelcopy = shared_module(
     'pixelcopy',
     'pixelcopy.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-newbuffer = py.extension_module(
+newbuffer = shared_module(
     'newbuffer',
     'newbuffer.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
 # new/experimental/uncommon stuff, but built by default
-system = py.extension_module(
+system = shared_module(
     'system',
     'system.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-geometry = py.extension_module(
+geometry = shared_module(
     'geometry',
     'geometry.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
-window = py.extension_module(
+window = shared_module(
     'window',
     'window.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
 # TODO: support SDL3
 if sdl_api != 3
-_render = py.extension_module(
+_render = shared_module(
     '_render',
     'render.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 endif
 
 # TODO: support SDL3
 if sdl_api != 3
-gfxdraw = py.extension_module(
+gfxdraw = shared_module(
     'gfxdraw',
     ['gfxdraw.c', 'SDL_gfx/SDL_gfxPrimitives.c'],
     # c_args: warnings_error,
     dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 endif
 
@@ -354,14 +329,13 @@ elif plat == 'linux'
     pg_camera_sources += 'camera_v4l2.c'
 endif
 
-_camera = py.extension_module(
+_camera = shared_module(
     '_camera',
     pg_camera_sources,
     c_args: warnings_error,
     dependencies: pg_base_deps,
     link_args: pg_camera_link,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
 # pygame.scrap
@@ -370,37 +344,34 @@ if plat == 'win'
     pg_scrap_link += ['-luser32', '-lgdi32']
 endif
 
-scrap = py.extension_module(
+scrap = shared_module(
     'scrap',
     'scrap.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
     link_args: pg_scrap_link,
-    install: true,
-    subdir: pg,
+    install_dir: pg,
 )
 
 # optional modules
 
 if sdl_image_dep.found()
-    imageext = py.extension_module(
+    imageext = shared_module(
         'imageext',
         'imageext.c',
         c_args: warnings_error,
         dependencies: pg_base_deps + sdl_image_dep,
-        install: true,
-        subdir: pg,
+        install_dir: pg,
     )
 endif
 
 if sdl_ttf_dep.found()
-    font = py.extension_module(
+    font = shared_module(
         'font',
         'font.c',
         c_args: warnings_error,
         dependencies: pg_base_deps + sdl_ttf_dep,
-        install: true,
-        subdir: pg,
+        install_dir: pg,
     )
 endif
 
@@ -408,53 +379,49 @@ endif
 if sdl_api != 3
 
 if sdl_mixer_dep.found()
-    mixer = py.extension_module(
+    mixer = shared_module(
         'mixer',
         'mixer.c',
         c_args: warnings_error,
         dependencies: pg_base_deps + sdl_mixer_dep,
-        install: true,
-        subdir: pg,
+        install_dir: pg,
     )
 
-    mixer_music = py.extension_module(
+    mixer_music = shared_module(
         'mixer_music',
         'music.c',
         c_args: warnings_error,
         dependencies: pg_base_deps + sdl_mixer_dep,
-        install: true,
-        subdir: pg,
+        install_dir: pg,
     )
 endif
 
-if freetype_dep.found()
-    _freetype = py.extension_module(
-        '_freetype',
-        [
-            'freetype/ft_cache.c',
-            'freetype/ft_wrap.c',
-            'freetype/ft_render.c',
-            'freetype/ft_render_cb.c',
-            'freetype/ft_layout.c',
-            'freetype/ft_unicode.c',
-            '_freetype.c',
-        ],
-        c_args: warnings_error + warnings_temp_freetype,
-        dependencies: pg_base_deps + freetype_dep,
-        install: true,
-        subdir: pg,
-    )
-endif
+# if freetype_dep.found()
+#     _freetype = shared_module(
+#         '_freetype',
+#         [
+#             'freetype/ft_cache.c',
+#             'freetype/ft_wrap.c',
+#             'freetype/ft_render.c',
+#             'freetype/ft_render_cb.c',
+#             'freetype/ft_layout.c',
+#             'freetype/ft_unicode.c',
+#             '_freetype.c',
+#         ],
+#         c_args: warnings_error + warnings_temp_freetype,
+#         dependencies: pg_base_deps + freetype_dep,
+#         install_dir: pg,
+#     )
+# endif
 
 endif
 
-if portmidi_dep.found()
-    pypm = py.extension_module(
-        'pypm',
-        fs.is_file('pypm.c') ? 'pypm.c' : 'cython/pygame/pypm.pyx',
-        # c_args: warnings_error,
-        dependencies: pg_base_deps + portmidi_deps,
-        install: true,
-        subdir: pg,
-    )
-endif
+# if portmidi_dep.found()
+#     pypm = shared_module(
+#         'pypm',
+#         fs.is_file('pypm.c') ? 'pypm.c' : 'cython/pygame/pypm.pyx',
+#         # c_args: warnings_error,
+#         dependencies: pg_base_deps + portmidi_deps,
+#         install_dir: pg,
+#     )
+# endif
