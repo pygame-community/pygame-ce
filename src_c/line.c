@@ -248,7 +248,7 @@ _line_project_helper(pgLineBase *line, double *point, int clamp)
     double dot_product =
         (vector_from_line_start_to_point[0] * line_vector[0] +
          vector_from_line_start_to_point[1] * line_vector[1]) /
-        (line_vector[0] * line_vector[0] + line_vector[1] * line_vector[1]);
+        squared_line_length;
 
     double projection[2] = {dot_product * line_vector[0],
                             dot_product * line_vector[1]};
