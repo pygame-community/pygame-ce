@@ -224,7 +224,7 @@ _line_project_helper(pgLineBase *line, double *point, int clamp)
 {
     // this is a vector that goes from one point of the line to another
     double line_vector[2] = {line->bx - line->ax, line->by - line->ay};
-    double squred_line_length =
+    double squared_line_length =
         line_vector[0] * line_vector[0] + line_vector[1] * line_vector[1];
 
     if (squred_line_length == 0.0 && clamp) {
