@@ -1417,7 +1417,6 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args)
     SDL_Surface *surf = pgSurface_AsSurface(self);
     Uint32 flags = 0, color = 0;
     PyObject *rgba_obj = NULL;
-    int result;
     int hascolor = SDL_FALSE;
 
     if (!PyArg_ParseTuple(args, "|Oi", &rgba_obj, &flags)) {
@@ -1436,22 +1435,23 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args)
     }
 
     pgSurface_Prep(self);
-    result = 0;
+    bool success = true;
     if (hascolor && PG_SURF_BytesPerPixel(surf) == 1) {
         /* For an indexed surface, remove the previous colorkey first.
          */
-        result = SDL_SetColorKey(surf, SDL_FALSE, color);
+        success = PG_SetSurfaceColorKey(surf, SDL_FALSE, color);
     }
-    if (result == 0 && hascolor) {
-        result = SDL_SetSurfaceRLE(
-            surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
+    if (success && hascolor) {
+        success =
+            SDL_SetSurfaceRLE(
+                surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE) == 0;
     }
-    if (result == 0) {
-        result = SDL_SetColorKey(surf, hascolor, color);
+    if (success) {
+        success = PG_SetSurfaceColorKey(surf, hascolor, color);
     }
     pgSurface_Unprep(self);
 
-    if (result == -1) {
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1814,7 +1814,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 
     if (has_colorkey) {
         colorkey = SDL_MapSurfaceRGBA(newsurf, key_r, key_g, key_b, key_a);
-        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
+        if (!PG_SetSurfaceColorKey(newsurf, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
@@ -1977,7 +1977,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 
     if (has_colorkey) {
         colorkey = SDL_MapRGBA(newsurf->format, key_r, key_g, key_b, key_a);
-        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
+        if (!PG_SetSurfaceColorKey(newsurf, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
@@ -3259,7 +3259,7 @@ surf_subsurface(PyObject *self, PyObject *args)
     }
     if (SDL_HasColorKey(surf)) {
         SDL_GetColorKey(surf, &colorkey);
-        if (SDL_SetColorKey(sub, SDL_TRUE, colorkey) != 0) {
+        if (!PG_SetSurfaceColorKey(sub, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(sub);
             return NULL;

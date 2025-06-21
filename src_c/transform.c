@@ -197,7 +197,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
 
     if (SDL_HasColorKey(surf)) {
         SDL_GetColorKey(surf, &colorkey);
-        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
+        if (!PG_SetSurfaceColorKey(newsurf, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
