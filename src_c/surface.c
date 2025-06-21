@@ -1544,7 +1544,7 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
     bool success =
         PG_SetSurfaceRLE(surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
     /* HACK HACK HACK */
-    // TODO: SDL3: figure out how to port this or if it's relevant to SDL3.
+    // TODO SDL3: figure out how to port this or if it's relevant to SDL3.
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     if ((surf->flags & SDL_RLEACCEL) && (!(flags & PGS_RLEACCEL))) {
         /* hack to strip SDL_RLEACCEL flag off surface immediately when
@@ -3019,6 +3019,8 @@ surf_get_flags(PyObject *self, PyObject *_null)
     if (PG_SurfaceHasRLE(surf)) {
         flags |= PGS_RLEACCELOK;
     }
+    // TODO SDL3: figure out how to properly emulate SDL2 check/relevance
+    // Current implementation is just a placeholder.
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     if (SDL_SurfaceHasRLE(surf)) {
         flags |= PGS_RLEACCEL;
@@ -4379,8 +4381,8 @@ surf_get_pixels_address(PyObject *self, PyObject *closure)
 }
 
 static int
-surface_do_overlap(SDL_Surface *src, SDL_Rect *srcrect, SDL_Rect *srcclip,
-                   SDL_Surface *dst, SDL_Rect *dstrect)
+surface_do_overlap(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
+                   SDL_Rect *dstrect, SDL_Rect *clip)
 {
     Uint8 *srcpixels;
     Uint8 *dstpixels;
@@ -4414,23 +4416,23 @@ surface_do_overlap(SDL_Surface *src, SDL_Rect *srcrect, SDL_Rect *srcclip,
     }
 
     /* clip the destination rectangle against the clip rectangle */
-    x = srcclip->x - dstx;
+    x = clip->x - dstx;
     if (x > 0) {
         w -= x;
         dstx += x;
         srcx += x;
     }
-    x = dstx + w - srcclip->x - srcclip->w;
+    x = dstx + w - clip->x - clip->w;
     if (x > 0) {
         w -= x;
     }
-    y = srcclip->y - dsty;
+    y = clip->y - dsty;
     if (y > 0) {
         h -= y;
         dsty += y;
         srcy += y;
     }
-    y = dsty + h - srcclip->y - srcclip->h;
+    y = dsty + h - clip->y - clip->h;
     if (y > 0) {
         h -= y;
     }
@@ -4468,12 +4470,12 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     SDL_Surface *dst = pgSurface_AsSurface(dstobj);
     SDL_Surface *subsurface = NULL;
     int result, suboffsetx = 0, suboffsety = 0;
-    SDL_Rect orig_clip, sub_clip, srcclip;
+    SDL_Rect orig_clip, sub_clip, dstclip;
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     Uint8 alpha;
 #endif
 
-    if (!PG_GetSurfaceClipRect(src, &srcclip)) {
+    if (!PG_GetSurfaceClipRect(dst, &dstclip)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return 0;
     }
@@ -4521,7 +4523,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             owner is locked.
             */
          dst->pixels == src->pixels && srcrect != NULL &&
-         surface_do_overlap(src, srcrect, &srcclip, dst, dstrect))) {
+         surface_do_overlap(src, srcrect, dst, dstrect, &dstclip))) {
         /* Py_BEGIN_ALLOW_THREADS */
         result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
         /* Py_END_ALLOW_THREADS */
