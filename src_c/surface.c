@@ -1496,8 +1496,6 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
     PyObject *alpha_obj = NULL, *intobj = NULL;
     Uint8 alpha;
     int alphaval = 255;
-    SDL_Rect sdlrect;
-    SDL_Surface *surface;
 
     if (!PyArg_ParseTuple(args, "|Oi", &alpha_obj, &flags)) {
         return NULL;
@@ -1546,24 +1544,24 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
     bool success =
         PG_SetSurfaceRLE(surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
     /* HACK HACK HACK */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (SDL_SurfaceHasRLE(surf) && (!(flags & PGS_RLEACCEL)))
-#else
-    if ((surf->flags & SDL_RLEACCEL) && (!(flags & PGS_RLEACCEL)))
-#endif
-    {
+    // TODO: SDL3: figure out how to port this or if it's relevant to SDL3.
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    if ((surf->flags & SDL_RLEACCEL) && (!(flags & PGS_RLEACCEL))) {
         /* hack to strip SDL_RLEACCEL flag off surface immediately when
            it is not requested */
+        SDL_Rect sdlrect;
         sdlrect.x = 0;
         sdlrect.y = 0;
         sdlrect.h = 0;
         sdlrect.w = 0;
 
-        surface = PG_CreateSurface(1, 1, PG_SURF_FORMATENUM(surf));
+        SDL_Surface *surface =
+            PG_CreateSurface(1, 1, PG_SURF_FORMATENUM(surf));
 
         SDL_LowerBlit(surf, &sdlrect, surface, &sdlrect);
         SDL_FreeSurface(surface);
     }
+#endif
     /* HACK HACK HACK */
     if (success) {
         success = PG_SetSurfaceAlphaMod(surf, alpha);
