@@ -202,8 +202,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
             SDL_FreeSurface(newsurf);
             return NULL;
         }
-        if (PG_SurfaceHasRLE(surf) &&
-            SDL_SetSurfaceRLE(newsurf, SDL_TRUE) != 0) {
+        if (PG_SurfaceHasRLE(surf) && !PG_SetSurfaceRLE(newsurf, SDL_TRUE)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;

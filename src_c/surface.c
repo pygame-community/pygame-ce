@@ -1442,9 +1442,8 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args)
         success = PG_SetSurfaceColorKey(surf, SDL_FALSE, color);
     }
     if (success && hascolor) {
-        success =
-            SDL_SetSurfaceRLE(
-                surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE) == 0;
+        success = PG_SetSurfaceRLE(
+            surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
     }
     if (success) {
         success = PG_SetSurfaceColorKey(surf, hascolor, color);
@@ -1496,7 +1495,7 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
     Uint32 flags = 0;
     PyObject *alpha_obj = NULL, *intobj = NULL;
     Uint8 alpha;
-    int result, alphaval = 255;
+    int alphaval = 255;
     SDL_Rect sdlrect;
     SDL_Surface *surface;
 
@@ -1544,8 +1543,8 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
         }
     }
     pgSurface_Prep(self);
-    result =
-        SDL_SetSurfaceRLE(surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
+    bool success =
+        PG_SetSurfaceRLE(surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
     /* HACK HACK HACK */
     if ((surf->flags & SDL_RLEACCEL) && (!(flags & PGS_RLEACCEL))) {
         /* hack to strip SDL_RLEACCEL flag off surface immediately when
@@ -1561,12 +1560,12 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
         SDL_FreeSurface(surface);
     }
     /* HACK HACK HACK */
-    if (result == 0) {
-        result = !PG_SetSurfaceAlphaMod(surf, alpha);
+    if (success) {
+        success = PG_SetSurfaceAlphaMod(surf, alpha);
     }
     pgSurface_Unprep(self);
 
-    if (result != 0) {
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 

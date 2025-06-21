@@ -593,8 +593,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
-            if (PG_SurfaceHasRLE(src) &&
-                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+            if (PG_SurfaceHasRLE(src) && !PG_SetSurfaceRLE(rz_dst, SDL_TRUE)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
@@ -653,8 +652,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
-            if (PG_SurfaceHasRLE(src) &&
-                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+            if (PG_SurfaceHasRLE(src) && !PG_SetSurfaceRLE(rz_dst, SDL_TRUE)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }

@@ -82,6 +82,7 @@
 #define PG_PixelFormatEnum SDL_PixelFormat
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
+#define PG_SetSurfaceRLE SDL_SetSurfaceRLE
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
@@ -349,6 +350,12 @@ PG_InitSubSystem(Uint32 flags)
 #define PG_INIT_TIMER SDL_INIT_TIMER
 
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
+
+static inline bool
+PG_SetSurfaceRLE(SDL_Surface *surface, bool enabled)
+{
+    return SDL_SetSurfaceRLE(surface, enabled) == 0;
+}
 
 static inline bool
 PG_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
