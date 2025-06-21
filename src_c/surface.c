@@ -3236,7 +3236,7 @@ surf_subsurface(PyObject *self, PyObject *args)
             SDL_FreeSurface(sub);
             return NULL;
         }
-        if (SDL_SetSurfacePalette(sub, pal) != 0) {
+        if (!PG_SetSurfacePalette(sub, pal)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreePalette(pal);
             SDL_FreeSurface(sub);
