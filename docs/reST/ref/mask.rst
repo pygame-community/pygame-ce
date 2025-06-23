@@ -570,7 +570,7 @@ to store which parts collide.
 
       | :sl:`Returns a surface with the mask drawn on it`
       | :sg:`to_surface() -> Surface`
-      | :sg:`to_surface(surface=None, setsurface=None, unsetsurface=None, setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 255), dest=(0, 0)) -> Surface`
+      | :sg:`to_surface(surface=None, setsurface=None, unsetsurface=None, setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 255), dest=(0, 0), area=None) -> Surface`
 
       Draws this mask on the given surface. Set bits (bits set to 1) and unset
       bits (bits set to 0) can be drawn onto a surface.
@@ -610,6 +610,14 @@ to store which parts collide.
          mask (i.e. position ``(0, 0)`` on the mask always corresponds to
          position ``(0, 0)`` on the ``setsurface`` and ``unsetsurface``)
       :type dest: Rect or tuple(int, int) or list(int, int) or Vector2(int, int)
+      :param area: (optional) rectangular portion of the mask to draw. It can be a
+         rect-like object (a Rect, a tuple or a list with 4 numbers or an object with a
+         rect attribute, etc) or it can be None (the default) in which case it will use the
+         entire mask. If the given rect pertrudes outside the bounds of the mask (as returned
+         by :meth:`get_rect`), it will get clipped to fit those boundaries. If the final rect
+         is smaller than the mask and no destination ``surface`` is given, the returned surface
+         will have the same size as this final rect.
+      :type area: Rect or rect-like object
 
       :returns: the ``surface`` parameter (or a newly created surface if no
          ``surface`` parameter was provided) with this mask drawn on it
@@ -632,6 +640,8 @@ to store which parts collide.
          therefore must be set to ``None``.
 
       .. versionaddedold:: 2.0.0
+
+      .. versionchanged:: 2.5.6 Added the area keyword argument.
 
       .. ## Mask.to_surface ##
 

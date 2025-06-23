@@ -26,7 +26,7 @@ static PyObject *
 controller_module_init(PyObject *module, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER)) {
-        if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
+        if (!PG_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
@@ -584,14 +584,7 @@ MODINIT_DEFINE(controller)
         return NULL;
     }
 
-    if (PyType_Ready(&pgController_Type) < 0) {
-        return NULL;
-    }
-
-    Py_INCREF(&pgController_Type);
-    if (PyModule_AddObject(module, "Controller",
-                           (PyObject *)&pgController_Type)) {
-        Py_DECREF(&pgController_Type);
+    if (PyModule_AddType(module, &pgController_Type)) {
         Py_DECREF(module);
         return NULL;
     }

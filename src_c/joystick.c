@@ -39,7 +39,7 @@ static PyObject *
 init(PyObject *self, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
-        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
+        if (!PG_InitSubSystem(SDL_INIT_JOYSTICK)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
         PG_SetJoystickEventsEnabled(SDL_TRUE);
