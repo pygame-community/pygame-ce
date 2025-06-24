@@ -45,6 +45,8 @@ pg_avx2_at_runtime_but_uncompiled()
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+
+__attribute__((target("avx2")))
 void
 grayscale_avx2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf)
 {
