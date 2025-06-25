@@ -1847,13 +1847,15 @@ class DrawLineTest(LineMixin, DrawTestCase):
                 "start={}, end={}".format(end_points[n], start_points[n]),
             )
 
-    @unittest.skipIf("CI" in os.environ, "Surface is too large for CI to handle")
+    @unittest.skipIf(pygame.system.get_total_ram() < 4096, "Surface is too large")
     def test_line_draw_large_surf_regression(self):
         """Regression test for https://github.com/pygame-community/pygame-ce/issues/2961"""
         try:
             surface = pygame.Surface((14457, 37200))
         except pygame.error:
-            self.skipTest("Surface too large to run this test in this environment")
+            self.skipTest(
+                "Surface too large to run this test in this environment, or too many background tasks"
+            )
 
         point1 = [400, 37135]
         point2 = [401, 37136]
