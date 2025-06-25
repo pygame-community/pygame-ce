@@ -1892,6 +1892,21 @@ class TransformModuleTest(unittest.TestCase):
 
         self.assertTrue(surfaces_have_same_pixels(square_pixelated, square_resized))
 
+        # test a variety of arguments raise an exception
+        for arg in (0, -1):
+            with self.assertRaises(ValueError, msg=f"Running with pixel_size = {arg}"):
+                pygame.transform.pixelate(image, arg)
+
+        for arg in (-1_000_000_000_000_000_000, 1_000_000_000_000_000_000):
+            with self.assertRaises(
+                OverflowError, msg=f"Running with pixel_size = {arg}"
+            ):
+                pygame.transform.pixelate(image, arg)
+
+        for arg in ("one", 1.0, None):
+            with self.assertRaises(TypeError, msg=f"Running with pixel_size = {arg}"):
+                pygame.transform.pixelate(image, arg)
+
 
 class TransformDisplayModuleTest(unittest.TestCase):
     def setUp(self):

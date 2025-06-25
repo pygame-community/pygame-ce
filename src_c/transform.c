@@ -4246,15 +4246,9 @@ surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
     double testWidth = round((double)src->surf->w / pixel_size);
     double testHeight = round((double)src->surf->h / pixel_size);
 
-    if (testWidth > INT_MAX || testWidth <= 0) {
-        PyErr_SetString(PyExc_OverflowError,
-                        "Cannot scale width outside the range (0, INT_MAX]");
-        return NULL;
-    }
-
-    if (testHeight > INT_MAX || testHeight <= 0) {
-        PyErr_SetString(PyExc_OverflowError,
-                        "Cannot scale height outside the range (0, INT_MAX]");
+    if (pixel_size < 1) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Pixel size must be a nonnegative integer");
         return NULL;
     }
 
