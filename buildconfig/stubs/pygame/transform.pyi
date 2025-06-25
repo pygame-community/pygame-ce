@@ -480,5 +480,5 @@ def pixelate(
 
     :returns: A new surface that's been pixelated.
 
-    ..versionadded:: 2.5.5
+    ..versionadded:: 2.5.6
     """

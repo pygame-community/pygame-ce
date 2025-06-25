@@ -4264,17 +4264,23 @@ surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_Surface *temp = scale_to(src, NULL, width, height);
     intermediate = pgSurface_New(temp);
     if (intermediate == NULL) {
+        SDL_FreeSurface(temp);
         return NULL; /* Exception already set in scale_to */
     }
     new_surf = scale_to(intermediate, dst, src->surf->w, src->surf->h);
     if (new_surf == NULL) {
+        Py_DECREF(intermediate);
         return NULL; /* Exception already set in scale_to */
     }
 
     if (dst) {
         Py_INCREF(dst);
+        Py_DECREF(intermediate);
         return (PyObject *)dst;
     }
+
+    Py_DECREF(intermediate);
+
     return (PyObject *)pgSurface_New(new_surf);
 }
 
