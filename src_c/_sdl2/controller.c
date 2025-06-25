@@ -396,8 +396,8 @@ controller_set_led(pgControllerObject *self, PyObject *arg)
     Uint8 colors[4] = {0, 0, 0, 0};
 
     if (!pg_RGBAFromObjEx(arg, colors, PG_COLOR_HANDLE_ALL)) {
-        return RAISE(PyExc_TypeError,
-                     "set_led must be passed in a Color-compatible argument");
+        // Exception already set
+        return NULL;
     }
 
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
