@@ -151,6 +151,7 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 #define PG_EventEnabled(type) SDL_EventEnabled(type)
 #define PG_SetJoystickEventsEnabled(enabled) \
     SDL_SetJoystickEventsEnabled(enabled)
+#define PG_InitSubSystem(flags) SDL_InitSubSystem(flags)
 
 #define PG_FIND_VNUM_MAJOR(ver) SDL_VERSIONNUM_MAJOR(ver)
 #define PG_FIND_VNUM_MINOR(ver) SDL_VERSIONNUM_MINOR(ver)
@@ -314,6 +315,12 @@ PG_MapRGB(PG_PixelFormat *format, const SDL_Palette *palette, Uint8 r, Uint8 g,
           Uint8 b)
 {
     return SDL_MapRGB(format, r, g, b);
+}
+
+static inline bool
+PG_InitSubSystem(Uint32 flags)
+{
+    return SDL_InitSubSystem(flags) == 0;
 }
 
 /* Mask to test if surface flags are in a fullscreen window.
