@@ -587,9 +587,6 @@ class AbstractGroupTypeTest(unittest.TestCase):
         self.assertEqual(self.ag.spritedict[self.s2], pygame.Rect(10, 0, 10, 10))
 
     def test_draw_sdl2(self):
-        reinit_display = pygame.display.get_init()
-
-        pygame.display.quit()
         win = pygame.Window()
         group = sprite.Group()
         renderer = Renderer(win)
@@ -603,8 +600,6 @@ class AbstractGroupTypeTest(unittest.TestCase):
         self.assertEqual(group.spritedict[gpusprite], tempsurf.get_rect())
 
         win.destroy()
-        if reinit_display:
-            pygame.display.init()
 
     def test_empty(self):
         self.ag.empty()
