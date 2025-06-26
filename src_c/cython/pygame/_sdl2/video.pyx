@@ -998,7 +998,7 @@ cdef class Renderer:
         else:
             raise TypeError('target must be a Texture or None')
 
-    cpdef object blit(self, object source, Rect dest=None, Rect area=None, int special_flags=0):
+    cpdef object blit(self, object source, RectLike dest=None, RectLike area=None, int special_flags=0):
         """Draw textures using a Surface-like API
 
         For compatibility purposes. Draws :class:`Texture` objects onto the

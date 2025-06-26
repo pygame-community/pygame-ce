@@ -15,7 +15,7 @@
 #define DOC_SPRITE_GROUP_REMOVE "remove(*sprites) -> None\nremove Sprites from the Group"
 #define DOC_SPRITE_GROUP_HAS "has(*sprites) -> bool\ntest if a Group contains Sprites"
 #define DOC_SPRITE_GROUP_UPDATE "update(*args, **kwargs) -> None\ncall the update method on contained Sprites"
-#define DOC_SPRITE_GROUP_DRAW "draw(Surface, bgd=None, special_flags=0) -> list[Rect]\nblit the Sprite images"
+#define DOC_SPRITE_GROUP_DRAW "draw(Surface, bgd=None, special_flags=0) -> list[Union[Rect, FRect]]\ndraw(Renderer, bgd=None, special_flags=0) -> list[Union[Rect, FRect]]\nblit the Sprite images"
 #define DOC_SPRITE_GROUP_CLEAR "clear(Surface_dest, background) -> None\ndraw a background over the Sprites"
 #define DOC_SPRITE_GROUP_EMPTY "empty() -> None\nremove all Sprites"
 #define DOC_SPRITE_RENDERUPDATES "RenderUpdates(*sprites) -> RenderUpdates\nGroup sub-class that tracks dirty updates."
