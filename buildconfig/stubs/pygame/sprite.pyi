@@ -197,7 +197,7 @@ class LayeredUpdates(AbstractGroup[_TSprite]):
 class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def draw(
         self,
-        surface: Surface,
+        surface: Union[Surface, Renderer],
         bgd: Optional[Surface] = None,
         special_flags: Optional[int] = None,
     ) -> list[Union[FRect, Rect]]: ...
