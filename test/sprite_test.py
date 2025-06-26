@@ -590,16 +590,19 @@ class AbstractGroupTypeTest(unittest.TestCase):
         win = pygame.Window()
         group = sprite.Group()
         renderer = Renderer(win)
+        renderer.draw_color = "blue"
         gpusprite = sprite.Sprite(group)
 
-        tempsurf = pygame.Surface((50, 50))
-        gpusprite.image = Texture.from_surface(renderer, tempsurf)
+        gpusprite.image = Texture(renderer, (50, 50), target=True)
+        renderer.target = gpusprite.image
+        renderer.clear()
         gpusprite.rect = gpusprite.image.get_rect()
 
+        renderer.target = None
         group.draw(renderer)
-        self.assertEqual(group.spritedict[gpusprite], tempsurf.get_rect())
+        self.assertEqual(group.spritedict[gpusprite], pygame.Rect(0, 0, 50, 50))
 
-        win.destroy()
+        renderer.present()
 
     def test_empty(self):
         self.ag.empty()
