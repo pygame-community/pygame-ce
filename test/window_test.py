@@ -1,8 +1,8 @@
-import unittest
-import pygame
 import os
 import platform
+import unittest
 
+import pygame
 from pygame import Window
 from pygame.version import SDL
 
@@ -290,6 +290,11 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(win.resizable)
         win.destroy()
 
+        # test utility
+        win = Window(utility=True)
+        self.assertTrue(win.utility)
+        win.destroy()
+
         # should raise a TypeError if keyword is random
         self.assertRaises(TypeError, lambda: Window(aaa=True))
         self.assertRaises(TypeError, lambda: Window(aaa=False))
@@ -448,6 +453,10 @@ class WindowTypeTest(unittest.TestCase):
                 self.assertIsNone(result)
             except pygame.error:
                 pass
+
+    def test_window_focused(self):
+        window = pygame.Window()
+        self.assertIsInstance(window.focused, bool)
 
     def tearDown(self):
         self.win.destroy()

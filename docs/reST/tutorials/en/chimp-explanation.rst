@@ -49,7 +49,7 @@ and run the chimp demo for yourself in the examples directory.
 
    (no, this is not a banner ad, it's the screenshot)
 
-   .. image:: ../assets/chimpshot.gif
+   .. image:: ../assets/chimpshot.webp
       :alt: chimp game banner
 
    :doc:`Full Source <../chimp.py>`
@@ -72,7 +72,7 @@ It also checks for the availability of some of the optional pygame modules. ::
 First, we import the standard "os" python module. This allow
 us to do things like create platform independent file paths.
 
-In the next line, we import the pygame package. 
+In the next line, we import the pygame package.
 
 Lastly, we prepare two paths for the rest of the code to use.
 ``main_dir`` uses the `os.path` module and the `__file__` variable provided
@@ -214,7 +214,7 @@ is colliding with the given target sprite. ::
 
         def __init__(self):
             pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
-            self.image, self.rect = load_image("chimp.png", -1, 4)
+            self.image, self.rect = load_image("chimp.webp", -1, 4)
             screen = pygame.display.get_surface()
             self.area = screen.get_rect()
             self.rect.topleft = 10, 90
@@ -321,7 +321,7 @@ Next we set up the display graphics mode. Note that the :mod:`pygame.display`
 module is used to control all the display settings. In this case we are
 asking for a 1280 by 480 window, with the ``SCALED`` display flag.
 This automatically scales up the window for displays much larger than the
-window. 
+window.
 
 Last we set the window title and turn off the mouse cursor for our
 window. Very basic to do, and now we have a small black window ready to
@@ -406,7 +406,7 @@ Prepare Game Object
 Here we create all the objects that the game is going to need.
 
 ::
-    
+
     whiff_sound = load_sound("whiff.wav")
     punch_sound = load_sound("punch.wav")
     chimp = Chimp()
@@ -500,7 +500,7 @@ Now that all the objects are in the right place, time to draw them. ::
 The first blit call will draw the background onto the entire screen. This
 erases everything we saw from the previous frame (slightly inefficient, but
 good enough for this game). Next we call the `draw()` method of the sprite
-container. Lastly, we `flip()` the contentsof pygame's software double buffer 
+container. Lastly, we `flip()` the contentsof pygame's software double buffer
 to the screen. This makes everything we've drawn visible all at once.
 
 

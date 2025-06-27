@@ -1,11 +1,10 @@
 import os
 import sys
-
 import unittest
-from pygame.tests.test_utils import trunk_relative_path
 
 import pygame
 from pygame import scrap
+from pygame.tests.test_utils import trunk_relative_path
 
 if os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER:
     __tags__ = ("ignore", "subprocess_ignore")
@@ -226,8 +225,7 @@ class X11InteractiveTest(unittest.TestCase):
         """
 
         from pygame import display, event, freetype
-        from pygame.locals import SCRAP_SELECTION, SCRAP_TEXT
-        from pygame.locals import KEYDOWN, K_y, QUIT
+        from pygame.locals import KEYDOWN, QUIT, SCRAP_SELECTION, SCRAP_TEXT, K_y
 
         success = False
         freetype.init()

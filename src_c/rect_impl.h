@@ -1084,31 +1084,40 @@ static PyObject *
 RectExport_scalebyIp(RectObject *self, PyObject *args, PyObject *kwargs)
 {
     float factor_x, factor_y = 0;
-
-    static char *keywords[] = {"x", "y", NULL};
-
-    if (kwargs) {
-        PyObject *scale_by = PyDict_GetItemString(kwargs, "scale_by");
-        float temp_x, temp_y = 0;
-
-        if (scale_by) {
-            if (PyDict_Size(kwargs) > 1) {
-                return RAISE(PyExc_TypeError,
-                             "The 'scale_by' keyword cannot be combined with "
-                             "other arguments.");
-            }
-            if (!pg_TwoFloatsFromObj(scale_by, &temp_x, &temp_y)) {
-                return RAISE(PyExc_TypeError, "number pair expected");
-            }
-            PyDict_SetItemString(kwargs, "x", PyFloat_FromDouble(temp_x));
-            PyDict_SetItemString(kwargs, "y", PyFloat_FromDouble(temp_y));
-            PyDict_DelItemString(kwargs, "scale_by");
+    PyObject *scale_by =
+        kwargs ? PyDict_GetItemString(kwargs, "scale_by") : NULL;
+    if (scale_by) {
+        if (PyDict_Size(kwargs) > 1) {
+            return RAISE(PyExc_TypeError,
+                         "The 'scale_by' keyword cannot be combined with "
+                         "other arguments.");
+        }
+        if (!pg_TwoFloatsFromObj(scale_by, &factor_x, &factor_y)) {
+            return RAISE(PyExc_TypeError,
+                         "The 'scale_by' argument must be a number pair");
         }
     }
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "f|f", keywords, &factor_x,
-                                     &factor_y)) {
-        return RAISE(PyExc_TypeError, "Float values expected.");
+    else {
+        static char *keywords[] = {"x", "y", NULL};
+        PyObject *arg_x, *arg_y = NULL;
+        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", keywords, &arg_x,
+                                         &arg_y)) {
+            return NULL;
+        }
+        if (!pg_TwoFloatsFromObj(arg_x, &factor_x, &factor_y)) {
+            /* Not a sequence, so try handling int separately */
+            if (!pg_FloatFromObj(arg_x, &factor_x)) {
+                return RAISE(PyExc_TypeError, "Argument 'x' must be a number");
+            }
+            if (arg_y && !pg_FloatFromObj(arg_y, &factor_y)) {
+                return RAISE(PyExc_TypeError, "Argument 'y' must be a number");
+            }
+        }
+        else if (arg_y) {
+            return RAISE(
+                PyExc_TypeError,
+                "Cannot pass argument 'y' after passing a sequence scale");
+        }
     }
 
     factor_x = factor_x < 0 ? -factor_x : factor_x;
@@ -1130,7 +1139,11 @@ RectExport_scaleby(RectObject *self, PyObject *args, PyObject *kwargs)
 {
     RectObject *returnRect = (RectObject *)RectExport_subtypeNew4(
         Py_TYPE(self), self->r.x, self->r.y, self->r.w, self->r.h);
-    RectExport_scalebyIp(returnRect, args, kwargs);
+    PyObject *tmp = RectExport_scalebyIp(returnRect, args, kwargs);
+    if (!tmp) {
+        return NULL;
+    }
+    Py_DECREF(tmp);
     return (PyObject *)returnRect;
 }
 
@@ -1170,8 +1183,9 @@ RectExport_unionIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     InnerRect *argrect, temp;
     PrimitiveType x, y, w, h;
 
-    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp)))
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
+    }
 
     x = MIN(self->r.x, argrect->x);
     y = MIN(self->r.y, argrect->y);
@@ -1529,8 +1543,7 @@ RectExport_RectFromObjectAndKeyFunc(PyObject *obj, PyObject *keyfunc,
                                     InnerRect *temp)
 {
     if (keyfunc) {
-        PyObject *obj_with_rect = PyObject_Vectorcall(keyfunc, &obj, 1, NULL);
-
+        PyObject *obj_with_rect = PyObject_CallOneArg(keyfunc, obj);
         if (!obj_with_rect) {
             return NULL;
         }
@@ -1771,8 +1784,9 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
     }
 
     ret = PyList_New(0);
-    if (!ret)
+    if (!ret) {
         return NULL;
+    }
 
     /* If the calling rect has 0 width or height, it cannot collide with
      * anything, hence return an empty list directly. */
@@ -1922,8 +1936,9 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     PyObject *subtup1, *subtup2;
     subtup1 = TupleFromTwoPrimitives(x1, y1);
-    if (!subtup1)
+    if (!subtup1) {
         return NULL;
+    }
 
     subtup2 = TupleFromTwoPrimitives(x2, y2);
     if (!subtup2) {
@@ -2000,22 +2015,28 @@ RectExport_clamp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     if (self->r.w >= argrect->w) {
         x = argrect->x + argrect->w / 2 - self->r.w / 2;
     }
-    else if (self->r.x < argrect->x)
+    else if (self->r.x < argrect->x) {
         x = argrect->x;
-    else if (self->r.x + self->r.w > argrect->x + argrect->w)
+    }
+    else if (self->r.x + self->r.w > argrect->x + argrect->w) {
         x = argrect->x + argrect->w - self->r.w;
-    else
+    }
+    else {
         x = self->r.x;
+    }
 
     if (self->r.h >= argrect->h) {
         y = argrect->y + argrect->h / 2 - self->r.h / 2;
     }
-    else if (self->r.y < argrect->y)
+    else if (self->r.y < argrect->y) {
         y = argrect->y;
-    else if (self->r.y + self->r.h > argrect->y + argrect->h)
+    }
+    else if (self->r.y + self->r.h > argrect->y + argrect->h) {
         y = argrect->y + argrect->h - self->r.h;
-    else
+    }
+    else {
         y = self->r.y;
+    }
 
     return RectExport_subtypeNew4(Py_TYPE(self), x, y, self->r.w, self->r.h);
 }
@@ -2057,22 +2078,28 @@ RectExport_clampIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     if (self->r.w >= argrect->w) {
         x = argrect->x + argrect->w / 2 - self->r.w / 2;
     }
-    else if (self->r.x < argrect->x)
+    else if (self->r.x < argrect->x) {
         x = argrect->x;
-    else if (self->r.x + self->r.w > argrect->x + argrect->w)
+    }
+    else if (self->r.x + self->r.w > argrect->x + argrect->w) {
         x = argrect->x + argrect->w - self->r.w;
-    else
+    }
+    else {
         x = self->r.x;
+    }
 
     if (self->r.h >= argrect->h) {
         y = argrect->y + argrect->h / 2 - self->r.h / 2;
     }
-    else if (self->r.y < argrect->y)
+    else if (self->r.y < argrect->y) {
         y = argrect->y;
-    else if (self->r.y + self->r.h > argrect->y + argrect->h)
+    }
+    else if (self->r.y + self->r.h > argrect->y + argrect->h) {
         y = argrect->y + argrect->h - self->r.h;
-    else
+    }
+    else {
         y = self->r.y;
+    }
 
     self->r.x = x;
     self->r.y = y;
@@ -2148,14 +2175,10 @@ RectExport_subscript(RectObject *self, PyObject *op)
     PrimitiveType *data = (PrimitiveType *)&self->r;
 
     if (PyIndex_Check(op)) {
-        PyObject *index = PyNumber_Index(op);
-        Py_ssize_t i;
-
-        if (index == NULL) {
+        Py_ssize_t i = PyNumber_AsSsize_t(op, NULL);
+        if (i == -1 && PyErr_Occurred()) {
             return NULL;
         }
-        i = PyNumber_AsSsize_t(index, NULL);
-        Py_DECREF(index);
         return RectExport_item(self, i);
     }
     else if (op == Py_Ellipsis) {
@@ -2201,15 +2224,10 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
         return -1;
     }
     if (PyIndex_Check(op)) {
-        PyObject *index;
-        Py_ssize_t i;
-
-        index = PyNumber_Index(op);
-        if (index == NULL) {
+        Py_ssize_t i = PyNumber_AsSsize_t(op, NULL);
+        if (i == -1 && PyErr_Occurred()) {
             return -1;
         }
-        i = PyNumber_AsSsize_t(index, NULL);
-        Py_DECREF(index);
         return RectExport_assItem(self, i, value);
     }
     else if (op == Py_Ellipsis) {
@@ -2582,7 +2600,7 @@ RectExport_setcentery(RectObject *self, PyObject *value, void *closure)
 static PyObject *
 RectExport_gettopleft(RectObject *self, void *closure)
 {
-    return Py_BuildValue("(" TypeFMT "" TypeFMT ")", self->r.x, self->r.y);
+    return TupleFromTwoPrimitives(self->r.x, self->r.y);
 }
 
 static int
@@ -2609,8 +2627,7 @@ RectExport_settopleft(RectObject *self, PyObject *value, void *closure)
 static PyObject *
 RectExport_gettopright(RectObject *self, void *closure)
 {
-    return Py_BuildValue("(" TypeFMT "" TypeFMT ")", self->r.x + self->r.w,
-                         self->r.y);
+    return TupleFromTwoPrimitives(self->r.x + self->r.w, self->r.y);
 }
 
 static int
@@ -2637,8 +2654,7 @@ RectExport_settopright(RectObject *self, PyObject *value, void *closure)
 static PyObject *
 RectExport_getbottomleft(RectObject *self, void *closure)
 {
-    return Py_BuildValue("(" TypeFMT "" TypeFMT ")", self->r.x,
-                         self->r.y + self->r.h);
+    return TupleFromTwoPrimitives(self->r.x, self->r.y + self->r.h);
 }
 
 static int
@@ -2665,8 +2681,8 @@ RectExport_setbottomleft(RectObject *self, PyObject *value, void *closure)
 static PyObject *
 RectExport_getbottomright(RectObject *self, void *closure)
 {
-    return Py_BuildValue("(" TypeFMT "" TypeFMT ")", self->r.x + self->r.w,
-                         self->r.y + self->r.h);
+    return TupleFromTwoPrimitives(self->r.x + self->r.w,
+                                  self->r.y + self->r.h);
 }
 
 static int
@@ -2693,8 +2709,7 @@ RectExport_setbottomright(RectObject *self, PyObject *value, void *closure)
 static PyObject *
 RectExport_getmidtop(RectObject *self, void *closure)
 {
-    return Py_BuildValue("(" TypeFMT "" TypeFMT ")",
-                         self->r.x + (self->r.w / 2), self->r.y);
+    return TupleFromTwoPrimitives(self->r.x + (self->r.w / 2), self->r.y);
 }
 
 static int
@@ -2721,8 +2736,7 @@ RectExport_setmidtop(RectObject *self, PyObject *value, void *closure)
 static PyObject *
 RectExport_getmidleft(RectObject *self, void *closure)
 {
-    return Py_BuildValue("(" TypeFMT "" TypeFMT ")", self->r.x,
-                         self->r.y + (self->r.h / 2));
+    return TupleFromTwoPrimitives(self->r.x, self->r.y + (self->r.h / 2));
 }
 
 static int
@@ -2749,8 +2763,8 @@ RectExport_setmidleft(RectObject *self, PyObject *value, void *closure)
 static PyObject *
 RectExport_getmidbottom(RectObject *self, void *closure)
 {
-    return Py_BuildValue("(" TypeFMT "" TypeFMT ")",
-                         self->r.x + (self->r.w / 2), self->r.y + self->r.h);
+    return TupleFromTwoPrimitives(self->r.x + (self->r.w / 2),
+                                  self->r.y + self->r.h);
 }
 
 static int
@@ -2777,8 +2791,8 @@ RectExport_setmidbottom(RectObject *self, PyObject *value, void *closure)
 static PyObject *
 RectExport_getmidright(RectObject *self, void *closure)
 {
-    return Py_BuildValue("(" TypeFMT "" TypeFMT ")", self->r.x + self->r.w,
-                         self->r.y + (self->r.h / 2));
+    return TupleFromTwoPrimitives(self->r.x + self->r.w,
+                                  self->r.y + (self->r.h / 2));
 }
 
 static int
@@ -2805,9 +2819,8 @@ RectExport_setmidright(RectObject *self, PyObject *value, void *closure)
 static PyObject *
 RectExport_getcenter(RectObject *self, void *closure)
 {
-    return Py_BuildValue("(" TypeFMT "" TypeFMT ")",
-                         self->r.x + (self->r.w / 2),
-                         self->r.y + (self->r.h / 2));
+    return TupleFromTwoPrimitives(self->r.x + (self->r.w / 2),
+                                  self->r.y + (self->r.h / 2));
 }
 
 static int
@@ -2834,7 +2847,7 @@ RectExport_setcenter(RectObject *self, PyObject *value, void *closure)
 static PyObject *
 RectExport_getsize(RectObject *self, void *closure)
 {
-    return Py_BuildValue("(" TypeFMT "" TypeFMT ")", self->r.w, self->r.h);
+    return TupleFromTwoPrimitives(self->r.w, self->r.h);
 }
 
 static int

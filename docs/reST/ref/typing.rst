@@ -11,23 +11,20 @@
 .. versionadded:: 2.5.2
 
 A lot of pygame functions and methods allow the user to provide different types
-for the same value like colors or coordinates. This module exports the most common
+for the same value like colors or points. This module exports the most common
 type aliases for proper typehint annotations.
-
-   .. data:: PathLike
-
-      An object representing a file path, i.e.:
-
-        * ``"my/string/path.txt"``
-        * ``pathlib.Path("my/pathlib/path.txt")``
-        * ``b"my/bytes/path.txt"``
-        * Any object implementing the path protocol (with a ``__fspath__`` magic method)
 
    .. data:: FileLike
 
-      An object representing a file. Same as :mod:`pygame.typing.PathLike` with
-      the addition of file buffers (``IO`` of strings or bytes) such as the
-      return value of ``open()``.
+      An object representing a file. This includes both path-like
+      objects and file-like objects, i.e.:
+
+        * ``"my/string/path.txt"``
+        * ``open("my/file/path.txt")``
+        * ``pathlib.Path("my/pathlib/path.txt")``
+        * ``io.BytesIO(b"my data: \x00\x01")``
+        * ``b"my/bytes/path.txt"``
+        * Any object implementing the path protocol or file protocol.
 
    .. data:: SequenceLike
 
@@ -40,22 +37,18 @@ type aliases for proper typehint annotations.
 
       Being a generic, subscribing it will signal further precision such as
       ``SequenceLike[str]`` or ``SequenceLike[float]``.
-      
-   .. data:: Coordinate
+
+   .. data:: Point
 
       A sequence of two numbers (floats or ints), i.e:
 
-        * ``pygame.Vector2(a, b)`` 
+        * ``pygame.Vector2(a, b)``
         * ``[a, b]``
         * ``(a, b)``
 
-   .. data:: IntCoordinate
+   .. data:: IntPoint
 
       A sequence of strictly two integers such as ``[a, b]`` or ``(a, b)``.
-
-   .. data:: RGBATuple
-
-      A tuple of four integers ``(r, g, b, a)`` in range 0-255 such as ``(20, 255, 0, 100)``.
 
    .. data:: ColorLike
 
@@ -67,17 +60,18 @@ type aliases for proper typehint annotations.
         * ``(r, g, b)``
         * ``(r, g, b, a)``
         * ``[r, g, b, a]``
-        * ``"green"``
+        * ``"green"`` (:doc:`color_list`)
+        * ``"#rrggbbaa"``
         * ``0`` (mapped color)
 
    .. data:: RectLike
-      
-      An object representing a rect such as a sequence of numbers or coordinates
+
+      An object representing a rect such as a sequence of numbers or points
       or an object with a rect attribute or a method returning a rect. These types
       are supported by every function accepting a rect as argument. i.e.:
 
         * ``(x, y, w, h)``
-        * ``(Coordinate, Coordinate)``
+        * ``(Point, Point)``
         * ``pygame.Rect(RectLike)``
         * Any object with a ``.rect`` attribute which is a ``RectLike`` or a function
           returning a ``RectLike``

@@ -59,18 +59,18 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
 
    This will play the loaded music stream. If the music is already playing it
    will be restarted.
-   
-   ``loops`` is an optional integer argument, which is ``0`` by default, which 
-   indicates how many times to repeat the music. The music repeats indefinitely if 
-   this argument is set to ``-1``. 
-   
-   ``start`` is an optional float argument, which is ``0.0`` by default, which 
-   denotes the position in time from which the music starts playing. The starting 
-   position depends on the format of the music played. ``MP3`` and ``OGG`` use 
+
+   ``loops`` is an optional integer argument, which is ``0`` by default, which
+   indicates how many times to repeat the music. The music repeats indefinitely if
+   this argument is set to ``-1``.
+
+   ``start`` is an optional float argument, which is ``0.0`` by default, which
+   denotes the position in time from which the music starts playing. The starting
+   position depends on the format of the music played. ``MP3`` and ``OGG`` use
    the position as time in seconds. For ``MP3`` files the start time position
    selected may not be accurate as things like variable bit rate encoding and ID3
-   tags can throw off the timing calculations. For ``MOD``  music it is the pattern 
-   order number. Passing a start position will raise a NotImplementedError if 
+   tags can throw off the timing calculations. For ``MOD``  music it is the pattern
+   order number. Passing a start position will raise a NotImplementedError if
    the start position cannot be set.
 
    ``fade_ms`` is an optional integer argument, which is ``0`` by default,
@@ -78,7 +78,7 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
    will fade up from volume level ``0.0`` to full volume (or the volume level
    previously set by :func:`set_volume`). The sample may end before the fade-in
    is complete. If the music is already streaming ``fade_ms`` is ignored.
-   
+
    .. versionchangedold:: 2.0.0 Added optional ``fade_ms`` argument
 
    .. ## pygame.mixer.music.play ##
@@ -90,7 +90,7 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
 
    Resets playback of the current music to the beginning. If :func:`pause` has
    previously been used to pause the music, the music will remain paused.
-   
+
    .. note:: :func:`rewind` supports a limited number of file types and notably
              ``WAV`` files are NOT supported. For unsupported file types use :func:`play`
              which will restart the music that's already playing (note that this
@@ -135,12 +135,12 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
 
    Fade out and stop the currently playing music.
 
-   The ``time`` argument denotes the integer milliseconds for which the 
+   The ``time`` argument denotes the integer milliseconds for which the
    fading effect is generated.
 
-   Note, that this function blocks until the music has faded out. Calls 
-   to :func:`fadeout` and :func:`set_volume` will have no effect during 
-   this time. If an event was set using :func:`set_endevent` it will be 
+   Note, that this function blocks until the music has faded out. Calls
+   to :func:`fadeout` and :func:`set_volume` will have no effect during
+   this time. If an event was set using :func:`set_endevent` it will be
    called after the music has faded.
 
    .. ## pygame.mixer.music.fadeout ##
@@ -151,12 +151,15 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
    | :sg:`set_volume(volume, /) -> None`
 
    Set the volume of the music playback.
-   
-   The ``volume`` argument is a float between ``0.0`` and ``1.0`` that sets 
+
+   The ``volume`` argument is a float between ``0.0`` and ``1.0`` that sets
    the volume level. When new music is loaded the volume is reset to full
    volume. If ``volume`` is a negative value it will be ignored and the
    volume will remain set at the current level. If the ``volume`` argument
    is greater than ``1.0``, the volume will be set to ``1.0``.
+
+   .. note::
+      See :func:`mixer.Sound.set_volume()<pygame.mixer.Sound.set_volume>` for more information regarding how the value is stored internally
 
    .. ## pygame.mixer.music.set_volume ##
 
@@ -165,8 +168,11 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
    | :sl:`get the music volume`
    | :sg:`get_volume() -> value`
 
-   Returns the current volume for the mixer. The value will be between ``0.0`` 
+   Returns the current volume for the mixer. The value will be between ``0.0``
    and ``1.0``.
+
+   .. note::
+      See :func:`mixer.Sound.set_volume()<pygame.mixer.Sound.set_volume>` for more information regarding the returned value
 
    .. ## pygame.mixer.music.get_volume ##
 
@@ -192,7 +198,7 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
    This sets the position in the music file where playback will start.
    The meaning of "pos", a float (or a number that can be converted to a float),
    depends on the music format.
-   
+
    For ``MOD`` files, pos is the integer pattern number in the module.
    For ``OGG`` it is the absolute position, in seconds, from
    the beginning of the sound. For ``MP3`` files, it is the relative position,
@@ -285,24 +291,24 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
    | :sg:`get_metadata() -> dict`
    | :sg:`get_metadata(filename) -> dict`
    | :sg:`get_metadata(fileobj, namehint="") -> dict`
-   
-   If no arguments are passed returns a dictionary containing metadata 
-   of the currently loaded music stream, raises an exception if a music stream is not loaded. 
-   Available keys are ``"title"``, ``"album"``, ``"artist"``, ``"copyright"``. 
-   Values are strings containing corresponding retrieved metadata. 
+
+   If no arguments are passed returns a dictionary containing metadata
+   of the currently loaded music stream, raises an exception if a music stream is not loaded.
+   Available keys are ``"title"``, ``"album"``, ``"artist"``, ``"copyright"``.
+   Values are strings containing corresponding retrieved metadata.
    If particular metadata was not found the value is an empty string.
    Here is an example:
    ``{'title': 'Small Tone', 'album': 'Tones', 'artist': 'Audacity Generator', 'copyright': ''}``
-   
-   Refer to the :func:`pygame.mixer.music.load` function for arguments regarding specifying a file or a file-like object 
-   whose metadata you want to retrieve. For this function all arguments are optional, 
+
+   Refer to the :func:`pygame.mixer.music.load` function for arguments regarding specifying a file or a file-like object
+   whose metadata you want to retrieve. For this function all arguments are optional,
    however, specifying only the ``namehint`` will raise an exception.
-   
+
    Since the underlying functionality was introduced in version 2.6.0 of SDL_mixer,
    calling this function with an older version of SDL_mixer will return a dictionary
    with all values being set to empty strings. You can find your version of SDL_mixer
    by using :func:`pygame.mixer.get_sdl_mixer_version`.
 
    .. versionadded:: 2.1.4
-   
+
    .. ## pygame.mixer.music.get_metadata ##

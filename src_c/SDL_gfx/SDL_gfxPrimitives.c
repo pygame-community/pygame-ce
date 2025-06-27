@@ -2069,8 +2069,9 @@ _clipLine(SDL_Surface *dst, Sint16 *x1, Sint16 *y1, Sint16 *x2, Sint16 *y2)
             draw = 1;
             break;
         }
-        else if (CLIP_REJECT(code1, code2))
+        else if (CLIP_REJECT(code1, code2)) {
             break;
+        }
         else {
             if (CLIP_INSIDE(code1)) {
                 swaptmp = *x2;
@@ -2781,7 +2782,7 @@ _aalineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
         /*
          * Not-so-portable version: erradj = ((Uint64)dx << 32) / (Uint64)dy;
          */
-        erradj = ((dx << 16) / dy) << 16;
+        erradj = (Uint32)((dx << 16) / dy) << 16;
 
         /*
          * draw all pixels other than the first and last
@@ -2818,7 +2819,7 @@ _aalineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
         /*
          * Not-so-portable version: erradj = ((Uint64)dy << 32) / (Uint64)dx;
          */
-        erradj = ((dy << 16) / dx) << 16;
+        erradj = (Uint32)((dy << 16) / dx) << 16;
 
         /*
          * draw all pixels other than the first and last
@@ -3270,10 +3271,12 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
     end %= 360;
     // 0 <= start & end < 360; note that sometimes start > end - if so, arc
     // goes back through 0.
-    while (start < 0)
+    while (start < 0) {
         start += 360;
-    while (end < 0)
+    }
+    while (end < 0) {
         end += 360;
+    }
     start %= 360;
     end %= 360;
 
@@ -3317,13 +3320,15 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
             // pixel at x = ((int)temp).
 
             // and whether to draw in this octant initially
-            if (oct % 2)
+            if (oct % 2) {
                 drawoct |=
                     (1 << oct);  // this is basically like saying drawoct[oct]
                                  // = true, if drawoct were a bool array
-            else
+            }
+            else {
                 drawoct &= 255 - (1 << oct);  // this is basically like saying
                                               // drawoct[oct] = false
+            }
         }
         if (oct == endoct) {
             // need to compute stopval_end for this octant
@@ -3364,10 +3369,12 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
                     drawoct &= 255 - (1 << oct);
                 }
             }
-            else if (oct % 2)
+            else if (oct % 2) {
                 drawoct &= 255 - (1 << oct);
-            else
+            }
+            else {
                 drawoct |= (1 << oct);
+            }
         }
         else if (oct != startoct) {  // already verified that it's != endoct
             drawoct |= (1 << oct);   // draw this entire segment
@@ -3421,25 +3428,31 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
                 xmcx = x - cx;
                 // always check if we're drawing a certain octant before adding
                 // a pixel to that octant.
-                if (drawoct & 4)
+                if (drawoct & 4) {
                     result |= fastPixelColorNolock(
                         dst, xmcx, ypcy,
                         color);  // drawoct & 4 = 22; drawoct[2]
-                if (drawoct & 2)
+                }
+                if (drawoct & 2) {
                     result |= fastPixelColorNolock(dst, xpcx, ypcy, color);
-                if (drawoct & 32)
+                }
+                if (drawoct & 32) {
                     result |= fastPixelColorNolock(dst, xmcx, ymcy, color);
-                if (drawoct & 64)
+                }
+                if (drawoct & 64) {
                     result |= fastPixelColorNolock(dst, xpcx, ymcy, color);
+                }
             }
             else {
-                if (drawoct & 6)
+                if (drawoct & 6) {
                     result |= fastPixelColorNolock(
                         dst, x, ypcy,
                         color);  // 4 + 2; drawoct[2] || drawoct[1]
-                if (drawoct & 96)
+                }
+                if (drawoct & 96) {
                     result |=
                         fastPixelColorNolock(dst, x, ymcy, color);  // 32 + 64
+                }
             }
 
             xpcy = x + cy;
@@ -3447,22 +3460,28 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
             if (cx > 0 && cx != cy) {
                 ypcx = y + cx;
                 ymcx = y - cx;
-                if (drawoct & 8)
+                if (drawoct & 8) {
                     result |= fastPixelColorNolock(dst, xmcy, ypcx, color);
-                if (drawoct & 1)
+                }
+                if (drawoct & 1) {
                     result |= fastPixelColorNolock(dst, xpcy, ypcx, color);
-                if (drawoct & 16)
+                }
+                if (drawoct & 16) {
                     result |= fastPixelColorNolock(dst, xmcy, ymcx, color);
-                if (drawoct & 128)
+                }
+                if (drawoct & 128) {
                     result |= fastPixelColorNolock(dst, xpcy, ymcx, color);
+                }
             }
             else if (cx == 0) {
-                if (drawoct & 24)
+                if (drawoct & 24) {
                     result |=
                         fastPixelColorNolock(dst, xmcy, y, color);  // 8 + 16
-                if (drawoct & 129)
+                }
+                if (drawoct & 129) {
                     result |=
                         fastPixelColorNolock(dst, xpcy, y, color);  // 1 + 128
+                }
             }
 
             /*
@@ -3471,16 +3490,20 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
             if (stopval_start == cx) {
                 // works like an on-off switch because start & end may be in
                 // the same octant.
-                if (drawoct & (1 << startoct))
+                if (drawoct & (1 << startoct)) {
                     drawoct &= 255 - (1 << startoct);
-                else
+                }
+                else {
                     drawoct |= (1 << startoct);
+                }
             }
             if (stopval_end == cx) {
-                if (drawoct & (1 << endoct))
+                if (drawoct & (1 << endoct)) {
                     drawoct &= 255 - (1 << endoct);
-                else
+                }
+                else {
                     drawoct |= (1 << endoct);
+                }
             }
 
             /*
@@ -3519,20 +3542,26 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
 
                 // always check if we're drawing a certain octant before adding
                 // a pixel to that octant.
-                if (drawoct & 4)
+                if (drawoct & 4) {
                     result |= pixelColorNolock(dst, xmcx, ypcy, color);
-                if (drawoct & 2)
+                }
+                if (drawoct & 2) {
                     result |= pixelColorNolock(dst, xpcx, ypcy, color);
-                if (drawoct & 32)
+                }
+                if (drawoct & 32) {
                     result |= pixelColorNolock(dst, xmcx, ymcy, color);
-                if (drawoct & 64)
+                }
+                if (drawoct & 64) {
                     result |= pixelColorNolock(dst, xpcx, ymcy, color);
+                }
             }
             else {
-                if (drawoct & 96)
+                if (drawoct & 96) {
                     result |= pixelColorNolock(dst, x, ymcy, color);
-                if (drawoct & 6)
+                }
+                if (drawoct & 6) {
                     result |= pixelColorNolock(dst, x, ypcy, color);
+                }
             }
 
             xpcy = x + cy;
@@ -3540,20 +3569,26 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
             if (cx > 0 && cx != cy) {
                 ypcx = y + cx;
                 ymcx = y - cx;
-                if (drawoct & 8)
+                if (drawoct & 8) {
                     result |= pixelColorNolock(dst, xmcy, ypcx, color);
-                if (drawoct & 1)
+                }
+                if (drawoct & 1) {
                     result |= pixelColorNolock(dst, xpcy, ypcx, color);
-                if (drawoct & 16)
+                }
+                if (drawoct & 16) {
                     result |= pixelColorNolock(dst, xmcy, ymcx, color);
-                if (drawoct & 128)
+                }
+                if (drawoct & 128) {
                     result |= pixelColorNolock(dst, xpcy, ymcx, color);
+                }
             }
             else if (cx == 0) {
-                if (drawoct & 24)
+                if (drawoct & 24) {
                     result |= pixelColorNolock(dst, xmcy, y, color);
-                if (drawoct & 129)
+                }
+                if (drawoct & 129) {
                     result |= pixelColorNolock(dst, xpcy, y, color);
+                }
             }
 
             /*
@@ -3562,16 +3597,20 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
             if (stopval_start == cx) {
                 // works like an on-off switch.
                 // This is just in case start & end are in the same octant.
-                if (drawoct & (1 << startoct))
+                if (drawoct & (1 << startoct)) {
                     drawoct &= 255 - (1 << startoct);
-                else
+                }
+                else {
                     drawoct |= (1 << startoct);
+                }
             }
             if (stopval_end == cx) {
-                if (drawoct & (1 << endoct))
+                if (drawoct & (1 << endoct)) {
                     drawoct &= 255 - (1 << endoct);
-                else
+                }
+                else {
                     drawoct |= (1 << endoct);
+                }
             }
 
             /*
@@ -4093,7 +4132,7 @@ ellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
                         result |= pixelColorNolock(dst, xmi, ypj, color);
                         result |= pixelColorNolock(dst, xpi, ypj, color);
                         result |= pixelColorNolock(dst, xmi, ymj, color);
-                        result |= pixelColor(dst, xpi, ymj, color);
+                        result |= pixelColorNolock(dst, xpi, ymj, color);
                     }
                     else {
                         result |= pixelColorNolock(dst, xmi, y, color);
@@ -4362,11 +4401,13 @@ aaellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
         xp--;
         d += t - b2;
 
-        if (d >= 0)
+        if (d >= 0) {
             ys = yp - 1;
+        }
         else if ((d - s - a2) > 0) {
-            if ((2 * d - s - a2) >= 0)
+            if ((2 * d - s - a2) >= 0) {
                 ys = yp + 1;
+            }
             else {
                 ys = yp;
                 yp++;
@@ -4423,11 +4464,13 @@ aaellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
         yp++;
         d -= s + a2;
 
-        if (d <= 0)
+        if (d <= 0) {
             xs = xp + 1;
+        }
         else if ((d + t - b2) < 0) {
-            if ((2 * d + t - b2) <= 0)
+            if ((2 * d + t - b2) <= 0) {
                 xs = xp - 1;
+            }
             else {
                 xs = xp;
                 xp--;

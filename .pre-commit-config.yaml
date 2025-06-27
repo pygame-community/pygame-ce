@@ -5,14 +5,37 @@
 # Then in the project root directory run `pre-commit install`
 
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    - id: end-of-file-fixer
+      exclude: |
+          (?x)^(
+              ^docs/licenses/.*$
+              | ^.*\.svg$
+              | ^.*\.sfd$
+              | docs/LGPL.txt
+          )$
+    - id: trailing-whitespace
+      exclude: |
+          (?x)^(
+              ^docs/licenses/.*$
+              | ^.*\.svg$
+              | ^.*\.sfd$
+              | docs/LGPL.txt
+          )$
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.2
+    rev: v0.11.12
     hooks:  # See pyproject.toml for configuration options.
+      - id: ruff
+        name: ruff-sort-imports
+        args: [ --select, I, --fix ]
       - id: ruff-format  # Run the formatter
         types_or: [ python, pyi, jupyter ]
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v18.1.4
+    rev: v20.1.5
     hooks:
       - id: clang-format
         exclude: |

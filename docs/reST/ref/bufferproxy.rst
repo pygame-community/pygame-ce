@@ -10,7 +10,7 @@
 .. class:: BufferProxy
 
    | :sl:`pygame object to export a surface buffer through an array protocol`
-   | :sg:`BufferProxy(<parent>) -> BufferProxy`
+   | :sg:`BufferProxy(parent) -> BufferProxy`
 
    :class:`BufferProxy` is a pygame support type, designed as the return value
    of the :meth:`Surface.get_buffer` and :meth:`Surface.get_view` methods.
@@ -47,8 +47,8 @@
 
       ``"strides"`` : tuple : (optional)
          Array stride information as a tuple of integers. It is required
-	 only of non C-contiguous arrays. The tuple length must match
-	 that of ``"shape"``.
+         only of non C-contiguous arrays. The tuple length must match
+         that of ``"shape"``.
 
       ``"parent"`` : object : (optional)
          The exporting object. It can be used to keep the parent object
@@ -57,7 +57,7 @@
       ``"before"`` : callable : (optional)
          Callback invoked when the :class:`BufferProxy` instance
          exports the buffer. The callback is given one argument, the
-	 ``"parent"`` object if given, otherwise ``None``.
+         ``"parent"`` object if given, otherwise ``None``.
          The callback is useful for setting a lock on the parent.
 
       ``"after"`` : callable : (optional)
@@ -65,7 +65,7 @@
          The callback is passed on argument, the ``"parent"`` object if given,
          otherwise None. The callback is useful for releasing a lock on the
          parent.
-      
+
    The BufferProxy class supports subclassing, instance variables, and weak
    references.
 
@@ -76,7 +76,7 @@
 
       | :sl:`Return wrapped exporting object.`
       | :sg:`parent -> Surface`
-      | :sg:`parent -> <parent>`
+      | :sg:`parent -> parent`
 
       The :class:`Surface` which returned the :class:`BufferProxy` object or
       the object passed to a :class:`BufferProxy` call.

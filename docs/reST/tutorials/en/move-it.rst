@@ -210,7 +210,7 @@ pygame is very straightforward. We'll pretend we have loaded some pretty
 graphics and named them "terrain1", "terrain2", and "hero". Where before
 we assigned numbers to a list, we now blit graphics to the screen. Another
 big change, instead of using positions as a single index (0 through 5), we
-now need a two dimensional coordinate. We'll pretend each of the graphics
+now need a two dimensional point. We'll pretend each of the graphics
 in our game is 10 pixels wide. ::
 
   >>> background = [terrain1, terrain1, terrain2, terrain2, terrain2, terrain1]
@@ -246,9 +246,9 @@ Screen Coordinates
 ------------------
 
 To position an object on the screen, we need to tell the blit() function
-where to put the image. In pygame we always pass positions as an (X,Y) coordinate.
+where to put the image. In pygame we always pass positions as (X,Y) coordinates.
 This represents the number of pixels to the right, and the number of pixels
-down to place the image. The top-left corner of a Surface is coordinate (0,
+down to place the image. The top-left corner of a Surface is coordinates (0,
 0). Moving to the right a little would be (10, 0), and then moving down just
 as much would be (10, 10). When blitting, the position argument represents
 where the topleft corner of the source should be placed on the destination.
@@ -339,7 +339,7 @@ and reference. The pygame.image module has a load() function which will do
 what we want. The lines to load the images should become this. ::
 
   >>> player = pygame.image.load('player.bmp').convert()
-  >>> background = pygame.image.load('liquid.bmp').convert()
+  >>> background = pygame.image.load('liquid.webp').convert()
 
 
 We can see that's pretty simple, the load function just takes a filename
@@ -383,8 +383,8 @@ user asks us to stop. ::
 
 
 What this code simply does is, first loop forever, then check if there are
-any events from the user. We exit the program if the user presses the close 
-button on the window. After we've checked all the events we move and draw 
+any events from the user. We exit the program if the user presses the close
+button on the window. After we've checked all the events we move and draw
 our game objects. (We'll also erase them before they move, too)
 
 
@@ -471,7 +471,7 @@ our move function under our GameObject class. ::
   ...   if down:
   ...       self.pos.top += self.speed
   ...   if up:
-  ...       self.pos.top -= self.speed   
+  ...       self.pos.top -= self.speed
   ...   if self.pos.right > WIDTH:
   ...       self.pos.left = 0
   ...   if self.pos.top > HEIGHT-SPRITE_HEIGHT:
@@ -483,7 +483,7 @@ our move function under our GameObject class. ::
 
 There's certainly a lot more going on here, so let's take it one step at a time.
 First, we've added some default values into the move function, declared as up,
-down, left, and right. These booleans will allow us to specifically select a 
+down, left, and right. These booleans will allow us to specifically select a
 direction that the object is moving in. The first part, where we go through and
 check True for each variable, is where we will add to the position of the object,
 much like before. Right controls horizontal, and top controls vertical positions.
@@ -505,7 +505,7 @@ We've already seen that pygame has event handling, and we know that KEYDOWN is
 an event in this loop. We could, under KEYDOWN, assert the key press matches an
 arrow key, where we would then call move. However, this movement will only occur
 once every time a key is pressed, and it therefore will be extremely choppy and
-unpleasant. 
+unpleasant.
 
 For this, we can use pygame.key.get_pressed(), which returns a list of all keys,
 and whether or not they are currently pressed. Since we want these key presses
@@ -571,7 +571,7 @@ sure we understand everything. ::
 
 A few things not mentioned earlier: we load in a second image and call it entity,
 and we use that for all objects that aren't the player, which uses the player
-image defined earlier. 
+image defined earlier.
 
 And that's all there is to it! Now we have a fully functional player object that
 is controlled using the arrow keys!

@@ -68,7 +68,7 @@ with any attributes set back to their necessary values. Next, the way in which t
 ball, because here its movement is simple (up/down), but it relies on the user telling it to move, unlike the ball which just keeps
 moving in every frame. To make sense of how the bat moves, it is helpful to look at a quick diagram to show the sequence of events:
 
-.. image:: ../assets/tom_event-flowchart.png
+.. image:: ../assets/tom_event-flowchart.webp
 
 What happens here is that the person controlling the bat pushes down on the key that moves the bat up. For each iteration of the main
 game loop (for every frame), if the key is still held down, then the ``state`` attribute of that bat object will be set to
@@ -85,7 +85,7 @@ will be set back to "still", and the ``movepos`` attribute will be set back to [
 
 5.1.1. Diversion 3: Pygame events
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+
 So how do we know when the player is pushing keys down, and then releasing them? With the Pygame event queue system of course! It's a
 really easy system to use and understand, so this shouldn't take long :) You've already seen the event queue in action in the basic
 Pygame program, where it was used to check if the user was quitting the application. The code for moving the bat is about as simple

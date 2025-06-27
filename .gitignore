@@ -32,6 +32,9 @@
 # mypy
 .mypy_cache/
 
+# Ruff
+.ruff_cache
+
 # Other
 envdev*
 .virtualenv*
@@ -44,8 +47,10 @@ dist
 *.so
 __pycache__
 _headers/*
+buildconfig/win_dll_dirs.json
 
 # cython generated files
 src_c/_sdl2/*.c
 !/src_c/_sdl2/touch.c
+!/src_c/_sdl2/controller.c
 src_c/pypm.c

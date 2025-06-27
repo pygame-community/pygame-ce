@@ -16,7 +16,7 @@ Contact: rumia0601@gmail.com
 이전 프로젝트는 게임이 아니라 이미지 한 장 같아 보인다. 출력을 바꾸는 입력이나 처리가 없기 때문이다. 물론, 윈도우의 종료 버튼을 누르는 것은 고려되지 않는다 (프로그램을 종료하는 것에 불과하므로). 우선, 우리는 “Hello World!”가 자동적으로 움직이게 할 것이다. 그러면 이제 프로젝트는 이미지 한 장이 아닌 애니메이션 같아 보일 것이다. 어떻게 텍스트를 움직일까? 우리는 텍스트의 위치가 Initial statement에서 초기화됨을 알고 있다. 그렇다면, 이 위치가 Always statement에서 업데이트되게 하면 된다. 물론, 추가적인 변수가 필요할 것이다.
 
 
-.. image:: ../../../assets/Bagic-PROCESS-sourcecode.png
+.. image:: ../../../assets/Bagic-PROCESS-sourcecode.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -31,7 +31,7 @@ Contact: rumia0601@gmail.com
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Bagic-PROCESS-sourcecode.png")
+   ball = pygame.image.load("Bagic-PROCESS-sourcecode.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -49,7 +49,7 @@ Contact: rumia0601@gmail.com
        pygame.display.flip()
 
 
-.. image:: ../../../assets/Bagic-PROCESS-resultscreen.png
+.. image:: ../../../assets/Bagic-PROCESS-resultscreen.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -64,7 +64,7 @@ Contact: rumia0601@gmail.com
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Bagic-PROCESS-resultscreen.png")
+   ball = pygame.image.load("Bagic-PROCESS-resultscreen.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -104,10 +104,10 @@ Contact: rumia0601@gmail.com
     red = (255,0,0)
     green = (0,255,0)
     pygame.init()
-    pygame.display.set_caption("Moving World Project") 
+    pygame.display.set_caption("Moving World Project")
     myScreen = pygame.display.set_mode((640, 480))
     myTextFont = pygame.font.Font("HoonWhitecatR.ttf", 32)
-    myText = myTextFont.render("Moving World!", True, red, green) 
+    myText = myTextFont.render("Moving World!", True, red, green)
     myTextArea = myText.get_rect()
     myTextArea.center = (320, 240)
     fpsClock = pygame.time.Clock() #1
@@ -138,7 +138,7 @@ Contact: rumia0601@gmail.com
 
 
     myTextArea.center = (320 + x, 240 + y) #10
-    
+
     myScreen.fill(white)
     myScreen.blit(myText, myTextArea)
 
@@ -149,4 +149,3 @@ Contact: rumia0601@gmail.com
 
     pygame.display.update()
     fpsClock.tick(60) #11
-
