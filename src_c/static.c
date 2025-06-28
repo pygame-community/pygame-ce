@@ -11,9 +11,11 @@
 #define PYGAMEAPI_WINDOW_INTERNAL
 #define PYGAMEAPI_RENDER_INTERNAL
 
+#if 0
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) \
     (pgSurfaceObject *)pgSurface_New2((surface), 0)
+#endif
 
 #include "pygame.h"
 #include "Python.h"
@@ -48,6 +50,10 @@ void
 import_pygame_surface(void)
 {
 }
+
+#ifdef import_pygame_window
+#undef import_pygame_window
+#endif
 
 void
 import_pygame_window(void)
@@ -89,6 +95,10 @@ import_pygame_event(void)
 {
 }
 
+#ifdef import_pygame_joystick
+#undef import_pygame_joystick
+#endif
+
 void
 import_pygame_joystick(void)
 {
@@ -113,6 +123,8 @@ import_pygame_pixelarray(void)
 {
 }
 
+PyMODINIT_FUNC
+PyInit_base(void);
 PyMODINIT_FUNC
 PyInit_color(void);
 PyMODINIT_FUNC
@@ -322,6 +334,10 @@ PyInit_pygame_static()
     // for correct input in wasm worker
     SDL_SetHint("SDL_EMSCRIPTEN_KEYBOARD_ELEMENT", "1");
 
+    // base module is including current file
+    // all globals are accessible from here.
+    load_submodule("pygame", PyInit_base(), "base");
+
     load_submodule("pygame", PyInit_constants(), "constants");
     //
     load_submodule("pygame", PyInit_pg_math(), "math");
@@ -391,7 +407,7 @@ PyInit_pygame_static()
 
 #endif  // defined(BUILD_STATIC)
 
-#include "base.h"
+// #include "base.h"
 
 #include "rect.c"
 #include "pgcompat_rect.c"

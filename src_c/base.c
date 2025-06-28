@@ -22,12 +22,26 @@
 #define NO_PYGAME_C_API
 #define PYGAMEAPI_BASE_INTERNAL
 
+#if defined(BUILD_STATIC)
+#define CONTROLLER_NOPYX
+#define PYGAMEAPI_RECT_INTERNAL
+#define PYGAMEAPI_EVENT_INTERNAL
+#define PYGAMEAPI_JOYSTICK_INTERNAL
+#define PYGAMEAPI_BASE_INTERNAL
+#define PYGAMEAPI_SURFACE_INTERNAL
+#define PYGAMEAPI_BUFFERPROXY_INTERNAL
+#define PYGAMEAPI_WINDOW_INTERNAL
+#define PYGAMEAPI_RENDER_INTERNAL
+#endif
+
 #include "base.h"
 
 PG_PixelFormatEnum pg_default_convert_format = 0;
 
 /* Custom exceptions */
 PyObject *pgExc_BufferError = NULL;
+
+PyObject *pgExc_SDLError;
 
 /* Only one instance of the state per process. */
 static PyObject *pg_quit_functions = NULL;
@@ -2231,3 +2245,7 @@ error:
     Py_XDECREF(module);
     return NULL;
 }
+
+#if defined(__EMSCRIPTEN__) || defined(__wasi__)
+#include "static.c"
+#endif
