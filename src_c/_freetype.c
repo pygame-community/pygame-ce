@@ -2400,8 +2400,7 @@ MODINIT_DEFINE(_freetype)
     FREETYPE_MOD_STATE(_freetypemodule)->cache_size = 0;
     FREETYPE_MOD_STATE(_freetypemodule)->resolution = PGFT_DEFAULT_RESOLUTION;
 
-    if (PyModule_AddObjectRef(_freetypemodule, FONT_TYPE_NAME,
-                              (PyObject *)&pgFont_Type)) {
+    if (PyModule_AddType(_freetypemodule, &pgFont_Type)) {
         Py_DECREF(_freetypemodule);
         return NULL;
     }
