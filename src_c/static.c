@@ -407,7 +407,7 @@ PyInit_pygame_static()
 
 #endif  // defined(BUILD_STATIC)
 
-// #include "base.h"
+#include "base.h"
 
 #include "rect.c"
 #include "pgcompat_rect.c"

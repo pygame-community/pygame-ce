@@ -19,9 +19,6 @@
   Pete Shinners
   pete@shinners.org
 */
-#define NO_PYGAME_C_API
-#define PYGAMEAPI_BASE_INTERNAL
-
 #if defined(BUILD_STATIC)
 #define CONTROLLER_NOPYX
 #define PYGAMEAPI_RECT_INTERNAL
