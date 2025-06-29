@@ -32,6 +32,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <limits.h>
 
 #include "simd_shared.h"
 #include "simd_transform.h"
@@ -4225,6 +4226,54 @@ surf_invert(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(newsurf);
 }
 
+static PyObject *
+surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *src;
+    pgSurfaceObject *dst = NULL;
+    int pixel_size;
+    SDL_Surface *new_surf;
+    pgSurfaceObject *intermediate;
+
+    static char *kwds[] = {"surface", "pixel_size", "dest_surface", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!i|O!", kwds,
+                                     &pgSurface_Type, &src, &pixel_size,
+                                     &pgSurface_Type, &dst)) {
+        return NULL;
+    }
+
+    if (pixel_size < 1) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Pixel size must be a nonnegative integer");
+        return NULL;
+    }
+
+    int width = (int)round((double)src->surf->w / pixel_size);
+    int height = (int)round((double)src->surf->h / pixel_size);
+
+    SDL_Surface *temp = scale_to(src, NULL, width, height);
+    intermediate = pgSurface_New(temp);
+    if (intermediate == NULL) {
+        SDL_FreeSurface(temp);
+        return NULL; /* Exception already set in scale_to */
+    }
+
+    new_surf = scale_to(intermediate, dst, src->surf->w, src->surf->h);
+    Py_DECREF(intermediate);
+
+    if (new_surf == NULL) {
+        return NULL; /* Exception already set in scale_to */
+    }
+
+    if (dst) {
+        Py_INCREF(dst);
+        return (PyObject *)dst;
+    }
+
+    return (PyObject *)pgSurface_New(new_surf);
+}
+
 static PyMethodDef _transform_methods[] = {
     {"scale", (PyCFunction)surf_scale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_SCALE},
@@ -4268,6 +4317,8 @@ static PyMethodDef _transform_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SOLIDOVERLAY},
     {"hsl", (PyCFunction)surf_hsl, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_HSL},
+    {"pixelate", (PyCFunction)surf_pixelate, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_PIXELATE},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)
