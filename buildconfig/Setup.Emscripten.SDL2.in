@@ -33,14 +33,13 @@ math src_c/math.c $(SDL) $(DEBUG)
 GFX = src_c/SDL_gfx/SDL_gfxPrimitives.c
 
 
-static src_c/static.c $(SDL) $(FREETYPE) $(FONT) $(MIXER) $(IMAGE) $(PNG) $(JPEG) $(DEBUG)
+static src_c/base.c $(SDL) $(FREETYPE) $(FONT) $(MIXER) $(IMAGE) $(PNG) $(JPEG) $(DEBUG)
 
-# these should not be altered they already are in static.c merging file above
+# these should not be altered they already are in base.c merging file above
 time src_c/void.c
 _freetype src_c/void.c
 imageext src_c/void.c
 image src_c/void.c
-base src_c/void.c
 bufferproxy src_c/void.c
 color src_c/void.c
 controller src_c/void.c
