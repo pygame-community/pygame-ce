@@ -38,8 +38,6 @@ PG_PixelFormatEnum pg_default_convert_format = 0;
 /* Custom exceptions */
 PyObject *pgExc_BufferError = NULL;
 
-PyObject *pgExc_SDLError;
-
 /* Only one instance of the state per process. */
 static PyObject *pg_quit_functions = NULL;
 static int pg_is_init = 0;
