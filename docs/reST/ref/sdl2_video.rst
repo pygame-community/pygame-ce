@@ -378,6 +378,10 @@
       | :sl:`Get or set the logical Renderer size (a device independent resolution for rendering)`
       | :sg:`logical_size -> (int width, int height)`
 
+      Note: When the rendering target is the main window, and ``logical_size``
+      has not been set before, it will contain ``(0, 0)`` and not the size of
+      the window.
+
    .. attribute:: scale
 
       | :sl:`Get the drawing scale for the current rendering target`
