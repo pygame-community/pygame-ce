@@ -510,7 +510,7 @@ renderer_window_to_logical(pgRendererObject *self, PyObject *const *args,
 
     SDL_RenderWindowToLogical(self->renderer, wx, wy, &x, &y);
 
-    return pg_tuple_couple_from_values_int(x, y);
+    return pg_tuple_couple_from_values_double(x, y);
 }
 
 static PyObject *
