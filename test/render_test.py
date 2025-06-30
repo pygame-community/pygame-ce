@@ -165,6 +165,8 @@ class RendererTest(unittest.TestCase):
         self.assertEqual(self.renderer.logical_size, (0, 0))
         self.renderer.logical_size = (10, 10)
         self.assertEqual(self.renderer.logical_size, (10, 10))
+        self.assertEqual(self.renderer.logical_to_window(10, 10), (100, 100))
+        self.assertEqual(self.renderer.window_to_logical(100, 100), (10, 10))
 
     def test_scale(self):
         self.assertEqual(self.renderer.scale, (1.0, 1.0))

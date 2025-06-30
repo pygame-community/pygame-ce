@@ -444,6 +444,76 @@ renderer_set_logical_size(pgRendererObject *self, PyObject *arg, void *closure)
 }
 
 static PyObject *
+renderer_logical_to_window(pgRendererObject *self, PyObject *const *args,
+                           Py_ssize_t nargs)
+{
+    int x, y;
+
+    if (nargs != 2) {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "logical_to_window requires exactly 2 numeric arguments");
+        return NULL;
+    }
+
+    PyObject *logical_x = args[0];
+    PyObject *logical_y = args[1];
+
+    double lx = PyFloat_AsDouble(logical_x);
+    if (PyErr_Occurred()) {
+        PyErr_SetString(PyExc_TypeError,
+                        "The argument logical_x must be a number");
+        return NULL;
+    }
+
+    double ly = PyFloat_AsDouble(logical_y);
+    if (PyErr_Occurred()) {
+        PyErr_SetString(PyExc_TypeError,
+                        "The argument logical_y must be a number");
+        return NULL;
+    }
+
+    SDL_RenderLogicalToWindow(self->renderer, lx, ly, &x, &y);
+
+    return pg_tuple_couple_from_values_int(x, y);
+}
+
+static PyObject *
+renderer_window_to_logical(pgRendererObject *self, PyObject *const *args,
+                           Py_ssize_t nargs)
+{
+    float x, y;
+
+    if (nargs != 2) {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "window_to_logical requires exactly 2 numeric arguments");
+        return NULL;
+    }
+
+    PyObject *window_x = args[0];
+    PyObject *window_y = args[1];
+
+    int wx = (int)PyFloat_AsDouble(window_x);
+    if (PyErr_Occurred()) {
+        PyErr_SetString(PyExc_TypeError,
+                        "The argument window_x must be a number");
+        return NULL;
+    }
+
+    int wy = (int)PyFloat_AsDouble(window_y);
+    if (PyErr_Occurred()) {
+        PyErr_SetString(PyExc_TypeError,
+                        "The argument window_y must be a number");
+        return NULL;
+    }
+
+    SDL_RenderWindowToLogical(self->renderer, wx, wy, &x, &y);
+
+    return pg_tuple_couple_from_values_int(x, y);
+}
+
+static PyObject *
 renderer_get_scale(pgRendererObject *self, void *closure)
 {
     float x, y;
@@ -582,6 +652,10 @@ static PyMethodDef renderer_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT},
     {"get_viewport", (PyCFunction)renderer_get_viewport, METH_NOARGS,
      DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT},
+    {"logical_to_window", (PyCFunction)renderer_logical_to_window,
+     METH_FASTCALL, DOC_SDL2_VIDEO_RENDERER_LOGICALTOWINDOW},
+    {"window_to_logical", (PyCFunction)renderer_window_to_logical,
+     METH_FASTCALL, DOC_SDL2_VIDEO_RENDERER_WINDOWTOLOGICAL},
     {"compose_custom_blend_mode",
      (PyCFunction)renderer_compose_custom_blend_mode,
      METH_VARARGS | METH_KEYWORDS | METH_CLASS,
