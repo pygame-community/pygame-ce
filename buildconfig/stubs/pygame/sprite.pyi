@@ -204,7 +204,7 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def set_timing_treshold(self, time_ms: SupportsFloat) -> None: ...
 
 class GroupSingle(AbstractGroup[_TSprite]):
-    sprite: _TSprite
+    sprite: Optional[_TSprite]
     def __init__(self, sprite: Optional[_TSprite] = None) -> None: ...
 
 # argument to collide_rect must have rect attribute
