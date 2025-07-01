@@ -41,7 +41,8 @@ class _HasImageAndRect(_HasRect, Protocol):
 
 # mask in addition to rect
 class _HasMaskAndRect(_HasRect, Protocol):
-    mask: Mask
+    @property
+    def mask(self) -> Mask: ...
 
 class Sprite:
     @property
