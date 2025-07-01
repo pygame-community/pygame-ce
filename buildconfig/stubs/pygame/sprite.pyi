@@ -43,9 +43,6 @@ class _HasImageAndRect(_HasRect, Protocol):
 class _HasMaskAndRect(_HasRect, Protocol):
     mask: Mask
 
-# non-generic Group, used in Sprite
-_Group = AbstractGroup[Any]
-
 class Sprite:
     @property
     def image(self) -> Optional[Surface]: ...
@@ -60,8 +57,8 @@ class Sprite:
     @layer.setter
     def layer(self, value: int) -> None: ...
     def __init__(self, *groups: _GroupOrGroups[Any]) -> None: ...
-    def add_internal(self, group: _Group) -> None: ...
-    def remove_internal(self, group: _Group) -> None: ...
+    def add_internal(self, group: AbstractGroup[Any]) -> None: ...
+    def remove_internal(self, group: AbstractGroup[Any]) -> None: ...
     def update(self, *args: Any, **kwargs: Any) -> None: ...
     def add(self, *groups: _GroupOrGroups[Any]) -> None: ...
     def remove(self, *groups: _GroupOrGroups[Any]) -> None: ...
@@ -165,7 +162,6 @@ class GroupSingle(AbstractGroup[_TSprite]):
     sprite: Optional[_TSprite]
     def __init__(self, sprite: Optional[_TSprite] = None) -> None: ...
 
-# argument to collide_rect must have rect attribute
 def collide_rect(left: _HasRect, right: _HasRect) -> bool: ...
 
 class collide_rect_ratio:
@@ -173,7 +169,7 @@ class collide_rect_ratio:
     def __init__(self, ratio: float) -> None: ...
     def __call__(self, left: _HasRect, right: _HasRect) -> bool: ...
 
-# must have rect attribute, may optionally have radius attribute
+# Must have rect attribute, may optionally have radius attribute
 _SupportsCollideCircle = _HasRect
 
 def collide_circle(
@@ -187,7 +183,7 @@ class collide_circle_ratio:
         self, left: _SupportsCollideCircle, right: _SupportsCollideCircle
     ) -> bool: ...
 
-# argument to collide_mask must either have mask or have image attribute, in
+# Argument to collide_mask must either have mask or have image attribute, in
 # addition to mandatorily having a rect attribute
 _SupportsCollideMask = Union[_HasImageAndRect, _HasMaskAndRect]
 
@@ -195,7 +191,6 @@ def collide_mask(
     left: _SupportsCollideMask, right: _SupportsCollideMask
 ) -> Optional[tuple[int, int]]: ...
 
-# _HasRect typevar for sprite collide functions
 _THasRect = TypeVar("_THasRect", bound=_HasRect)
 
 def spritecollide(
