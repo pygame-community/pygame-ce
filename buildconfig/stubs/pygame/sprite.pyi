@@ -43,10 +43,6 @@ class _HasImageAndRect(_HasRect, Protocol):
 class _HasMaskAndRect(_HasRect, Protocol):
     mask: Mask
 
-# radius in addition to rect
-class _HasRadiusAndRect(_HasRect, Protocol):
-    radius: float
-
 # non-generic Group, used in Sprite
 _Group = AbstractGroup[Any]
 
@@ -220,7 +216,7 @@ class collide_rect_ratio:
     def __call__(self, left: _HasRect, right: _HasRect) -> bool: ...
 
 # must have rect attribute, may optionally have radius attribute
-_SupportsCollideCircle = Union[_HasRect, _HasRadiusAndRect]
+_SupportsCollideCircle = _HasRect
 
 def collide_circle(
     left: _SupportsCollideCircle, right: _SupportsCollideCircle
