@@ -27,9 +27,7 @@ from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.typing import Point, RectLike
 
-# define some useful protocols first, which sprite functions accept
-# sprite functions don't need all sprite attributes to be present in the
-# arguments passed, they only use a few which are marked in the below protocols
+# Some sprite functions only need objects with certain attributes, not always a sprite
 class _HasRect(Protocol):
     @property
     def rect(self) -> Optional[Union[FRect, Rect]]: ...
@@ -44,7 +42,7 @@ class _HasMaskAndRect(_HasRect, Protocol):
     @property
     def mask(self) -> Mask: ...
 
-class Sprite:
+class Sprite(_HasImageAndRect):
     @property
     def image(self) -> Optional[Surface]: ...
     @image.setter
@@ -112,7 +110,7 @@ class AbstractGroup(Generic[_SpriteT]):
 class Group(AbstractGroup[_SpriteT]):
     def __init__(self, *sprites: _SpriteOrSprites[_SpriteT]) -> None: ...
 
-# these are aliased in the code too
+# These deprecated types are just aliases in the code too
 @deprecated("Use `pygame.sprite.Group` instead")
 class RenderPlain(Group[_SpriteT]): ...
 
@@ -184,7 +182,7 @@ class collide_circle_ratio:
         self, left: _SupportsCollideCircle, right: _SupportsCollideCircle
     ) -> bool: ...
 
-# Argument to collide_mask must either have mask or have image attribute, in
+# Arguments to collide_mask must either have mask or have image attribute, in
 # addition to mandatorily having a rect attribute
 _SupportsCollideMask = Union[_HasImageAndRect, _HasMaskAndRect]
 
