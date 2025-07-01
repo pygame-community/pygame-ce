@@ -75,8 +75,6 @@ class DirtySprite(Sprite):
     source_rect: Union[FRect, Rect]
     visible: int
     _layer: int
-    def _set_visible(self, val: int) -> None: ...
-    def _get_visible(self) -> int: ...
 
 _TSprite = TypeVar("_TSprite", bound=Sprite)
 _TSprite2 = TypeVar("_TSprite2", bound=Sprite)
