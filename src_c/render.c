@@ -462,12 +462,12 @@ renderer_logical_to_window(pgRendererObject *self, PyObject *args,
     float wx, wy;
     SDL_RenderCoordinatesToWindow(self->renderer, lx, ly, &wx, &wy);
 
-    return pg_tuple_couple_from_values_int((int)wx, (int)wy);
+    return pg_tuple_couple_from_values_float(wx, wy);
 #else
     int wx, wy;
     SDL_RenderLogicalToWindow(self->renderer, lx, ly, &wx, &wy);
 
-    return pg_tuple_couple_from_values_int(wx, wy);
+    return pg_tuple_couple_from_values_float((float)wx, (float)wy);
 #endif
 }
 
@@ -639,13 +639,6 @@ static PyMethodDef renderer_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_LOGICALTOWINDOW},
     {"window_to_logical", (PyCFunction)renderer_window_to_logical,
      METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_WINDOWTOLOGICAL},
-    /* Next 2 are aliased from above for SDL2 -> SDL3 transition */
-    {"render_coordinates_to_window", (PyCFunction)renderer_logical_to_window,
-     METH_VARARGS | METH_KEYWORDS,
-     DOC_SDL2_VIDEO_RENDERER_RENDERCOORDINATESTOWINDOW},
-    {"render_coordinates_from_window", (PyCFunction)renderer_window_to_logical,
-     METH_VARARGS | METH_KEYWORDS,
-     DOC_SDL2_VIDEO_RENDERER_RENDERCOORDINATESFROMWINDOW},
     {"compose_custom_blend_mode",
      (PyCFunction)renderer_compose_custom_blend_mode,
      METH_VARARGS | METH_KEYWORDS | METH_CLASS,
