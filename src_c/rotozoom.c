@@ -589,12 +589,11 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
             PG_CreateSurface(dstwidth, dstheight, PG_SURF_FORMATENUM(rz_src));
         if (SDL_HasColorKey(src)) {
             SDL_GetColorKey(src, &colorkey);
-            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+            if (!PG_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
-            if (PG_SurfaceHasRLE(src) &&
-                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+            if (PG_SurfaceHasRLE(src) && !PG_SetSurfaceRLE(rz_dst, SDL_TRUE)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
@@ -649,12 +648,11 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
             PG_CreateSurface(dstwidth, dstheight, PG_SURF_FORMATENUM(rz_src));
         if (SDL_HasColorKey(src)) {
             SDL_GetColorKey(src, &colorkey);
-            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+            if (!PG_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
-            if (PG_SurfaceHasRLE(src) &&
-                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+            if (PG_SurfaceHasRLE(src) && !PG_SetSurfaceRLE(rz_dst, SDL_TRUE)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }

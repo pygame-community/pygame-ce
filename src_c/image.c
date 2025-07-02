@@ -1795,12 +1795,9 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     }
 
     if (h.has_cmap) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (!SDL_SetSurfacePalette(linebuf, surf_palette))
-#else
-        if (SDL_SetSurfacePalette(linebuf, surf_palette) < 0)
-#endif
+        if (!PG_SetSurfacePalette(linebuf, surf_palette)) {
             goto error; /* SDL error already set. */
+        }
     }
 
     if (rle) {
