@@ -444,73 +444,56 @@ renderer_set_logical_size(pgRendererObject *self, PyObject *arg, void *closure)
 }
 
 static PyObject *
-renderer_logical_to_window(pgRendererObject *self, PyObject *const *args,
-                           Py_ssize_t nargs)
+renderer_logical_to_window(pgRendererObject *self, PyObject *args,
+                           PyObject *kwargs)
 {
-    int x, y;
+    float lx, ly;
+    PyObject *point;
 
-    if (nargs != 2) {
-        PyErr_SetString(
-            PyExc_TypeError,
-            "logical_to_window requires exactly 2 numeric arguments");
+    static char *keywords[] = {"point", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &point)) {
         return NULL;
     }
-
-    PyObject *logical_x = args[0];
-    PyObject *logical_y = args[1];
-
-    double lx = PyFloat_AsDouble(logical_x);
-    if (PyErr_Occurred()) {
-        PyErr_SetString(PyExc_TypeError,
-                        "The argument logical_x must be a number");
-        return NULL;
+    if (!pg_TwoFloatsFromObj(point, &lx, &ly)) {
+        return RAISE(PyExc_TypeError, "invalid argument");
     }
 
-    double ly = PyFloat_AsDouble(logical_y);
-    if (PyErr_Occurred()) {
-        PyErr_SetString(PyExc_TypeError,
-                        "The argument logical_y must be a number");
-        return NULL;
-    }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    float wx, wy;
+    SDL_RenderCoordinatesToWindow(self->renderer, lx, ly, &wx, &wy);
 
-    SDL_RenderLogicalToWindow(self->renderer, (float)lx, (float)ly, &x, &y);
+    return pg_tuple_couple_from_values_int((int)wx, (int)wy);
+#else
+    int wx, wy;
+    SDL_RenderLogicalToWindow(self->renderer, lx, ly, &wx, &wy);
 
-    return pg_tuple_couple_from_values_int(x, y);
+    return pg_tuple_couple_from_values_int(wx, wy);
+#endif
 }
 
 static PyObject *
-renderer_window_to_logical(pgRendererObject *self, PyObject *const *args,
-                           Py_ssize_t nargs)
+renderer_window_to_logical(pgRendererObject *self, PyObject *args,
+                           PyObject *kwargs)
 {
-    float x, y;
+    float lx, ly;
+    float wx, wy;
+    PyObject *point;
 
-    if (nargs != 2) {
-        PyErr_SetString(
-            PyExc_TypeError,
-            "window_to_logical requires exactly 2 numeric arguments");
+    static char *keywords[] = {"point", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &point)) {
         return NULL;
     }
-
-    PyObject *window_x = args[0];
-    PyObject *window_y = args[1];
-
-    int wx = (int)PyFloat_AsDouble(window_x);
-    if (PyErr_Occurred()) {
-        PyErr_SetString(PyExc_TypeError,
-                        "The argument window_x must be a number");
-        return NULL;
+    if (!pg_TwoFloatsFromObj(point, &wx, &wy)) {
+        return RAISE(PyExc_TypeError, "invalid argument");
     }
 
-    int wy = (int)PyFloat_AsDouble(window_y);
-    if (PyErr_Occurred()) {
-        PyErr_SetString(PyExc_TypeError,
-                        "The argument window_y must be a number");
-        return NULL;
-    }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_RenderCoordinatesFromWindow(self->renderer, wx, wy, &lx, &ly);
+#else
+    SDL_RenderWindowToLogical(self->renderer, (int)wx, (int)wy, &lx, &ly);
+#endif
 
-    SDL_RenderWindowToLogical(self->renderer, wx, wy, &x, &y);
-
-    return pg_tuple_couple_from_values_double(x, y);
+    return pg_tuple_couple_from_values_double(lx, ly);
 }
 
 static PyObject *
@@ -653,9 +636,16 @@ static PyMethodDef renderer_methods[] = {
     {"get_viewport", (PyCFunction)renderer_get_viewport, METH_NOARGS,
      DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT},
     {"logical_to_window", (PyCFunction)renderer_logical_to_window,
-     METH_FASTCALL, DOC_SDL2_VIDEO_RENDERER_LOGICALTOWINDOW},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_LOGICALTOWINDOW},
     {"window_to_logical", (PyCFunction)renderer_window_to_logical,
-     METH_FASTCALL, DOC_SDL2_VIDEO_RENDERER_WINDOWTOLOGICAL},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_WINDOWTOLOGICAL},
+    /* Next 2 are aliased from above for SDL2 -> SDL3 transition */
+    {"render_coordinates_to_window", (PyCFunction)renderer_logical_to_window,
+     METH_VARARGS | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_RENDERER_RENDERCOORDINATESTOWINDOW},
+    {"render_coordinates_from_window", (PyCFunction)renderer_window_to_logical,
+     METH_VARARGS | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_RENDERER_RENDERCOORDINATESFROMWINDOW},
     {"compose_custom_blend_mode",
      (PyCFunction)renderer_compose_custom_blend_mode,
      METH_VARARGS | METH_KEYWORDS | METH_CLASS,

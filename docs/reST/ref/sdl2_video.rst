@@ -427,18 +427,30 @@
    .. method:: logical_to_window
 
       | :sl:`Translates logical coordinates to window coordinates`
-      | :sg:`logical_to_window(logical_x, logical_y) -> (int, int)`
+      | :sg:`logical_to_window(point) -> (int, int)`
 
-      :param logical_x: The x coordinate in logical space
-      :param logical_y: The y coordinate in logical space
+      :param point: The coordinates in logical space.
 
    .. method:: window_to_logical
 
       | :sl:`Translates window coordinates to logical coordinates`
-      | :sg:`window_to_logical(window_x, window_y) -> (float, float)`
+      | :sg:`window_to_logical(point) -> (float, float)`
 
-      :param window_x: The x coordinate in window space
-      :param window_y: The y coordinate in window space
+      :param point: The coordinates in window space.
+
+   .. method:: render_coordinates_to_window
+
+      | :sl:`Alias for logical_to_window`
+      | :sg:`logical_to_window(point) -> (int, int)`
+
+      :param point: The coordinates in logical space.
+
+   .. method:: render_coordinates_from_window
+
+      | :sl:`Alias for window_to_logical`
+      | :sg:`window_to_logical(point) -> (float, float)`
+
+      :param point: The coordinates in window space.
 
    .. method:: blit
 
