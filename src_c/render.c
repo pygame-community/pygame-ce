@@ -462,12 +462,12 @@ renderer_logical_to_window(pgRendererObject *self, PyObject *args,
     float wx, wy;
     SDL_RenderCoordinatesToWindow(self->renderer, lx, ly, &wx, &wy);
 
-    return pg_tuple_couple_from_values_float(wx, wy);
+    return pg_tuple_couple_from_values_double(wx, wy);
 #else
     int wx, wy;
     SDL_RenderLogicalToWindow(self->renderer, lx, ly, &wx, &wy);
 
-    return pg_tuple_couple_from_values_float((float)wx, (float)wy);
+    return pg_tuple_couple_from_values_double((float)wx, (float)wy);
 #endif
 }
 
