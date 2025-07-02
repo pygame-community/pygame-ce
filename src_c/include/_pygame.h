@@ -208,6 +208,7 @@ typedef struct {
 
 #define pgRect_AsRect(x) (((pgRectObject *)x)->r)
 #define pgFRect_AsRect(x) (((pgFRectObject *)x)->r)
+
 #ifndef PYGAMEAPI_RECT_INTERNAL
 #define pgRect_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(rect, 0))
 
