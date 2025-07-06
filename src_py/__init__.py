@@ -312,15 +312,54 @@ try:
 except (ImportError, OSError):
     scrap = MissingModule("scrap", urgent=0)
 
-try:
-    import pygame.surfarray
-except (ImportError, OSError):
-    surfarray = MissingModule("surfarray", urgent=0)
+# Two lazily imported modules to avoid loading numpy unnecessarily
+
+from importlib.util import LazyLoader, find_spec, module_from_spec
+
+
+def lazy_import(name):
+    """Lazily import a pygame module.
+
+    See https://docs.python.org/3/library/importlib.html#implementing-lazy-imports
+    Only load the module upon its first attribute access.
+
+    Lazily imported modules are directly referenced in packager_imports function.
+    """
+    spec = find_spec("pygame." + name)
+    loader = LazyLoader(spec.loader)
+    spec.loader = loader
+    module = module_from_spec(spec)
+    sys.modules[spec.name] = module
+    loader.exec_module(module)
+    return module
+
+
+# Check if numpy is available for surfarray and sndarray modules
+numpy_missing = find_spec("numpy") is None
 
 try:
-    import pygame.sndarray
+    if numpy_missing:
+        # Always fails here. Need the error message for MissingModule.reason
+        import numpy  # pylint: disable=ungrouped-imports
+    # Check that module dependencies are not missing, or get error message
+    import pygame.pixelcopy  # pylint: disable=ungrouped-imports
+except (ImportError, OSError):
+    surfarray = MissingModule("surfarray", urgent=0)
+else:
+    surfarray = lazy_import("surfarray")
+
+try:
+    if numpy_missing:
+        # Always fails here. Need the error message for MissingModule.reason
+        import numpy  # pylint: disable=ungrouped-imports
+    # Check that module dependencies are not missing, or get error message
+    import pygame.mixer  # pylint: disable=ungrouped-imports
 except (ImportError, OSError):
     sndarray = MissingModule("sndarray", urgent=0)
+else:
+    sndarray = lazy_import("sndarray")
+
+del LazyLoader, find_spec, lazy_import, module_from_spec, numpy_missing
 
 try:
     import pygame._debug
@@ -377,6 +416,10 @@ def packager_imports():
     import OpenGL.GL
     import pygame.macosx
     import pygame.colordict
+
+    # lazy imports
+    import pygame.surfarray
+    import pygame.sndarray
 
 
 # make Rects pickleable
