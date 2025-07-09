@@ -119,7 +119,6 @@ quote-style = "preserve"
 # numpy on platforms that it doesn't have wheels for
 [tool.uv.pip]
 only-binary = ["numpy"]
-prerelease = "allow" # TODO: remove this when numpy has a full pypy 3.11 release
 
 # 1. skip all 32-bit manylinux (i686)
 # 2. skip all pypy+arm combinations
