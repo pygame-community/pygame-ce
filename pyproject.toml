@@ -123,5 +123,5 @@ only-binary = ["numpy"]
 # 1. skip all 32-bit manylinux (i686)
 # 2. skip all pypy+arm combinations
 [[tool.cibuildwheel.overrides]]
-select = "{*-manylinux_i686,pp*-*{arm64,aarch64}}"
+select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64}"
 test-requires = []
