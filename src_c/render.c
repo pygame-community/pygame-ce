@@ -632,7 +632,7 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
              *originobj = Py_None;
     SDL_Rect srcrect, *srcrectptr = NULL;
     SDL_FRect dstrect, *dstrectptr = NULL;
-    SDL_FPoint origin;
+    SDL_FPoint origin, *originprt = NULL;
     double angle = 0;
     int flip_x = 0;
     int flip_y = 0;
@@ -663,6 +663,7 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         if (!pg_TwoFloatsFromObj(originobj, &origin.x, &origin.y)) {
             return RAISE(PyExc_ValueError, "origin must be a point or None");
         }
+        originptr = &origin;
     }
     if (flip_x) {
         flip |= SDL_FLIP_HORIZONTAL;
@@ -672,7 +673,7 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     }
     RENDERER_ERROR_CHECK(SDL_RenderCopyExF(self->renderer->renderer,
                                            self->texture, srcrectptr,
-                                           dstrectptr, angle, &origin, flip))
+                                           dstrectptr, angle, originptr, flip))
     Py_RETURN_NONE;
 }
 
