@@ -494,12 +494,14 @@ renderer_set_target(pgRendererObject *self, PyObject *arg, void *closure)
 {
     if (Py_IsNone(arg)) {
         self->target = NULL;
+        Py_XDECREF(self->target);
         RENDERER_PROPERTY_ERROR_CHECK(
             SDL_SetRenderTarget(self->renderer, NULL))
         return 0;
     }
     else if (pgTexture_Check(arg)) {
         self->target = (pgTextureObject *)arg;
+        Py_XINCREF(self->target);
         RENDERER_PROPERTY_ERROR_CHECK(
             SDL_SetRenderTarget(self->renderer, self->target->texture))
         return 0;
@@ -609,6 +611,7 @@ texture_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     new_texture->renderer = renderer;
+    Py_XINCREF(new_texture->renderer);
     new_texture->width = surf->w;
     new_texture->height = surf->h;
     return (PyObject *)new_texture;
@@ -629,7 +632,7 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
              *originobj = Py_None;
     SDL_Rect srcrect, *srcrectptr = NULL;
     SDL_FRect dstrect, *dstrectptr = NULL;
-    SDL_FPoint origin, *originptr = NULL;
+    SDL_FPoint origin;
     double angle = 0;
     int flip_x = 0;
     int flip_y = 0;
@@ -660,7 +663,6 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         if (!pg_TwoFloatsFromObj(originobj, &origin.x, &origin.y)) {
             return RAISE(PyExc_ValueError, "origin must be a point or None");
         }
-        originptr = &origin;
     }
     if (flip_x) {
         flip |= SDL_FLIP_HORIZONTAL;
@@ -670,7 +672,7 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     }
     RENDERER_ERROR_CHECK(SDL_RenderCopyExF(self->renderer->renderer,
                                            self->texture, srcrectptr,
-                                           dstrectptr, angle, originptr, flip))
+                                           dstrectptr, angle, &origin, flip))
     Py_RETURN_NONE;
 }
 
@@ -991,13 +993,13 @@ texture_get_blend_mode(pgTextureObject *self, void *closure)
 static int
 texture_set_blend_mode(pgTextureObject *self, PyObject *arg, void *closure)
 {
-    if (PyLong_Check(arg)) {
-        long longval = PyLong_AsLong(arg);
-        RENDERER_PROPERTY_ERROR_CHECK(
-            SDL_SetTextureBlendMode(self->texture, (int)longval))
-        return 0;
+    long longval = PyLong_AsLong(arg);
+    if (longval == -1 && PyErr_Occurred()) {
+        return -1;
     }
-    return 1;
+    RENDERER_PROPERTY_ERROR_CHECK(
+        SDL_SetTextureBlendMode(self->texture, (int)longval))
+    return 0;
 }
 
 static PyObject *
@@ -1090,6 +1092,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         access = SDL_TEXTUREACCESS_STATIC;
     }
     self->renderer = renderer;
+    Py_XINCREF(self->renderer);
     self->texture =
         SDL_CreateTexture(renderer->renderer, format, access, width, height);
     if (!self->texture) {
@@ -1234,7 +1237,7 @@ static PyTypeObject pgRenderer_Type = {
     .tp_getset = renderer_getset};
 
 static PyTypeObject pgTexture_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._renderer.Texture",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._render.Texture",
     .tp_basicsize = sizeof(pgTextureObject),
     .tp_dealloc = (destructor)texture_dealloc,
     .tp_doc = DOC_SDL2_VIDEO_TEXTURE,
