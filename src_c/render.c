@@ -632,7 +632,7 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
              *originobj = Py_None;
     SDL_Rect srcrect, *srcrectptr = NULL;
     SDL_FRect dstrect, *dstrectptr = NULL;
-    SDL_FPoint origin, *originprt = NULL;
+    SDL_FPoint origin, *originptr = NULL;
     double angle = 0;
     int flip_x = 0;
     int flip_y = 0;
