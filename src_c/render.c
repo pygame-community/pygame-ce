@@ -455,7 +455,7 @@ renderer_logical_to_window(pgRendererObject *self, PyObject *args,
         return NULL;
     }
     if (!pg_TwoFloatsFromObj(point, &lx, &ly)) {
-        return RAISE(PyExc_TypeError, "invalid argument");
+        return RAISE(PyExc_TypeError, "point must be a sequence of two numbers");
     }
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -484,7 +484,7 @@ renderer_window_to_logical(pgRendererObject *self, PyObject *args,
         return NULL;
     }
     if (!pg_TwoFloatsFromObj(point, &wx, &wy)) {
-        return RAISE(PyExc_TypeError, "invalid argument");
+        return RAISE(PyExc_TypeError, "point must be a sequence of two numbers");
     }
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
