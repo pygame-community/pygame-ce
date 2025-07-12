@@ -167,7 +167,7 @@ class RendererTest(unittest.TestCase):
         self.assertEqual(self.renderer.logical_size, (10, 10))
 
     def test_logical_window_mapping(self):
-        self.renderer.logical_size = (10,10)
+        self.renderer.logical_size = (10, 10)
         self.assertEqual(self.renderer.logical_to_window((10, 10)), (100, 100))
         self.assertEqual(self.renderer.window_to_logical((100, 100)), (10, 10))
         with self.assertRaises(TypeError):
