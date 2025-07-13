@@ -2300,6 +2300,7 @@ static PyObject *
 pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
 {
     int display_count, i;
+    PyObject *result;
 
     VIDEO_INIT_CHECK();
 
@@ -3175,6 +3176,8 @@ static PyMethodDef _pg_display_methods[] = {
      METH_NOARGS, "provisional API, subject to change"},
     {"get_desktop_sizes", (PyCFunction)pg_get_desktop_screen_sizes,
      METH_NOARGS, DOC_DISPLAY_GETDESKTOPSIZES},
+    {"get_desktop_usable_bounds", (PyCFunction)pg_get_desktop_usable_bounds,
+     METH_NOARGS, DOC_DISPLAY_GETDESKTOPUSABLEBOUNDS},
     {"is_fullscreen", (PyCFunction)pg_is_fullscreen, METH_NOARGS,
      DOC_DISPLAY_ISFULLSCREEN},
     {"is_vsync", (PyCFunction)pg_is_vsync, METH_NOARGS, DOC_DISPLAY_ISVSYNC},
