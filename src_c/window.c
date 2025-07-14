@@ -1251,13 +1251,8 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
     if (icon_colorkey != -1) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (!SDL_SetColorKey(pgSurface_AsSurface(icon), SDL_TRUE,
-                             icon_colorkey)) {
-#else
-        if (SDL_SetColorKey(pgSurface_AsSurface(icon), SDL_TRUE,
-                            icon_colorkey) < 0) {
-#endif
+        if (!PG_SetSurfaceColorKey(pgSurface_AsSurface(icon), SDL_TRUE,
+                                   icon_colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             return -1;
         }
@@ -1491,17 +1486,13 @@ MODINIT_DEFINE(window)
         return NULL;
     }
 
-    if (PyType_Ready(&pgWindow_Type) < 0) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (module == 0) {
         return NULL;
     }
 
-    if (PyModule_AddObjectRef(module, "Window", (PyObject *)&pgWindow_Type)) {
+    if (PyModule_AddType(module, &pgWindow_Type)) {
         Py_DECREF(module);
         return NULL;
     }

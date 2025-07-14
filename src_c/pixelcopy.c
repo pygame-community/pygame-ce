@@ -287,12 +287,7 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
                      intsize);
         return -1;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (!SDL_GetSurfaceBlendMode(surf, &mode))
-#else
-    if (SDL_GetSurfaceBlendMode(surf, &mode) < 0)
-#endif
-    {
+    if (!PG_GetSurfaceBlendMode(surf, &mode)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
@@ -739,7 +734,7 @@ array_to_surface(PyObject *self, PyObject *arg)
             else {
                 Uint32 alpha = 0;
                 if (format->Amask) {
-                    alpha = 255 >> Aloss << Ashift;
+                    alpha = 255u >> Aloss << Ashift;
                 }
                 switch (view_p->itemsize) {
                     case sizeof(Uint8):
@@ -1210,8 +1205,8 @@ make_surface(PyObject *self, PyObject *arg)
     if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         /* Give the surface something other than an all white palette.
          *          */
-        if (SDL_SetPaletteColors(palette, default_palette_colors, 0,
-                                 default_palette_size - 1) != 0) {
+        if (!PG_SetPaletteColors(palette, default_palette_colors, 0,
+                                 default_palette_size - 1)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(surf);
             return 0;

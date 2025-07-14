@@ -95,12 +95,7 @@ _PgSurface_SrcAlpha(SDL_Surface *surf)
 {
     if (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(surf))) {
         SDL_BlendMode mode;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (!SDL_GetSurfaceBlendMode(surf, &mode))
-#else
-        if (SDL_GetSurfaceBlendMode(surf, &mode) < 0)
-#endif
-        {
+        if (!PG_GetSurfaceBlendMode(surf, &mode)) {
             return -1;
         }
         if (mode == SDL_BLENDMODE_BLEND) {
@@ -109,7 +104,7 @@ _PgSurface_SrcAlpha(SDL_Surface *surf)
     }
     else {
         Uint8 color = SDL_ALPHA_OPAQUE;
-        if (SDL_GetSurfaceAlphaMod(surf, &color) != 0) {
+        if (!PG_GetSurfaceAlphaMod(surf, &color)) {
             return -1;
         }
         if (color != SDL_ALPHA_OPAQUE) {
@@ -141,7 +136,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
     /* Copy palette, colorkey, etc info */
     if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         SDL_Palette *newsurf_palette = PG_GetSurfacePalette(newsurf);
-        SDL_Palette *surf_palette = PG_GetSurfacePalette(newsurf);
+        SDL_Palette *surf_palette = PG_GetSurfacePalette(surf);
 
         if (newsurf_palette == NULL) {
             PyErr_SetString(
@@ -158,21 +153,21 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
             return NULL;
         }
 
-        if (SDL_SetPaletteColors(newsurf_palette, surf_palette->colors, 0,
-                                 surf_palette->ncolors) != 0) {
+        if (!PG_SetPaletteColors(newsurf_palette, surf_palette->colors, 0,
+                                 surf_palette->ncolors)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
         }
     }
 
-    if (SDL_GetSurfaceAlphaMod(surf, &alpha) != 0) {
+    if (!PG_GetSurfaceAlphaMod(surf, &alpha)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         SDL_FreeSurface(newsurf);
         return NULL;
     }
     if (alpha != 255) {
-        if (SDL_SetSurfaceAlphaMod(newsurf, alpha) != 0) {
+        if (!PG_SetSurfaceAlphaMod(newsurf, alpha)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
@@ -181,7 +176,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
 
     isalpha = _PgSurface_SrcAlpha(surf);
     if (isalpha == 1) {
-        if (SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND) != 0) {
+        if (!PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
@@ -193,7 +188,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         return NULL;
     }
     else {
-        if (SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE) != 0) {
+        if (!PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
@@ -202,13 +197,12 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
 
     if (SDL_HasColorKey(surf)) {
         SDL_GetColorKey(surf, &colorkey);
-        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
+        if (!PG_SetSurfaceColorKey(newsurf, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
         }
-        if (PG_SurfaceHasRLE(surf) &&
-            SDL_SetSurfaceRLE(newsurf, SDL_TRUE) != 0) {
+        if (PG_SurfaceHasRLE(surf) && !PG_SetSurfaceRLE(newsurf, SDL_TRUE)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
@@ -2425,20 +2419,10 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
     int src_lock = SDL_MUSTLOCK(src);
     int dst_lock = src != newsurf && SDL_MUSTLOCK(newsurf);
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (src_lock && !SDL_LockSurface(src))
-#else
-    if (src_lock && SDL_LockSurface(src) < 0)
-#endif
-    {
+    if (src_lock && !PG_LockSurface(src)) {
         return NULL;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (dst_lock && !SDL_LockSurface(newsurf))
-#else
-    if (dst_lock && SDL_LockSurface(newsurf) < 0)
-#endif
-    {
+    if (dst_lock && !PG_LockSurface(newsurf)) {
         if (src_lock) {
             SDL_UnlockSurface(src);
         }
@@ -2701,13 +2685,13 @@ modify_hsl(SDL_Surface *surf, PG_PixelFormat *fmt, SDL_Surface *dst,
 {
     int surf_locked = 0;
     if (SDL_MUSTLOCK(surf)) {
-        if (SDL_LockSurface(surf) == 0) {
+        if (PG_LockSurface(surf)) {
             surf_locked = 1;
         }
     }
     int dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) == 0) {
+        if (PG_LockSurface(dst)) {
             dst_locked = 1;
         }
     }
@@ -2718,7 +2702,7 @@ modify_hsl(SDL_Surface *surf, PG_PixelFormat *fmt, SDL_Surface *dst,
     Uint8 *srcp8 = (Uint8 *)surf->pixels;
     Uint8 *dstp8 = (Uint8 *)dst->pixels;
     SDL_Palette *surf_palette = PG_GetSurfacePalette(surf);
-    SDL_Palette *dst_palette = PG_GetSurfacePalette(surf);
+    SDL_Palette *dst_palette = PG_GetSurfacePalette(dst);
 
     if (PG_FORMAT_BytesPerPixel(fmt) == 4 ||
         PG_FORMAT_BytesPerPixel(fmt) == 3) {

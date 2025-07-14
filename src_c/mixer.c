@@ -444,7 +444,7 @@ _init(int freq, int size, int channels, int chunk, char *devicename,
             SDL_setenv("SDL_AUDIODRIVER", "directsound", 1);
         }
 
-        if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+        if (!PG_InitSubSystem(SDL_INIT_AUDIO)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
 
