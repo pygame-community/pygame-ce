@@ -57,8 +57,8 @@ static PyTypeObject pgImage_Type;
 static int
 texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest);
 
-static image_renderer_draw(pgImageObject *self, PyObject *area,
-                           PyObject *dest);
+static int
+image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest);
 
 /* Renderer implementation */
 static PyObject *
