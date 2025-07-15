@@ -1999,6 +1999,16 @@ RectExport_containsSeq(RectObject *self, PyObject *arg)
         PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
                                          ">' requires rect style object"
                                          " or int as left operand");
+        if (strcmp(ObjectName, "pygame.rect.FRect") == 0) {
+            PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
+                                             ">' requires rect style object"
+                                             " or float as left operand");
+        }
+        else {
+            PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
+                                             ">' requires rect style object"
+                                             " or int as left operand");
+        }
     }
     return ret;
 }
