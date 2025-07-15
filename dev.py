@@ -359,7 +359,7 @@ class Dev:
 
         # Build command
         build_parser = subparsers.add_parser(
-            "build", help="Build the project", aliases=["install"]
+            "build", help="Build and install the project", aliases=["install"]
         )
         build_parser.add_argument(
             "--wheel",
