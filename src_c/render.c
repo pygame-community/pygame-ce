@@ -35,28 +35,30 @@ static PyTypeObject pgImage_Type;
         return RAISE(PyExc_TypeError, "invalid " #name " argument"); \
     }
 
-#define PARSE_COLOR(obj, r, g, b, a, name)                               \
-    if (Py_IsNone(obj)) {                                                \
-        r = 255;                                                         \
-        g = 255;                                                         \
-        b = 255;                                                         \
-        a = 255;                                                         \
-    }                                                                    \
-    else {                                                               \
-        if (!pg_IntFromObjIndex(obj, 0, &r) ||                           \
-            !pg_IntFromObjIndex(obj, 1, &g) ||                           \
-            !pg_IntFromObjIndex(obj, 2, &b)) {                           \
-            return RAISE(PyExc_TypeError, "invalid " #name " argument"); \
-        }                                                                \
-        if (PySequence_Size(obj) == 4)                                   \
-            pg_IntFromObjIndex(obj, 3, &a);                              \
+#define PARSE_COLOR(obj, rgba)                                   \
+    if (Py_IsNone(obj)) {                                        \
+        rgba[0] = 255;                                           \
+        rgba[1] = 255;                                           \
+        rgba[2] = 255;                                           \
+        rgba[3] = 255;                                           \
+    }                                                            \
+    else {                                                       \
+        if (!pg_RGBAFromObjEx(obj, rgba, PG_COLOR_HANDLE_ALL)) { \
+            return NULL;                                         \
+        }                                                        \
     }
 
-static void
+#define SET_VERTEX_COLOR(vertex, texture_mods, vertex_mods)     \
+    vertex.color.r = (Uint8)(texture_mods[0] * vertex_mods[0]); \
+    vertex.color.g = (Uint8)(texture_mods[1] * vertex_mods[1]); \
+    vertex.color.b = (Uint8)(texture_mods[2] * vertex_mods[2]); \
+    vertex.color.a = (Uint8)(texture_mods[3] * vertex_mods[3]);
+
+static int
 texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest);
 
-static void
-image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest);
+static image_renderer_draw(pgImageObject *self, PyObject *area,
+                           PyObject *dest);
 
 /* Renderer implementation */
 static PyObject *
@@ -378,10 +380,16 @@ renderer_blit(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (pgTexture_Check(sourceobj)) {
-        texture_renderer_draw((pgTextureObject *)sourceobj, areaobj, destobj);
+        if (!texture_renderer_draw((pgTextureObject *)sourceobj, areaobj,
+                                   destobj)) {
+            return NULL;
+        }
     }
     else if (pgImage_Check(sourceobj)) {
-        image_renderer_draw((pgImageObject *)sourceobj, areaobj, destobj);
+        if (!image_renderer_draw((pgImageObject *)sourceobj, areaobj,
+                                 destobj)) {
+            return NULL;
+        }
     }
     else {
         if (!PyObject_CallFunctionObjArgs(
@@ -492,9 +500,9 @@ renderer_get_target(pgRendererObject *self, void *closure)
 static int
 renderer_set_target(pgRendererObject *self, PyObject *arg, void *closure)
 {
+    Py_XDECREF(self->target);
     if (Py_IsNone(arg)) {
         self->target = NULL;
-        Py_XDECREF(self->target);
         RENDERER_PROPERTY_ERROR_CHECK(
             SDL_SetRenderTarget(self->renderer, NULL))
         return 0;
@@ -562,7 +570,7 @@ renderer_dealloc(pgRendererObject *self, PyObject *_null)
 }
 
 /* Texture implementation */
-static void
+static int
 texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
 {
     SDL_Rect srcrect, *srcrectptr = NULL;
@@ -571,6 +579,7 @@ texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
         if (!(srcrectptr = pgRect_FromObject(area, &srcrect))) {
             PyErr_SetString(PyExc_ValueError,
                             "srcrect must be a Rect or None");
+            return 0;
         }
     }
     if (!Py_IsNone(dest)) {
@@ -578,6 +587,7 @@ texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
             if (!pg_TwoFloatsFromObj(dest, &dstrect.x, &dstrect.y)) {
                 PyErr_SetString(PyExc_ValueError,
                                 "dstrect must be a point, Rect, or None");
+                return 0;
             }
             dstrect.w = (float)self->width;
             dstrect.h = (float)self->height;
@@ -586,7 +596,9 @@ texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
     if (SDL_RenderCopyExF(self->renderer->renderer, self->texture, srcrectptr,
                           dstrectptr, 0, NULL, SDL_FLIP_NONE) < 0) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return 0;
     }
+    return 1;
 }
 
 static PyObject *
@@ -595,21 +607,22 @@ texture_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     pgRendererObject *renderer;
     pgSurfaceObject *surfobj;
     pgTextureObject *new_texture;
+    SDL_Texture *texture;
     SDL_Surface *surf = NULL;
     static char *keywords[] = {"renderer", "surface", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", keywords, &renderer,
                                      &pgSurface_Type, &surfobj)) {
         return NULL; /* Exception already set. */
     }
-    new_texture =
-        (pgTextureObject *)(&(pgTexture_Type))->tp_alloc(&pgTexture_Type, 0);
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
-    new_texture->texture =
-        SDL_CreateTextureFromSurface(renderer->renderer, surf);
-    if (!new_texture->texture) {
+    texture = SDL_CreateTextureFromSurface(renderer->renderer, surf);
+    if (!texture) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
+    new_texture =
+        (pgTextureObject *)(&(pgTexture_Type))->tp_alloc(&pgTexture_Type, 0);
+    new_texture->texture = texture;
     new_texture->renderer = renderer;
     Py_XINCREF(new_texture->renderer);
     new_texture->width = surf->w;
@@ -684,9 +697,9 @@ texture_draw_triangle(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     PyObject *p1_xyobj, *p2_xyobj, *p3_xyobj,
         *p1_uvobj = Py_None, *p2_uvobj = Py_None, *p3_uvobj = Py_None,
         *p1_modobj = Py_None, *p2_modobj = Py_None, *p3_modobj = Py_None;
-    Uint8 _r_mod, _g_mod, _b_mod, _a_mod;
-    float r_mod, g_mod, b_mod, a_mod;
-    int p1_mod[4], p2_mod[4], p3_mod[4];
+    Uint8 texture_mods[4];
+    float mods[4];
+    Uint8 p1_mod[4], p2_mod[4], p3_mod[4];
     SDL_Vertex vertices[3];
     static char *keywords[] = {"p1_xy", "p2_xy",  "p3_xy",  "p1_uv",  "p2_uv",
                                "p3_uv", "p1_mod", "p2_mod", "p3_mod", NULL};
@@ -729,31 +742,20 @@ texture_draw_triangle(pgTextureObject *self, PyObject *args, PyObject *kwargs)
                     "p3_uv")
     }
     /* Parse color */
-    PARSE_COLOR(p1_modobj, p1_mod[0], p1_mod[1], p1_mod[2], p1_mod[3],
-                "p1_mod")
-    PARSE_COLOR(p2_modobj, p2_mod[0], p2_mod[1], p2_mod[2], p2_mod[3],
-                "p2_mod")
-    PARSE_COLOR(p3_modobj, p3_mod[0], p3_mod[1], p3_mod[2], p3_mod[3],
-                "p3_mod")
+    PARSE_COLOR(p1_modobj, p1_mod)
+    PARSE_COLOR(p2_modobj, p2_mod)
+    PARSE_COLOR(p3_modobj, p3_mod)
+    RENDERER_ERROR_CHECK(SDL_GetTextureColorMod(
+        self->texture, &texture_mods[0], &texture_mods[1], &texture_mods[2]));
     RENDERER_ERROR_CHECK(
-        SDL_GetTextureColorMod(self->texture, &_r_mod, &_g_mod, &_b_mod));
-    RENDERER_ERROR_CHECK(SDL_GetTextureAlphaMod(self->texture, &_a_mod));
-    r_mod = _r_mod / (float)255.0;
-    g_mod = _g_mod / (float)255.0;
-    b_mod = _b_mod / (float)255.0;
-    a_mod = _a_mod / (float)255.0;
-    vertices[0].color.r = (int)r_mod * p1_mod[0];
-    vertices[0].color.g = (int)g_mod * p1_mod[1];
-    vertices[0].color.b = (int)b_mod * p1_mod[2];
-    vertices[0].color.a = (int)a_mod * p1_mod[3];
-    vertices[1].color.r = (int)r_mod * p2_mod[0];
-    vertices[1].color.g = (int)g_mod * p2_mod[1];
-    vertices[1].color.b = (int)b_mod * p2_mod[2];
-    vertices[1].color.a = (int)a_mod * p2_mod[3];
-    vertices[2].color.r = (int)r_mod * p3_mod[0];
-    vertices[2].color.g = (int)g_mod * p3_mod[1];
-    vertices[2].color.b = (int)b_mod * p3_mod[2];
-    vertices[2].color.a = (int)a_mod * p3_mod[3];
+        SDL_GetTextureAlphaMod(self->texture, &texture_mods[3]));
+    mods[0] = texture_mods[0] / (float)255.0;
+    mods[1] = texture_mods[1] / (float)255.0;
+    mods[2] = texture_mods[2] / (float)255.0;
+    mods[3] = texture_mods[3] / (float)255.0;
+    SET_VERTEX_COLOR(vertices[0], mods, p1_mod);
+    SET_VERTEX_COLOR(vertices[1], mods, p2_mod);
+    SET_VERTEX_COLOR(vertices[2], mods, p3_mod);
     RENDERER_ERROR_CHECK(SDL_RenderGeometry(
         self->renderer->renderer, self->texture, vertices, 3, NULL, 0))
     Py_RETURN_NONE;
@@ -771,11 +773,10 @@ texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         *p1_uvobj = Py_None, *p2_uvobj = Py_None, *p3_uvobj = Py_None,
         *p4_uvobj = Py_None, *p1_modobj = Py_None, *p2_modobj = Py_None,
         *p3_modobj = Py_None, *p4_modobj = Py_None;
-    Uint8 _r_mod, _g_mod, _b_mod, _a_mod;
-    float r_mod, g_mod, b_mod, a_mod;
+    Uint8 texture_mods[4];
+    float mods[4];
+    Uint8 p1_mod[4], p2_mod[4], p3_mod[4], p4_mod[4];
     SDL_Vertex vertices[6];
-    int p1_mod[] = {255, 255, 255, 255}, p2_mod[] = {255, 255, 255, 255},
-        p3_mod[] = {255, 255, 255, 255}, p4_mod[] = {255, 255, 255, 255};
     static char *keywords[] = {"p1_xy",  "p2_xy",  "p3_xy", "p4_xy",  "p1_uv",
                                "p2_uv",  "p3_uv",  "p4_uv", "p1_mod", "p2_mod",
                                "p3_mod", "p4_mod", NULL};
@@ -832,38 +833,23 @@ texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     }
     vertices[5].tex_coord = vertices[0].tex_coord;
     /* Parse color */
-    PARSE_COLOR(p1_modobj, p1_mod[0], p1_mod[1], p1_mod[2], p1_mod[3],
-                "p1_mod")
-    PARSE_COLOR(p2_modobj, p2_mod[0], p2_mod[1], p2_mod[2], p2_mod[3],
-                "p2_mod")
-    PARSE_COLOR(p3_modobj, p3_mod[0], p3_mod[1], p3_mod[2], p3_mod[3],
-                "p3_mod")
-    PARSE_COLOR(p4_modobj, p4_mod[0], p4_mod[1], p4_mod[2], p4_mod[3],
-                "p4_mod")
+    PARSE_COLOR(p1_modobj, p1_mod)
+    PARSE_COLOR(p2_modobj, p2_mod)
+    PARSE_COLOR(p3_modobj, p3_mod)
+    PARSE_COLOR(p4_modobj, p4_mod)
+    RENDERER_ERROR_CHECK(SDL_GetTextureColorMod(
+        self->texture, &texture_mods[0], &texture_mods[1], &texture_mods[2]));
     RENDERER_ERROR_CHECK(
-        SDL_GetTextureColorMod(self->texture, &_r_mod, &_g_mod, &_b_mod));
-    RENDERER_ERROR_CHECK(SDL_GetTextureAlphaMod(self->texture, &_a_mod));
-    r_mod = _r_mod / (float)255.0;
-    g_mod = _g_mod / (float)255.0;
-    b_mod = _b_mod / (float)255.0;
-    a_mod = _a_mod / (float)255.0;
-    vertices[0].color.r = (int)r_mod * p1_mod[0];
-    vertices[0].color.g = (int)g_mod * p1_mod[1];
-    vertices[0].color.b = (int)b_mod * p1_mod[2];
-    vertices[0].color.a = (int)a_mod * p1_mod[3];
-    vertices[1].color.r = (int)r_mod * p2_mod[0];
-    vertices[1].color.g = (int)g_mod * p2_mod[1];
-    vertices[1].color.b = (int)b_mod * p2_mod[2];
-    vertices[1].color.a = (int)a_mod * p2_mod[3];
-    vertices[2].color.r = (int)r_mod * p3_mod[0];
-    vertices[2].color.g = (int)g_mod * p3_mod[1];
-    vertices[2].color.b = (int)b_mod * p3_mod[2];
-    vertices[2].color.a = (int)a_mod * p3_mod[3];
+        SDL_GetTextureAlphaMod(self->texture, &texture_mods[3]));
+    mods[0] = texture_mods[0] / (float)255.0;
+    mods[1] = texture_mods[1] / (float)255.0;
+    mods[2] = texture_mods[2] / (float)255.0;
+    mods[3] = texture_mods[3] / (float)255.0;
+    SET_VERTEX_COLOR(vertices[0], mods, p1_mod);
+    SET_VERTEX_COLOR(vertices[1], mods, p2_mod);
+    SET_VERTEX_COLOR(vertices[2], mods, p3_mod);
     vertices[3].color = vertices[2].color;
-    vertices[4].color.r = (int)r_mod * p4_mod[0];
-    vertices[4].color.g = (int)g_mod * p4_mod[1];
-    vertices[4].color.b = (int)b_mod * p4_mod[2];
-    vertices[4].color.a = (int)a_mod * p4_mod[3];
+    SET_VERTEX_COLOR(vertices[4], mods, p4_mod);
     vertices[5].color = vertices[0].color;
     RENDERER_ERROR_CHECK(SDL_RenderGeometry(
         self->renderer->renderer, self->texture, vertices, 6, NULL, 0))
@@ -1097,7 +1083,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     self->texture =
         SDL_CreateTexture(renderer->renderer, format, access, width, height);
     if (!self->texture) {
-        RAISERETURN(PyExc_ValueError, "Debug?", -1)
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1)
     }
     if (scale_quality != -1) {
 #if SDL_VERSION_ATLEAST(2, 0, 12)
@@ -1132,10 +1118,10 @@ texture_dealloc(pgTextureObject *self, PyObject *_null)
 }
 
 /* Image implementation */
-static void
+static int
 image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
 {
-    return;
+    return 1;
 }
 
 /* Module definition */

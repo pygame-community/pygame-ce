@@ -121,9 +121,9 @@ class Texture:
         p1_uv: Point = (0.0, 0.0),
         p2_uv: Point = (1.0, 1.0),
         p3_uv: Point = (0.0, 1.0),
-        p1_mod: Iterable[int] = (255, 255, 255, 255),
-        p2_mod: Iterable[int] = (255, 255, 255, 255),
-        p3_mod: Iterable[int] = (255, 255, 255, 255),
+        p1_mod: ColorLike = (255, 255, 255, 255),
+        p2_mod: ColorLike = (255, 255, 255, 255),
+        p3_mod: ColorLike = (255, 255, 255, 255),
     ) -> None: ...
     def draw_quad(
         self,
@@ -135,10 +135,10 @@ class Texture:
         p2_uv: Point = (1.0, 0.0),
         p3_uv: Point = (1.0, 1.0),
         p4_uv: Point = (0.0, 1.0),
-        p1_mod: Iterable[int] = (255, 255, 255, 255),
-        p2_mod: Iterable[int] = (255, 255, 255, 255),
-        p3_mod: Iterable[int] = (255, 255, 255, 255),
-        p4_mod: Iterable[int] = (255, 255, 255, 255),
+        p1_mod: ColorLike = (255, 255, 255, 255),
+        p2_mod: ColorLike = (255, 255, 255, 255),
+        p3_mod: ColorLike = (255, 255, 255, 255),
+        p4_mod: ColorLike = (255, 255, 255, 255),
     ) -> None: ...
     def get_rect(self, **kwargs: Any) -> Rect: ...
     def update(self, surface: Surface, area: Optional[RectLike] = None) -> None: ...
