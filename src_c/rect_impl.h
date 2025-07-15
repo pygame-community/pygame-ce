@@ -1994,21 +1994,16 @@ RectExport_containsSeq(RectObject *self, PyObject *arg)
         return coord == self->r.x || coord == self->r.y ||
                coord == self->r.w || coord == self->r.h;
     }
+
     int ret = RectExport_contains_internal(self, (PyObject *const *)&arg, 1);
     if (ret < 0) {
-        PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
-                                         ">' requires rect style object"
-                                         " or int as left operand");
-        if (strcmp(ObjectName, "pygame.rect.FRect") == 0) {
-            PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
-                                             ">' requires rect style object"
-                                             " or float as left operand");
-        }
-        else {
-            PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
-                                             ">' requires rect style object"
-                                             " or int as left operand");
-        }
+        const char *operand_type =
+            strcmp(ObjectName, "pygame.rect.FRect") == 0 ? "float" : "int";
+
+        PyErr_Format(
+            PyExc_TypeError,
+            "'in %s' requires rect style object or %s as left operand",
+            ObjectName, operand_type);
     }
     return ret;
 }
