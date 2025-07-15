@@ -1998,7 +1998,7 @@ RectExport_containsSeq(RectObject *self, PyObject *arg)
     int ret = RectExport_contains_internal(self, (PyObject *const *)&arg, 1);
     if (ret < 0) {
         const char *operand_type =
-            strcmp(ObjectName, "pygame.rect.FRect") == 0 ? "float" : "int";
+            pgFRect_Check((PyObject *)self) ? "float" : "int";
 
         PyErr_Format(
             PyExc_TypeError,
