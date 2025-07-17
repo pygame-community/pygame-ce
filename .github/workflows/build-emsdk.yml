@@ -16,7 +16,9 @@ on:
       - '!.github/workflows/build-emsdk.yml'
 
   pull_request:
-    branches: main
+    branches:
+      - main
+      - 2.5.5-branch
     paths-ignore:
       - 'docs/**'
       - 'examples/**'

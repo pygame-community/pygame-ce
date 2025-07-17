@@ -18,7 +18,9 @@ on:
       - '!.github/workflows/build-sdl3.yml'
 
   pull_request:
-    branches: main
+    branches:
+      - main
+      - 2.5.5-branch
     paths-ignore:
       - 'docs/**'
       - 'examples/**'
