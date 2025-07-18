@@ -431,12 +431,17 @@
 
       :param point: The coordinates in logical space.
 
+      .. versionadded:: 2.5.6
+
+
    .. method:: window_to_logical
 
       | :sl:`Translates window coordinates to logical coordinates`
       | :sg:`window_to_logical(point) -> (float, float)`
 
       :param point: The coordinates in window space.
+
+      .. versionadded:: 2.5.6
 
    .. method:: blit
 
