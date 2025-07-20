@@ -9,6 +9,7 @@ from typing import (
     SupportsFloat,
     TypeVar,
     Union,
+    overload,
 )
 
 # use typing_extensions for compatibility with older Python versions
@@ -22,6 +23,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
+from pygame._sdl2.video import Renderer, Texture
 from pygame.mask import Mask
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
@@ -37,7 +39,7 @@ class _HasRect(Protocol):
 # image in addition to rect
 class _HasImageAndRect(_HasRect, Protocol):
     @property
-    def image(self) -> Optional[Surface]: ...
+    def image(self) -> Optional[Union[Surface, Texture]]: ...
 
 # mask in addition to rect
 class _HasMaskAndRect(_HasRect, Protocol):
@@ -54,9 +56,9 @@ _Group = AbstractGroup[Any]
 # and allows the use of any class with the required attributes and methods
 class _SupportsSprite(_HasImageAndRect, Protocol):
     @property
-    def image(self) -> Optional[Surface]: ...
+    def image(self) -> Optional[Union[Surface, Texture]]: ...
     @image.setter
-    def image(self, value: Optional[Surface]) -> None: ...
+    def image(self, value: Optional[Union[Surface, Texture]]) -> None: ...
     @property
     def rect(self) -> Optional[Union[FRect, Rect]]: ...
     @rect.setter
@@ -87,9 +89,9 @@ class _SupportsDirtySprite(_SupportsSprite, Protocol):
 # concrete sprite implementation class
 class Sprite(_SupportsSprite):
     @property
-    def image(self) -> Optional[Surface]: ...
+    def image(self) -> Optional[Union[Surface, Texture]]: ...
     @image.setter
-    def image(self, value: Optional[Surface]) -> None: ...
+    def image(self, value: Optional[Union[Surface, Texture]]) -> None: ...
     @property
     def rect(self) -> Optional[Union[FRect, Rect]]: ...
     @rect.setter
@@ -146,7 +148,10 @@ class AbstractGroup(Generic[_TSprite]):
     def has(self, *sprites: _SpriteOrIterable[_TSprite]) -> bool: ...
     def update(self, *args: Any, **kwargs: Any) -> None: ...
     def draw(
-        self, surface: Surface, bgd: Optional[Surface] = None, special_flags: int = 0
+        self,
+        surface: Union[Surface, Renderer],
+        bgd: Optional[Surface] = None,
+        special_flags: int = 0,
     ) -> list[Union[FRect, Rect]]: ...
     def clear(
         self,
@@ -192,7 +197,7 @@ class LayeredUpdates(AbstractGroup[_TSprite]):
 class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def draw(
         self,
-        surface: Surface,
+        surface: Union[Surface, Renderer],
         bgd: Optional[Surface] = None,
         special_flags: Optional[int] = None,
     ) -> list[Union[FRect, Rect]]: ...
