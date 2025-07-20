@@ -20,10 +20,6 @@
   pete@shinners.org
 */
 
-#if defined(__EMSCRIPTEN__) || defined(__wasi__)
-#define BUILD_STATIC 1
-#endif
-
 #if defined(BUILD_STATIC)
 #define PYGAMEAPI_RECT_INTERNAL
 #define PYGAMEAPI_EVENT_INTERNAL
@@ -2076,11 +2072,13 @@ pg_uninstall_parachute(void)
 #endif
 }
 
-
 #if defined(BUILD_STATIC)
-static PyObject * mod_pygame_import_cython(PyObject *self, PyObject *spec);
-void PyInit_pygame_static();
-PyObject *load_submodule(const char *parent, PyObject *mod, const char *alias);
+static PyObject *
+mod_pygame_import_cython(PyObject *self, PyObject *spec);
+void
+PyInit_pygame_static();
+PyObject *
+load_submodule(const char *parent, PyObject *mod, const char *alias);
 #endif
 
 /* bind functions to python */
@@ -2104,7 +2102,6 @@ static PyMethodDef _base_methods[] = {
 #endif
     {NULL, NULL, 0, NULL}};
 
-
 volatile void *c_api[PYGAMEAPI_BASE_NUMSLOTS];
 
 MODINIT_DEFINE(base)
@@ -2121,7 +2118,6 @@ MODINIT_DEFINE(base)
                                          NULL,
                                          NULL,
                                          NULL};
-
 
     PyObject *module, *apiobj;
 
@@ -2148,7 +2144,6 @@ MODINIT_DEFINE(base)
     if (!module) {
         goto error;
     }
-
 
 #if defined(BUILD_STATIC)
     load_submodule("pygame", module, "base");
@@ -2258,9 +2253,9 @@ MODINIT_DEFINE(base)
 #ifdef MS_WIN32
     SDL_RegisterApp("pygame", 0, GetModuleHandle(NULL));
 #endif
-#else // !BUILD_STATIC
+#else   // !BUILD_STATIC
     PyInit_pygame_static();
-#endif // BUILD_STATIC
+#endif  // BUILD_STATIC
     return module;
 
 error:
@@ -2441,7 +2436,6 @@ PyInit_system(void);
 PyMODINIT_FUNC
 PyInit_transform(void);
 
-
 PyMODINIT_FUNC
 PyInit__sprite(void);
 
@@ -2464,24 +2458,24 @@ PyMODINIT_FUNC
 PyInit__render(void);
 
 // pygame _sdl2
+#if !defined(NO_SDL2)
 
 PyMODINIT_FUNC
 PyInit_sdl2(void);
-/*
+
 PyMODINIT_FUNC
 PyInit_sdl2_controller(void);
 
 PyMODINIT_FUNC
 PyInit_sdl2_mixer(void);
 
-
 PyMODINIT_FUNC
 PyInit_sdl2_audio(void);
 
 PyMODINIT_FUNC
 PyInit_sdl2_video(void);
-*/
 
+#endif
 
 // pygame_static module
 
@@ -2554,13 +2548,15 @@ load_submodule_mphase(const char *parent, PyObject *mdef, PyObject *spec,
 static PyObject *
 mod_pygame_import_cython(PyObject *self, PyObject *spec)
 {
-/*
+#if defined(NO_SDL2)
+#pragma message "WARNING: pygame._sdl2.* are disabled"
+#else
     load_submodule_mphase("pygame._sdl2", PyInit_sdl2(), spec, "sdl2");
     load_submodule_mphase("pygame._sdl2", PyInit_mixer(), spec, "mixer");
     load_submodule("pygame._sdl2", PyInit_controller(), "controller");
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
-*/
+#endif
 
     Py_RETURN_NONE;
 }
@@ -2737,7 +2733,7 @@ PyInit_pygame_static()
 #include "geometry.c"
 
 #if defined(DEC_CONST)
-    #undef DEC_CONST
+#undef DEC_CONST
 #endif
 #include "_freetype.c"
 #include "freetype/ft_wrap.c"
@@ -2776,6 +2772,4 @@ PyInit_pygame_static()
 
 #include "math.c"
 
-
-#endif  // defined(BUILD_STATIC)
-
+#endif  // BUILD_STATIC
