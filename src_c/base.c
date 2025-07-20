@@ -2560,16 +2560,7 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
 
     Py_RETURN_NONE;
 }
-/*
-static PyMethodDef mod_pygame_static_methods[] = {
-    {"import_cython", (PyCFunction)mod_pygame_import_cython, METH_O,
-     "pygame._sdl2.*"},
-    {NULL, NULL, 0, NULL}};
 
-static struct PyModuleDef mod_pygame_static = {PyModuleDef_HEAD_INIT,
-                                               "pygame_static", NULL, -1,
-                                               mod_pygame_static_methods};
-*/
 void
 PyInit_pygame_static()
 {
