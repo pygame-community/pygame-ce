@@ -9,6 +9,18 @@ from pygame.tests import test_utils
 from pygame.tests.test_utils import example_path
 
 
+def surfaces_have_same_pixels(surf1, surf2):
+    if surf1.get_size() != surf2.get_size():
+        return False
+
+    for row in range(surf1.get_height()):
+        for col in range(surf1.get_width()):
+            if surf1.get_at((col, row)) != surf2.get_at((col, row)):
+                return False
+
+    return True
+
+
 def show_image(s, images=[]):
     # pygame.display.init()
     size = s.get_rect()[2:]
@@ -1858,6 +1870,42 @@ class TransformModuleTest(unittest.TestCase):
                 smaller_surface.get_at(((k // 2), 0)), pygame.Color(127, 127, 127)
             )
             self.assertEqual(smaller_surface.get_size(), (k, 1))
+
+    def test_pixelate(self):
+        """Test pygame.transform.pixelate"""
+        # test that pixelating the original with a pixel_size of 1 yields the original back
+        data_fname = example_path("data")
+        path = os.path.join(data_fname, "alien3.png")
+        image = pygame.image.load(path)  # Get an indexed surface.
+
+        no_change = pygame.transform.pixelate(image, 1)
+
+        self.assertTrue(surfaces_have_same_pixels(image, no_change))
+
+        # test that pixelating a square image with a pixel_size equal to the side length
+        # yields a surface of a single color, which is the average of the surf
+        square = pygame.transform.scale(image, (50, 50))
+        square_pixelated = pygame.transform.pixelate(square, 50)
+        square_resized = pygame.transform.scale(
+            pygame.transform.scale(square, (1, 1)), square.get_size()
+        )
+
+        self.assertTrue(surfaces_have_same_pixels(square_pixelated, square_resized))
+
+        # test a variety of arguments raise an exception
+        for arg in (0, -1):
+            with self.assertRaises(ValueError, msg=f"Running with pixel_size = {arg}"):
+                pygame.transform.pixelate(image, arg)
+
+        for arg in (-1_000_000_000_000_000_000, 1_000_000_000_000_000_000):
+            with self.assertRaises(
+                OverflowError, msg=f"Running with pixel_size = {arg}"
+            ):
+                pygame.transform.pixelate(image, arg)
+
+        for arg in ("one", 1.0, None):
+            with self.assertRaises(TypeError, msg=f"Running with pixel_size = {arg}"):
+                pygame.transform.pixelate(image, arg)
 
 
 class TransformDisplayModuleTest(unittest.TestCase):

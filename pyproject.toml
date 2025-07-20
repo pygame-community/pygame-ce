@@ -60,6 +60,7 @@ requires = [
   "sphinx<=8.1.3",
   "sphinx-autoapi<=3.3.2",
   "pyproject-metadata!=0.9.1",
+  "astroid<=3.3.8",
 ]
 build-backend = 'mesonpy'
 
