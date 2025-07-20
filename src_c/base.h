@@ -56,6 +56,7 @@ typedef struct pg_view_internals_s {
 
 extern PG_PixelFormatEnum pg_default_convert_format;
 extern PyObject *pgExc_BufferError;
+extern PyObject *pgExc_SDLError;
 extern SDL_Window *pg_default_window;
 extern pgSurfaceObject *pg_default_screen;
 

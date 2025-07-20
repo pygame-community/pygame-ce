@@ -24,13 +24,25 @@
 #define BUILD_STATIC 1
 #endif
 
+#if defined(BUILD_STATIC)
+#define CONTROLLER_NOPYX
+#define PYGAMEAPI_RECT_INTERNAL
+#define PYGAMEAPI_EVENT_INTERNAL
+#define PYGAMEAPI_JOYSTICK_INTERNAL
+#define PYGAMEAPI_BASE_INTERNAL
+#define PYGAMEAPI_SURFACE_INTERNAL
+#define PYGAMEAPI_BUFFERPROXY_INTERNAL
+#define PYGAMEAPI_WINDOW_INTERNAL
+#define PYGAMEAPI_RENDER_INTERNAL
+#endif
+
 #include "base.h"
 
 PG_PixelFormatEnum pg_default_convert_format = 0;
 
 /* Custom exceptions */
-volatile PyObject *pgExc_BufferError = NULL;
-volatile PyObject *pgExc_SDLError = NULL;
+PyObject *pgExc_BufferError = NULL;
+PyObject *pgExc_SDLError = NULL;
 
 /* Only one instance of the state per process. */
 static PyObject *pg_quit_functions = NULL;
@@ -2087,10 +2099,7 @@ MODINIT_DEFINE(base)
 {
     PyObject *module, *apiobj, *atexit;
     PyObject *atexit_register;
-#if !(defined(BUILD_STATIC) && defined(NO_PYGAME_C_API))
-    // only pointer via C-api will be used, no need to keep global.
-    PyObject *pgExc_SDLError;
-#endif
+
     static void *c_api[PYGAMEAPI_BASE_NUMSLOTS];
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
@@ -2409,10 +2418,8 @@ PyInit_pg_math(void);
 PyMODINIT_FUNC
 PyInit_pg_time(void);
 
-
 PyMODINIT_FUNC
 PyInit_system(void);
-
 
 PyMODINIT_FUNC
 PyInit_transform(void);
@@ -2741,7 +2748,7 @@ PyInit_pygame_static()
 // #include "_sdl2/controller_old.c"
 // #include "_sdl2/mixer.c"
 #include "_sdl2/touch.c"
-#include "_sdl2/sdl2.c"
+// #include "_sdl2/sdl2.c"
 
 #include "transform.c"
 // that remove some warnings
