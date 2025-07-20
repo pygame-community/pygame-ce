@@ -25,7 +25,6 @@
 #endif
 
 #if defined(BUILD_STATIC)
-#define CONTROLLER_NOPYX
 #define PYGAMEAPI_RECT_INTERNAL
 #define PYGAMEAPI_EVENT_INTERNAL
 #define PYGAMEAPI_JOYSTICK_INTERNAL
@@ -2077,6 +2076,13 @@ pg_uninstall_parachute(void)
 #endif
 }
 
+
+#if defined(BUILD_STATIC)
+static PyObject * mod_pygame_import_cython(PyObject *self, PyObject *spec);
+void PyInit_pygame_static();
+PyObject *load_submodule(const char *parent, PyObject *mod, const char *alias);
+#endif
+
 /* bind functions to python */
 
 static PyMethodDef _base_methods[] = {
@@ -2090,18 +2096,22 @@ static PyMethodDef _base_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_GETSDLVERSION},
     {"get_sdl_byteorder", (PyCFunction)pg_get_sdl_byteorder, METH_NOARGS,
      DOC_GETSDLBYTEORDER},
-
     {"get_array_interface", (PyCFunction)pg_get_array_interface, METH_O,
      "return an array struct interface as an interface dictionary"},
+#if defined(BUILD_STATIC)
+    {"import_cython", (PyCFunction)mod_pygame_import_cython, METH_O,
+     "pygame._sdl2.*"},
+#endif
     {NULL, NULL, 0, NULL}};
+
+
+volatile void *c_api[PYGAMEAPI_BASE_NUMSLOTS];
 
 MODINIT_DEFINE(base)
 {
-    PyObject *module, *apiobj, *atexit;
-    PyObject *atexit_register;
-
-    static void *c_api[PYGAMEAPI_BASE_NUMSLOTS];
-
+#if !defined(BUILD_STATIC)
+    PyObject *atexit, *atexit_register;
+#endif
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "base",
                                          "",
@@ -2112,9 +2122,14 @@ MODINIT_DEFINE(base)
                                          NULL,
                                          NULL};
 
+
+    PyObject *module, *apiobj;
+
     /* import need modules. Do this first so if there is an error
         the module is not loaded.
     */
+
+#if !defined(BUILD_STATIC)
     atexit = PyImport_ImportModule("atexit");
     if (!atexit) {
         return NULL;
@@ -2125,12 +2140,19 @@ MODINIT_DEFINE(base)
     if (!atexit_register) {
         return NULL;
     }
+#endif
 
     /* create the module */
     module = PyModule_Create(&_module);
+
     if (!module) {
         goto error;
     }
+
+
+#if defined(BUILD_STATIC)
+    load_submodule("pygame", module, "base");
+#endif
 
     /* create the exceptions */
     pgExc_SDLError =
@@ -2206,6 +2228,7 @@ MODINIT_DEFINE(base)
         goto error;
     }
 
+#if !defined(BUILD_STATIC)
     /*some initialization*/
     PyObject *quit = PyObject_GetAttrString(module, "quit");
     PyObject *rval;
@@ -2213,6 +2236,7 @@ MODINIT_DEFINE(base)
     if (!quit) { /* assertion */
         goto error;
     }
+
     rval = PyObject_CallOneArg(atexit_register, quit);
     Py_DECREF(atexit_register);
     Py_DECREF(quit);
@@ -2234,28 +2258,21 @@ MODINIT_DEFINE(base)
 #ifdef MS_WIN32
     SDL_RegisterApp("pygame", 0, GetModuleHandle(NULL));
 #endif
-
+#else // !BUILD_STATIC
+    PyInit_pygame_static();
+#endif // BUILD_STATIC
     return module;
 
 error:
     Py_XDECREF(pgExc_BufferError);
-    Py_XDECREF(atexit_register);
     Py_XDECREF(module);
+#if !defined(BUILD_STATIC)
+    Py_XDECREF(atexit_register);
+#endif
     return NULL;
 }
 
 #if defined(BUILD_STATIC)
-
-#define NO_PYGAME_C_API
-
-#define PYGAMEAPI_RECT_INTERNAL
-#define PYGAMEAPI_EVENT_INTERNAL
-#define PYGAMEAPI_JOYSTICK_INTERNAL
-#define PYGAMEAPI_BASE_INTERNAL
-#define PYGAMEAPI_SURFACE_INTERNAL
-#define PYGAMEAPI_BUFFERPROXY_INTERNAL
-#define PYGAMEAPI_WINDOW_INTERNAL
-#define PYGAMEAPI_RENDER_INTERNAL
 
 #include <SDL_ttf.h>
 
@@ -2450,25 +2467,25 @@ PyInit__render(void);
 
 PyMODINIT_FUNC
 PyInit_sdl2(void);
+/*
+PyMODINIT_FUNC
+PyInit_sdl2_controller(void);
 
 PyMODINIT_FUNC
-PyInit_controller(void);
-
-PyMODINIT_FUNC
-PyInit_mixer(void);
+PyInit_sdl2_mixer(void);
 
 
 PyMODINIT_FUNC
-PyInit_audio(void);
+PyInit_sdl2_audio(void);
 
 PyMODINIT_FUNC
-PyInit_video(void);
-
+PyInit_sdl2_video(void);
+*/
 
 
 // pygame_static module
 
-void
+PyObject *
 load_submodule(const char *parent, PyObject *mod, const char *alias)
 {
     char fqn[1024];
@@ -2497,6 +2514,7 @@ load_submodule(const char *parent, PyObject *mod, const char *alias)
             Py_XDECREF(mod);
         }
     }
+    return mod;
 }
 
 void
@@ -2536,8 +2554,8 @@ load_submodule_mphase(const char *parent, PyObject *mdef, PyObject *spec,
 static PyObject *
 mod_pygame_import_cython(PyObject *self, PyObject *spec)
 {
-    load_submodule_mphase("pygame._sdl2", PyInit_sdl2(), spec, "sdl2");
 /*
+    load_submodule_mphase("pygame._sdl2", PyInit_sdl2(), spec, "sdl2");
     load_submodule_mphase("pygame._sdl2", PyInit_mixer(), spec, "mixer");
     load_submodule("pygame._sdl2", PyInit_controller(), "controller");
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
@@ -2546,7 +2564,7 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
 
     Py_RETURN_NONE;
 }
-
+/*
 static PyMethodDef mod_pygame_static_methods[] = {
     {"import_cython", (PyCFunction)mod_pygame_import_cython, METH_O,
      "pygame._sdl2.*"},
@@ -2555,8 +2573,8 @@ static PyMethodDef mod_pygame_static_methods[] = {
 static struct PyModuleDef mod_pygame_static = {PyModuleDef_HEAD_INIT,
                                                "pygame_static", NULL, -1,
                                                mod_pygame_static_methods};
-
-PyMODINIT_FUNC
+*/
+void
 PyInit_pygame_static()
 {
     // cannot fail here, and font_initialized is already set to 1 in font.c .
@@ -2567,7 +2585,7 @@ PyInit_pygame_static()
 
     // base module is including current file
     // all globals are accessible from here.
-    load_submodule("pygame", PyInit_base(), "base");
+    // load_submodule("pygame", PyInit_base(), "base");
 
     load_submodule("pygame", PyInit_constants(), "constants");
     //
@@ -2633,7 +2651,7 @@ PyInit_pygame_static()
 
     load_submodule("pygame", PyInit_system(), "system");
 
-    return PyModule_Create(&mod_pygame_static);
+    // return PyModule_Create(&mod_pygame_static);
 }
 
 // meson static support

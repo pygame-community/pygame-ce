@@ -2051,7 +2051,8 @@ pgChannel_New(int channelnum)
 
 #if BUILD_STATIC
 // avoid conflict with PyInit_mixer in _sdl2/mixer.c
-MODINIT_DEFINE(pg_mixer)
+#pragma message "change sdl2/mixer name instead !!!"
+MODINIT_DEFINE(mixer)
 #else
 MODINIT_DEFINE(mixer)
 #endif
