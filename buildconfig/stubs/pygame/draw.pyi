@@ -508,7 +508,7 @@ def aaline(
     :param int width: (optional) used for line thickness
 
             | if width >= 1, used for line thickness (default is 1)
-            | if width < 1, nothing will be drawn
+            | if width < 1, a line of width == 1 will be drawn
 
     :returns: a rect bounding the changed pixels, if nothing is drawn the
         bounding rect's position will be the ``start_pos`` parameter value (float
@@ -521,8 +521,9 @@ def aaline(
     .. versionchangedold:: 2.0.0 Added support for keyword arguments.
     .. versionchanged:: 2.4.0 Removed deprecated 'blend' argument
     .. versionchanged:: 2.5.0 ``blend`` argument re-added for backcompat, but will
-        always raise a deprecation exception when used
-    .. versionchanged:: 2.5.3 Added line width
+        do nothing different and always raise a deprecation exception when used.
+    .. versionchanged:: 2.5.6 Added ``width`` in place of the deprecated
+        ``blend`` argument in a way that doesn't break backcompat too much.
     """
 
 def aalines(
