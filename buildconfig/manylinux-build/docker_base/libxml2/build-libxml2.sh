@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-LIBXML2_VER=2.13
+LIBXML2_VER=2.14
 LIBXML2_PATCH=4
 LIBXML2="libxml2-$LIBXML2_VER.$LIBXML2_PATCH"
 
