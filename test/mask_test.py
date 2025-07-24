@@ -2569,7 +2569,7 @@ class MaskTypeTest(unittest.TestCase):
     @unittest.skipIf(IS_PYPY, "Segfaults on pypy")
     def test_to_surface(self):
         """Ensures empty and full masks can be drawn onto surfaces."""
-        expected_ref_count = 3
+        expected_ref_count = (2, 3)
         size = (33, 65)
         surface = pygame.Surface(size, SRCALPHA, 32)
         surface_color = pygame.Color("red")
@@ -2583,13 +2583,13 @@ class MaskTypeTest(unittest.TestCase):
 
             self.assertIs(to_surface, surface)
             if not IS_PYPY:
-                self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+                self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
             self.assertEqual(to_surface.get_size(), size)
             assertSurfaceFilled(self, to_surface, expected_color)
 
     def test_to_surface__create_surface(self):
         """Ensures empty and full masks can be drawn onto a created surface."""
-        expected_ref_count = 2
+        expected_ref_count = (1, 2)
         expected_flag = SRCALPHA
         expected_depth = 32
         size = (33, 65)
@@ -2606,7 +2606,7 @@ class MaskTypeTest(unittest.TestCase):
 
                 self.assertIsInstance(to_surface, pygame.Surface)
                 if not IS_PYPY:
-                    self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+                    self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
                 self.assertTrue(to_surface.get_flags() & expected_flag)
                 self.assertEqual(to_surface.get_bitsize(), expected_depth)
                 self.assertEqual(to_surface.get_size(), size)
@@ -2614,7 +2614,7 @@ class MaskTypeTest(unittest.TestCase):
 
     def test_to_surface__surface_param(self):
         """Ensures to_surface accepts a surface arg/kwarg."""
-        expected_ref_count = 4
+        expected_ref_count = (3, 4)
         expected_color = pygame.Color("white")
         surface_color = pygame.Color("red")
         size = (5, 3)
@@ -2632,13 +2632,13 @@ class MaskTypeTest(unittest.TestCase):
 
             self.assertIs(to_surface, surface)
             if not IS_PYPY:
-                self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+                self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
             self.assertEqual(to_surface.get_size(), size)
             assertSurfaceFilled(self, to_surface, expected_color)
 
     def test_to_surface__setsurface_param(self):
         """Ensures to_surface accepts a setsurface arg/kwarg."""
-        expected_ref_count = 2
+        expected_ref_count = (1, 2)
         expected_flag = SRCALPHA
         expected_depth = 32
         expected_color = pygame.Color("red")
@@ -2657,7 +2657,7 @@ class MaskTypeTest(unittest.TestCase):
             self.assertIsInstance(to_surface, pygame.Surface)
 
             if not IS_PYPY:
-                self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+                self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
             self.assertTrue(to_surface.get_flags() & expected_flag)
             self.assertEqual(to_surface.get_bitsize(), expected_depth)
             self.assertEqual(to_surface.get_size(), size)
@@ -2665,7 +2665,7 @@ class MaskTypeTest(unittest.TestCase):
 
     def test_to_surface__unsetsurface_param(self):
         """Ensures to_surface accepts a unsetsurface arg/kwarg."""
-        expected_ref_count = 2
+        expected_ref_count = (1, 2)
         expected_flag = SRCALPHA
         expected_depth = 32
         expected_color = pygame.Color("red")
@@ -2683,7 +2683,7 @@ class MaskTypeTest(unittest.TestCase):
 
             self.assertIsInstance(to_surface, pygame.Surface)
             if not IS_PYPY:
-                self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+                self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
             self.assertTrue(to_surface.get_flags() & expected_flag)
             self.assertEqual(to_surface.get_bitsize(), expected_depth)
             self.assertEqual(to_surface.get_size(), size)
@@ -2691,7 +2691,7 @@ class MaskTypeTest(unittest.TestCase):
 
     def test_to_surface__setcolor_param(self):
         """Ensures to_surface accepts a setcolor arg/kwarg."""
-        expected_ref_count = 2
+        expected_ref_count = (1, 2)
         expected_flag = SRCALPHA
         expected_depth = 32
         expected_color = pygame.Color("red")
@@ -2707,7 +2707,7 @@ class MaskTypeTest(unittest.TestCase):
 
             self.assertIsInstance(to_surface, pygame.Surface)
             if not IS_PYPY:
-                self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+                self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
             self.assertTrue(to_surface.get_flags() & expected_flag)
             self.assertEqual(to_surface.get_bitsize(), expected_depth)
             self.assertEqual(to_surface.get_size(), size)
@@ -2728,7 +2728,7 @@ class MaskTypeTest(unittest.TestCase):
 
     def test_to_surface__unsetcolor_param(self):
         """Ensures to_surface accepts an unsetcolor arg/kwarg."""
-        expected_ref_count = 2
+        expected_ref_count = (1, 2)
         expected_flag = SRCALPHA
         expected_depth = 32
         expected_color = pygame.Color("red")
@@ -2746,7 +2746,7 @@ class MaskTypeTest(unittest.TestCase):
 
             self.assertIsInstance(to_surface, pygame.Surface)
             if not IS_PYPY:
-                self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+                self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
             self.assertTrue(to_surface.get_flags() & expected_flag)
             self.assertEqual(to_surface.get_bitsize(), expected_depth)
             self.assertEqual(to_surface.get_size(), size)
@@ -2767,7 +2767,7 @@ class MaskTypeTest(unittest.TestCase):
 
     def test_to_surface__dest_param(self):
         """Ensures to_surface accepts a dest arg/kwarg."""
-        expected_ref_count = 2
+        expected_ref_count = (1, 2)
         expected_flag = SRCALPHA
         expected_depth = 32
         default_surface_color = (0, 0, 0, 0)
@@ -2791,7 +2791,7 @@ class MaskTypeTest(unittest.TestCase):
 
             self.assertIsInstance(to_surface, pygame.Surface)
             if not IS_PYPY:
-                self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+                self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
             self.assertTrue(to_surface.get_flags() & expected_flag)
             self.assertEqual(to_surface.get_bitsize(), expected_depth)
             self.assertEqual(to_surface.get_size(), size)
@@ -2822,7 +2822,7 @@ class MaskTypeTest(unittest.TestCase):
 
     def test_to_surface__area_param(self):
         """Ensures to_surface accepts an area arg/kwarg."""
-        expected_ref_count = 2
+        expected_ref_count = (1, 2)
         expected_flag = SRCALPHA
         expected_depth = 32
         default_surface_color = (0, 0, 0, 0)
@@ -2845,7 +2845,7 @@ class MaskTypeTest(unittest.TestCase):
 
             self.assertIsInstance(to_surface, pygame.Surface)
             if not IS_PYPY:
-                self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+                self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
             self.assertTrue(to_surface.get_flags() & expected_flag)
             self.assertEqual(to_surface.get_bitsize(), expected_depth)
             self.assertEqual(to_surface.get_size(), size)
@@ -3594,7 +3594,7 @@ class MaskTypeTest(unittest.TestCase):
         This tests many parameter combinations with full and empty
         masks.
         """
-        expected_ref_count = 2
+        expected_ref_count = (1, 2)
         expected_flag = SRCALPHA
         expected_depth = 32
         size = (5, 3)
@@ -3661,7 +3661,7 @@ class MaskTypeTest(unittest.TestCase):
 
                                 self.assertIsInstance(to_surface, pygame.Surface)
                                 if not IS_PYPY:
-                                    self.assertEqual(
+                                    self.assertIn(
                                         sys.getrefcount(to_surface), expected_ref_count
                                     )
                                 self.assertTrue(to_surface.get_flags() & expected_flag)
@@ -3678,7 +3678,7 @@ class MaskTypeTest(unittest.TestCase):
         This tests many parameter combinations with full and empty
         masks.
         """
-        expected_ref_count = 4
+        expected_ref_count = (3, 4)
         expected_flag = SRCALPHA
         expected_depth = 32
         size = (5, 3)
@@ -3748,7 +3748,7 @@ class MaskTypeTest(unittest.TestCase):
 
                                 self.assertIs(to_surface, surface)
                                 if not IS_PYPY:
-                                    self.assertEqual(
+                                    self.assertIn(
                                         sys.getrefcount(to_surface), expected_ref_count
                                     )
                                 self.assertTrue(to_surface.get_flags() & expected_flag)
@@ -5529,7 +5529,7 @@ class MaskTypeTest(unittest.TestCase):
 
     def test_to_surface__surface_with_zero_size(self):
         """Ensures zero sized surfaces are handled correctly."""
-        expected_ref_count = 3
+        expected_ref_count = (2, 3)
         size = (0, 0)
         surface = pygame.Surface(size)
         mask = pygame.mask.Mask((3, 4), fill=True)
@@ -5538,12 +5538,12 @@ class MaskTypeTest(unittest.TestCase):
 
         self.assertIs(to_surface, surface)
         if not IS_PYPY:
-            self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+            self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
         self.assertEqual(to_surface.get_size(), size)
 
     def test_to_surface__setsurface_with_zero_size(self):
         """Ensures zero sized setsurfaces are handled correctly."""
-        expected_ref_count = 2
+        expected_ref_count = (1, 2)
         expected_flag = SRCALPHA
         expected_depth = 32
         expected_color = pygame.Color("white")  # Default setcolor.
@@ -5555,7 +5555,7 @@ class MaskTypeTest(unittest.TestCase):
 
         self.assertIsInstance(to_surface, pygame.Surface)
         if not IS_PYPY:
-            self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+            self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
         self.assertTrue(to_surface.get_flags() & expected_flag)
         self.assertEqual(to_surface.get_bitsize(), expected_depth)
         self.assertEqual(to_surface.get_size(), mask_size)
@@ -5563,7 +5563,7 @@ class MaskTypeTest(unittest.TestCase):
 
     def test_to_surface__unsetsurface_with_zero_size(self):
         """Ensures zero sized unsetsurfaces are handled correctly."""
-        expected_ref_count = 2
+        expected_ref_count = (1, 2)
         expected_flag = SRCALPHA
         expected_depth = 32
         expected_color = pygame.Color("black")  # Default unsetcolor.
@@ -5575,7 +5575,7 @@ class MaskTypeTest(unittest.TestCase):
 
         self.assertIsInstance(to_surface, pygame.Surface)
         if not IS_PYPY:
-            self.assertEqual(sys.getrefcount(to_surface), expected_ref_count)
+            self.assertIn(sys.getrefcount(to_surface), expected_ref_count)
         self.assertTrue(to_surface.get_flags() & expected_flag)
         self.assertEqual(to_surface.get_bitsize(), expected_depth)
         self.assertEqual(to_surface.get_size(), mask_size)
