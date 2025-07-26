@@ -24,6 +24,18 @@ class VideoModuleTest(unittest.TestCase):
         renderer.set_viewport(rect)
         self.assertEqual(renderer.get_viewport(), (0, 0, 1920, 1080))
 
+    def test_logical_window_mapping(self):
+        window = video.Window(title=self.default_caption, size=(100, 100))
+        renderer = video.Renderer(window=window)
+        renderer.logical_size = (10, 10)
+
+        self.assertEqual(renderer.logical_to_window((10, 10)), (100, 100))
+        self.assertEqual(renderer.window_to_logical((100, 100)), (10, 10))
+        with self.assertRaises(TypeError):
+            renderer.logical_to_window(42, 42)
+        with self.assertRaises(TypeError):
+            renderer.window_to_logical(42, 42)
+
     @unittest.skipIf(IS_PYPY, "PyPy doesn't have sys.getrefcount")
     def test_renderer_to_surface_refcount(self):
         """Make sure to_surface doesn't leak memory due to reference counting."""
