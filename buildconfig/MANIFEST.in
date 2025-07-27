@@ -10,7 +10,7 @@ recursive-exclude buildconfig/macdependencies *
 recursive-exclude buildconfig/stubs/.mypy_cache *
 
 include README.rst
-include meson_options.txt
+include meson.options
 include meson.build
 include pyproject.toml
 
