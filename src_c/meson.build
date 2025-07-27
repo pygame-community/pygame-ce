@@ -86,52 +86,7 @@ rwobject = py.extension_module(
 
 # TODO: support SDL3
 if sdl_api != 3
-simd_blitters_avx2 = static_library(
-    'simd_blitters_avx2',
-    'simd_blitters_avx2.c',
-    dependencies: pg_base_deps,
-    c_args: simd_avx2_flags + warnings_error,
-)
-
-simd_blitters_sse2 = static_library(
-    'simd_blitters_sse2',
-    'simd_blitters_sse2.c',
-    dependencies: pg_base_deps,
-    c_args: simd_sse2_neon_flags + warnings_error,
-)
-
-simd_surface_fill_avx2 = static_library(
-    'simd_surface_fill_avx2',
-    'simd_surface_fill_avx2.c',
-    dependencies: pg_base_deps,
-    c_args: simd_avx2_flags + warnings_error,
-)
-
-simd_surface_fill_sse2 = static_library(
-    'simd_surface_fill_sse2',
-    'simd_surface_fill_sse2.c',
-    dependencies: pg_base_deps,
-    c_args: simd_sse2_neon_flags + warnings_error,
-)
-
-surface = py.extension_module(
-    'surface',
-    [
-        'surface.c',
-        'alphablit.c',
-        'surface_fill.c',
-    ],
-    c_args: warnings_error,
-    link_with: [
-        simd_blitters_avx2,
-        simd_blitters_sse2,
-        simd_surface_fill_avx2,
-        simd_surface_fill_sse2,
-    ],
-    dependencies: pg_base_deps,
-    install: true,
-    subdir: pg,
-)
+    subdir('surface')
 endif
 
 surflock = py.extension_module(
@@ -182,6 +137,7 @@ image = py.extension_module(
 simd_transform_avx2 = static_library(
     'simd_transform_avx2',
     'simd_transform_avx2.c',
+    include_directories: 'surface',
     dependencies: pg_base_deps,
     c_args: simd_avx2_flags + warnings_error,
 )
@@ -189,6 +145,7 @@ simd_transform_avx2 = static_library(
 simd_transform_sse2 = static_library(
     'simd_transform_sse2',
     'simd_transform_sse2.c',
+    include_directories: 'surface',
     dependencies: pg_base_deps,
     c_args: simd_sse2_neon_flags + warnings_error,
 )
@@ -212,6 +169,7 @@ endif
 transform = py.extension_module(
     'transform',
     transform_sources,
+    include_directories: ['include', 'surface'],
     c_args: warnings_error,
     link_with: [simd_transform_avx2, simd_transform_sse2],
     objects: transform_objs,
@@ -241,6 +199,7 @@ bufferproxy = py.extension_module(
 pixelarray = py.extension_module(
     'pixelarray',
     'pixelarray.c',
+    include_directories: 'surface',
     c_args: warnings_error,
     dependencies: pg_base_deps,
     install: true,
@@ -259,6 +218,7 @@ math = py.extension_module(
 pixelcopy = py.extension_module(
     'pixelcopy',
     'pixelcopy.c',
+    include_directories: 'include',
     c_args: warnings_error,
     dependencies: pg_base_deps,
     install: true,

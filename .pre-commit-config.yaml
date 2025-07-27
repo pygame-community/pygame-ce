@@ -42,6 +42,7 @@ repos:
             (?x)^(
                 ^src_c/_sdl2/.*$
                 | ^src_c/doc/.*$
+                | ^src_c/.+/.*_doc.h$
                 | docs/reST/_static/script.js
                 | docs/reST/_templates/header.h
                 | src_c/include/sse2neon.h
