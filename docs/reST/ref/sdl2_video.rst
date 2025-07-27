@@ -428,6 +428,25 @@
                    drawing area on the target, or ``None`` to use the
                    entire area of the current rendering target.
 
+   .. method:: logical_to_window
+
+      | :sl:`Translates logical coordinates to window coordinates`
+      | :sg:`logical_to_window(point) -> (float, float)`
+
+      :param point: The coordinates in logical space.
+
+      .. versionadded:: 2.5.6
+
+
+   .. method:: window_to_logical
+
+      | :sl:`Translates window coordinates to logical coordinates`
+      | :sg:`window_to_logical(point) -> (float, float)`
+
+      :param point: The coordinates in window space.
+
+      .. versionadded:: 2.5.6
+
    .. method:: blit
 
       | :sl:`Draw textures using a Surface-like API`
