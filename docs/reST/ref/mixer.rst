@@ -500,6 +500,18 @@ The following file formats are supported
 
       .. ## Sound.get_raw ##
 
+   .. method:: copy
+
+      | :sl:`return a new Sound object that is a deep copy of this one`
+      | :sg:`copy() -> Sound`
+
+      Return a new Sound object that is a deep copy of this one. The new Sound will
+      be playable just like the original. If the copy fails,  a ``MemoryError`` or a
+      :meth:`pygame.error` exception will be raised.
+
+      .. ## Sound.copy ##
+
+
    .. ## pygame.mixer.Sound ##
 
 .. class:: Channel
