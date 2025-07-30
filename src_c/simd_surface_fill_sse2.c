@@ -41,7 +41,7 @@ _pg_HasSSE_NEON()
                                                                               \
     __m128i mm128_dst;                                                        \
     /* prep and load the color */                                             \
-    Uint32 amask = surface->format->Amask;                                    \
+    Uint32 amask = surface_format->Amask;                                     \
     if (amask) {                                                              \
         {                                                                     \
             COLOR_PROCESS_CODE                                                \
@@ -96,52 +96,58 @@ _pg_HasSSE_NEON()
     /* ==== recombine A and B pixels ==== */                   \
     mm128_dst = _mm_packus_epi16(_shuff16_temp, shuff_dst);
 
-#define FILLERS(NAME, COLOR_PROCESS_CODE, FILL_CODE)                        \
-    int surface_fill_blend_##NAME##_sse2(SDL_Surface *surface,              \
-                                         SDL_Rect *rect, Uint32 color)      \
-    {                                                                       \
-        SETUP_SSE2_FILLER(COLOR_PROCESS_CODE)                               \
-        RUN_SSE2_FILLER(FILL_CODE)                                          \
-        return 0;                                                           \
-    }                                                                       \
-    int surface_fill_blend_rgba_##NAME##_sse2(SDL_Surface *surface,         \
-                                              SDL_Rect *rect, Uint32 color) \
-    {                                                                       \
-        SETUP_SSE2_FILLER({})                                               \
-        RUN_SSE2_FILLER(FILL_CODE)                                          \
-        return 0;                                                           \
+#define FILLERS(NAME, COLOR_PROCESS_CODE, FILL_CODE)                          \
+    int surface_fill_blend_##NAME##_sse2(SDL_Surface *surface,                \
+                                         PG_PixelFormat *surface_format,      \
+                                         SDL_Rect *rect, Uint32 color)        \
+    {                                                                         \
+        SETUP_SSE2_FILLER(COLOR_PROCESS_CODE)                                 \
+        RUN_SSE2_FILLER(FILL_CODE)                                            \
+        return 0;                                                             \
+    }                                                                         \
+    int surface_fill_blend_rgba_##NAME##_sse2(SDL_Surface *surface,           \
+                                              PG_PixelFormat *surface_format, \
+                                              SDL_Rect *rect, Uint32 color)   \
+    {                                                                         \
+        SETUP_SSE2_FILLER({})                                                 \
+        RUN_SSE2_FILLER(FILL_CODE)                                            \
+        return 0;                                                             \
     }
 
-#define FILLERS_SHUFF(NAME, COLOR_PROCESS_CODE, FILL_CODE)                  \
-    int surface_fill_blend_##NAME##_sse2(SDL_Surface *surface,              \
-                                         SDL_Rect *rect, Uint32 color)      \
-    {                                                                       \
-        SETUP_SSE2_FILLER(COLOR_PROCESS_CODE)                               \
-        SETUP_SHUFFLE                                                       \
-        RUN_SSE2_FILLER(RUN_16BIT_SHUFFLE_OUT(FILL_CODE))                   \
-        return 0;                                                           \
-    }                                                                       \
-    int surface_fill_blend_rgba_##NAME##_sse2(SDL_Surface *surface,         \
-                                              SDL_Rect *rect, Uint32 color) \
-    {                                                                       \
-        SETUP_SSE2_FILLER({})                                               \
-        SETUP_SHUFFLE                                                       \
-        RUN_SSE2_FILLER(RUN_16BIT_SHUFFLE_OUT(FILL_CODE))                   \
-        return 0;                                                           \
+#define FILLERS_SHUFF(NAME, COLOR_PROCESS_CODE, FILL_CODE)                    \
+    int surface_fill_blend_##NAME##_sse2(SDL_Surface *surface,                \
+                                         PG_PixelFormat *surface_format,      \
+                                         SDL_Rect *rect, Uint32 color)        \
+    {                                                                         \
+        SETUP_SSE2_FILLER(COLOR_PROCESS_CODE)                                 \
+        SETUP_SHUFFLE                                                         \
+        RUN_SSE2_FILLER(RUN_16BIT_SHUFFLE_OUT(FILL_CODE))                     \
+        return 0;                                                             \
+    }                                                                         \
+    int surface_fill_blend_rgba_##NAME##_sse2(SDL_Surface *surface,           \
+                                              PG_PixelFormat *surface_format, \
+                                              SDL_Rect *rect, Uint32 color)   \
+    {                                                                         \
+        SETUP_SSE2_FILLER({})                                                 \
+        SETUP_SHUFFLE                                                         \
+        RUN_SSE2_FILLER(RUN_16BIT_SHUFFLE_OUT(FILL_CODE))                     \
+        return 0;                                                             \
     }
 
-#define INVALID_DEFS(NAME)                                                  \
-    int surface_fill_blend_##NAME##_sse2(SDL_Surface *surface,              \
-                                         SDL_Rect *rect, Uint32 color)      \
-    {                                                                       \
-        BAD_SSE2_FUNCTION_CALL;                                             \
-        return -1;                                                          \
-    }                                                                       \
-    int surface_fill_blend_rgba_##NAME##_sse2(SDL_Surface *surface,         \
-                                              SDL_Rect *rect, Uint32 color) \
-    {                                                                       \
-        BAD_SSE2_FUNCTION_CALL;                                             \
-        return -1;                                                          \
+#define INVALID_DEFS(NAME)                                                    \
+    int surface_fill_blend_##NAME##_sse2(SDL_Surface *surface,                \
+                                         PG_PixelFormat *surface_format,      \
+                                         SDL_Rect *rect, Uint32 color)        \
+    {                                                                         \
+        BAD_SSE2_FUNCTION_CALL;                                               \
+        return -1;                                                            \
+    }                                                                         \
+    int surface_fill_blend_rgba_##NAME##_sse2(SDL_Surface *surface,           \
+                                              PG_PixelFormat *surface_format, \
+                                              SDL_Rect *rect, Uint32 color)   \
+    {                                                                         \
+        BAD_SSE2_FUNCTION_CALL;                                               \
+        return -1;                                                            \
     }
 
 #define ADD_CODE mm128_dst = _mm_adds_epu8(mm128_dst, mm128_color);
