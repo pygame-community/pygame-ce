@@ -201,7 +201,7 @@ window_get_surface(pgWindowObject *self, PyObject *_null)
 static PyObject *
 window_flip(pgWindowObject *self, PyObject *_null)
 {
-    int result;
+    bool success;
 
     if (self->context == NULL) {
         if (!self->surf) {
@@ -211,9 +211,9 @@ window_flip(pgWindowObject *self, PyObject *_null)
         }
 
         Py_BEGIN_ALLOW_THREADS;
-        result = SDL_UpdateWindowSurface(self->_win);
+        success = PG_UpdateWindowSurface(self->_win);
         Py_END_ALLOW_THREADS;
-        if (result) {
+        if (!success) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
@@ -879,7 +879,12 @@ window_set_opacity(pgWindowObject *self, PyObject *arg, void *v)
     if (PyErr_Occurred()) {
         return -1;
     }
-    if (SDL_SetWindowOpacity(self->_win, opacity)) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_SetWindowOpacity(self->_win, opacity))
+#else
+    if (SDL_SetWindowOpacity(self->_win, opacity))
+#endif
+    {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
