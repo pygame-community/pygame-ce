@@ -36,7 +36,7 @@
 #endif
 
 #include "pygame.h"
-
+#if !defined(BUILD_STATIC)
 /* Blend modes */
 #define PYGAME_BLEND_ADD 0x1
 #define PYGAME_BLEND_SUB 0x2
@@ -57,7 +57,7 @@
 #define PYGAME_BLEND_RGBA_MAX 0x10
 #define PYGAME_BLEND_PREMULTIPLIED 0x11
 #define PYGAME_BLEND_ALPHA_SDL2 0x12
-
+#endif
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define GET_PIXEL_24(b) (b[0] + (b[1] << 8) + (b[2] << 16))
 #else
