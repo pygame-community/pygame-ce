@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-OGG=libogg-1.3.5
+OGG=libogg-1.3.6
 VORBIS=libvorbis-1.3.7
 
 curl -sL --retry 10 http://downloads.xiph.org/releases/ogg/${OGG}.tar.gz > ${OGG}.tar.gz
@@ -22,6 +22,7 @@ cd ..
 tar xzf ${VORBIS}.tar.gz
 cd $VORBIS
 
-cmake . $PG_BASE_CMAKE_FLAGS
+# CMake 3.5 or higher policy is required for buiding under CMake 4
+cmake . $PG_BASE_CMAKE_FLAGS -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 make
 make install
