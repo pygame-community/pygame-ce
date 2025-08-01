@@ -2552,10 +2552,10 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
 #pragma message "WARNING: pygame._sdl2.* are disabled"
 #else
     load_submodule_mphase("pygame._sdl2", PyInit_sdl2(), spec, "sdl2");
-    load_submodule_mphase("pygame._sdl2", PyInit_mixer(), spec, "mixer");
-    load_submodule("pygame._sdl2", PyInit_controller(), "controller");
-    load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
-    load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
+    load_submodule_mphase("pygame._sdl2", PyInit_sdl2_mixer(), spec, "mixer");
+    load_submodule("pygame._sdl2", PyInit_sdl2_controller(), "controller");
+    load_submodule_mphase("pygame._sdl2", PyInit_sdl2_audio(), spec, "audio");
+    load_submodule_mphase("pygame._sdl2", PyInit_sdl2_video(), spec, "video");
 #endif
 
     Py_RETURN_NONE;
