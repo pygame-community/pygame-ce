@@ -2102,7 +2102,7 @@ static PyMethodDef _base_methods[] = {
 #endif
     {NULL, NULL, 0, NULL}};
 
-volatile void *c_api[PYGAMEAPI_BASE_NUMSLOTS];
+static void *c_api[PYGAMEAPI_BASE_NUMSLOTS];
 
 MODINIT_DEFINE(base)
 {
