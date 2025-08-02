@@ -1037,10 +1037,10 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def logical_to_window(self, point):
-        """Translates logical coordinates to window coordinates
+    def coordinates_to_window(self, point):
+        """Translates renderer coordinates to window coordinates
 
-        :param point: The coordinates in logical space.
+        :param point: The coordinates in render space.
         """
         cdef int wx
         cdef int wy
@@ -1052,8 +1052,8 @@ cdef class Renderer:
         # Return float for future compatibility with SDL3's RenderCoordinatesToWindow
         return (float(wx), float(wy))
 
-    def window_to_logical(self, point):
-        """Translates window coordinates to logical coordinates
+    def coordinates_from_window(self, point):
+        """Translates window coordinates to renderer coordinates
 
         :param point: The coordinates in window space.
         """

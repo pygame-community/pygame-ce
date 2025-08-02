@@ -424,20 +424,20 @@
                    drawing area on the target, or ``None`` to use the
                    entire area of the current rendering target.
 
-   .. method:: logical_to_window
+   .. method:: coordinates_to_window
 
-      | :sl:`Translates logical coordinates to window coordinates`
-      | :sg:`logical_to_window(point) -> (float, float)`
+      | :sl:`Translates renderer coordinates to window coordinates`
+      | :sg:`coordinates_to_window(point) -> (float, float)`
 
-      :param point: The coordinates in logical space.
+      :param point: The coordinates in render space.
 
       .. versionadded:: 2.5.6
 
 
-   .. method:: window_to_logical
+   .. method:: coordinates_from_window
 
-      | :sl:`Translates window coordinates to logical coordinates`
-      | :sg:`window_to_logical(point) -> (float, float)`
+      | :sl:`Translates window coordinates to renderer coordinates`
+      | :sg:`coordinates_from_window(point) -> (float, float)`
 
       :param point: The coordinates in window space.
 

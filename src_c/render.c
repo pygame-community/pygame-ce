@@ -444,8 +444,8 @@ renderer_set_logical_size(pgRendererObject *self, PyObject *arg, void *closure)
 }
 
 static PyObject *
-renderer_logical_to_window(pgRendererObject *self, PyObject *args,
-                           PyObject *kwargs)
+renderer_coordinates_to_window(pgRendererObject *self, PyObject *args,
+                               PyObject *kwargs)
 {
     float lx, ly;
     PyObject *point;
@@ -473,8 +473,8 @@ renderer_logical_to_window(pgRendererObject *self, PyObject *args,
 }
 
 static PyObject *
-renderer_window_to_logical(pgRendererObject *self, PyObject *args,
-                           PyObject *kwargs)
+renderer_coordinates_from_window(pgRendererObject *self, PyObject *args,
+                                 PyObject *kwargs)
 {
     float lx, ly;
     float wx, wy;
@@ -637,10 +637,12 @@ static PyMethodDef renderer_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT},
     {"get_viewport", (PyCFunction)renderer_get_viewport, METH_NOARGS,
      DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT},
-    {"logical_to_window", (PyCFunction)renderer_logical_to_window,
-     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_LOGICALTOWINDOW},
-    {"window_to_logical", (PyCFunction)renderer_window_to_logical,
-     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_WINDOWTOLOGICAL},
+    {"coordinates_to_window", (PyCFunction)renderer_coordinates_to_window,
+     METH_VARARGS | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_RENDERER_COORDINATESTOWINDOW},
+    {"coordinates_from_window", (PyCFunction)renderer_coordinates_from_window,
+     METH_VARARGS | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_RENDERER_COORDINATESFROMWINDOW},
     {"compose_custom_blend_mode",
      (PyCFunction)renderer_compose_custom_blend_mode,
      METH_VARARGS | METH_KEYWORDS | METH_CLASS,

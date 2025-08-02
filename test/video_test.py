@@ -29,12 +29,12 @@ class VideoModuleTest(unittest.TestCase):
         renderer = video.Renderer(window=window)
         renderer.logical_size = (10, 10)
 
-        self.assertEqual(renderer.logical_to_window((10, 10)), (100, 100))
-        self.assertEqual(renderer.window_to_logical((100, 100)), (10, 10))
+        self.assertEqual(renderer.coordinates_to_window((10, 10)), (100, 100))
+        self.assertEqual(renderer.coordinates_from_window((100, 100)), (10, 10))
         with self.assertRaises(TypeError):
-            renderer.logical_to_window(42, 42)
+            renderer.coordinates_to_window(42, 42)
         with self.assertRaises(TypeError):
-            renderer.window_to_logical(42, 42)
+            renderer.coordinates_from_window(42, 42)
 
     @unittest.skipIf(IS_PYPY, "PyPy doesn't have sys.getrefcount")
     def test_renderer_to_surface_refcount(self):
