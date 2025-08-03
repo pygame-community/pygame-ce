@@ -2049,12 +2049,7 @@ pgChannel_New(int channelnum)
     return (PyObject *)chanobj;
 }
 
-#if BUILD_STATIC
-// avoid conflict with PyInit_mixer in _sdl2/mixer.c
-MODINIT_DEFINE(pg_mixer)
-#else
 MODINIT_DEFINE(mixer)
-#endif
 {
     PyObject *module, *apiobj, *music = NULL;
     static void *c_api[PYGAMEAPI_MIXER_NUMSLOTS];
