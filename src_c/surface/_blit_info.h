@@ -1,7 +1,7 @@
 #ifndef _BLIT_INFO_H
 #define _BLIT_INFO_H
 #define NO_PYGAME_C_API
-#include "_surface.h"
+#include "surface.h"
 
 /* The structure passed to the low level blit functions */
 typedef struct {
