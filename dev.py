@@ -266,9 +266,7 @@ class Dev:
         if sanitize:
             install_args.append(f"-Csetup-args=-Db_sanitize={sanitize}")
 
-        info_str = (
-            f"with {debug=}, {lax=}, {sdl3=}, {stripped=}, {coverage=}, {ctest=}, and {sanitize=}"
-        )
+        info_str = f"with {debug=}, {lax=}, {sdl3=}, {stripped=}, {coverage=}, {ctest=}, and {sanitize=}"
 
         if wheel_dir:
             pprint(f"Building wheel at '{wheel_dir}' ({info_str})")
