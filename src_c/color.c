@@ -181,6 +181,9 @@ _color_int(pgColorObject *);
 static PyObject *
 _color_float(pgColorObject *);
 
+static PyObject *
+_color_bytes(pgColorObject *);
+
 /* Sequence protocol methods */
 static Py_ssize_t
 _color_length(pgColorObject *);
@@ -256,6 +259,8 @@ static PyMethodDef _color_methods[] = {
     {"premul_alpha", (PyCFunction)_premul_alpha, METH_NOARGS,
      DOC_COLOR_PREMULALPHA},
     {"update", (PyCFunction)_color_update, METH_FASTCALL, DOC_COLOR_UPDATE},
+    {"__bytes__", (PyCFunction)_color_bytes, METH_NOARGS,
+     "Get a byte representation of the color"},
     {NULL, NULL, 0, NULL}};
 
 /**
@@ -1751,6 +1756,16 @@ _color_float(pgColorObject *color)
     Uint32 tmp = (((Uint32)color->data[0] << 24) + (color->data[1] << 16) +
                   (color->data[2] << 8) + color->data[3]);
     return PyFloat_FromDouble((double)tmp);
+}
+
+/**
+ * bytes(color)
+ */
+static PyObject *
+_color_bytes(pgColorObject *color)
+{
+    return PyBytes_FromFormat("%c%c%c%c", color->data[0], color->data[1],
+                              color->data[2], color->data[3]);
 }
 
 /* Sequence protocol methods */
