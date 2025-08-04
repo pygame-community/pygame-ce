@@ -1210,6 +1210,17 @@ font_dealloc(PyFontObject *self)
 {
     TTF_Font *font = PyFont_AsFont(self);
     if (font && font_initialized) {
+        // In SDL3_ttf, it seems that closing a font after its library was
+        // destroyed segfaults. So only close if same generation.
+        // TODO SDL3:
+        // TTF docs say "A well-written program should call TTF_CloseFont()
+        // on any open fonts before calling this function!"
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (self->ttf_init_generation == current_ttf_generation) {
+            TTF_CloseFont(font);
+        }
+        self->font = NULL;
+#else
         if (self->ttf_init_generation != current_ttf_generation) {
             // Since TTF_Font is a private structure
             // it's impossible to access face field in a common way.
@@ -1218,6 +1229,7 @@ font_dealloc(PyFontObject *self)
         }
         TTF_CloseFont(font);
         self->font = NULL;
+#endif
     }
 
     if (self->weakreflist) {
