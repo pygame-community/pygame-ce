@@ -28,3 +28,10 @@ Header file: src_c/include/pygame.h
 
    Will return false if *x* is not a subclass of `Window`.
    This is a macro. No check is made that *x* is not *NULL*.
+
+.. c:function:: PyObject* pgWindow_GetInfo(SDL_Window *window)
+
+   Return a python dict containing system-specific information about a window.
+
+   .. seealso::
+      :py:func:`pygame.window.Window.get_info`
