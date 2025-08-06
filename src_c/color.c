@@ -1764,8 +1764,7 @@ _color_float(pgColorObject *color)
 static PyObject *
 _color_bytes(pgColorObject *color)
 {
-    return PyBytes_FromFormat("%c%c%c%c", color->data[0], color->data[1],
-                              color->data[2], color->data[3]);
+    return PyBytes_FromStringAndSize((char *)color->data, 4);
 }
 
 /* Sequence protocol methods */
