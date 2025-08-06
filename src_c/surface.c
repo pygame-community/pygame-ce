@@ -2782,12 +2782,12 @@ scroll_repeat(int h, int dx, int dy, int pitch, int span, int xoffset,
         while (h--) {
             if (dx > 0) {
                 memcpy(tempbuf, linesrc + span - xoffset, xoffset);
-                memcpy(linesrc + xoffset, linesrc, span - xoffset);
+                memmove(linesrc + xoffset, linesrc, span - xoffset);
                 memcpy(linesrc, tempbuf, xoffset);
             }
             else if (dx < 0) {
                 memcpy(tempbuf, linesrc, -xoffset);
-                memcpy(linesrc, linesrc - xoffset, span + xoffset);
+                memmove(linesrc, linesrc - xoffset, span + xoffset);
                 memcpy(linesrc + span + xoffset, tempbuf, -xoffset);
             }
             linesrc += pitch;
@@ -2837,13 +2837,13 @@ scroll_default(int h, int dx, int dy, int pitch, int span, int xoffset,
         // No y-shifting, we only need to move pixels on the same line
         while (h--) {
             if (dx > 0) {
-                memcpy(linesrc + xoffset, linesrc, span - xoffset);
+                memmove(linesrc + xoffset, linesrc, span - xoffset);
                 if (erase) {
                     memset(linesrc, 0, xoffset);
                 }
             }
             else if (dx < 0) {
-                memcpy(linesrc, linesrc - xoffset, span + xoffset);
+                memmove(linesrc, linesrc - xoffset, span + xoffset);
                 if (erase) {
                     memset(linesrc + span + xoffset, 0, -xoffset);
                 }
