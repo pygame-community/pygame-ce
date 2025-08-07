@@ -2,6 +2,7 @@
 # Also generates coverage information from unit tests. Note that for intrinsics,
 # it only runs what gets compiled and would naturally run. It also is limited to
 # what can run in a CI environment.
+
 # Update this workflow when our min/max python minor versions update
 # This workflow is necessary to ensure that we can build and run with
 # a debug python build without too much worrying about SIGABRT being thrown
@@ -27,6 +28,7 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/run-ubuntu-checks.yml'
+
 
   pull_request:
     branches: main
@@ -102,8 +104,7 @@ jobs:
       id: build-pygame-ce
       run: |
         pyenv global ${{ matrix.python }}-debug
-        python dev.py build --lax --coverage --sanitize undefined
-
+        python dev.py build --lax --coverage --ctest --sanitize undefined
     - name: Run tests
       env:
         SDL_VIDEODRIVER: "dummy"
