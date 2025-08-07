@@ -1869,6 +1869,7 @@ RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 static PyObject *
 RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
+    PyObject *outer_rect = NULL;
     InnerRect *rect = &self->r, *rect_copy = NULL;
     PrimitiveType x1, y1, x2, y2;
 
@@ -1918,7 +1919,8 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     if ((self->r.w < 0) || (self->r.h < 0)) {
         /* Make a copy of the rect so it can be normalized. */
-        rect_copy = &pgRectAsRect(RectExport_RectNew(&self->r));
+        outer_rect = RectExport_RectNew(&self->r);
+        rect_copy = &pgRectAsRect(outer_rect);
 
         if (rect_copy == NULL) {
             return RAISE(PyExc_MemoryError, "cannot allocate memory for rect");
@@ -1929,11 +1931,11 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (!RectImport_IntersectRectAndLine(rect, &x1, &y1, &x2, &y2)) {
-        Py_XDECREF(rect_copy);
+        Py_XDECREF(outer_rect);
         return PyTuple_New(0);
     }
 
-    Py_XDECREF(rect_copy);
+    Py_XDECREF(outer_rect);
 
     PyObject *subtup1, *subtup2;
     subtup1 = TupleFromTwoPrimitives(x1, y1);
