@@ -577,52 +577,6 @@ typedef struct {
 #define import_pygame_render() IMPORT_PYGAME_MODULE(_render)
 #endif
 
-typedef struct pgTextureObject pgTextureObject;
-
-/*
- * Render module
- */
-typedef struct {
-    PyObject_HEAD SDL_Renderer *renderer;
-    pgWindowObject *window;
-    pgTextureObject *target;
-    SDL_bool _is_borrowed;
-} pgRendererObject;
-
-struct pgTextureObject {
-    PyObject_HEAD SDL_Texture *texture;
-    pgRendererObject *renderer;
-    int width;
-    int height;
-};
-
-typedef struct {
-    PyObject_HEAD pgTextureObject *texture;
-    pgRectObject *srcrect;
-    pgColorObject *color;
-    float angle;
-    float alpha;
-    SDL_bool has_origin;
-    SDL_FPoint origin;
-    SDL_bool flip_x;
-    SDL_bool flip_y;
-    SDL_BlendMode blend_mode;
-} pgImageObject;
-
-#ifndef PYGAMEAPI_RENDER_INTERNAL
-#define pgRenderer_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_render, 0))
-#define pgTexture_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_render, 1))
-#define pgImage_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_render, 2))
-#define pgRenderer_Check(x) \
-    (PyObject_IsInstance((x), (PyObject *)&pgRender_Type))
-#define pgTexture_Check(x) \
-    (PyObject_IsInstance((x), (PyObject *)&pgTexture_Type))
-#define pgImage_Check(x) (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
-#define import_pygame_render() IMPORT_PYGAME_MODULE(_render)
-#endif
-
-typedef struct pgTextureObject pgTextureObject;
-
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
 
 /*
