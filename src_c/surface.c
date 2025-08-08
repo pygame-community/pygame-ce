@@ -4564,7 +4564,11 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             newfmt.Bloss = fmt->Bloss;
             src = PG_ConvertSurface(src, &newfmt);
             if (src) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = SDL_BlitSurface(src, srcrect, dst, dstrect) ? 0 : -1;
+#else
                 result = SDL_BlitSurface(src, srcrect, dst, dstrect);
+#endif
                 SDL_FreeSurface(src);
             }
             else {
@@ -4594,7 +4598,11 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     }
     else {
         /* Py_BEGIN_ALLOW_THREADS */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        result = SDL_BlitSurface(src, srcrect, dst, dstrect) ? 0 : -1;
+#else
         result = SDL_BlitSurface(src, srcrect, dst, dstrect);
+#endif
         /* Py_END_ALLOW_THREADS */
     }
 
