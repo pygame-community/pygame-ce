@@ -2391,487 +2391,135 @@ Unimplemented:
     return Py_NotImplemented;
 }
 
-/*width*/
-static PyObject *
-RectExport_getwidth(RectObject *self, void *closure)
-{
-    return PythonNumberFromPrimitiveType(self->r.w);
-}
-
-static int
-RectExport_setwidth(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
+#define RECT_ATTRIBUTE(name, getter_code, setter_values, setter_parser,      \
+                       setter_code)                                          \
+    static PyObject *RectExport_get##name(RectObject *self, void *closure)   \
+    {                                                                        \
+        return getter_code;                                                  \
+    }                                                                        \
+                                                                             \
+    static int RectExport_set##name(RectObject *self, PyObject *value,       \
+                                    void *closure)                           \
+    {                                                                        \
+        setter_values;                                                       \
+        if (NULL == value) {                                                 \
+            /* Attribute deletion not supported. */                          \
+            PyErr_SetString(PyExc_AttributeError, "can't delete attribute"); \
+            return -1;                                                       \
+        }                                                                    \
+                                                                             \
+        if (!setter_parser) {                                                \
+            PyErr_SetString(PyExc_TypeError, "invalid rect assignment");     \
+            return -1;                                                       \
+        }                                                                    \
+        setter_code return 0;                                                \
     }
 
-    if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.w = val1;
-    return 0;
-}
-
-/*height*/
-static PyObject *
-RectExport_getheight(RectObject *self, void *closure)
-{
-    return PythonNumberFromPrimitiveType(self->r.h);
-}
-
-static int
-RectExport_setheight(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.h = val1;
-    return 0;
-}
-
-/*top*/
-static PyObject *
-RectExport_gettop(RectObject *self, void *closure)
-{
-    return PythonNumberFromPrimitiveType(self->r.y);
-}
-
-static int
-RectExport_settop(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.y = val1;
-    return 0;
-}
-
-/*left*/
-static PyObject *
-RectExport_getleft(RectObject *self, void *closure)
-{
-    return PythonNumberFromPrimitiveType(self->r.x);
-}
-
-static int
-RectExport_setleft(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x = val1;
-    return 0;
-}
-
-/*right*/
-static PyObject *
-RectExport_getright(RectObject *self, void *closure)
-{
-    return PythonNumberFromPrimitiveType(self->r.x + self->r.w);
-}
-
-static int
-RectExport_setright(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x = val1 - self->r.w;
-    return 0;
-}
-
-/*bottom*/
-static PyObject *
-RectExport_getbottom(RectObject *self, void *closure)
-{
-    return PythonNumberFromPrimitiveType(self->r.y + self->r.h);
-}
-
-static int
-RectExport_setbottom(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.y = val1 - self->r.h;
-    return 0;
-}
-
-/*centerx*/
-static PyObject *
-RectExport_getcenterx(RectObject *self, void *closure)
-{
-    return PythonNumberFromPrimitiveType(self->r.x + (self->r.w / 2));
-}
-
-static int
-RectExport_setcenterx(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x = val1 - (self->r.w / 2);
-    return 0;
-}
-
-/*centery*/
-static PyObject *
-RectExport_getcentery(RectObject *self, void *closure)
-{
-    return PythonNumberFromPrimitiveType(self->r.y + (self->r.h / 2));
-}
-
-static int
-RectExport_setcentery(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!PrimitiveFromObj(value, &val1)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.y = val1 - (self->r.h / 2);
-    return 0;
-}
-
-/*topleft*/
-static PyObject *
-RectExport_gettopleft(RectObject *self, void *closure)
-{
-    return TupleFromTwoPrimitives(self->r.x, self->r.y);
-}
-
-static int
-RectExport_settopleft(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1, val2;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x = val1;
-    self->r.y = val2;
-    return 0;
-}
-
-/*topright*/
-static PyObject *
-RectExport_gettopright(RectObject *self, void *closure)
-{
-    return TupleFromTwoPrimitives(self->r.x + self->r.w, self->r.y);
-}
-
-static int
-RectExport_settopright(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1, val2;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x = val1 - self->r.w;
-    self->r.y = val2;
-    return 0;
-}
-
-/*bottomleft*/
-static PyObject *
-RectExport_getbottomleft(RectObject *self, void *closure)
-{
-    return TupleFromTwoPrimitives(self->r.x, self->r.y + self->r.h);
-}
-
-static int
-RectExport_setbottomleft(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1, val2;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x = val1;
-    self->r.y = val2 - self->r.h;
-    return 0;
-}
-
-/*bottomright*/
-static PyObject *
-RectExport_getbottomright(RectObject *self, void *closure)
-{
-    return TupleFromTwoPrimitives(self->r.x + self->r.w,
-                                  self->r.y + self->r.h);
-}
-
-static int
-RectExport_setbottomright(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1, val2;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x = val1 - self->r.w;
-    self->r.y = val2 - self->r.h;
-    return 0;
-}
-
-/*midtop*/
-static PyObject *
-RectExport_getmidtop(RectObject *self, void *closure)
-{
-    return TupleFromTwoPrimitives(self->r.x + (self->r.w / 2), self->r.y);
-}
-
-static int
-RectExport_setmidtop(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1, val2;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x += val1 - (self->r.x + (self->r.w / 2));
-    self->r.y = val2;
-    return 0;
-}
-
-/*midleft*/
-static PyObject *
-RectExport_getmidleft(RectObject *self, void *closure)
-{
-    return TupleFromTwoPrimitives(self->r.x, self->r.y + (self->r.h / 2));
-}
-
-static int
-RectExport_setmidleft(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1, val2;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x = val1;
-    self->r.y += val2 - (self->r.y + (self->r.h / 2));
-    return 0;
-}
-
-/*midbottom*/
-static PyObject *
-RectExport_getmidbottom(RectObject *self, void *closure)
-{
-    return TupleFromTwoPrimitives(self->r.x + (self->r.w / 2),
-                                  self->r.y + self->r.h);
-}
-
-static int
-RectExport_setmidbottom(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1, val2;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x += val1 - (self->r.x + (self->r.w / 2));
-    self->r.y = val2 - self->r.h;
-    return 0;
-}
-
-/*midright*/
-static PyObject *
-RectExport_getmidright(RectObject *self, void *closure)
-{
-    return TupleFromTwoPrimitives(self->r.x + self->r.w,
-                                  self->r.y + (self->r.h / 2));
-}
-
-static int
-RectExport_setmidright(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1, val2;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x = val1 - self->r.w;
-    self->r.y += val2 - (self->r.y + (self->r.h / 2));
-    return 0;
-}
-
-/*center*/
-static PyObject *
-RectExport_getcenter(RectObject *self, void *closure)
-{
-    return TupleFromTwoPrimitives(self->r.x + (self->r.w / 2),
-                                  self->r.y + (self->r.h / 2));
-}
-
-static int
-RectExport_setcenter(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1, val2;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.x += val1 - (self->r.x + (self->r.w / 2));
-    self->r.y += val2 - (self->r.y + (self->r.h / 2));
-    return 0;
-}
-
-/*size*/
-static PyObject *
-RectExport_getsize(RectObject *self, void *closure)
-{
-    return TupleFromTwoPrimitives(self->r.w, self->r.h);
-}
-
-static int
-RectExport_setsize(RectObject *self, PyObject *value, void *closure)
-{
-    PrimitiveType val1, val2;
-
-    if (NULL == value) {
-        /* Attribute deletion not supported. */
-        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
-        return -1;
-    }
-
-    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
-        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
-        return -1;
-    }
-    self->r.w = val1;
-    self->r.h = val2;
-    return 0;
-}
+RECT_ATTRIBUTE(width, PythonNumberFromPrimitiveType(self->r.w),
+               PrimitiveType val1, PrimitiveFromObj(value, &val1),
+               self->r.w = val1;)
+
+RECT_ATTRIBUTE(height, PythonNumberFromPrimitiveType(self->r.h),
+               PrimitiveType val1, PrimitiveFromObj(value, &val1),
+               self->r.h = val1;)
+
+RECT_ATTRIBUTE(top, PythonNumberFromPrimitiveType(self->r.y),
+               PrimitiveType val1, PrimitiveFromObj(value, &val1),
+               self->r.y = val1;)
+
+RECT_ATTRIBUTE(left, PythonNumberFromPrimitiveType(self->r.x),
+               PrimitiveType val1, PrimitiveFromObj(value, &val1),
+               self->r.x = val1;)
+
+RECT_ATTRIBUTE(bottom, PythonNumberFromPrimitiveType(self->r.y + self->r.h),
+               PrimitiveType val1, PrimitiveFromObj(value, &val1),
+               self->r.y = val1 - self->r.h;)
+
+RECT_ATTRIBUTE(right, PythonNumberFromPrimitiveType(self->r.x + self->r.w),
+               PrimitiveType val1, PrimitiveFromObj(value, &val1),
+               self->r.x = val1 - self->r.w;)
+
+RECT_ATTRIBUTE(centerx,
+               PythonNumberFromPrimitiveType(self->r.x + (self->r.w / 2)),
+               PrimitiveType val1, PrimitiveFromObj(value, &val1),
+               self->r.x = val1 - (self->r.w / 2);)
+
+RECT_ATTRIBUTE(centery,
+               PythonNumberFromPrimitiveType(self->r.y + (self->r.h / 2)),
+               PrimitiveType val1, PrimitiveFromObj(value, &val1),
+               self->r.y = val1 - (self->r.h / 2);)
+
+RECT_ATTRIBUTE(topleft, TupleFromTwoPrimitives(self->r.x, self->r.y),
+               PrimitiveType val1;
+               PrimitiveType val2, twoPrimitivesFromObj(value, &val1, &val2),
+               self->r.x = val1;
+               self->r.y = val2;)
+
+RECT_ATTRIBUTE(topright,
+               TupleFromTwoPrimitives(self->r.x + self->r.w, self->r.y),
+               PrimitiveType val1;
+               PrimitiveType val2, twoPrimitivesFromObj(value, &val1, &val2),
+               self->r.x = val1 - self->r.w;
+               self->r.y = val2;)
+
+RECT_ATTRIBUTE(bottomleft,
+               TupleFromTwoPrimitives(self->r.x, self->r.y + self->r.h),
+               PrimitiveType val1;
+               PrimitiveType val2, twoPrimitivesFromObj(value, &val1, &val2),
+               self->r.x = val1;
+               self->r.y = val2 - self->r.h;)
+
+RECT_ATTRIBUTE(bottomright,
+               TupleFromTwoPrimitives(self->r.x + self->r.w,
+                                      self->r.y + self->r.h),
+               PrimitiveType val1;
+               PrimitiveType val2, twoPrimitivesFromObj(value, &val1, &val2),
+               self->r.x = val1 - self->r.w;
+               self->r.y = val2 - self->r.h;)
+
+RECT_ATTRIBUTE(midtop,
+               TupleFromTwoPrimitives(self->r.x + (self->r.w / 2), self->r.y),
+               PrimitiveType val1;
+               PrimitiveType val2, twoPrimitivesFromObj(value, &val1, &val2),
+               self->r.x += val1 - (self->r.x + (self->r.w / 2));
+               self->r.y = val2;)
+
+RECT_ATTRIBUTE(midleft,
+               TupleFromTwoPrimitives(self->r.x, self->r.y + (self->r.h / 2)),
+               PrimitiveType val1;
+               PrimitiveType val2, twoPrimitivesFromObj(value, &val1, &val2),
+               self->r.x = val1;
+               self->r.y += val2 - (self->r.y + (self->r.h / 2));)
+
+RECT_ATTRIBUTE(midbottom,
+               TupleFromTwoPrimitives(self->r.x + (self->r.w / 2),
+                                      self->r.y + self->r.h),
+               PrimitiveType val1;
+               PrimitiveType val2, twoPrimitivesFromObj(value, &val1, &val2),
+               self->r.x += val1 - (self->r.x + (self->r.w / 2));
+               self->r.y = val2 - self->r.h;)
+
+RECT_ATTRIBUTE(midright,
+               TupleFromTwoPrimitives(self->r.x + self->r.w,
+                                      self->r.y + (self->r.h / 2)),
+               PrimitiveType val1;
+               PrimitiveType val2, twoPrimitivesFromObj(value, &val1, &val2),
+               self->r.x = val1 - self->r.w;
+               self->r.y += val2 - (self->r.y + (self->r.h / 2));)
+
+RECT_ATTRIBUTE(center,
+               TupleFromTwoPrimitives(self->r.x + (self->r.w / 2),
+                                      self->r.y + (self->r.h / 2)),
+               PrimitiveType val1;
+               PrimitiveType val2, twoPrimitivesFromObj(value, &val1, &val2),
+               self->r.x += val1 - (self->r.x + (self->r.w / 2));
+               self->r.y += val2 - (self->r.y + (self->r.h / 2));)
+
+RECT_ATTRIBUTE(size, TupleFromTwoPrimitives(self->r.w, self->r.h),
+               PrimitiveType val1;
+               PrimitiveType val2, twoPrimitivesFromObj(value, &val1, &val2),
+               self->r.w = val1;
+               self->r.h = val2;)
 
 static PyObject *
 RectExport_iterator(RectObject *self)
