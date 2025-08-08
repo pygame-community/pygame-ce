@@ -7,6 +7,7 @@ import unittest
 
 import pygame
 from pygame import sprite
+from pygame._sdl2.video import Renderer, Texture
 
 ################################# MODULE LEVEL #################################
 
@@ -584,6 +585,24 @@ class AbstractGroupTypeTest(unittest.TestCase):
 
         self.assertEqual(self.ag.spritedict[self.s1], pygame.Rect(0, 0, 10, 10))
         self.assertEqual(self.ag.spritedict[self.s2], pygame.Rect(10, 0, 10, 10))
+
+    def test_draw_sdl2(self):
+        win = pygame.Window()
+        group = sprite.Group()
+        renderer = Renderer(win)
+        renderer.draw_color = "blue"
+        gpusprite = sprite.Sprite(group)
+
+        gpusprite.image = Texture(renderer, (50, 50), target=True)
+        renderer.target = gpusprite.image
+        renderer.clear()
+        gpusprite.rect = gpusprite.image.get_rect()
+
+        renderer.target = None
+        group.draw(renderer)
+        self.assertEqual(group.spritedict[gpusprite], pygame.Rect(0, 0, 50, 50))
+
+        renderer.present()
 
     def test_empty(self):
         self.ag.empty()
