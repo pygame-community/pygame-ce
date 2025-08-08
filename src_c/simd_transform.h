@@ -26,7 +26,8 @@
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
 
 void
-grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf);
+grayscale_sse2(SDL_Surface *src, PG_PixelFormat *src_fmt,
+               SDL_Surface *newsurf);
 // smoothscale filters
 void
 filter_shrink_X_SSE2(Uint8 *srcpix, Uint8 *dstpix, int height, int srcpitch,
@@ -41,12 +42,13 @@ void
 filter_expand_Y_SSE2(Uint8 *srcpix, Uint8 *dstpix, int width, int srcpitch,
                      int dstpitch, int srcheight, int dstheight);
 void
-invert_sse2(SDL_Surface *src, SDL_Surface *newsurf);
+invert_sse2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf);
 
 #endif /* (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)) */
 
 // AVX2 functions
 void
-grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf);
+grayscale_avx2(SDL_Surface *src, PG_PixelFormat *src_fmt,
+               SDL_Surface *newsurf);
 void
-invert_avx2(SDL_Surface *src, SDL_Surface *newsurf);
+invert_avx2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf);

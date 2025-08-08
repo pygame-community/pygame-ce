@@ -7,10 +7,10 @@
    :synopsis: Experimental pygame module for porting new SDL video systems
 
 .. warning::
-	This module isn't ready for prime time yet, it's still in development.
-        These docs are primarily meant to help the pygame developers and
-        super-early adopters who are in communication with the developers.
-        This API will change.
+   This module isn't ready for prime time yet, it's still in development.
+   These docs are primarily meant to help the pygame developers and
+   super-early adopters who are in communication with the developers.
+   This API will change.
 
 | :sl:`Experimental pygame module for porting new SDL video systems`
 
@@ -377,6 +377,10 @@
 
       | :sl:`Get or set the logical Renderer size (a device independent resolution for rendering)`
       | :sg:`logical_size -> (int width, int height)`
+
+      Note: When the rendering target is the main window, and ``logical_size``
+      has not been set before, it will contain ``(0, 0)`` and not the size of
+      the window.
 
    .. attribute:: scale
 

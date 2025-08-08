@@ -1,8 +1,8 @@
-import unittest
-import pygame
 import os
 import platform
+import unittest
 
+import pygame
 from pygame import Window
 from pygame.version import SDL
 

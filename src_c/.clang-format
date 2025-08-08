@@ -7,9 +7,9 @@ AlignAfterOpenBracket: Align
 BreakBeforeBraces: Stroustrup
 ColumnLimit: 79
 DerivePointerAlignment: false
+InsertBraces: true
 # These settings are mirrored in .editorconfig.  Keep them in sync.
 IndentWidth: 4
-Language: Cpp
 PointerAlignment: Right
 ReflowComments: true
 SpaceBeforeParens: ControlStatements

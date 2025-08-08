@@ -116,6 +116,7 @@ COLOR_FROM_SPACE(hsla);
 COLOR_FROM_SPACE(cmy);
 COLOR_FROM_SPACE(i1i2i3);
 COLOR_FROM_SPACE(normalized);
+COLOR_FROM_SPACE(hex);
 #undef COLOR_FROM_SPACE
 
 /* Getters/setters */
@@ -155,6 +156,10 @@ static PyObject *
 _color_get_normalized(pgColorObject *, void *);
 static int
 _color_set_normalized(pgColorObject *, PyObject *, void *);
+static PyObject *
+_color_get_hex(pgColorObject *, void *);
+static int
+_color_set_hex(pgColorObject *, PyObject *, void *);
 static PyObject *
 _color_get_arraystruct(pgColorObject *, void *);
 
@@ -236,6 +241,8 @@ static PyMethodDef _color_methods[] = {
      DOC_COLOR_FROMI1I2I3},
     {"from_normalized", (PyCFunction)_color_from_normalized,
      METH_CLASS | METH_VARARGS, DOC_COLOR_FROMNORMALIZED},
+    {"from_hex", (PyCFunction)_color_from_hex, METH_CLASS | METH_VARARGS,
+     DOC_COLOR_FROMHEX},
     {"normalize", (PyCFunction)_color_normalize, METH_NOARGS,
      DOC_COLOR_NORMALIZE},
     {"correct_gamma", (PyCFunction)_color_correct_gamma, METH_VARARGS,
@@ -269,6 +276,8 @@ static PyGetSetDef _color_getsets[] = {
      NULL},
     {"normalized", (getter)_color_get_normalized,
      (setter)_color_set_normalized, DOC_COLOR_NORMALIZED, NULL},
+    {"hex", (getter)_color_get_hex, (setter)_color_set_hex, DOC_COLOR_HEX,
+     NULL},
     {"__array_struct__", (getter)_color_get_arraystruct, NULL,
      "array structure interface, read only", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
@@ -501,14 +510,18 @@ _hexcolor(PyObject *color, Uint8 rgba[])
     }
 
     if (name[0] == '#') {
-        if (len != 7 && len != 9)
+        if (len != 7 && len != 9) {
             return TRISTATE_FAIL;
-        if (!_hextoint(name + 1, &rgba[0]))
+        }
+        if (!_hextoint(name + 1, &rgba[0])) {
             return TRISTATE_FAIL;
-        if (!_hextoint(name + 3, &rgba[1]))
+        }
+        if (!_hextoint(name + 3, &rgba[1])) {
             return TRISTATE_FAIL;
-        if (!_hextoint(name + 5, &rgba[2]))
+        }
+        if (!_hextoint(name + 5, &rgba[2])) {
             return TRISTATE_FAIL;
+        }
         rgba[3] = 255;
         if (len == 9 && !_hextoint(name + 7, &rgba[3])) {
             return TRISTATE_FAIL;
@@ -516,14 +529,18 @@ _hexcolor(PyObject *color, Uint8 rgba[])
         return TRISTATE_SUCCESS;
     }
     else if (name[0] == '0' && name[1] == 'x') {
-        if (len != 8 && len != 10)
+        if (len != 8 && len != 10) {
             return TRISTATE_FAIL;
-        if (!_hextoint(name + 2, &rgba[0]))
+        }
+        if (!_hextoint(name + 2, &rgba[0])) {
             return TRISTATE_FAIL;
-        if (!_hextoint(name + 4, &rgba[1]))
+        }
+        if (!_hextoint(name + 4, &rgba[1])) {
             return TRISTATE_FAIL;
-        if (!_hextoint(name + 6, &rgba[2]))
+        }
+        if (!_hextoint(name + 6, &rgba[2])) {
             return TRISTATE_FAIL;
+        }
         rgba[3] = 255;
         if (len == 10 && !_hextoint(name + 8, &rgba[3])) {
             return TRISTATE_FAIL;
@@ -709,6 +726,9 @@ _color_from_space(char *space, PyObject *args)
     else if (strcmp(space, "normalized") == 0) {
         set_success = _color_set_normalized(color, args, NULL);
     }
+    else if (strcmp(space, "hex") == 0) {
+        set_success = _color_set_hex(color, args, NULL);
+    }
 
     if (set_success != 0) {
         return NULL;
@@ -808,7 +828,19 @@ _color_lerp(pgColorObject *self, PyObject *args, PyObject *kw)
         return NULL;
     }
 
-    if (amt < 0 || amt > 1) {
+    // TOLERANCE to account for double precison floating point inaccuracy at
+    // the very limits, like if you're LERP'ing by 0.01. When you hit the end,
+    // something stupid like this might happen
+    /*  >>> value = 0
+        >>> offset = 0.01
+        >>> while value < 1:
+        ...     value += offset
+        ...
+        >>> print(value)
+        1.0000000000000007
+    */
+    static const double TOLERANCE = 1e-6;
+    if ((amt < -TOLERANCE) || (amt > (1.0 + TOLERANCE))) {
         return RAISE(PyExc_ValueError, "Argument 2 must be in range [0, 1]");
     }
 
@@ -1524,6 +1556,36 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
 }
 
 static PyObject *
+_color_get_hex(pgColorObject *color, void *closure)
+{
+    return PyUnicode_FromFormat("#%02x%02x%02x%02x", color->data[0],
+                                color->data[1], color->data[2],
+                                color->data[3]);
+}
+
+static int
+_color_set_hex(pgColorObject *color, PyObject *value, void *closure)
+{
+    DEL_ATTR_NOT_SUPPORTED_CHECK("hex", value);
+
+    if (!PyUnicode_Check(value)) {
+        PyErr_SetString(PyExc_TypeError, "hex color must be a string");
+        return -1;
+    }
+
+    switch (_hexcolor(value, color->data)) {
+        case TRISTATE_FAIL:
+            PyErr_SetString(PyExc_ValueError, "invalid hex string");
+            return -1;
+        case TRISTATE_ERROR:
+            return -1; /* forward python error */
+        default:
+            return 0;
+    }
+    return 0;
+}
+
+static PyObject *
 _color_get_arraystruct(pgColorObject *color, void *closure)
 {
     Py_buffer view;
@@ -1675,7 +1737,7 @@ _color_inv(pgColorObject *color)
 static PyObject *
 _color_int(pgColorObject *color)
 {
-    Uint32 tmp = (color->data[0] << 24) + (color->data[1] << 16) +
+    Uint32 tmp = ((Uint32)color->data[0] << 24) + (color->data[1] << 16) +
                  (color->data[2] << 8) + color->data[3];
     return PyLong_FromUnsignedLong(tmp);
 }
@@ -1686,7 +1748,7 @@ _color_int(pgColorObject *color)
 static PyObject *
 _color_float(pgColorObject *color)
 {
-    Uint32 tmp = ((color->data[0] << 24) + (color->data[1] << 16) +
+    Uint32 tmp = (((Uint32)color->data[0] << 24) + (color->data[1] << 16) +
                   (color->data[2] << 8) + color->data[3]);
     return PyFloat_FromDouble((double)tmp);
 }
@@ -1931,8 +1993,9 @@ _color_set_slice(pgColorObject *color, PyObject *idx, PyObject *val)
                                  &slicelength) < 0) {
             return -1;
         }
-        if ((step < 0 && start < stop) || (step > 0 && start > stop))
+        if ((step < 0 && start < stop) || (step > 0 && start > stop)) {
             stop = start;
+        }
 
         if (!(fastitems = PySequence_Fast(val, "expected sequence"))) {
             return -1;
@@ -2071,11 +2134,13 @@ _color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
     }
 
     attr_unicode = PyUnicode_FromObject(attr_name);
-    if (attr_unicode == NULL)
+    if (attr_unicode == NULL) {
         goto swizzle_failed;
+    }
     attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
-    if (attr == NULL)
+    if (attr == NULL) {
         goto swizzle_error;
+    }
 
     /* If we are not a swizzle, go straight to GenericGetAttr. */
     if ((attr[0] != 'r') && (attr[0] != 'g') && (attr[0] != 'b') &&
@@ -2092,8 +2157,9 @@ _color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
         res = (PyObject *)PyTuple_New(len);
     }
 
-    if (res == NULL)
+    if (res == NULL) {
         goto swizzle_error;
+    }
 
     for (i = 0; i < len; i++) {
         switch (attr[i]) {
@@ -2125,8 +2191,9 @@ _color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
             ((pgColorObject *)res)->data[i] = value;
         }
         else {
-            if (PyTuple_SetItem(res, i, PyLong_FromLong(value)) != 0)
+            if (PyTuple_SetItem(res, i, PyLong_FromLong(value)) != 0) {
                 goto swizzle_error;
+            }
         }
     }
 
@@ -2156,13 +2223,15 @@ _color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
     Uint8 entry[4] = {0};
     int entry_was_set[4] = {0};
 
-    if (len == 1)
+    if (len == 1) {
         return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
+    }
 
     /* Handle string and unicode uniformly */
     attr_unicode = PyUnicode_FromObject(attr_name);
-    if (attr_unicode == NULL)
+    if (attr_unicode == NULL) {
         return -1;
+    }
     attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
 
     if (attr == NULL) {
@@ -2228,11 +2297,13 @@ _color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
 
         entry_long = PyLong_AsLong(entry_obj);
         Py_DECREF(entry_obj);
-        if (PyErr_Occurred())
+        if (PyErr_Occurred()) {
             goto swizzle_error;
+        }
 
-        if (entry_long >= 0 && entry_long <= 255)
+        if (entry_long >= 0 && entry_long <= 255) {
             entry[idx] = (Uint8)entry_long;
+        }
         else {
             PyErr_SetString(
                 PyExc_TypeError,
@@ -2242,9 +2313,11 @@ _color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
     }
 
     /* Swizzle successful */
-    for (i = 0; i < 4; ++i)
-        if (entry_was_set[i])
+    for (i = 0; i < 4; ++i) {
+        if (entry_was_set[i]) {
             self->data[i] = entry[i];
+        }
+    }
     return 0;
 
     /* Swizzling failed! Fallback to PyObject_GenericSetAttr */
@@ -2443,26 +2516,16 @@ MODINIT_DEFINE(color)
         return NULL;
     }
 
-    /* type preparation */
-    if (PyType_Ready(&pgColor_Type) < 0) {
-        goto error;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
         goto error;
     }
 
-    Py_INCREF(&pgColor_Type);
-    if (PyModule_AddObject(module, "Color", (PyObject *)&pgColor_Type)) {
-        Py_DECREF(&pgColor_Type);
+    if (PyModule_AddType(module, &pgColor_Type)) {
         goto error;
     }
-    Py_INCREF(_COLORDICT);
-    if (PyModule_AddObject(module, "THECOLORS", _COLORDICT)) {
-        /* Yes, _COLORDICT is decref'd twice here and we want that */
-        Py_DECREF(_COLORDICT);
+    if (PyModule_AddObjectRef(module, "THECOLORS", _COLORDICT)) {
         goto error;
     }
 

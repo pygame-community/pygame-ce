@@ -1,10 +1,9 @@
 import platform
-import unittest
 import sys
+import unittest
+
 import pygame
-
 from pygame._sdl2 import video
-
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 

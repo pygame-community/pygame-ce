@@ -35,16 +35,19 @@ key_set_repeat(PyObject *self, PyObject *args)
 {
     int delay = 0, interval = 0;
 
-    if (!PyArg_ParseTuple(args, "|ii", &delay, &interval))
+    if (!PyArg_ParseTuple(args, "|ii", &delay, &interval)) {
         return NULL;
+    }
 
     VIDEO_INIT_CHECK();
 
-    if (delay && !interval)
+    if (delay && !interval) {
         interval = delay;
+    }
 
-    if (pg_EnableKeyRepeat(delay, interval) == -1)
+    if (pg_EnableKeyRepeat(delay, interval) == -1) {
         return NULL;
+    }
 
     Py_RETURN_NONE;
 }
@@ -78,8 +81,9 @@ pg_scancodewrapper_subscript(pgScancodeWrapper *self, PyObject *item)
 {
     long index;
     PyObject *adjustedvalue, *ret;
-    if ((index = PyLong_AsLong(item)) == -1 && PyErr_Occurred())
+    if ((index = PyLong_AsLong(item)) == -1 && PyErr_Occurred()) {
         return NULL;
+    }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     index = SDL_GetScancodeFromKey(index, NULL);
 #else
@@ -174,26 +178,21 @@ key_get_pressed(PyObject *self, PyObject *_null)
 #endif
     PyObject *ret_obj = NULL;
     PyObject *key_tuple;
-    int i;
 
     VIDEO_INIT_CHECK();
 
     key_state = SDL_GetKeyboardState(&num_keys);
 
-    if (!key_state || !num_keys)
+    if (!key_state || !num_keys) {
         Py_RETURN_NONE;
+    }
 
-    if (!(key_tuple = PyTuple_New(num_keys)))
+    if (!(key_tuple = PyTuple_New(num_keys))) {
         return NULL;
+    }
 
-    for (i = 0; i < num_keys; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(key_state[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    for (int i = 0; i < num_keys; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(key_state[i]));
     }
 
     ret_obj =
@@ -211,18 +210,12 @@ get_just_pressed(PyObject *self, PyObject *_null)
     PyObject *key_tuple = NULL;
     PyObject *ret_obj = NULL;
 
-    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES)))
+    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES))) {
         return NULL;
+    }
 
-    int i;
-    for (i = 0; i < SDL_NUM_SCANCODES; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(pressed_keys[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(pressed_keys[i]));
     }
     ret_obj =
         PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
@@ -239,18 +232,12 @@ get_just_released(PyObject *self, PyObject *_null)
     PyObject *key_tuple = NULL;
     PyObject *ret_obj = NULL;
 
-    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES)))
+    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES))) {
         return NULL;
+    }
 
-    int i;
-    for (i = 0; i < SDL_NUM_SCANCODES; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(released_keys[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(released_keys[i]));
     }
     ret_obj =
         PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
@@ -440,8 +427,9 @@ key_name(PyObject *self, PyObject *args, PyObject *kwargs)
     static char *kwids[] = {"key", "use_compat", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i|p", kwids, &key,
-                                     &use_compat))
+                                     &use_compat)) {
         return NULL;
+    }
 
     if (use_compat) {
         /* Use our backcompat function, that has names hardcoded in pygame
@@ -465,8 +453,9 @@ key_code(PyObject *self, PyObject *args, PyObject *kwargs)
 
     static char *kwids[] = {"name", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwids, &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwids, &name)) {
         return NULL;
+    }
 
     /* in the future, this should be an error. For now it's a warning to not
      * break existing code */
@@ -499,8 +488,9 @@ key_set_mods(PyObject *self, PyObject *args)
 {
     int mods;
 
-    if (!PyArg_ParseTuple(args, "i", &mods))
+    if (!PyArg_ParseTuple(args, "i", &mods)) {
         return NULL;
+    }
 
     VIDEO_INIT_CHECK();
 
@@ -570,8 +560,9 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
         Py_RETURN_NONE;
     }
     rect = pgRect_FromObject(obj, &temp);
-    if (!rect)
+    if (!rect) {
         return RAISE(PyExc_TypeError, "Invalid rect argument");
+    }
 
     if (sdlRenderer != NULL) {
         SDL_Rect vprect, rect2;
@@ -672,10 +663,8 @@ MODINIT_DEFINE(key)
         return NULL;
     }
 
-    Py_INCREF(&pgScancodeWrapper_Type);
-    if (PyModule_AddObject(module, _PG_SCANCODEWRAPPER_TYPE_NAME,
-                           (PyObject *)&pgScancodeWrapper_Type)) {
-        Py_DECREF(&pgScancodeWrapper_Type);
+    if (PyModule_AddObjectRef(module, _PG_SCANCODEWRAPPER_TYPE_NAME,
+                              (PyObject *)&pgScancodeWrapper_Type)) {
         Py_DECREF(module);
         return NULL;
     }

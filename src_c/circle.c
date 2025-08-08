@@ -91,7 +91,7 @@ pg_circle_repr(pgCircleObject *self)
         return NULL;
     }
 
-    PyObject *result = PyUnicode_FromFormat("<Circle((%R, %R), %R)>", x, y, r);
+    PyObject *result = PyUnicode_FromFormat("Circle((%R, %R), %R)", x, y, r);
 
     Py_DECREF(x);
     Py_DECREF(y);
@@ -539,11 +539,13 @@ pg_circle_contains(pgCircleObject *self, PyObject *arg)
     if (pgCircle_Check(arg)) {
         pgCircleBase *circle = &pgCircle_AsCircle(arg);
         /*a circle is always contained within itself*/
-        if (circle == scirc)
+        if (circle == scirc) {
             Py_RETURN_TRUE;
+        }
         /* a bigger circle can't be contained within a smaller circle */
-        if (circle->r > scirc->r)
+        if (circle->r > scirc->r) {
             Py_RETURN_FALSE;
+        }
 
         const double dx = circle->x - scirc->x;
         const double dy = circle->y - scirc->y;

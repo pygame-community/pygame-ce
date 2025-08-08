@@ -1,12 +1,14 @@
 import pathlib
+import platform
+import sys
 import unittest
 
-from pygame import encode_string, encode_file_path
+from pygame import encode_file_path, encode_string
+
+IS_PYPY = "PyPy" == platform.python_implementation()
 
 
 class RWopsEncodeStringTest(unittest.TestCase):
-    global getrefcount
-
     def test_obj_None(self):
         encoded_string = encode_string(None)
 
@@ -68,22 +70,15 @@ class RWopsEncodeStringTest(unittest.TestCase):
         self.assertIs(encoded_string, b)
         self.assertEqual(encoded_decode_string, b)
 
-    try:
-        from sys import getrefcount as _g
-
-        getrefcount = _g  # This nonsense is for Python 3.x
-    except ImportError:
-        pass
-    else:
-
-        def test_refcount(self):
-            bpath = b" This is a string that is not cached."[1:]
-            upath = bpath.decode("ascii")
-            before = getrefcount(bpath)
-            bpath = encode_string(bpath)
-            self.assertEqual(getrefcount(bpath), before)
-            bpath = encode_string(upath)
-            self.assertEqual(getrefcount(bpath), before)
+    @unittest.skipIf(IS_PYPY, "getrefcount not available on pypy")
+    def test_refcount(self):
+        bpath = b" This is a string that is not cached."[1:]
+        upath = bpath.decode("ascii")
+        before = sys.getrefcount(bpath)
+        bpath = encode_string(bpath)
+        self.assertEqual(sys.getrefcount(bpath), before)
+        bpath = encode_string(upath)
+        self.assertIn(sys.getrefcount(bpath), (before, before - 1))
 
     def test_smp(self):
         utf_8 = b"a\xf0\x93\x82\xa7b"

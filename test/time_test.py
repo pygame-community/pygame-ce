@@ -1,6 +1,7 @@
-import unittest
-import pygame
 import time
+import unittest
+
+import pygame
 
 Clock = pygame.time.Clock
 

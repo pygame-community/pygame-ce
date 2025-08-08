@@ -40,10 +40,12 @@ pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
     INSERT_INSTRUCTIONSET_INFO("LSX", SDL_HasLSX);
     INSERT_INSTRUCTIONSET_INFO("LASX", SDL_HasLASX);
 #else
-    if (PyDict_SetItemString(instruction_sets, "LSX", Py_False))
+    if (PyDict_SetItemString(instruction_sets, "LSX", Py_False)) {
         goto error;
-    if (PyDict_SetItemString(instruction_sets, "LASX", Py_False))
+    }
+    if (PyDict_SetItemString(instruction_sets, "LASX", Py_False)) {
         goto error;
+    }
 #endif
 
 #undef INSERT_INSTRUCTIONSET_INFO
@@ -232,13 +234,15 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
     );
     // clang-format on
 
-    if (!return_kwargs)
+    if (!return_kwargs) {
         return NULL;
+    }
 
     return_args = Py_BuildValue("()");
 
-    if (!return_args)
+    if (!return_args) {
         return NULL;
+    }
 
     if (!PowerState_class) {
         return RAISE(PyExc_SystemError, "PowerState class is not imported.");

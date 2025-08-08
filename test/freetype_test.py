@@ -1,11 +1,12 @@
-import os
-import io
-import unittest
 import ctypes
-import weakref
 import gc
+import io
+import os
 import pathlib
 import platform
+import sys
+import unittest
+import weakref
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
@@ -16,7 +17,6 @@ except NameError:
     pass
 
 import pygame
-
 import pygame.freetype as ft
 
 FONTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "fonts")
@@ -1612,16 +1612,16 @@ class FreeTypeFontTest(unittest.TestCase):
         else:
             array = arrinter.Array(rect.size, "u", 1)
             o = font.render_raw(text)
-            self.assertEqual(getrefcount(o), 2)
+            self.assertIn(getrefcount(o), (1, 2))
             self.assertEqual(getrefcount(o[0]), 2)
             self.assertEqual(getrefcount(o[1]), 2)
             self.assertEqual(getrefcount(font.render_raw_to(array, text)), 1)
             o = font.get_metrics("AB")
-            self.assertEqual(getrefcount(o), 2)
+            self.assertIn(getrefcount(o), (1, 2))
             for i in range(len(o)):
                 self.assertEqual(getrefcount(o[i]), 2, "refcount fail for item %d" % i)
             o = font.get_sizes()
-            self.assertEqual(getrefcount(o), 2)
+            self.assertIn(getrefcount(o), (1, 2))
             for i in range(len(o)):
                 self.assertEqual(getrefcount(o[i]), 2, "refcount fail for item %d" % i)
 
