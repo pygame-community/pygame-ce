@@ -76,28 +76,22 @@ pgSurface_LockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
     PyObject *ref;
     pgSurfaceObject *surf = (pgSurfaceObject *)surfobj;
 
-    LOCK_pgSurfaceObject(surfobj);
-
     if (surf->locklist == NULL) {
         surf->locklist = PyList_New(0);
         if (surf->locklist == NULL) {
-            UNLOCK_pgSurfaceObject(surfobj);
             return 0;
         }
     }
     ref = PyWeakref_NewRef(lockobj, NULL);
     if (ref == NULL) {
-        UNLOCK_pgSurfaceObject(surfobj);
         return 0;
     }
     if (ref == Py_None) {
         Py_DECREF(ref);
-        UNLOCK_pgSurfaceObject(surfobj);
         return 0;
     }
     if (0 != PyList_Append(surf->locklist, ref)) {
         Py_DECREF(ref);
-        UNLOCK_pgSurfaceObject(surfobj);
         return 0; /* Exception already set. */
     }
     Py_DECREF(ref);
@@ -107,7 +101,6 @@ pgSurface_LockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
     }
     if (!PG_LockSurface(surf->surf)) {
         PyErr_SetString(PyExc_RuntimeError, "error locking surface");
-        UNLOCK_pgSurfaceObject(surfobj);
         return 0;
     }
 
@@ -186,7 +179,6 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
     }
 
     if (!found) {
-        UNLOCK_pgSurfaceObject(surfobj);
         return noerror;
     }
 
@@ -201,7 +193,6 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
         found--;
     }
 
-    UNLOCK_pgSurfaceObject(surfobj);
     return noerror;
 }
 

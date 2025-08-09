@@ -323,22 +323,31 @@ typedef struct {
     PyObject *dependency;
 #if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
     PyMutex mutex;
+    int is_locked;
 #endif
 } pgSurfaceObject;
 #define pgSurface_AsSurface(x) (((pgSurfaceObject *)x)->surf)
 
 #if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
-#define LOCK_pgSurfaceObject(pgSurfacePtr) \
-    PyMutex_Lock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex));
+#define LOCK_pgSurfaceObject(pgSurfacePtr)                     \
+    PyMutex_Lock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex)); \
+    ((pgSurfaceObject *)pgSurfacePtr)->is_locked = 1;
 #else
 #define LOCK_pgSurfaceObject(pgSurfacePtr)
 #endif
 
 #if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
-#define UNLOCK_pgSurfaceObject(pgSurfacePtr) \
-    PyMutex_Unlock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex));
+#define UNLOCK_pgSurfaceObject(pgSurfacePtr)                     \
+    PyMutex_Unlock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex)); \
+    ((pgSurfaceObject *)pgSurfacePtr)->is_locked = 0;
 #else
 #define UNLOCK_pgSurfaceObject(pgSurfacePtr)
+#endif
+
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+#define IS_LOCKED(pgSurfacePtr) ((pgSurfaceObject *)pgSurfacePtr)->is_locked
+#else
+#define IS_LOCKED(pgSurfacePtr) 0
 #endif
 
 #ifndef PYGAMEAPI_SURFACE_INTERNAL

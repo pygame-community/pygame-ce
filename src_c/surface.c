@@ -913,7 +913,13 @@ surf_get_at(PyObject *self, PyObject *position)
         return RAISE(PyExc_RuntimeError, "invalid color depth for surface");
     }
 
+    LOCK_pgSurfaceObject((pgSurfaceObject *)self);
     if (!pgSurface_Lock((pgSurfaceObject *)self)) {
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
         if (PyErr_Occurred()) {
             PyErr_Print();
             PyErr_Clear();
@@ -955,10 +961,16 @@ surf_get_at(PyObject *self, PyObject *position)
             PyErr_Print();
             PyErr_Clear();
         }
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
         PyErr_SetString(pgExc_SDLError, "Failed to unlock surface in get_at");
         return NULL;
     }
 
+    UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
     return pgColor_New(rgba);
 }
 
@@ -1012,7 +1024,13 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         return NULL;
     }
 
+    LOCK_pgSurfaceObject((pgSurfaceObject *)self);
     if (!pgSurface_Lock((pgSurfaceObject *)self)) {
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
         if (PyErr_Occurred()) {
             PyErr_Print();
             PyErr_Clear();
@@ -1060,10 +1078,15 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
             PyErr_Print();
             PyErr_Clear();
         }
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
+        if (PyErr_Occurred()) {
+            PyErr_Print();
+            PyErr_Clear();
+        }
         PyErr_SetString(pgExc_SDLError, "Failed to unlock surface in set_at");
-
         return NULL;
     }
+    UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
 
     Py_RETURN_NONE;
 }
