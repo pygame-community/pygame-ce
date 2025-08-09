@@ -413,6 +413,7 @@ if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
         f"pygame-ce {ver} (SDL {'.'.join(map(str, get_sdl_version()))}, "
         f"Python {python_version})"
     )
+    del python_version, python_implementation
 
 # cleanup namespace
 del pygame, os, sys, platform, MissingModule, copyreg, packager_imports
