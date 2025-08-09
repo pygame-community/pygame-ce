@@ -401,11 +401,10 @@ copyreg.pickle(Color, __color_reduce, __color_constructor)
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
     python_implementation = sys.version
     python_version = platform.python_version()
-    from packaging import version
 
     if (
         sys.platform not in ("wasi", "wasm")
-        and (version.parse(python_version) >= version.parse("3.13.0"))
+        and (sys.version_info >= (3, 13, 0))
         and "free-threading" in python_implementation
     ):
         python_version += f"t, {'' if sys._is_gil_enabled() else 'No '}GIL"
