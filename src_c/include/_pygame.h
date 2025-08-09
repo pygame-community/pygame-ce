@@ -208,6 +208,7 @@ typedef struct {
 
 #define pgRect_AsRect(x) (((pgRectObject *)x)->r)
 #define pgFRect_AsRect(x) (((pgFRectObject *)x)->r)
+
 #ifndef PYGAMEAPI_RECT_INTERNAL
 #define pgRect_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(rect, 0))
 
@@ -526,26 +527,10 @@ typedef struct pgColorObject pgColorObject;
 #endif /* PYGAMEAPI_COLOR_INTERNAL */
 
 /*
- * Math module
+ * Geometry module
  */
-#ifndef PYGAMEAPI_MATH_INTERNAL
-#define pgVector2_Check(x) \
-    ((x)->ob_type == (PyTypeObject *)PYGAMEAPI_GET_SLOT(math, 0))
-
-#define pgVector3_Check(x) \
-    ((x)->ob_type == (PyTypeObject *)PYGAMEAPI_GET_SLOT(math, 1))
-/*
-#define pgVector2_New                                             \
-    (*(PyObject*(*))  \
-        PYGAMEAPI_GET_SLOT(PyGAME_C_API, 1))
-*/
-#define import_pygame_math() IMPORT_PYGAME_MODULE(math)
-#endif /* PYGAMEAPI_MATH_INTERNAL */
-
 #ifndef PYGAMEAPI_GEOMETRY_INTERNAL
-
 #define import_pygame_geometry() IMPORT_PYGAME_MODULE(geometry)
-
 #endif /* ~PYGAMEAPI_GEOMETRY_INTERNAL */
 
 /*

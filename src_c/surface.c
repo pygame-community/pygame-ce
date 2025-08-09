@@ -720,16 +720,16 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         if (flags & PGS_SRCALPHA) {
             switch (bpp) {
                 case 16:
-                    Rmask = 0xF << 8;
-                    Gmask = 0xF << 4;
-                    Bmask = 0xF;
-                    Amask = 0xF << 12;
+                    Rmask = 0xFu << 8;
+                    Gmask = 0xFu << 4;
+                    Bmask = 0xFu;
+                    Amask = 0xFu << 12;
                     break;
                 case 32:
-                    Rmask = 0xFF << 16;
-                    Gmask = 0xFF << 8;
-                    Bmask = 0xFF;
-                    Amask = 0xFF << 24;
+                    Rmask = 0xFFu << 16;
+                    Gmask = 0xFFu << 8;
+                    Bmask = 0xFFu;
+                    Amask = 0xFFu << 24;
                     break;
                 default:
                     PyErr_SetString(
@@ -796,20 +796,20 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         if (flags & PGS_SRCALPHA) {
             switch (bpp) {
                 case 16:
-                    Rmask = 0xF << 8;
-                    Gmask = 0xF << 4;
-                    Bmask = 0xF;
-                    Amask = 0xF << 12;
+                    Rmask = 0xFu << 8;
+                    Gmask = 0xFu << 4;
+                    Bmask = 0xFu;
+                    Amask = 0xFu << 12;
                     break;
                 case 24:
                     bpp = 32;
                     // we automatically step up to 32 if video is 24, fall
                     // through to case below
                 case 32:
-                    Rmask = 0xFF << 16;
-                    Gmask = 0xFF << 8;
-                    Bmask = 0xFF;
-                    Amask = 0xFF << 24;
+                    Rmask = 0xFFu << 16;
+                    Gmask = 0xFFu << 8;
+                    Bmask = 0xFFu;
+                    Amask = 0xFFu << 24;
                     break;
                 default:
                     PyErr_SetString(
@@ -1443,7 +1443,6 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args)
     SDL_Surface *surf = pgSurface_AsSurface(self);
     Uint32 flags = 0, color = 0;
     PyObject *rgba_obj = NULL;
-    int result;
     int hascolor = SDL_FALSE;
 
     if (!PyArg_ParseTuple(args, "|Oi", &rgba_obj, &flags)) {
@@ -1462,22 +1461,22 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args)
     }
 
     pgSurface_Prep(self);
-    result = 0;
+    bool success = true;
     if (hascolor && PG_SURF_BytesPerPixel(surf) == 1) {
         /* For an indexed surface, remove the previous colorkey first.
          */
-        result = SDL_SetColorKey(surf, SDL_FALSE, color);
+        success = PG_SetSurfaceColorKey(surf, SDL_FALSE, color);
     }
-    if (result == 0 && hascolor) {
-        result = SDL_SetSurfaceRLE(
+    if (success && hascolor) {
+        success = PG_SetSurfaceRLE(
             surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
     }
-    if (result == 0) {
-        result = SDL_SetColorKey(surf, hascolor, color);
+    if (success) {
+        success = PG_SetSurfaceColorKey(surf, hascolor, color);
     }
     pgSurface_Unprep(self);
 
-    if (result == -1) {
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1522,9 +1521,7 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
     Uint32 flags = 0;
     PyObject *alpha_obj = NULL, *intobj = NULL;
     Uint8 alpha;
-    int result, alphaval = 255;
-    SDL_Rect sdlrect;
-    SDL_Surface *surface;
+    int alphaval = 255;
 
     if (!PyArg_ParseTuple(args, "|Oi", &alpha_obj, &flags)) {
         return NULL;
@@ -1570,29 +1567,34 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
         }
     }
     pgSurface_Prep(self);
-    result =
-        SDL_SetSurfaceRLE(surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
+    bool success =
+        PG_SetSurfaceRLE(surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
     /* HACK HACK HACK */
+    // TODO SDL3: figure out how to port this or if it's relevant to SDL3.
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     if ((surf->flags & SDL_RLEACCEL) && (!(flags & PGS_RLEACCEL))) {
         /* hack to strip SDL_RLEACCEL flag off surface immediately when
            it is not requested */
+        SDL_Rect sdlrect;
         sdlrect.x = 0;
         sdlrect.y = 0;
         sdlrect.h = 0;
         sdlrect.w = 0;
 
-        surface = PG_CreateSurface(1, 1, PG_SURF_FORMATENUM(surf));
+        SDL_Surface *surface =
+            PG_CreateSurface(1, 1, PG_SURF_FORMATENUM(surf));
 
         SDL_LowerBlit(surf, &sdlrect, surface, &sdlrect);
         SDL_FreeSurface(surface);
     }
+#endif
     /* HACK HACK HACK */
-    if (result == 0) {
-        result = !PG_SetSurfaceAlphaMod(surf, alpha);
+    if (success) {
+        success = PG_SetSurfaceAlphaMod(surf, alpha);
     }
     pgSurface_Unprep(self);
 
-    if (result != 0) {
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1840,7 +1842,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 
     if (has_colorkey) {
         colorkey = SDL_MapSurfaceRGBA(newsurf, key_r, key_g, key_b, key_a);
-        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
+        if (!PG_SetSurfaceColorKey(newsurf, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
@@ -2003,7 +2005,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 
     if (has_colorkey) {
         colorkey = SDL_MapRGBA(newsurf->format, key_r, key_g, key_b, key_a);
-        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
+        if (!PG_SetSurfaceColorKey(newsurf, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
@@ -3043,9 +3045,17 @@ surf_get_flags(PyObject *self, PyObject *_null)
     if (PG_SurfaceHasRLE(surf)) {
         flags |= PGS_RLEACCELOK;
     }
+    // TODO SDL3: figure out how to properly emulate SDL2 check/relevance
+    // Current implementation is just a placeholder.
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (SDL_SurfaceHasRLE(surf)) {
+        flags |= PGS_RLEACCEL;
+    }
+#else
     if ((sdl_flags & SDL_RLEACCEL)) {
         flags |= PGS_RLEACCEL;
     }
+#endif
     if (is_window_surf) {
         if (window_flags & PG_WINDOW_FULLSCREEN_INCLUSIVE) {
             flags |= PGS_FULLSCREEN;
@@ -3263,7 +3273,7 @@ surf_subsurface(PyObject *self, PyObject *args)
             SDL_FreeSurface(sub);
             return NULL;
         }
-        if (SDL_SetSurfacePalette(sub, pal) != 0) {
+        if (!PG_SetSurfacePalette(sub, pal)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreePalette(pal);
             SDL_FreeSurface(sub);
@@ -3285,7 +3295,7 @@ surf_subsurface(PyObject *self, PyObject *args)
     }
     if (SDL_HasColorKey(surf)) {
         SDL_GetColorKey(surf, &colorkey);
-        if (SDL_SetColorKey(sub, SDL_TRUE, colorkey) != 0) {
+        if (!PG_SetSurfaceColorKey(sub, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(sub);
             return NULL;
@@ -4398,7 +4408,7 @@ surf_get_pixels_address(PyObject *self, PyObject *closure)
 
 static int
 surface_do_overlap(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-                   SDL_Rect *dstrect)
+                   SDL_Rect *dstrect, SDL_Rect *clip)
 {
     Uint8 *srcpixels;
     Uint8 *dstpixels;
@@ -4407,7 +4417,6 @@ surface_do_overlap(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
     int x, y;
     int w = srcrect->w, h = srcrect->h;
     int maxw, maxh;
-    SDL_Rect *clip = &dst->clip_rect;
     int span;
     int dstoffset;
 
@@ -4487,8 +4496,15 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     SDL_Surface *dst = pgSurface_AsSurface(dstobj);
     SDL_Surface *subsurface = NULL;
     int result, suboffsetx = 0, suboffsety = 0;
-    SDL_Rect orig_clip, sub_clip;
+    SDL_Rect orig_clip, sub_clip, dstclip;
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     Uint8 alpha;
+#endif
+
+    if (!PG_GetSurfaceClipRect(dst, &dstclip)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return 0;
+    }
 
     /* passthrough blits to the real surface */
     if (((pgSurfaceObject *)dstobj)->subsurface) {
@@ -4533,11 +4549,13 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             owner is locked.
             */
          dst->pixels == src->pixels && srcrect != NULL &&
-         surface_do_overlap(src, srcrect, dst, dstrect))) {
+         surface_do_overlap(src, srcrect, dst, dstrect, &dstclip))) {
         /* Py_BEGIN_ALLOW_THREADS */
         result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
         /* Py_END_ALLOW_THREADS */
     }
+// TODO SDL3: port the below bit of code. Skipping for initial surface port.
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     /* can't blit alpha to 8bit, crashes SDL */
     else if (PG_SURF_BytesPerPixel(dst) == 1 &&
              (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(src)) ||
@@ -4581,6 +4599,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         }
         /* Py_END_ALLOW_THREADS */
     }
+#endif
     else if (blend_flags != PYGAME_BLEND_ALPHA_SDL2 &&
              !(pg_EnvShouldBlendAlphaSDL2()) && !SDL_HasColorKey(src) &&
              (PG_SURF_BytesPerPixel(dst) == 4 ||
@@ -4588,7 +4607,12 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
              _PgSurface_SrcAlpha(src) &&
              (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(src))) &&
              !PG_SurfaceHasRLE(src) && !PG_SurfaceHasRLE(dst) &&
-             !(src->flags & SDL_RLEACCEL) && !(dst->flags & SDL_RLEACCEL)) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+             1
+#else
+             !(src->flags & SDL_RLEACCEL) && !(dst->flags & SDL_RLEACCEL)
+#endif
+    ) {
         /* If we have a 32bit source surface with per pixel alpha
            and no RLE we'll use pygame_Blit so we can mimic how SDL1
             behaved */
@@ -4656,11 +4680,11 @@ exec_surface(PyObject *module)
 
     PyObject *apiobj;
     static void *c_api[PYGAMEAPI_SURFACE_NUMSLOTS];
-
+#ifndef BUILD_STATIC
     if (pg_warn_simd_at_runtime_but_uncompiled() < 0) {
         return -1;
     }
-
+#endif
     if (PyModule_AddObjectRef(module, "SurfaceType",
                               (PyObject *)&pgSurface_Type)) {
         return -1;
@@ -4690,6 +4714,7 @@ exec_surface(PyObject *module)
 
 MODINIT_DEFINE(surface)
 {
+#ifndef BUILD_STATIC
     static PyModuleDef_Slot surf_slots[] = {
         {Py_mod_exec, &exec_surface},
 #if PY_VERSION_HEX >= 0x030c0000
@@ -4701,16 +4726,32 @@ MODINIT_DEFINE(surface)
         DISABLE_GIL_MULTIPHASE_INITIALIZATION("surface")
 #endif
             {0, NULL}};
-
+#endif
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "surface",
                                          DOC_SURFACE,
                                          0,
                                          _surface_methods,
+#ifndef BUILD_STATIC
                                          surf_slots,
+#else
+                                         NULL,
+#endif
                                          NULL,
                                          NULL,
                                          NULL};
-
+#ifndef BUILD_STATIC
     return PyModuleDef_Init(&_module);
+#else
+    // in static mode with want surface module to be ready before python types
+    // are evaluated eg pygame.surface.Surface in sprite.py
+    PyObject *module = PyModule_Create(&_module);
+    if (module) {
+        if (exec_surface(module) != 0) {
+            Py_DECREF(module);
+            return NULL;
+        }
+    }
+    return module;
+#endif
 }

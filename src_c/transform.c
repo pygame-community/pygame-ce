@@ -136,7 +136,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
     /* Copy palette, colorkey, etc info */
     if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         SDL_Palette *newsurf_palette = PG_GetSurfacePalette(newsurf);
-        SDL_Palette *surf_palette = PG_GetSurfacePalette(newsurf);
+        SDL_Palette *surf_palette = PG_GetSurfacePalette(surf);
 
         if (newsurf_palette == NULL) {
             PyErr_SetString(
@@ -197,13 +197,12 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
 
     if (SDL_HasColorKey(surf)) {
         SDL_GetColorKey(surf, &colorkey);
-        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
+        if (!PG_SetSurfaceColorKey(newsurf, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
         }
-        if (PG_SurfaceHasRLE(surf) &&
-            SDL_SetSurfaceRLE(newsurf, SDL_TRUE) != 0) {
+        if (PG_SurfaceHasRLE(surf) && !PG_SetSurfaceRLE(newsurf, SDL_TRUE)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
             return NULL;
@@ -2703,7 +2702,7 @@ modify_hsl(SDL_Surface *surf, PG_PixelFormat *fmt, SDL_Surface *dst,
     Uint8 *srcp8 = (Uint8 *)surf->pixels;
     Uint8 *dstp8 = (Uint8 *)dst->pixels;
     SDL_Palette *surf_palette = PG_GetSurfacePalette(surf);
-    SDL_Palette *dst_palette = PG_GetSurfacePalette(surf);
+    SDL_Palette *dst_palette = PG_GetSurfacePalette(dst);
 
     if (PG_FORMAT_BytesPerPixel(fmt) == 4 ||
         PG_FORMAT_BytesPerPixel(fmt) == 3) {

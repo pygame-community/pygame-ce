@@ -36,7 +36,7 @@
 #endif
 
 #include "pygame.h"
-
+#if !defined(BUILD_STATIC)
 /* Blend modes */
 #define PYGAME_BLEND_ADD 0x1
 #define PYGAME_BLEND_SUB 0x2
@@ -57,7 +57,7 @@
 #define PYGAME_BLEND_RGBA_MAX 0x10
 #define PYGAME_BLEND_PREMULTIPLIED 0x11
 #define PYGAME_BLEND_ALPHA_SDL2 0x12
-
+#endif
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define GET_PIXEL_24(b) (b[0] + (b[1] << 8) + (b[2] << 16))
 #else
@@ -142,22 +142,22 @@
     }
 #endif
 
-#define CREATE_PIXEL(buf, r, g, b, a, bp, ft)                 \
-    switch (bp) {                                             \
-        case 2:                                               \
-            *((Uint16 *)(buf)) =                              \
-                ((r >> PG_FORMAT_R_LOSS(ft)) << ft->Rshift) | \
-                ((g >> PG_FORMAT_G_LOSS(ft)) << ft->Gshift) | \
-                ((b >> PG_FORMAT_B_LOSS(ft)) << ft->Bshift) | \
-                ((a >> PG_FORMAT_A_LOSS(ft)) << ft->Ashift);  \
-            break;                                            \
-        case 4:                                               \
-            *((Uint32 *)(buf)) =                              \
-                ((r >> PG_FORMAT_R_LOSS(ft)) << ft->Rshift) | \
-                ((g >> PG_FORMAT_G_LOSS(ft)) << ft->Gshift) | \
-                ((b >> PG_FORMAT_B_LOSS(ft)) << ft->Bshift) | \
-                ((a >> PG_FORMAT_A_LOSS(ft)) << ft->Ashift);  \
-            break;                                            \
+#define CREATE_PIXEL(buf, r, g, b, a, bp, ft)                         \
+    switch (bp) {                                                     \
+        case 2:                                                       \
+            *((Uint16 *)(buf)) =                                      \
+                ((r >> PG_FORMAT_R_LOSS(ft)) << ft->Rshift) |         \
+                ((g >> PG_FORMAT_G_LOSS(ft)) << ft->Gshift) |         \
+                ((b >> PG_FORMAT_B_LOSS(ft)) << ft->Bshift) |         \
+                ((a >> PG_FORMAT_A_LOSS(ft)) << ft->Ashift);          \
+            break;                                                    \
+        case 4:                                                       \
+            *((Uint32 *)(buf)) =                                      \
+                ((Uint32)(r >> PG_FORMAT_R_LOSS(ft)) << ft->Rshift) | \
+                ((Uint32)(g >> PG_FORMAT_G_LOSS(ft)) << ft->Gshift) | \
+                ((Uint32)(b >> PG_FORMAT_B_LOSS(ft)) << ft->Bshift) | \
+                ((Uint32)(a >> PG_FORMAT_A_LOSS(ft)) << ft->Ashift);  \
+            break;                                                    \
     }
 
 /* Pretty good idea from Tom Duff :-). */

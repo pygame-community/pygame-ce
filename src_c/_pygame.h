@@ -82,6 +82,7 @@
 #define PG_PixelFormatEnum SDL_PixelFormat
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
+#define PG_SetSurfaceRLE SDL_SetSurfaceRLE
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
@@ -132,6 +133,8 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 
 #define PG_GetSurfacePalette SDL_GetSurfacePalette
 #define PG_SetPaletteColors SDL_SetPaletteColors
+#define PG_SetSurfacePalette SDL_SetSurfacePalette
+#define PG_SetSurfaceColorKey SDL_SetSurfaceColorKey
 #define PG_SetSurfaceBlendMode SDL_SetSurfaceBlendMode
 #define PG_GetSurfaceBlendMode SDL_GetSurfaceBlendMode
 #define PG_GetSurfaceAlphaMod SDL_GetSurfaceAlphaMod
@@ -151,6 +154,7 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 #define PG_EventEnabled(type) SDL_EventEnabled(type)
 #define PG_SetJoystickEventsEnabled(enabled) \
     SDL_SetJoystickEventsEnabled(enabled)
+#define PG_InitSubSystem(flags) SDL_InitSubSystem(flags)
 
 #define PG_FIND_VNUM_MAJOR(ver) SDL_VERSIONNUM_MAJOR(ver)
 #define PG_FIND_VNUM_MINOR(ver) SDL_VERSIONNUM_MINOR(ver)
@@ -248,6 +252,18 @@ PG_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors,
 }
 
 static inline bool
+PG_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
+{
+    return SDL_SetSurfacePalette(surface, palette) == 0;
+}
+
+static inline bool
+PG_SetSurfaceColorKey(SDL_Surface *surface, bool enabled, Uint32 key)
+{
+    return SDL_SetColorKey(surface, enabled, key) == 0;
+}
+
+static inline bool
 PG_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
 {
     return SDL_SetSurfaceBlendMode(surface, blendMode) == 0;
@@ -316,6 +332,12 @@ PG_MapRGB(PG_PixelFormat *format, const SDL_Palette *palette, Uint8 r, Uint8 g,
     return SDL_MapRGB(format, r, g, b);
 }
 
+static inline bool
+PG_InitSubSystem(Uint32 flags)
+{
+    return SDL_InitSubSystem(flags) == 0;
+}
+
 /* Mask to test if surface flags are in a fullscreen window.
  * SDL_WINDOW_FULLSCREEN_DESKTOP works here because it also contains
  * SDL_WINDOW_FULLSCREEN. */
@@ -335,6 +357,12 @@ PG_MapRGB(PG_PixelFormat *format, const SDL_Palette *palette, Uint8 r, Uint8 g,
 #define PG_INIT_TIMER SDL_INIT_TIMER
 
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
+
+static inline bool
+PG_SetSurfaceRLE(SDL_Surface *surface, bool enabled)
+{
+    return SDL_SetSurfaceRLE(surface, enabled) == 0;
+}
 
 static inline bool
 PG_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
@@ -670,7 +698,6 @@ typedef enum {
 #define PYGAMEAPI_RWOBJECT_NUMSLOTS 5
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
-#define PYGAMEAPI_MATH_NUMSLOTS 2
 #define PYGAMEAPI_BASE_NUMSLOTS 30
 #define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
