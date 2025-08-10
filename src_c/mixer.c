@@ -89,6 +89,8 @@ pgChannel_New(int);
 #define pgChannel_Check(x) \
     (PyObject_IsInstance(x, (PyObject *)&pgChannel_Type))
 
+static PyObject *
+snd_get_arraystruct(PyObject *self, void *closure);
 static int
 snd_getbuffer(PyObject *, Py_buffer *, int);
 static void
@@ -802,6 +804,37 @@ snd_get_raw(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+snd_copy(PyObject *self, PyObject *_null)
+{
+    MIXER_INIT_CHECK();
+
+    pgSoundObject *newSound =
+        (pgSoundObject *)pgSound_Type.tp_new(&pgSound_Type, NULL, NULL);
+
+    PyObject *kwargs = PyDict_New();
+    PyObject *key = PyUnicode_FromString("buffer");
+    PyObject *bytes = snd_get_raw(self, NULL);
+    if (PyDict_SetItem(kwargs, key, bytes) < 0) {
+        // exception set already
+        Py_DECREF(key);
+        Py_DECREF(bytes);
+        Py_DECREF(kwargs);
+        return NULL;
+    }
+    Py_DECREF(key);
+    Py_DECREF(bytes);
+
+    if (sound_init((PyObject *)newSound, NULL, kwargs) != 0) {
+        Py_DECREF(kwargs);
+        Py_DECREF(newSound);
+        return RAISE(pgExc_SDLError, "Failed to initialize copied sound");
+    }
+
+    Py_DECREF(kwargs);
+    return (PyObject *)newSound;
+}
+
+static PyObject *
 snd_get_arraystruct(PyObject *self, void *closure)
 {
     Py_buffer view;
@@ -858,6 +891,8 @@ PyMethodDef sound_methods[] = {
     {"get_volume", snd_get_volume, METH_NOARGS, DOC_MIXER_SOUND_GETVOLUME},
     {"get_length", snd_get_length, METH_NOARGS, DOC_MIXER_SOUND_GETLENGTH},
     {"get_raw", snd_get_raw, METH_NOARGS, DOC_MIXER_SOUND_GETRAW},
+    {"copy", snd_copy, METH_NOARGS, DOC_MIXER_SOUND_COPY},
+    {"__copy__", snd_copy, METH_NOARGS, DOC_MIXER_SOUND_COPY},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef sound_getset[] = {
