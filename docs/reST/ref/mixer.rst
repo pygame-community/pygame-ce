@@ -369,6 +369,10 @@ The following file formats are supported
    an exception when different. Also, source samples are truncated to fit the
    audio sample size. This will not change.
 
+   .. note:: ``bytes(Sound)`` and ``bytearray(Sound)`` make use of the buffer
+             interface, which is implemented internally by ``pygame.mixer.Sound``.
+             Because of this, there is no need to directly implement ``__bytes__``.
+
    .. versionaddedold:: 1.8 ``pygame.mixer.Sound(buffer)``
    .. versionaddedold:: 1.9.2
       :class:`pygame.mixer.Sound` keyword arguments and array interface support
