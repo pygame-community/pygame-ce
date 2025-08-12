@@ -135,7 +135,9 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     static char *keywords[] = {"surface", "color", "start_pos", "end_pos",
                                "width",   "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|iO", keywords,
+    // blend argument is keyword only for backcompat.
+    // if it is passed as a positional argument, it will be handled in width
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|i$O", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
                                      &start, &end, &width, &blend)) {
         return NULL; /* Exception already set. */
@@ -180,10 +182,6 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_TypeError, "invalid end_pos argument");
     }
 
-    if (width < 1) {
-        return pgRect_New4((int)startx, (int)starty, 0, 0);
-    }
-
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
@@ -193,6 +191,8 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
                           starty, endx, endy, width, drawn_area);
     }
     else {
+        // For all width <= 1 treat it as width == 1, this helps compat
+        // with the old blend argument
         draw_aaline(surf, surf_clip_rect, surf_format, color, startx, starty,
                     endx, endy, drawn_area, 0, 0, 0);
     }
