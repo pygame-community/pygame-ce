@@ -773,6 +773,17 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c.a, 146)
         self.assertEqual(int(c), int(0x33727592))
 
+    def test_bytes(self):
+        c = pygame.Color(0x00012345)
+        self.assertEqual(c.r, 0x00)
+        self.assertEqual(c.g, 0x01)
+        self.assertEqual(c.b, 0x23)
+        self.assertEqual(c.a, 0x45)
+
+        as_bytes = bytes(c)
+        self.assertEqual(as_bytes, bytes([0x00, 0x01, 0x23, 0x45]))
+        self.assertEqual(len(as_bytes), 4)
+
     def test_from_cmy(self):
         cmy = pygame.Color.from_cmy(0.5, 0.5, 0.5)
         cmy_tuple = pygame.Color.from_cmy((0.5, 0.5, 0.5))

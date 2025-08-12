@@ -92,6 +92,11 @@
    :returns: a newly created :class:`Color` object
    :rtype: Color
 
+   .. versionchanged:: 2.5.6
+      ``bytes(Color(...))`` (assuming `bytes <https://docs.python.org/3/library/stdtypes.html#bytes>`_ is
+      the built-in type) now returns a ``bytes`` object (of length 4) with the RGBA values of the color,
+      as opposed to :class:`Color` being interpreted as an integer (think ``int(Color(...))``) causing it
+      to return a ``bytes`` object filled with 0s the length of said integer.
    .. versionchangedold:: 2.0.0
       Support for tuples, lists, and :class:`Color` objects when creating
       :class:`Color` objects.
