@@ -299,7 +299,6 @@ endsound_callback(int channel)
             PyGILState_STATE gstate = PyGILState_Ensure();
             int channelnum;
             Mix_Chunk *sound = pgSound_AsChunk(channeldata[channel].queue);
-            Py_XDECREF(channeldata[channel].sound);
             channeldata[channel].sound = channeldata[channel].queue;
             channeldata[channel].queue = NULL;
             PyGILState_Release(gstate);
@@ -310,7 +309,6 @@ endsound_callback(int channel)
         }
         else {
             PyGILState_STATE gstate = PyGILState_Ensure();
-            Py_XDECREF(channeldata[channel].sound);
             channeldata[channel].sound = NULL;
             PyGILState_Release(gstate);
             Mix_GroupChannel(channel, -1);
@@ -806,28 +804,43 @@ snd_get_raw(PyObject *self, PyObject *_null)
 static PyObject *
 snd_copy(PyObject *self, PyObject *_null)
 {
+    PG_DECLARE_EXCEPTION_SAVER
     MIXER_INIT_CHECK();
 
     pgSoundObject *newSound =
-        (pgSoundObject *)pgSound_Type.tp_new(&pgSound_Type, NULL, NULL);
+        (pgSoundObject *)Py_TYPE(self)->tp_new(&pgSound_Type, NULL, NULL);
 
     PyObject *kwargs = PyDict_New();
     PyObject *key = PyUnicode_FromString("buffer");
     PyObject *bytes = snd_get_raw(self, NULL);
+    if (bytes == NULL) {
+        // exception set already by PyBytes_FromStringAndSize
+        PG_SAVE_EXCEPTION
+        Py_DECREF(key);
+        Py_DECREF(kwargs);
+        PG_UNSAVE_EXCEPTION
+        return NULL;
+    }
+
     if (PyDict_SetItem(kwargs, key, bytes) < 0) {
         // exception set already
+        PG_SAVE_EXCEPTION
         Py_DECREF(key);
         Py_DECREF(bytes);
         Py_DECREF(kwargs);
+        PG_UNSAVE_EXCEPTION
         return NULL;
     }
     Py_DECREF(key);
     Py_DECREF(bytes);
 
     if (sound_init((PyObject *)newSound, NULL, kwargs) != 0) {
+        PG_SAVE_EXCEPTION
         Py_DECREF(kwargs);
         Py_DECREF(newSound);
-        return RAISE(pgExc_SDLError, "Failed to initialize copied sound");
+        PG_UNSAVE_EXCEPTION
+        // Exception set by sound_init
+        return NULL;
     }
 
     Py_DECREF(kwargs);

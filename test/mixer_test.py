@@ -1347,7 +1347,7 @@ class SoundTypeTest(unittest.TestCase):
             filename = example_path(os.path.join("data", f))
             try:
                 sound = mixer.Sound(file=filename)
-            except pygame.error as e:
+            except pygame.error:
                 continue
             sound_copy = sound.copy()
             self.assertEqual(sound.get_length(), sound_copy.get_length())
