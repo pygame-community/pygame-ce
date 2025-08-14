@@ -22,6 +22,10 @@ PG_CTEST(test__pg_is_int_tuple_nominal)(PyObject *self, PyObject *_null) {
   TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg2));
   TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg3));
 
+  Py_DECREF(arg1);
+  Py_DECREF(arg2);
+  Py_DECREF(arg3);
+
   Py_RETURN_NONE;
 }
 
@@ -31,13 +35,17 @@ PG_CTEST(test__pg_is_int_tuple_nominal)(PyObject *self, PyObject *_null) {
 PG_CTEST(test__pg_is_int_tuple_failureModes)(PyObject *self, PyObject *_null) {
   PyObject *arg1 =
       Py_BuildValue("(sss)", (char *)"Larry", (char *)"Moe", (char *)"Curly");
-  PyObject *arg2 = Py_BuildValue("(sss)", (char *)NULL, (char *)NULL,
+  PyObject *arg2 = Py_BuildValue("(zzz)", (char *)NULL, (char *)NULL,
                                  (char *)NULL); // tuple of None's
   PyObject *arg3 = Py_BuildValue("(OOO)", arg1, arg2, arg1);
 
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg1));
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg2));
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg3));
+
+  Py_DECREF(arg1);
+  Py_DECREF(arg2);
+  Py_DECREF(arg3);
 
   Py_RETURN_NONE;
 }
@@ -53,6 +61,10 @@ PG_CTEST(test__pg_is_int_tuple_floats)(PyObject *self, PyObject *_null) {
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg1));
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg2));
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg3));
+
+  Py_DECREF(arg1);
+  Py_DECREF(arg2);
+  Py_DECREF(arg3);
 
   Py_RETURN_NONE;
 }
