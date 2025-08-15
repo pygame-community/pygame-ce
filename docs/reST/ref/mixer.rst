@@ -515,6 +515,9 @@ The following file formats are supported
       original Sound. If the copy fails, a ``TypeError`` or :meth:`pygame.error`
       exception will be raised.
 
+      If copying a subclass of ``mixer.Sound``, an instance of the same subclass
+      will be returned.
+
       Also note that this functions as ``Sound.__copy__``.
 
       .. versionadded:: 2.5.6

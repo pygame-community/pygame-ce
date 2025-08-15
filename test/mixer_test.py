@@ -1331,6 +1331,10 @@ class SoundTypeTest(unittest.TestCase):
         self.assertRaises(RuntimeError, incorrect.get_volume)
 
     def test_snd_copy(self):
+        class SubSound(mixer.Sound):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+
         mixer.init()
 
         filenames = [
@@ -1340,13 +1344,16 @@ class SoundTypeTest(unittest.TestCase):
             "house_lo.opus",
             "surfonasinewave.xm",
         ]
+        old_volumes = [0.1, 0.2, 0.5, 0.7, 1.0]
+        new_volumes = [0.2, 0.3, 0.7, 1.0, 0.1]
         if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
             filenames.append("house_lo.mp3")
 
-        for f in filenames:
+        for f, old_vol, new_vol in zip(filenames, old_volumes, new_volumes):
             filename = example_path(os.path.join("data", f))
             try:
                 sound = mixer.Sound(file=filename)
+                sound.set_volume(old_vol)
             except pygame.error:
                 continue
             sound_copy = sound.copy()
@@ -1355,7 +1362,37 @@ class SoundTypeTest(unittest.TestCase):
             self.assertEqual(sound.get_volume(), sound_copy.get_volume())
             self.assertEqual(sound.get_raw(), sound_copy.get_raw())
 
-            sound.set_volume(0.5)
+            sound.set_volume(new_vol)
+            self.assertNotEqual(sound.get_volume(), sound_copy.get_volume())
+
+            del sound
+
+            # Test on the copy for playable sounds
+            channel = sound_copy.play()
+            if channel is None:
+                continue
+            self.assertTrue(channel.get_busy())
+            sound_copy.stop()
+            self.assertFalse(channel.get_busy())
+            sound_copy.play()
+            self.assertEqual(sound_copy.get_num_channels(), 1)
+
+        # Test copying a subclass of Sound
+        for f, old_vol, new_vol in zip(filenames, old_volumes, new_volumes):
+            filename = example_path(os.path.join("data", f))
+            try:
+                sound = SubSound(file=filename)
+                sound.set_volume(old_vol)
+            except pygame.error:
+                continue
+            sound_copy = sound.copy()
+            self.assertTrue(sound_copy, SubSound)
+            self.assertEqual(sound.get_length(), sound_copy.get_length())
+            self.assertEqual(sound.get_num_channels(), sound_copy.get_num_channels())
+            self.assertEqual(sound.get_volume(), sound_copy.get_volume())
+            self.assertEqual(sound.get_raw(), sound_copy.get_raw())
+
+            sound.set_volume(new_vol)
             self.assertNotEqual(sound.get_volume(), sound_copy.get_volume())
 
             del sound

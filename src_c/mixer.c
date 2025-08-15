@@ -808,7 +808,7 @@ snd_copy(PyObject *self, PyObject *_null)
     MIXER_INIT_CHECK();
 
     pgSoundObject *newSound =
-        (pgSoundObject *)Py_TYPE(self)->tp_new(&pgSound_Type, NULL, NULL);
+        (pgSoundObject *)Py_TYPE(self)->tp_new(Py_TYPE(self), NULL, NULL);
 
     PyObject *kwargs = PyDict_New();
     PyObject *key = PyUnicode_FromString("buffer");
@@ -841,6 +841,15 @@ snd_copy(PyObject *self, PyObject *_null)
         PG_UNSAVE_EXCEPTION
         // Exception set by sound_init
         return NULL;
+    }
+
+    // Preserve original volume on the new chunk
+    Mix_Chunk *orig = pgSound_AsChunk(self);
+    Mix_Chunk *dst = pgSound_AsChunk((PyObject *)newSound);
+
+    if (orig && dst) {
+        int vol = Mix_VolumeChunk(orig, -1);
+        Mix_VolumeChunk(dst, vol);
     }
 
     Py_DECREF(kwargs);
