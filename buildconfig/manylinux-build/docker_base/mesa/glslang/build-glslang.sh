@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-GLSLANG_VER=14.3.0
+GLSLANG_VER=15.3.0
 GLSLANG="glslang-$GLSLANG_VER"
 curl -sL --retry 10 https://github.com/KhronosGroup/glslang/archive/refs/tags/${GLSLANG_VER}.tar.gz > ${GLSLANG}.tar.gz
 
