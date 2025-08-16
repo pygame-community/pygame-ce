@@ -299,7 +299,7 @@ endsound_callback(int channel)
             PyGILState_STATE gstate = PyGILState_Ensure();
             int channelnum;
             Mix_Chunk *sound = pgSound_AsChunk(channeldata[channel].queue);
-            Py_DECREF(channeldata[channel].sound);
+            Py_XDECREF(channeldata[channel].sound);
             channeldata[channel].sound = channeldata[channel].queue;
             channeldata[channel].queue = NULL;
             PyGILState_Release(gstate);
@@ -310,7 +310,7 @@ endsound_callback(int channel)
         }
         else {
             PyGILState_STATE gstate = PyGILState_Ensure();
-            Py_DECREF(channeldata[channel].sound);
+            Py_XDECREF(channeldata[channel].sound);
             channeldata[channel].sound = NULL;
             PyGILState_Release(gstate);
             Mix_GroupChannel(channel, -1);
