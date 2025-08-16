@@ -519,14 +519,14 @@ mixer_quit(PyObject *self, PyObject *_null)
 
         if (channeldata) {
             for (i = 0; i < numchanneldata; ++i) {
-                if (channeldata[i].queue) {
+                if (channeldata[i].sound) {
                     Mix_HaltGroup(
                         (int)(intptr_t)pgSound_AsChunk(channeldata[i].sound));
                 }
-                else {
-                    Mix_HaltGroup(-1);
+                if (channeldata[i].queue) {
+                    Mix_HaltGroup(
+                        (int)(intptr_t)pgSound_AsChunk(channeldata[i].queue));
                 }
-                Py_XDECREF(channeldata[i].queue);
             }
             free(channeldata);
             channeldata = NULL;
@@ -678,11 +678,7 @@ pgSound_Play(PyObject *self, PyObject *args, PyObject *kwargs)
         Py_RETURN_NONE;
     }
 
-    if (channeldata[channelnum].sound) {
-        Mix_HaltGroup(
-            (int)(intptr_t)pgSound_AsChunk(channeldata[channelnum].sound));
-    }
-
+    Py_XDECREF(channeldata[channelnum].sound);
     Py_XDECREF(channeldata[channelnum].queue);
     channeldata[channelnum].queue = NULL;
     channeldata[channelnum].sound = self;
