@@ -816,33 +816,49 @@ snd_copy(PyObject *self, PyObject *_null)
     pgSoundObject *newSound =
         (pgSoundObject *)Py_TYPE(self)->tp_new(Py_TYPE(self), NULL, NULL);
 
-    PyObject *kwargs = PyDict_New();
-    PyObject *key = PyUnicode_FromString("buffer");
+    if (!newSound) {
+        if (!PyErr_Occurred()) {
+            PyErr_SetString(PyExc_MemoryError,
+                            "Failed to create new Sound object for copy");
+        }
+        return NULL;
+    }
+
+    PyObject *dict = PyDict_New();
+    if (!dict) {
+        if (!PyErr_Occurred()) {
+            PyErr_SetString(PyExc_MemoryError,
+                            "Failed to create internal dictionary to create "
+                            "copy of Sound");
+        }
+        Py_DECREF(newSound);
+        return NULL;
+    }
+
     PyObject *bytes = snd_get_raw(self, NULL);
     if (bytes == NULL) {
         // exception set already by PyBytes_FromStringAndSize
         PG_SAVE_EXCEPTION
-        Py_DECREF(key);
-        Py_DECREF(kwargs);
+        Py_DECREF(dict);
+        Py_DECREF(newSound);
         PG_UNSAVE_EXCEPTION
         return NULL;
     }
 
-    if (PyDict_SetItem(kwargs, key, bytes) < 0) {
+    if (PyDict_SetItemString(dict, "buffer", bytes) < 0) {
         // exception set already
         PG_SAVE_EXCEPTION
-        Py_DECREF(key);
         Py_DECREF(bytes);
-        Py_DECREF(kwargs);
+        Py_DECREF(dict);
+        Py_DECREF(newSound);
         PG_UNSAVE_EXCEPTION
         return NULL;
     }
-    Py_DECREF(key);
     Py_DECREF(bytes);
 
-    if (sound_init((PyObject *)newSound, NULL, kwargs) != 0) {
+    if (sound_init((PyObject *)newSound, NULL, dict) != 0) {
         PG_SAVE_EXCEPTION
-        Py_DECREF(kwargs);
+        Py_DECREF(dict);
         Py_DECREF(newSound);
         PG_UNSAVE_EXCEPTION
         // Exception set by sound_init
@@ -858,7 +874,7 @@ snd_copy(PyObject *self, PyObject *_null)
         Mix_VolumeChunk(dst, vol);
     }
 
-    Py_DECREF(kwargs);
+    Py_DECREF(dict);
     return (PyObject *)newSound;
 }
 
