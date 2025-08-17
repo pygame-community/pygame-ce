@@ -41,6 +41,8 @@
 #define DOC_SDL2_VIDEO_RENDERER_PRESENT "present() -> None\nUpdate the screen with any rendering performed since the previous call"
 #define DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT "get_viewport() -> Rect\nGet the drawing area on the rendering target"
 #define DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT "set_viewport(area) -> None\nSet the drawing area on the rendering target"
+#define DOC_SDL2_VIDEO_RENDERER_COORDINATESTOWINDOW "coordinates_to_window(point) -> (float, float)\nTranslates renderer coordinates to window coordinates"
+#define DOC_SDL2_VIDEO_RENDERER_COORDINATESFROMWINDOW "coordinates_from_window(point) -> (float, float)\nTranslates window coordinates to renderer coordinates"
 #define DOC_SDL2_VIDEO_RENDERER_BLIT "blit(source, dest, area=None, special_flags=0)-> Rect\nDraw textures using a Surface-like API"
 #define DOC_SDL2_VIDEO_RENDERER_DRAWLINE "draw_line(p1, p2) -> None\nDraw a line"
 #define DOC_SDL2_VIDEO_RENDERER_DRAWPOINT "draw_point(point) -> None\nDraw a point"

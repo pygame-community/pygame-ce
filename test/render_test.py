@@ -172,6 +172,15 @@ class RendererTest(unittest.TestCase):
         self.renderer.logical_size = (10, 10)
         self.assertEqual(self.renderer.logical_size, (10, 10))
 
+    def test_logical_window_mapping(self):
+        self.renderer.logical_size = (10, 10)
+        self.assertEqual(self.renderer.coordinates_to_window((10, 10)), (100, 100))
+        self.assertEqual(self.renderer.coordinates_from_window((100, 100)), (10, 10))
+        with self.assertRaises(TypeError):
+            self.renderer.coordinates_to_window(42, 42)
+        with self.assertRaises(TypeError):
+            self.renderer.coordinates_from_window(42, 42)
+
     def test_scale(self):
         self.assertEqual(self.renderer.scale, (1.0, 1.0))
         self.renderer.scale = (0.5, 2)
