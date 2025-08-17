@@ -404,7 +404,7 @@ if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
     python_version = platform.python_version()
 
     if (
-        sys.platform not in ("wasi", "wasm")
+        sys.platform not in ("wasi", "emscripten")
         and (sys.version_info >= (3, 13, 0))
         and sysconfig.get_config_var("Py_GIL_DISABLED")
     ):
