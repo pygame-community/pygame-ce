@@ -285,8 +285,14 @@ typedef struct {
     Uint32 blit_sw_A : 1;
     Uint32 blit_fill : 1;
     Uint32 video_mem;
+#if PG_SDL3
+    /* We cannot use PG_PixelFormat here because it aliases to const */
+    SDL_PixelFormatDetails *vfmt;
+    SDL_PixelFormatDetails vfmt_data;
+#else
     SDL_PixelFormat *vfmt;
     SDL_PixelFormat vfmt_data;
+#endif
     int current_w;
     int current_h;
 } pg_VideoInfo;

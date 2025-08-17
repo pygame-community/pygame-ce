@@ -331,6 +331,10 @@ pg_window_set_fullscreen(SDL_Window *window, int desktop)
             goto end;
         }
     }
+
+    if (!SDL_SetWindowFullscreen(window, 1)) {
+        goto end;
+    }
     if (!SDL_SetWindowFullscreenMode(window, chosen_mode)) {
         goto end;
     }
