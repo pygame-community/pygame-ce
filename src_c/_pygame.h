@@ -87,6 +87,8 @@
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
 
+#define PG_UpdateWindowSurface SDL_UpdateWindowSurface
+
 /* Emulating SDL2 SDL_LockMutex API. In SDL3, it returns void. */
 static inline int
 PG_LockMutex(SDL_mutex *mutex)
@@ -197,6 +199,12 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect)
+
+static inline bool
+PG_UpdateWindowSurface(SDL_Window *window)
+{
+    return SDL_UpdateWindowSurface(window) == 0;
+}
 
 static inline int
 PG_LockMutex(SDL_mutex *mutex)
@@ -431,8 +439,6 @@ typedef enum {
 
     PGE_MIDIIN,
     PGE_MIDIOUT,
-    PGE_KEYREPEAT, /* Special internal pygame event, for managing key-presses
-                    */
 
     /* DO NOT CHANGE THE ORDER OF EVENTS HERE */
     PGE_WINDOWSHOWN,
