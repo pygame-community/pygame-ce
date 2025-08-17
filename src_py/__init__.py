@@ -407,7 +407,11 @@ except (ImportError, OSError):
 
 
 def packager_imports():
-    """some additional imports that py2app/py2exe will want to see"""
+    """Some additional imports that py2app/py2exe will want to see.
+
+    This function is never executed.
+    Some tools scan the source code for import statements.
+    """
     import atexit
     import numpy
     import OpenGL.GL
