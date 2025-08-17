@@ -73,9 +73,13 @@ class MissingModule:
 
     def __init__(self, name, urgent=0):
         self.name = name
-        exc_type, exc_msg = sys.exc_info()[:2]
-        self.info = str(exc_msg)
-        self.reason = f"{exc_type.__name__}: {self.info}"
+        exc_type, exc_msg, _ = sys.exc_info()
+        if exc_type is not None:
+            self.info = str(exc_msg)
+            self.reason = f"{exc_type.__name__}: {self.info}"
+        else:
+            self.info = "<no info>"
+            self.reason = f"<no exception>: {self.info}"
         self.urgent = urgent
         if urgent:
             self.warn()
@@ -315,11 +319,14 @@ def lazy_import(name):
 
     Lazily imported modules are directly referenced in packager_imports function.
     """
-    spec = find_spec("pygame." + name)
+    fullname = "pygame." + name
+    spec = find_spec(fullname)
+    if spec is None or spec.loader is None:
+        return MissingModule(name, urgent=0)
     loader = LazyLoader(spec.loader)
     spec.loader = loader
     module = module_from_spec(spec)
-    sys.modules[spec.name] = module
+    sys.modules[fullname] = module
     loader.exec_module(module)
     return module
 
