@@ -1691,7 +1691,7 @@ static int
 pg_flip_internal(_DisplayState *state)
 {
     SDL_Window *win = pg_GetDefaultWindow();
-    int status = 0;
+    bool success = true;
 
     /* Same check as VIDEO_INIT_CHECK() but returns -1 instead of NULL on
      * fail. */
@@ -1729,12 +1729,12 @@ pg_flip_internal(_DisplayState *state)
             if (new_surface != ((pgSurfaceObject *)screen)->surf) {
                 screen->surf = new_surface;
             }
-            status = SDL_UpdateWindowSurface(win);
+            success = PG_UpdateWindowSurface(win);
         }
     }
     Py_END_ALLOW_THREADS;
 
-    if (status < 0) {
+    if (!success) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
