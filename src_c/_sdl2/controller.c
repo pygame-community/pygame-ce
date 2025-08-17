@@ -388,6 +388,35 @@ controller_stop_rumble(pgControllerObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
+static PyObject*
+controller_set_led(pgControllerObject *self, PyObject *arg)
+{
+    CONTROLLER_INIT_CHECK();
+
+    Uint8 colors[4] = {0, 0, 0, 0};
+
+    if (!pg_RGBAFromObjEx(arg, colors, PG_COLOR_HANDLE_ALL)) {
+        // Exception already set
+        return NULL;
+    }
+
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    if (SDL_GameControllerSetLED(self->controller, colors[0], colors[1], colors[2]) < 0) {
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_TRUE;
+#else
+    // SDL3 renames the function and sets an error message on failure
+    bool result = SDL_SetGamepadLED(self->controller, colors[0], colors[1], colors[2]);
+    if (!result) {
+        // Clear the SDL error message that SDL set, for example if it didn't
+        // have an addressable LED
+        (void)SDL_GetError();
+    }
+    return PyBool_FromLong(result);
+#endif
+}
+
 static PyMethodDef controller_methods[] = {
     {"from_joystick", (PyCFunction)controller_from_joystick,
      METH_CLASS | METH_VARARGS | METH_KEYWORDS,
@@ -414,6 +443,7 @@ static PyMethodDef controller_methods[] = {
      DOC_SDL2_CONTROLLER_CONTROLLER_RUMBLE},
     {"stop_rumble", (PyCFunction)controller_stop_rumble, METH_NOARGS,
      DOC_SDL2_CONTROLLER_CONTROLLER_STOPRUMBLE},
+    {"set_led", (PyCFunction)controller_set_led, METH_O, DOC_SDL2_CONTROLLER_CONTROLLER_SETLED},
     {NULL, NULL, 0, NULL}};
 
 static PyMemberDef controller_members[] = {
@@ -565,6 +595,11 @@ MODINIT_DEFINE(controller)
     };
 
     import_pygame_base();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    import_pygame_color();
     if (PyErr_Occurred()) {
         return NULL;
     }

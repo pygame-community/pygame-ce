@@ -1,5 +1,6 @@
 from typing import final
 
+from pygame.typing import ColorLike
 from typing_extensions import deprecated  # added in 3.13
 
 def init() -> None: ...
@@ -31,6 +32,7 @@ class JoystickType:
         self, low_frequency: float, high_frequency: float, duration: int
     ) -> bool: ...
     def stop_rumble(self) -> None: ...
+    def set_led(self, color: ColorLike, /) -> bool: ...
 
 # according to the current implementation, Joystick is a function that returns
 # a JoystickType instance. In the future, when the C implementation is fixed to

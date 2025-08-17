@@ -23,3 +23,4 @@
 #define DOC_JOYSTICK_JOYSTICK_GETHAT "get_hat(hat_number, /) -> x, y\nget the position of a joystick hat"
 #define DOC_JOYSTICK_JOYSTICK_RUMBLE "rumble(low_frequency, high_frequency, duration) -> bool\nStart a rumbling effect"
 #define DOC_JOYSTICK_JOYSTICK_STOPRUMBLE "stop_rumble() -> None\nStop any rumble effect playing"
+#define DOC_JOYSTICK_JOYSTICK_SETLED "set_led(color_arg) -> bool\nSet the LED color of the joystick"
