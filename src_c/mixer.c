@@ -812,7 +812,6 @@ snd_get_raw(PyObject *self, PyObject *_null)
 static PyObject *
 snd_copy(PyObject *self, PyObject *_null)
 {
-    PG_DECLARE_EXCEPTION_SAVER
     MIXER_INIT_CHECK();
 
     pgSoundObject *newSound =
@@ -828,11 +827,6 @@ snd_copy(PyObject *self, PyObject *_null)
 
     PyObject *dict = PyDict_New();
     if (!dict) {
-        if (!PyErr_Occurred()) {
-            PyErr_SetString(PyExc_MemoryError,
-                            "Failed to create internal dictionary to create "
-                            "copy of Sound");
-        }
         Py_DECREF(newSound);
         return NULL;
     }
@@ -840,29 +834,23 @@ snd_copy(PyObject *self, PyObject *_null)
     PyObject *bytes = snd_get_raw(self, NULL);
     if (bytes == NULL) {
         // exception set already by PyBytes_FromStringAndSize
-        PG_SAVE_EXCEPTION
         Py_DECREF(dict);
         Py_DECREF(newSound);
-        PG_UNSAVE_EXCEPTION
         return NULL;
     }
 
     if (PyDict_SetItemString(dict, "buffer", bytes) < 0) {
         // exception set already
-        PG_SAVE_EXCEPTION
         Py_DECREF(bytes);
         Py_DECREF(dict);
         Py_DECREF(newSound);
-        PG_UNSAVE_EXCEPTION
         return NULL;
     }
     Py_DECREF(bytes);
 
     if (sound_init((PyObject *)newSound, NULL, dict) != 0) {
-        PG_SAVE_EXCEPTION
         Py_DECREF(dict);
         Py_DECREF(newSound);
-        PG_UNSAVE_EXCEPTION
         // Exception set by sound_init
         return NULL;
     }
