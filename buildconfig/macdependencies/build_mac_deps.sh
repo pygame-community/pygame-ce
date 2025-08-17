@@ -65,6 +65,9 @@ cd ../manylinux-build/docker_base
 # install some buildtools
 bash buildtools/install.sh
 
+# sdl dep
+bash libsamplerate/build-libsamplerate.sh
+
 # sdl_image deps
 bash zlib-ng/build-zlib-ng.sh
 bash libpng/build-png.sh # depends on zlib

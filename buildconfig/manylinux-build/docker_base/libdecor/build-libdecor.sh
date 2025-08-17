@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-LIBDECOR_VER=0.2.2
+LIBDECOR_VER=0.2.3
 LIBDECOR="libdecor-$LIBDECOR_VER"
 
 curl -sL --retry 10 https://gitlab.freedesktop.org/libdecor/libdecor/-/releases/${LIBDECOR_VER}/downloads/${LIBDECOR}.tar.xz > ${LIBDECOR}.tar.xz

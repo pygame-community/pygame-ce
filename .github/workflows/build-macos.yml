@@ -115,7 +115,7 @@ jobs:
       - name: Install uv for speed
         uses: astral-sh/setup-uv@v6
         with:
-          version: "0.5.26"
+          version: "0.8.3"
 
       - name: Build and test wheels
         uses: pypa/cibuildwheel@v3.1.3

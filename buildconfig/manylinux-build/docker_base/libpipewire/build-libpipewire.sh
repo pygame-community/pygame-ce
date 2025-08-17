@@ -3,6 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
+# pipewire 1.4.5 has some compilation issues, stay at an older version for now
 PIPEWIRE_VER="1.2.7"
 PIPEWIRE="pipewire-$PIPEWIRE_VER"
 
