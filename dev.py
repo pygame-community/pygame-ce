@@ -15,6 +15,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Union
 
+from buildconfig.get_version import version
+
 MOD_NAME = "pygame-ce"
 DIST_DIR = "dist"
 
@@ -194,9 +196,9 @@ class Dev:
             "build": get_build_deps(),
             "docs": get_build_deps(),
             "test": {"numpy"},
-            "lint": {"pylint==3.3.1", "numpy"},
+            "lint": {"pylint==3.3.7", "numpy"},
             "stubs": {"mypy==1.13.0", "numpy"},
-            "format": {"pre-commit==4.0.1"},
+            "format": {"pre-commit==4.2.0"},
         }
         self.deps["all"] = set()
         for k in self.deps.values():
@@ -204,9 +206,12 @@ class Dev:
 
     def cmd_build(self):
         wheel_dir = self.args.get("wheel", DIST_DIR)
+        quiet = self.args.get("quiet", False)
         debug = self.args.get("debug", False)
         lax = self.args.get("lax", False)
         sdl3 = self.args.get("sdl3", False)
+        stripped = self.args.get("stripped", False)
+        sanitize = self.args.get("sanitize")
         coverage = self.args.get("coverage", False)
         if wheel_dir and coverage:
             pprint("Cannot pass --wheel and --coverage together", Colors.RED)
@@ -228,6 +233,8 @@ class Dev:
 
         if not wheel_dir:
             # editable install
+            if not quiet:
+                install_args.append("-Ceditable-verbose=true")
             install_args.append("--editable")
 
         install_args.append(".")
@@ -242,18 +249,27 @@ class Dev:
         if sdl3:
             install_args.extend(SDL3_ARGS)
 
+        if stripped:
+            install_args.append("-Csetup-args=-Dstripped=true")
+
         if coverage:
             install_args.extend(COVERAGE_ARGS)
 
-        info_str = f"with {debug=}, {lax=}, {sdl3=}, and {coverage=}"
+        if sanitize:
+            install_args.append(f"-Csetup-args=-Db_sanitize={sanitize}")
+
+        info_str = (
+            f"with {debug=}, {lax=}, {sdl3=}, {stripped=}, {coverage=} and {sanitize=}"
+        )
         if wheel_dir:
             pprint(f"Building wheel at '{wheel_dir}' ({info_str})")
             cmd_run(
                 [self.py, "-m", "pip", "wheel", "-v", "-w", wheel_dir, *install_args]
             )
             pprint("Installing wheel")
+            mod_name = f"{MOD_NAME}=={version}"
             pip_install(
-                self.py, ["--no-index", "--force", "--find-links", wheel_dir, MOD_NAME]
+                self.py, ["--no-index", "--force", "--find-links", wheel_dir, mod_name]
             )
         else:
             pprint(f"Installing in editable mode ({info_str})")
@@ -353,6 +369,11 @@ class Dev:
             ),
         )
         build_parser.add_argument(
+            "--quiet",
+            action="store_true",
+            help="Silence build log in editable install (doing editable-verbose=false)",
+        )
+        build_parser.add_argument(
             "--debug",
             action="store_true",
             help="Install in debug mode (optimizations disabled and debug symbols enabled)",
@@ -366,6 +387,25 @@ class Dev:
             "--sdl3",
             action="store_true",
             help="Build against SDL3 instead of the default SDL2",
+        )
+        build_parser.add_argument(
+            "--stripped",
+            action="store_true",
+            help="Generate a stripped pygame-ce build (no docs/examples/tests/stubs)",
+        )
+        build_parser.add_argument(
+            "--sanitize",
+            choices=[
+                "address",
+                "undefined",
+                "address,undefined",
+                "leak",
+                "thread",
+                "memory",
+                "none",
+            ],
+            default="none",
+            help="Enable compiler sanitizers. Defaults to 'none'.",
         )
         build_parser.add_argument(
             "--coverage",

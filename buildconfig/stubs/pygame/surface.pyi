@@ -773,7 +773,7 @@ class Surface:
         rectangle for the Surface centered at a given position. Size attributes
         such as ``size`` or ``w`` can also be applied to resize the FRect.
 
-        ..versionadded:: 2.3.0
+        .. versionadded:: 2.3.0
         """
 
     def get_bitsize(self) -> int:

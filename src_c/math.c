@@ -2341,13 +2341,8 @@ static int
 _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
 {
     if (xOrSequence) {
-        if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
-            if (!PySequence_AsVectorCoords(xOrSequence, self->coords, 2)) {
-                return -1;
-            }
-            else {
-                return 0;
-            }
+        if (pg_VectorCoordsFromObj(xOrSequence, 2, self->coords)) {
+            return 0;
         }
         else if (RealNumber_Check(xOrSequence)) {
             self->coords[0] = PyFloat_AsDouble(xOrSequence);
@@ -2789,13 +2784,8 @@ static int
 _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
 {
     if (xOrSequence) {
-        if (pgVectorCompatible_Check(xOrSequence, self->dim)) {
-            if (!PySequence_AsVectorCoords(xOrSequence, self->coords, 3)) {
-                return -1;
-            }
-            else {
-                return 0;
-            }
+        if (pg_VectorCoordsFromObj(xOrSequence, 3, self->coords)) {
+            return 0;
         }
         else if (RealNumber_Check(xOrSequence)) {
             self->coords[0] = PyFloat_AsDouble(xOrSequence);
@@ -4504,12 +4494,12 @@ math_lerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     PyObject *max = args[1];
     PyObject *value = args[2];
 
-    if (PyNumber_Check(args[2]) != 1) {
-        return RAISE(PyExc_TypeError,
-                     "lerp requires the interpolation amount to be number");
-    }
-
+    double a = PyFloat_AsDouble(min);
+    RAISE_ARG_TYPE_ERROR("min")
+    double b = PyFloat_AsDouble(max);
+    RAISE_ARG_TYPE_ERROR("max")
     double t = PyFloat_AsDouble(value);
+    RAISE_ARG_TYPE_ERROR("value")
 
     if (nargs == 4 && !PyObject_IsTrue(args[3])) {
         ;  // pass if do_clamp is false
@@ -4523,16 +4513,7 @@ math_lerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         }
     }
 
-    if (PyNumber_Check(min) && PyNumber_Check(max)) {
-        return PyFloat_FromDouble(PyFloat_AsDouble(min) * (1 - t) +
-                                  PyFloat_AsDouble(max) * t);
-    }
-    else {
-        return RAISE(
-            PyExc_TypeError,
-            "math.lerp requires all the arguments to be numbers. To lerp "
-            "between two vectors, please use the Vector class methods.");
-    }
+    return PyFloat_FromDouble(lerp(a, b, t));
 }
 
 static PyObject *

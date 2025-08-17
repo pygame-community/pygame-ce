@@ -641,6 +641,8 @@ to store which parts collide.
 
       .. versionaddedold:: 2.0.0
 
+      .. versionchanged:: 2.5.6 Added the area keyword argument.
+
       .. ## Mask.to_surface ##
 
    .. ## pygame.mask.Mask ##

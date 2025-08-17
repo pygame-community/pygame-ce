@@ -107,21 +107,12 @@ class MissingModule:
 # mixing single phase (C) and multiphase modules (cython)
 if sys.platform in ("wasi", "emscripten"):
     try:
-        import pygame_static
+        import pygame.base as pygame_static
     except ModuleNotFoundError:
         pygame_static = None
 
     if pygame_static:
         pygame = sys.modules[__name__]
-
-        pygame.Color = pygame.color.Color
-
-        Vector2 = pygame.math.Vector2
-        Vector3 = pygame.math.Vector3
-
-        Rect = pygame.rect.Rect
-
-        BufferProxy = pygame.bufferproxy.BufferProxy
 
         # cython modules use multiphase initialisation when not in builtin Inittab.
 
@@ -144,19 +135,28 @@ if sys.platform in ("wasi", "emscripten"):
 from pygame.base import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
-from pygame.rect import Rect, FRect
 from pygame.rwobject import encode_string, encode_file_path
-import pygame.surflock
+
+
+import pygame.rect
+
+Rect = pygame.rect.Rect
+FRect = pygame.rect.FRect
+
+
 import pygame.color
 
 Color = pygame.color.Color
+
 import pygame.bufferproxy
 
 BufferProxy = pygame.bufferproxy.BufferProxy
+
 import pygame.math
 
 Vector2 = pygame.math.Vector2
 Vector3 = pygame.math.Vector3
+
 
 from pygame.base import __version__
 
@@ -210,18 +210,13 @@ except (ImportError, OSError):
 
 
 try:
-    import pygame.sprite
-except (ImportError, OSError):
-    sprite = MissingModule("sprite", urgent=1)
-
-
-try:
     import pygame.pixelcopy
 except (ImportError, OSError):
     pixelcopy = MissingModule("pixelcopy", urgent=1)
 
 
 try:
+    import pygame.surflock
     from pygame.surface import Surface, SurfaceType
 except (ImportError, OSError):
 
@@ -229,6 +224,13 @@ except (ImportError, OSError):
         _attribute_undefined("pygame.Surface")
 
     SurfaceType = Surface
+
+# sprite.py is using pygame.surface.Surface type
+try:
+    import pygame.sprite
+except (ImportError, OSError):
+    sprite = MissingModule("sprite", urgent=1)
+
 
 try:
     import pygame.mask

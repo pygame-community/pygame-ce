@@ -197,10 +197,14 @@ image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
             SDL_RWops *rw = pgRWops_FromFileObject(obj);
             if (rw != NULL) {
                 if (!strcasecmp(ext, "bmp")) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                    result = (SDL_SaveBMP_IO(surf, rw, 0) ? 0 : -1);
+#else
                     /* The SDL documentation didn't specify which negative
                      * number is returned upon error. We want to be sure that
                      * result is either 0 or -1: */
                     result = (SDL_SaveBMP_RW(surf, rw, 0) == 0 ? 0 : -1);
+#endif
                 }
                 else {
                     result = SaveTGA_RW(surf, rw, 1);
@@ -213,10 +217,14 @@ image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
         else {
             if (!strcasecmp(ext, "bmp")) {
                 Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = (SDL_SaveBMP(surf, name) ? 0 : -1);
+#else
                 /* The SDL documentation didn't specify which negative number
                  * is returned upon error. We want to be sure that result is
                  * either 0 or -1: */
                 result = (SDL_SaveBMP(surf, name) == 0 ? 0 : -1);
+#endif
                 Py_END_ALLOW_THREADS;
             }
             else {
@@ -1795,12 +1803,9 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     }
 
     if (h.has_cmap) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (!SDL_SetSurfacePalette(linebuf, surf_palette))
-#else
-        if (SDL_SetSurfacePalette(linebuf, surf_palette) < 0)
-#endif
+        if (!PG_SetSurfacePalette(linebuf, surf_palette)) {
             goto error; /* SDL error already set. */
+        }
     }
 
     if (rle) {

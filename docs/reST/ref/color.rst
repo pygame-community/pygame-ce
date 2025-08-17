@@ -292,6 +292,18 @@
 
       .. ## Color.from_normalized ##
 
+   .. classmethod:: from_hex
+
+      | :sl:`Returns a Color object from a Hexadecimal representation`
+      | :sg:`from_hex(hex, /) -> Color`
+
+      Creates a Color object from the given Hexadecimal components. Refer to :attr:`Color.hex`
+      for more information.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Color.from_hex ##
+
    .. method:: normalize
 
       | :sl:`Returns the normalized RGBA values of the Color.`

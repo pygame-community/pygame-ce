@@ -3,8 +3,11 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
+# TODO: when freetype is updated, we can look into resolving the circular
+# dependency between freetype and harfbuzz by using the upcoming freetype
+# dynamic harfbuzz loading feature.
 FREETYPE="freetype-2.13.3"
-HARFBUZZ_VER=10.2.0
+HARFBUZZ_VER=11.3.3
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
 curl -sL --retry 10 https://savannah.nongnu.org/download/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz

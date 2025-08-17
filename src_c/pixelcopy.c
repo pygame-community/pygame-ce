@@ -734,7 +734,7 @@ array_to_surface(PyObject *self, PyObject *arg)
             else {
                 Uint32 alpha = 0;
                 if (format->Amask) {
-                    alpha = 255 >> Aloss << Ashift;
+                    alpha = 255u >> Aloss << Ashift;
                 }
                 switch (view_p->itemsize) {
                     case sizeof(Uint8):

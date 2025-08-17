@@ -1,3 +1,4 @@
+import sys
 import types
 from collections.abc import Callable, Iterable, Iterator
 from typing import (
@@ -10,17 +11,48 @@ from typing import (
     Union,
 )
 
+# use typing_extensions for compatibility with older Python versions
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
 from pygame.mask import Mask
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.typing import Point, RectLike
-from typing_extensions import deprecated  # added in 3.13
+
+# define some useful protocols first, which sprite functions accept
+# sprite functions don't need all sprite attributes to be present in the
+# arguments passed, they only use a few which are marked in the below protocols
+class _HasRect(Protocol):
+    @property
+    def rect(self) -> Optional[Union[FRect, Rect]]: ...
+
+# image in addition to rect
+class _HasImageAndRect(_HasRect, Protocol):
+    @property
+    def image(self) -> Optional[Surface]: ...
+
+# mask in addition to rect
+class _HasMaskAndRect(_HasRect, Protocol):
+    mask: Mask
+
+# radius in addition to rect
+class _HasRadiusAndRect(_HasRect, Protocol):
+    radius: float
 
 # non-generic Group, used in Sprite
-_Group = AbstractGroup[_SpriteSupportsGroup]
+_Group = AbstractGroup[Any]
 
 # protocol helps with structural subtyping for typevars in sprite group generics
-class _SupportsSprite(Protocol):
+# and allows the use of any class with the required attributes and methods
+class _SupportsSprite(_HasImageAndRect, Protocol):
     @property
     def image(self) -> Optional[Surface]: ...
     @image.setter
@@ -33,7 +65,6 @@ class _SupportsSprite(Protocol):
     def layer(self) -> int: ...
     @layer.setter
     def layer(self, value: int) -> None: ...
-    def __init__(self, *groups: _Group) -> None: ...
     def add_internal(self, group: _Group) -> None: ...
     def remove_internal(self, group: _Group) -> None: ...
     def update(self, *args: Any, **kwargs: Any) -> None: ...
@@ -75,10 +106,10 @@ class Sprite(_SupportsSprite):
     def remove(self, *groups: _Group) -> None: ...
     def kill(self) -> None: ...
     def alive(self) -> bool: ...
-    def groups(self) -> list[_Group]: ...
+    def groups(self) -> list[AbstractGroup[_SupportsSprite]]: ...
 
 # concrete dirty sprite implementation class
-class DirtySprite(_SupportsDirtySprite):
+class DirtySprite(Sprite, _SupportsDirtySprite):
     dirty: int
     blendmode: int
     source_rect: Union[FRect, Rect]
@@ -87,59 +118,14 @@ class DirtySprite(_SupportsDirtySprite):
     def _set_visible(self, val: int) -> None: ...
     def _get_visible(self) -> int: ...
 
-# used as a workaround for typing.Self because it is added in python 3.11
-_TGroup = TypeVar("_TGroup", bound=AbstractGroup)
-
-# define some useful protocols first, which sprite functions accept
-# sprite functions don't need all sprite attributes to be present in the
-# arguments passed, they only use a few which are marked in the below protocols
-class _HasRect(Protocol):
-    @property
-    def rect(self) -> Optional[Union[FRect, Rect]]: ...
-
-# image in addition to rect
-class _HasImageAndRect(_HasRect, Protocol):
-    @property
-    def image(self) -> Optional[Surface]: ...
-
-# mask in addition to rect
-class _HasMaskAndRect(_HasRect, Protocol):
-    mask: Mask
-
-# radius in addition to rect
-class _HasRadiusAndRect(_HasRect, Protocol):
-    radius: float
-
-class _SpriteSupportsGroup(_SupportsSprite, _HasImageAndRect, Protocol): ...
-class _DirtySpriteSupportsGroup(_SupportsDirtySprite, _HasImageAndRect, Protocol): ...
-
-# typevar bound to Sprite, _SpriteSupportsGroup Protocol ensures sprite
+# typevar bound to Sprite, _SupportsSprite Protocol ensures sprite
 # subclass passed to group has image and rect attributes
-_TSprite = TypeVar("_TSprite", bound=_SpriteSupportsGroup)
-_TSprite2 = TypeVar("_TSprite2", bound=_SpriteSupportsGroup)
+_TSprite = TypeVar("_TSprite", bound=_SupportsSprite)
+_TSprite2 = TypeVar("_TSprite2", bound=_SupportsSprite)
+_TDirtySprite = TypeVar("_TDirtySprite", bound=_SupportsDirtySprite)
 
-# almost the same as _TSprite but bound to DirtySprite
-_TDirtySprite = TypeVar("_TDirtySprite", bound=_DirtySpriteSupportsGroup)
-
-# Below code demonstrates the advantages of the _SpriteSupportsGroup protocol
-
-# typechecker should error, regular Sprite does not support Group.draw due to
-# missing image and rect attributes
-# a = Group(Sprite())
-
-# typechecker should error, other Sprite attributes are also needed for Group
-# class MySprite:
-#     image: Surface
-#     rect: Rect
-#
-# b = Group(MySprite())
-
-# typechecker should pass
-# class MySprite(Sprite):
-#     image: Surface
-#     rect: Rect
-#
-# b = Group(MySprite())
+# typevar for sprite or iterable of sprites, used in Group init, add and remove
+_SpriteOrIterable = Union[_TSprite, Iterable[_SpriteOrIterable[_TSprite]]]
 
 class AbstractGroup(Generic[_TSprite]):
     spritedict: dict[_TSprite, Optional[Union[FRect, Rect]]]
@@ -153,17 +139,11 @@ class AbstractGroup(Generic[_TSprite]):
     def add_internal(self, sprite: _TSprite, layer: None = None) -> None: ...
     def remove_internal(self, sprite: _TSprite) -> None: ...
     def has_internal(self, sprite: _TSprite) -> bool: ...
-    def copy(self: _TGroup) -> _TGroup: ...  # typing.Self is py3.11+
+    def copy(self) -> Self: ...
     def sprites(self) -> list[_TSprite]: ...
-    def add(
-        self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
-    ) -> None: ...
-    def remove(
-        self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
-    ) -> None: ...
-    def has(
-        self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
-    ) -> bool: ...
+    def add(self, *sprites: _SpriteOrIterable[_TSprite]) -> None: ...
+    def remove(self, *sprites: _SpriteOrIterable[_TSprite]) -> None: ...
+    def has(self, *sprites: _SpriteOrIterable[_TSprite]) -> bool: ...
     def update(self, *args: Any, **kwargs: Any) -> None: ...
     def draw(
         self, surface: Surface, bgd: Optional[Surface] = None, special_flags: int = 0
@@ -176,16 +156,14 @@ class AbstractGroup(Generic[_TSprite]):
     def empty(self) -> None: ...
 
 class Group(AbstractGroup[_TSprite]):
-    def __init__(
-        self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
-    ) -> None: ...
+    def __init__(self, *sprites: _SpriteOrIterable[_TSprite]) -> None: ...
 
 # these are aliased in the code too
 @deprecated("Use `pygame.sprite.Group` instead")
-class RenderPlain(Group): ...
+class RenderPlain(Group[_TSprite]): ...
 
 @deprecated("Use `pygame.sprite.Group` instead")
-class RenderClear(Group): ...
+class RenderClear(Group[_TSprite]): ...
 
 class RenderUpdates(Group[_TSprite]): ...
 
@@ -194,23 +172,9 @@ class OrderedUpdates(RenderUpdates[_TSprite]): ...
 
 class LayeredUpdates(AbstractGroup[_TSprite]):
     def __init__(
-        self,
-        *sprites: Union[
-            _TSprite,
-            AbstractGroup[_TSprite],
-            Iterable[Union[_TSprite, AbstractGroup[_TSprite]]],
-        ],
-        **kwargs: Any,
+        self, *sprites: _SpriteOrIterable[_TSprite], **kwargs: Any
     ) -> None: ...
-    def add(
-        self,
-        *sprites: Union[
-            _TSprite,
-            AbstractGroup[_TSprite],
-            Iterable[Union[_TSprite, AbstractGroup[_TSprite]]],
-        ],
-        **kwargs: Any,
-    ) -> None: ...
+    def add(self, *sprites: _SpriteOrIterable[_TSprite], **kwargs: Any) -> None: ...
     def get_sprites_at(self, pos: Point) -> list[_TSprite]: ...
     def get_sprite(self, idx: int) -> _TSprite: ...
     def remove_sprites_of_layer(self, layer_nr: int) -> list[_TSprite]: ...
@@ -226,7 +190,6 @@ class LayeredUpdates(AbstractGroup[_TSprite]):
     def switch_layer(self, layer1_nr: int, layer2_nr: int) -> None: ...
 
 class LayeredDirty(LayeredUpdates[_TDirtySprite]):
-    def __init__(self, *sprites: _TDirtySprite, **kwargs: Any) -> None: ...
     def draw(
         self,
         surface: Surface,
@@ -238,9 +201,7 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def repaint_rect(self, screen_rect: RectLike) -> None: ...
     def set_clip(self, screen_rect: Optional[RectLike] = None) -> None: ...
     def get_clip(self) -> Union[FRect, Rect]: ...
-    def set_timing_threshold(
-        self, time_ms: SupportsFloat
-    ) -> None: ...  # This actually accept any value
+    def set_timing_threshold(self, time_ms: SupportsFloat) -> None: ...
     @deprecated(
         "since 2.1.1. Use `pygame.sprite.LayeredDirty.set_timing_threshold` instead"
     )
@@ -279,11 +240,15 @@ _SupportsCollideMask = Union[_HasImageAndRect, _HasMaskAndRect]
 def collide_mask(
     left: _SupportsCollideMask, right: _SupportsCollideMask
 ) -> Optional[tuple[int, int]]: ...
+
+# _HasRect typevar for sprite collide functions
+_THasRect = TypeVar("_THasRect", bound=_HasRect)
+
 def spritecollide(
-    sprite: _HasRect,
+    sprite: _THasRect,
     group: AbstractGroup[_TSprite],
     dokill: bool,
-    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
+    collided: Optional[Callable[[_THasRect, _TSprite], Any]] = None,
 ) -> list[_TSprite]: ...
 def groupcollide(
     groupa: AbstractGroup[_TSprite],
@@ -293,7 +258,7 @@ def groupcollide(
     collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> dict[_TSprite, list[_TSprite2]]: ...
 def spritecollideany(
-    sprite: _HasRect,
+    sprite: _THasRect,
     group: AbstractGroup[_TSprite],
-    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
+    collided: Optional[Callable[[_THasRect, _TSprite], Any]] = None,
 ) -> Optional[_TSprite]: ...

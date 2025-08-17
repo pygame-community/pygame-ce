@@ -119,7 +119,7 @@ Conversion can be combined with swizzling or slicing to create a new order
 
    The formula is:
 
-   ``a * value + (1 - value) * b``.
+   ``a + (b - a) * value``.
 
    .. versionadded:: 2.4.0
 

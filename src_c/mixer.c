@@ -444,7 +444,7 @@ _init(int freq, int size, int channels, int chunk, char *devicename,
             SDL_setenv("SDL_AUDIODRIVER", "directsound", 1);
         }
 
-        if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+        if (!PG_InitSubSystem(SDL_INIT_AUDIO)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
 
@@ -2049,12 +2049,7 @@ pgChannel_New(int channelnum)
     return (PyObject *)chanobj;
 }
 
-#if BUILD_STATIC
-// avoid conflict with PyInit_mixer in _sdl2/mixer.c
-MODINIT_DEFINE(pg_mixer)
-#else
 MODINIT_DEFINE(mixer)
-#endif
 {
     PyObject *module, *apiobj, *music = NULL;
     static void *c_api[PYGAMEAPI_MIXER_NUMSLOTS];

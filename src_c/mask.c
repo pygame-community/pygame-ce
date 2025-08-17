@@ -763,7 +763,8 @@ set_pixel_color(Uint8 *pixel, Uint8 bpp, Uint32 color)
 
         case 3:
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            *(Uint16 *)pixel = color;
+            pixel[0] = color;
+            pixel[1] = color >> 8;
             pixel[2] = color >> 16;
 #else  /* != SDL_LIL_ENDIAN */
             pixel[2] = color;
@@ -2666,8 +2667,7 @@ static PyMethodDef _mask_methods[] = {
 
 MODINIT_DEFINE(mask)
 {
-    PyObject *module, *apiobj;
-    static void *c_api[PYGAMEAPI_MASK_NUMSLOTS];
+    PyObject *module;
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "mask",
@@ -2719,13 +2719,5 @@ MODINIT_DEFINE(mask)
         return NULL;
     }
 
-    /* export the c api */
-    c_api[0] = &pgMask_Type;
-    apiobj = encapsulate_api(c_api, "mask");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
-        Py_DECREF(module);
-        return NULL;
-    }
     return module;
 }

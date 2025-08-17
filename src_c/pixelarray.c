@@ -1926,18 +1926,12 @@ MODINIT_DEFINE(pixelarray)
         return NULL;
     }
 
-    /* type preparation */
-    if (PyType_Ready(&pgPixelArray_Type)) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
         return NULL;
     }
-    if (PyModule_AddObjectRef(module, "PixelArray",
-                              (PyObject *)&pgPixelArray_Type)) {
+    if (PyModule_AddType(module, &pgPixelArray_Type)) {
         Py_DECREF(module);
         return NULL;
     }
