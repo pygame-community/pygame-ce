@@ -41,7 +41,7 @@ jobs:
       SDKROOT: /opt/python-wasm-sdk
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v5.0.0
 
     - name: Regen with latest cython (using system python3)
       run: |
