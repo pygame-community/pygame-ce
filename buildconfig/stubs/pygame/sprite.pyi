@@ -196,17 +196,17 @@ def spritecollide(
     sprite: _HasRectT,
     group: AbstractGroup[_SpriteT],
     dokill: bool,
-    collided: Optional[Callable[[_HasRectT, _SpriteT], Any]] = None,
+    collided: Optional[Callable[[_HasRectT, _SpriteT], bool]] = None,
 ) -> list[_SpriteT]: ...
 def groupcollide(
     groupa: AbstractGroup[_SpriteT],
     groupb: AbstractGroup[_SpriteT2],
     dokilla: bool,
     dokillb: bool,
-    collided: Optional[Callable[[_SpriteT, _SpriteT2], Any]] = None,
+    collided: Optional[Callable[[_SpriteT, _SpriteT2], bool]] = None,
 ) -> dict[_SpriteT, list[_SpriteT2]]: ...
 def spritecollideany(
     sprite: _HasRectT,
     group: AbstractGroup[_SpriteT],
-    collided: Optional[Callable[[_HasRectT, _SpriteT], Any]] = None,
+    collided: Optional[Callable[[_HasRectT, _SpriteT], bool]] = None,
 ) -> Optional[_SpriteT]: ...
