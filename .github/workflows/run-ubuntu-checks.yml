@@ -53,8 +53,9 @@ jobs:
         os: [ ubuntu-24.04 ]
         # check our min python (minor) version and our max python (minor) version
         python: [
-          3.9.21,
-          3.13.1
+          3.9.23,
+          3.13.5,
+          3.14.0rc1
         ]
 
     env:
@@ -87,7 +88,7 @@ jobs:
 
     - name: Cache debug python build
       id: cache-python
-      uses: actions/cache@v4.2.3
+      uses: actions/cache@v4.2.4
       with:
         key: ${{ matrix.python }}
         path: ~/.pyenv/versions/${{ matrix.python }}-debug/**

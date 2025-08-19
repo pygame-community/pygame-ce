@@ -378,6 +378,10 @@
       | :sl:`Get or set the logical Renderer size (a device independent resolution for rendering)`
       | :sg:`logical_size -> (int width, int height)`
 
+      Note: When the rendering target is the main window, and ``logical_size``
+      has not been set before, it will contain ``(0, 0)`` and not the size of
+      the window.
+
    .. attribute:: scale
 
       | :sl:`Get the drawing scale for the current rendering target`
@@ -423,6 +427,25 @@
       :param area: A :class:`pygame.Rect` or tuple representing the
                    drawing area on the target, or ``None`` to use the
                    entire area of the current rendering target.
+
+   .. method:: coordinates_to_window
+
+      | :sl:`Translates renderer coordinates to window coordinates`
+      | :sg:`coordinates_to_window(point) -> (float, float)`
+
+      :param point: The coordinates in render space.
+
+      .. versionadded:: 2.5.6
+
+
+   .. method:: coordinates_from_window
+
+      | :sl:`Translates window coordinates to renderer coordinates`
+      | :sg:`coordinates_from_window(point) -> (float, float)`
+
+      :param point: The coordinates in window space.
+
+      .. versionadded:: 2.5.6
 
    .. method:: blit
 

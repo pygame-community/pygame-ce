@@ -597,7 +597,7 @@ The following file formats are supported
 
       Set the position (angle, distance) of a playing channel.
 
-      `angle`: Angle is in degrees.
+      `angle`: Angle in degrees.
 
       `distance`: Range from 0 to 255.
 

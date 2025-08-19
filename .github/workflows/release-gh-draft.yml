@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4.2.2
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: pygame-wheels
           merge-multiple: true

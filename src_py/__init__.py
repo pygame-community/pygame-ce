@@ -107,22 +107,12 @@ class MissingModule:
 # mixing single phase (C) and multiphase modules (cython)
 if sys.platform in ("wasi", "emscripten"):
     try:
-        import pygame_static
+        import pygame.base as pygame_static
     except ModuleNotFoundError:
         pygame_static = None
 
     if pygame_static:
         pygame = sys.modules[__name__]
-
-        # pygame.Color = pygame.color.Color
-
-        # Vector2 = pygame.math.Vector2
-        # Vector3 = pygame.math.Vector3
-        # Rect = pygame.rect.Rect
-        # BufferProxy = pygame.bufferproxy.BufferProxy
-
-        # for pygame.surface.Surface type in sprite.py ?
-        # surface = sys.modules["pygame.surface"]
 
         # cython modules use multiphase initialisation when not in builtin Inittab.
 
