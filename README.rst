@@ -155,7 +155,7 @@ How to Contribute
 First of all, thank you for considering contributing to pygame-ce! It's people like you that make pygame-ce a great library. Please follow these steps to get started:
 
 1. Read the `Contribution Guidelines`_ and the `Many Ways to Contribute`_ wiki pages.
-2. Read the documentataion on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
+2. Read the documentation on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
 3. Read how to `label and link reported issues`_.
 4. Check the `issue tracker`_ for open issues that interest you or open a new issue to start a discussion about your idea.
 
