@@ -5,15 +5,15 @@ enable_free_tier: true
 reviews:
   profile: chill
   request_changes_workflow: false
-  high_level_summary: false
+  high_level_summary: true
   high_level_summary_placeholder: '@coderabbitai summary'
-  high_level_summary_in_walkthrough: false
+  high_level_summary_in_walkthrough: true
   auto_title_placeholder: '@coderabbitai'
   auto_title_instructions: ''
   review_status: true
   commit_status: true
   fail_commit_status: false
-  collapse_walkthrough: false
+  collapse_walkthrough: true
   changed_files_summary: true
   sequence_diagrams: true
   estimate_code_review_effort: true
