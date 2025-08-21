@@ -77,8 +77,16 @@
 
 #define PG_CreateSurface SDL_CreateSurface
 #define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
-#define PG_ConvertSurface SDL_ConvertSurface
 #define PG_ConvertSurfaceFormat SDL_ConvertSurface
+
+/* Convert surface using palette and format of dst */
+static inline SDL_Surface *
+PG_ConvertSurface(SDL_Surface *surface, SDL_Surface *dst)
+{
+    return SDL_ConvertSurfaceAndColorspace(surface, dst->format,
+                                           SDL_GetSurfacePalette(dst),
+                                           SDL_GetSurfaceColorspace(dst), 0);
+}
 
 #define PG_PixelFormatEnum SDL_PixelFormat
 
@@ -106,7 +114,17 @@ PG_UnlockMutex(SDL_mutex *mutex)
     return 0;
 }
 
-#define PG_SURF_BitsPerPixel(surf) SDL_BITSPERPIXEL(surf->format)
+static inline int
+PG_SURF_BitsPerPixel(SDL_Surface *surf)
+{
+    if (SDL_BYTESPERPIXEL(surf->format) == 4) {
+        /* Compat with SDL2: for 24-bit images SDL3 returns 24 when SDL2
+         * returned 32 */
+        return 32;
+    }
+    return SDL_BITSPERPIXEL(surf->format);
+}
+
 #define PG_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
@@ -119,11 +137,23 @@ PG_UnlockMutex(SDL_mutex *mutex)
 
 #define PG_PixelFormat const SDL_PixelFormatDetails
 
+static inline SDL_Palette *
+PG_GetSurfacePalette(SDL_Surface *surf)
+{
+    SDL_Palette *ret = SDL_GetSurfacePalette(surf);
+    if (!ret && SDL_ISPIXELFORMAT_INDEXED(surf->format)) {
+        /* Palette doesn't exist but is expected, so create it.
+         * SDL will associate the newly created palette with the surface */
+        ret = SDL_CreateSurfacePalette(surf);
+    }
+    return ret;
+}
+
 static inline bool
 PG_GetSurfaceDetails(SDL_Surface *surf, PG_PixelFormat **format_p,
                      SDL_Palette **palette_p)
 {
-    *palette_p = SDL_GetSurfacePalette(surf);
+    *palette_p = PG_GetSurfacePalette(surf);
     *format_p = SDL_GetPixelFormatDetails(surf->format);
     return *format_p != NULL;
 }
@@ -134,7 +164,6 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
     return SDL_GetPixelFormatDetails(surf->format);
 }
 
-#define PG_GetSurfacePalette SDL_GetSurfacePalette
 #define PG_SetPaletteColors SDL_SetPaletteColors
 #define PG_SetSurfacePalette SDL_SetSurfacePalette
 #define PG_SetSurfaceColorKey SDL_SetSurfaceColorKey
@@ -188,9 +217,14 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
     SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, format)
 #define PG_CreateSurfaceFrom(width, height, format, pixels, pitch) \
     SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, 0, pitch, format)
-#define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
+
+static inline SDL_Surface *
+PG_ConvertSurface(SDL_Surface *surface, SDL_Surface *dst)
+{
+    return SDL_ConvertSurface(surface, dst->format, 0);
+}
 
 #define PG_PixelFormatEnum SDL_PixelFormatEnum
 
