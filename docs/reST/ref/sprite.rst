@@ -50,6 +50,17 @@ extend those when you add a Sprite or Group class.
 
 Sprites are not thread safe. So lock them yourself if using threads.
 
+.. note:: As of version 2.5.6, you can use ``Sprite`` and ``Group`` with ``Renderer``
+            and ``Texture`` from ``_sdl2.video``, at least partially. Instead of ``Sprite.image``
+            needing to be a ``Surface``, it needs to be a ``Texture`` to do this. This behavior
+            is still very experimental, so please report any weirdness to the developers as an
+            issue on the ``pygame-ce`` github repository. Also note that ``LayeredDirty.draw``
+            does not currently work in this manner. Other group types might work, but have not
+            been thorougly tested.
+
+.. versionchanged:: 2.5.6 ``Sprite`` and ``Group``
+                     have some compatibility with ``_sdl2.video``
+
 .. class:: Sprite
 
    | :sl:`Simple base class for visible game objects.`
@@ -291,17 +302,29 @@ Sprites are not thread safe. So lock them yourself if using threads.
    .. method:: draw
 
       | :sl:`blit the Sprite images`
-      | :sg:`draw(Surface, bgd=None, special_flags=0) -> list[Rect]`
+      | :sg:`draw(Surface, bgd=None, special_flags=0) -> list[Union[Rect, FRect]]`
+      | :sg:`draw(Renderer, bgd=None, special_flags=0) -> list[Union[Rect, FRect]]`
 
-      Draws the contained Sprites to the Surface argument. This uses the
-      ``Sprite.image`` attribute for the source surface, and ``Sprite.rect``
-      for the position. ``special_flags`` is passed to ``Surface.blit()``.
+      Draws the contained Sprites to the Surface or _sdl2.video.Renderer argument.
+
+      Surface
+      -------
+      This uses the ``Sprite.image`` attribute for the source surface, and ``Sprite.rect``
+      for the position.
+
+      Renderer
+      --------
+      This uses the ``Sprite.image`` attribute for the source Texture, and ``Sprite.rect``
+      for the position.
+
+      ``special_flags`` is passed to ``Surface.blit()``.
       ``bgd`` is unused in this method but ``LayeredDirty.draw()`` uses
       it.
 
       The Group keeps sprites in the order they were added, they will be drawn in this order.
 
       .. versionchanged:: 2.5.4 Added the ``bgd`` and ``special_flags`` arguments
+      .. versionchanged:: 2.5.6 Now accepts a renderer for use with ``_sdl2.video`` and ``Sprite.rect`` supports ``FRect``s
 
       .. ## Group.draw ##
 

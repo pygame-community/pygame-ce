@@ -443,6 +443,14 @@ cdef extern from "pygame.h" nogil:
         cdef SDL_Rect r
         cdef object weakreflist
 
+    ctypedef class pygame.rect.FRect [object pgFRectObject]:
+        cdef SDL_FRect r
+        cdef object weakreflist
+
+    ctypedef fused RectLike:
+        Rect
+        FRect
+
     ctypedef class pygame.window.Window [object pgWindowObject]:
         cdef SDL_Window *_win
         cdef SDL_bool _is_borrowed
@@ -481,7 +489,7 @@ cdef class Renderer:
     cdef int _is_borrowed
 
     cpdef object get_viewport(self)
-    cpdef object blit(self, object source, Rect dest=*, Rect area=*, int special_flags=*)
+    cpdef object blit(self, object source, RectLike dest=*, RectLike area=*, int special_flags=*)
 
 cdef class Texture:
     cdef SDL_Texture* _tex
