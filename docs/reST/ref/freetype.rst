@@ -395,6 +395,18 @@ loaded. This module must be imported explicitly to be used. ::
       width in pixels, horizontal ppem (nominal width) in fractional pixels,
       and vertical ppem (nominal height) in fractional pixels.
 
+
+   .. method:: is_char_defined
+
+      | :sl:`Check if a char is defined in the font.`
+      | :sg:`is_char_defined(char) -> bool`
+
+      This checks if the char is defined in this font.
+
+      .. versionadded:: 2.4.0
+
+      .. ## Font.is_char_defined ##
+
    .. method:: render
 
       | :sl:`Return rendered text as a surface`

@@ -595,6 +595,61 @@ font_set_strikethrough(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
+font_is_char_provided(PyObject *self, PyObject *textobj)
+{
+    TTF_Font *font = PyFont_AsFont(self);
+    PyObject *temp;
+    PyObject *obj;
+    Uint16 *buffer;
+    Py_ssize_t length;
+    Uint16 ch;
+
+    if (PyUnicode_Check(textobj)) {
+        obj = textobj;
+        Py_INCREF(obj);
+    }
+    else if (PyBytes_Check(textobj)) {
+        obj = PyUnicode_FromEncodedObject(textobj, "UTF-8", NULL);
+        if (!obj) {
+            return NULL;
+        }
+    }
+    else {
+        return RAISE_TEXT_TYPE_ERROR();
+    }
+    temp = PyUnicode_AsUTF16String(obj);
+    Py_DECREF(obj);
+    if (!temp)
+        return NULL;
+    obj = temp;
+
+#if !SDL_TTF_VERSION_ATLEAST(2, 0, 15)
+    if (utf_8_needs_UCS_4(astring)) {
+        Py_DECREF(obj);
+        return RAISE(PyExc_UnicodeError,
+                     "a Unicode character above '\\uFFFF' was found;"
+                     " not supported with SDL_ttf version below 2.0.15");
+    }
+#endif
+
+    buffer = (Uint16 *)PyBytes_AS_STRING(obj);
+    length = PyBytes_GET_SIZE(obj) / sizeof(Uint16);
+
+    if (length > 2) {
+        Py_DECREF(obj);
+        return RAISE(PyExc_ValueError, "Too long, only 1 char supported.");
+    }
+
+    ch = buffer[1]; /* skip BOM */
+    int index = TTF_GlyphIsProvided(font, ch);
+    Py_DECREF(obj);
+    if (!index) {
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_TRUE;
+}
+
+static PyObject *
 font_render(PyObject *self, PyObject *args, PyObject *kwds)
 {
     if (!PgFont_GenerationCheck(self)) {
@@ -1198,6 +1253,8 @@ static PyMethodDef font_methods[] = {
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
     {"render", (PyCFunction)font_render, METH_VARARGS | METH_KEYWORDS,
      DOC_FONT_FONT_RENDER},
+    {"is_char_defined", font_is_char_provided, METH_O,
+     DOC_FONT_FONT_ISCHARDEFINED},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,

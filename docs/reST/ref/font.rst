@@ -306,6 +306,17 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.point_size ##
 
+   .. method:: is_char_defined
+
+      | :sl:`Check if a char is defined in the font.`
+      | :sg:`is_char_defined(char) -> bool`
+
+      This checks if the char is defined in this font.
+
+      .. versionadded:: 2.4.0
+
+      .. ## Font.is_char_defined ##
+
    .. method:: render
 
       | :sl:`draw text on a new Surface`
