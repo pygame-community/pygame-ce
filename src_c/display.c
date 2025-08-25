@@ -2300,7 +2300,7 @@ static PyObject *
 pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
 {
     int display_count, i;
-    PyObject *result;
+    PyObject *result = NULL;
 
     VIDEO_INIT_CHECK();
 
@@ -2318,6 +2318,9 @@ pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
 
     result = PyList_New(display_count);
     if (!result) {
+#if PG_SDL3
+        SDL_free(displays);
+#endif
         return NULL;
     }
 
@@ -2326,22 +2329,32 @@ pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
 #if PG_SDL3
         SDL_DisplayID display_id = displays[i];
         if (SDL_GetDisplayUsableBounds(display_id, &bounds) == SDL_FALSE) {
+            Py_DECREF(result);
+            SDL_free(displays);
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
 #else
         if (SDL_GetDisplayUsableBounds(i, &bounds) < 0) {
+            Py_DECREF(result);
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
 #endif
         PyObject *pg_rect = pgRect_New(&bounds);
         if (pg_rect == NULL) {
+#if PG_SDL3
+            SDL_free(displays);
+#endif
+            Py_DECREF(result);
             return NULL; /* exception already set */
         }
         PyList_SET_ITEM(result, i, pg_rect);
     }
+
+#if PG_SDL3
+    SDL_free(displays);
+#endif
     return result;
 }
-
 static PyObject *
 pg_is_fullscreen(PyObject *self, PyObject *_null)
 {
