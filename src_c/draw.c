@@ -29,6 +29,7 @@
 
 #include "doc/draw_doc.h"
 
+#include <limits.h>  // for CHAR_BIT
 #include <math.h>
 
 #include <float.h>
@@ -1394,7 +1395,7 @@ swap(float *a, float *b)
     *b = temp;
 }
 
-#define WORD_BITS (8 * sizeof(unsigned int))
+#define WORD_BITS (CHAR_BIT  * sizeof(unsigned int))
 
 struct point2d {
     Uint32 x;
@@ -1404,18 +1405,19 @@ struct point2d {
 static inline void
 _bitarray_set(unsigned int *bitarray, size_t idx, SDL_bool value)
 {
+    const unsigned int mask = (1u << (idx % WORD_BITS));
     if (value) {
-        bitarray[idx / WORD_BITS] |= (1 << (idx % WORD_BITS));
+        bitarray[idx / WORD_BITS] |= mask;
     }
     else {
-        bitarray[idx / WORD_BITS] &= (~(1) << (idx % WORD_BITS));
+        bitarray[idx / WORD_BITS] &= ~mask;
     }
 }
 
 static inline SDL_bool
 _bitarray_get(unsigned int *bitarray, size_t idx)
 {
-    if (bitarray[idx / WORD_BITS] & (1 << (idx % WORD_BITS)))
+    if (bitarray[idx / WORD_BITS] & (1u << (idx % WORD_BITS)))
         return SDL_TRUE;
     else
         return SDL_FALSE;
@@ -2502,8 +2504,9 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
     // breadth first flood fill, like graph search
     SDL_Rect cliprect;
     size_t mask_idx;
-
-    SDL_GetClipRect(surf, &cliprect);
+    if (!PG_GetSurfaceClipRect(surf, &cliprect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     size_t frontier_bufsize = 8, frontier_size = 1, next_frontier_size = 0;
 
     // Instead of a queue, we use two arrays and swap them between steps.
@@ -2524,8 +2527,9 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
 
     // 2D bitmask for queued nodes
     // we could check drawn color, but that doesnt work for patterns
-    size_t mask_size = cliprect.w * cliprect.h;
-    unsigned int *mask = calloc((mask_size) / 8 + 1, sizeof(unsigned int));
+    size_t mask_size = (size_t)cliprect.w * (size_t)cliprect.h;
+    size_t mask_words = (mask_size + WORD_BITS - 1) / WORD_BITS;
+    unsigned int *mask = calloc(mask_words, sizeof(unsigned int));
 
     if (mask == NULL) {
         free(frontier);
