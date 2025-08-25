@@ -2478,8 +2478,9 @@ draw_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
     }
     set_and_check_rect(surf, surf_clip_rect, x2, y2, color, drawn_area);
 }
-#define SURF_GET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_pix)              \
-    switch (PG_SURF_BytesPerPixel(p_surf)) {                                 \
+#ifndef SURF_GET_AT
+#define SURF_GET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format, p_pix)    \
+    switch (PG_FORMAT_BytesPerPixel(p_format)) {                             \
         case 1:                                                              \
             p_color = (Uint32) *                                             \
                       ((Uint8 *)(p_pixels) + (p_y) * p_surf->pitch + (p_x)); \
@@ -2501,6 +2502,7 @@ draw_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
                 *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x));     \
             break;                                                           \
     }
+#endif //SURF_GET_AT
 
 static int
 flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
@@ -2509,6 +2511,10 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
     // breadth first flood fill, like graph search
     SDL_Rect cliprect;
     size_t mask_idx;
+    PG_PixelFormat *format = PG_GetSurfaceFormat(surf);
+    if (!format) {
+        return -1;
+    }
     if (!PG_GetSurfaceClipRect(surf, &cliprect)) {
         return -1;
     }
@@ -2554,7 +2560,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
         goto flood_fill_finished;
     }
 
-    SURF_GET_AT(old_color, surf, x1, y1, (Uint8 *)surf->pixels, pix);
+    SURF_GET_AT(old_color, surf, x1, y1, (Uint8 *)surf->pixels, format, pix);
 
     if (pattern == NULL && old_color == new_color) {
         // not an error, but nothing to do here
@@ -2577,7 +2583,8 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
 
             Uint32 current_color = 0;
 
-            SURF_GET_AT(current_color, surf, x, y, (Uint8 *)surf->pixels, pix);
+            SURF_GET_AT(current_color, surf, x, y, (Uint8 *)surf->pixels,
+                        format, pix);
 
             if (current_color != old_color) {
                 continue;
@@ -2585,7 +2592,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
 
             if (pattern != NULL) {
                 SURF_GET_AT(new_color, pattern, x % pattern->w, y % pattern->h,
-                            (Uint8 *)pattern->pixels, pix);
+                            (Uint8 *)pattern->pixels, format, pix);
             }
 
             // clipping and color mapping have already happened here
