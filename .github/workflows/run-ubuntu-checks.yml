@@ -1,10 +1,13 @@
-# This workflow runs a build with a python version that has debug symbols
+# This workflow runs a build with a python version that has debug symbols.
+# Also generates coverage information from unit tests. Note that for intrinsics,
+# it only runs what gets compiled and would naturally run. It also is limited to
+# what can run in a CI environment.
 # Update this workflow when our min/max python minor versions update
 # This workflow is necessary to ensure that we can build and run with
 # a debug python build without too much worrying about SIGABRT being thrown
 # IMPORTANT: binaries are not to be uploaded from this workflow!
 
-name: Ubuntu debug python
+name: Ubuntu Checks
 defaults:
   run:
     shell: bash -leo pipefail {0}
@@ -23,7 +26,7 @@ on:
       - '*.md'
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
-      - '!.github/workflows/build-ubuntu-debug-python.yml'
+      - '!.github/workflows/run-ubuntu-checks.yml'
 
   pull_request:
     branches: main
@@ -35,14 +38,14 @@ on:
       - '*.md'
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
-      - '!.github/workflows/build-ubuntu-debug-python.yml'
+      - '!.github/workflows/run-ubuntu-checks.yml'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-ubuntu-debug-python
+  group: ${{ github.workflow }}-${{ github.ref }}-ubuntu-checks
   cancel-in-progress: true
 
 jobs:
-  debug_python:
+  debug_coverage:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
@@ -50,8 +53,9 @@ jobs:
         os: [ ubuntu-24.04 ]
         # check our min python (minor) version and our max python (minor) version
         python: [
-          3.9.21,
-          3.13.1
+          3.9.23,
+          3.13.5,
+          3.14.0rc1
         ]
 
     env:
@@ -62,14 +66,14 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v5.0.0
 
     - name: Install pygame-ce deps
       # https://github.com/actions/runner-images/issues/7192
       # https://github.com/orgs/community/discussions/47863
       run: |
         sudo apt-get update --fix-missing
-
+        sudo apt-get install lcov -y
         sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev -y
 
     - name: Install pyenv
@@ -84,7 +88,7 @@ jobs:
 
     - name: Cache debug python build
       id: cache-python
-      uses: actions/cache@v4.2.3
+      uses: actions/cache@v4.2.4
       with:
         key: ${{ matrix.python }}
         path: ~/.pyenv/versions/${{ matrix.python }}-debug/**
@@ -98,7 +102,7 @@ jobs:
       id: build-pygame-ce
       run: |
         pyenv global ${{ matrix.python }}-debug
-        python dev.py build --lax
+        python dev.py build --lax --coverage --sanitize undefined
 
     - name: Run tests
       env:
@@ -107,3 +111,56 @@ jobs:
       run: |
         pyenv global ${{ matrix.python }}-debug
         python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
+
+    - name: Generate coverage
+      id: gen-coverage
+      # want to continue regardless of whether a test failed or not as long as the job wasn't cancelled
+      if: ${{ steps.build-pygame-ce.conclusion == 'success' && !cancelled() }}
+      run: |
+        lcov --capture --directory . --output-file ./coverage.info
+        genhtml ./coverage.info --output-directory ./out
+
+    # We upload the generated files under github actions assets
+    - name: Upload coverage html
+      # want to continue only if the coverage generation was successful
+      if: ${{ steps.gen-coverage.conclusion == 'success' && !cancelled() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: pygame-coverage-${{ matrix.os }}-${{ matrix.python }}
+        path: ./out
+
+  # Run cppcheck static analysis on src_c changes
+  run-cppcheck:
+    runs-on: ubuntu-24.04
+    needs: debug_coverage
+
+    steps:
+    - uses: actions/checkout@v5.0.0
+      with:
+        fetch-depth: 0  # fetch full history
+
+    - name: Check if any src_c files changed
+      id: check-changes
+      continue-on-error: true
+      run: |
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+        else
+          CHANGED_FILES=$(git diff --name-only HEAD^1...HEAD)
+        fi
+        echo "Changed files: $CHANGED_FILES"
+        echo "$CHANGED_FILES" | grep '^src_c/' || echo "skip=true" >> "$GITHUB_OUTPUT"
+
+    - name: Install cppcheck
+      if: steps.check-changes.outputs.skip != 'true'
+      run: |
+        sudo apt-get update --fix-missing
+        sudo apt install cppcheck
+
+    - name: Run Static Checker
+      if: steps.check-changes.outputs.skip != 'true'
+      run: cppcheck src_c --enable=performance,portability,warning \
+        --suppress=*:src_c/freetype/ft_cache.c --suppress=*:src_c/scrap* \
+        --suppress=*:src_c/scale_mmx*.c --suppress=*:src_c/SDL_gfx/* \
+        --suppress=missingReturn --suppress=syntaxError -DWITH_THREAD -j $(nproc) \
+        -DPG_MAJOR_VERSION -DPG_MINOR_VERSION -DPG_PATCH_VERSION -DPG_VERSION_TAG

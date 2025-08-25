@@ -1707,36 +1707,21 @@ def spritecollide(sprite, group, dokill, collided=None):
     which will be used to calculate the collision.
 
     """
-    # pull the default collision function in as a local variable outside
-    # the loop as this makes the loop run faster
-    default_sprite_collide_func = sprite.rect.colliderect
-
-    if dokill:
-        crashed = []
-        append = crashed.append
-
-        for group_sprite in group.sprites():
-            if collided is not None:
-                if collided(sprite, group_sprite):
-                    group_sprite.kill()
-                    append(group_sprite)
-            else:
-                if default_sprite_collide_func(group_sprite.rect):
-                    group_sprite.kill()
-                    append(group_sprite)
-
-        return crashed
-
     if collided is not None:
-        return [
+        collided_sprites = [
             group_sprite for group_sprite in group if collided(sprite, group_sprite)
         ]
-
-    return [
-        group_sprite
-        for group_sprite in group
-        if default_sprite_collide_func(group_sprite.rect)
-    ]
+    else:
+        sprite_rect_collide = sprite.rect.colliderect
+        collided_sprites = [
+            group_sprite
+            for group_sprite in group
+            if sprite_rect_collide(group_sprite.rect)
+        ]
+    if dokill:
+        for group_sprite in collided_sprites:
+            group_sprite.kill()
+    return collided_sprites
 
 
 def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
@@ -1757,22 +1742,18 @@ def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
     that will be used to calculate the collision.
 
     """
-    crashed = {}
+    collided_sprites = {}
     # pull the collision function in as a local variable outside
     # the loop as this makes the loop run faster
     sprite_collide_func = spritecollide
+    for group_a_sprite in groupa:
+        collisions = sprite_collide_func(group_a_sprite, groupb, dokillb, collided)
+        if collisions:
+            collided_sprites[group_a_sprite] = collisions
     if dokilla:
-        for group_a_sprite in groupa.sprites():
-            collision = sprite_collide_func(group_a_sprite, groupb, dokillb, collided)
-            if collision:
-                crashed[group_a_sprite] = collision
-                group_a_sprite.kill()
-    else:
-        for group_a_sprite in groupa:
-            collision = sprite_collide_func(group_a_sprite, groupb, dokillb, collided)
-            if collision:
-                crashed[group_a_sprite] = collision
-    return crashed
+        for group_a_sprite in collided_sprites:
+            group_a_sprite.kill()
+    return collided_sprites
 
 
 def spritecollideany(sprite, group, collided=None):
@@ -1793,19 +1774,16 @@ def spritecollideany(sprite, group, collided=None):
     sprites must have a "rect" value, which is a rectangle of the sprite area,
     which will be used to calculate the collision.
 
-
     """
-    # pull the default collision function in as a local variable outside
-    # the loop as this makes the loop run faster
-    default_sprite_collide_func = sprite.rect.colliderect
-
     if collided is not None:
         for group_sprite in group:
             if collided(sprite, group_sprite):
                 return group_sprite
     else:
-        # Special case old behaviour for speed.
+        # pull the default collision function in as a local variable outside
+        # the loop as this makes the loop run faster
+        sprite_rect_collide = sprite.rect.colliderect
         for group_sprite in group:
-            if default_sprite_collide_func(group_sprite.rect):
+            if sprite_rect_collide(group_sprite.rect):
                 return group_sprite
     return None

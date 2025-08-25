@@ -763,7 +763,8 @@ set_pixel_color(Uint8 *pixel, Uint8 bpp, Uint32 color)
 
         case 3:
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            *(Uint16 *)pixel = color;
+            pixel[0] = color;
+            pixel[1] = color >> 8;
             pixel[2] = color >> 16;
 #else  /* != SDL_LIL_ENDIAN */
             pixel[2] = color;
@@ -1985,7 +1986,8 @@ extract_color(SDL_Surface *surf, PyObject *color_obj, Uint8 rgba_color[],
  */
 static void
 draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
-                int draw_setbits, int draw_unsetbits, SDL_Surface *setsurf,
+                int x_area_offset, int y_area_offset, int draw_setbits,
+                int draw_unsetbits, SDL_Surface *setsurf,
                 SDL_Surface *unsetsurf, Uint32 *setcolor, Uint32 *unsetcolor)
 {
     Uint8 *pixel = NULL;
@@ -2050,10 +2052,12 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
 
         for (y = y_start, ym = ym_start; y < y_end; ++y, ++ym) {
             pixel = (Uint8 *)surf->pixels + y * surf->pitch + x_start * bpp;
-            setpixel = (Uint8 *)setsurf->pixels + ym * setsurf->pitch +
-                       xm_start * bpp;
-            unsetpixel = (Uint8 *)unsetsurf->pixels + ym * unsetsurf->pitch +
-                         xm_start * bpp;
+            setpixel = (Uint8 *)setsurf->pixels +
+                       (y_area_offset + ym) * setsurf->pitch +
+                       (x_area_offset + xm_start) * bpp;
+            unsetpixel = (Uint8 *)unsetsurf->pixels +
+                         (y_area_offset + ym) * unsetsurf->pitch +
+                         (x_area_offset + xm_start) * bpp;
 
             for (x = x_start, xm = xm_start; x < x_end;
                  ++x, ++xm, pixel += bpp, setpixel += bpp, unsetpixel += bpp) {
@@ -2084,13 +2088,15 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
                 draw_unsetbits && NULL != unsetsurf && unsetsurf->h > ym;
 
             if (use_setsurf) {
-                setpixel = (Uint8 *)setsurf->pixels + ym * setsurf->pitch +
-                           xm_start * bpp;
+                setpixel = (Uint8 *)setsurf->pixels +
+                           (y_area_offset + ym) * setsurf->pitch +
+                           (x_area_offset + xm_start) * bpp;
             }
 
             if (use_unsetsurf) {
                 unsetpixel = (Uint8 *)unsetsurf->pixels +
-                             ym * unsetsurf->pitch + xm_start * bpp;
+                             (y_area_offset + ym) * unsetsurf->pitch +
+                             (x_area_offset + xm_start) * bpp;
             }
 
             for (x = x_start, xm = xm_start; x < x_end;
@@ -2158,9 +2164,10 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *surfobj = Py_None, *setcolorobj = NULL, *unsetcolorobj = NULL;
     PyObject *setsurfobj = Py_None, *unsetsurfobj = Py_None;
-    PyObject *destobj = NULL;
+    PyObject *destobj = NULL, *areaobj = NULL;
+    SDL_Rect *area_rect, temp_rect;
     SDL_Surface *surf = NULL, *setsurf = NULL, *unsetsurf = NULL;
-    bitmask_t *bitmask = pgMask_AsBitmap(self);
+    bitmask_t *bitmask = pgMask_AsBitmap(self), *area_bitmask;
     Uint32 *setcolor_ptr = NULL, *unsetcolor_ptr = NULL;
     Uint32 setcolor, unsetcolor;
     int draw_setbits = 0, draw_unsetbits = 0;
@@ -2168,21 +2175,82 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     int x_dest = 0, y_dest = 0; /* Default destination coordinates. */
     Uint8 dflt_setcolor[] = {255, 255, 255, 255}; /* Default set color. */
     Uint8 dflt_unsetcolor[] = {0, 0, 0, 255};     /* Default unset color. */
+    int create_area_bitmask = 0;
 
     static char *keywords[] = {"surface",  "setsurface", "unsetsurface",
                                "setcolor", "unsetcolor", "dest",
-                               NULL};
+                               "area",     NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOOOOO", keywords,
-                                     &surfobj, &setsurfobj, &unsetsurfobj,
-                                     &setcolorobj, &unsetcolorobj, &destobj)) {
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "|OOOOOOO", keywords, &surfobj, &setsurfobj,
+            &unsetsurfobj, &setcolorobj, &unsetcolorobj, &destobj, &areaobj)) {
         return NULL; /* Exception already set. */
     }
 
+    if (NULL != destobj) {
+        int tempx = 0, tempy = 0;
+
+        /* Destination coordinates can be extracted from:
+         * - lists/tuples with 2 items
+         * - Rect (or Rect like) objects (uses x, y values) */
+        if (pg_TwoIntsFromObj(destobj, &tempx, &tempy)) {
+            x_dest = tempx;
+            y_dest = tempy;
+        }
+        else {
+            SDL_Rect temp_rect;
+            SDL_Rect *dest_rect = pgRect_FromObject(destobj, &temp_rect);
+
+            if (NULL != dest_rect) {
+                x_dest = dest_rect->x;
+                y_dest = dest_rect->y;
+            }
+            else {
+                PyErr_SetString(PyExc_TypeError, "invalid dest argument");
+                goto to_surface_error;
+            }
+        }
+    }
+
+    if (areaobj && areaobj != Py_None) {
+        if (!(area_rect = pgRect_FromObject(areaobj, &temp_rect))) {
+            PyErr_SetString(PyExc_TypeError, "invalid rectstyle argument");
+            goto to_surface_error;
+        }
+
+        memcpy(&temp_rect, area_rect, sizeof(temp_rect));
+        area_rect = &temp_rect;
+
+        pgRect_Normalize(area_rect);
+
+        if (area_rect->x < 0) {
+            // x_dest -= area_rect->x;
+            area_rect->w += area_rect->x;
+            area_rect->x = 0;
+        }
+        if (area_rect->y < 0) {
+            // y_dest -= area_rect->y;
+            area_rect->h += area_rect->y;
+            area_rect->y = 0;
+        }
+
+        // clamp rect width and height to not stick out of the mask
+        area_rect->w = MAX(MIN(area_rect->w, bitmask->w - area_rect->x), 0);
+        area_rect->h = MAX(MIN(area_rect->h, bitmask->h - area_rect->y), 0);
+
+        create_area_bitmask = 1;
+    }
+    else {
+        temp_rect.x = temp_rect.y = 0;
+        temp_rect.w = bitmask->w;
+        temp_rect.h = bitmask->h;
+        area_rect = &temp_rect;
+    }
+
     if (Py_None == surfobj) {
-        surfobj =
-            PyObject_CallFunction((PyObject *)&pgSurface_Type, "(ii)ii",
-                                  bitmask->w, bitmask->h, PGS_SRCALPHA, 32);
+        surfobj = PyObject_CallFunction((PyObject *)&pgSurface_Type, "(ii)ii",
+                                        area_rect->w, area_rect->h,
+                                        PGS_SRCALPHA, 32);
 
         if (NULL == surfobj) {
             if (!PyErr_Occurred()) {
@@ -2266,31 +2334,6 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
         draw_unsetbits = 1;
     }
 
-    if (NULL != destobj) {
-        int tempx = 0, tempy = 0;
-
-        /* Destination coordinates can be extracted from:
-         * - lists/tuples with 2 items
-         * - Rect (or Rect like) objects (uses x, y values) */
-        if (pg_TwoIntsFromObj(destobj, &tempx, &tempy)) {
-            x_dest = tempx;
-            y_dest = tempy;
-        }
-        else {
-            SDL_Rect temp_rect;
-            SDL_Rect *dest_rect = pgRect_FromObject(destobj, &temp_rect);
-
-            if (NULL != dest_rect) {
-                x_dest = dest_rect->x;
-                y_dest = dest_rect->y;
-            }
-            else {
-                PyErr_SetString(PyExc_TypeError, "invalid dest argument");
-                goto to_surface_error;
-            }
-        }
-    }
-
     if (!pgSurface_Lock((pgSurfaceObject *)surfobj)) {
         PyErr_SetString(PyExc_RuntimeError, "cannot lock surface");
         goto to_surface_error;
@@ -2311,13 +2354,31 @@ mask_to_surface(PyObject *self, PyObject *args, PyObject *kwargs)
         goto to_surface_error;
     }
 
+    if (create_area_bitmask) {
+        area_bitmask = bitmask_create(area_rect->w, area_rect->h);
+        if (NULL == area_bitmask) {
+            PyErr_Format(PyExc_MemoryError,
+                         "failed to allocate memory for a mask");
+            return NULL;
+        }
+
+        bitmask_draw(area_bitmask, bitmask, -area_rect->x, -area_rect->y);
+    }
+    else {
+        area_bitmask = bitmask;
+    }
+
     Py_BEGIN_ALLOW_THREADS; /* Release the GIL. */
 
-    draw_to_surface(surf, bitmask, x_dest, y_dest, draw_setbits,
-                    draw_unsetbits, setsurf, unsetsurf, setcolor_ptr,
-                    unsetcolor_ptr);
+    draw_to_surface(surf, area_bitmask, x_dest, y_dest, area_rect->x,
+                    area_rect->y, draw_setbits, draw_unsetbits, setsurf,
+                    unsetsurf, setcolor_ptr, unsetcolor_ptr);
 
     Py_END_ALLOW_THREADS; /* Obtain the GIL. */
+
+    if (create_area_bitmask) {
+        bitmask_free(area_bitmask);
+    }
 
     if (NULL != unsetsurf &&
         !pgSurface_Unlock((pgSurfaceObject *)unsetsurfobj)) {
@@ -2606,8 +2667,7 @@ static PyMethodDef _mask_methods[] = {
 
 MODINIT_DEFINE(mask)
 {
-    PyObject *module, *apiobj;
-    static void *c_api[PYGAMEAPI_MASK_NUMSLOTS];
+    PyObject *module;
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "mask",
@@ -2649,27 +2709,15 @@ MODINIT_DEFINE(mask)
     if (module == NULL) {
         return NULL;
     }
-    Py_INCREF(&pgMask_Type);
-    if (PyModule_AddObject(module, "MaskType", (PyObject *)&pgMask_Type)) {
-        Py_DECREF(&pgMask_Type);
+    if (PyModule_AddObjectRef(module, "MaskType", (PyObject *)&pgMask_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&pgMask_Type);
-    if (PyModule_AddObject(module, "Mask", (PyObject *)&pgMask_Type)) {
-        Py_DECREF(&pgMask_Type);
+    if (PyModule_AddObjectRef(module, "Mask", (PyObject *)&pgMask_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    /* export the c api */
-    c_api[0] = &pgMask_Type;
-    apiobj = encapsulate_api(c_api, "mask");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
-        Py_DECREF(module);
-        return NULL;
-    }
     return module;
 }

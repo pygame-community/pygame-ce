@@ -40,6 +40,8 @@
 #define DOC_MATH_VECTOR2_CLAMPMAGNITUDEIP "clamp_magnitude_ip(max_length, /) -> None\nclamp_magnitude_ip(min_length, max_length, /) -> None\nClamps the vector's magnitude between max_length and min_length"
 #define DOC_MATH_VECTOR2_UPDATE "update() -> None\nupdate(int) -> None\nupdate(float) -> None\nupdate(Vector2) -> None\nupdate(x, y) -> None\nupdate((x, y)) -> None\nSets the coordinates of the vector."
 #define DOC_MATH_VECTOR2_EPSILON "Determines the tolerance of vector calculations."
+#define DOC_MATH_VECTOR2_ANGLE "Gives the angle of the vector in degrees, relative to the X-axis, normalized to the interval [-180, 180]."
+#define DOC_MATH_VECTOR2_ANGLERAD "Gives the angle of the vector in radians, relative to the X-axis, normalized to the interval [-π, π]."
 #define DOC_MATH_VECTOR3 "Vector3() -> Vector3(0, 0, 0)\nVector3(int) -> Vector3\nVector3(float) -> Vector3\nVector3(Vector3) -> Vector3\nVector3(x, y, z) -> Vector3\nVector3((x, y, z)) -> Vector3\na 3-Dimensional Vector"
 #define DOC_MATH_VECTOR3_DOT "dot(Vector3, /) -> float\ncalculates the dot- or scalar-product with the other vector"
 #define DOC_MATH_VECTOR3_CROSS "cross(Vector3, /) -> Vector3\ncalculates the cross- or vector-product"

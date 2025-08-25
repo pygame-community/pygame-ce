@@ -152,7 +152,7 @@ _pg_repeat_callback(Uint32 interval, void *param)
     int repeat_interval_copy = pg_key_repeat_interval;
     PG_UNLOCK_EVFILTER_MUTEX
 
-    repeat_event_copy.type = PGE_KEYREPEAT;
+    repeat_event_copy.type = SDL_KEYDOWN;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     repeat_event_copy.key.down = true;
     repeat_event_copy.key.repeat = true;
@@ -160,7 +160,13 @@ _pg_repeat_callback(Uint32 interval, void *param)
     repeat_event_copy.key.state = SDL_PRESSED;
     repeat_event_copy.key.repeat = 1;
 #endif
-    SDL_PushEvent(&repeat_event_copy);
+    /* Use SDL_PeepEvents and not SDL_PushEvent because we don't want
+     * this to go through our event filter.
+     * Because this doesn't go through our filter we have to check event
+     * blocking beforehand. */
+    if (PG_EventEnabled(_pg_pgevent_proxify(repeat_event_copy.type))) {
+        SDL_PeepEvents(&repeat_event_copy, 1, SDL_ADDEVENT, 0, 0);
+    }
     return repeat_interval_copy;
 }
 
@@ -470,19 +476,40 @@ _pg_pgevent_deproxify(Uint32 type)
     return _pg_pgevent_proxify_helper(type, 0);
 }
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
-/* We don't need to do window event translation because in SDL3 each window
- * event is its own thing anyways */
-static int
-_pg_translate_windowevent(void *_, SDL_Event *event)
+/* Get type of an event, handling WINDOWEVENT translation on SDL2.
+ * On SDL3 this function is trivial */
+static Uint32
+_pg_pgevent_type(SDL_Event *event)
 {
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (event->type == SDL_WINDOWEVENT) {
-        event->type = PGE_WINDOWSHOWN + event->window.event - 1;
-        return PG_EventEnabled(_pg_pgevent_proxify(event->type));
+        return PGE_WINDOWSHOWN + event->window.event - 1;
+    }
+#endif
+    return event->type;
+}
+
+/* Handle blocking of pseudo-blocked events.
+ * Currently this only includes WINDOWEVENT, but can be expanded in the
+ * future.
+ */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static bool SDLCALL
+#else
+static int SDLCALL
+#endif
+_pg_filter_blocked_events(void *_, SDL_Event *event)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (event->type >= SDL_EVENT_WINDOW_FIRST &&
+        event->type <= SDL_EVENT_WINDOW_LAST) {
+#else
+    if (event->type == SDL_WINDOWEVENT) {
+#endif
+        return PG_EventEnabled(_pg_pgevent_proxify(_pg_pgevent_type(event)));
     }
     return 1;
 }
-#endif
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 static bool SDLCALL
@@ -613,10 +640,6 @@ pg_event_filter(void *_, SDL_Event *event)
         PG_UNLOCK_EVFILTER_MUTEX
     }
 
-    else if (event->type == PGE_KEYREPEAT) {
-        event->type = SDL_KEYDOWN;
-    }
-
     else if (event->type == SDL_KEYUP) {
         PG_LOCK_EVFILTER_MUTEX
         /* Actual keyup is blocked, so clear unneeded cache if it exists */
@@ -709,6 +732,14 @@ pg_event_filter(void *_, SDL_Event *event)
             return RAISE(pgExc_SDLError, SDL_GetError()), 0;
         */
     }
+    /* TODO:
+     * Any event that gets blocked here will not be visible to the event
+     * watchers. So things like WINDOWEVENT should never be blocked here.
+     * This is taken care of in SDL2 codepaths already but needs to also
+     * be verified in SDL3 porting.
+     * If the user requests a block on WINDOWEVENTs we are going to handle
+     * it specially and call it a "pseudo-block", where the filtering will
+     * happen in a _pg_filter_blocked_events call. */
     return PG_EventEnabled(_pg_pgevent_proxify(event->type));
 }
 
@@ -1747,6 +1778,7 @@ pgEvent_New(SDL_Event *event)
     }
 
     if (event) {
+        event->type = _pg_pgevent_type(event);
         e->type = _pg_pgevent_deproxify(event->type);
         e->dict = dict_from_event(event);
     }
@@ -1846,14 +1878,7 @@ _pg_event_pump(int dopump)
         SDL_PumpEvents();
     }
 
-    /* WINDOWEVENT translation needed only on SDL2 */
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
-    /* We need to translate WINDOWEVENTS. But if we do that from the
-     * from event filter, internal SDL stuff that rely on WINDOWEVENT
-     * might break. So after every event pump, we translate events from
-     * here */
-    SDL_FilterEvents(_pg_translate_windowevent, NULL);
-#endif
+    SDL_FilterEvents(_pg_filter_blocked_events, NULL);
 }
 
 static int
@@ -2458,8 +2483,6 @@ pg_event_set_blocked(PyObject *self, PyObject *obj)
     /* Never block SDL_WINDOWEVENT on SDL2, we need them for translation */
     PG_SetEventEnabled(SDL_WINDOWEVENT, SDL_TRUE);
 #endif
-    /* Never block PGE_KEYREPEAT too, its needed for pygame internal use */
-    PG_SetEventEnabled(PGE_KEYREPEAT, SDL_TRUE);
     Py_RETURN_NONE;
 }
 
@@ -2578,15 +2601,12 @@ MODINIT_DEFINE(event)
         return NULL;
     }
 
-    Py_INCREF(&pgEvent_Type);
-    if (PyModule_AddObject(module, "EventType", (PyObject *)&pgEvent_Type)) {
-        Py_DECREF(&pgEvent_Type);
+    if (PyModule_AddObjectRef(module, "EventType",
+                              (PyObject *)&pgEvent_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&pgEvent_Type);
-    if (PyModule_AddObject(module, "Event", (PyObject *)&pgEvent_Type)) {
-        Py_DECREF(&pgEvent_Type);
+    if (PyModule_AddObjectRef(module, "Event", (PyObject *)&pgEvent_Type)) {
         Py_DECREF(module);
         return NULL;
     }

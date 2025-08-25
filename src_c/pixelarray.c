@@ -1926,24 +1926,15 @@ MODINIT_DEFINE(pixelarray)
         return NULL;
     }
 
-    /* type preparation */
-    if (PyType_Ready(&pgPixelArray_Type)) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
         return NULL;
     }
-    Py_INCREF(&pgPixelArray_Type);
-    if (PyModule_AddObject(module, "PixelArray",
-                           (PyObject *)&pgPixelArray_Type)) {
-        Py_DECREF((PyObject *)&pgPixelArray_Type);
+    if (PyModule_AddType(module, &pgPixelArray_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    pgPixelArray_Type.tp_getattro = PyObject_GenericGetAttr;
 
     c_api[0] = &pgPixelArray_Type;
     c_api[1] = pgPixelArray_New;

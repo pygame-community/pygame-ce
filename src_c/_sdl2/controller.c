@@ -26,11 +26,7 @@ static PyObject *
 controller_module_init(PyObject *module, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER)) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (!SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
-#else
-        if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
-#endif
+        if (!PG_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
@@ -418,6 +414,35 @@ controller_stop_rumble(pgControllerObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
+static PyObject*
+controller_set_led(pgControllerObject *self, PyObject *arg)
+{
+    CONTROLLER_INIT_CHECK();
+
+    Uint8 colors[4] = {0, 0, 0, 0};
+
+    if (!pg_RGBAFromObjEx(arg, colors, PG_COLOR_HANDLE_ALL)) {
+        // Exception already set
+        return NULL;
+    }
+
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    if (SDL_GameControllerSetLED(self->controller, colors[0], colors[1], colors[2]) < 0) {
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_TRUE;
+#else
+    // SDL3 renames the function and sets an error message on failure
+    bool result = SDL_SetGamepadLED(self->controller, colors[0], colors[1], colors[2]);
+    if (!result) {
+        // Clear the SDL error message that SDL set, for example if it didn't
+        // have an addressable LED
+        (void)SDL_GetError();
+    }
+    return PyBool_FromLong(result);
+#endif
+}
+
 static PyMethodDef controller_methods[] = {
     {"from_joystick", (PyCFunction)controller_from_joystick,
      METH_CLASS | METH_VARARGS | METH_KEYWORDS,
@@ -444,6 +469,7 @@ static PyMethodDef controller_methods[] = {
      DOC_SDL2_CONTROLLER_CONTROLLER_RUMBLE},
     {"stop_rumble", (PyCFunction)controller_stop_rumble, METH_NOARGS,
      DOC_SDL2_CONTROLLER_CONTROLLER_STOPRUMBLE},
+    {"set_led", (PyCFunction)controller_set_led, METH_O, DOC_SDL2_CONTROLLER_CONTROLLER_SETLED},
     {NULL, NULL, 0, NULL}};
 
 static PyMemberDef controller_members[] = {
@@ -610,6 +636,11 @@ MODINIT_DEFINE(controller)
         return NULL;
     }
 
+    import_pygame_color();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
     import_pygame_joystick();
     if (PyErr_Occurred()) {
         return NULL;
@@ -625,14 +656,7 @@ MODINIT_DEFINE(controller)
         return NULL;
     }
 
-    if (PyType_Ready(&pgController_Type) < 0) {
-        return NULL;
-    }
-
-    Py_INCREF(&pgController_Type);
-    if (PyModule_AddObject(module, "Controller",
-                           (PyObject *)&pgController_Type)) {
-        Py_DECREF(&pgController_Type);
+    if (PyModule_AddType(module, &pgController_Type)) {
         Py_DECREF(module);
         return NULL;
     }

@@ -178,7 +178,6 @@ key_get_pressed(PyObject *self, PyObject *_null)
 #endif
     PyObject *ret_obj = NULL;
     PyObject *key_tuple;
-    int i;
 
     VIDEO_INIT_CHECK();
 
@@ -192,14 +191,8 @@ key_get_pressed(PyObject *self, PyObject *_null)
         return NULL;
     }
 
-    for (i = 0; i < num_keys; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(key_state[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    for (int i = 0; i < num_keys; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(key_state[i]));
     }
 
     ret_obj =
@@ -221,15 +214,8 @@ get_just_pressed(PyObject *self, PyObject *_null)
         return NULL;
     }
 
-    int i;
-    for (i = 0; i < SDL_NUM_SCANCODES; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(pressed_keys[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(pressed_keys[i]));
     }
     ret_obj =
         PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
@@ -250,15 +236,8 @@ get_just_released(PyObject *self, PyObject *_null)
         return NULL;
     }
 
-    int i;
-    for (i = 0; i < SDL_NUM_SCANCODES; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(released_keys[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(released_keys[i]));
     }
     ret_obj =
         PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
@@ -684,10 +663,8 @@ MODINIT_DEFINE(key)
         return NULL;
     }
 
-    Py_INCREF(&pgScancodeWrapper_Type);
-    if (PyModule_AddObject(module, _PG_SCANCODEWRAPPER_TYPE_NAME,
-                           (PyObject *)&pgScancodeWrapper_Type)) {
-        Py_DECREF(&pgScancodeWrapper_Type);
+    if (PyModule_AddObjectRef(module, _PG_SCANCODEWRAPPER_TYPE_NAME,
+                              (PyObject *)&pgScancodeWrapper_Type)) {
         Py_DECREF(module);
         return NULL;
     }

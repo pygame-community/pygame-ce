@@ -264,7 +264,8 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
          * to null in the animation to prevent double free */
         surfs->frames[i] = NULL;
 
-        PyObject *listentry = Py_BuildValue("(Oi)", frame, surfs->delays[i]);
+        PyObject *listentry =
+            Py_BuildValue("(Od)", frame, (double)surfs->delays[i]);
         Py_DECREF(frame);
         if (!listentry) {
             goto error;
@@ -332,26 +333,34 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         if (!strcasecmp(ext, "jpeg") || !strcasecmp(ext, "jpg")) {
             if (rw != NULL) {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-                result = IMG_SaveJPG_IO(surf, rw, 0, JPEG_QUALITY);
+                result = IMG_SaveJPG_IO(surf, rw, 0, JPEG_QUALITY) ? 0 : -1;
 #else
                 result = IMG_SaveJPG_RW(surf, rw, 0, JPEG_QUALITY);
 #endif
             }
             else {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = IMG_SaveJPG(surf, name, JPEG_QUALITY) ? 0 : -1;
+#else
                 result = IMG_SaveJPG(surf, name, JPEG_QUALITY);
+#endif
             }
         }
         else if (!strcasecmp(ext, "png")) {
             /*Py_BEGIN_ALLOW_THREADS; */
             if (rw != NULL) {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-                result = IMG_SavePNG_IO(surf, rw, 0);
+                result = IMG_SavePNG_IO(surf, rw, 0) ? 0 : -1;
 #else
                 result = IMG_SavePNG_RW(surf, rw, 0);
 #endif
             }
             else {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = IMG_SavePNG(surf, name) ? 0 : -1;
+#else
                 result = IMG_SavePNG(surf, name);
+#endif
             }
             /*Py_END_ALLOW_THREADS; */
         }

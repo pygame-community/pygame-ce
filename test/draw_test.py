@@ -2447,18 +2447,26 @@ class AALineMixin(BaseLineMixin):
 
     def test_aaline__blend_warning(self):
         """Using the blend argument should raise a DeprecationWarning"""
-        faulty_blend_values = [0, 1, True, False, None, "", [], type]
+        faulty_blend_values = [0, 1, True, False]
         with warnings.catch_warnings(record=True) as w:
             for count, blend in enumerate(faulty_blend_values):
                 # Cause all warnings to always be triggered.
                 warnings.simplefilter("always")
                 # Trigger DeprecationWarning.
-                self.draw_aaline(
-                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), 1, blend
+                bounding1 = self.draw_aaline(
+                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), blend=blend
+                )
+                # Doesn't trigger DeprecationWarning, interepreted as width
+                bounding2 = self.draw_aaline(
+                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), blend
                 )
                 # Check if there is only one warning and is a DeprecationWarning.
                 self.assertEqual(len(w), count + 1)
                 self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
+
+                # check that the line gets drawn
+                self.assertEqual(bounding1, bounding2)
+                self.assertEqual(bounding1, (0, 0, 2, 2))
 
     def test_aaline__kwargs(self):
         """Ensures draw aaline accepts the correct kwargs"""
@@ -2681,11 +2689,10 @@ class AALineMixin(BaseLineMixin):
         for width in (-100, -10, -1, 0, 1, 10, 100):
             surface.fill(surface_color)  # Clear for each test.
             kwargs["width"] = width
-            expected_color = line_color if width > 0 else surface_color
 
             bounds_rect = self.draw_aaline(**kwargs)
 
-            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertEqual(surface.get_at(pos), line_color)
             self.assertIsInstance(bounds_rect, pygame.Rect)
 
     def test_aaline__valid_start_pos_formats(self):
@@ -2878,20 +2885,22 @@ class AALineMixin(BaseLineMixin):
                 pos = (x, 0)
                 self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
 
-    def test_line__gaps_with_thickness(self):
+    def test_aaline__gaps_with_thickness(self):
         """Ensures a thick aaline is drawn without any gaps."""
-        expected_color = (255, 255, 255)
+        background_color = (0, 0, 0)
         thickness = 5
         for surface in self._create_surfaces():
             width = surface.get_width() - 1
             h = width // 5
             w = h * 5
-            self.draw_aaline(surface, expected_color, (0, 5), (w, 5 + h), thickness)
+            self.draw_aaline(surface, (255, 255, 255), (0, 5), (w, 5 + h), thickness)
 
             for x in range(w + 1):
                 for y in range(3, 8):
                     pos = (x, y + ((x + 2) // 5))
-                    self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
+                    self.assertNotEqual(
+                        surface.get_at(pos), background_color, f"pos={pos}"
+                    )
 
     def test_aaline__bounding_rect(self):
         """Ensures draw aaline returns the correct bounding rect.
@@ -2926,22 +2935,14 @@ class AALineMixin(BaseLineMixin):
                             surface, line_color, start, end, thickness
                         )
 
-                        if 0 < thickness:
-                            # Calculating the expected_rect after the line is
-                            # drawn (it uses what is actually drawn).
-                            expected_rect = create_bounding_rect(
-                                surface, surf_color, start
-                            )
-                        else:
-                            # Nothing drawn.
-                            expected_rect = pygame.Rect(start, (0, 0))
+                        # Calculating the expected_rect after the line is
+                        # drawn (it uses what is actually drawn).
+                        expected_rect = create_bounding_rect(surface, surf_color, start)
 
                         self.assertEqual(
                             bounding_rect,
                             expected_rect,
-                            "start={}, end={}, size={}, thickness={}".format(
-                                start, end, size, thickness
-                            ),
+                            f"start={start}, end={end}, size={size}, thickness={thickness}",
                         )
 
     def test_aaline__surface_clip(self):
@@ -2961,6 +2962,8 @@ class AALineMixin(BaseLineMixin):
             # drawing the aaline over the clip_rect's bounds.
             for center in rect_corners_mids_and_center(clip_rect):
                 pos_rect.center = center
+                start = pos_rect.midtop
+                end = pos_rect.midbottom
 
                 # Get the expected points by drawing the aaline without the
                 # clip area set.
@@ -2969,8 +2972,8 @@ class AALineMixin(BaseLineMixin):
                 self.draw_aaline(
                     surface,
                     aaline_color,
-                    pos_rect.midtop,
-                    pos_rect.midbottom,
+                    start,
+                    end,
                     thickness,
                 )
 
@@ -2986,8 +2989,8 @@ class AALineMixin(BaseLineMixin):
                 self.draw_aaline(
                     surface,
                     aaline_color,
-                    pos_rect.midtop,
-                    pos_rect.midbottom,
+                    start,
+                    end,
                     thickness,
                 )
 
@@ -2997,9 +3000,17 @@ class AALineMixin(BaseLineMixin):
                 # are not surface_color.
                 for pt in ((x, y) for x in range(surfw) for y in range(surfh)):
                     if pt in expected_pts:
-                        self.assertNotEqual(surface.get_at(pt), surface_color, pt)
+                        self.assertNotEqual(
+                            surface.get_at(pt),
+                            surface_color,
+                            f"start={start}, end={end}, thickness={thickness}, point={pt}",
+                        )
                     else:
-                        self.assertEqual(surface.get_at(pt), surface_color, pt)
+                        self.assertEqual(
+                            surface.get_at(pt),
+                            surface_color,
+                            f"start={start}, end={end}, thickness={thickness}, point={pt}",
+                        )
 
                 surface.unlock()
 
