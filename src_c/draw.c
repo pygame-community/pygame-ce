@@ -1302,13 +1302,14 @@ static PyObject *
 flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
-    pgSurfaceObject *pat_surfobj;
+    pgSurfaceObject *pat_surfobj = NULL;
     PyObject *colorobj, *start;
     SDL_Surface *surf = NULL;
     int startx, starty;
     Uint32 color;
     SDL_Surface *pattern = NULL;
-    SDL_bool did_lock = SDL_FALSE;
+    SDL_bool did_lock_surf = SDL_FALSE;
+    SDL_bool did_lock_pat = SDL_FALSE;
     int flood_fill_result;
 
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
@@ -1331,19 +1332,10 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (pgSurface_Check(colorobj)) {
-        pat_surfobj = ((pgSurfaceObject *)colorobj);
-
-        pattern = SDL_ConvertSurface(pat_surfobj->surf, surf->format, 0);
-
-        if (pattern == NULL) {
-            return RAISE(PyExc_RuntimeError, "error converting pattern surf");
-        }
-
-        SDL_SetSurfaceRLE(pattern, SDL_FALSE);
-
-        color = 0;
-    }
-    else {
+        pat_surfobj = (pgSurfaceObject *)colorobj;
+        pattern = pat_surfobj->surf;  /* No conversion: we will map per-pixel */
+        color = 0;                    /* new_color unused for pattern path */
+    } else {
         CHECK_LOAD_COLOR(colorobj);
     }
 
@@ -1352,20 +1344,35 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (SDL_MUSTLOCK(surf)) {
-        did_lock = SDL_TRUE;
+        did_lock_surf = SDL_TRUE;
         if (!pgSurface_Lock(surfobj)) {
             return RAISE(PyExc_RuntimeError, "error locking surface");
+        }
+    }
+    if (pattern && SDL_MUSTLOCK(pattern)) {
+        did_lock_pat = SDL_TRUE;
+        if (!pgSurface_Lock(pat_surfobj)) {
+            if (did_lock_surf) {
+                pgSurface_Unlock(surfobj);
+            }
+            return RAISE(PyExc_RuntimeError, "error locking pattern surface");
         }
     }
 
     flood_fill_result =
         flood_fill_inner(surf, startx, starty, color, pattern, drawn_area);
 
-    if (pattern != NULL) {
-        SDL_FreeSurface(pattern);
-    }
+    /* no allocated pattern surface to free */
 
-    if (did_lock) {
+    if (did_lock_pat) {
+        if (!pgSurface_Unlock(pat_surfobj)) {
+            if (did_lock_surf) {
+                pgSurface_Unlock(surfobj);
+            }
+            return RAISE(PyExc_RuntimeError, "error unlocking pattern surface");
+        }
+    }
+    if (did_lock_surf) {
         if (!pgSurface_Unlock(surfobj)) {
             return RAISE(PyExc_RuntimeError, "error unlocking surface");
         }
@@ -1384,7 +1391,6 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
     else
         return pgRect_New4(startx, starty, 0, 0);
 }
-
 /* Functions used in drawing algorithms */
 
 static void
