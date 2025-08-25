@@ -578,7 +578,7 @@ def aalines(
    from the starting point, with a repeating pattern or solid single color
 
    :param Surface surface: surface to draw on
-   :param color: color to draw with, the alpha value is optional if using a
+   :param color: color, or surface pattern, to draw with. The alpha value is optional if using a
       tuple ``(RGB[A])``
    :type color: :data:`pygame.typing.ColorLike` or a pattern to fill with, as a Surface
    :param start_point: starting point as a sequence of 2 ints/floats,
