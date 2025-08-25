@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-PCIACCESS_VER="0.18"
+PCIACCESS_VER="0.18.1"
 PCIACCESS="libpciaccess-$PCIACCESS_VER"
 
 curl -sL --retry 10 https://www.x.org/releases/individual/lib/$PCIACCESS.tar.xz > $PCIACCESS.tar.xz

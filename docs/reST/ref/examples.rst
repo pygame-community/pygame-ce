@@ -26,7 +26,7 @@ eg:
 
    python -m pygame.examples.scaletest someimage.png
 
-Resources such as images and sounds for the examples are found in the 
+Resources such as images and sounds for the examples are found in the
 pygame/examples/data subdirectory.
 
 You can find where the example files are installed by using the following
@@ -287,7 +287,7 @@ pygame much earlier.
    Thumbnail generation with scaling is an example of what you can do with
    pygame.
 
-   ``NOTE``: the pygame scale function uses SIMD acceleration if available, 
+   ``NOTE``: the pygame scale function uses SIMD acceleration if available,
    and can be run in multiple threads.
 
    If ``headless_no_windows_needed.py`` is run as a program it takes the

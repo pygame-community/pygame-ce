@@ -17,7 +17,7 @@ option('font', type: 'feature', value: 'enabled')
 option('freetype', type: 'feature', value: 'enabled')
 
 # Controls whether pygame.midi is built.
-# Enabled by default, disable explicitly if you don't want to compile with 
+# Enabled by default, disable explicitly if you don't want to compile with
 # portmidi/porttime.
 option('midi', type: 'feature', value: 'enabled')
 
@@ -33,3 +33,10 @@ option('error_on_warns', type: 'boolean', value: 'false')
 # Controls whether to error on build if generated docs are missing. Defaults to
 # false.
 option('error_docs_missing', type: 'boolean', value: 'false')
+
+# Controls whether to do a coverage build.
+# This argument must be used together with the editable install.
+option('coverage', type: 'boolean', value: false)
+
+# Controls whether to use SDL3 instead of SDL2. The default is to use SDL2
+option('sdl_api', type: 'integer', min: 2, max: 3, value: 2)

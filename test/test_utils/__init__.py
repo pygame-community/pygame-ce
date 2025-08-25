@@ -1,9 +1,8 @@
 import os
-import pygame
 import sys
 import tempfile
 
-is_pygame_pkg = __name__.startswith("pygame.tests.")
+import pygame
 
 ###############################################################################
 
@@ -22,11 +21,8 @@ def geterror():
 ###############################################################################
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
-trunk_dir = os.path.split(os.path.split(this_dir)[0])[0]
-if is_pygame_pkg:
-    test_module = "tests"
-else:
-    test_module = "test"
+this_dir_parent = os.path.split(this_dir)[0]
+trunk_dir = os.path.split(this_dir_parent)[0]
 
 
 def trunk_relative_path(relative):
@@ -34,7 +30,7 @@ def trunk_relative_path(relative):
 
 
 def fixture_path(path):
-    return trunk_relative_path(os.path.join(test_module, "fixtures", path))
+    return os.path.join(this_dir_parent, "fixtures", path)
 
 
 def example_path(path):

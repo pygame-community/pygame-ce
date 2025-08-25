@@ -1,14 +1,13 @@
-import sys
 import os
-import unittest
-import time
 import pathlib
 import platform
-
-from pygame.tests.test_utils import example_path, prompt, question
+import sys
+import time
+import unittest
 
 import pygame
 from pygame import mixer
+from pygame.tests.test_utils import example_path, prompt, question
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
@@ -300,15 +299,15 @@ class MixerModuleTest(unittest.TestCase):
     def test_array_keyword(self):
         try:
             from numpy import (
-                array,
                 arange,
-                zeros,
+                array,
                 int8,
-                uint8,
                 int16,
-                uint16,
                 int32,
+                uint8,
+                uint16,
                 uint32,
+                zeros,
             )
         except ImportError:
             self.skipTest("requires numpy")
@@ -369,7 +368,7 @@ class MixerModuleTest(unittest.TestCase):
                     mixer.quit()
 
     def _test_array_argument(self, format, a, test_pass):
-        from numpy import array, all as all_
+        from numpy import all as all_, array
 
         try:
             snd = mixer.Sound(array=a)
@@ -1105,7 +1104,7 @@ class SoundTypeTest(unittest.TestCase):
     def test_samples_address(self):
         """Test the _samples_address getter."""
         try:
-            from ctypes import pythonapi, c_void_p, py_object
+            from ctypes import c_void_p, py_object, pythonapi
 
             Bytes_FromString = pythonapi.PyBytes_FromString
 

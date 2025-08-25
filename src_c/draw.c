@@ -39,57 +39,79 @@
 
 /* Declaration of drawing algorithms */
 static void
-draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
-                int y2, int width, int *drawn_area);
+draw_line_width(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
+                int x1, int y1, int x2, int y2, int width, int *drawn_area);
 static void
-draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
-          int *drawn_area);
+draw_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
+          int y2, Uint32 color, int *drawn_area);
 static void
-draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
-            float endx, float endy, int *drawn_area);
+draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+            PG_PixelFormat *surf_format, Uint32 color, float startx,
+            float starty, float endx, float endy, int *drawn_area,
+            int disable_first_endpoint, int disable_second_endpoint,
+            int extra_pixel_for_aalines);
 static void
-draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
-         int radius2, int width, double angle_start, double angle_stop,
-         Uint32 color, int *drawn_area);
+draw_aaline_width(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                  PG_PixelFormat *surf_format, Uint32 color, float from_x,
+                  float from_y, float to_x, float to_y, int width,
+                  int *drawn_area);
 static void
-draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
-                      int thickness, Uint32 color, int *drawn_area);
+draw_arc(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x_center,
+         int y_center, int radius1, int radius2, int width, double angle_start,
+         double angle_stop, Uint32 color, int *drawn_area);
 static void
-draw_circle_bresenham_thin(SDL_Surface *surf, int x0, int y0, int radius,
-                           Uint32 color, int *drawn_area);
+draw_circle_bresenham(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
+                      int y0, int radius, int thickness, Uint32 color,
+                      int *drawn_area);
 static void
-draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
-                   int *drawn_area);
+draw_circle_bresenham_thin(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
+                           int y0, int radius, Uint32 color, int *drawn_area);
 static void
-draw_circle_quadrant(SDL_Surface *surf, int x0, int y0, int radius,
-                     int thickness, Uint32 color, int top_right, int top_left,
-                     int bottom_left, int bottom_right, int *drawn_area);
+draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                      PG_PixelFormat *surf_format, int x0, int y0, int radius,
+                      int thickness, Uint32 color, int top_right, int top_left,
+                      int bottom_left, int bottom_right, int *drawn_area);
 static void
-draw_ellipse_filled(SDL_Surface *surf, int x0, int y0, int width, int height,
-                    Uint32 color, int *drawn_area);
+draw_circle_xiaolinwu_thin(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                           PG_PixelFormat *surf_format, int x0, int y0,
+                           int radius, Uint32 color, int top_right,
+                           int top_left, int bottom_left, int bottom_right,
+                           int *drawn_area);
 static void
-draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
-                       int height, int thickness, Uint32 color,
-                       int *drawn_area);
+draw_circle_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
+                   int radius, Uint32 color, int *drawn_area);
 static void
-draw_fillpoly(SDL_Surface *surf, int *vx, int *vy, Py_ssize_t n, Uint32 color,
-              int *drawn_area);
+draw_circle_quadrant(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
+                     int y0, int radius, int thickness, Uint32 color,
+                     int top_right, int top_left, int bottom_left,
+                     int bottom_right, int *drawn_area);
+static void
+draw_ellipse_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
+                    int width, int height, Uint32 color, int *drawn_area);
+static void
+draw_ellipse_thickness(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
+                       int y0, int width, int height, int thickness,
+                       Uint32 color, int *drawn_area);
+static void
+draw_fillpoly(SDL_Surface *surf, SDL_Rect surf_clip_rect, int *vx, int *vy,
+              Py_ssize_t n, Uint32 color, int *drawn_area);
 static int
-draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
-             int *drawn_area);
+draw_filltri(SDL_Surface *surf, SDL_Rect surf_clip_rect, int *xlist,
+             int *ylist, Uint32 color, int *drawn_area);
 static void
-draw_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int width,
-          Uint32 color);
+draw_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
+          int y2, int width, Uint32 color);
 static void
-draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
-                int width, Uint32 color, int top_left, int top_right,
-                int bottom_left, int bottom_right, int *drawn_area);
+draw_round_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1,
+                int x2, int y2, int radius, int width, Uint32 color,
+                int top_left, int top_right, int bottom_left, int bottom_right,
+                int *drawn_area);
 
 // validation of a draw color
-#define CHECK_LOAD_COLOR(colorobj)                               \
-    if (!pg_MappedColorFromObj((colorobj), surf->format, &color, \
-                               PG_COLOR_HANDLE_ALL)) {           \
-        return NULL;                                             \
+#define CHECK_LOAD_COLOR(colorobj)                       \
+    if (!pg_MappedColorFromObj((colorobj), surf, &color, \
+                               PG_COLOR_HANDLE_ALL)) {   \
+        return NULL;                                     \
     }
 
 /* Definition of functions that get called in Python */
@@ -105,16 +127,19 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *start, *end;
     SDL_Surface *surf = NULL;
     float startx, starty, endx, endy;
+    int width = 1; /* Default width. */
     PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Uint32 color;
-    static char *keywords[] = {"surface", "color", "start_pos",
-                               "end_pos", "blend", NULL};
+    static char *keywords[] = {"surface", "color", "start_pos", "end_pos",
+                               "width",   "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|O", keywords,
+    // blend argument is keyword only for backcompat.
+    // if it is passed as a positional argument, it will be handled in width
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|i$O", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &start, &end, &blend)) {
+                                     &start, &end, &width, &blend)) {
         return NULL; /* Exception already set. */
     }
 
@@ -137,6 +162,16 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
                             PG_SURF_BytesPerPixel(surf));
     }
 
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
+    if (surf_format == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (!pg_TwoFloatsFromObj(start, &startx, &starty)) {
@@ -151,19 +186,30 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    draw_aaline(surf, color, startx, starty, endx, endy, drawn_area);
+    if (width > 1) {
+        draw_aaline_width(surf, surf_clip_rect, surf_format, color, startx,
+                          starty, endx, endy, width, drawn_area);
+    }
+    else {
+        // For all width <= 1 treat it as width == 1, this helps compat
+        // with the old blend argument
+        draw_aaline(surf, surf_clip_rect, surf_format, color, startx, starty,
+                    endx, endy, drawn_area, 0, 0, 0);
+    }
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
     }
 
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4((int)startx, (int)starty, 0, 0);
+    }
 }
 
 /* Draws a line on the given surface.
@@ -199,6 +245,11 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
                             PG_SURF_BytesPerPixel(surf));
     }
 
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (!pg_TwoIntsFromObj(start, &startx, &starty)) {
@@ -217,8 +268,8 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    draw_line_width(surf, color, startx, starty, endx, endy, width,
-                    drawn_area);
+    draw_line_width(surf, surf_clip_rect, color, startx, starty, endx, endy,
+                    width, drawn_area);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -226,12 +277,14 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     /* Compute return rect. */
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4(startx, starty, 0, 0);
+    }
 }
 
 /* Draws a series of antialiased lines on the given surface.
@@ -247,9 +300,13 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     SDL_Surface *surf = NULL;
     Uint32 color;
     float pts[4];
-    float *xlist, *ylist;
+    float pts_prev[4];
     float x, y;
     int l, t;
+    int extra_px;
+    int disable_endpoints;
+    int steep_prev;
+    int steep_curr;
     PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
@@ -283,6 +340,16 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                             PG_SURF_BytesPerPixel(surf));
     }
 
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
+    if (surf_format == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (!PySequence_Check(points)) {
@@ -297,16 +364,12 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                      "points argument must contain 2 or more points");
     }
 
-    xlist = PyMem_New(float, length);
-    ylist = PyMem_New(float, length);
+    // Allocate bytes for the xlist and ylist at once to reduce allocations.
+    float *points_buf = PyMem_New(float, length * 2);
+    float *xlist = points_buf;
+    float *ylist = points_buf + length;
 
-    if (NULL == xlist || NULL == ylist) {
-        if (xlist) {
-            PyMem_Free(xlist);
-        }
-        if (ylist) {
-            PyMem_Free(ylist);
-        }
+    if (points_buf == NULL) {
         return RAISE(PyExc_MemoryError,
                      "cannot allocate memory to draw aalines");
     }
@@ -321,8 +384,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         Py_DECREF(item);
 
         if (!result) {
-            PyMem_Free(xlist);
-            PyMem_Free(ylist);
+            PyMem_Free(points_buf);
             return RAISE(PyExc_TypeError, "points must be number pairs");
         }
 
@@ -331,28 +393,105 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock(surfobj)) {
-        PyMem_Free(xlist);
-        PyMem_Free(ylist);
+        PyMem_Free(points_buf);
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    for (loop = 1; loop < length; ++loop) {
+    /* first line - if open, add endpoint pixels.*/
+    pts[0] = xlist[0];
+    pts[1] = ylist[0];
+    pts[2] = xlist[1];
+    pts[3] = ylist[1];
+
+    /* Previous points.
+     * Used to compare previous and current line.*/
+    pts_prev[0] = pts[0];
+    pts_prev[1] = pts[1];
+    pts_prev[2] = pts[2];
+    pts_prev[3] = pts[3];
+    steep_prev =
+        fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+    steep_curr = fabs(xlist[2] - pts[2]) < fabs(ylist[2] - pts[1]);
+    extra_px = steep_prev > steep_curr;
+    disable_endpoints =
+        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+    if (closed) {
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, disable_endpoints,
+                    disable_endpoints, extra_px);
+    }
+    else {
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, 0, disable_endpoints,
+                    extra_px);
+    }
+
+    for (loop = 2; loop < length - 1; ++loop) {
         pts[0] = xlist[loop - 1];
         pts[1] = ylist[loop - 1];
         pts[2] = xlist[loop];
         pts[3] = ylist[loop];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area);
+
+        /* Comparing previous and current line.
+         * If one is steep and other is not, extra pixel must be drawn.*/
+        steep_prev =
+            fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+        steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+        extra_px = steep_prev != steep_curr;
+        disable_endpoints =
+            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+        pts_prev[0] = pts[0];
+        pts_prev[1] = pts[1];
+        pts_prev[2] = pts[2];
+        pts_prev[3] = pts[3];
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, disable_endpoints,
+                    disable_endpoints, extra_px);
     }
+
+    /* Last line - if open, add endpoint pixels. */
+    pts[0] = xlist[length - 2];
+    pts[1] = ylist[length - 2];
+    pts[2] = xlist[length - 1];
+    pts[3] = ylist[length - 1];
+    steep_prev =
+        fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+    steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+    extra_px = steep_prev != steep_curr;
+    disable_endpoints =
+        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+    pts_prev[0] = pts[0];
+    pts_prev[1] = pts[1];
+    pts_prev[2] = pts[2];
+    pts_prev[3] = pts[3];
+    if (closed) {
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, disable_endpoints,
+                    disable_endpoints, extra_px);
+    }
+    else {
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, disable_endpoints, 0,
+                    extra_px);
+    }
+
     if (closed && length > 2) {
         pts[0] = xlist[length - 1];
         pts[1] = ylist[length - 1];
         pts[2] = xlist[0];
         pts[3] = ylist[0];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area);
+        steep_prev =
+            fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+        steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+        extra_px = steep_prev != steep_curr;
+        disable_endpoints =
+            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+        draw_aaline(surf, surf_clip_rect, surf_format, color, pts[0], pts[1],
+                    pts[2], pts[3], drawn_area, disable_endpoints,
+                    disable_endpoints, extra_px);
     }
 
-    PyMem_Free(xlist);
-    PyMem_Free(ylist);
+    PyMem_Free(points_buf);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -360,12 +499,14 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     /* Compute return rect. */
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4(l, t, 0, 0);
+    }
 }
 
 /* Draws a series of lines on the given surface.
@@ -402,6 +543,11 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
                             PG_SURF_BytesPerPixel(surf));
+    }
+
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -463,13 +609,15 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     for (loop = 1; loop < length; ++loop) {
-        draw_line_width(surf, color, xlist[loop - 1], ylist[loop - 1],
-                        xlist[loop], ylist[loop], width, drawn_area);
+        draw_line_width(surf, surf_clip_rect, color, xlist[loop - 1],
+                        ylist[loop - 1], xlist[loop], ylist[loop], width,
+                        drawn_area);
     }
 
     if (closed && length > 2) {
-        draw_line_width(surf, color, xlist[length - 1], ylist[length - 1],
-                        xlist[0], ylist[0], width, drawn_area);
+        draw_line_width(surf, surf_clip_rect, color, xlist[length - 1],
+                        ylist[length - 1], xlist[0], ylist[0], width,
+                        drawn_area);
     }
 
     PyMem_Free(xlist);
@@ -481,12 +629,14 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     /* Compute return rect. */
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4(x, y, 0, 0);
+    }
 }
 
 static PyObject *
@@ -525,6 +675,11 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
                             PG_SURF_BytesPerPixel(surf));
     }
 
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (width < 0) {
@@ -546,8 +701,9 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     width = MIN(width, MIN(rect->w, rect->h) / 2);
 
-    draw_arc(surf, rect->x + rect->w / 2, rect->y + rect->h / 2, rect->w / 2,
-             rect->h / 2, width, angle_start, angle_stop, color, drawn_area);
+    draw_arc(surf, surf_clip_rect, rect->x + rect->w / 2,
+             rect->y + rect->h / 2, rect->w / 2, rect->h / 2, width,
+             angle_start, angle_stop, color, drawn_area);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -555,12 +711,14 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     /* Compute return rect. */
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4(rect->x, rect->y, 0, 0);
+    }
 }
 
 static PyObject *
@@ -597,6 +755,11 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
                             PG_SURF_BytesPerPixel(surf));
     }
 
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (width < 0) {
@@ -609,12 +772,12 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (!width ||
         width >= MIN(rect->w / 2 + rect->w % 2, rect->h / 2 + rect->h % 2)) {
-        draw_ellipse_filled(surf, rect->x, rect->y, rect->w, rect->h, color,
-                            drawn_area);
+        draw_ellipse_filled(surf, surf_clip_rect, rect->x, rect->y, rect->w,
+                            rect->h, color, drawn_area);
     }
     else {
-        draw_ellipse_thickness(surf, rect->x, rect->y, rect->w, rect->h,
-                               width - 1, color, drawn_area);
+        draw_ellipse_thickness(surf, surf_clip_rect, rect->x, rect->y, rect->w,
+                               rect->h, width - 1, color, drawn_area);
     }
 
     if (!pgSurface_Unlock(surfobj)) {
@@ -622,12 +785,14 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4(rect->x, rect->y, 0, 0);
+    }
 }
 
 static PyObject *
@@ -637,7 +802,6 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *colorobj;
     SDL_Surface *surf = NULL;
     Uint32 color;
-    SDL_Rect cliprect;
     PyObject *posobj, *radiusobj;
     int posx, posy, radius;
     int width = 0; /* Default values. */
@@ -658,8 +822,9 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!OOO|iiiii", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
                                      &posobj, &radiusobj, &width, &top_right,
-                                     &top_left, &bottom_left, &bottom_right))
+                                     &top_left, &bottom_left, &bottom_right)) {
         return NULL; /* Exception already set. */
+    }
 
     if (!pg_TwoIntsFromObj(posobj, &posx, &posy)) {
         PyErr_SetString(PyExc_TypeError,
@@ -681,6 +846,11 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
                             PG_SURF_BytesPerPixel(surf));
     }
 
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (radius < 1 || width < 0) {
@@ -691,12 +861,10 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
         width = radius;
     }
 
-    SDL_GetClipRect(surf, &cliprect);
-
-    if (posx > cliprect.x + cliprect.w + radius ||
-        posx < cliprect.x - radius ||
-        posy > cliprect.y + cliprect.h + radius ||
-        posy < cliprect.y - radius) {
+    if (posx > surf_clip_rect.x + surf_clip_rect.w + radius ||
+        posx < surf_clip_rect.x - radius ||
+        posy > surf_clip_rect.y + surf_clip_rect.h + radius ||
+        posy < surf_clip_rect.y - radius) {
         return pgRect_New4(posx, posy, 0, 0);
     }
 
@@ -707,32 +875,170 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     if ((top_right == 0 && top_left == 0 && bottom_left == 0 &&
          bottom_right == 0)) {
         if (!width || width == radius) {
-            draw_circle_filled(surf, posx, posy, radius, color, drawn_area);
+            draw_circle_filled(surf, surf_clip_rect, posx, posy, radius, color,
+                               drawn_area);
         }
         else if (width == 1) {
-            draw_circle_bresenham_thin(surf, posx, posy, radius, color,
-                                       drawn_area);
+            draw_circle_bresenham_thin(surf, surf_clip_rect, posx, posy,
+                                       radius, color, drawn_area);
         }
         else {
-            draw_circle_bresenham(surf, posx, posy, radius, width, color,
-                                  drawn_area);
+            draw_circle_bresenham(surf, surf_clip_rect, posx, posy, radius,
+                                  width, color, drawn_area);
         }
     }
     else {
-        draw_circle_quadrant(surf, posx, posy, radius, width, color, top_right,
-                             top_left, bottom_left, bottom_right, drawn_area);
+        draw_circle_quadrant(surf, surf_clip_rect, posx, posy, radius, width,
+                             color, top_right, top_left, bottom_left,
+                             bottom_right, drawn_area);
     }
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
     }
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4(posx, posy, 0, 0);
+    }
+}
+
+static PyObject *
+aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    PyObject *colorobj;
+    SDL_Surface *surf = NULL;
+    Uint32 color;
+    PyObject *posobj, *radiusobj;
+    int posx, posy, radius;
+    int width = 0; /* Default values. */
+    int top_right = 0, top_left = 0, bottom_left = 0, bottom_right = 0;
+    int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
+                         INT_MIN}; /* Used to store bounding box values */
+    static char *keywords[] = {"surface",
+                               "color",
+                               "center",
+                               "radius",
+                               "width",
+                               "draw_top_right",
+                               "draw_top_left",
+                               "draw_bottom_left",
+                               "draw_bottom_right",
+                               NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!OOO|iiiii", keywords,
+                                     &pgSurface_Type, &surfobj, &colorobj,
+                                     &posobj, &radiusobj, &width, &top_right,
+                                     &top_left, &bottom_left, &bottom_right)) {
+        return NULL; /* Exception already set. */
+    }
+
+    if (!pg_TwoIntsFromObj(posobj, &posx, &posy)) {
+        return RAISE(PyExc_TypeError,
+                     "center argument must be a pair of numbers");
+    }
+
+    if (!pg_IntFromObj(radiusobj, &radius)) {
+        return RAISE(PyExc_TypeError, "radius argument must be a number");
+    }
+
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
+        return PyErr_Format(PyExc_ValueError,
+                            "unsupported surface bit depth (%d) for drawing",
+                            PG_SURF_BytesPerPixel(surf));
+    }
+
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
+    if (surf_format == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    CHECK_LOAD_COLOR(colorobj)
+
+    if (radius < 1 || width < 0) {
+        return pgRect_New4(posx, posy, 0, 0);
+    }
+
+    if (width > radius) {
+        width = radius;
+    }
+
+    if (posx > surf_clip_rect.x + surf_clip_rect.w + radius ||
+        posx < surf_clip_rect.x - radius ||
+        posy > surf_clip_rect.y + surf_clip_rect.h + radius ||
+        posy < surf_clip_rect.y - radius) {
+        return pgRect_New4(posx, posy, 0, 0);
+    }
+
+    if (!pgSurface_Lock(surfobj)) {
+        return RAISE(PyExc_RuntimeError, "error locking surface");
+    }
+
+    if ((top_right == 0 && top_left == 0 && bottom_left == 0 &&
+         bottom_right == 0)) {
+        if (!width || width == radius) {
+            draw_circle_filled(surf, surf_clip_rect, posx, posy, radius - 1,
+                               color, drawn_area);
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
+                                  posy, radius, 2, color, 1, 1, 1, 1,
+                                  drawn_area);
+        }
+        else if (width == 1) {
+            draw_circle_xiaolinwu_thin(surf, surf_clip_rect, surf_format, posx,
+                                       posy, radius, color, 1, 1, 1, 1,
+                                       drawn_area);
+        }
+        else {
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
+                                  posy, radius, width, color, 1, 1, 1, 1,
+                                  drawn_area);
+        }
+    }
+    else {
+        if (!width || width == radius) {
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
+                                  posy, radius, radius, color, top_right,
+                                  top_left, bottom_left, bottom_right,
+                                  drawn_area);
+        }
+        else if (width == 1) {
+            draw_circle_xiaolinwu_thin(
+                surf, surf_clip_rect, surf_format, posx, posy, radius, color,
+                top_right, top_left, bottom_left, bottom_right, drawn_area);
+        }
+        else {
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
+                                  posy, radius, width, color, top_right,
+                                  top_left, bottom_left, bottom_right,
+                                  drawn_area);
+        }
+    }
+
+    if (!pgSurface_Unlock(surfobj)) {
+        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+    }
+    if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
+        return pgRect_New4(drawn_area[0], drawn_area[1],
+                           drawn_area[2] - drawn_area[0] + 1,
+                           drawn_area[3] - drawn_area[1] + 1);
+    }
+    else {
+        return pgRect_New4(posx, posy, 0, 0);
+    }
 }
 
 static PyObject *
@@ -742,7 +1048,6 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *points, *item = NULL;
     SDL_Surface *surf = NULL;
     Uint32 color;
-    int *xlist = NULL, *ylist = NULL;
     int width = 0; /* Default width. */
     int x, y, result, l, t;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
@@ -779,6 +1084,11 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
                             PG_SURF_BytesPerPixel(surf));
     }
 
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (!PySequence_Check(points)) {
@@ -793,16 +1103,12 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
                      "points argument must contain more than 2 points");
     }
 
-    xlist = PyMem_New(int, length);
-    ylist = PyMem_New(int, length);
+    // Allocate bytes for the xlist and ylist at once to reduce allocations.
+    int *points_buf = PyMem_New(int, length * 2);
+    int *xlist = points_buf;
+    int *ylist = points_buf + length;
 
-    if (NULL == xlist || NULL == ylist) {
-        if (xlist) {
-            PyMem_Free(xlist);
-        }
-        if (ylist) {
-            PyMem_Free(ylist);
-        }
+    if (points_buf == NULL) {
         return RAISE(PyExc_MemoryError,
                      "cannot allocate memory to draw polygon");
     }
@@ -817,8 +1123,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
         Py_DECREF(item);
 
         if (!result) {
-            PyMem_Free(xlist);
-            PyMem_Free(ylist);
+            PyMem_Free(points_buf);
             return RAISE(PyExc_TypeError, "points must be number pairs");
         }
 
@@ -827,31 +1132,32 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pgSurface_Lock(surfobj)) {
-        PyMem_Free(xlist);
-        PyMem_Free(ylist);
+        PyMem_Free(points_buf);
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
     if (length != 3) {
-        draw_fillpoly(surf, xlist, ylist, length, color, drawn_area);
+        draw_fillpoly(surf, surf_clip_rect, xlist, ylist, length, color,
+                      drawn_area);
     }
     else {
-        draw_filltri(surf, xlist, ylist, color, drawn_area);
+        draw_filltri(surf, surf_clip_rect, xlist, ylist, color, drawn_area);
     }
-    PyMem_Free(xlist);
-    PyMem_Free(ylist);
+    PyMem_Free(points_buf);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
     }
 
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4(l, t, 0, 0);
+    }
 }
 
 static PyObject *
@@ -866,8 +1172,6 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     int top_left_radius = -1, top_right_radius = -1, bottom_left_radius = -1,
         bottom_right_radius = -1;
     SDL_Rect sdlrect;
-    SDL_Rect cliprect;
-    int result;
     SDL_Rect clipped;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
@@ -901,6 +1205,11 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
                             PG_SURF_BytesPerPixel(surf));
     }
 
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (width < 0) {
@@ -918,25 +1227,26 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
         sdlrect.y = rect->y;
         sdlrect.w = rect->w;
         sdlrect.h = rect->h;
-        SDL_GetClipRect(surf, &cliprect);
         /* SDL_FillRect respects the clip rect already, but in order to
             return the drawn area, we need to do this here, and keep the
             pointer to the result in clipped */
-        if (!SDL_IntersectRect(&sdlrect, &cliprect, &clipped)) {
+        if (!SDL_IntersectRect(&sdlrect, &surf_clip_rect, &clipped)) {
             return pgRect_New4(rect->x, rect->y, 0, 0);
         }
         if (width > 0 && (width * 2) < clipped.w && (width * 2) < clipped.h) {
-            draw_rect(surf, sdlrect.x, sdlrect.y, sdlrect.x + sdlrect.w - 1,
-                      sdlrect.y + sdlrect.h - 1, width, color);
+            draw_rect(surf, surf_clip_rect, sdlrect.x, sdlrect.y,
+                      sdlrect.x + sdlrect.w - 1, sdlrect.y + sdlrect.h - 1,
+                      width, color);
         }
         else {
             pgSurface_Prep(surfobj);
             pgSurface_Lock(surfobj);
-            result = SDL_FillRect(surf, &clipped, color);
+            bool success = PG_FillSurfaceRect(surf, &clipped, color);
             pgSurface_Unlock(surfobj);
             pgSurface_Unprep(surfobj);
-            if (result != 0)
+            if (!success) {
                 return RAISE(pgExc_SDLError, SDL_GetError());
+            }
         }
         return pgRect_New(&clipped);
     }
@@ -960,22 +1270,24 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
             width = MAX(rect->w / 2, rect->h / 2);
         }
 
-        draw_round_rect(surf, rect->x, rect->y, rect->x + rect->w - 1,
-                        rect->y + rect->h - 1, radius, width, color,
-                        top_left_radius, top_right_radius, bottom_left_radius,
-                        bottom_right_radius, drawn_area);
+        draw_round_rect(surf, surf_clip_rect, rect->x, rect->y,
+                        rect->x + rect->w - 1, rect->y + rect->h - 1, radius,
+                        width, color, top_left_radius, top_right_radius,
+                        bottom_left_radius, bottom_right_radius, drawn_area);
         if (!pgSurface_Unlock(surfobj)) {
             return RAISE(PyExc_RuntimeError, "error unlocking surface");
         }
     }
 
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4(rect->x, rect->y, 0, 0);
+    }
 }
 
 /* Functions used in drawing algorithms */
@@ -995,19 +1307,49 @@ compare_int(const void *a, const void *b)
 }
 
 static Uint32
-get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
-                      float brightness)
+get_antialiased_color(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                      PG_PixelFormat *surf_format, int x, int y,
+                      Uint32 original_color, float brightness)
 {
     Uint8 color_part[4], background_color[4];
-    Uint32 *pixels = (Uint32 *)surf->pixels;
-    SDL_GetRGBA(original_color, surf->format, &color_part[0], &color_part[1],
-                &color_part[2], &color_part[3]);
-    if (x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w ||
-        y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)
+    if (x < surf_clip_rect.x || x >= surf_clip_rect.x + surf_clip_rect.w ||
+        y < surf_clip_rect.y || y >= surf_clip_rect.y + surf_clip_rect.h) {
         return original_color;
-    SDL_GetRGBA(pixels[(y * surf->w) + x], surf->format, &background_color[0],
-                &background_color[1], &background_color[2],
-                &background_color[3]);
+    }
+
+    PG_GetRGBA(original_color, surf_format, PG_GetSurfacePalette(surf),
+               &color_part[0], &color_part[1], &color_part[2], &color_part[3]);
+
+    Uint32 pixel = 0;
+    int bpp = PG_SURF_BytesPerPixel(surf);
+    Uint8 *pixels = (Uint8 *)surf->pixels + y * surf->pitch + x * bpp;
+
+    switch (bpp) {
+        case 1:
+            pixel = *pixels;
+            break;
+
+        case 2:
+            pixel = *((Uint16 *)pixels);
+            break;
+
+        case 3:
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            pixel = (pixels[0]) + (pixels[1] << 8) + (pixels[2] << 16);
+#else  /* SDL_BIG_ENDIAN */
+            pixel = (pixels[2]) + (pixels[1] << 8) + (pixels[0] << 16);
+#endif /* SDL_BIG_ENDIAN */
+            break;
+
+        default: /* case 4: */
+            pixel = *((Uint32 *)pixels);
+            break;
+    }
+
+    PG_GetRGBA(pixel, surf_format, PG_GetSurfacePalette(surf),
+               &background_color[0], &background_color[1],
+               &background_color[2], &background_color[3]);
+
     color_part[0] = (Uint8)(brightness * color_part[0] +
                             (1 - brightness) * background_color[0]);
     color_part[1] = (Uint8)(brightness * color_part[1] +
@@ -1016,8 +1358,9 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
                             (1 - brightness) * background_color[2]);
     color_part[3] = (Uint8)(brightness * color_part[3] +
                             (1 - brightness) * background_color[3]);
-    original_color = SDL_MapRGBA(surf->format, color_part[0], color_part[1],
-                                 color_part[2], color_part[3]);
+    original_color =
+        PG_MapRGBA(surf_format, PG_GetSurfacePalette(surf), color_part[0],
+                   color_part[1], color_part[2], color_part[3]);
     return original_color;
 }
 
@@ -1056,8 +1399,8 @@ add_line_to_drawn_list(int x1, int y1, int x2, int y2, int *pts)
 }
 
 static int
-clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
-          int xinc)
+clip_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int *x1, int *y1,
+          int *x2, int *y2, int width, int xinc)
 {
     int left, right, top, bottom;
     if (xinc) {
@@ -1072,9 +1415,9 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
         top = MIN(*y1, *y2) - width;
         bottom = MAX(*y1, *y2) + width;
     }
-    if (surf->clip_rect.x > right || surf->clip_rect.y > bottom ||
-        surf->clip_rect.x + surf->clip_rect.w <= left ||
-        surf->clip_rect.y + surf->clip_rect.h <= top) {
+    if (surf_clip_rect.x > right || surf_clip_rect.y > bottom ||
+        surf_clip_rect.x + surf_clip_rect.w <= left ||
+        surf_clip_rect.y + surf_clip_rect.h <= top) {
         return 0;
     }
 
@@ -1082,17 +1425,16 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
 }
 
 static int
-set_at(SDL_Surface *surf, int x, int y, Uint32 color)
+set_at(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x, int y, Uint32 color)
 {
-    SDL_PixelFormat *format = surf->format;
     Uint8 *pixels = (Uint8 *)surf->pixels;
-    Uint8 *byte_buf, rgb[4];
 
-    if (x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w ||
-        y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)
+    if (x < surf_clip_rect.x || x >= surf_clip_rect.x + surf_clip_rect.w ||
+        y < surf_clip_rect.y || y >= surf_clip_rect.y + surf_clip_rect.h) {
         return 0;
+    }
 
-    switch (PG_FORMAT_BytesPerPixel(format)) {
+    switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
             *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
             break;
@@ -1103,33 +1445,31 @@ set_at(SDL_Surface *surf, int x, int y, Uint32 color)
             *((Uint32 *)(pixels + y * surf->pitch) + x) = color;
             break;
         default: /*case 3:*/
-            SDL_GetRGB(color, format, rgb, rgb + 1, rgb + 2);
-            byte_buf = (Uint8 *)(pixels + y * surf->pitch) + x * 3;
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            *(byte_buf + (format->Rshift >> 3)) = rgb[0];
-            *(byte_buf + (format->Gshift >> 3)) = rgb[1];
-            *(byte_buf + (format->Bshift >> 3)) = rgb[2];
-#else
-            *(byte_buf + 2 - (format->Rshift >> 3)) = rgb[0];
-            *(byte_buf + 2 - (format->Gshift >> 3)) = rgb[1];
-            *(byte_buf + 2 - (format->Bshift >> 3)) = rgb[2];
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+            color <<= 8;
 #endif
+            memcpy((pixels + y * surf->pitch) + x * 3, &color,
+                   3 * sizeof(Uint8));
             break;
     }
     return 1;
 }
 
 static void
-set_and_check_rect(SDL_Surface *surf, int x, int y, Uint32 color,
-                   int *drawn_area)
+set_and_check_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x, int y,
+                   Uint32 color, int *drawn_area)
 {
-    if (set_at(surf, x, y, color))
+    if (set_at(surf, surf_clip_rect, x, y, color)) {
         add_pixel_to_drawn_list(x, y, drawn_area);
+    }
 }
 
 static void
-draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
-            float to_x, float to_y, int *drawn_area)
+draw_aaline(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+            PG_PixelFormat *surf_format, Uint32 color, float from_x,
+            float from_y, float to_x, float to_y, int *drawn_area,
+            int disable_first_endpoint, int disable_second_endpoint,
+            int extra_pixel_for_aalines)
 {
     float gradient, dx, dy, intersect_y, brightness;
     int x, x_pixel_start, x_pixel_end;
@@ -1143,10 +1483,10 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     /* Single point.
      * A line with length 0 is drawn as a single pixel at full brightness. */
     if (fabs(dx) < 0.0001 && fabs(dy) < 0.0001) {
-        pixel_color =
-            get_antialiased_color(surf, (int)floor(from_x + 0.5),
-                                  (int)floor(from_y + 0.5), color, 1);
-        set_and_check_rect(surf, (int)floor(from_x + 0.5),
+        pixel_color = get_antialiased_color(
+            surf, surf_clip_rect, surf_format, (int)floor(from_x + 0.5),
+            (int)floor(from_y + 0.5), color, 1);
+        set_and_check_rect(surf, surf_clip_rect, (int)floor(from_x + 0.5),
                            (int)floor(from_y + 0.5), pixel_color, drawn_area);
         return;
     }
@@ -1154,10 +1494,10 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     /* To draw correctly the pixels at the border of the clipping area when
      * the line crosses it, we need to clip it one pixel wider in all four
      * directions: */
-    clip_left = (float)surf->clip_rect.x - 1.0f;
-    clip_right = (float)clip_left + surf->clip_rect.w + 1.0f;
-    clip_top = (float)surf->clip_rect.y - 1.0f;
-    clip_bottom = (float)clip_top + surf->clip_rect.h + 1.0f;
+    clip_left = (float)surf_clip_rect.x - 1.0f;
+    clip_right = (float)clip_left + surf_clip_rect.w + 1.0f;
+    clip_top = (float)surf_clip_rect.y - 1.0f;
+    clip_bottom = (float)clip_top + surf_clip_rect.h + 1.0f;
 
     steep = fabs(dx) < fabs(dy);
     if (steep) {
@@ -1232,68 +1572,88 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
 
     /* Handle endpoints separately.
      * The line is not a mathematical line of thickness zero. The same
-     * goes for the endpoints. The have a height and width of one pixel. */
+     * goes for the endpoints. The have a height and width of one pixel.
+     * Extra pixel drawing is requested externally from aalines.
+     * It is drawn only when one line is steep and other is not.*/
     /* First endpoint */
-    x_pixel_start = (int)from_x;
-    y_endpoint = intersect_y = from_y + gradient * (x_pixel_start - from_x);
-    if (to_x > clip_left + 1.0f) {
-        x_gap = 1 + x_pixel_start - from_x;
-        brightness = y_endpoint - (int)y_endpoint;
-        if (steep) {
-            x = (int)y_endpoint;
-            y = x_pixel_start;
-        }
-        else {
-            x = x_pixel_start;
-            y = (int)y_endpoint;
-        }
-        if ((int)y_endpoint < y_endpoint) {
+    if (!disable_first_endpoint || extra_pixel_for_aalines) {
+        x_pixel_start = (int)from_x;
+        y_endpoint = intersect_y =
+            from_y + gradient * (x_pixel_start - from_x);
+        if (to_x > clip_left + 1.0f) {
+            x_gap = 1 + x_pixel_start - from_x;
+            brightness = y_endpoint - (int)y_endpoint;
+            if (steep) {
+                x = (int)y_endpoint;
+                y = x_pixel_start;
+            }
+            else {
+                x = x_pixel_start;
+                y = (int)y_endpoint;
+            }
+            if ((int)y_endpoint < y_endpoint) {
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y, color, brightness * x_gap);
+                set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
+                                   drawn_area);
+            }
+            if (steep) {
+                x--;
+            }
+            else {
+                y--;
+            }
+            brightness = 1 - brightness;
             pixel_color =
-                get_antialiased_color(surf, x, y, color, brightness * x_gap);
-            set_and_check_rect(surf, x, y, pixel_color, drawn_area);
+                get_antialiased_color(surf, surf_clip_rect, surf_format, x, y,
+                                      color, brightness * x_gap);
+            set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
+                               drawn_area);
+            intersect_y += gradient;
+            x_pixel_start++;
         }
-        if (steep) {
-            x--;
-        }
-        else {
-            y--;
-        }
-        brightness = 1 - brightness;
-        pixel_color =
-            get_antialiased_color(surf, x, y, color, brightness * x_gap);
-        set_and_check_rect(surf, x, y, pixel_color, drawn_area);
-        intersect_y += gradient;
-        x_pixel_start++;
+    }
+    /* To be sure main loop skips first endpoint.*/
+    if (disable_first_endpoint) {
+        x_pixel_start = (int)ceil(from_x);
+        intersect_y = from_y + gradient * (x_pixel_start - from_x);
     }
     /* Second endpoint */
     x_pixel_end = (int)ceil(to_x);
-    if (from_x < clip_right - 1.0f) {
-        y_endpoint = to_y + gradient * (x_pixel_end - to_x);
-        x_gap = 1 - x_pixel_end + to_x;
-        brightness = y_endpoint - (int)y_endpoint;
-        if (steep) {
-            x = (int)y_endpoint;
-            y = x_pixel_end;
-        }
-        else {
-            x = x_pixel_end;
-            y = (int)y_endpoint;
-        }
-        if ((int)y_endpoint < y_endpoint) {
+    if (!disable_second_endpoint || extra_pixel_for_aalines) {
+        if (from_x < clip_right - 1.0f) {
+            y_endpoint = to_y + gradient * (x_pixel_end - to_x);
+            x_gap = 1 - x_pixel_end + to_x;
+            brightness = y_endpoint - (int)y_endpoint;
+            if (steep) {
+                x = (int)y_endpoint;
+                y = x_pixel_end;
+            }
+            else {
+                x = x_pixel_end;
+                y = (int)y_endpoint;
+            }
+            if ((int)y_endpoint < y_endpoint) {
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y, color, brightness * x_gap);
+                set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
+                                   drawn_area);
+            }
+            if (steep) {
+                x--;
+            }
+            else {
+                y--;
+            }
+            brightness = 1 - brightness;
             pixel_color =
-                get_antialiased_color(surf, x, y, color, brightness * x_gap);
-            set_and_check_rect(surf, x, y, pixel_color, drawn_area);
+                get_antialiased_color(surf, surf_clip_rect, surf_format, x, y,
+                                      color, brightness * x_gap);
+            set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
+                               drawn_area);
         }
-        if (steep) {
-            x--;
-        }
-        else {
-            y--;
-        }
-        brightness = 1 - brightness;
-        pixel_color =
-            get_antialiased_color(surf, x, y, color, brightness * x_gap);
-        set_and_check_rect(surf, x, y, pixel_color, drawn_area);
     }
 
     /* main line drawing loop */
@@ -1302,25 +1662,33 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
         if (steep) {
             brightness = 1 - intersect_y + y;
             pixel_color =
-                get_antialiased_color(surf, y - 1, x, color, brightness);
-            set_and_check_rect(surf, y - 1, x, pixel_color, drawn_area);
+                get_antialiased_color(surf, surf_clip_rect, surf_format, y - 1,
+                                      x, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect, y - 1, x, pixel_color,
+                               drawn_area);
             if (y < intersect_y) {
                 brightness = 1 - brightness;
                 pixel_color =
-                    get_antialiased_color(surf, y, x, color, brightness);
-                set_and_check_rect(surf, y, x, pixel_color, drawn_area);
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, y,
+                                          x, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, y, x, pixel_color,
+                                   drawn_area);
             }
         }
         else {
             brightness = 1 - intersect_y + y;
             pixel_color =
-                get_antialiased_color(surf, x, y - 1, color, brightness);
-            set_and_check_rect(surf, x, y - 1, pixel_color, drawn_area);
+                get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                      y - 1, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect, x, y - 1, pixel_color,
+                               drawn_area);
             if (y < intersect_y) {
                 brightness = 1 - brightness;
                 pixel_color =
-                    get_antialiased_color(surf, x, y, color, brightness);
-                set_and_check_rect(surf, x, y, pixel_color, drawn_area);
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
+                                   drawn_area);
             }
         }
         intersect_y += gradient;
@@ -1399,10 +1767,12 @@ drawvertline(SDL_Surface *surf, Uint32 color, int y1, int x1, int y2)
 }
 
 static void
-drawhorzlineclip(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
+drawhorzlineclip(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
+                 int x1, int y1, int x2)
 {
-    if (y1 < surf->clip_rect.y || y1 >= surf->clip_rect.y + surf->clip_rect.h)
+    if (y1 < surf_clip_rect.y || y1 >= surf_clip_rect.y + surf_clip_rect.h) {
         return;
+    }
 
     if (x2 < x1) {
         int temp = x1;
@@ -1410,25 +1780,27 @@ drawhorzlineclip(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
         x2 = temp;
     }
 
-    x1 = MAX(x1, surf->clip_rect.x);
-    x2 = MIN(x2, surf->clip_rect.x + surf->clip_rect.w - 1);
+    x1 = MAX(x1, surf_clip_rect.x);
+    x2 = MIN(x2, surf_clip_rect.x + surf_clip_rect.w - 1);
 
-    if (x2 < surf->clip_rect.x || x1 >= surf->clip_rect.x + surf->clip_rect.w)
+    if (x2 < surf_clip_rect.x || x1 >= surf_clip_rect.x + surf_clip_rect.w) {
         return;
+    }
 
     if (x1 == x2) {
-        set_at(surf, x1, y1, color);
+        set_at(surf, surf_clip_rect, x1, y1, color);
         return;
     }
     drawhorzline(surf, color, x1, y1, x2);
 }
 
 static void
-drawhorzlineclipbounding(SDL_Surface *surf, Uint32 color, int x1, int y1,
-                         int x2, int *pts)
+drawhorzlineclipbounding(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                         Uint32 color, int x1, int y1, int x2, int *pts)
 {
-    if (y1 < surf->clip_rect.y || y1 >= surf->clip_rect.y + surf->clip_rect.h)
+    if (y1 < surf_clip_rect.y || y1 >= surf_clip_rect.y + surf_clip_rect.h) {
         return;
+    }
 
     if (x2 < x1) {
         int temp = x1;
@@ -1436,20 +1808,52 @@ drawhorzlineclipbounding(SDL_Surface *surf, Uint32 color, int x1, int y1,
         x2 = temp;
     }
 
-    x1 = MAX(x1, surf->clip_rect.x);
-    x2 = MIN(x2, surf->clip_rect.x + surf->clip_rect.w - 1);
+    x1 = MAX(x1, surf_clip_rect.x);
+    x2 = MIN(x2, surf_clip_rect.x + surf_clip_rect.w - 1);
 
-    if (x2 < surf->clip_rect.x || x1 >= surf->clip_rect.x + surf->clip_rect.w)
+    if (x2 < surf_clip_rect.x || x1 >= surf_clip_rect.x + surf_clip_rect.w) {
         return;
+    }
 
     if (x1 == x2) {
-        set_and_check_rect(surf, x1, y1, color, pts);
+        set_and_check_rect(surf, surf_clip_rect, x1, y1, color, pts);
         return;
     }
 
     add_line_to_drawn_list(x1, y1, x2, y1, pts);
 
     drawhorzline(surf, color, x1, y1, x2);
+}
+
+static void
+drawvertlineclipbounding(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                         Uint32 color, int y1, int x1, int y2, int *pts)
+{
+    if (x1 < surf_clip_rect.x || x1 >= surf_clip_rect.x + surf_clip_rect.w) {
+        return;
+    }
+
+    if (y2 < y1) {
+        int temp = y1;
+        y1 = y2;
+        y2 = temp;
+    }
+
+    y1 = MAX(y1, surf_clip_rect.y);
+    y2 = MIN(y2, surf_clip_rect.y + surf_clip_rect.h - 1);
+
+    if (y2 < surf_clip_rect.y || y1 >= surf_clip_rect.y + surf_clip_rect.h) {
+        return;
+    }
+
+    if (y1 == y2) {
+        set_and_check_rect(surf, surf_clip_rect, x1, y1, color, pts);
+        return;
+    }
+
+    add_line_to_drawn_list(x1, y1, x1, y2, pts);
+
+    drawvertline(surf, color, y1, x1, y2);
 }
 
 void
@@ -1465,8 +1869,8 @@ swap_coordinates(int *x1, int *y1, int *x2, int *y2)
 }
 
 static int
-draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
-             int *draw_area)
+draw_filltri(SDL_Surface *surf, SDL_Rect surf_clip_rect, int *xlist,
+             int *ylist, Uint32 color, int *draw_area)
 {
     int p0x, p0y, p1x, p1y, p2x, p2y;
 
@@ -1501,31 +1905,35 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
         int x1 = p0x + (int)((y - p0y) * d1);
 
         int x2;
-        if (y < p1y)
+        if (y < p1y) {
             x2 = p0x + (int)((y - p0y) * d2);
-        else
+        }
+        else {
             x2 = p1x + (int)((y - p1y) * d3);
+        }
 
-        drawhorzlineclipbounding(surf, color, x1, y, x2, draw_area);
+        drawhorzlineclipbounding(surf, surf_clip_rect, color, x1, y, x2,
+                                 draw_area);
     }
 
     return 0;
 }
 
 static void
-draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
-                int y2, int width, int *drawn_area)
+draw_line_width(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
+                int x1, int y1, int x2, int y2, int width, int *drawn_area)
 {
     int dx, dy, err, e2, sx, sy, start_draw, end_draw;
-    int end_x = surf->clip_rect.x + surf->clip_rect.w - 1;
-    int end_y = surf->clip_rect.y + surf->clip_rect.h - 1;
+    int end_x = surf_clip_rect.x + surf_clip_rect.w - 1;
+    int end_y = surf_clip_rect.y + surf_clip_rect.h - 1;
     int xinc = 0;
     int extra_width = 1 - (width % 2);
 
-    if (width < 1)
+    if (width < 1) {
         return;
+    }
     if (width == 1) {
-        draw_line(surf, x1, y1, x2, y2, color, drawn_area);
+        draw_line(surf, surf_clip_rect, x1, y1, x2, y2, color, drawn_area);
         return;
     }
 
@@ -1538,11 +1946,12 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
         xinc = 1;
     }
 
-    if (!clip_line(surf, &x1, &y1, &x2, &y2, width, xinc))
+    if (!clip_line(surf, surf_clip_rect, &x1, &y1, &x2, &y2, width, xinc)) {
         return;
+    }
 
     if (x1 == x2 && y1 == y2) { /* Single point */
-        start_draw = MAX((x1 - width) + extra_width, surf->clip_rect.x);
+        start_draw = MAX((x1 - width) + extra_width, surf_clip_rect.x);
         end_draw = MIN(end_x, x1 + width);
         if (start_draw <= end_draw) {
             drawhorzline(surf, color, start_draw, y1, end_draw);
@@ -1558,9 +1967,8 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     err = (dx > dy ? dx : -dy) / 2;
     if (xinc) {
         while (y1 != (y2 + sy)) {
-            if (surf->clip_rect.y <= y1 && y1 <= end_y) {
-                start_draw =
-                    MAX((x1 - width) + extra_width, surf->clip_rect.x);
+            if (surf_clip_rect.y <= y1 && y1 <= end_y) {
+                start_draw = MAX((x1 - width) + extra_width, surf_clip_rect.x);
                 end_draw = MIN(end_x, x1 + width);
                 if (start_draw <= end_draw) {
                     drawhorzline(surf, color, start_draw, y1, end_draw);
@@ -1581,9 +1989,8 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     }
     else {
         while (x1 != (x2 + sx)) {
-            if (surf->clip_rect.x <= x1 && x1 <= end_x) {
-                start_draw =
-                    MAX((y1 - width) + extra_width, surf->clip_rect.y);
+            if (surf_clip_rect.x <= x1 && x1 <= end_x) {
+                start_draw = MAX((y1 - width) + extra_width, surf_clip_rect.y);
                 end_draw = MIN(end_y, y1 + width);
                 if (start_draw <= end_draw) {
                     drawvertline(surf, color, start_draw, x1, end_draw);
@@ -1604,37 +2011,332 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     }
 }
 
+static void
+draw_aaline_width(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                  PG_PixelFormat *surf_format, Uint32 color, float from_x,
+                  float from_y, float to_x, float to_y, int width,
+                  int *drawn_area)
+{
+    float gradient, dx, dy, intersect_y, brightness;
+    int x, x_pixel_start, x_pixel_end, start_draw, end_draw;
+    Uint32 pixel_color;
+    float y_endpoint, clip_left, clip_right, clip_top, clip_bottom;
+    int steep, y;
+    int extra_width = 1 - (width % 2);
+
+    width = (width / 2);
+
+    dx = to_x - from_x;
+    dy = to_y - from_y;
+    steep = fabs(dx) < fabs(dy);
+
+    /* Single point.
+     * A line with length 0 is drawn as a single pixel at full brightness. */
+    if (fabs(dx) < 0.0001 && fabs(dy) < 0.0001) {
+        x = (int)floor(from_x + 0.5);
+        y = (int)floor(from_y + 0.5);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x, y, color, 1);
+        set_and_check_rect(surf, surf_clip_rect, x, y, pixel_color,
+                           drawn_area);
+        if (dx != 0 && dy != 0) {
+            if (steep) {
+                start_draw = (int)(x - width + extra_width);
+                end_draw = (int)(x + width) - 1;
+                drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                         start_draw, y, end_draw, drawn_area);
+            }
+            else {
+                start_draw = (int)(y - width + extra_width);
+                end_draw = (int)(y + width) - 1;
+                drawvertlineclipbounding(surf, surf_clip_rect, color,
+                                         start_draw, x, end_draw, drawn_area);
+            }
+        }
+        return;
+    }
+
+    /* To draw correctly the pixels at the border of the clipping area when
+     * the line crosses it, we need to clip it one pixel wider in all four
+     * directions, and add width */
+    clip_left = (float)surf_clip_rect.x - 1.0f;
+    clip_right = (float)clip_left + surf_clip_rect.w + 1.0f;
+    clip_top = (float)surf_clip_rect.y - 1.0f;
+    clip_bottom = (float)clip_top + surf_clip_rect.h + 1.0f;
+
+    if (steep) {
+        swap(&from_x, &from_y);
+        swap(&to_x, &to_y);
+        swap(&dx, &dy);
+        swap(&clip_left, &clip_top);
+        swap(&clip_right, &clip_bottom);
+    }
+    if (dx < 0) {
+        swap(&from_x, &to_x);
+        swap(&from_y, &to_y);
+        dx = -dx;
+        dy = -dy;
+    }
+
+    if (to_x <= clip_left || from_x >= clip_right) {
+        /* The line is completely to the side of the surface */
+        return;
+    }
+
+    /* Note. There is no need to guard against a division by zero here. If dx
+     * was zero then either we had a single point (and we've returned) or it
+     * has been swapped with a non-zero dy. */
+    gradient = dy / dx;
+
+    /* No need to waste CPU cycles on pixels not on the surface. */
+    if (from_x < clip_left + 1) {
+        from_y += gradient * (clip_left + 1 - from_x);
+        from_x = clip_left + 1;
+    }
+    if (to_x > clip_right - 1) {
+        to_y += gradient * (clip_right - 1 - to_x);
+        to_x = clip_right - 1;
+    }
+
+    if (gradient > 0.0f) {
+        if (from_x < clip_left + 1) {
+            /* from_ is the topmost endpoint */
+            if (to_y <= clip_top || from_y >= clip_bottom) {
+                /* The line does not enter the surface */
+                return;
+            }
+            if (from_y < clip_top - width) {
+                from_x += (clip_top - width - from_y) / gradient;
+                from_y = clip_top - width;
+            }
+            if (to_y > clip_bottom + width) {
+                to_x += (clip_bottom + width - to_y) / gradient;
+                to_y = clip_bottom + width;
+            }
+        }
+    }
+    else {
+        if (to_x > clip_right - 1) {
+            /* to_ is the topmost endpoint */
+            if (from_y <= clip_top || to_y >= clip_bottom) {
+                /* The line does not enter the surface */
+                return;
+            }
+            if (to_y < clip_top - width) {
+                to_x += (clip_top - width - to_y) / gradient;
+                to_y = clip_top - width;
+            }
+            if (from_y > clip_bottom + width) {
+                from_x += (clip_bottom + width - from_y) / gradient;
+                from_y = clip_bottom + width;
+            }
+        }
+    }
+
+    /* By moving the points one pixel down, we can assume y is never negative.
+     * That permit us to use (int)y to round down instead of having to use
+     * floor(y). We then draw the pixels one higher.*/
+    from_y += 1.0f;
+    to_y += 1.0f;
+
+    /* Handle endpoints separately */
+    /* First endpoint */
+    x_pixel_start = (int)from_x;
+    y_endpoint = intersect_y = from_y + gradient * (x_pixel_start - from_x);
+    if (to_x > clip_left + 1.0f) {
+        brightness = y_endpoint - (int)y_endpoint;
+        if (steep) {
+            x = (int)y_endpoint;
+            y = x_pixel_start;
+        }
+        else {
+            x = x_pixel_start;
+            y = (int)y_endpoint;
+        }
+        if ((int)y_endpoint < y_endpoint) {
+            if (steep) {
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                          x + width, y, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x + width, y,
+                                   pixel_color, drawn_area);
+            }
+            else {
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y + width, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x, y + width,
+                                   pixel_color, drawn_area);
+            }
+        }
+        brightness = 1 - brightness;
+        if (steep) {
+            pixel_color =
+                get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                      x - width, y, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect,
+                               x - width + extra_width - 1, y, pixel_color,
+                               drawn_area);
+            start_draw = (int)(x - width + extra_width);
+            end_draw = (int)(x + width) - 1;
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     y, end_draw, drawn_area);
+        }
+        else {
+            pixel_color = get_antialiased_color(
+                surf, surf_clip_rect, surf_format, x,
+                y - width + extra_width - 1, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect, x,
+                               y - width + extra_width - 1, pixel_color,
+                               drawn_area);
+            start_draw = (int)(y - width + extra_width);
+            end_draw = (int)(y + width) - 1;
+            drawvertlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     x, end_draw, drawn_area);
+        }
+        intersect_y += gradient;
+        x_pixel_start++;
+    }
+
+    /* Second endpoint */
+    x_pixel_end = (int)ceil(to_x);
+    if (from_x < clip_right - 1.0f) {
+        y_endpoint = to_y + gradient * (x_pixel_end - to_x);
+        brightness = y_endpoint - (int)y_endpoint;
+        if (steep) {
+            x = (int)y_endpoint;
+            y = x_pixel_end;
+        }
+        else {
+            x = x_pixel_end;
+            y = (int)y_endpoint;
+        }
+        if ((int)y_endpoint < y_endpoint) {
+            if (steep) {
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                          x + width, y, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x + width, y,
+                                   pixel_color, drawn_area);
+            }
+            else {
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y + width, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x, y + width,
+                                   pixel_color, drawn_area);
+            }
+        }
+        brightness = 1 - brightness;
+        if (steep) {
+            pixel_color = get_antialiased_color(
+                surf, surf_clip_rect, surf_format, x - width + extra_width - 1,
+                y, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect,
+                               x - width + extra_width - 1, y, pixel_color,
+                               drawn_area);
+            start_draw = (int)(x - width);
+            end_draw = (int)(x + width) - 1;
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     y, end_draw, drawn_area);
+        }
+        else {
+            pixel_color = get_antialiased_color(
+                surf, surf_clip_rect, surf_format, x,
+                y - width + extra_width - 1, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect, x,
+                               y - width + extra_width - 1, pixel_color,
+                               drawn_area);
+            start_draw = (int)(y - width + extra_width);
+            end_draw = (int)(y + width) - 1;
+            drawvertlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     x, end_draw, drawn_area);
+        }
+    }
+
+    /* main line drawing loop */
+    for (x = x_pixel_start; x < x_pixel_end; x++) {
+        y = (int)intersect_y;
+        if (steep) {
+            brightness = 1 - intersect_y + y;
+            pixel_color = get_antialiased_color(
+                surf, surf_clip_rect, surf_format, y - width + extra_width - 1,
+                x, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect,
+                               y - width + extra_width - 1, x, pixel_color,
+                               drawn_area);
+            if (y < intersect_y) {
+                brightness = 1 - brightness;
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                          y + width, x, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, y + width, x,
+                                   pixel_color, drawn_area);
+            }
+            start_draw = (int)(y - width + extra_width);
+            end_draw = (int)(y + width) - 1;
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     x, end_draw, drawn_area);
+        }
+        else {
+            brightness = 1 - intersect_y + y;
+            pixel_color = get_antialiased_color(
+                surf, surf_clip_rect, surf_format, x,
+                y - width + extra_width - 1, color, brightness);
+            set_and_check_rect(surf, surf_clip_rect, x,
+                               y - width + extra_width - 1, pixel_color,
+                               drawn_area);
+            if (y < intersect_y) {
+                brightness = 1 - brightness;
+                pixel_color =
+                    get_antialiased_color(surf, surf_clip_rect, surf_format, x,
+                                          y + width, color, brightness);
+                set_and_check_rect(surf, surf_clip_rect, x, y + width,
+                                   pixel_color, drawn_area);
+            }
+            start_draw = (int)(y - width + extra_width);
+            end_draw = (int)(y + width) - 1;
+            drawvertlineclipbounding(surf, surf_clip_rect, color, start_draw,
+                                     x, end_draw, drawn_area);
+        }
+        intersect_y += gradient;
+    }
+}
+
 /* Algorithm modified from
  * https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm
  */
 static void
-draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
-          int *drawn_area)
+draw_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
+          int y2, Uint32 color, int *drawn_area)
 {
     int dx, dy, err, e2, sx, sy;
     if (x1 == x2 && y1 == y2) { /* Single point */
-        set_and_check_rect(surf, x1, y1, color, drawn_area);
+        set_and_check_rect(surf, surf_clip_rect, x1, y1, color, drawn_area);
         return;
     }
     if (y1 == y2) { /* Horizontal line */
         dx = (x1 < x2) ? 1 : -1;
         for (sx = 0; sx <= abs(x1 - x2); sx++) {
-            set_and_check_rect(surf, x1 + dx * sx, y1, color, drawn_area);
+            set_and_check_rect(surf, surf_clip_rect, x1 + dx * sx, y1, color,
+                               drawn_area);
         }
 
         return;
     }
     if (x1 == x2) { /* Vertical line */
         dy = (y1 < y2) ? 1 : -1;
-        for (sy = 0; sy <= abs(y1 - y2); sy++)
-            set_and_check_rect(surf, x1, y1 + dy * sy, color, drawn_area);
+        for (sy = 0; sy <= abs(y1 - y2); sy++) {
+            set_and_check_rect(surf, surf_clip_rect, x1, y1 + dy * sy, color,
+                               drawn_area);
+        }
         return;
     }
     dx = abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
     dy = abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
     err = (dx > dy ? dx : -dy) / 2;
     while (x1 != x2 || y1 != y2) {
-        set_and_check_rect(surf, x1, y1, color, drawn_area);
+        set_and_check_rect(surf, surf_clip_rect, x1, y1, color, drawn_area);
         e2 = err;
         if (e2 > -dx) {
             err -= dy;
@@ -1645,7 +2347,7 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
             y1 += sy;
         }
     }
-    set_and_check_rect(surf, x2, y2, color, drawn_area);
+    set_and_check_rect(surf, surf_clip_rect, x2, y2, color, drawn_area);
 }
 
 static int
@@ -1657,13 +2359,15 @@ check_pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
     // Check outer boundary
     const double x_adjusted = x * x * invsqr_radius1;
     const double y_adjusted = y * y * invsqr_radius2;
-    if (x_adjusted + y_adjusted > 1)
+    if (x_adjusted + y_adjusted > 1) {
         return 0;
+    }
     // Check inner boundary
     const double x_inner_adjusted = x * x * invsqr_inner_radius1;
     const double y_inner_adjusted = y * y * invsqr_inner_radius2;
-    if (x_inner_adjusted + y_inner_adjusted < 1)
+    if (x_inner_adjusted + y_inner_adjusted < 1) {
         return 0;
+    }
 
     // Return whether the angle of the point is within the accepted range
     return x * x_middle + y * y_middle >= min_dotproduct * sqrt(x * x + y * y);
@@ -1676,11 +2380,9 @@ check_pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
 static void
 unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color)
 {
-    SDL_PixelFormat *format = surf->format;
     Uint8 *pixels = (Uint8 *)surf->pixels;
-    Uint8 *byte_buf, rgb[4];
 
-    switch (PG_FORMAT_BytesPerPixel(format)) {
+    switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
             *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
             break;
@@ -1691,29 +2393,23 @@ unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color)
             *((Uint32 *)(pixels + y * surf->pitch) + x) = color;
             break;
         default: /*case 3:*/
-            SDL_GetRGB(color, format, rgb, rgb + 1, rgb + 2);
-            byte_buf = (Uint8 *)(pixels + y * surf->pitch) + x * 3;
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            *(byte_buf + (format->Rshift >> 3)) = rgb[0];
-            *(byte_buf + (format->Gshift >> 3)) = rgb[1];
-            *(byte_buf + (format->Bshift >> 3)) = rgb[2];
-#else
-            *(byte_buf + 2 - (format->Rshift >> 3)) = rgb[0];
-            *(byte_buf + 2 - (format->Gshift >> 3)) = rgb[1];
-            *(byte_buf + 2 - (format->Bshift >> 3)) = rgb[2];
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+            color <<= 8;
 #endif
+            memcpy((pixels + y * surf->pitch) + x * 3, &color,
+                   3 * sizeof(Uint8));
             break;
     }
 }
 
 static void
-calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
-                int radius1, int radius2, int inner_radius1, int inner_radius2,
-                double invsqr_radius1, double invsqr_radius2,
-                double invsqr_inner_radius1, double invsqr_inner_radius2,
-                double min_dotproduct, double x_middle, double y_middle,
-                int x_center, int y_center, int *minxbound, int *minybound,
-                int *maxxbound, int *maxybound)
+calc_arc_bounds(SDL_Surface *surf, SDL_Rect surf_clip_rect, double angle_start,
+                double angle_stop, int radius1, int radius2, int inner_radius1,
+                int inner_radius2, double invsqr_radius1,
+                double invsqr_radius2, double invsqr_inner_radius1,
+                double invsqr_inner_radius2, double min_dotproduct,
+                double x_middle, double y_middle, int x_center, int y_center,
+                int *minxbound, int *minybound, int *maxxbound, int *maxybound)
 {
     // calculate bounding box
     // these values find the corners of the arc
@@ -1737,40 +2433,46 @@ calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
     // also account for the surface's clip rect. This allows us to bypass the
     // drawn area calculations
     int minx = -radius1;
-    if (-x_middle < min_dotproduct)
+    if (-x_middle < min_dotproduct) {
         minx = MIN(MIN(x_start_inner, x_stop_inner),
                    MIN(x_start_outer, x_stop_outer));
-    minx = MAX(minx, surf->clip_rect.x - x_center);
+    }
+    minx = MAX(minx, surf_clip_rect.x - x_center);
 
     int miny = -radius2;
-    if (-y_middle < min_dotproduct)
+    if (-y_middle < min_dotproduct) {
         miny = MIN(MIN(y_start_inner, y_stop_inner),
                    MIN(y_start_outer, y_stop_outer));
-    miny = MAX(miny, surf->clip_rect.y - y_center);
+    }
+    miny = MAX(miny, surf_clip_rect.y - y_center);
 
     int maxx = radius1;
-    if (x_middle < min_dotproduct)
+    if (x_middle < min_dotproduct) {
         maxx = MAX(MAX(x_start_inner, x_stop_inner),
                    MAX(x_start_outer, x_stop_outer));
-    maxx = MIN(maxx, surf->clip_rect.x + surf->clip_rect.w - x_center - 1);
+    }
+    maxx = MIN(maxx, surf_clip_rect.x + surf_clip_rect.w - x_center - 1);
 
     int maxy = radius2;
-    if (y_middle < min_dotproduct)
+    if (y_middle < min_dotproduct) {
         maxy = MAX(MAX(y_start_inner, y_stop_inner),
                    MAX(y_start_outer, y_stop_outer));
-    maxy = MIN(maxy, surf->clip_rect.y + surf->clip_rect.h - y_center - 1);
+    }
+    maxy = MIN(maxy, surf_clip_rect.y + surf_clip_rect.h - y_center - 1);
 
     // Early return to avoid setting drawn_area with possibly strange values
-    if (minx >= maxx || miny >= maxy)
+    if (minx >= maxx || miny >= maxy) {
         return;
+    }
 
     // dynamically reduce bounds to handle special edge cases with clipping
     // I really hope you have code folding otherwise good luck I guess :)
     int exists = 0;
     // Reduce miny bound area
     while (!exists) {
-        if (miny >= maxy)
+        if (miny >= maxy) {
             return;
+        }
 
         // Go through each pixel in the circle
         for (int x = minx; x <= maxx; ++x) {
@@ -1789,8 +2491,9 @@ calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
     while (!exists) {
         // Early return to avoid setting drawn_area with possibly strange
         // values
-        if (maxy <= miny)
+        if (maxy <= miny) {
             return;
+        }
 
         // For every pixel in the row
         for (int x = minx; x <= maxx; ++x) {
@@ -1809,8 +2512,9 @@ calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
     while (!exists) {
         // Early return to avoid setting drawn_area with possibly strange
         // values
-        if (minx >= maxx)
+        if (minx >= maxx) {
             return;
+        }
 
         // For every pixel in the row
         for (int y = miny; y <= maxy; ++y) {
@@ -1829,8 +2533,9 @@ calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
     while (!exists) {
         // Early return to avoid setting drawn_area with possibly strange
         // values
-        if (minx >= maxx)
+        if (minx >= maxx) {
             return;
+        }
 
         // For every pixel in the row
         for (int y = miny; y <= maxy; ++y) {
@@ -1852,18 +2557,21 @@ calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
 }
 
 static void
-draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
-         int radius2, int width, double angle_start, double angle_stop,
-         Uint32 color, int *drawn_area)
+draw_arc(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x_center,
+         int y_center, int radius1, int radius2, int width, double angle_start,
+         double angle_stop, Uint32 color, int *drawn_area)
 {
     // handle cases from documentation
-    if (width <= 0)
+    if (width <= 0) {
         return;
-    if (angle_stop < angle_start)
+    }
+    if (angle_stop < angle_start) {
         angle_stop += 2 * M_PI;
+    }
     // if angles are equal then don't draw anything either
-    if (angle_stop <= angle_start)
+    if (angle_stop <= angle_start) {
         return;
+    }
 
     // Calculate the angle halfway from the start and stop. This is guaranteed
     // to be within the final arc.
@@ -1895,15 +2603,16 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
     int miny = 0;
     int maxx = -1;
     int maxy = -1;
-    calc_arc_bounds(surf, angle_start, angle_stop, radius1, radius2,
-                    inner_radius1, inner_radius2, invsqr_radius1,
+    calc_arc_bounds(surf, surf_clip_rect, angle_start, angle_stop, radius1,
+                    radius2, inner_radius1, inner_radius2, invsqr_radius1,
                     invsqr_radius2, invsqr_inner_radius1, invsqr_inner_radius2,
                     min_dotproduct, x_middle, y_middle, x_center, y_center,
                     &minx, &miny, &maxx, &maxy);
 
     // Early return to avoid weird bounding box issues
-    if (minx >= maxx || miny >= maxy)
+    if (minx >= maxx || miny >= maxy) {
         return;
+    }
 
     // Iterate over every pixel within the circle and
     // check if it's in the arc
@@ -1921,9 +2630,10 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
         // use 0 as the inner radius by default
         const int x_outer = (int)(radius1 * sqrt(1.0 - y2 * invsqr_radius2));
         int x_inner = 0;
-        if (y < inner_radius2)
+        if (y < inner_radius2) {
             x_inner =
                 (int)(inner_radius1 * sqrt(1.0 - y2 * invsqr_inner_radius2));
+        }
 
         // Precalculate positive and negative y offsets
         const int py_offset = y_center + y;
@@ -1941,8 +2651,9 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
             const int neg_x = (-x >= minx) && (-x <= maxx);
             // Skip coordinate to avoid unnecessary calculations if neither
             // positive nor negative x are within the allowed ranges
-            if (!(pos_x || neg_x))
+            if (!(pos_x || neg_x)) {
                 continue;
+            }
 
             // Precalculate offsets for positive and negative x
             const int px_offset = x_center + x;
@@ -1956,14 +2667,18 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
             const double x_dot = x * x_middle;
 
             // Check if the point is within the arc for each quadrant
-            if (pos_y && pos_x && (x_dot + y_dot >= cmp))
+            if (pos_y && pos_x && (x_dot + y_dot >= cmp)) {
                 unsafe_set_at(surf, px_offset, py_offset, color);
-            if (pos_y && neg_x && (-x_dot + y_dot >= cmp))
+            }
+            if (pos_y && neg_x && (-x_dot + y_dot >= cmp)) {
                 unsafe_set_at(surf, nx_offset, py_offset, color);
-            if (neg_y && pos_x && (x_dot - y_dot >= cmp))
+            }
+            if (neg_y && pos_x && (x_dot - y_dot >= cmp)) {
                 unsafe_set_at(surf, px_offset, ny_offset, color);
-            if (neg_y && neg_x && (-x_dot - y_dot >= cmp))
+            }
+            if (neg_y && neg_x && (-x_dot - y_dot >= cmp)) {
                 unsafe_set_at(surf, nx_offset, ny_offset, color);
+            }
         }
     }
 
@@ -1978,8 +2693,9 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
  * with additional line width parameter
  */
 static void
-draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
-                      int thickness, Uint32 color, int *drawn_area)
+draw_circle_bresenham(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
+                      int y0, int radius, int thickness, Uint32 color,
+                      int *drawn_area)
 {
     long long x = 0;
     long long y = radius;
@@ -2007,29 +2723,34 @@ draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
             d1 += dx + radius_squared;
         }
         if (line) {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 + (int)x - 1, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
-                                     x0 + (int)x - 1, drawn_area);
-        }
-        else {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                      y0 - (int)y, x0 + (int)x - 1, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                      y0 + (int)y - 1, x0 + (int)x - 1,
                                      drawn_area);
+        }
+        else {
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
+                                     y0 - (int)y, x0 - (int)x_inner,
+                                     drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
+                                     y0 + (int)y - 1, x0 - (int)x_inner,
+                                     drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                     x0 + (int)x_inner - 1, y0 - (int)y,
+                                     x0 + (int)x - 1, drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                     x0 + (int)x_inner - 1, y0 + (int)y - 1,
+                                     x0 + (int)x - 1, drawn_area);
         }
         x++;
         y--;
         dx += double_radius_squared;
         dy -= double_radius_squared;
         d1 += dx - dy + radius_squared;
-        if (line && y < radius_inner)
+        if (line && y < radius_inner) {
             line = 0;
+        }
         if (!line) {
             while (d1_inner < 0) {
                 x_inner += 1;
@@ -2047,21 +2768,25 @@ draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
          ((x + 0.5) * (x + 0.5) + (y - 1) * (y - 1) - radius_squared);
     while (y >= 0) {
         if (line) {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 + (int)x - 1, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
-                                     x0 + (int)x - 1, drawn_area);
-        }
-        else {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                      y0 - (int)y, x0 + (int)x - 1, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                      y0 + (int)y - 1, x0 + (int)x - 1,
                                      drawn_area);
+        }
+        else {
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
+                                     y0 - (int)y, x0 - (int)x_inner,
+                                     drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
+                                     y0 + (int)y - 1, x0 - (int)x_inner,
+                                     drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                     x0 + (int)x_inner - 1, y0 - (int)y,
+                                     x0 + (int)x - 1, drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                     x0 + (int)x_inner - 1, y0 + (int)y - 1,
+                                     x0 + (int)x - 1, drawn_area);
         }
         if (d1 > 0) {
             y--;
@@ -2075,8 +2800,9 @@ draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
             dy -= double_radius_squared;
             d1 += dx - dy + radius_squared;
         }
-        if (line && y < radius_inner)
+        if (line && y < radius_inner) {
             line = 0;
+        }
         if (!line) {
             if (dx_inner < dy_inner) {
                 while (d1_inner < 0) {
@@ -2091,11 +2817,12 @@ draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
                 d1_inner += dx_inner - dy_inner + radius_inner_squared;
             }
             else {
-                if (!d2_inner)
+                if (!d2_inner) {
                     d2_inner =
                         radius_inner_squared *
                         ((x_inner + 0.5) * (x_inner + 0.5) +
                          (y_inner - 1) * (y_inner - 1) - radius_inner_squared);
+                }
                 if (d2_inner > 0) {
                     y_inner--;
                     dy_inner -= double_radius_inner_squared;
@@ -2114,8 +2841,8 @@ draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
 }
 
 static void
-draw_circle_bresenham_thin(SDL_Surface *surf, int x0, int y0, int radius,
-                           Uint32 color, int *drawn_area)
+draw_circle_bresenham_thin(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
+                           int y0, int radius, Uint32 color, int *drawn_area)
 {
     int f = 1 - radius;
     int ddF_x = 0;
@@ -2133,27 +2860,30 @@ draw_circle_bresenham_thin(SDL_Surface *surf, int x0, int y0, int radius,
         ddF_x += 2;
         f += ddF_x + 1;
 
-        set_and_check_rect(surf, x0 + x - 1, y0 + y - 1, color,
+        set_and_check_rect(surf, surf_clip_rect, x0 + x - 1, y0 + y - 1, color,
                            drawn_area); /* 7 */
-        set_and_check_rect(surf, x0 - x, y0 + y - 1, color,
+        set_and_check_rect(surf, surf_clip_rect, x0 - x, y0 + y - 1, color,
                            drawn_area); /* 6 */
-        set_and_check_rect(surf, x0 + x - 1, y0 - y, color,
-                           drawn_area);                              /* 2 */
-        set_and_check_rect(surf, x0 - x, y0 - y, color, drawn_area); /* 3 */
-        set_and_check_rect(surf, x0 + y - 1, y0 + x - 1, color,
+        set_and_check_rect(surf, surf_clip_rect, x0 + x - 1, y0 - y, color,
+                           drawn_area); /* 2 */
+        set_and_check_rect(surf, surf_clip_rect, x0 - x, y0 - y, color,
+                           drawn_area); /* 3 */
+        set_and_check_rect(surf, surf_clip_rect, x0 + y - 1, y0 + x - 1, color,
                            drawn_area); /* 8 */
-        set_and_check_rect(surf, x0 + y - 1, y0 - x, color,
+        set_and_check_rect(surf, surf_clip_rect, x0 + y - 1, y0 - x, color,
                            drawn_area); /* 1 */
-        set_and_check_rect(surf, x0 - y, y0 + x - 1, color,
-                           drawn_area);                              /* 5 */
-        set_and_check_rect(surf, x0 - y, y0 - x, color, drawn_area); /* 4 */
+        set_and_check_rect(surf, surf_clip_rect, x0 - y, y0 + x - 1, color,
+                           drawn_area); /* 5 */
+        set_and_check_rect(surf, surf_clip_rect, x0 - y, y0 - x, color,
+                           drawn_area); /* 4 */
     }
 }
 
 static void
-draw_circle_quadrant(SDL_Surface *surf, int x0, int y0, int radius,
-                     int thickness, Uint32 color, int top_right, int top_left,
-                     int bottom_left, int bottom_right, int *drawn_area)
+draw_circle_quadrant(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
+                     int y0, int radius, int thickness, Uint32 color,
+                     int top_right, int top_left, int bottom_left,
+                     int bottom_right, int *drawn_area)
 {
     int f = 1 - radius;
     int ddF_x = 0;
@@ -2167,14 +2897,22 @@ draw_circle_quadrant(SDL_Surface *surf, int x0, int y0, int radius,
     int i_ddF_y = -2 * i_y;
     int i;
     if (radius == 1) {
-        if (top_right > 0)
-            set_and_check_rect(surf, x0, y0 - 1, color, drawn_area);
-        if (top_left > 0)
-            set_and_check_rect(surf, x0 - 1, y0 - 1, color, drawn_area);
-        if (bottom_left > 0)
-            set_and_check_rect(surf, x0 - 1, y0, color, drawn_area);
-        if (bottom_right > 0)
-            set_and_check_rect(surf, x0, y0, color, drawn_area);
+        if (top_right > 0) {
+            set_and_check_rect(surf, surf_clip_rect, x0, y0 - 1, color,
+                               drawn_area);
+        }
+        if (top_left > 0) {
+            set_and_check_rect(surf, surf_clip_rect, x0 - 1, y0 - 1, color,
+                               drawn_area);
+        }
+        if (bottom_left > 0) {
+            set_and_check_rect(surf, surf_clip_rect, x0 - 1, y0, color,
+                               drawn_area);
+        }
+        if (bottom_right > 0) {
+            set_and_check_rect(surf, surf_clip_rect, x0, y0, color,
+                               drawn_area);
+        }
         return;
     }
 
@@ -2197,53 +2935,66 @@ draw_circle_quadrant(SDL_Surface *surf, int x0, int y0, int radius,
             i_ddF_x += 2;
             i_f += i_ddF_x + 1;
 
-            if (thickness > 1)
+            if (thickness > 1) {
                 thickness = y - i_y;
+            }
 
             /* Numbers represent parts of circle function draw in radians
             interval: [number - 1 * pi / 4, number * pi / 4] */
             if (top_right > 0) {
                 for (i = 0; i < thickness; i++) {
                     y1 = y - i;
-                    if ((y0 - y1) < (y0 - x))
-                        set_and_check_rect(surf, x0 + x - 1, y0 - y1, color,
-                                           drawn_area); /* 2 */
-                    if ((x0 + y1 - 1) >= (x0 + x - 1))
-                        set_and_check_rect(surf, x0 + y1 - 1, y0 - x, color,
-                                           drawn_area); /* 1 */
+                    if ((y0 - y1) < (y0 - x)) {
+                        set_and_check_rect(surf, surf_clip_rect, x0 + x - 1,
+                                           y0 - y1, color, drawn_area); /* 2 */
+                    }
+                    if ((x0 + y1 - 1) >= (x0 + x - 1)) {
+                        set_and_check_rect(surf, surf_clip_rect, x0 + y1 - 1,
+                                           y0 - x, color, drawn_area); /* 1 */
+                    }
                 }
             }
             if (top_left > 0) {
                 for (i = 0; i < thickness; i++) {
                     y1 = y - i;
-                    if ((y0 - y1) <= (y0 - x))
-                        set_and_check_rect(surf, x0 - x, y0 - y1, color,
-                                           drawn_area); /* 3 */
-                    if ((x0 - y1) < (x0 - x))
-                        set_and_check_rect(surf, x0 - y1, y0 - x, color,
-                                           drawn_area); /* 4 */
+                    if ((y0 - y1) <= (y0 - x)) {
+                        set_and_check_rect(surf, surf_clip_rect, x0 - x,
+                                           y0 - y1, color, drawn_area); /* 3 */
+                    }
+                    if ((x0 - y1) < (x0 - x)) {
+                        set_and_check_rect(surf, surf_clip_rect, x0 - y1,
+                                           y0 - x, color, drawn_area); /* 4 */
+                    }
                 }
             }
             if (bottom_left > 0) {
                 for (i = 0; i < thickness; i++) {
                     y1 = y - i;
-                    if ((x0 - y1) <= (x0 - x))
-                        set_and_check_rect(surf, x0 - y1, y0 + x - 1, color,
+                    if ((x0 - y1) <= (x0 - x)) {
+                        set_and_check_rect(surf, surf_clip_rect, x0 - y1,
+                                           y0 + x - 1, color,
                                            drawn_area); /* 5 */
-                    if ((y0 + y1 - 1) > (y0 + x - 1))
-                        set_and_check_rect(surf, x0 - x, y0 + y1 - 1, color,
+                    }
+                    if ((y0 + y1 - 1) > (y0 + x - 1)) {
+                        set_and_check_rect(surf, surf_clip_rect, x0 - x,
+                                           y0 + y1 - 1, color,
                                            drawn_area); /* 6 */
+                    }
                 }
             }
             if (bottom_right > 0) {
                 for (i = 0; i < thickness; i++) {
                     y1 = y - i;
-                    if ((y0 + y1 - 1) >= (y0 + x - 1))
-                        set_and_check_rect(surf, x0 + x - 1, y0 + y1 - 1,
-                                           color, drawn_area); /* 7 */
-                    if ((x0 + y1 - 1) > (x0 + x - 1))
-                        set_and_check_rect(surf, x0 + y1 - 1, y0 + x - 1,
-                                           color, drawn_area); /* 8 */
+                    if ((y0 + y1 - 1) >= (y0 + x - 1)) {
+                        set_and_check_rect(surf, surf_clip_rect, x0 + x - 1,
+                                           y0 + y1 - 1, color,
+                                           drawn_area); /* 7 */
+                    }
+                    if ((x0 + y1 - 1) > (x0 + x - 1)) {
+                        set_and_check_rect(surf, surf_clip_rect, x0 + y1 - 1,
+                                           y0 + x - 1, color,
+                                           drawn_area); /* 8 */
+                    }
                 }
             }
         }
@@ -2260,42 +3011,42 @@ draw_circle_quadrant(SDL_Surface *surf, int x0, int y0, int radius,
             f += ddF_x + 1;
             if (top_right > 0) {
                 for (y1 = y0 - x; y1 <= y0; y1++) {
-                    set_and_check_rect(surf, x0 + y - 1, y1, color,
-                                       drawn_area); /* 1 */
+                    set_and_check_rect(surf, surf_clip_rect, x0 + y - 1, y1,
+                                       color, drawn_area); /* 1 */
                 }
                 for (y1 = y0 - y; y1 <= y0; y1++) {
-                    set_and_check_rect(surf, x0 + x - 1, y1, color,
-                                       drawn_area); /* 2 */
+                    set_and_check_rect(surf, surf_clip_rect, x0 + x - 1, y1,
+                                       color, drawn_area); /* 2 */
                 }
             }
             if (top_left > 0) {
                 for (y1 = y0 - x; y1 <= y0; y1++) {
-                    set_and_check_rect(surf, x0 - y, y1, color,
+                    set_and_check_rect(surf, surf_clip_rect, x0 - y, y1, color,
                                        drawn_area); /* 4 */
                 }
                 for (y1 = y0 - y; y1 <= y0; y1++) {
-                    set_and_check_rect(surf, x0 - x, y1, color,
+                    set_and_check_rect(surf, surf_clip_rect, x0 - x, y1, color,
                                        drawn_area); /* 3 */
                 }
             }
             if (bottom_left > 0) {
                 for (y1 = y0; y1 < y0 + x; y1++) {
-                    set_and_check_rect(surf, x0 - y, y1, color,
+                    set_and_check_rect(surf, surf_clip_rect, x0 - y, y1, color,
                                        drawn_area); /* 4 */
                 }
                 for (y1 = y0; y1 < y0 + y; y1++) {
-                    set_and_check_rect(surf, x0 - x, y1, color,
+                    set_and_check_rect(surf, surf_clip_rect, x0 - x, y1, color,
                                        drawn_area); /* 3 */
                 }
             }
             if (bottom_right > 0) {
                 for (y1 = y0; y1 < y0 + x; y1++) {
-                    set_and_check_rect(surf, x0 + y - 1, y1, color,
-                                       drawn_area); /* 1 */
+                    set_and_check_rect(surf, surf_clip_rect, x0 + y - 1, y1,
+                                       color, drawn_area); /* 1 */
                 }
                 for (y1 = y0; y1 < y0 + y; y1++) {
-                    set_and_check_rect(surf, x0 + x - 1, y1, color,
-                                       drawn_area); /* 2 */
+                    set_and_check_rect(surf, surf_clip_rect, x0 + x - 1, y1,
+                                       color, drawn_area); /* 2 */
                 }
             }
         }
@@ -2303,8 +3054,8 @@ draw_circle_quadrant(SDL_Surface *surf, int x0, int y0, int radius,
 }
 
 static void
-draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
-                   int *drawn_area)
+draw_circle_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
+                   int radius, Uint32 color, int *drawn_area)
 {
     int f = 1 - radius;
     int ddF_x = 0;
@@ -2333,32 +3084,193 @@ draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
         /* optimisation to avoid overdrawing and repeated return rect checks:
            only draw a line if y-step is about to be decreased. */
         if (f >= 0) {
-            drawhorzlineclipbounding(surf, color, x0 - x, y0 + y - 1,
-                                     x0 + MIN(x - 1, xmax), drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - x, y0 - y,
-                                     x0 + MIN(x - 1, xmax), drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - x,
+                                     y0 + y - 1, x0 + MIN(x - 1, xmax),
+                                     drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - x,
+                                     y0 - y, x0 + MIN(x - 1, xmax),
+                                     drawn_area);
         }
-        drawhorzlineclipbounding(surf, color, x0 - y, y0 + x - 1,
-                                 x0 + MIN(y - 1, xmax), drawn_area);
-        drawhorzlineclipbounding(surf, color, x0 - y, y0 - x,
+        drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - y,
+                                 y0 + x - 1, x0 + MIN(y - 1, xmax),
+                                 drawn_area);
+        drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - y, y0 - x,
                                  x0 + MIN(y - 1, xmax), drawn_area);
     }
 }
 
 static void
-draw_ellipse_filled(SDL_Surface *surf, int x0, int y0, int width, int height,
-                    Uint32 color, int *drawn_area)
+draw_eight_symetric_pixels(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                           PG_PixelFormat *surf_format, int x0, int y0,
+                           Uint32 color, int x, int y, float opacity,
+                           int top_right, int top_left, int bottom_left,
+                           int bottom_right, int *drawn_area)
+{
+    opacity = opacity / 255.0f;
+    Uint32 pixel_color;
+    if (top_right == 1) {
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 + x, y0 - y, color, opacity);
+        set_and_check_rect(surf, surf_clip_rect, x0 + x, y0 - y, pixel_color,
+                           drawn_area);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 + y, y0 - x, color, opacity);
+        set_and_check_rect(surf, surf_clip_rect, x0 + y, y0 - x, pixel_color,
+                           drawn_area);
+    }
+    if (top_left == 1) {
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 - x, y0 - y, color, opacity);
+        set_and_check_rect(surf, surf_clip_rect, x0 - x, y0 - y, pixel_color,
+                           drawn_area);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 - y, y0 - x, color, opacity);
+        set_and_check_rect(surf, surf_clip_rect, x0 - y, y0 - x, pixel_color,
+                           drawn_area);
+    }
+    if (bottom_left == 1) {
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 - x, y0 + y, color, opacity);
+        set_and_check_rect(surf, surf_clip_rect, x0 - x, y0 + y, pixel_color,
+                           drawn_area);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 - y, y0 + x, color, opacity);
+        set_and_check_rect(surf, surf_clip_rect, x0 - y, y0 + x, pixel_color,
+                           drawn_area);
+    }
+    if (bottom_right == 1) {
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 + x, y0 + y, color, opacity);
+        set_and_check_rect(surf, surf_clip_rect, x0 + x, y0 + y, pixel_color,
+                           drawn_area);
+        pixel_color = get_antialiased_color(surf, surf_clip_rect, surf_format,
+                                            x0 + y, y0 + x, color, opacity);
+        set_and_check_rect(surf, surf_clip_rect, x0 + y, y0 + x, pixel_color,
+                           drawn_area);
+    }
+}
+
+/* Xiaolin Wu Circle Algorithm
+ * adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
+ * with additional line width parameter and quadrants option
+ */
+static void
+draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                      PG_PixelFormat *surf_format, int x0, int y0, int radius,
+                      int thickness, Uint32 color, int top_right, int top_left,
+                      int bottom_left, int bottom_right, int *drawn_area)
+{
+    for (int layer_radius = radius - thickness; layer_radius <= radius;
+         layer_radius++) {
+        int x = 0;
+        int y = layer_radius;
+        double pow_layer_r = pow(layer_radius, 2);
+        double prev_opacity = 0.0;
+        if (layer_radius == radius - thickness) {
+            while (x < y) {
+                double height = sqrt(pow_layer_r - pow(x, 2));
+                double opacity = 255.0 * (ceil(height) - height);
+                if (opacity < prev_opacity) {
+                    --y;
+                }
+                prev_opacity = opacity;
+                draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format,
+                                           x0, y0, color, x, y, 255.0f,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                draw_eight_symetric_pixels(
+                    surf, surf_clip_rect, surf_format, x0, y0, color, x, y - 1,
+                    (float)opacity, top_right, top_left, bottom_left,
+                    bottom_right, drawn_area);
+                ++x;
+            }
+        }
+        else if (layer_radius == radius) {
+            while (x < y) {
+                double height = sqrt(pow_layer_r - pow(x, 2));
+                double opacity = 255.0 * (ceil(height) - height);
+                if (opacity < prev_opacity) {
+                    --y;
+                }
+                prev_opacity = opacity;
+                draw_eight_symetric_pixels(
+                    surf, surf_clip_rect, surf_format, x0, y0, color, x, y,
+                    255.0f - (float)opacity, top_right, top_left, bottom_left,
+                    bottom_right, drawn_area);
+                draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format,
+                                           x0, y0, color, x, y - 1, 255.0f,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                ++x;
+            }
+        }
+        else {
+            while (x < y) {
+                double height = sqrt(pow_layer_r - pow(x, 2));
+                double opacity = 255.0 * (ceil(height) - height);
+                if (opacity < prev_opacity) {
+                    --y;
+                }
+                prev_opacity = opacity;
+                draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format,
+                                           x0, y0, color, x, y, 255.0f,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format,
+                                           x0, y0, color, x, y - 1, 255.0f,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                ++x;
+            }
+        }
+    }
+}
+
+static void
+draw_circle_xiaolinwu_thin(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                           PG_PixelFormat *surf_format, int x0, int y0,
+                           int radius, Uint32 color, int top_right,
+                           int top_left, int bottom_left, int bottom_right,
+                           int *drawn_area)
+{
+    int x = 0;
+    int y = radius;
+    double pow_r = pow(radius, 2);
+    double prev_opacity = 0.0;
+    while (x < y) {
+        double height = sqrt(pow_r - pow(x, 2));
+        double opacity = 255.0 * (ceil(height) - height);
+        if (opacity < prev_opacity) {
+            --y;
+        }
+        prev_opacity = opacity;
+        draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format, x0, y0,
+                                   color, x, y, 255.0f - (float)opacity,
+                                   top_right, top_left, bottom_left,
+                                   bottom_right, drawn_area);
+        draw_eight_symetric_pixels(surf, surf_clip_rect, surf_format, x0, y0,
+                                   color, x, y - 1, (float)opacity, top_right,
+                                   top_left, bottom_left, bottom_right,
+                                   drawn_area);
+        ++x;
+    }
+}
+
+static void
+draw_ellipse_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
+                    int width, int height, Uint32 color, int *drawn_area)
 {
     long long dx, dy, x, y;
     int x_offset, y_offset;
     double d1, d2;
     if (width == 1) {
-        draw_line(surf, x0, y0, x0, y0 + height - 1, color, drawn_area);
+        draw_line(surf, surf_clip_rect, x0, y0, x0, y0 + height - 1, color,
+                  drawn_area);
         return;
     }
     if (height == 1) {
-        drawhorzlineclipbounding(surf, color, x0, y0, x0 + width - 1,
-                                 drawn_area);
+        drawhorzlineclipbounding(surf, surf_clip_rect, color, x0, y0,
+                                 x0 + width - 1, drawn_area);
         return;
     }
     x0 = x0 + width / 2;
@@ -2373,9 +3285,10 @@ draw_ellipse_filled(SDL_Surface *surf, int x0, int y0, int width, int height,
     dx = 2 * height * height * x;
     dy = 2 * width * width * y;
     while (dx < dy) {
-        drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                 x0 + (int)x - x_offset, drawn_area);
-        drawhorzlineclipbounding(surf, color, x0 - (int)x,
+        drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
+                                 y0 - (int)y, x0 + (int)x - x_offset,
+                                 drawn_area);
+        drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                  y0 + (int)y - y_offset,
                                  x0 + (int)x - x_offset, drawn_area);
         if (d1 < 0) {
@@ -2395,9 +3308,10 @@ draw_ellipse_filled(SDL_Surface *surf, int x0, int y0, int width, int height,
          (((double)width * width) * ((y - 1) * (y - 1))) -
          ((double)width * width * height * height);
     while (y >= 0) {
-        drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                 x0 + (int)x - x_offset, drawn_area);
-        drawhorzlineclipbounding(surf, color, x0 - (int)x,
+        drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
+                                 y0 - (int)y, x0 + (int)x - x_offset,
+                                 drawn_area);
+        drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                  y0 + (int)y - y_offset,
                                  x0 + (int)x - x_offset, drawn_area);
         if (d2 > 0) {
@@ -2416,9 +3330,9 @@ draw_ellipse_filled(SDL_Surface *surf, int x0, int y0, int width, int height,
 }
 
 static void
-draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
-                       int height, int thickness, Uint32 color,
-                       int *drawn_area)
+draw_ellipse_thickness(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0,
+                       int y0, int width, int height, int thickness,
+                       Uint32 color, int *drawn_area)
 {
     long long dx, dy, dx_inner, dy_inner, x, y, x_inner, y_inner;
     int line, x_offset, y_offset;
@@ -2445,22 +3359,25 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
     dy_inner = 2 * (width - thickness) * (width - thickness) * y_inner;
     while (dx < dy) {
         if (line) {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 + (int)x - x_offset, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x,
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
+                                     y0 - (int)y, x0 + (int)x - x_offset,
+                                     drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                      y0 + (int)y - y_offset,
                                      x0 + (int)x - x_offset, drawn_area);
         }
         else {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x,
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
+                                     y0 - (int)y, x0 - (int)x_inner,
+                                     drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                      y0 + (int)y - y_offset, x0 - (int)x_inner,
                                      drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x - x_offset,
-                                     y0 - (int)y, x0 + (int)x_inner - x_offset,
-                                     drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x - x_offset,
+            drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                     x0 + (int)x - x_offset, y0 - (int)y,
+                                     x0 + (int)x_inner - x_offset, drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                     x0 + (int)x - x_offset,
                                      y0 + (int)y - y_offset,
                                      x0 + (int)x_inner - x_offset, drawn_area);
         }
@@ -2505,22 +3422,25 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
          ((double)width * width * height * height);
     while (y >= 0) {
         if (line) {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 + (int)x - x_offset, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x,
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
+                                     y0 - (int)y, x0 + (int)x - x_offset,
+                                     drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                      y0 + (int)y - y_offset,
                                      x0 + (int)x - x_offset, drawn_area);
         }
         else {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x,
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
+                                     y0 - (int)y, x0 - (int)x_inner,
+                                     drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                      y0 + (int)y - y_offset, x0 - (int)x_inner,
                                      drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x - x_offset,
-                                     y0 - (int)y, x0 + (int)x_inner - x_offset,
-                                     drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x - x_offset,
+            drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                     x0 + (int)x - x_offset, y0 - (int)y,
+                                     x0 + (int)x_inner - x_offset, drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                     x0 + (int)x - x_offset,
                                      y0 + (int)y - y_offset,
                                      x0 + (int)x_inner - x_offset, drawn_area);
         }
@@ -2592,8 +3512,9 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
 }
 
 static void
-draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
-              Py_ssize_t num_points, Uint32 color, int *drawn_area)
+draw_fillpoly(SDL_Surface *surf, SDL_Rect surf_clip_rect, int *point_x,
+              int *point_y, Py_ssize_t num_points, Uint32 color,
+              int *drawn_area)
 {
     /* point_x : x coordinates of the points
      * point-y : the y coordinates of the points
@@ -2630,7 +3551,8 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
             minx = MIN(minx, point_x[i]);
             maxx = MAX(maxx, point_x[i]);
         }
-        drawhorzlineclipbounding(surf, color, minx, miny, maxx, drawn_area);
+        drawhorzlineclipbounding(surf, surf_clip_rect, color, minx, miny, maxx,
+                                 drawn_area);
         PyMem_Free(x_intersect);
         return;
     }
@@ -2673,15 +3595,17 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
                 if (n_intersections % 2 == 0) {
                     intersect = (float)floor(intersect);
                 }
-                else
+                else {
                     intersect = (float)ceil(intersect);
+                }
                 x_intersect[n_intersections++] = (int)intersect + x1;
             }
         }
         qsort(x_intersect, n_intersections, sizeof(int), compare_int);
         for (i = 0; (i < n_intersections); i += 2) {
-            drawhorzlineclipbounding(surf, color, x_intersect[i], y,
-                                     x_intersect[i + 1], drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color,
+                                     x_intersect[i], y, x_intersect[i + 1],
+                                     drawn_area);
         }
     }
 
@@ -2699,43 +3623,50 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
         y = point_y[i];
 
         if ((miny < y) && (point_y[i_previous] == y) && (y < maxy)) {
-            drawhorzlineclipbounding(surf, color, point_x[i], y,
-                                     point_x[i_previous], drawn_area);
+            drawhorzlineclipbounding(surf, surf_clip_rect, color, point_x[i],
+                                     y, point_x[i_previous], drawn_area);
         }
     }
     PyMem_Free(x_intersect);
 }
 
 static void
-draw_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int width,
-          Uint32 color)
+draw_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
+          int y2, int width, Uint32 color)
 {
     int i;
     for (i = 0; i < width; i++) {
-        drawhorzlineclip(surf, color, x1, y1 + i, x2);
-        drawhorzlineclip(surf, color, x1, y2 - i, x2);
+        drawhorzlineclip(surf, surf_clip_rect, color, x1, y1 + i, x2);
+        drawhorzlineclip(surf, surf_clip_rect, color, x1, y2 - i, x2);
     }
     for (i = 0; i < (y2 - y1) - 2 * width + 1; i++) {
-        drawhorzlineclip(surf, color, x1, y1 + width + i, x1 + width - 1);
-        drawhorzlineclip(surf, color, x2 - width + 1, y1 + width + i, x2);
+        drawhorzlineclip(surf, surf_clip_rect, color, x1, y1 + width + i,
+                         x1 + width - 1);
+        drawhorzlineclip(surf, surf_clip_rect, color, x2 - width + 1,
+                         y1 + width + i, x2);
     }
 }
 
 static void
-draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
-                int width, Uint32 color, int top_left, int top_right,
-                int bottom_left, int bottom_right, int *drawn_area)
+draw_round_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1,
+                int x2, int y2, int radius, int width, Uint32 color,
+                int top_left, int top_right, int bottom_left, int bottom_right,
+                int *drawn_area)
 {
     int pts[16], i;
     float q_top, q_left, q_bottom, q_right, f;
-    if (top_left < 0)
+    if (top_left < 0) {
         top_left = radius;
-    if (top_right < 0)
+    }
+    if (top_right < 0) {
         top_right = radius;
-    if (bottom_left < 0)
+    }
+    if (bottom_left < 0) {
         bottom_left = radius;
-    if (bottom_right < 0)
+    }
+    if (bottom_right < 0) {
         bottom_right = radius;
+    }
     if ((top_left + top_right) > (x2 - x1 + 1) ||
         (bottom_left + bottom_right) > (x2 - x1 + 1) ||
         (top_left + bottom_left) > (y2 - y1 + 1) ||
@@ -2767,14 +3698,18 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
         pts[13] = y2;
         pts[14] = y2;
         pts[15] = y2 - bottom_left;
-        draw_fillpoly(surf, pts, pts + 8, 8, color, drawn_area);
-        draw_circle_quadrant(surf, x2 - top_right + 1, y1 + top_right,
-                             top_right, 0, color, 1, 0, 0, 0, drawn_area);
-        draw_circle_quadrant(surf, x1 + top_left, y1 + top_left, top_left, 0,
-                             color, 0, 1, 0, 0, drawn_area);
-        draw_circle_quadrant(surf, x1 + bottom_left, y2 - bottom_left + 1,
-                             bottom_left, 0, color, 0, 0, 1, 0, drawn_area);
-        draw_circle_quadrant(surf, x2 - bottom_right + 1,
+        draw_fillpoly(surf, surf_clip_rect, pts, pts + 8, 8, color,
+                      drawn_area);
+        draw_circle_quadrant(surf, surf_clip_rect, x2 - top_right + 1,
+                             y1 + top_right, top_right, 0, color, 1, 0, 0, 0,
+                             drawn_area);
+        draw_circle_quadrant(surf, surf_clip_rect, x1 + top_left,
+                             y1 + top_left, top_left, 0, color, 0, 1, 0, 0,
+                             drawn_area);
+        draw_circle_quadrant(surf, surf_clip_rect, x1 + bottom_left,
+                             y2 - bottom_left + 1, bottom_left, 0, color, 0, 0,
+                             1, 0, drawn_area);
+        draw_circle_quadrant(surf, surf_clip_rect, x2 - bottom_right + 1,
                              y2 - bottom_right + 1, bottom_right, 0, color, 0,
                              0, 0, 1, drawn_area);
     }
@@ -2782,60 +3717,68 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
         if (x2 - top_right == x1 + top_left) {
             for (i = 0; i < width; i++) {
                 set_and_check_rect(
-                    surf, x1 + top_left, y1 + i, color,
+                    surf, surf_clip_rect, x1 + top_left, y1 + i, color,
                     drawn_area); /* Fill gap if reduced radius */
             }
         }
-        else
-            draw_line_width(surf, color, x1 + top_left,
+        else {
+            draw_line_width(surf, surf_clip_rect, color, x1 + top_left,
                             y1 + (int)(width / 2) - 1 + width % 2,
                             x2 - top_right,
                             y1 + (int)(width / 2) - 1 + width % 2, width,
                             drawn_area); /* Top line */
+        }
         if (y2 - bottom_left == y1 + top_left) {
             for (i = 0; i < width; i++) {
                 set_and_check_rect(
-                    surf, x1 + i, y1 + top_left, color,
+                    surf, surf_clip_rect, x1 + i, y1 + top_left, color,
                     drawn_area); /* Fill gap if reduced radius */
             }
         }
-        else
+        else {
             draw_line_width(
-                surf, color, x1 + (int)(width / 2) - 1 + width % 2,
-                y1 + top_left, x1 + (int)(width / 2) - 1 + width % 2,
-                y2 - bottom_left, width, drawn_area); /* Left line */
+                surf, surf_clip_rect, color,
+                x1 + (int)(width / 2) - 1 + width % 2, y1 + top_left,
+                x1 + (int)(width / 2) - 1 + width % 2, y2 - bottom_left, width,
+                drawn_area); /* Left line */
+        }
         if (x2 - bottom_right == x1 + bottom_left) {
             for (i = 0; i < width; i++) {
                 set_and_check_rect(
-                    surf, x1 + bottom_left, y2 - i, color,
+                    surf, surf_clip_rect, x1 + bottom_left, y2 - i, color,
                     drawn_area); /* Fill gap if reduced radius */
             }
         }
-        else
-            draw_line_width(surf, color, x1 + bottom_left,
+        else {
+            draw_line_width(surf, surf_clip_rect, color, x1 + bottom_left,
                             y2 - (int)(width / 2), x2 - bottom_right,
                             y2 - (int)(width / 2), width,
                             drawn_area); /* Bottom line */
+        }
         if (y2 - bottom_right == y1 + top_right) {
             for (i = 0; i < width; i++) {
                 set_and_check_rect(
-                    surf, x2 - i, y1 + top_right, color,
+                    surf, surf_clip_rect, x2 - i, y1 + top_right, color,
                     drawn_area); /* Fill gap if reduced radius */
             }
         }
-        else
-            draw_line_width(surf, color, x2 - (int)(width / 2), y1 + top_right,
-                            x2 - (int)(width / 2), y2 - bottom_right, width,
+        else {
+            draw_line_width(surf, surf_clip_rect, color, x2 - (int)(width / 2),
+                            y1 + top_right, x2 - (int)(width / 2),
+                            y2 - bottom_right, width,
                             drawn_area); /* Right line */
+        }
 
-        draw_circle_quadrant(surf, x2 - top_right + 1, y1 + top_right,
-                             top_right, width, color, 1, 0, 0, 0, drawn_area);
-        draw_circle_quadrant(surf, x1 + top_left, y1 + top_left, top_left,
-                             width, color, 0, 1, 0, 0, drawn_area);
-        draw_circle_quadrant(surf, x1 + bottom_left, y2 - bottom_left + 1,
-                             bottom_left, width, color, 0, 0, 1, 0,
+        draw_circle_quadrant(surf, surf_clip_rect, x2 - top_right + 1,
+                             y1 + top_right, top_right, width, color, 1, 0, 0,
+                             0, drawn_area);
+        draw_circle_quadrant(surf, surf_clip_rect, x1 + top_left,
+                             y1 + top_left, top_left, width, color, 0, 1, 0, 0,
                              drawn_area);
-        draw_circle_quadrant(surf, x2 - bottom_right + 1,
+        draw_circle_quadrant(surf, surf_clip_rect, x1 + bottom_left,
+                             y2 - bottom_left + 1, bottom_left, width, color,
+                             0, 0, 1, 0, drawn_area);
+        draw_circle_quadrant(surf, surf_clip_rect, x2 - bottom_right + 1,
                              y2 - bottom_right + 1, bottom_right, width, color,
                              0, 0, 0, 1, drawn_area);
     }
@@ -2855,6 +3798,8 @@ static PyMethodDef _draw_methods[] = {
     {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_ARC},
     {"circle", (PyCFunction)circle, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_CIRCLE},
+    {"aacircle", (PyCFunction)aacircle, METH_VARARGS | METH_KEYWORDS,
+     DOC_DRAW_AACIRCLE},
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_POLYGON},
     {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_RECT},

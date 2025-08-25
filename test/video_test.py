@@ -1,10 +1,9 @@
 import platform
-import unittest
 import sys
+import unittest
+
 import pygame
-
 from pygame._sdl2 import video
-
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
@@ -24,6 +23,18 @@ class VideoModuleTest(unittest.TestCase):
         rect = pygame.Rect(0, 0, 1920, 1080)
         renderer.set_viewport(rect)
         self.assertEqual(renderer.get_viewport(), (0, 0, 1920, 1080))
+
+    def test_logical_window_mapping(self):
+        window = video.Window(title=self.default_caption, size=(100, 100))
+        renderer = video.Renderer(window=window)
+        renderer.logical_size = (10, 10)
+
+        self.assertEqual(renderer.coordinates_to_window((10, 10)), (100, 100))
+        self.assertEqual(renderer.coordinates_from_window((100, 100)), (10, 10))
+        with self.assertRaises(TypeError):
+            renderer.coordinates_to_window(42, 42)
+        with self.assertRaises(TypeError):
+            renderer.coordinates_from_window(42, 42)
 
     @unittest.skipIf(IS_PYPY, "PyPy doesn't have sys.getrefcount")
     def test_renderer_to_surface_refcount(self):

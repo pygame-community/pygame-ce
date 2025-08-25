@@ -85,7 +85,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
    | :sl:`Returns the number of joysticks.`
    | :sg:`get_count() -> count`
 
-   Return the number of joystick devices on the system. The count will be ``0`` 
+   Return the number of joystick devices on the system. The count will be ``0``
    if there are no joysticks on the system.
 
    When you create Joystick objects using ``Joystick(id)``, you pass an integer
@@ -107,7 +107,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
 
    .. versionchangedold:: 2.0.0 Joystick objects are now opened immediately on creation.
 
-   .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Joystick`` 
+   .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Joystick``
       alias.
 
    .. method:: init
@@ -158,7 +158,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       .. deprecatedold:: 2.0.0
 
          The original device index is not useful in pygame 2. Use
-         :meth:`.get_instance_id` instead. 
+         :meth:`.get_instance_id` instead.
 
    .. method:: get_instance_id() -> int
 
@@ -215,13 +215,13 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       two for the position. Controls like rudders and throttles are treated as
       additional axes.
 
-      The ``pygame.JOYAXISMOTION`` events will be in the range from ``-1.0`` 
-      to ``1.0``. A value of ``0.0`` means the axis is centered. Gamepad devices 
-      will usually be ``-1``, ``0``, or ``1`` with no values in between. Older 
-      analog joystick axes will not always use the full ``-1`` to ``1`` range, 
-      and the centered value will be some area around ``0``. 
-      
-      Analog joysticks usually have a bit of noise in their axis, which will 
+      The ``pygame.JOYAXISMOTION`` events will be in the range from ``-1.0``
+      to ``1.0``. A value of ``0.0`` means the axis is centered. Gamepad devices
+      will usually be ``-1``, ``0``, or ``1`` with no values in between. Older
+      analog joystick axes will not always use the full ``-1`` to ``1`` range,
+      and the centered value will be some area around ``0``.
+
+      Analog joysticks usually have a bit of noise in their axis, which will
       generate a lot of rapid small motion events.
 
       .. ## Joystick.get_numaxes ##
@@ -232,9 +232,9 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       | :sg:`get_axis(axis_number, /) -> float`
 
       Returns the current position of a joystick axis. The value will range
-      from ``-1`` to ``1`` with a value of ``0`` being centered. You may want 
-      to take into account some tolerance to handle jitter, and joystick drift 
-      may keep the joystick from centering at ``0`` or using the full range of 
+      from ``-1`` to ``1`` with a value of ``0`` being centered. You may want
+      to take into account some tolerance to handle jitter, and joystick drift
+      may keep the joystick from centering at ``0`` or using the full range of
       position values.
 
       The axis number must be an integer from ``0`` to ``get_numaxes() - 1``.
@@ -302,8 +302,8 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       input.
 
       The ``pygame.JOYHATMOTION`` event is generated when the hat changes
-      position. The ``position`` attribute for the event contains a pair of 
-      values that are either ``-1``, ``0``, or ``1``. A position of ``(0, 0)`` 
+      position. The ``position`` attribute for the event contains a pair of
+      values that are either ``-1``, ``0``, or ``1``. A position of ``(0, 0)``
       means the hat is centered.
 
       .. ## Joystick.get_numhats ##
@@ -316,10 +316,10 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       Returns the current position of a position hat. The position is given as
       two values representing the ``x`` and ``y`` position for the hat. ``(0, 0)``
       means centered. A value of ``-1`` means left/down and a value of ``1`` means
-      right/up: so ``(-1, 0)`` means left; ``(1, 0)`` means right; ``(0, 1)`` means 
+      right/up: so ``(-1, 0)`` means left; ``(1, 0)`` means right; ``(0, 1)`` means
       up; ``(1, 1)`` means upper-right; etc.
 
-      This value is digital, ``i.e.``, each coordinate can be ``-1``, ``0`` or ``1`` 
+      This value is digital, ``i.e.``, each coordinate can be ``-1``, ``0`` or ``1``
       but never in-between.
 
       The hat number must be between ``0`` and ``get_numhats() - 1``.
@@ -338,7 +338,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       playing, then it will be overwritten.
 
       Returns True if the rumble was played successfully or False if the
-      joystick does not support it or :meth:`pygame.version.SDL` is below 2.0.9.
+      joystick does not support it.
 
       .. versionaddedold:: 2.0.2
 
@@ -355,6 +355,22 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       .. versionaddedold:: 2.0.2
 
       .. ## Joystick.stop_rumble ##
+
+   .. method:: set_led
+
+      | :sl:`Set the LED color of the joystick`
+      | :sg:`set_led(color_arg) -> bool`
+
+      Set the color of the LED on the joystick. The argument is a
+      ``pygame.Color``-compatible value (alpha being ignored). The
+      joystick's LED, if it has one, will be set to the input color.
+      If the joystick does not have an addressable LED, then this
+      method will do nothing and return False. Returns True if the
+      LED was set successfully.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Joystick.set_led ##
 
    .. ## pygame.joystick.Joystick ##
 
@@ -403,7 +419,7 @@ After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (L)".
     L                   Button 17                 Button 14
     ZL                  Button 19                 Button 15
 
-Reference : D-pad Up points toward SL and SR buttons. 
+Reference : D-pad Up points toward SL and SR buttons.
 
 * **Hat/JoyStick**::
 

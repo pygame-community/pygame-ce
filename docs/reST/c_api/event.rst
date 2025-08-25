@@ -40,7 +40,7 @@ Header file: src_c/include/pygame.h
    On failure raise a Python exception and return ``NULL``.
 
 .. c:function:: char* pgEvent_GetKeyDownInfo(void)
-   
+
    Return an array of bools (using char) of length SDL_NUM_SCANCODES
    with the most recent key presses.
 

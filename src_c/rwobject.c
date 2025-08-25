@@ -46,6 +46,18 @@ static const char pg_default_errors[] = "backslashreplace";
 
 static PyObject *os_module = NULL;
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static Sint64
+_pg_rw_size(void *);
+static Sint64
+_pg_rw_seek(void *, Sint64, SDL_IOWhence);
+static size_t
+_pg_rw_read(void *, void *, size_t, SDL_IOStatus *);
+static size_t
+_pg_rw_write(void *, const void *, size_t, SDL_IOStatus *);
+static bool
+_pg_rw_close(void *);
+#else
 static Sint64
 _pg_rw_size(SDL_RWops *);
 static Sint64
@@ -56,6 +68,7 @@ static size_t
 _pg_rw_write(SDL_RWops *, const void *, size_t, size_t);
 static int
 _pg_rw_close(SDL_RWops *);
+#endif
 
 /* Converter function used by PyArg_ParseTupleAndKeywords with the "O&" format.
  *
@@ -178,8 +191,9 @@ pg_EncodeString(PyObject *obj, const char *encoding, const char *errors,
     }
 
     ret = _trydecode_pathlibobj(obj);
-    if (!ret)
+    if (!ret) {
         return NULL;
+    }
 
     if (PyUnicode_Check(ret)) {
         oencoded = PyUnicode_AsEncodedString(ret, encoding, errors);
@@ -291,26 +305,45 @@ pg_EncodeFilePath(PyObject *obj, PyObject *eclass)
 static int
 pgRWops_IsFileObject(SDL_RWops *rw)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_PropertiesID props = SDL_GetIOProperties(rw);
+    if (!props) {
+        // pgRWops_IsFileObject doesn't have any error checking facility
+        // so when in doubt let's say it isn't a file object.
+        return 0;
+    }
+    return SDL_GetBooleanProperty(props, "_pygame_is_file_object", 0);
+#else
     return rw->close == _pg_rw_close;
+#endif
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static Sint64
+_pg_rw_size(void *userdata)
+{
+    pgRWHelper *helper = (pgRWHelper *)userdata;
+#else
 static Sint64
 _pg_rw_size(SDL_RWops *context)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
+#endif
+
     PyObject *pos = NULL;
     PyObject *tmp = NULL;
     Sint64 size;
     Sint64 retval = -1;
 
-    if (!helper->seek || !helper->tell)
+    if (!helper->seek || !helper->tell) {
         return retval;
+    }
 
     PyGILState_STATE state = PyGILState_Ensure();
 
     /* Current file position; need to restore it later.
      */
-    pos = PyObject_CallFunction(helper->tell, NULL);
+    pos = PyObject_CallNoArgs(helper->tell);
     if (!pos) {
         PyErr_Print();
         goto end;
@@ -327,7 +360,7 @@ _pg_rw_size(SDL_RWops *context)
 
     /* Record file size.
      */
-    tmp = PyObject_CallFunction(helper->tell, NULL);
+    tmp = PyObject_CallNoArgs(helper->tell);
     if (!tmp) {
         PyErr_Print();
         goto end;
@@ -342,7 +375,7 @@ _pg_rw_size(SDL_RWops *context)
 
     /* Return to original position.
      */
-    tmp = PyObject_CallFunctionObjArgs(helper->seek, pos, NULL);
+    tmp = PyObject_CallOneArg(helper->seek, pos);
     if (!tmp) {
         PyErr_Print();
         goto end;
@@ -361,15 +394,25 @@ end:
     return retval;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static size_t
+_pg_rw_write(void *userdata, const void *ptr, size_t size,
+             SDL_IOStatus *status)
+{
+    pgRWHelper *helper = (pgRWHelper *)userdata;
+    size_t num = 1;
+#else
 static size_t
 _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
+#endif
     PyObject *result;
     size_t retval;
 
-    if (!helper->write)
+    if (!helper->write) {
         return -1;
+    }
 
     PyGILState_STATE state = PyGILState_Ensure();
 
@@ -382,26 +425,42 @@ _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
     }
 
     Py_DECREF(result);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    retval = size;
+#else
     retval = num;
+#endif
 
 end:
     PyGILState_Release(state);
     return retval;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static bool
+_pg_rw_close(void *userdata)
+{
+    pgRWHelper *helper = (pgRWHelper *)userdata;
+    bool retval = true;
+#else
 static int
 _pg_rw_close(SDL_RWops *context)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
-    PyObject *result;
     int retval = 0;
+#endif
+    PyObject *result;
     PyGILState_STATE state = PyGILState_Ensure();
 
     if (helper->close) {
-        result = PyObject_CallFunction(helper->close, NULL);
+        result = PyObject_CallNoArgs(helper->close);
         if (!result) {
             PyErr_Print();
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            retval = false;
+#else
             retval = -1;
+#endif
         }
         Py_XDECREF(result);
     }
@@ -414,7 +473,9 @@ _pg_rw_close(SDL_RWops *context)
 
     PyMem_Free(helper);
     PyGILState_Release(state);
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_FreeRW(context);
+#endif
     return retval;
 }
 
@@ -437,8 +498,42 @@ pgRWops_FromFileObject(PyObject *obj)
         return NULL;
     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_IOStreamInterface iface;
+    SDL_INIT_INTERFACE(&iface);
+    iface.size = _pg_rw_size;
+    iface.seek = _pg_rw_seek;
+    iface.read = _pg_rw_read;
+    iface.write = _pg_rw_write;
+    iface.close = _pg_rw_close;
+
+    // TODO: These should raise SDLError probably?
+    // rwobject.c hasn't required pygame.base before (the source of SDLError)
+    // so omitting that for now.
+
+    rw = SDL_OpenIO(&iface, helper);
+    if (rw == NULL) {
+        iface.close(helper);
+        return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
+    }
+
+    SDL_PropertiesID props = SDL_GetIOProperties(rw);
+    if (!props) {
+        iface.close(helper);
+        return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
+    }
+
+    if (!SDL_SetBooleanProperty(props, "_pygame_is_file_object", 1)) {
+        iface.close(helper);
+        return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
+    }
+
+#else
     rw = SDL_AllocRW();
     if (rw == NULL) {
+        /* TODO: here member attributes of helper are getting leaked and close
+         * isn't being called. Refactor to use _pg_rw_close logic on helper
+         * here */
         PyMem_Free(helper);
         return (SDL_RWops *)PyErr_NoMemory();
     }
@@ -450,19 +545,28 @@ pgRWops_FromFileObject(PyObject *obj)
     rw->read = _pg_rw_read;
     rw->write = _pg_rw_write;
     rw->close = _pg_rw_close;
+#endif
 
     return rw;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static Sint64
+_pg_rw_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
+{
+    pgRWHelper *helper = (pgRWHelper *)userdata;
+#else
 static Sint64
 _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
+#endif
     PyObject *result;
     Sint64 retval;
 
-    if (!helper->seek || !helper->tell)
+    if (!helper->seek || !helper->tell) {
         return -1;
+    }
 
     PyGILState_STATE state = PyGILState_Ensure();
 
@@ -479,7 +583,7 @@ _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
         Py_DECREF(result);
     }
 
-    result = PyObject_CallFunction(helper->tell, NULL);
+    result = PyObject_CallNoArgs(helper->tell);
     if (!result) {
         PyErr_Print();
         retval = -1;
@@ -487,8 +591,9 @@ _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
     }
 
     retval = PyLong_AsLongLong(result);
-    if (retval == -1 && PyErr_Occurred())
+    if (retval == -1 && PyErr_Occurred()) {
         PyErr_Clear();
+    }
 
     Py_DECREF(result);
 
@@ -498,15 +603,24 @@ end:
     return retval;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static size_t
+_pg_rw_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
+{
+    pgRWHelper *helper = (pgRWHelper *)userdata;
+    size_t maxnum = 1;
+#else
 static size_t
 _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
+#endif
     PyObject *result;
     Py_ssize_t retval;
 
-    if (!helper->read)
+    if (!helper->read) {
         return -1;
+    }
 
     PyGILState_STATE state = PyGILState_Ensure();
     result = PyObject_CallFunction(helper->read, "K",
@@ -527,7 +641,9 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
     retval = PyBytes_GET_SIZE(result);
     if (retval) {
         memcpy(ptr, PyBytes_AsString(result), retval);
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
         retval /= size;
+#endif
     }
 
     Py_DECREF(result);
@@ -581,7 +697,11 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
                     /* If out of memory, decref oencoded to be safe, and try
                      * to close out `rw` as well. */
                     Py_DECREF(oencoded);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                    if (!SDL_RWclose(rw)) {
+#else
                     if (SDL_RWclose(rw) < 0) {
+#endif
                         PyErr_SetString(PyExc_IOError, SDL_GetError());
                     }
                     return (SDL_RWops *)PyErr_NoMemory();
@@ -601,21 +721,25 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
     SDL_ClearError();
 
     PyObject *cwd = NULL, *path = NULL, *isabs = NULL;
-    if (!os_module)
+    if (!os_module) {
         goto simple_case;
+    }
 
     cwd = PyObject_CallMethod(os_module, "getcwd", NULL);
-    if (!cwd)
+    if (!cwd) {
         goto simple_case;
+    }
 
     path = PyObject_GetAttrString(os_module, "path");
-    if (!path)
+    if (!path) {
         goto simple_case;
+    }
 
     isabs = PyObject_CallMethod(path, "isabs", "O", obj);
     Py_DECREF(path);
-    if (!isabs || isabs == Py_True)
+    if (!isabs || isabs == Py_True) {
         goto simple_case;
+    }
 
     PyErr_Format(PyExc_FileNotFoundError,
                  "No file '%S' found in working directory '%S'.", obj, cwd);
@@ -640,19 +764,22 @@ pgRWops_FromObject(PyObject *obj, char **extptr)
     int retry = 0;
 again:
     rw = _rwops_from_pystr(obj, extptr);
-    if (retry)
+    if (retry) {
         Py_XDECREF(obj);
+    }
     if (!rw) {
-        if (PyErr_Occurred())
+        if (PyErr_Occurred()) {
             return NULL;
+        }
     }
     else {
         return rw;
     }
 
 fail:
-    if (retry)
+    if (retry) {
         return RAISE(PyExc_RuntimeError, "can't access resource on platform");
+    }
 
     retry = 1;
     PyObject *name = PyObject_GetAttrString(obj, "name");
@@ -665,8 +792,9 @@ fail:
 #else
     SDL_RWops *rw = _rwops_from_pystr(obj, extptr);
     if (!rw) {
-        if (PyErr_Occurred())
+        if (PyErr_Occurred()) {
             return NULL;
+        }
     }
     else {
         return rw;
@@ -757,8 +885,9 @@ MODINIT_DEFINE(rwobject)
 
     /* import os, don't sweat if it errors, it will be checked before use */
     os_module = PyImport_ImportModule("os");
-    if (os_module == NULL)
+    if (os_module == NULL) {
         PyErr_Clear();
+    }
 
     return module;
 }

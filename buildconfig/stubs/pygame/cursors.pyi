@@ -1,13 +1,13 @@
-from typing import Any, Iterator, Tuple, Union, overload
+from collections.abc import Iterator
+from typing import Any, Literal, Union, overload
 
 from pygame.surface import Surface
+from pygame.typing import FileLike, IntPoint, SequenceLike
 
-from ._common import FileArg, Literal, IntCoordinate, Sequence
-
-_Small_string = Tuple[
+_Small_string = tuple[
     str, str, str, str, str, str, str, str, str, str, str, str, str, str, str, str
 ]
-_Big_string = Tuple[
+_Big_string = tuple[
     str,
     str,
     str,
@@ -47,14 +47,14 @@ sizer_xy_strings: _Small_string
 textmarker_strings: _Small_string
 
 def compile(
-    strings: Sequence[str],
+    strings: SequenceLike[str],
     black: str = "X",
     white: str = ".",
     xor: str = "o",
-) -> Tuple[Tuple[int, ...], Tuple[int, ...]]: ...
+) -> tuple[tuple[int, ...], tuple[int, ...]]: ...
 def load_xbm(
-    curs: FileArg, mask: FileArg
-) -> Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, ...], Tuple[int, ...]]: ...
+    curs: FileLike, mask: FileLike
+) -> tuple[tuple[int, int], tuple[int, int], tuple[int, ...], tuple[int, ...]]: ...
 
 class Cursor:
     @overload
@@ -64,28 +64,26 @@ class Cursor:
     @overload
     def __init__(
         self,
-        size: IntCoordinate,
-        hotspot: IntCoordinate,
-        xormasks: Sequence[int],
-        andmasks: Sequence[int],
+        size: IntPoint,
+        hotspot: IntPoint,
+        xormasks: SequenceLike[int],
+        andmasks: SequenceLike[int],
     ) -> None: ...
     @overload
     def __init__(
         self,
-        hotspot: IntCoordinate,
+        hotspot: IntPoint,
         surface: Surface,
     ) -> None: ...
     def __iter__(self) -> Iterator[Any]: ...
     def __len__(self) -> int: ...
     def __copy__(self) -> Cursor: ...
     def __hash__(self) -> int: ...
-    def __getitem__(
-        self, index: int
-    ) -> Union[int, IntCoordinate, Surface]: ...
-    copy = __copy__
+    def __getitem__(self, index: int) -> Union[int, IntPoint, Surface]: ...
+    def copy(self) -> Cursor: ...
     type: Literal["system", "color", "bitmap"]
     data: Union[
-        Tuple[int],
-        Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, ...], Tuple[int, ...]],
-        Tuple[IntCoordinate, Surface],
+        tuple[int],
+        tuple[tuple[int, int], tuple[int, int], tuple[int, ...], tuple[int, ...]],
+        tuple[IntPoint, Surface],
     ]

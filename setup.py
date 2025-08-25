@@ -19,7 +19,7 @@ EXTRAS = {}
 METADATA = {
     "name": "pygame-ce",
     "version": pg_ver.version,
-    "license": "LGPL",
+    "license": "LGPL v2.1",
     "url": "https://pyga.me",
     "author": "A community project.",
     "description": "Python Game Development",
@@ -29,6 +29,7 @@ METADATA = {
         "Documentation": "https://pyga.me/docs",
         "Bug Tracker": "https://github.com/pygame-community/pygame-ce/issues",
         "Source": "https://github.com/pygame-community/pygame-ce",
+        "Release Notes": "https://github.com/pygame-community/pygame-ce/releases",
     },
     "classifiers": [
         "Development Status :: 5 - Production/Stable",
@@ -38,11 +39,12 @@ METADATA = {
         "Programming Language :: Cython",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Games/Entertainment",
@@ -61,7 +63,7 @@ METADATA = {
         "Operating System :: MacOS",
         "Typing :: Typed"
     ],
-    "python_requires": '>=3.8',
+    "python_requires": '>=3.9',
 }
 
 import re
@@ -124,7 +126,7 @@ distutils.ccompiler.CCompiler.__spawn = distutils.ccompiler.CCompiler.spawn
 distutils.ccompiler.CCompiler.spawn = spawn
 
 # A (bit hacky) fix for https://github.com/pygame-community/pygame-ce/issues/1346
-# This is due to the fact that distutils uses command line args to 
+# This is due to the fact that distutils uses command line args to
 # export PyInit_* functions on windows, but those functions are already exported
 # and that is why compiler gives warnings
 from distutils.command.build_ext import build_ext
@@ -154,11 +156,11 @@ def compilation_help():
     print('---\n')
 
 
-if not hasattr(sys, 'version_info') or sys.version_info < (3, 8):
+if not hasattr(sys, 'version_info') or sys.version_info < (3, 9):
     compilation_help()
-    raise SystemExit("Pygame-ce requires Python3 version 3.8 or above.")
+    raise SystemExit("Pygame-ce requires Python3 version 3.9 or above.")
 if IS_PYPY and sys.pypy_version_info < (7,):
-    raise SystemExit("Pygame-ce requires PyPy version 7.0.0 above, compatible with CPython >= 3.8")
+    raise SystemExit("Pygame-ce requires PyPy version 7.0.0 above, compatible with CPython >= 3.9")
 
 
 def consume_arg(name):
@@ -264,7 +266,7 @@ if compile_cython:
     for i, kwargs in enumerate(queue):
         kwargs['progress'] = f'[{i + 1}/{count}] '
         cythonize_one(**kwargs)
-    
+
     if cython_only:
         sys.exit(0)
 
@@ -420,7 +422,7 @@ for e in extensions:
 
     if "freetype" in e.name and sys.platform not in ("darwin", "win32"):
         # TODO: fix freetype issues here
-        if sysconfig.get_config_var("MAINCC") != "clang":        
+        if sysconfig.get_config_var("MAINCC") != "clang":
             e.extra_compile_args.append("-Wno-error=unused-but-set-variable")
 
     if "mask" in e.name and sys.platform == "win32":
@@ -717,6 +719,9 @@ class OurSdist(sdist):
         # we do not want MANIFEST.in to appear in the root cluttering up things.
         self.template = os.path.join('buildconfig', 'MANIFEST.in')
 
+        print("WARNING: This command is deprecated and will be removed in the future.")
+        print("Use the alternative: `python3 -m build --sdist --outdir dist .`")
+
 
 if "bdist_msi" in sys.argv:
     # if you are making an msi, we want it to overwrite files
@@ -802,12 +807,12 @@ class DocsCommand(Command):
         runs Sphinx to build the docs.
         '''
         import subprocess
-        print("Using python:", sys.executable)
-        command_line = [
-            sys.executable, os.path.join('buildconfig', 'makeref.py')
-        ]
+        command_line = [sys.executable, "dev.py", "docs"]
         if self.fullgeneration:
-            command_line.append('full_generation')
+            command_line.append('--full')
+
+        print("WARNING: This command is deprecated and will be removed in the future.")
+        print(f"Please use the following replacement: `{' '.join(command_line)}`\n")
         if subprocess.call(command_line) != 0:
             raise SystemExit("Failed to build documentation")
 
@@ -818,7 +823,7 @@ class StubcheckCommand(Command):
     user_options = []
     def initialize_options(self):
         pass
-        
+
     def finalize_options(self):
         pass
 
@@ -827,20 +832,10 @@ class StubcheckCommand(Command):
         runs mypy to build the docs.
         '''
         import subprocess
-        import warnings
-
-        print("Using python:", sys.executable)
-
-        if shutil.which('mypy') is None:
-            warnings.warn("Please install 'mypy' in your environment. (hint: 'python3 -m pip install mypy')")
-            sys.exit(1)
-
-        os.chdir('buildconfig/stubs')
-        command_line = [
-            sys.executable,'-m','mypy.stubtest',"pygame","--allowlist","mypy_allow_list.txt"
-        ]
+        command_line = [sys.executable, "dev.py", "stubs"]
+        print("WARNING: This command is deprecated and will be removed in the future.")
+        print(f"Please use the following replacement: `{' '.join(command_line)}`\n")
         result = subprocess.run(command_line)
-        os.chdir('../../')
         if result.returncode != 0:
             raise SystemExit("Stubcheck failed.")
 
@@ -857,13 +852,15 @@ PACKAGEDATA = {
                  'pygame.tests.test_utils',
                  'pygame.docs',
                  'pygame.examples',
-                 'pygame.__pyinstaller'],
+                 'pygame.__pyinstaller',
+                 'pygame.__briefcase'],
     "package_dir": {'pygame': 'src_py',
                     'pygame._sdl2': 'src_py/_sdl2',
                     'pygame.tests': 'test',
                     'pygame.docs': 'docs',
                     'pygame.examples': 'examples',
-                    'pygame.__pyinstaller': 'src_py/__pyinstaller'},
+                    'pygame.__pyinstaller': 'src_py/__pyinstaller',
+                    'pygame.__briefcase': 'src_py/__briefcase'},
     "headers": headers,
     "ext_modules": extensions,
     "data_files": data_files,

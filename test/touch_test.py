@@ -1,5 +1,6 @@
-import unittest
 import os
+import unittest
+
 import pygame
 from pygame._sdl2 import touch
 from pygame.tests.test_utils import question
@@ -65,9 +66,7 @@ class TouchInteractiveTest(unittest.TestCase):
 
         font = pygame.font.Font(None, 32)
         instructions_str_1 = "Please place some fingers on your touch device"
-        instructions_str_2 = (
-            "Close the window when finished, " "and answer the question"
-        )
+        instructions_str_2 = "Close the window when finished, and answer the question"
         inst_1_render = font.render(instructions_str_1, True, pygame.Color("#000000"))
         inst_2_render = font.render(instructions_str_2, True, pygame.Color("#000000"))
 

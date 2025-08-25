@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SURFARRAY "pygame module for accessing surface pixel data using array interfaces"
 #define DOC_SURFARRAY_ARRAY2D "array2d(Surface) -> array\nCopy pixels into a 2d array"
 #define DOC_SURFARRAY_PIXELS2D "pixels2d(Surface) -> array\nReference pixels into a 2d array"

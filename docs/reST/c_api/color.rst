@@ -44,8 +44,8 @@ Header file: src_c/include/pygame.h
    instances and tuples. It can also handle integer and string color inputs based
    on ``handle_flags``.
 
-.. c:function:: int pg_MappedColorFromObj(PyObject *val, SDL_PixelFormat *format, Uint32 *color, pgColorHandleFlags handle_flags)
+.. c:function:: int pg_MappedColorFromObj(PyObject *val, SDL_Surface *surf, Uint32 *color, pgColorHandleFlags handle_flags)
 
    Like above function, but returns mapped color instead. One notable point of difference is
    the way in which ints are handled (this function directly interprets the int passed as the
-   mapped color)
+   mapped color on the surface ``surf```)

@@ -1,12 +1,15 @@
-import unittest
-import pygame
 import os
-import time
+import platform
+import unittest
 
+import pygame
 from pygame import Window
 from pygame.version import SDL
 
 pygame.init()
+
+
+IS_PYPY = "PyPy" == platform.python_implementation()
 
 
 class WindowTypeTest(unittest.TestCase):
@@ -147,8 +150,9 @@ class WindowTypeTest(unittest.TestCase):
         self.win.size = (640, 480)
 
     def test_position(self):
-        self.win.position = (12, 34)
-        self.assertTupleEqual(self.win.position, (12, 34))
+        new_pos = (self.win.position[0] + 20, self.win.position[1] + 10)
+        self.win.position = new_pos
+        self.assertTupleEqual(self.win.position, new_pos)
 
         self.win.position = pygame.WINDOWPOS_CENTERED
 
@@ -266,6 +270,11 @@ class WindowTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: setattr(self.win, "opacity", "null str"))
 
     def test_init_flags(self):
+        # test no opengl by default
+        win = Window()
+        self.assertFalse(win.opengl)
+        win.destroy()
+
         # test borderless
         win = Window(borderless=True)
         self.assertTrue(win.borderless)
@@ -280,6 +289,11 @@ class WindowTypeTest(unittest.TestCase):
         # test resizable
         win = Window(resizable=True)
         self.assertTrue(win.resizable)
+        win.destroy()
+
+        # test utility
+        win = Window(utility=True)
+        self.assertTrue(win.utility)
         win.destroy()
 
         # should raise a TypeError if keyword is random
@@ -310,40 +324,36 @@ class WindowTypeTest(unittest.TestCase):
         pygame.init()
 
     def test_from_display_module(self):
-        pygame.display.set_mode((640, 480))
+        surf = pygame.display.set_mode((640, 480))
 
         win1 = Window.from_display_module()
         win2 = Window.from_display_module()
 
         self.assertIs(win1, win2)
+        self.assertIs(win1.get_surface(), surf)
 
         pygame.display.quit()
         pygame.init()
 
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
     def test_window_surface(self):
-        # window's surface uses an event callback that may take some time to get
-        # processed by the system event queue - sleep for 1 second to give
-        # the window event queue chance to catch up
         win = Window(size=(640, 480))
-        time.sleep(1)
         surf = win.get_surface()
 
         self.assertIsInstance(surf, pygame.Surface)
 
         # test auto resize
         self.assertTupleEqual(win.size, surf.get_size())
-
         win.size = (100, 100)
-        time.sleep(1)
         self.assertTupleEqual(win.size, surf.get_size())
         win.size = (1280, 720)
-        time.sleep(1)
         self.assertTupleEqual(win.size, surf.get_size())
 
         # window surface should be invalid after the window is destroyed
         win.destroy()
         self.assertRaises(pygame.error, lambda: surf.fill((0, 0, 0)))
 
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
     def test_window_surface_with_display_module(self):
         # get_surface() should raise an error if the set_mode() is not called.
         pygame.display.set_mode((640, 480))
@@ -376,6 +386,78 @@ class WindowTypeTest(unittest.TestCase):
             win.flip,
         )
         win.destroy()
+
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "OpenGL requires a non-null SDL_VIDEODRIVER",
+    )
+    def test_window_opengl(self):
+        win1 = Window(opengl=True)
+        self.assertTrue(win1.opengl)
+        win1.flip()
+        win1.destroy()
+
+        win2 = Window(opengl=False)
+        self.assertFalse(win2.opengl)
+        win2.get_surface()
+        win2.flip()
+        win2.destroy()
+
+        pygame.display.set_mode((640, 480), pygame.OPENGL)
+        win = Window.from_display_module()
+        self.assertTrue(win.opengl)
+        pygame.display.quit()
+        pygame.init()
+
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
+    def test_window_subclassable(self):
+        class WindowSubclass(Window):
+            def __init__(self, title="Different title", size=(640, 480), **flags):
+                super().__init__(title, size, pygame.WINDOWPOS_CENTERED, **flags)
+                self.attribute = 10
+
+        window = WindowSubclass()
+        self.assertTrue(issubclass(WindowSubclass, Window))
+        self.assertIsInstance(window, WindowSubclass)
+        self.assertEqual(window.title, "Different title")
+        self.assertEqual(window.attribute, 10)
+        window.destroy()
+
+        pygame.display.set_mode((200, 200))
+        window = WindowSubclass.from_display_module()
+        self.assertIsInstance(window, WindowSubclass)
+        self.assertEqual(window.size, (200, 200))
+
+    @unittest.skipIf(
+        SDL < (2, 0, 16),
+        "requires SDL 2.0.16+",
+    )
+    def test_window_flash(self):
+        window = pygame.Window()
+
+        with self.assertRaises(TypeError):
+            window.flash("string")
+            window.flash(2.2)
+            window.flash([0])
+
+        with self.assertRaises(ValueError):
+            window.flash(-1)
+            window.flash(3)
+
+        for operation in [
+            pygame.FLASH_CANCEL,
+            pygame.FLASH_BRIEFLY,
+            pygame.FLASH_UNTIL_FOCUSED,
+        ]:
+            try:
+                result = window.flash(operation)
+                self.assertIsNone(result)
+            except pygame.error:
+                pass
+
+    def test_window_focused(self):
+        window = pygame.Window()
+        self.assertIsInstance(window.focused, bool)
 
     def tearDown(self):
         self.win.destroy()

@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_CAMERA "pygame module for camera use"
 #define DOC_CAMERA_INIT "init(backend = None) -> None\nModule init"
 #define DOC_CAMERA_GETBACKENDS "get_backends() -> [str]\nGet the backends supported on this system"

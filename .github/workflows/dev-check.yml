@@ -1,0 +1,42 @@
+name: python3 dev.py all
+
+# Run CI on changes to main branch, or any PR to main. Do not run CI on
+# any other branch.
+# Run on changes to all files.
+on:
+  push:
+    branches: main
+
+  pull_request:
+    branches: main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-dev-check
+  cancel-in-progress: true
+
+jobs:
+  dev-check:
+    runs-on: ubuntu-24.04
+
+    env:
+      # Pip now forces us to either make a venv or set this flag, so we will do
+      # this
+      PIP_BREAK_SYSTEM_PACKAGES: 1
+
+      # We are using dependencies installed from apt
+      PG_DEPS_FROM_SYSTEM: 1
+
+      # environment variables to set while testing
+      SDL_VIDEODRIVER: "dummy"
+      SDL_AUDIODRIVER: "disk"
+
+    steps:
+      - uses: actions/checkout@v5.0.0
+
+      - name: Install deps
+        run: |
+          sudo apt-get update --fix-missing
+          sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev python3-dev
+
+      - name: Check dev.py all
+        run: python3 dev.py all

@@ -18,6 +18,7 @@ python_sources = files(
     'sprite.py',
     'surfarray.py',
     'sysfont.py',
+    'typing.py',
     'version.py',
 )
 py.install_sources(python_sources, subdir: pg)
@@ -29,12 +30,14 @@ endif
 
 data_files = files(
     'freesansbold.ttf',
-    'pygame.ico',
     'pygame_icon.bmp',
-    'pygame_icon.icns',
-    'pygame_icon_mac.bmp',
 )
+if plat == 'mac'
+    data_files += 'pygame_icon_mac.bmp'
+endif
+
 install_data(data_files, install_dir: pg_dir, install_tag: 'pg-tag')
 
 subdir('_sdl2')
 subdir('__pyinstaller')
+subdir('__briefcase')

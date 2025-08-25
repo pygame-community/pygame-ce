@@ -1,19 +1,38 @@
-from typing import Any, Dict, Tuple, Union, overload
+import sys
+from typing import Any, Union, overload
 
+from pygame.color import Color
 from pygame.surface import Surface
+from pygame.typing import SequenceLike
 
-from ._common import ColorValue, Sequence
+# 'ellipsis' existed in typeshed pre 3.10, now we use EllipsisType which is
+# the modern standard library equivalent.
+if sys.version_info >= (3, 10):
+    from types import EllipsisType
+else:
+    EllipsisType = ellipsis
+
+_PixelColor = Union[int, Color, tuple[int, int, int], tuple[int, int, int, int]]
 
 class PixelArray:
-    surface: Surface
-    itemsize: int
-    ndim: int
-    shape: Tuple[int, ...]
-    strides: Tuple[int, ...]
+    @property
+    def surface(self) -> Surface: ...
+    @property
+    def itemsize(self) -> int: ...
+    @property
+    def ndim(self) -> int: ...
+    @property
+    def shape(self) -> tuple[int, ...]: ...
+    @property
+    def strides(self) -> tuple[int, ...]: ...
     # possibly going to be deprecated/removed soon, in which case these
     # typestubs must be removed too
-    __array_interface__: Dict[str, Any]
-    __array_struct__: Any
+    @property
+    def __array_interface__(self) -> dict[str, Any]: ...
+    @property
+    def __array_struct__(self) -> Any: ...
+    if sys.version_info >= (3, 12):
+        def __buffer__(self, flags: int, /) -> memoryview[int]: ...
     def __init__(self, surface: Surface) -> None: ...
     def __enter__(self) -> PixelArray: ...
     def __exit__(self, *args, **kwargs) -> None: ...
@@ -27,29 +46,29 @@ class PixelArray:
     def __getitem__(self, index_range: slice) -> Union[PixelArray, None]: ...
     # only valid for a 2D PixelArray
     @overload
-    def __getitem__(self, indices: Tuple[int, int]) -> int: ...
+    def __getitem__(self, indices: tuple[int, int]) -> int: ...
     # returns self
     @overload
-    def __getitem__(self, ell: ellipsis) -> PixelArray: ...
+    def __getitem__(self, ell: EllipsisType) -> PixelArray: ...
     def make_surface(self) -> Surface: ...
     def replace(
         self,
-        color: ColorValue,
-        repcolor: ColorValue,
+        color: _PixelColor,
+        repcolor: _PixelColor,
         distance: float = 0,
-        weights: Sequence[float] = (0.299, 0.587, 0.114),
+        weights: SequenceLike[float] = (0.299, 0.587, 0.114),
     ) -> None: ...
     def extract(
         self,
-        color: ColorValue,
+        color: _PixelColor,
         distance: float = 0,
-        weights: Sequence[float] = (0.299, 0.587, 0.114),
+        weights: SequenceLike[float] = (0.299, 0.587, 0.114),
     ) -> PixelArray: ...
     def compare(
         self,
         array: PixelArray,
         distance: float = 0,
-        weights: Sequence[float] = (0.299, 0.587, 0.114),
+        weights: SequenceLike[float] = (0.299, 0.587, 0.114),
     ) -> PixelArray: ...
     def transpose(self) -> PixelArray: ...
-    def close(self) -> PixelArray: ...
+    def close(self) -> None: ...

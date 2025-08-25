@@ -10,7 +10,7 @@
 
 Functions to convert between NumPy arrays and Sound objects. This
 module will only be functional when pygame can use the external NumPy
-package. If NumPy can't be imported, ``surfarray`` becomes a ``MissingModule``
+package. If NumPy can't be imported, ``sndarray`` becomes a ``MissingModule``
 object.
 
 Sound data is made of thousands of samples per second, and each sample is the
@@ -62,6 +62,7 @@ one.
    DEPRECATED: Uses the requested array type for the module functions. The
    only supported arraytype is ``'numpy'``. Other values will raise ValueError.
    Using this function will raise a ``DeprecationWarning``.
+
    .. ## pygame.sndarray.use_arraytype ##
 
 .. function:: get_arraytype

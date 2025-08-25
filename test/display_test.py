@@ -1,13 +1,12 @@
-import unittest
 import os
 import sys
 import time
+import unittest
 
-import pygame, pygame.transform
-
-from pygame.tests.test_utils import question
-
+import pygame
+import pygame.transform
 from pygame import display
+from pygame.tests.test_utils import question
 
 
 class DisplayModuleTest(unittest.TestCase):
@@ -151,7 +150,11 @@ class DisplayModuleTest(unittest.TestCase):
         self.assertTrue(display.get_init())
 
     def test_get_surface(self):
-        """Ensures get_surface gets the current display surface."""
+        """Ensures get_surface gets the current display surface.
+        We can't guarantee small screen sizes get respected, so the
+        sizes of the surfaces returned from set_mode must be compared
+        to the size of the surface from get_surface.
+        """
         lengths = (1, 5, 100)
         correct_depth = pygame.display.Info().bitsize
 
@@ -169,7 +172,7 @@ class DisplayModuleTest(unittest.TestCase):
 
                 self.assertEqual(surface, expected_surface)
                 self.assertIsInstance(surface, pygame.Surface)
-                self.assertEqual(surface.get_size(), expected_size)
+                self.assertEqual(surface.get_size(), expected_surface.get_size())
                 self.assertEqual(surface.get_bitsize(), correct_depth)
 
     def test_get_surface__mode_not_set(self):
@@ -512,6 +515,10 @@ class DisplayModuleTest(unittest.TestCase):
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
         "Needs a non-null videodriver",
     )
+    @unittest.skipIf(
+        pygame.version.SDL >= (2, 32, 50),
+        "set_gamma is removed in SDL3, does not work in sdl2-compat either",
+    )
     def test_set_gamma(self):
         pygame.display.set_mode((1, 1))
 
@@ -526,6 +533,10 @@ class DisplayModuleTest(unittest.TestCase):
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
         "Needs a non-null videodriver",
     )
+    @unittest.skipIf(
+        pygame.version.SDL >= (2, 32, 50),
+        "set_gamma is removed in SDL3, does not work in sdl2-compat either",
+    )
     def test_set_gamma__tuple(self):
         pygame.display.set_mode((1, 1))
 
@@ -535,8 +546,8 @@ class DisplayModuleTest(unittest.TestCase):
                 self.assertEqual(pygame.display.set_gamma(r, g, b), True)
 
     @unittest.skipIf(
-        not hasattr(pygame.display, "set_gamma_ramp"),
-        "Not all systems and hardware support gamma ramps",
+        pygame.version.SDL >= (2, 32, 50),
+        "set_gamma_ramp is removed in SDL3, does not work in sdl2-compat either",
     )
     def test_set_gamma_ramp(self):
         # __doc__ (as of 2008-08-02) for pygame.display.set_gamma_ramp:
@@ -679,6 +690,13 @@ class DisplayModuleTest(unittest.TestCase):
                     (test_surf.get_width(), test_surf.get_height()), width_height
                 )
 
+    def test_get_set_window_position(self):
+        pygame.display.set_mode((500, 500))
+        pygame.display.set_window_position((420, 360))
+        position = pygame.display.get_window_position()
+        self.assertEqual(position[0], 420)
+        self.assertEqual(position[1], 360)
+
 
 class DisplayUpdateTest(unittest.TestCase):
     def question(self, qstr):
@@ -707,6 +725,9 @@ class DisplayUpdateTest(unittest.TestCase):
         r3 = pygame.Rect(-10, 0, -100, -100)
         pygame.display.update(r3)
 
+        # random point in rect
+        self.assertEqual(self.screen.get_at((50, 50)), (0, 255, 0))
+
         self.question("Is the screen green in (0, 0, 100, 100)?")
 
     def test_update_sequence(self):
@@ -720,6 +741,47 @@ class DisplayUpdateTest(unittest.TestCase):
         ]
         pygame.display.update(rects)
         pygame.event.pump()  # so mac updates
+
+        # random points in rect
+        for random_point in ((50, 50), (150, 50), (250, 50), (350, 350)):
+            self.assertEqual(self.screen.get_at(random_point), (0, 255, 0))
+
+        self.question(f"Is the screen green in {rects}?")
+
+    def test_update_dict_values(self):
+        """only updates the part of the display given by the rects."""
+        self.screen.fill("green")
+        rects = {
+            "foo": pygame.Rect(0, 0, 100, 100),
+            "foobar": pygame.Rect(100, 0, 100, 100),
+            "hello": pygame.Rect(200, 0, 100, 100),
+            "hi": pygame.Rect(300, 300, 100, 100),
+        }
+        pygame.display.update(rects.values())
+        pygame.event.pump()  # so mac updates
+
+        # random points in rect
+        for random_point in ((50, 50), (150, 50), (250, 50), (350, 350)):
+            self.assertEqual(self.screen.get_at(random_point), (0, 255, 0))
+
+        self.question(f"Is the screen green in {' '.join(map(str, rects.values()))}?")
+
+    def test_update_generator(self):
+        """only updates the part of the display given by the rects."""
+        self.screen.fill("green")
+        rects = [
+            pygame.Rect(0, 0, 100, 100),
+            pygame.Rect(100, 0, 100, 100),
+            pygame.Rect(200, 0, 100, 100),
+            pygame.Rect(300, 300, 100, 100),
+        ]
+        # make a generator from list, pass list with rect duplicates
+        pygame.display.update(i for i in (rects * 5))
+        pygame.event.pump()  # so mac updates
+
+        # random points in rect
+        for random_point in ((50, 50), (150, 50), (250, 50), (350, 350)):
+            self.assertEqual(self.screen.get_at(random_point), (0, 255, 0))
 
         self.question(f"Is the screen green in {rects}?")
 
@@ -736,6 +798,10 @@ class DisplayUpdateTest(unittest.TestCase):
         pygame.display.update(rects)
         pygame.event.pump()  # so mac updates
 
+        # random points in rect
+        for random_point in ((50, 50), (150, 50), (250, 50), (350, 350)):
+            self.assertEqual(self.screen.get_at(random_point), (0, 255, 0))
+
         self.question(f"Is the screen green in {rects}?")
 
     def test_update_none(self):
@@ -750,6 +816,11 @@ class DisplayUpdateTest(unittest.TestCase):
         self.screen.fill("green")
         pygame.display.update()
         pygame.event.pump()  # so mac updates
+
+        # random points in rect
+        for random_point in ((50, 50), (150, 50), (250, 50), (350, 350)):
+            self.assertEqual(self.screen.get_at(random_point), (0, 255, 0))
+
         self.question(f"Is the WHOLE screen green?")
 
     def test_update_args(self):
@@ -758,6 +829,9 @@ class DisplayUpdateTest(unittest.TestCase):
         pygame.display.update(100, 100, 100, 100)
         pygame.event.pump()  # so mac updates
         self.question("Is the screen green in (100, 100, 100, 100)?")
+
+        # random points in rect
+        self.assertEqual(self.screen.get_at((150, 150)), (0, 255, 0))
 
     def test_update_incorrect_args(self):
         """raises a ValueError when inputs are wrong."""
@@ -806,6 +880,10 @@ class DisplayInteractiveTest(unittest.TestCase):
         self.assertTrue(response)
         pygame.display.quit()
 
+    @unittest.skipIf(
+        pygame.version.SDL >= (2, 32, 50),
+        "set_gamma_ramp is removed in SDL3, does not work in sdl2-compat either",
+    )
     def test_set_gamma_ramp(self):
         os.environ["SDL_VIDEO_WINDOW_POS"] = "100,250"
         pygame.display.quit()
@@ -832,7 +910,7 @@ class DisplayInteractiveTest(unittest.TestCase):
         pygame.display.quit()
 
 
-class FullscreenToggleTests(unittest.TestCase):
+class FullscreenToggleTestsInteractive(unittest.TestCase):
     __tags__ = ["interactive"]
 
     screen = None
@@ -1014,6 +1092,11 @@ class MessageBoxInteractiveTest(unittest.TestCase):
             buttons=("Yes", "No"),
         )
         self.assertEqual(result, 0)
+
+    def test_message_box_parent_window_none(self):
+        pygame.display.message_box(
+            "Test", "Just close this messagebox", parent_window=None
+        )
 
 
 if __name__ == "__main__":

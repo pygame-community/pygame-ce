@@ -151,8 +151,8 @@ alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
     Uint32 *dstp = (Uint32 *)info->d_pixels;
     int dstskip = info->d_skip >> 2;
 
-    SDL_PixelFormat *srcfmt = info->src;
-    SDL_PixelFormat *dstfmt = info->dst;
+    PG_PixelFormat *srcfmt = info->src;
+    PG_PixelFormat *dstfmt = info->dst;
 
     // int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
     // int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
@@ -293,8 +293,8 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     int height = info->height;
     int srcskip = info->s_skip >> 2;
     int dstskip = info->d_skip >> 2;
-    SDL_PixelFormat *srcfmt = info->src;
-    SDL_PixelFormat *dstfmt = info->dst;
+    PG_PixelFormat *srcfmt = info->src;
+    PG_PixelFormat *dstfmt = info->dst;
 
     /* Original 'Straight Alpha' blending equation:
        --------------------------------------------
@@ -589,73 +589,83 @@ alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
         srcp128 = (__m128i *)srcp32;
         dstp128 = (__m128i *)dstp32;
 
-        LOOP_UNROLLED4(
-            {
-                /* ==== load 4 pixels into SSE registers ==== */
+        if (n_iters_4) {
+            LOOP_UNROLLED4(
+                {
+                    /* ==== load 4 pixels into SSE registers ==== */
 
-                /*[AR][GB][AR][GB][AR][GB][AR][GB] -> pixels_src*/
-                pixels_src = _mm_loadu_si128(srcp128);
+                    /*[AR][GB][AR][GB][AR][GB][AR][GB] -> pixels_src*/
+                    pixels_src = _mm_loadu_si128(srcp128);
 
-                /* isolate alpha channels
-                 * [A10][00 ][A20][00 ][A30][00 ][A40][00 ] -> mm_src_alpha*/
-                mm_src_alpha = _mm_andnot_si128(mm_rgb_mask, pixels_src);
+                    /* isolate alpha channels
+                     * [A10][00 ][A20][00 ][A30][00 ][A40][00 ] ->
+                     * mm_src_alpha*/
+                    mm_src_alpha = _mm_andnot_si128(mm_rgb_mask, pixels_src);
 
-                /* shift right to position alpha channels for manipulation
-                 * [0A1][00 ][0A2][00 ][0A3][00 ][0A4][00 ] -> mm_src_alpha*/
-                mm_src_alpha = _mm_srli_si128(mm_src_alpha, 1);
+                    /* shift right to position alpha channels for manipulation
+                     * [0A1][00 ][0A2][00 ][0A3][00 ][0A4][00 ] ->
+                     * mm_src_alpha*/
+                    mm_src_alpha = _mm_srli_si128(mm_src_alpha, 1);
 
-                /*[AR][GB][AR][GB][AR][GB][AR][GB] -> pixels_dst*/
-                pixels_dst = _mm_loadu_si128(dstp128);
+                    /*[AR][GB][AR][GB][AR][GB][AR][GB] -> pixels_dst*/
+                    pixels_dst = _mm_loadu_si128(dstp128);
 
-                /* ==== BATCH A (the 2 low pixels) ==== */
+                    /* ==== BATCH A (the 2 low pixels) ==== */
 
-                /* shuffle alpha channels to duplicate 16 bit pairs
-                 * [00 ][00 ][00 ][00 ][0A3][0A3][0A4][0A4] -> mm_src_alpha*/
-                unpacked_alpha = _mm_shufflelo_epi16(mm_src_alpha, 0b11110101);
+                    /* shuffle alpha channels to duplicate 16 bit pairs
+                     * [00 ][00 ][00 ][00 ][0A3][0A3][0A4][0A4] ->
+                     * mm_src_alpha*/
+                    unpacked_alpha =
+                        _mm_shufflelo_epi16(mm_src_alpha, 0b11110101);
 
-                /* spread alpha into final config for 16 bit math
-                 * [0A3][0A3][0A3][0A3][0A4][0A4][0A4][0A4] -> unpacked_alpha*/
-                unpacked_alpha =
-                    _mm_unpacklo_epi16(unpacked_alpha, unpacked_alpha);
+                    /* spread alpha into final config for 16 bit math
+                     * [0A3][0A3][0A3][0A3][0A4][0A4][0A4][0A4] ->
+                     * unpacked_alpha*/
+                    unpacked_alpha =
+                        _mm_unpacklo_epi16(unpacked_alpha, unpacked_alpha);
 
-                /* 0A0R0G0B0A0R0G0B -> src1 */
-                src1 = _mm_unpacklo_epi8(pixels_src, mm_zero);
+                    /* 0A0R0G0B0A0R0G0B -> src1 */
+                    src1 = _mm_unpacklo_epi8(pixels_src, mm_zero);
 
-                /* 0A0R0G0B0A0R0G0B -> dst1 */
-                dst1 = _mm_unpacklo_epi8(pixels_dst, mm_zero);
+                    /* 0A0R0G0B0A0R0G0B -> dst1 */
+                    dst1 = _mm_unpacklo_epi8(pixels_dst, mm_zero);
 
-                ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE
+                    ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE
 
-                batch_a_dst = sub_dst;
+                    batch_a_dst = sub_dst;
 
-                /* ==== BATCH B (the 2 high pixels) ==== */
+                    /* ==== BATCH B (the 2 high pixels) ==== */
 
-                /*[00 ][00 ][00 ][00 ][0A1][0A1][0A2][0A2] -> unpacked_alpha*/
-                unpacked_alpha = _mm_shufflehi_epi16(mm_src_alpha, 0b11110101);
+                    /*[00 ][00 ][00 ][00 ][0A1][0A1][0A2][0A2] ->
+                     * unpacked_alpha*/
+                    unpacked_alpha =
+                        _mm_shufflehi_epi16(mm_src_alpha, 0b11110101);
 
-                /*[0A1][0A1][0A1][0A1][0A2][0A2][0A2][0A2] -> unpacked_alpha*/
-                unpacked_alpha =
-                    _mm_unpackhi_epi16(unpacked_alpha, unpacked_alpha);
+                    /*[0A1][0A1][0A1][0A1][0A2][0A2][0A2][0A2] ->
+                     * unpacked_alpha*/
+                    unpacked_alpha =
+                        _mm_unpackhi_epi16(unpacked_alpha, unpacked_alpha);
 
-                /*[0A][0R][0G][0B][0A][0R][0G][0B] -> src1*/
-                src1 = _mm_unpackhi_epi8(pixels_src, mm_zero);
+                    /*[0A][0R][0G][0B][0A][0R][0G][0B] -> src1*/
+                    src1 = _mm_unpackhi_epi8(pixels_src, mm_zero);
 
-                /*[0A][0R][0G][0B][0A][0R][0G][0B] -> dst1*/
-                dst1 = _mm_unpackhi_epi8(pixels_dst, mm_zero);
+                    /*[0A][0R][0G][0B][0A][0R][0G][0B] -> dst1*/
+                    dst1 = _mm_unpackhi_epi8(pixels_dst, mm_zero);
 
-                ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE
+                    ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE
 
-                /* ==== combine batches and store ==== */
+                    /* ==== combine batches and store ==== */
 
-                sub_dst = _mm_packus_epi16(batch_a_dst, sub_dst);
-                /* zero out alpha */
-                sub_dst = _mm_and_si128(sub_dst, mm_rgb_mask);
-                _mm_storeu_si128(dstp128, sub_dst);
+                    sub_dst = _mm_packus_epi16(batch_a_dst, sub_dst);
+                    /* zero out alpha */
+                    sub_dst = _mm_and_si128(sub_dst, mm_rgb_mask);
+                    _mm_storeu_si128(dstp128, sub_dst);
 
-                srcp128++;
-                dstp128++;
-            },
-            n, n_iters_4);
+                    srcp128++;
+                    dstp128++;
+                },
+                n, n_iters_4);
+        }
 
         srcp32 = (Uint32 *)srcp128;
         dstp32 = (Uint32 *)dstp128;
@@ -709,7 +719,7 @@ blit_blend_premultiplied_sse2(SDL_BlitInfo *info)
     int srcskip = info->s_skip >> 2;
     Uint32 *dstp = (Uint32 *)info->d_pixels;
     int dstskip = info->d_skip >> 2;
-    SDL_PixelFormat *srcfmt = info->src;
+    PG_PixelFormat *srcfmt = info->src;
     Uint32 amask = srcfmt->Amask;
     // Uint64 multmask;
     Uint64 ones;
@@ -777,15 +787,14 @@ blit_blend_premultiplied_sse2(SDL_BlitInfo *info)
 }
 
 void
-premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
+premul_surf_color_by_alpha_sse2(SDL_Surface *src, PG_PixelFormat *srcfmt,
+                                SDL_Surface *dst)
 {
     int n;
     int width = src->w;
     int height = src->h;
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)dst->pixels;
-
-    SDL_PixelFormat *srcfmt = src->format;
     Uint32 amask = srcfmt->Amask;
     Uint64 ones;
 
