@@ -227,17 +227,12 @@ _line_project_helper(pgLineBase *line, double *point, int clamp)
     double squared_line_length =
         line_vector[0] * line_vector[0] + line_vector[1] * line_vector[1];
 
-    if (squared_line_length == 0.0 && clamp) {
+    if (squared_line_length == 0.0) {
         double projected_point[2];
         projected_point[0] = line->ax;
         projected_point[1] = line->ay;
         return pg_tuple_couple_from_values_double(projected_point[0],
                                                   projected_point[1]);
-    }
-    else if (squared_line_length == 0.0) {
-        return RAISE(PyExc_ValueError,
-                     "The Line has to have some length or this method has to "
-                     "be clamped to work");
     }
 
     // this is a vector that goes from the start of the line to the point we

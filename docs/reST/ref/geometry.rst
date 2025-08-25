@@ -762,7 +762,7 @@
 
             Example of what the clamp argument changes. If it is `True`, the point is bounded between the line segment ends.
 
-            WARNING: This method has to have some length or the clamp parameter must be true for it to work and not throw a `ValueError`
+            WARNING:  If the line has no length (i.e. the start and end points are the same) then the returned point of this function will be the same point as both ends of the line.
 
          .. versionadded:: 2.5.6
 

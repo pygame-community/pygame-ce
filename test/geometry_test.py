@@ -2231,9 +2231,8 @@ class LineTypeTest(unittest.TestCase):
         self.assertEqual(math.ceil(projected_point[0]), 0)
         self.assertEqual(math.ceil(projected_point[1]), 0)
 
-        # testing if the method fails when it should
-        with self.assertRaises(ValueError):
-            bad_line.project(test_bad_line_point)
+        projected_point = bad_line.project(test_bad_line_point)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
 
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""
