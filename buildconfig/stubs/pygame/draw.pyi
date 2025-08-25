@@ -569,7 +569,7 @@ def aalines(
         always raise a deprecation exception when used
     """
 
-  def flood_fill(
+def flood_fill(
     surface: Surface,
     color: Union[ColorLike, Surface],
     start_point: Point
