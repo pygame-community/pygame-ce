@@ -516,7 +516,7 @@ mixer_quit(PyObject *self, PyObject *_null)
         Py_BEGIN_ALLOW_THREADS;
         Mix_HaltMusic();
         Py_END_ALLOW_THREADS;
-Mix_ChannelFinished(NULL);
+        Mix_ChannelFinished(NULL);
 
         if (channeldata) {
             for (i = 0; i < numchanneldata; ++i) {
