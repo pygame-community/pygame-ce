@@ -3736,7 +3736,7 @@ surf_average_color(PyObject *self, PyObject *args, PyObject *kwargs)
     Uint8 r, g, b, a;
     int x, y, w, h;
     static char *keywords[] = {"surface", "rect", "consider_alpha", NULL};
-    SDL_bool consider_alpha = SDL_FALSE;
+    int consider_alpha = SDL_FALSE;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|Op", keywords,
                                      &pgSurface_Type, &surfobj, &rectobj,
@@ -4050,7 +4050,7 @@ surf_box_blur(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurfaceObject *dst_surf_obj = NULL;
     pgSurfaceObject *src_surf_obj;
     SDL_Surface *new_surf = NULL;
-    SDL_bool repeat_edge_pixels = SDL_TRUE;
+    int repeat_edge_pixels = SDL_TRUE;
 
     int radius;
 
@@ -4083,7 +4083,7 @@ surf_gaussian_blur(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurfaceObject *dst_surf_obj = NULL;
     pgSurfaceObject *src_surf_obj;
     SDL_Surface *new_surf = NULL;
-    SDL_bool repeat_edge_pixels = SDL_TRUE;
+    int repeat_edge_pixels = SDL_TRUE;
 
     int radius;
 
