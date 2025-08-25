@@ -1333,9 +1333,10 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (pgSurface_Check(colorobj)) {
         pat_surfobj = (pgSurfaceObject *)colorobj;
-        pattern = pat_surfobj->surf;  /* No conversion: we will map per-pixel */
-        color = 0;                    /* new_color unused for pattern path */
-    } else {
+        pattern = pat_surfobj->surf; /* No conversion: we will map per-pixel */
+        color = 0;                   /* new_color unused for pattern path */
+    }
+    else {
         CHECK_LOAD_COLOR(colorobj);
     }
 
@@ -1369,7 +1370,8 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
             if (did_lock_surf) {
                 pgSurface_Unlock(surfobj);
             }
-            return RAISE(PyExc_RuntimeError, "error unlocking pattern surface");
+            return RAISE(PyExc_RuntimeError,
+                         "error unlocking pattern surface");
         }
     }
     if (did_lock_surf) {
@@ -1384,12 +1386,14 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     /* Compute return rect. */
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4(startx, starty, 0, 0);
+    }
 }
 /* Functions used in drawing algorithms */
 
@@ -1401,7 +1405,7 @@ swap(float *a, float *b)
     *b = temp;
 }
 
-#define WORD_BITS (CHAR_BIT  * sizeof(unsigned int))
+#define WORD_BITS (CHAR_BIT * sizeof(unsigned int))
 
 struct point2d {
     Uint32 x;
@@ -1423,10 +1427,12 @@ _bitarray_set(unsigned int *bitarray, size_t idx, SDL_bool value)
 static inline SDL_bool
 _bitarray_get(unsigned int *bitarray, size_t idx)
 {
-    if (bitarray[idx / WORD_BITS] & (1u << (idx % WORD_BITS)))
+    if (bitarray[idx / WORD_BITS] & (1u << (idx % WORD_BITS))) {
         return SDL_TRUE;
-    else
+    }
+    else {
         return SDL_FALSE;
+    }
 }
 
 static int
@@ -2502,7 +2508,7 @@ draw_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
                 *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x));     \
             break;                                                           \
     }
-#endif //SURF_GET_AT
+#endif  // SURF_GET_AT
 
 static int
 flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
@@ -2609,8 +2615,9 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
                 }
 
                 mask_idx = (ny - cliprect.y) * cliprect.w + (nx - cliprect.x);
-                if (_bitarray_get(mask, mask_idx))
+                if (_bitarray_get(mask, mask_idx)) {
                     continue;
+                }
 
                 // only queue node once
                 _bitarray_set(mask, mask_idx, SDL_TRUE);
