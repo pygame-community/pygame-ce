@@ -920,6 +920,11 @@ window_get_opengl(pgWindowObject *self, void *v)
         hasGL = self->context != NULL;
     }
     else {
+        /* This is not a reliable way to test that OPENGL was requested by the
+         * user. SDL can implicitly create and use an opengl context in some
+         * platforms and in that case hasGL=1 even when the user didn't
+         * request for it. As borrowed windows are deprecated functionality we
+         * can ignore this issue. */
         hasGL = (SDL_GetWindowFlags(self->_win) & SDL_WINDOW_OPENGL) > 0;
     }
     return PyBool_FromLong(hasGL);
