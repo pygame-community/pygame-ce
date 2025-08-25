@@ -2510,7 +2510,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
     SDL_Rect cliprect;
     size_t mask_idx;
     if (!PG_GetSurfaceClipRect(surf, &cliprect)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return -1;
     }
     size_t frontier_bufsize = 8, frontier_size = 1, next_frontier_size = 0;
 
