@@ -399,10 +399,22 @@ def __color_reduce(c):
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
+    import sysconfig
+
+    python_version = platform.python_version()
+
+    if (
+        sys.platform not in ("wasi", "emscripten")
+        and (sys.version_info >= (3, 13, 0))
+        and sysconfig.get_config_var("Py_GIL_DISABLED")
+    ):
+        python_version += f"t, {'' if sys._is_gil_enabled() else 'No '}GIL"
+
     print(
         f"pygame-ce {ver} (SDL {'.'.join(map(str, get_sdl_version()))}, "
-        f"Python {platform.python_version()})"
+        f"Python {python_version})"
     )
+    del python_version, sysconfig
 
 # cleanup namespace
 del pygame, os, sys, platform, MissingModule, copyreg, packager_imports
