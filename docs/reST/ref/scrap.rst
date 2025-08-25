@@ -77,43 +77,21 @@ data (MIME) types are defined and registered:
 
 ::
 
-   pygame         string
-  constant        value        description
-  --------------------------------------------------
-  SCRAP_TEXT   "text/plain"    plain text
-  SCRAP_BMP    "image/bmp"     BMP encoded image data
-  SCRAP_PBM    "image/pbm"     PBM encoded image data
-  SCRAP_PPM    "image/ppm"     PPM encoded image data
-
-``pygame.SCRAP_PPM``, ``pygame.SCRAP_PBM`` and ``pygame.SCRAP_BMP`` are
-suitable for surface buffers to be shared with other applications.
-``pygame.SCRAP_TEXT`` is an alias for the plain text clipboard type.
-
-Depending on the platform, additional types are automatically registered when
-data is placed into the clipboard to guarantee a consistent sharing behaviour
-with other applications. The following listed types can be used as strings to
-be passed to the respective :mod:`pygame.scrap` module functions.
+  "text/plain"                 Plain text (also accessible via the SCRAP_TEXT constant)
+  "text/plain;charset=utf-8"   UTF-8 encoded text
 
 For **Windows** platforms, these additional types are supported automatically
 and resolve to their internal definitions:
 
 ::
 
-  "text/plain;charset=utf-8"   UTF-8 encoded text
+  "image/bmp"                  BMP encoded image data (also accessible via the SCRAP_BMP constant)
   "audio/wav"                  WAV encoded audio
   "image/tiff"                 TIFF encoded image data
 
-For **X11** platforms, these additional types are supported automatically and
-resolve to their internal definitions:
 
-::
-
-  "text/plain;charset=utf-8"   UTF-8 encoded text
-  "UTF8_STRING"                UTF-8 encoded text
-  "COMPOUND_TEXT"              COMPOUND text
-
-User defined types can be used, but the data might not be accessible by other
-applications unless they know what data type to look for.
+User defined types can be used on **Windows**, but the data might not be
+accessible by other applications unless they know what data type to look for.
 Example: Data placed into the clipboard by
 ``pygame.scrap.put("my_data_type", byte_data)`` can only be accessed by
 applications which query the clipboard for the ``"my_data_type"`` data type.
@@ -125,9 +103,7 @@ For an example of how the scrap module works refer to the examples page
 .. versionaddedold:: 1.8
 
 .. note::
-   The scrap module is currently only supported for Windows, X11 and Mac OS X.
-   On Mac OS X only text works at the moment - other types may be supported in
-   future releases.
+   Non-text data is only supported on Windows. On other platforms only text is supported.
 
 .. function:: init
 
@@ -221,8 +197,8 @@ For an example of how the scrap module works refer to the examples page
    Places data for a given clipboard type into the clipboard. The data must
    be a string buffer. The type is a string identifying the type of data to be
    placed into the clipboard. This can be one of the predefined
-   ``pygame.SCRAP_PBM``, ``pygame.SCRAP_PPM``, ``pygame.SCRAP_BMP`` or
-   ``pygame.SCRAP_TEXT`` values or a user defined string identifier.
+   ``pygame.SCRAP_BMP`` or ``pygame.SCRAP_TEXT`` values or a user defined
+   string identifier.
 
    :param string type: type identifier of the data to be placed into the
       clipboard
