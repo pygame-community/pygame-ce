@@ -1,7 +1,6 @@
+import platform
 import sys
 import unittest
-
-import platform
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
@@ -10,7 +9,6 @@ try:
 except NameError:
     pass
 import pygame
-
 
 quit_count = 0
 
@@ -115,7 +113,8 @@ class BaseModuleTest(unittest.TestCase):
         # verified by first checking the weak reference both before and
         # after the regular reference held by o is removed.
 
-        import weakref, gc
+        import gc
+        import weakref
 
         class NoDictError(RuntimeError):
             pass
@@ -249,9 +248,10 @@ class BaseModuleTest(unittest.TestCase):
             self.NEWBUF_assertSame(v, o)
 
     def test_bad_format(self):
+        from ctypes import addressof, create_string_buffer
+
         from pygame.bufferproxy import BufferProxy
         from pygame.newbuffer import BufferMixin
-        from ctypes import create_string_buffer, addressof
 
         buftools = self.buftools
         Exporter = buftools.Exporter
@@ -380,8 +380,9 @@ class BaseModuleTest(unittest.TestCase):
 
     @unittest.skipIf(IS_PYPY, "newbuf with ctypes")
     def test_PgObject_AsBuffer_PyBUF_flags(self):
-        from pygame.bufferproxy import BufferProxy
         import ctypes
+
+        from pygame.bufferproxy import BufferProxy
 
         is_lil_endian = pygame.get_sdl_byteorder() == pygame.LIL_ENDIAN
         fsys, frev = ("<", ">") if is_lil_endian else (">", "<")

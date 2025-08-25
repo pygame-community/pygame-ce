@@ -24,7 +24,7 @@ accessed by passing ``None`` as the font name.
 
 Before pygame 2.0.3, pygame.font accepts any UCS-2 / UTF-16 character
 ('\\u0001' to '\\uFFFF'). After 2.0.3, pygame.font built with SDL_ttf
-2.0.15 accepts any valid UCS-4 / UTF-32 character 
+2.0.15 accepts any valid UCS-4 / UTF-32 character
 (like emojis, if the font has them) ('\\U00000001' to '\\U0010FFFF')).
 More about this in :func:`Font.render`.
 
@@ -88,8 +88,8 @@ solves no longer exists, it will likely be removed in the future.
 
    Returns a tuple of integers that identify SDL_ttf's version.
    SDL_ttf is the underlying font rendering library, written in C,
-   on which pygame's font module depends. If 'linked' is True (the default), 
-   the function returns the version of the linked TTF library. 
+   on which pygame's font module depends. If 'linked' is True (the default),
+   the function returns the version of the linked TTF library.
    Otherwise this function returns the version of TTF pygame was compiled with
 
    .. versionadded:: 2.1.3
@@ -216,7 +216,7 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`Gets the font's style_name.`
       | :sg:`style_name -> str`
 
-      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string. 
+      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string.
       Here are some examples:
 
         'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique',
@@ -261,7 +261,7 @@ solves no longer exists, it will likely be removed in the future.
       .. versionaddedold:: 2.0.0
 
       .. ## Font.underline ##
-   
+
    .. attribute:: strikethrough
 
       | :sl:`Gets or sets whether the font should be rendered with a strikethrough.`
@@ -311,7 +311,7 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`draw text on a new Surface`
       | :sg:`render(text, antialias, color, bgcolor=None, wraplength=0) -> Surface`
 
-      This creates a new Surface with the specified text rendered on it. 
+      This creates a new Surface with the specified text rendered on it.
       :mod:`pygame.font` provides no way to directly draw text on an existing
       Surface: instead you must use :func:`Font.render` to create an image
       (Surface) of the text, then blit this image onto another Surface.
@@ -405,7 +405,7 @@ solves no longer exists, it will likely be removed in the future.
        .. note:: This is the same as the :attr:`underline` attribute.
 
       .. ## Font.get_underline ##
-   
+
    .. method:: set_strikethrough
 
       | :sl:`control if text is rendered with a strikethrough`
@@ -416,7 +416,7 @@ solves no longer exists, it will likely be removed in the future.
       This can be mixed with the bold, italic and underline modes.
 
       .. note:: This is the same as the :attr:`strikethrough` attribute.
-      
+
       .. versionadded:: 2.1.3
 
       .. ## Font.set_strikethrough ##
@@ -429,7 +429,7 @@ solves no longer exists, it will likely be removed in the future.
       Return True when the font strikethrough is enabled.
 
        .. note:: This is the same as the :attr:`strikethrough` attribute.
-       
+
        .. versionadded:: 2.1.3
 
       .. ## Font.get_strikethrough ##
@@ -487,6 +487,9 @@ solves no longer exists, it will likely be removed in the future.
       advance), ...]. None is entered in the list for each unrecognized
       character.
 
+      .. versionchanged:: 2.5.4 This function now supports all unicode codepoints.
+         Previously, only a subset that was representable in UCS-2 was supported.
+
       .. ## Font.metrics ##
 
    .. method:: get_italic
@@ -511,6 +514,19 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.get_linesize ##
 
+   .. method:: set_linesize
+
+      | :sl:`set the line space of the font text`
+      | :sg:`set_linesize(linesize) -> None`
+
+      Set the height in pixels for a line of text with the font. When rendering
+      multiple lines of text this refers to the amount of space between lines.
+      The value must be non-negative.
+
+      .. versionadded:: 2.5.4
+
+      .. ## Font.set_linesize ##
+
    .. method:: get_height
 
       | :sl:`get the height of the font`
@@ -524,7 +540,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_point_size
 
       | :sl:`set the point size of the font`
-      | :sg:`set_point_size(size, /) -> int`
+      | :sg:`set_point_size(size, /) -> None`
 
       Sets the point size of the font, which is the value that was used to
       initialize this font.
@@ -541,7 +557,7 @@ solves no longer exists, it will likely be removed in the future.
       Returns the point size of the font. Will not be accurate upon
       initializing the font object when the font name is initialized
       as ``None``.
-      
+
       .. versionadded:: 2.3.1
 
       .. ## Font.get_point_size ##
@@ -581,7 +597,7 @@ solves no longer exists, it will likely be removed in the future.
 
       .. versionadded:: 2.1.4
 
-      .. ## Font.set_script ## 
+      .. ## Font.set_script ##
 
    .. method:: set_direction
 
@@ -604,7 +620,7 @@ solves no longer exists, it will likely be removed in the future.
          or bottom-to-top rendering.
 
       .. versionadded:: 2.1.4
-      
+
       .. ## font.set_direction ##
 
    .. ## pygame.font.Font ##

@@ -101,7 +101,7 @@ This is a really nice feature of Python - class
 inheritance. Now the ``Ball`` class has all of the functions that come with the ``Sprite`` class, and any object
 instances of the ``Ball`` class will be registered by Pygame as sprites. Whereas with text and the background, which don't
 move, it's OK to blit the object onto the background, Pygame handles sprite objects in a different manner, which you'll see when we
-look at the whole program's code. 
+look at the whole program's code.
 
 Basically, you create both a ball object, and a sprite object for that ball, and you then call the ball's update function on the
 sprite object, thus updating the sprite. Sprites also give you sophisticated ways of determining if two objects have collided.
@@ -124,7 +124,7 @@ The angle is measured in radians, and will give you the direction in which the b
 moves. So by using this vector, we can determine the direction and speed of the ball, and therefore how much it will move on the x and
 y axes:
 
-.. image:: ../assets/tom_radians.png
+.. image:: ../assets/tom_radians.webp
 
 The diagram above illustrates the basic maths behind vectors. In the left hand diagram, you can see the ball's projected movement
 represented by the blue line. The length of that line (z) represents its speed, and the angle is the direction in which
@@ -137,7 +137,6 @@ Pygame doesn't support vectors itself, and we can only move the ball by moving i
 trigonometry, and can be done with the formulae shown in the diagram.
 
 If you've studied elementary trigonometry before, none of this should be news to you. But just in case you're forgetful, here are some
-useful formulae to remember, that will help you visualise the angles (I find it easier to visualise angles in degrees than in radians!) 
+useful formulae to remember, that will help you visualise the angles (I find it easier to visualise angles in degrees than in radians!)
 
-.. image:: ../assets/tom_formulae.png
-
+.. image:: ../assets/tom_formulae.webp

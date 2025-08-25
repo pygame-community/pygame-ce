@@ -1,4 +1,5 @@
 import collections
+import os
 import time
 import unittest
 
@@ -248,16 +249,32 @@ class EventModuleArgsTest(unittest.TestCase):
         self.assertRaises(ValueError, pygame.event.clear, 0x0010FFFFF)
         self.assertRaises(TypeError, pygame.event.get, ["a", "b", "c"])
 
-    def test_peek(self):
-        pygame.event.peek()
-        pygame.event.peek(None)
-        pygame.event.peek(None, True)
+    def test_peek_no_arg(self):
+        pygame.event.clear()
+        # do a strict "is" check and not just a simple truthy-test to check that
+        # we have a boolean instance.
+        self.assertIs(pygame.event.peek(), False)
+        self.assertIs(pygame.event.peek(None), False)
 
-        pygame.event.peek(pump=False)
-        pygame.event.peek(pump=True)
-        pygame.event.peek(eventtype=None)
-        pygame.event.peek(eventtype=[pygame.KEYUP, pygame.KEYDOWN])
-        pygame.event.peek(eventtype=pygame.USEREVENT, pump=False)
+        # peek should return True if there's any event on the queue
+        pygame.event.post(pygame.event.Event(pygame.USEREVENT))
+        self.assertIs(pygame.event.peek(), True)
+        self.assertIs(pygame.event.peek(None), True)
+
+    def test_peek(self):
+        self.assertIsInstance(pygame.event.peek(), bool)
+        self.assertIsInstance(pygame.event.peek(None), bool)
+        self.assertIsInstance(pygame.event.peek(None, True), bool)
+
+        self.assertIsInstance(pygame.event.peek(pump=False), bool)
+        self.assertIsInstance(pygame.event.peek(pump=True), bool)
+        self.assertIsInstance(pygame.event.peek(eventtype=None), bool)
+        self.assertIsInstance(
+            pygame.event.peek(eventtype=[pygame.KEYUP, pygame.KEYDOWN]), bool
+        )
+        self.assertIsInstance(
+            pygame.event.peek(eventtype=pygame.USEREVENT, pump=False), bool
+        )
 
         class Foo:
             pass
@@ -818,12 +835,10 @@ class EventModuleTest(unittest.TestCase):
         """Ensure pump() functions properly."""
         pygame.event.pump()
 
-    # @unittest.skipIf(
-    #     os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
-    #     'requires the SDL_VIDEODRIVER to be a non-null value',
-    # )
-    # Fails on SDL 2.0.18
-    @unittest.skip("flaky test, and broken on 2.0.18 windows")
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        'requires the SDL_VIDEODRIVER to be a non-null value',
+    )
     def test_set_grab__and_get_symmetric(self):
         """Ensure event grabbing can be enabled and disabled.
 
@@ -888,12 +903,10 @@ class EventModuleTest(unittest.TestCase):
 
         self.assertTrue(blocked)
 
-    # @unittest.skipIf(
-    #     os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
-    #     'requires the SDL_VIDEODRIVER to be a non-null value',
-    # )
-    # Fails on SDL 2.0.18
-    @unittest.skip("flaky test, and broken on 2.0.18 windows")
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        'requires the SDL_VIDEODRIVER to be a non-null value',
+    )
     def test_get_grab(self):
         """Ensure get_grab() works as expected"""
         surf = pygame.display.set_mode((10, 10))

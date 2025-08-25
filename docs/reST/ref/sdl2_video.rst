@@ -7,10 +7,10 @@
    :synopsis: Experimental pygame module for porting new SDL video systems
 
 .. warning::
-	This module isn't ready for prime time yet, it's still in development.
-        These docs are primarily meant to help the pygame developers and
-        super-early adopters who are in communication with the developers.
-        This API will change.
+   This module isn't ready for prime time yet, it's still in development.
+   These docs are primarily meant to help the pygame developers and
+   super-early adopters who are in communication with the developers.
+   This API will change.
 
 | :sl:`Experimental pygame module for porting new SDL video systems`
 
@@ -34,9 +34,9 @@
    | :sl:`pygame object encapsulating Renderer driver information`
 
    Attributes:
-   
+
    ::
-      
+
       name
       flags
       num_texture_formats
@@ -63,7 +63,7 @@
 
    See :class:`pygame.Window`
 
-.. class:: Texture	
+.. class:: Texture
 
    | :sl:`pygame object that represents a texture`
    | :sg:`Texture(renderer, size, depth=0, static=False, streaming=False, target=False, scale_quality=None) -> Texture`
@@ -95,18 +95,18 @@
 
    Since textures are stored in GPU video memory, they aren't as easy to modify
    as the image data of :class:`pygame.Surface` objects, which reside in RAM.
-   
+
    Textures can be modified in 2 ways:
-        
+
       * By drawing other textures onto them, achieved by marking them as "target" textures and setting them as the rendering target of their Renderer object (if properly configured and supported).
-         
+
       * By updating them with a Surface.
 
       .. note::
          A :class:`pygame.Surface`-to-:class:`Texture` update is generally
          considered a slow operation, as it requires image data to be uploaded from
          RAM to VRAM, which can have a notable overhead cost.
-   
+
    .. attribute:: renderer
 
       | :sl:`Get the renderer associated with the texture (**read-only**)`
@@ -133,7 +133,7 @@
       | :sg:`blend_mode -> int`
 
       Gets or sets the blend mode for the texture's drawing operations.
-      Valid blend modes are any of the ``BLENDMODE_*`` constants or a custom one. 
+      Valid blend modes are any of the ``BLENDMODE_*`` constants or a custom one.
 
    .. attribute:: color
 
@@ -289,12 +289,12 @@
       | :sl:`Get or set the Image's origin of rotation`
       | :sg:`origin -> (float, float) or None`
 
-      Gets or sets the Image's origin of rotation, a 2D coordinate relative to
-      the topleft coordinate of the Image's rectangular area.
+      Gets or sets the Image's origin of rotation, a 2D point relative to
+      the topleft coordinates of the Image's rectangular area.
 
       An origin of ``None`` means no origin was set and the Image will be
       rotated around its center.
-   
+
    .. method:: get_rect
 
       | :sl:`Get the rectangular area of the Image`
@@ -336,7 +336,7 @@
                       the refresh rate.
    :param bool target_texture: Whether the renderer should support setting
                               :class:`Texture` objects as target textures, to
-                              enable drawing onto them. 
+                              enable drawing onto them.
 
 
    :class:`Renderer` objects provide a cross-platform API for rendering 2D
@@ -350,7 +350,7 @@
    If configured correctly and supported by an underlying rendering driver, Renderer
    objects can have a :class:`Texture` object temporarily set as a target texture
    (the Texture object must have been created with target texture usage support),
-   which allows those textures to be drawn onto. 
+   which allows those textures to be drawn onto.
 
    To present drawn content onto the window, :meth:`Renderer.present` should be
    called. :meth:`Renderer.clear` should be called to clear any drawn content
@@ -366,7 +366,7 @@
    .. attribute:: draw_blend_mode
 
       | :sl:`Get or set the blend mode used for primitive drawing operations`
-      | :sg:`draw_blend_mode -> int`   
+      | :sg:`draw_blend_mode -> int`
 
    .. attribute:: draw_color
 
@@ -377,6 +377,10 @@
 
       | :sl:`Get or set the logical Renderer size (a device independent resolution for rendering)`
       | :sg:`logical_size -> (int width, int height)`
+
+      Note: When the rendering target is the main window, and ``logical_size``
+      has not been set before, it will contain ``(0, 0)`` and not the size of
+      the window.
 
    .. attribute:: scale
 
@@ -422,7 +426,26 @@
 
       :param area: A :class:`pygame.Rect` or tuple representing the
                    drawing area on the target, or ``None`` to use the
-                   entire area of the current rendering target. 
+                   entire area of the current rendering target.
+
+   .. method:: coordinates_to_window
+
+      | :sl:`Translates renderer coordinates to window coordinates`
+      | :sg:`coordinates_to_window(point) -> (float, float)`
+
+      :param point: The coordinates in render space.
+
+      .. versionadded:: 2.5.6
+
+
+   .. method:: coordinates_from_window
+
+      | :sl:`Translates window coordinates to renderer coordinates`
+      | :sg:`coordinates_from_window(point) -> (float, float)`
+
+      :param point: The coordinates in window space.
+
+      .. versionadded:: 2.5.6
 
    .. method:: blit
 
@@ -452,7 +475,7 @@
       | :sl:`Draw a point`
       | :sg:`draw_point(point) -> None`
 
-      :param point: The point's coordinate.
+      :param point: The point's coordinates.
 
    .. method:: draw_rect
 
@@ -472,7 +495,7 @@
 
       | :sl:`Draw a triangle outline`
       | :sg:`draw_triangle(p1, p2, p3) -> None`
-      
+
       :param p1: The first triangle point.
       :param p2: The second triangle point.
       :param p2: The third triangle point.
@@ -528,7 +551,7 @@
          :class:`pygame.Surface`. It should not be used frequently.
 
    .. method:: compose_custom_blend_mode
-   
+
       | :sl:`Compose a custom blend mode`
       | :sg:`compose_custom_blend_mode(color_mode, alpha_mode) -> int`
 
@@ -537,5 +560,5 @@
 
       :param color_mode: A tuple ``(srcColorFactor, dstColorFactor, colorOperation)``
       :param alpha_mode: A tuple ``(srcAlphaFactor, dstAlphaFactor, alphaOperation)``
-      
+
       :return: A blend mode to be used with :meth:`Renderer.set_draw_blend_mode` and :meth:`Texture.set_blend_mode`.

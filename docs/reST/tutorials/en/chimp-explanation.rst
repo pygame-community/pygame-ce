@@ -49,7 +49,7 @@ and run the chimp demo for yourself in the examples directory.
 
    (no, this is not a banner ad, it's the screenshot)
 
-   .. image:: ../assets/chimpshot.gif
+   .. image:: ../assets/chimpshot.webp
       :alt: chimp game banner
 
    :doc:`Full Source <../chimp.py>`
@@ -65,11 +65,6 @@ It also checks for the availability of some of the optional pygame modules. ::
     import os
     import pygame
 
-    if not pygame.font:
-        print("Warning, fonts disabled")
-    if not pygame.mixer:
-        print("Warning, sound disabled")
-
     main_dir = os.path.split(os.path.abspath(__file__))[0]
     data_dir = os.path.join(main_dir, "data")
 
@@ -77,13 +72,7 @@ It also checks for the availability of some of the optional pygame modules. ::
 First, we import the standard "os" python module. This allow
 us to do things like create platform independent file paths.
 
-In the next line, we import the pygame package. 
-
-Some pygame modules are optional, and if they aren't found,
-they evaluate to ``False``. Because of that, we decide to print
-a nice warning message if the :mod:`font<pygame.font>` or
-:mod:`mixer <pygame.mixer>` modules in pygame are not available.
-(Although they will only be unavailable in very uncommon situations). 
+In the next line, we import the pygame package.
 
 Lastly, we prepare two paths for the rest of the code to use.
 ``main_dir`` uses the `os.path` module and the `__file__` variable provided
@@ -101,12 +90,10 @@ look at each function individually in this section. ::
     def load_image(name, colorkey=None, scale=1):
         fullname = os.path.join(data_dir, name)
         image = pygame.image.load(fullname)
-
-        size = image.get_size()
-        size = (size[0] * scale, size[1] * scale)
-        image = pygame.transform.scale(image, size)
-
         image = image.convert()
+
+        image = pygame.transform.scale_by(image, scale)
+
         if colorkey is not None:
             if colorkey == -1:
                 colorkey = image.get_at((0, 0))
@@ -130,9 +117,8 @@ call to the `convert()` function. This makes a new copy of a Surface and convert
 its color format and depth to match the display. This means blitting the
 image to the screen will happen as quickly as possible.
 
-We then scale the image, using the :func:`pygame.transform.scale` function.
-This function takes a Surface and the size it should be scaled to. To scale
-by a scalar, we can get the size and scale the x and y by the scalar.
+We then scale the image, using the :func:`pygame.transform.scale_by` function.
+This function takes a Surface and the scale factor it should be scaled of.
 
 Last, we set the colorkey for the image. If the user supplied an argument
 for the colorkey argument we use that value as the colorkey for the image.
@@ -146,7 +132,7 @@ that color for the colorkey. ::
             def play(self):
                 pass
 
-        if not pygame.mixer or not pygame.mixer.get_init():
+        if not pygame.mixer.get_init():
             return NoneSound()
 
         fullname = os.path.join(data_dir, name)
@@ -156,7 +142,7 @@ that color for the colorkey. ::
 
 
 Next is the function to load a sound file. The first thing this function
-does is check to see if the :mod:`pygame.mixer` module was imported correctly.
+does is check to see if the :mod:`pygame.mixer` module was initialized.
 If not, it returns a small class instance that has a placeholder play method.
 This will act enough like a normal Sound object for this game to run without
 any extra error checking.
@@ -228,7 +214,7 @@ is colliding with the given target sprite. ::
 
         def __init__(self):
             pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
-            self.image, self.rect = load_image("chimp.png", -1, 4)
+            self.image, self.rect = load_image("chimp.webp", -1, 4)
             screen = pygame.display.get_surface()
             self.area = screen.get_rect()
             self.rect.topleft = 10, 90
@@ -335,7 +321,7 @@ Next we set up the display graphics mode. Note that the :mod:`pygame.display`
 module is used to control all the display settings. In this case we are
 asking for a 1280 by 480 window, with the ``SCALED`` display flag.
 This automatically scales up the window for displays much larger than the
-window. 
+window.
 
 Last we set the window title and turn off the mouse cursor for our
 window. Very basic to do, and now we have a small black window ready to
@@ -367,15 +353,12 @@ input formats. See the :mod:`pygame.Color` for all the color formats.
 Put Text On The Background, Centered
 ------------------------------------
 
-Now that we have a background surface, lets get the text rendered to it. We
-only do this if we see the :mod:`pygame.font` module has imported properly.
-If not, we just skip this section. ::
+Now that we have a background surface, lets get the text rendered to it. ::
 
-    if pygame.font:
-        font = pygame.font.Font(None, 64)
-        text = font.render("Pummel The Chimp, And Win $$$", True, (10, 10, 10))
-        textpos = text.get_rect(centerx=background.get_width() / 2, y=10)
-        background.blit(text, textpos)
+    font = pygame.font.Font(None, 64)
+    text = font.render("Pummel The Chimp, And Win $$$", True, (10, 10, 10))
+    textpos = text.get_rect(centerx=background.get_width() / 2, y=10)
+    background.blit(text, textpos)
 
 As you see, there are a couple steps to getting this done. First we
 must create the font object and render it into a new surface. We then find
@@ -423,24 +406,20 @@ Prepare Game Object
 Here we create all the objects that the game is going to need.
 
 ::
-    
+
     whiff_sound = load_sound("whiff.wav")
     punch_sound = load_sound("punch.wav")
     chimp = Chimp()
     fist = Fist()
-    allsprites = pygame.sprite.RenderPlain((chimp, fist))
-    clock = pygame.time.Clock()
+    all_sprites = pygame.sprite.Group((chimp, fist))
+    clock = pygame.Clock()
 
 First we load two sound effects using the `load_sound` function we defined
 above. Then we create an instance of each of our sprite classes. And lastly
 we create a sprite :class:`Group <pygame.sprite.Group>` which will contain all
 our sprites.
 
-We actually use a special sprite group named :class:`RenderPlain
-<pygame.sprite.RenderPlain>`. This sprite group can draw all the sprites it
-contains to the screen. It is called `RenderPlain` because there are actually
-more advanced Render groups. But for our game, we just need simple drawing. We
-create the group named "allsprites" by passing a list with all the sprites that
+We create the group named "all_sprites" by passing a list with all the sprites that
 should belong in the group. We could later on add or remove sprites from this
 group, but in this game we won't need to.
 
@@ -501,7 +480,7 @@ Update the Sprites
 
 ::
 
-  allsprites.update()
+  all_sprites.update()
 
 Sprite groups have an `update()` method, which simply calls the update method
 for all the sprites it contains. Each of the objects will move around, depending
@@ -515,16 +494,14 @@ Draw The Entire Scene
 Now that all the objects are in the right place, time to draw them. ::
 
   screen.blit(background, (0, 0))
-  allsprites.draw(screen)
+  all_sprites.draw(screen)
   pygame.display.flip()
 
 The first blit call will draw the background onto the entire screen. This
 erases everything we saw from the previous frame (slightly inefficient, but
 good enough for this game). Next we call the `draw()` method of the sprite
-container. Since this sprite container is really an instance of the "RenderPlain"
-sprite group, it knows how to draw our sprites. Lastly, we `flip()` the contents
-of pygame's software double buffer to the screen. This makes everything we've
-drawn visible all at once.
+container. Lastly, we `flip()` the contentsof pygame's software double buffer
+to the screen. This makes everything we've drawn visible all at once.
 
 
 Game Over

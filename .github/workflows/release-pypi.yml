@@ -12,16 +12,29 @@ jobs:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     steps:
-      - uses: actions/checkout@v4.1.6
+      - uses: actions/checkout@v5.0.0
 
       - name: Pull all release assets
-        uses: robinraju/release-downloader@v1.10
+        uses: robinraju/release-downloader@v1.12
         with:
           releaseId: ${{ github.event.release.id }}
           fileName: "*"
           tarBall: false
           zipBall: false
           out-file-path: "dist"
+
+      - name: Verify release attestation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for fname in dist/*; do
+            if gh attestation verify $fname -R ${{ github.repository }}; then
+              echo "[ALLOWED] $fname"
+            else
+              rm $fname
+              echo "[DELETED] $fname"
+            fi
+          done
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

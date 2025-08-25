@@ -28,65 +28,71 @@ AXISCOLOR = "white"
 if os.name != "nt" or sys.getwindowsversion()[0] < 6:
     raise NotImplementedError("this script requires Windows Vista or newer")
 
-import pygame
-
 import ctypes
 
-# Determine whether or not the user would like to prevent stretching
-if os.path.basename(sys.executable) == "pythonw.exe":
-    selection = "y"
-else:
-    selection = None
-    while selection not in ("y", "n"):
-        selection = input("Prevent stretching? (y/n): ").strip().lower()
+import pygame
 
-if selection == "y":
-    msg = "Stretching is prevented."
-else:
-    msg = "Stretching is not prevented."
 
-# Prevent stretching
-if selection == "y":
-    user32 = ctypes.windll.user32
-    user32.SetProcessDPIAware()
+def main():
+    # Determine whether or not the user would like to prevent stretching
+    if os.path.basename(sys.executable) == "pythonw.exe":
+        selection = "y"
+    else:
+        selection = None
+        while selection not in ("y", "n"):
+            selection = input("Prevent stretching? (y/n): ").strip().lower()
 
-# Show screen
-pygame.display.init()
-RESOLUTION = (350, 350)
-screen = pygame.display.set_mode(RESOLUTION)
+    if selection == "y":
+        msg = "Stretching is prevented."
+    else:
+        msg = "Stretching is not prevented."
 
-# Render message onto a surface
-pygame.font.init()
-font = pygame.Font(None, 36)
-msg_surf = font.render(msg, 1, TEXTCOLOR)
-res_surf = font.render("Intended resolution: %ix%i" % RESOLUTION, 1, TEXTCOLOR)
+    # Prevent stretching
+    if selection == "y":
+        user32 = ctypes.windll.user32
+        user32.SetProcessDPIAware()
 
-# Control loop
-running = True
-clock = pygame.Clock()
-counter = 0
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    # Show screen
+    pygame.display.init()
+    RESOLUTION = (350, 350)
+    screen = pygame.display.set_mode(RESOLUTION)
 
-    screen.fill(BACKGROUNDCOLOR)
+    # Render message onto a surface
+    pygame.font.init()
+    font = pygame.Font(None, 36)
+    msg_surf = font.render(msg, True, TEXTCOLOR)
+    res_surf = font.render("Intended resolution: %ix%i" % RESOLUTION, 1, TEXTCOLOR)
 
-    # Draw lines which will be blurry if the window is stretched
-    # or clear if the window is not stretched.
-    pygame.draw.line(screen, AXISCOLOR, (0, counter), (RESOLUTION[0] - 1, counter))
-    pygame.draw.line(screen, AXISCOLOR, (counter, 0), (counter, RESOLUTION[1] - 1))
+    # Control loop
+    running = True
+    clock = pygame.Clock()
+    counter = 0
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-    # Blit message onto screen surface
-    msg_blit_rect = screen.blit(msg_surf, (0, 0))
-    screen.blit(res_surf, (0, msg_blit_rect.bottom))
+        screen.fill(BACKGROUNDCOLOR)
 
-    clock.tick(10)
+        # Draw lines which will be blurry if the window is stretched
+        # or clear if the window is not stretched.
+        pygame.draw.line(screen, AXISCOLOR, (0, counter), (RESOLUTION[0] - 1, counter))
+        pygame.draw.line(screen, AXISCOLOR, (counter, 0), (counter, RESOLUTION[1] - 1))
 
-    pygame.display.flip()
+        # Blit message onto screen surface
+        msg_blit_rect = screen.blit(msg_surf, (0, 0))
+        screen.blit(res_surf, (0, msg_blit_rect.bottom))
 
-    counter += 1
-    if counter == RESOLUTION[0]:
-        counter = 0
+        clock.tick(10)
 
-pygame.quit()
+        pygame.display.flip()
+
+        counter += 1
+        if counter == RESOLUTION[0]:
+            counter = 0
+
+    pygame.quit()
+
+
+if __name__ == "__main__":
+    main()

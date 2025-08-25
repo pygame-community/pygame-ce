@@ -92,7 +92,7 @@ C header: src_c/include/pygame.h
 .. c:function:: int pg_RGBAFromObj(PyObject *obj, Uint8 *RGBA)
 
    You probably want to use the :c:func:`pg_RGBAFromObjEx` function instead of this.
-   
+
    Convert the color represented by object *obj* into a red, green, blue, alpha
    length 4 C array *RGBA*.
    The object must be a length 3 or 4 sequence of numbers having values
@@ -177,3 +177,9 @@ C header: src_c/include/pygame.h
    The previous surface object, if any, is invalidated.
    Argument *screen* may be *NULL*.
    This functions is called by pygame.display.set_mode().
+
+.. c:function:: PyObject* pgObject_getRectHelper(PyObject *rect, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames, char *type)
+
+   Return a rectangle covering the entire object. Rectangle will start at (0, 0)
+   with a width and height the same size as the object. You can pass keyword
+   arguments to be applied to the attributes of the rect before it is returned.

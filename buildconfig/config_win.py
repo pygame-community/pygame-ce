@@ -372,7 +372,7 @@ def _add_sdl2_dll_deps(DEPS):
     DEPS.add_dll(r'(z|zlib1)\.dll$', 'z', ['zlib-[1-9].*'])
     DEPS.add_dll(r'(lib)?webp[-0-9]*\.dll$', 'webp', ['*webp-[0-9]*'])
     DEPS.add_dll(r'(lib)?webpdemux[-0-9]*\.dll$', 'webpdemux', ['*webpdemux-[0-9]*'])
-    
+
 
 def setup():
     DEPS = DependencyGroup()

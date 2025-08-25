@@ -140,8 +140,9 @@ int
 _is_supported_input_format(GUID format)
 {
     for (int i = 0; i < NUM_FORM; i++) {
-        if (format.Data1 == inp_types[i]->Data1)
+        if (format.Data1 == inp_types[i]->Data1) {
             return 1;
+        }
     }
     return 0;
 }

@@ -1,0 +1,123 @@
+# SDL3 porting is WIP
+name: SDL3 build
+
+# Run CI only when a release is created, on changes to main branch, or any PR
+# to main. Do not run CI on any other branch. Also, skip any non-source changes
+# from running on CI
+on:
+  push:
+    branches: main
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '.gitignore'
+      - '*.rst'
+      - '*.md'
+      - '.github/workflows/*.yml'
+      # re-include current file to not be excluded
+      - '!.github/workflows/build-sdl3.yml'
+
+  pull_request:
+    branches: main
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '.gitignore'
+      - '*.rst'
+      - '*.md'
+      - '.github/workflows/*.yml'
+      # re-include current file to not be excluded
+      - '!.github/workflows/build-sdl3.yml'
+
+  # the github release drafter can call this workflow
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-ubuntu-sdist
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-14]
+
+    env:
+      # Pip now forces us to either make a venv or set this flag, so we will do
+      # this
+      PIP_BREAK_SYSTEM_PACKAGES: 1
+      # We are using dependencies installed from apt
+      PG_DEPS_FROM_SYSTEM: 1
+
+    steps:
+    - uses: actions/checkout@v5.0.0
+
+    - name: Install pygame deps (linux)
+      if: matrix.os == 'ubuntu-24.04'
+      run: |
+        sudo apt-get update --fix-missing
+        sudo apt-get install libfreetype6-dev libportmidi-dev python3-dev
+
+    - name: Install pygame deps (mac)
+      if: matrix.os == 'macos-14'
+      run: brew install freetype portmidi
+
+    # taken from dependencies of the 'libsdl2-dev' package
+    - name: Install SDL deps (linux)
+      if: matrix.os == 'ubuntu-24.04'
+      run: >
+        sudo apt-get install libasound2-dev libdbus-1-dev libdecor-0-dev libdrm-dev
+        libegl-dev libgbm-dev libgl-dev libgles-dev libibus-1.0-dev libpulse-dev
+        libsamplerate0-dev libsndio-dev libudev-dev libwayland-dev libx11-dev
+        libxcursor-dev libxext-dev libxfixes-dev libxi-dev libxinerama-dev
+        libxkbcommon-dev libxrandr-dev libxss-dev libxt-dev libxv-dev libxxf86vm-dev
+
+    # taken from https://wiki.libsdl.org/SDL3/Installation
+    - name: Install SDL3
+      if: matrix.os != 'windows-latest'
+      run: |
+        git clone https://github.com/libsdl-org/SDL
+        cd SDL
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release --parallel
+        sudo cmake --install . --config Release
+
+    - name: Install SDL3_image
+      if: matrix.os != 'windows-latest'
+      run: |
+        git clone https://github.com/libsdl-org/SDL_image
+        cd SDL_image
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release --parallel
+        sudo cmake --install . --config Release
+
+    - name: Install SDL3_ttf
+      if: matrix.os != 'windows-latest'
+      run: |
+        git clone https://github.com/libsdl-org/SDL_ttf
+        cd SDL_ttf
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release --parallel
+        sudo cmake --install . --config Release
+
+    - name: Build with SDL3
+      run: python3 dev.py build --sdl3
+
+    # eventually we need to run all tests, but for now test that importing pygame
+    # works
+    - name: Test import works
+      run: python3 -c 'import pygame'
+
+    # - name: Run tests
+    #   env:
+    #     SDL_VIDEODRIVER: "dummy"
+    #     SDL_AUDIODRIVER: "disk"
+    #   run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300

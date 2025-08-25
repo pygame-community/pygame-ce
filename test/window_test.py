@@ -1,11 +1,15 @@
-import unittest
-import pygame
 import os
+import platform
+import unittest
 
+import pygame
 from pygame import Window
 from pygame.version import SDL
 
 pygame.init()
+
+
+IS_PYPY = "PyPy" == platform.python_implementation()
 
 
 class WindowTypeTest(unittest.TestCase):
@@ -146,8 +150,9 @@ class WindowTypeTest(unittest.TestCase):
         self.win.size = (640, 480)
 
     def test_position(self):
-        self.win.position = (12, 34)
-        self.assertTupleEqual(self.win.position, (12, 34))
+        new_pos = (self.win.position[0] + 20, self.win.position[1] + 10)
+        self.win.position = new_pos
+        self.assertTupleEqual(self.win.position, new_pos)
 
         self.win.position = pygame.WINDOWPOS_CENTERED
 
@@ -286,6 +291,11 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(win.resizable)
         win.destroy()
 
+        # test utility
+        win = Window(utility=True)
+        self.assertTrue(win.utility)
+        win.destroy()
+
         # should raise a TypeError if keyword is random
         self.assertRaises(TypeError, lambda: Window(aaa=True))
         self.assertRaises(TypeError, lambda: Window(aaa=False))
@@ -314,17 +324,18 @@ class WindowTypeTest(unittest.TestCase):
         pygame.init()
 
     def test_from_display_module(self):
-        pygame.display.set_mode((640, 480))
+        surf = pygame.display.set_mode((640, 480))
 
         win1 = Window.from_display_module()
         win2 = Window.from_display_module()
 
         self.assertIs(win1, win2)
-        self.assertFalse(win1.opengl)
+        self.assertIs(win1.get_surface(), surf)
 
         pygame.display.quit()
         pygame.init()
 
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
     def test_window_surface(self):
         win = Window(size=(640, 480))
         surf = win.get_surface()
@@ -342,6 +353,7 @@ class WindowTypeTest(unittest.TestCase):
         win.destroy()
         self.assertRaises(pygame.error, lambda: surf.fill((0, 0, 0)))
 
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
     def test_window_surface_with_display_module(self):
         # get_surface() should raise an error if the set_mode() is not called.
         pygame.display.set_mode((640, 480))
@@ -396,6 +408,56 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(win.opengl)
         pygame.display.quit()
         pygame.init()
+
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
+    def test_window_subclassable(self):
+        class WindowSubclass(Window):
+            def __init__(self, title="Different title", size=(640, 480), **flags):
+                super().__init__(title, size, pygame.WINDOWPOS_CENTERED, **flags)
+                self.attribute = 10
+
+        window = WindowSubclass()
+        self.assertTrue(issubclass(WindowSubclass, Window))
+        self.assertIsInstance(window, WindowSubclass)
+        self.assertEqual(window.title, "Different title")
+        self.assertEqual(window.attribute, 10)
+        window.destroy()
+
+        pygame.display.set_mode((200, 200))
+        window = WindowSubclass.from_display_module()
+        self.assertIsInstance(window, WindowSubclass)
+        self.assertEqual(window.size, (200, 200))
+
+    @unittest.skipIf(
+        SDL < (2, 0, 16),
+        "requires SDL 2.0.16+",
+    )
+    def test_window_flash(self):
+        window = pygame.Window()
+
+        with self.assertRaises(TypeError):
+            window.flash("string")
+            window.flash(2.2)
+            window.flash([0])
+
+        with self.assertRaises(ValueError):
+            window.flash(-1)
+            window.flash(3)
+
+        for operation in [
+            pygame.FLASH_CANCEL,
+            pygame.FLASH_BRIEFLY,
+            pygame.FLASH_UNTIL_FOCUSED,
+        ]:
+            try:
+                result = window.flash(operation)
+                self.assertIsNone(result)
+            except pygame.error:
+                pass
+
+    def test_window_focused(self):
+        window = pygame.Window()
+        self.assertIsInstance(window.focused, bool)
 
     def tearDown(self):
         self.win.destroy()

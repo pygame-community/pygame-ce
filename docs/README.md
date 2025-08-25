@@ -2,19 +2,19 @@
 
 ### Accessing Documentation
 
-Obviously you can visit pyga.me/docs/ to see the documentation, 
+Obviously you can visit pyga.me/docs/ to see the documentation,
 but the documentation can also be launched with `python -m pygame.docs`
 
 ### Generating the Documentation
 
 Steps:
-- Install Sphinx (`pip install Sphinx`)
-- Fork the pygame-ce repository, download and navigate to it in the terminal
-- Run `python buildconfig/make_docs.py`
-- If you are using the legacy `python setup.py docs` (which is now deprecated):
-     - (Run `python -m pip install -U pip setuptools` first if `ModuleNotFoundError: No module named setuptools` occurs)
 
-This will create a new folder under the `docs` folder. 
+- Fork the pygame-ce repository, download and navigate to it in the terminal
+- Run `python dev.py docs`
+- If you are using the legacy `python setup.py docs` (which is now deprecated):
+  - (Run `python -m pip install -U pip setuptools` first if `ModuleNotFoundError: No module named setuptools` occurs)
+
+This will create a new folder under the `docs` folder.
 In `docs/generated`, you will find a local copy of the pygame documentation.
 
 You can launch this by clicking on index.html or by running the command
@@ -22,11 +22,18 @@ You can launch this by clicking on index.html or by running the command
 __main__.py in `docs/`). The docs launch command will direct you to the
 pygame website if there aren't any locally generated docs.
 
+--- **DEPRECATED** ---
 There is also a `docs --fullgeneration` or `docs --f` command for regenerating
 everything regardless of whether Sphinx thinks it should be regenerated. This
 is useful when editing the theme CSS.
 
-###  Contributing
+
+--- **INSTEAD USE** ---
+There is also `python dev.py docs --full` for regenerating
+everything regardless of whether Sphinx thinks it should be regenerated. This
+is useful when editing the theme CSS.
+
+### Contributing
 
 If you see any grammatical mistakes or errors in the documentation,
 contributing to the docs is a great way to help out.
@@ -43,16 +50,16 @@ Sphinx has a good ReStructed Text primer to learn the basics:
 https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
 
 Contributing steps:
-- Have an idea to improve the docs, perhaps create an issue on Github
-- Find the file you want to edit: it will most likely be in `docs/reST/ref`.
-OR
-- Pygame docs pages have an "Edit on Github" button, which will show you the file
-- Download the pygame source from Github locally.  
-     ^ One way to do this is to fork and use a Git client to make that a local repository
+
+- Have an idea to improve the docs, perhaps create an issue on Github.
+- Find the file you want to edit. It will most likely be in `docs/reST/ref`.
+  OR
+- Pygame docs pages have an "Edit on Github" button, which will show you the file.
+- Download the pygame source from Github locally.^ One way to do this is to fork and use a Git client to make that a local repository.
 - Implement your idea.
-- Follow the steps in "Generating the Documentation"
-     ^ This is important to test your changes work well
-- Commit your changes, create a pull request
+- Follow the steps in "Generating the Documentation" above.
+  ^ This is important to test that your changes work well.
+- Commit your changes, create a pull request.
 
 ## Documentation Style
 

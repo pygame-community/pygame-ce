@@ -1,13 +1,14 @@
-.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_ce_logo.svg
   :alt: pygame
   :target: https://pyga.me/
 
 
-|DocsStatus| 
+|DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `Français`_ `فارسی`_ **Español**
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ **Español** `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 `Pygame`_ es una biblioteca multiplataforma, gratuita y de código abierto
@@ -19,7 +20,7 @@ lo más intuitivo posible.
 Esta distribución se llama **« pygame - Community Edition »** (abreviado « pygame-ce »).
 
 
-Esta es una bifurcación del proyecto original de sus principales desarrolladores anteriores. Fue creado como resultado de muchos obstáculos que eran imposibles de superar, impidiéndoles continuar el desarrollo del proyecto inicial. Esta nueva distribución tiene como objetivo ofrecer actualizaciones más regular, mejoras y correcciones, pero también un modelo de gobernanza más democrático. 
+Esta es una bifurcación del proyecto original de sus principales desarrolladores anteriores. Fue creado como resultado de muchos obstáculos que eran imposibles de superar, impidiéndoles continuar el desarrollo del proyecto inicial. Esta nueva distribución tiene como objetivo ofrecer actualizaciones más regular, mejoras y correcciones, pero también un modelo de gobernanza más democrático.
 
 ¡Cualquier nuevo colaborador es bienvenido!
 
@@ -50,7 +51,7 @@ Construir a partir del código fuente
 
 Si deseas utilizar características en desarrollo, o quieres contribuir a pygame-ce, vas a necesitar construir pygame-ce localmente a partir del código fuente, en lugar de instalarlo con pip.
 
-La instalación de pygame-ce desde el código fuente está bastante automatizada. La mayor parte del trabajo consistirá en compilar e instalar todas las dependencias de 
+La instalación de pygame-ce desde el código fuente está bastante automatizada. La mayor parte del trabajo consistirá en compilar e instalar todas las dependencias de
 pygame-ce. Una vez hecho esto, ejecute el script ``setup.py`` que intentará autoconfigurar, compilar e instalación.
 
 Más información sobre la instalación y compilación está disponible en `La pagina wiki de compilando`_.
@@ -86,7 +87,7 @@ Tyler, Nathaniel Pryce, Dave Wallace, John Popplewell, Michael Urman,
 Andrew Straw, Michael Hudson, Ole Martin Bjoerndalen, Herve Cauwelier,
 James Mazer, Lalo Martins, Timothy Stranex, Chad Lester, Matthias
 Spiller, Bo Jangeborg, Dmitry Borisov, Campbell Barton, Diego Essaya,
-Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber
+Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber,
 Matthew L Daniel, Nirav Patel, Forrest Voight, Charlie Nolan,
 Frankie Robertson, John Krukoff, Lorenz Quack, Nick Irvine,
 Michael George, Saul Spatz, Thomas Ibbotson, Tom Rothamel, Evan Kroske,
@@ -110,15 +111,15 @@ Dépendances
 
 **note:** This section translation is out of date (September 2023)
 
-Pygame obviamente depende en gran medida de SDL y Python. También enlaza e incorpora varias otras bibliotecas más pequeñas. El módulo de fuentes se basa en SDL_ttf, que depende de freetype. Los módulos mixer (y mixer.music) dependen de SDL_mixer. El módulo de imagen depende de SDL_image, que también puede usar libjpeg y libpng. El módulo de transformación tiene una versión integrada de SDL_rotozoom para su propia función rotozoom. 
+Pygame obviamente depende en gran medida de SDL y Python. También enlaza e incorpora varias otras bibliotecas más pequeñas. El módulo de fuentes se basa en SDL_ttf, que depende de freetype. Los módulos mixer (y mixer.music) dependen de SDL_mixer. El módulo de imagen depende de SDL_image, que también puede usar libjpeg y libpng. El módulo de transformación tiene una versión integrada de SDL_rotozoom para su propia función rotozoom.
 El módulo surfarray necesita el paquete python numpy, para sus matrices numéricas multidimensionales.
 
 Versiones de dependencia:
 
 +----------+-----------------------------+
-| CPython  | >= 3.8 (Ou utiliser PyPy3)  |
+| CPython  | >= 3.9 (Ou utiliser PyPy3)  |
 +----------+-----------------------------+
-| SDL      | >= 2.0.10                   |
+| SDL      | >= 2.0.14                   |
 +----------+-----------------------------+
 | SDL_mixer| >= 2.0.4                    |
 +----------+-----------------------------+
@@ -129,6 +130,7 @@ Versiones de dependencia:
 
 Licencia
 --------
+**Identificador de licencia:** LGPL-2.1-or-later
 
 La biblioteca se distribuye bajo la licencia `GNU LGPL version 2.1`_, que se puede encontrar en el archivo ``docs/LGPL.txt``. Nos reservamos el derecho de licenciar versiones futuras de esta biblioteca bajo una licencia diferente.
 
@@ -152,7 +154,7 @@ Consulta docs/licenses para ver las licencias de dependencia.
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
-   
+
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
@@ -164,6 +166,11 @@ Consulta docs/licenses para ver las licencias de dependencia.
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
 .. _简体中文: README.zh-cn.rst
+.. _繁體中文: README.zh-tw.rst
 .. _English: ./../../README.rst
 .. _فارسی: README.fa.rst
 .. _Français: README.fr.rst
+.. _日本語: README.ja.rst
+.. _Italiano: README.it.rst
+.. _Русский: README.ru.rst
+.. _Ελληνικά: README.gr.rst

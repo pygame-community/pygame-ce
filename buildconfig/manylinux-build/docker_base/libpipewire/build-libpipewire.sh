@@ -3,8 +3,8 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-# use pinned commit (latest at the time of this comment) as 1.0.3 has compilation issues
-PIPEWIRE_VER="0cfe57f33d4a6e511577614e97c7491e6450f0eb"  # 1.0.3
+# pipewire 1.4.5 has some compilation issues, stay at an older version for now
+PIPEWIRE_VER="1.2.7"
 PIPEWIRE="pipewire-$PIPEWIRE_VER"
 
 curl -sL --retry 10 https://gitlab.freedesktop.org/pipewire/pipewire/-/archive/${PIPEWIRE_VER}/${PIPEWIRE}.tar.gz > ${PIPEWIRE}.tar.gz

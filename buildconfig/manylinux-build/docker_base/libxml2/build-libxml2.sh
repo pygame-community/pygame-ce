@@ -3,8 +3,8 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-LIBXML2_VER=2.11
-LIBXML2_PATCH=7
+LIBXML2_VER=2.14
+LIBXML2_PATCH=4
 LIBXML2="libxml2-$LIBXML2_VER.$LIBXML2_PATCH"
 
 curl -sL --retry 10 https://download.gnome.org/sources/libxml2/${LIBXML2_VER}/${LIBXML2}.tar.xz > ${LIBXML2}.tar.xz

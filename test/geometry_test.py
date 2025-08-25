@@ -2,8 +2,8 @@ import math
 import unittest
 from math import sqrt
 
-from pygame import Vector2, Vector3, Rect, FRect
-from pygame.geometry import Circle
+from pygame import FRect, Rect, Vector2, Vector3
+from pygame.geometry import Circle, Line
 
 
 def float_range(a, b, step):
@@ -95,6 +95,13 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(2.0, c.y)
         self.assertEqual(3.0, c.r)
 
+    def testConstruction_zero_radius(self):
+        c = Circle(1, 2, 0)
+
+        self.assertEqual(1.0, c.x)
+        self.assertEqual(2.0, c.y)
+        self.assertEqual(0, c.r)
+
     def test_x(self):
         """Ensures changing the x attribute moves the circle and does not change
         the circle's radius.
@@ -183,7 +190,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.radius = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.r = value
             with self.assertRaises(ValueError):
@@ -293,6 +300,210 @@ class CircleTypeTest(unittest.TestCase):
         with self.assertRaises(AttributeError):
             del c.center
 
+    def test_top(self):
+        """Ensures changing the top attribute moves the circle and does not change the circle's radius."""
+        expected_radius = 5.0
+
+        for pos in [
+            (1, 0),
+            (0, 0),
+            (-1, 0),
+            (0, -1),
+            (1, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+        ]:
+            c = Circle((0, 0), expected_radius)
+
+            c.top = pos
+
+            self.assertEqual(pos[0], c.x)
+            self.assertEqual(pos[1], c.y - expected_radius)
+
+            self.assertEqual(expected_radius, c.r)
+
+    def test_top_update(self):
+        """Ensures changing the x or y value of the circle correctly updates the top."""
+        expected_x = 10.3
+        expected_y = 2.12
+        expected_radius = 5.0
+        c = Circle(1, 1, expected_radius)
+
+        c.x = expected_x
+        self.assertEqual(c.top, (expected_x, c.y - expected_radius))
+
+        c.y = expected_y
+        self.assertEqual(c.top, (c.x, expected_y - expected_radius))
+
+    def test_top_invalid_value(self):
+        """Ensures the top attribute handles invalid values correctly."""
+        c = Circle(0, 0, 1)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], True, False):
+            with self.assertRaises(TypeError):
+                c.top = value
+
+    def test_top_del(self):
+        """Ensures the top attribute can't be deleted."""
+        c = Circle(0, 0, 1)
+
+        with self.assertRaises(AttributeError):
+            del c.top
+
+    def test_left(self):
+        """Ensures changing the left attribute moves the circle and does not change the circle's radius."""
+        expected_radius = 5.0
+
+        for pos in [
+            (1, 0),
+            (0, 0),
+            (-1, 0),
+            (0, -1),
+            (1, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+        ]:
+            c = Circle((0, 0), expected_radius)
+
+            c.left = pos
+
+            self.assertEqual(pos[0], c.x - expected_radius)
+            self.assertEqual(pos[1], c.y)
+
+            self.assertEqual(expected_radius, c.r)
+
+    def test_left_update(self):
+        """Ensures changing the x or y value of the circle correctly updates the left."""
+        expected_x = 10.3
+        expected_y = 2.12
+        expected_radius = 5.0
+        c = Circle(1, 1, expected_radius)
+
+        c.x = expected_x
+        self.assertEqual(c.left, (expected_x - expected_radius, c.y))
+
+        c.y = expected_y
+        self.assertEqual(c.left, (c.x - expected_radius, expected_y))
+
+    def test_left_invalid_value(self):
+        """Ensures the left attribute handles invalid values correctly."""
+        c = Circle(0, 0, 1)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], True, False):
+            with self.assertRaises(TypeError):
+                c.left = value
+
+    def test_left_del(self):
+        """Ensures the left attribute can't be deleted."""
+        c = Circle(0, 0, 1)
+
+        with self.assertRaises(AttributeError):
+            del c.left
+
+    def test_right(self):
+        """Ensures changing the right attribute moves the circle and does not change the circle's radius."""
+        expected_radius = 5.0
+
+        for pos in [
+            (1, 0),
+            (0, 0),
+            (-1, 0),
+            (0, -1),
+            (1, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+        ]:
+            c = Circle((0, 0), expected_radius)
+
+            c.right = pos
+
+            self.assertEqual(pos[0], c.x + expected_radius)
+            self.assertEqual(pos[1], c.y)
+
+            self.assertEqual(expected_radius, c.r)
+
+    def test_right_update(self):
+        """Ensures changing the x or y value of the circle correctly updates the right."""
+        expected_x = 10.3
+        expected_y = 2.12
+        expected_radius = 5.0
+        c = Circle(1, 1, expected_radius)
+
+        c.x = expected_x
+        self.assertEqual(c.right, (expected_x + expected_radius, c.y))
+
+        c.y = expected_y
+        self.assertEqual(c.right, (c.x + expected_radius, expected_y))
+
+    def test_right_invalid_value(self):
+        """Ensures the right attribute handles invalid values correctly."""
+        c = Circle(0, 0, 1)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], True, False):
+            with self.assertRaises(TypeError):
+                c.right = value
+
+    def test_right_del(self):
+        """Ensures the right attribute can't be deleted."""
+        c = Circle(0, 0, 1)
+
+        with self.assertRaises(AttributeError):
+            del c.right
+
+    def test_bottom(self):
+        """Ensures changing the bottom attribute moves the circle and does not change the circle's radius."""
+        expected_radius = 5.0
+
+        for pos in [
+            (1, 0),
+            (0, 0),
+            (-1, 0),
+            (0, -1),
+            (1, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+        ]:
+            c = Circle((0, 0), expected_radius)
+
+            c.bottom = pos
+
+            self.assertEqual(pos[0], c.x)
+            self.assertEqual(pos[1], c.y + expected_radius)
+
+            self.assertEqual(expected_radius, c.r)
+
+    def test_bottom_update(self):
+        """Ensures changing the x or y value of the circle correctly updates the bottom."""
+        expected_x = 10.3
+        expected_y = 2.12
+        expected_radius = 5.0
+        c = Circle(1, 1, expected_radius)
+
+        c.x = expected_x
+        self.assertEqual(c.bottom, (expected_x, c.y + expected_radius))
+
+        c.y = expected_y
+        self.assertEqual(c.bottom, (c.x, expected_y + expected_radius))
+
+    def test_bottom_invalid_value(self):
+        """Ensures the bottom attribute handles invalid values correctly."""
+        c = Circle(0, 0, 1)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], True, False):
+            with self.assertRaises(TypeError):
+                c.bottom = value
+
+    def test_bottom_del(self):
+        """Ensures the bottom attribute can't be deleted."""
+        c = Circle(0, 0, 1)
+
+        with self.assertRaises(AttributeError):
+            del c.bottom
+
     def test_area(self):
         """Ensures the area is calculated correctly."""
         c = Circle(0, 0, 1)
@@ -317,7 +528,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.area = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.area = value
 
@@ -352,7 +563,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.circumference = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.circumference = value
 
@@ -390,7 +601,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.diameter = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.diameter = value
             with self.assertRaises(ValueError):
@@ -408,14 +619,14 @@ class CircleTypeTest(unittest.TestCase):
 
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""
-        c_str = "<Circle((10.3, 3.2), 4.3)>"
+        c_str = "Circle((10.3, 3.2), 4.3)"
         circle = Circle((10.3, 3.2), 4.3)
         self.assertEqual(str(circle), c_str)
         self.assertEqual(circle.__str__(), c_str)
 
     def test__repr__(self):
         """Checks whether the __repr__ method works correctly."""
-        c_repr = "<Circle((10.3, 3.2), 4.3)>"
+        c_repr = "Circle((10.3, 3.2), 4.3)"
         circle = Circle((10.3, 3.2), 4.3)
         self.assertEqual(repr(circle), c_repr)
         self.assertEqual(circle.__repr__(), c_repr)
@@ -674,6 +885,102 @@ class CircleTypeTest(unittest.TestCase):
         p2 = (50, 0)
         self.assertTrue(c.collideswith(p))
         self.assertFalse(c.collideswith(p2))
+
+    def test_collidelist_argtype(self):
+        """Tests if the function correctly handles incorrect types as parameters"""
+
+        invalid_types = (None, "1", (1,), 1, (1, 2, 3), True, False)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.collidelist(value)
+
+    def test_collidelist_argnum(self):
+        """Tests if the function correctly handles incorrect number of parameters"""
+        c = Circle(10, 10, 4)
+
+        circles = [(Circle(10, 10, 4), Circle(10, 10, 4))]
+
+        with self.assertRaises(TypeError):
+            c.collidelist()
+
+        with self.assertRaises(TypeError):
+            c.collidelist(circles, 1)
+
+    def test_collidelist_return_type(self):
+        """Tests if the function returns the correct type"""
+        c = Circle(10, 10, 4)
+
+        objects = [
+            Circle(10, 10, 4),
+            Rect(10, 10, 4, 4),
+        ]
+
+        for object in objects:
+            self.assertIsInstance(c.collidelist([object]), int)
+
+    def test_collidelist(self):
+        """Ensures that the collidelist method works correctly"""
+        c = Circle(10, 10, 4)
+
+        circles = [Circle(1000, 1000, 2), Circle(5, 10, 5), Circle(16, 10, 7)]
+        rects = [Rect(1000, 1000, 4, 4), Rect(1000, 200, 5, 5), Rect(5, 10, 7, 3)]
+        points = [(-10, -10), Vector2(1, 1), Vector2(10, -20), (10, 10)]
+        expected = [1, 2, 3]
+
+        for objects, expected in zip([circles, rects, points], expected):
+            self.assertEqual(c.collidelist(objects), expected)
+
+    def test_collidelistall_argtype(self):
+        """Tests if the function correctly handles incorrect types as parameters"""
+
+        invalid_types = (None, "1", (1,), 1, (1, 2, 3), True, False)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.collidelistall(value)
+
+    def test_collidelistall_argnum(self):
+        """Tests if the function correctly handles incorrect number of parameters"""
+        c = Circle(10, 10, 4)
+
+        circles = [(Circle(10, 10, 4), Circle(10, 10, 4))]
+
+        with self.assertRaises(TypeError):
+            c.collidelistall()
+
+        with self.assertRaises(TypeError):
+            c.collidelistall(circles, 1)
+
+    def test_collidelistall_return_type(self):
+        """Tests if the function returns the correct type"""
+        c = Circle(10, 10, 4)
+
+        objects = [
+            Circle(10, 10, 4),
+            Rect(10, 10, 4, 4),
+            (10, 10),
+            Vector2(9, 9),
+        ]
+
+        for object in objects:
+            self.assertIsInstance(c.collidelistall([object]), list)
+
+    def test_collidelistall(self):
+        """Ensures that the collidelistall method works correctly"""
+        c = Circle(10, 10, 4)
+
+        circles = [Circle(1000, 1000, 2), Circle(5, 10, 5), Circle(16, 10, 7)]
+        rects = [Rect(1000, 1000, 4, 4), Rect(1000, 200, 5, 5), Rect(5, 10, 7, 3)]
+        points = [Vector2(-10, -10), (8, 8), (10, -20), Vector2(10, 10)]
+        expected = [[1, 2], [2], [1, 3]]
+
+        for objects, expected in zip([circles, rects, points], expected):
+            self.assertEqual(c.collidelistall(objects), expected)
 
     def test_update(self):
         """Ensures that updating the circle position
@@ -1287,6 +1594,659 @@ class CircleTypeTest(unittest.TestCase):
 
         # on the edge
         self.assertTrue(c.contains(fr_edge))
+
+    def test_intersect_argtype(self):
+        """Tests if the function correctly handles incorrect types as parameters"""
+
+        invalid_types = (None, "1", (1,), 1, (1, 2, 3), True, False)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.intersect(value)
+
+    def test_intersect_argnum(self):
+        """Tests if the function correctly handles incorrect number of parameters"""
+        c = Circle(10, 10, 4)
+
+        circles = [(Circle(10, 10, 4) for _ in range(100))]
+        for size in range(len(circles)):
+            with self.assertRaises(TypeError):
+                c.intersect(*circles[:size])
+
+    def test_intersect_return_type(self):
+        """Tests if the function returns the correct type"""
+        c = Circle(10, 10, 4)
+
+        objects = [
+            Circle(10, 10, 4),
+            Circle(10, 10, 400),
+            Circle(10, 10, 1),
+            Circle(15, 10, 10),
+        ]
+
+        for object in objects:
+            self.assertIsInstance(c.intersect(object), list)
+
+    def test_intersect(self):
+        # Circle
+        c = Circle(10, 10, 4)
+        c2 = Circle(10, 10, 2)
+        c3 = Circle(100, 100, 1)
+        c3_1 = Circle(10, 10, 400)
+        c4 = Circle(16, 10, 7)
+        c5 = Circle(18, 10, 4)
+
+        for circle in [c, c2, c3, c3_1]:
+            self.assertEqual(c.intersect(circle), [])
+
+        # intersecting circle
+        self.assertEqual(
+            [(10.25, 6.007820144332172), (10.25, 13.992179855667828)], c.intersect(c4)
+        )
+
+        # touching
+        self.assertEqual([(14.0, 10.0)], c.intersect(c5))
+
+
+class LineTypeTest(unittest.TestCase):
+    class ClassWithLineAttrib:
+        def __init__(self, line):
+            self.line = line
+
+    class ClassWithLineProperty:
+        def __init__(self, line):
+            self._line = line
+
+        @property
+        def line(self):
+            return self._line
+
+    class ClassWithLineFunction:
+        def __init__(self, line):
+            self._line = line
+
+        def line(self):
+            return self._line
+
+    def testConstruction_invalid_type(self):
+        """Checks whether passing wrong types to the constructor
+        raises the appropriate errors
+        """
+        invalid_types = (None, [], "1", (1,), [1, 2, 3], Vector2(1, 1))
+
+        # Test ax
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(value, 0, 1, 2)
+        # Test ay
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(0, value, 1, 2)
+        # Test bx
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(0, 0, value, 2)
+        # Test by
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(0, 1, 2, value)
+
+        # Test ax
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line((value, 0), (1, 2))
+        # Test ay
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line((0, value), (1, 2))
+        # Test bx
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line((0, 0), (value, 2))
+        # Test by
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line((0, 1), (2, value))
+
+        # Test ax
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(((value, 0), (1, 2)))
+        # Test ay
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(((0, value), (1, 2)))
+        # Test bx
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(((0, 0), (value, 2)))
+        # Test by
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(((0, 1), (2, value)))
+
+    def testConstruction_invalid_arguments_number(self):
+        """Checks whether passing the wrong number of arguments to the constructor
+        raises the appropriate errors
+        """
+        arguments = (
+            (1,),  # one non vec3 non circle arg
+            (1, 1),  # two args
+            (1, 1, 1),  # three args
+            (1, 1, 1, 1, 1),  # five args
+        )
+
+        for arg_seq in arguments:
+            with self.assertRaises(TypeError):
+                Line(*arg_seq)
+
+    def testConstructionaxabyxby_float(self):
+        """Tests the construction of a line with 4 float arguments"""
+        line = Line(1.0, 2.0, 3.0, 4.0)
+
+        self.assertEqual(line.ax, 1.0)
+        self.assertEqual(line.ay, 2.0)
+        self.assertEqual(line.bx, 3.0)
+        self.assertEqual(line.by, 4.0)
+
+    def testConstructionTUP_axabyxby_float(self):
+        """Tests the construction of a line with a tuple of 4 float arguments"""
+        line = Line((1.0, 2.0, 3.0, 4.0))
+
+        self.assertEqual(line.ax, 1.0)
+        self.assertEqual(line.ay, 2.0)
+        self.assertEqual(line.bx, 3.0)
+        self.assertEqual(line.by, 4.0)
+
+    def testConstructionaxabyxby_int(self):
+        """Tests the construction of a line with 4 int arguments"""
+        line = Line(1, 2, 3, 4)
+
+        self.assertEqual(line.ax, 1.0)
+        self.assertEqual(line.ay, 2.0)
+        self.assertEqual(line.bx, 3.0)
+        self.assertEqual(line.by, 4.0)
+
+    def testConstructionTUP_axabyxby_int(self):
+        """Tests the construction of a line with a tuple of 4 int arguments"""
+        line = Line((1, 2, 3, 4))
+
+        self.assertEqual(line.ax, 1.0)
+        self.assertEqual(line.ay, 2.0)
+        self.assertEqual(line.bx, 3.0)
+        self.assertEqual(line.by, 4.0)
+
+    def testConstruction_class_with_line_attrib(self):
+        """Tests the construction of a line with a class that has a line attribute"""
+        class_ = self.ClassWithLineAttrib(Line(1.1, 2.2, 3.3, 4.4))
+
+        line = Line(class_)
+
+        self.assertEqual(line.ax, 1.1)
+        self.assertEqual(line.ay, 2.2)
+        self.assertEqual(line.bx, 3.3)
+        self.assertEqual(line.by, 4.4)
+
+    def testConstruction_class_with_line_property(self):
+        """Tests the construction of a line with a class that has a line property"""
+        class_ = self.ClassWithLineProperty(Line(1.1, 2.2, 3.3, 4.4))
+
+        line = Line(class_)
+
+        self.assertEqual(line.ax, 1.1)
+        self.assertEqual(line.ay, 2.2)
+        self.assertEqual(line.bx, 3.3)
+        self.assertEqual(line.by, 4.4)
+
+    def testConstruction_class_with_line_function(self):
+        """Tests the construction of a line with a class that has a line function"""
+        class_ = self.ClassWithLineFunction(Line(1.1, 2.2, 3.3, 4.4))
+
+        line = Line(class_)
+
+        self.assertEqual(line.ax, 1.1)
+        self.assertEqual(line.ay, 2.2)
+        self.assertEqual(line.bx, 3.3)
+        self.assertEqual(line.by, 4.4)
+
+    def test_attrib_x1(self):
+        """a full test for the ax attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        line = Line(1, expected_y1, expected_x2, expected_y2)
+
+        line.ax = expected_x1
+
+        self.assertEqual(line.ax, expected_x1)
+        self.assertEqual(line.ay, expected_y1)
+        self.assertEqual(line.bx, expected_x2)
+        self.assertEqual(line.by, expected_y2)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3]):
+            with self.assertRaises(TypeError):
+                line.ax = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.ax
+
+    def test_attrib_y1(self):
+        """a full test for the ay attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        line = Line(expected_x1, 1, expected_x2, expected_y2)
+
+        line.ay = expected_y1
+
+        self.assertEqual(line.ax, expected_x1)
+        self.assertEqual(line.ay, expected_y1)
+        self.assertEqual(line.bx, expected_x2)
+        self.assertEqual(line.by, expected_y2)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3]):
+            with self.assertRaises(TypeError):
+                line.ay = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.ay
+
+    def test_attrib_x2(self):
+        """a full test for the ay attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        line = Line(expected_x1, expected_y1, 1, expected_y2)
+
+        line.bx = expected_x2
+
+        self.assertEqual(line.ax, expected_x1)
+        self.assertEqual(line.ay, expected_y1)
+        self.assertEqual(line.bx, expected_x2)
+        self.assertEqual(line.by, expected_y2)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3]):
+            with self.assertRaises(TypeError):
+                line.bx = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.bx
+
+    def test_attrib_y2(self):
+        """a full test for the ay attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        line = Line(expected_x1, expected_y1, expected_x2, 1)
+
+        line.by = expected_y2
+
+        self.assertEqual(line.ax, expected_x1)
+        self.assertEqual(line.ay, expected_y1)
+        self.assertEqual(line.bx, expected_x2)
+        self.assertEqual(line.by, expected_y2)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3]):
+            with self.assertRaises(TypeError):
+                line.by = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.by
+
+    def test_attrib_a(self):
+        """a full test for the ay attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        expected_a = expected_x1, expected_y1
+        expected_b = expected_x2, expected_y2
+        line = Line((0, 1), expected_b)
+
+        line.a = expected_a
+
+        self.assertEqual(line.a, expected_a)
+        self.assertEqual(line.b, expected_b)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], 1):
+            with self.assertRaises(TypeError):
+                line.a = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.a
+
+    def test_attrib_b(self):
+        """a full test for the ay attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        expected_a = expected_x1, expected_y1
+        expected_b = expected_x2, expected_y2
+        line = Line(expected_a, (0, 1))
+
+        line.b = expected_b
+
+        self.assertEqual(line.a, expected_a)
+        self.assertEqual(line.b, expected_b)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], 1):
+            with self.assertRaises(TypeError):
+                line.b = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.b
+
+    def test_attrib_length(self):
+        """a full test for the length attribute"""
+        expected_length = 3.0
+        line = Line(1, 4, 4, 4)
+        self.assertEqual(line.length, expected_length)
+
+        line.ax = 2
+        expected_length = 2.0
+        self.assertEqual(line.length, expected_length)
+
+        line.ax = 2.7
+        expected_length = 1.2999999999999998
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.ay = 2
+        expected_length = 2.3853720883753127
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.ay = 2.7
+        expected_length = 1.8384776310850233
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.bx = 2
+        expected_length = 1.4764823060233399
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.bx = 2.7
+        expected_length = 1.2999999999999998
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.by = 2
+        expected_length = 0.7000000000000002
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.by = 2.7
+        expected_length = 0.0
+        self.assertEqual(line.length, expected_length)
+
+        line1 = Line(7, 3, 2, 3)
+        line2 = Line(9, 5, 4, 5)
+        self.assertEqual(line1.length, line2.length)
+
+        line = Line(7.6, 3.2, 2.1, 3.8)
+        expected_length = 5.532630477449222
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line = Line(-9.8, -5.2, -4.4, -5.6)
+        expected_length = 5.414794548272353
+        self.assertAlmostEqual(line.length, expected_length)
+
+    def test_meth_copy(self):
+        line = Line(1, 2, 3, 4)
+        # check 1 arg passed
+        with self.assertRaises(TypeError):
+            line.copy(10)
+
+        line_2 = line.copy()
+        self.assertEqual(line.ax, line_2.ax)
+        self.assertEqual(line.by, line_2.by)
+        self.assertEqual(line.bx, line_2.bx)
+        self.assertEqual(line.by, line_2.by)
+
+        self.assertIsNot(line, line_2)
+
+    def test_meth_move(self):
+        line = Line(1.1, 2.2, 3.3, 4.4)
+
+        ret = line.move(1, 2)
+
+        self.assertEqual(ret.ax, 2.1)
+        self.assertEqual(ret.ay, 4.2)
+        self.assertEqual(ret.bx, 4.3)
+        self.assertEqual(ret.by, 6.4)
+
+        with self.assertRaises(TypeError):
+            line.move()
+
+        with self.assertRaises(TypeError):
+            line.move(1)
+
+        with self.assertRaises(TypeError):
+            line.move(1, 2, 3)
+
+        with self.assertRaises(TypeError):
+            line.move("1", "2")
+
+    def test_meth_move_ip(self):
+        line = Line(1.1, 2.2, 3.3, 4.4)
+
+        line.move_ip(1, 2)
+
+        self.assertEqual(line.ax, 2.1)
+        self.assertEqual(line.ay, 4.2)
+        self.assertEqual(line.bx, 4.3)
+        self.assertEqual(line.by, 6.4)
+
+        with self.assertRaises(TypeError):
+            line.move_ip()
+
+        with self.assertRaises(TypeError):
+            line.move_ip(1)
+
+        with self.assertRaises(TypeError):
+            line.move_ip(1, 2, 3)
+
+        with self.assertRaises(TypeError):
+            line.move_ip("1", "2")
+
+    def test_meth_scale(self):
+        line = Line(0, 0, 10, 0).scale(2, 0)
+        self.assertEqual(line.length, 20)
+        line = Line(0, 0, 20, 0).scale(2.1, 0)
+        self.assertEqual(line.length, 42)
+        line = Line(0, 0, 10, 0).scale(4, 0)
+        self.assertEqual(line.length, 40)
+        line = Line(0, 0, 10, 0).scale(3, 0)
+        self.assertEqual(line.length, 30)
+        line = Line(10, 10, 20, 20).scale(2, 0)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+        line = Line(10, 10, 20, 20).scale(2, 0.5)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+        line = Line(10, 10, 20, 20).scale(2, 1)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+
+        with self.assertRaises(ValueError):
+            line = line.scale(0, 0.5)
+
+        with self.assertRaises(ValueError):
+            line = line.scale(2, -0.1)
+
+        with self.assertRaises(ValueError):
+            line = line.scale(-2, -0.5)
+
+        with self.assertRaises(ValueError):
+            line = line.scale(17, 1.1)
+
+        with self.assertRaises(ValueError):
+            line = line.scale(17, 10.0)
+
+    def test_meth_scale_ip(self):
+        line = Line(0, 0, 10, 0)
+        line.scale_ip(2, 0)
+        self.assertEqual(line.length, 20)
+        line = Line(0, 0, 20, 0)
+        line.scale_ip(2.1, 0)
+        self.assertEqual(line.length, 42)
+        line = Line(0, 0, 10, 0)
+        line.scale_ip(4, 0)
+        self.assertEqual(line.length, 40)
+        line = Line(0, 0, 10, 0)
+        line.scale_ip(3, 0)
+        self.assertEqual(line.length, 30)
+        line = Line(10, 10, 20, 20)
+        line.scale_ip(2, 0)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+        line = Line(10, 10, 20, 20)
+        line.scale_ip(2, 0.5)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+        line = Line(10, 10, 20, 20)
+        line.scale_ip(2, 1.0)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+
+        with self.assertRaises(ValueError):
+            line.scale_ip(0, 0.5)
+
+        with self.assertRaises(ValueError):
+            line.scale_ip(2, -0.1)
+
+        with self.assertRaises(ValueError):
+            line.scale_ip(-2, -0.5)
+
+        with self.assertRaises(ValueError):
+            line.scale_ip(17, 1.1)
+
+        with self.assertRaises(ValueError):
+            line.scale_ip(17, 10.0)
+
+    def test_meth_flip(self):
+        line = Line(1.1, 2.2, 3.3, 4.4)
+
+        ret = line.flip_ab()
+
+        self.assertIsInstance(ret, Line)
+        self.assertEqual(ret.ax, 3.3)
+        self.assertEqual(ret.ay, 4.4)
+        self.assertEqual(ret.bx, 1.1)
+        self.assertEqual(ret.by, 2.2)
+
+        with self.assertRaises(TypeError):
+            line.flip_ab(1)
+
+    def test_meth_flip_ab_ip(self):
+        line = Line(1.1, 2.2, 3.3, 4.4)
+
+        line.flip_ab_ip()
+
+        self.assertEqual(line.ax, 3.3)
+        self.assertEqual(line.ay, 4.4)
+        self.assertEqual(line.bx, 1.1)
+        self.assertEqual(line.by, 2.2)
+
+        with self.assertRaises(TypeError):
+            line.flip_ab_ip(1)
+
+    def test_meth_update(self):
+        line = Line(0, 0, 1, 1)
+
+        line.update(1, 2, 3, 4)
+        self.assertEqual(line.ax, 1)
+        self.assertEqual(line.ay, 2)
+        self.assertEqual(line.bx, 3)
+        self.assertEqual(line.by, 4)
+
+        line.update((5, 6), (7, 8))
+        self.assertEqual(line.ax, 5)
+        self.assertEqual(line.ay, 6)
+        self.assertEqual(line.bx, 7)
+        self.assertEqual(line.by, 8)
+
+        line.update((9, 10, 11, 12))
+        self.assertEqual(line.ax, 9)
+        self.assertEqual(line.ay, 10)
+        self.assertEqual(line.bx, 11)
+        self.assertEqual(line.by, 12)
+
+        with self.assertRaises(TypeError):
+            line.update()
+
+        with self.assertRaises(TypeError):
+            line.update(1, 2, 3, 4, 5)
+
+        with self.assertRaises(TypeError):
+            line.update(1, 2, 3)
+
+    def test_meth_project(self):
+        line = Line(0, 0, 100, 100)
+        test_point1 = (25, 75)
+        test_clamp_point1 = (100, 300)
+        test_clamp_point2 = (-50, -150)
+        test_clamp_point3 = (-200, -200)
+
+        bad_line = Line(0, 0, 0, 0)
+        test_bad_line_point = (10, 10)
+
+        projected_point = line.project(test_point1)
+        self.assertEqual(math.ceil(projected_point[0]), 50)
+        self.assertEqual(math.ceil(projected_point[1]), 50)
+
+        projected_point = line.project(test_clamp_point1, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 100)
+        self.assertEqual(math.ceil(projected_point[1]), 100)
+
+        projected_point = line.project(test_clamp_point2, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = line.project(test_clamp_point3, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = bad_line.project(test_bad_line_point, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = bad_line.project(test_bad_line_point)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+
+    def test__str__(self):
+        """Checks whether the __str__ method works correctly."""
+        l_str = "Line((10.1, 10.2), (4.3, 56.4))"
+        line = Line(10.1, 10.2, 4.3, 56.4)
+        self.assertEqual(str(line), l_str)
+        self.assertEqual(line.__str__(), l_str)
+
+    def test__repr__(self):
+        """Checks whether the __repr__ method works correctly."""
+        l_repr = "Line((10.1, 10.2), (4.3, 56.4))"
+        line = Line(10.1, 10.2, 4.3, 56.4)
+        self.assertEqual(repr(line), l_repr)
+        self.assertEqual(line.__repr__(), l_repr)
 
 
 if __name__ == "__main__":

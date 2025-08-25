@@ -1,33 +1,14 @@
 name: ManyLinux
 
-# Run CI only when a release is created, on changes to main branch, or any PR 
-# to main. Do not run CI on any other branch. Also, skip any non-source changes 
-# from running on CI
+# Run CI only when a release is created, on changes to main branch, or any PR
+# to main.
 on:
   push:
     branches: main
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-      - '.gitignore'
-      - '*.rst'
-      - '*.md'
-      - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/build-manylinux.yml'
 
   pull_request:
     branches: main
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-      - '.gitignore'
-      - '*.rst'
-      - '*.md'
-      - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/build-manylinux.yml'
-  
+
   # the github release drafter can call this workflow
   workflow_call:
 
@@ -38,51 +19,29 @@ concurrency:
 jobs:
   build:
     name: ${{ matrix.arch }}
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     permissions:
       contents: read
       packages: write
-    
+
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        arch: [x86_64, i686]
-    
-    env:
-      # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
-      # because this should not affect cibuildwheel machinery
-      # also define environment variables needed for testing
-      CIBW_ENVIRONMENT: SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
+        arch: [x86_64, i686, aarch64]
 
-      CIBW_BUILD: "cp3{8,9,10,11,12}-* pp3{8,9,10}-*"
+    env:
       CIBW_ARCHS: ${{ matrix.arch }}
 
-      # skip musllinux for now
-      CIBW_SKIP: '*-musllinux_*'
-
-      CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
-
-      # To 'solve' this issue:
-      #   >>> process 338: D-Bus library appears to be incorrectly set up; failed to read
-      #   machine uuid: Failed to open "/var/lib/dbus/machine-id": No such file or directory
-      CIBW_BEFORE_TEST: |
-        if [ ! -f /var/lib/dbus/machine-id ]; then
-            dbus-uuidgen > /var/lib/dbus/machine-id
-        fi
-
-      # Increase pip debugging output
-      CIBW_BUILD_VERBOSITY: 2
-
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v5.0.0
 
     - name: Log in to the Container registry
-      uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20
+      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Inspect image, skip build if image exists
       id: inspect
       continue-on-error: true
@@ -90,14 +49,14 @@ jobs:
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
-      uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81
+      uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f
       with:
         images: ghcr.io/${{ github.repository }}_${{ matrix.arch }}
         tags: type=raw,value=${{ hashFiles('buildconfig/manylinux-build/**') }}
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0
+      uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
@@ -112,8 +71,10 @@ jobs:
         CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ghcr.io/${{ github.repository }}_x86_64:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
+        CIBW_MANYLINUX_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
+        CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v2.18.1
+      uses: pypa/cibuildwheel@v3.1.4
 
     # We upload the generated files under github actions assets
     - name: Upload dist
@@ -122,4 +83,3 @@ jobs:
         name: pygame-wheels-manylinux-${{ matrix.arch }}
         path: ./wheelhouse/*.whl
         compression-level: 0  # wheels are already zip files, no need for more compression
-

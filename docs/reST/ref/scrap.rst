@@ -18,7 +18,7 @@ functions. All other functions are deprecated as of pygame 2.2.0 and will be rem
 in a future release of pygame.
 
 .. note:: ``scrap.put_text``, ``scrap.get_text``, and ``scrap.has_text`` use the same
-   clipboard as the rest of the current API, but only strings are compatible with the 
+   clipboard as the rest of the current API, but only strings are compatible with the
    new API as of right now.
 
 .. function:: put_text
@@ -41,7 +41,7 @@ in a future release of pygame.
    .. ## pygame.scrap.put_text
 
 .. function:: get_text
-   
+
    | :sl:`Gets text from the clipboard.`
    | :sg:`get_text() -> str`
 
@@ -56,7 +56,7 @@ in a future release of pygame.
    .. ## pygame.scrap.get_text
 
 .. function:: has_text
-   
+
    | :sl:`Checks if text is in the clipboard.`
    | :sg:`has_text() -> bool`
 
@@ -140,7 +140,7 @@ For an example of how the scrap module works refer to the examples page
 
    .. note:: The scrap module requires :func:`pygame.display.set_mode()` be
       called before being initialized.
-   
+
    .. deprecated:: 2.2.0
 
    .. ## pygame.scrap.init ##
