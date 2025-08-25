@@ -28,7 +28,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
     See the :mod:`pygame.gfxdraw` module for alternative draw methods.
 """
 
-from typing import overload
+from typing import overload, Union
 
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -571,20 +571,19 @@ def aalines(
 
   def flood_fill(
     surface: Surface,
-    color: ColorLike,
+    color: Union[ColorLike, Surface],
     start_point: Point
-) -> Rect:  
+) -> Rect:
    """Replace the color of a cluster of connected same-color pixels, beginning
    from the starting point, with a repeating pattern or solid single color
-   
+
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
-   :param pattern_surface: pattern to fill with, as a surface
-   :param starting_point: starting point as a sequence of 2 ints/floats,
+   :type color: :data:`pygame.typing.ColorLike` or a pattern to fill with, as a Surface
+   :param start_point: starting point as a sequence of 2 ints/floats,
       e.g. ``(x, y)``
-   :type starting_point: tuple(int or float, int or float) or
+   :type start_point: tuple(int or float, int or float) or
       list(int or float, int or float) or Vector2(int or float, int or float)
 
    :returns: a rect bounding the changed pixels, if nothing is drawn the
