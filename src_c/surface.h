@@ -43,12 +43,14 @@
 #define PYGAME_BLEND_MULT 0x3
 #define PYGAME_BLEND_MIN 0x4
 #define PYGAME_BLEND_MAX 0x5
+#define PYGAME_BLEND_OVERLAY 0x13
 
 #define PYGAME_BLEND_RGB_ADD 0x1
 #define PYGAME_BLEND_RGB_SUB 0x2
 #define PYGAME_BLEND_RGB_MULT 0x3
 #define PYGAME_BLEND_RGB_MIN 0x4
 #define PYGAME_BLEND_RGB_MAX 0x5
+#define PYGAME_BLEND_RGB_OVERLAY 0x13
 
 #define PYGAME_BLEND_RGBA_ADD 0x6
 #define PYGAME_BLEND_RGBA_SUB 0x7
@@ -208,6 +210,26 @@
     dR = (dR && sR) ? ((dR * sR) + 255) >> 8 : 0;  \
     dG = (dG && sG) ? ((dG * sG) + 255) >> 8 : 0;  \
     dB = (dB && sB) ? ((dB * sB) + 255) >> 8 : 0;
+
+#define BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA) \
+    if (dR < 127) {                                   \
+        dR = ((dR * sR)) >> 7;                        \
+    }                                                 \
+    else {                                            \
+        dR = 255 - (((255 - dR) * (255 - sR)) >> 7);  \
+    }                                                 \
+    if (dG < 127) {                                   \
+        dG = ((dG * sG)) >> 7;                        \
+    }                                                 \
+    else {                                            \
+        dG = 255 - (((255 - dG) * (255 - sG)) >> 7);  \
+    }                                                 \
+    if (dB < 127) {                                   \
+        dB = ((dB * sB)) >> 7;                        \
+    }                                                 \
+    else {                                            \
+        dB = 255 - (((255 - dB) * (255 - sB)) >> 7);  \
+    }
 
 #define BLEND_MIN(sR, sG, sB, sA, dR, dG, dB, dA) \
     if (sR < dR) {                                \
