@@ -1332,9 +1332,17 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (pgSurface_Check(colorobj)) {
-        pat_surfobj = (pgSurfaceObject *)colorobj;
-        pattern = pat_surfobj->surf; /* No conversion: we will map per-pixel */
-        color = 0;                   /* new_color unused for pattern path */
+        pat_surfobj = ((pgSurfaceObject *)colorobj);
+
+        pattern = PG_ConvertSurface(pat_surfobj->surf, surf->format);
+
+        if (pattern == NULL) {
+            return RAISE(PyExc_RuntimeError, "error converting pattern surf");
+        }
+
+        SDL_SetSurfaceRLE(pattern, SDL_FALSE);
+
+        color = 0;
     }
     else {
         CHECK_LOAD_COLOR(colorobj);
@@ -1381,7 +1389,7 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (flood_fill_result == -1) {
-        return PyErr_NoMemory();
+        return NULL; /* error already set by flood_fill_inner */
     }
 
     /* Compute return rect. */
@@ -2484,9 +2492,9 @@ draw_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
     }
     set_and_check_rect(surf, surf_clip_rect, x2, y2, color, drawn_area);
 }
-#ifndef SURF_GET_AT
-#define SURF_GET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format, p_pix)    \
-    switch (PG_FORMAT_BytesPerPixel(p_format)) {                             \
+
+#define SURF_GET_AT_FORMAT(p_color, p_surf, p_x, p_y, p_pixels, p_pix)       \
+    switch (PG_SURF_BytesPerPixel(p_surf)) {                                 \
         case 1:                                                              \
             p_color = (Uint32) *                                             \
                       ((Uint8 *)(p_pixels) + (p_y) * p_surf->pitch + (p_x)); \
@@ -2508,7 +2516,6 @@ draw_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
                 *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x));     \
             break;                                                           \
     }
-#endif  // SURF_GET_AT
 
 static int
 flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
@@ -2517,11 +2524,8 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
     // breadth first flood fill, like graph search
     SDL_Rect cliprect;
     size_t mask_idx;
-    PG_PixelFormat *format = PG_GetSurfaceFormat(surf);
-    if (!format) {
-        return -1;
-    }
     if (!PG_GetSurfaceClipRect(surf, &cliprect)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
     size_t frontier_bufsize = 8, frontier_size = 1, next_frontier_size = 0;
@@ -2531,6 +2535,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
     struct point2d *frontier =
         malloc(frontier_bufsize * sizeof(struct point2d));
     if (frontier == NULL) {
+        PyErr_NoMemory();
         return -1;
     }
 
@@ -2539,6 +2544,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
 
     if (frontier_next == NULL) {
         free(frontier);
+        PyErr_NoMemory();
         return -1;
     }
 
@@ -2551,6 +2557,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
     if (mask == NULL) {
         free(frontier);
         free(frontier_next);
+        PyErr_NoMemory();
         return -1;
     }
     Uint32 old_color = 0;
@@ -2566,7 +2573,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
         goto flood_fill_finished;
     }
 
-    SURF_GET_AT(old_color, surf, x1, y1, (Uint8 *)surf->pixels, format, pix);
+    SURF_GET_AT_FORMAT(old_color, surf, x1, y1, (Uint8 *)surf->pixels, pix);
 
     if (pattern == NULL && old_color == new_color) {
         // not an error, but nothing to do here
@@ -2589,16 +2596,17 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
 
             Uint32 current_color = 0;
 
-            SURF_GET_AT(current_color, surf, x, y, (Uint8 *)surf->pixels,
-                        format, pix);
+            SURF_GET_AT_FORMAT(current_color, surf, x, y,
+                               (Uint8 *)surf->pixels, pix);
 
             if (current_color != old_color) {
                 continue;
             }
 
             if (pattern != NULL) {
-                SURF_GET_AT(new_color, pattern, x % pattern->w, y % pattern->h,
-                            (Uint8 *)pattern->pixels, format, pix);
+                SURF_GET_AT_FORMAT(new_color, pattern, x % pattern->w,
+                                   y % pattern->h, (Uint8 *)pattern->pixels,
+                                   pix);
             }
 
             // clipping and color mapping have already happened here
@@ -2635,6 +2643,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
                         free(mask);
                         free(frontier);
                         free(old_buf);
+                        PyErr_NoMemory();
                         return -1;
                     }
 
@@ -2645,6 +2654,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
                         free(old_buf);
                         free(mask);
                         free(frontier_next);
+                        PyErr_NoMemory();
                         return -1;
                     }
                 }
