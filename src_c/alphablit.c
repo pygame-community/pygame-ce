@@ -1715,7 +1715,8 @@ premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst)
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     if ((PG_SURF_BytesPerPixel(src) == 4) &&
-        (src->pitch == (src->w * PG_SURF_BytesPerPixel(src))) && pg_has_avx2()) {
+        (src->pitch == (src->w * PG_SURF_BytesPerPixel(src))) &&
+        pg_has_avx2()) {
         premul_surf_color_by_alpha_avx2(src, src_format, dst);
         return 0;
     }
