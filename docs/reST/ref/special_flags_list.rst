@@ -62,7 +62,7 @@ Special Flags List
        - ``BLEND_MAX`` / ``BLEND_RGB_MAX``
            Takes the maximum value of each color channel
 
-       .. versionadded:: 2.5.0
+       .. versionadded:: 2.5.6
 
        - ``BLEND_OVERLAY`` / ``BLEND_RGB_OVERLAY``
            Combines the Multiply and Screen blend modes. Where the base layer is light, the top
