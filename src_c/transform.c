@@ -4243,8 +4243,7 @@ surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (pixel_size < 1) {
-        PyErr_SetString(PyExc_ValueError,
-                        "pixel_size must be greater than 0");
+        PyErr_SetString(PyExc_ValueError, "pixel_size must be greater than 0");
         return NULL;
     }
 
