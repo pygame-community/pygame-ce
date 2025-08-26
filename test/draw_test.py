@@ -168,6 +168,7 @@ class DrawTestCase(unittest.TestCase):
     draw_circle = staticmethod(draw.circle)
     draw_aacircle = staticmethod(draw.aacircle)
     draw_ellipse = staticmethod(draw.ellipse)
+    draw_aaellipse = staticmethod(draw.aaellipse)
     draw_arc = staticmethod(draw.arc)
     draw_line = staticmethod(draw.line)
     draw_lines = staticmethod(draw.lines)
@@ -1041,6 +1042,660 @@ class DrawEllipseTest(DrawEllipseMixin, DrawTestCase):
 
     This class inherits the general tests from DrawEllipseMixin. It is also
     the class to add any draw.ellipse specific tests to.
+    """
+
+
+### AAEllipse Testing ###########################################################
+
+
+class DrawAAEllipseMixin:
+    """Mixin tests for drawing antialiased ellipses.
+
+    This class contains all the general antialiased ellipse drawing tests.
+    Most of test are taken from DrawEllipseMixin class.
+    """
+
+    def test_aaellipse__args(self):
+        """Ensures draw aaellipse accepts the correct args."""
+        bounds_rect = self.draw_aaellipse(
+            pygame.Surface((3, 3)), (0, 10, 0, 50), pygame.Rect((0, 0), (3, 2)), 1
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aaellipse__args_without_width(self):
+        """Ensures draw aaellipse accepts the args without a width."""
+        bounds_rect = self.draw_aaellipse(
+            pygame.Surface((2, 2)), (1, 1, 1, 99), pygame.Rect((1, 1), (1, 1))
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aaellipse__args_with_negative_width(self):
+        """Ensures draw aaellipse accepts the args with negative width."""
+        bounds_rect = self.draw_aaellipse(
+            pygame.Surface((3, 3)), (0, 10, 0, 50), pygame.Rect((2, 3), (3, 2)), -1
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+        self.assertEqual(bounds_rect, pygame.Rect(2, 3, 0, 0))
+
+    def test_aaellipse__args_with_width_gt_radius(self):
+        """Ensures draw aaellipse accepts the args with
+        width > rect.w // 2 and width > rect.h // 2.
+        """
+        rect = pygame.Rect((0, 0), (4, 4))
+        bounds_rect = self.draw_aaellipse(
+            pygame.Surface((3, 3)), (0, 10, 0, 50), rect, rect.w // 2 + 1
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+        bounds_rect = self.draw_aaellipse(
+            pygame.Surface((3, 3)), (0, 10, 0, 50), rect, rect.h // 2 + 1
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aaellipse__kwargs(self):
+        """Ensures draw aaellipse accepts the correct kwargs
+        with and without a width arg.
+        """
+        kwargs_list = [
+            {
+                "surface": pygame.Surface((4, 4)),
+                "color": pygame.Color("yellow"),
+                "rect": pygame.Rect((0, 0), (3, 2)),
+                "width": 1,
+            },
+            {
+                "surface": pygame.Surface((2, 1)),
+                "color": (0, 10, 20),
+                "rect": (0, 0, 1, 1),
+            },
+        ]
+
+        for kwargs in kwargs_list:
+            bounds_rect = self.draw_aaellipse(**kwargs)
+
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aaellipse__kwargs_order_independent(self):
+        """Ensures draw aaellipse's kwargs are not order dependent."""
+        bounds_rect = self.draw_aaellipse(
+            color=(1, 2, 3),
+            surface=pygame.Surface((3, 2)),
+            width=0,
+            rect=pygame.Rect((1, 0), (1, 1)),
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aaellipse__args_missing(self):
+        """Ensures draw aaellipse detects any missing required args."""
+        surface = pygame.Surface((1, 1))
+
+        with self.assertRaises(TypeError):
+            self.draw_aaellipse(surface, pygame.Color("red"))
+
+        with self.assertRaises(TypeError):
+            self.draw_aaellipse(surface)
+
+        with self.assertRaises(TypeError):
+            self.draw_aaellipse()
+
+    def test_aaellipse__kwargs_missing(self):
+        """Ensures draw aaellipse detects any missing required kwargs."""
+        kwargs = {
+            "surface": pygame.Surface((1, 2)),
+            "color": pygame.Color("red"),
+            "rect": pygame.Rect((1, 0), (2, 2)),
+            "width": 2,
+        }
+
+        for name in ("rect", "color", "surface"):
+            invalid_kwargs = dict(kwargs)
+            invalid_kwargs.pop(name)  # Pop from a copy.
+
+            with self.assertRaises(TypeError):
+                self.draw_aaellipse(**invalid_kwargs)
+
+    def test_aaellipse__arg_invalid_types(self):
+        """Ensures draw aaellipse detects invalid arg types."""
+        surface = pygame.Surface((2, 2))
+        color = pygame.Color("blue")
+        rect = pygame.Rect((1, 1), (1, 1))
+
+        with self.assertRaises(TypeError):
+            # Invalid width.
+            self.draw_aaellipse(surface, color, rect, "1")
+
+        with self.assertRaises(TypeError):
+            # Invalid rect.
+            self.draw_aaellipse(surface, color, (1, 2, 3, 4, 5), 1)
+
+        with self.assertRaises(TypeError):
+            # Invalid color.
+            self.draw_aaellipse(surface, 2.3, rect, 0)
+
+        with self.assertRaises(TypeError):
+            # Invalid surface.
+            self.draw_aaellipse(rect, color, rect, 2)
+
+    def test_aaellipse__kwarg_invalid_types(self):
+        """Ensures draw aaellipse detects invalid kwarg types."""
+        surface = pygame.Surface((3, 3))
+        color = pygame.Color("green")
+        rect = pygame.Rect((0, 1), (1, 1))
+        kwargs_list = [
+            {
+                "surface": pygame.Surface,  # Invalid surface.
+                "color": color,
+                "rect": rect,
+                "width": 1,
+            },
+            {
+                "surface": surface,
+                "color": 2.3,  # Invalid color.
+                "rect": rect,
+                "width": 1,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "rect": (0, 0, 0),  # Invalid rect.
+                "width": 1,
+            },
+            {"surface": surface, "color": color, "rect": rect, "width": 1.1},
+        ]  # Invalid width.
+
+        for kwargs in kwargs_list:
+            with self.assertRaises(TypeError):
+                self.draw_aaellipse(**kwargs)
+
+    def test_aaellipse__kwarg_invalid_name(self):
+        """Ensures draw aaellipse detects invalid kwarg names."""
+        surface = pygame.Surface((2, 3))
+        color = pygame.Color("cyan")
+        rect = pygame.Rect((0, 1), (2, 2))
+        kwargs_list = [
+            {
+                "surface": surface,
+                "color": color,
+                "rect": rect,
+                "width": 1,
+                "invalid": 1,
+            },
+            {"surface": surface, "color": color, "rect": rect, "invalid": 1},
+        ]
+
+        for kwargs in kwargs_list:
+            with self.assertRaises(TypeError):
+                self.draw_aaellipse(**kwargs)
+
+    def test_aaellipse__args_and_kwargs(self):
+        """Ensures draw aaellipse accepts a combination of args/kwargs"""
+        surface = pygame.Surface((3, 1))
+        color = (255, 255, 0, 0)
+        rect = pygame.Rect((1, 0), (2, 1))
+        width = 0
+        kwargs = {"surface": surface, "color": color, "rect": rect, "width": width}
+
+        for name in ("surface", "color", "rect", "width"):
+            kwargs.pop(name)
+
+            if "surface" == name:
+                bounds_rect = self.draw_aaellipse(surface, **kwargs)
+            elif "color" == name:
+                bounds_rect = self.draw_aaellipse(surface, color, **kwargs)
+            elif "rect" == name:
+                bounds_rect = self.draw_aaellipse(surface, color, rect, **kwargs)
+            else:
+                bounds_rect = self.draw_aaellipse(surface, color, rect, width, **kwargs)
+
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aaellipse__valid_width_values(self):
+        """Ensures draw aaellipse accepts different width values."""
+        pos = (1, 1)
+        surface_color = pygame.Color("white")
+        surface = pygame.Surface((3, 4))
+        color = (10, 20, 30, 255)
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "rect": pygame.Rect(pos, (3, 2)),
+            "width": None,
+        }
+
+        for width in (-1000, -10, -1, 0, 1, 10, 1000):
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["width"] = width
+            expected_color = color if width >= 0 else surface_color
+
+            bounds_rect = self.draw_aaellipse(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aaellipse__valid_rect_formats(self):
+        """Ensures draw aaellipse accepts different rect formats."""
+        pos = (1, 1)
+        expected_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((4, 4))
+        kwargs = {"surface": surface, "color": expected_color, "rect": None, "width": 0}
+        rects = (pygame.Rect(pos, (1, 3)), (pos, (2, 1)), (pos[0], pos[1], 1, 1))
+
+        for rect in rects:
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["rect"] = rect
+
+            bounds_rect = self.draw_aaellipse(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aaellipse__valid_color_formats(self):
+        """Ensures draw aaellipse accepts different color formats."""
+        pos = (1, 1)
+        green_color = pygame.Color("green")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((3, 4))
+        kwargs = {
+            "surface": surface,
+            "color": None,
+            "rect": pygame.Rect(pos, (1, 2)),
+            "width": 0,
+        }
+        reds = (
+            (0, 255, 0),
+            (0, 255, 0, 255),
+            surface.map_rgb(green_color),
+            green_color,
+        )
+
+        for color in reds:
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["color"] = color
+
+            if isinstance(color, int):
+                expected_color = surface.unmap_rgb(color)
+            else:
+                expected_color = green_color
+
+            bounds_rect = self.draw_aaellipse(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aaellipse__invalid_color_formats(self):
+        """Ensures draw aaellipse handles invalid color formats correctly."""
+        pos = (1, 1)
+        surface = pygame.Surface((4, 3))
+        kwargs = {
+            "surface": surface,
+            "color": None,
+            "rect": pygame.Rect(pos, (2, 2)),
+            "width": 1,
+        }
+
+        for expected_color in (2.3, surface):
+            kwargs["color"] = expected_color
+
+            with self.assertRaises(TypeError):
+                self.draw_aaellipse(**kwargs)
+
+    def test_aaellipse__no_holes(self):
+        width = 80
+        height = 70
+        surface = pygame.Surface((width + 1, height + 1))
+        rect = pygame.Rect(0, 0, width, height)
+        # thickness=1 can't be checked because of antialiasing
+        for thickness in range(37, 5):
+            surface.fill("BLACK")
+            self.draw_aaellipse(surface, "RED", rect, thickness)
+            for y in range(height):
+                number_of_changes = 0
+                drawn_pixel = False
+                for x in range(width + 1):
+                    if (
+                        not drawn_pixel
+                        and surface.get_at((x, y)) == pygame.Color("RED")
+                        or drawn_pixel
+                        and surface.get_at((x, y)) == pygame.Color("BLACK")
+                    ):
+                        drawn_pixel = not drawn_pixel
+                        number_of_changes += 1
+                if y < thickness or y > height - thickness - 1:
+                    self.assertEqual(number_of_changes, 2)
+                else:
+                    self.assertEqual(number_of_changes, 4)
+
+    def _check_1_pixel_sized_aaellipse(
+        self, surface, collide_rect, surface_color, ellipse_color
+    ):
+        # Helper method to check the surface for 1 pixel wide and/or high
+        # ellipses.
+        surf_w, surf_h = surface.get_size()
+
+        surface.lock()  # For possible speed up.
+
+        for pos in ((x, y) for y in range(surf_h) for x in range(surf_w)):
+            # Since the ellipse is just a line we can use a rect to help find
+            # where it is expected to be drawn.
+            if collide_rect.collidepoint(pos):
+                expected_color = ellipse_color
+            else:
+                expected_color = surface_color
+
+            self.assertEqual(
+                surface.get_at(pos),
+                expected_color,
+                f"collide_rect={collide_rect}, pos={pos}",
+            )
+
+        surface.unlock()
+
+    def test_aaellipse__1_pixel_width(self):
+        """Ensures an ellipse with a width of 1 is drawn correctly.
+
+        An ellipse with a width of 1 pixel is a vertical line.
+        """
+        ellipse_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surf_w, surf_h = 10, 20
+
+        surface = pygame.Surface((surf_w, surf_h))
+        rect = pygame.Rect((0, 0), (1, 0))
+        collide_rect = rect.copy()
+
+        # Calculate some positions.
+        off_left = -1
+        off_right = surf_w
+        off_bottom = surf_h
+        center_x = surf_w // 2
+        center_y = surf_h // 2
+
+        # Test some even and odd heights.
+        for ellipse_h in range(6, 10):
+            collide_rect.h = ellipse_h
+            rect.h = ellipse_h
+
+            # Calculate some variable positions.
+            off_top = -(ellipse_h + 1)
+            half_off_top = -(ellipse_h // 2)
+            half_off_bottom = surf_h - (ellipse_h // 2)
+
+            # Draw the ellipse in different positions: fully on-surface,
+            # partially off-surface, and fully off-surface.
+            positions = (
+                (off_left, off_top),
+                (off_left, half_off_top),
+                (off_left, center_y),
+                (off_left, half_off_bottom),
+                (off_left, off_bottom),
+                (center_x, off_top),
+                (center_x, half_off_top),
+                (center_x, center_y),
+                (center_x, half_off_bottom),
+                (center_x, off_bottom),
+                (off_right, off_top),
+                (off_right, half_off_top),
+                (off_right, center_y),
+                (off_right, half_off_bottom),
+                (off_right, off_bottom),
+            )
+
+            for rect_pos in positions:
+                surface.fill(surface_color)  # Clear before each draw.
+                rect.topleft = rect_pos
+                collide_rect.topleft = rect_pos
+
+                self.draw_aaellipse(surface, ellipse_color, rect)
+
+                self._check_1_pixel_sized_aaellipse(
+                    surface, collide_rect, surface_color, ellipse_color
+                )
+
+    def test_aaellipse__1_pixel_width_spanning_surface(self):
+        """Ensures an ellipse with a width of 1 is drawn correctly
+        when spanning the height of the surface.
+
+        An ellipse with a width of 1 pixel is a vertical line.
+        """
+        ellipse_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surf_w, surf_h = 10, 20
+
+        surface = pygame.Surface((surf_w, surf_h))
+        rect = pygame.Rect((0, 0), (1, surf_h + 2))  # Longer than the surface.
+
+        # Draw the ellipse in different positions: on-surface and off-surface.
+        positions = (
+            (-1, -1),  # (off_left,   off_top)
+            (0, -1),  # (left_edge,  off_top)
+            (surf_w // 2, -1),  # (center_x,   off_top)
+            (surf_w - 1, -1),  # (right_edge, off_top)
+            (surf_w, -1),
+        )  # (off_right,  off_top)
+
+        for rect_pos in positions:
+            surface.fill(surface_color)  # Clear before each draw.
+            rect.topleft = rect_pos
+
+            self.draw_aaellipse(surface, ellipse_color, rect)
+
+            self._check_1_pixel_sized_aaellipse(
+                surface, rect, surface_color, ellipse_color
+            )
+
+    def test_aaellipse__1_pixel_height(self):
+        """Ensures an ellipse with a height of 1 is drawn correctly.
+
+        An ellipse with a height of 1 pixel is a horizontal line.
+        """
+        ellipse_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surf_w, surf_h = 20, 10
+
+        surface = pygame.Surface((surf_w, surf_h))
+        rect = pygame.Rect((0, 0), (0, 1))
+        collide_rect = rect.copy()
+
+        # Calculate some positions.
+        off_right = surf_w
+        off_top = -1
+        off_bottom = surf_h
+        center_x = surf_w // 2
+        center_y = surf_h // 2
+
+        # Test some even and odd widths.
+        for ellipse_w in range(6, 10):
+            collide_rect.w = ellipse_w
+            rect.w = ellipse_w
+
+            # Calculate some variable positions.
+            off_left = -(ellipse_w + 1)
+            half_off_left = -(ellipse_w // 2)
+            half_off_right = surf_w - (ellipse_w // 2)
+
+            # Draw the ellipse in different positions: fully on-surface,
+            # partially off-surface, and fully off-surface.
+            positions = (
+                (off_left, off_top),
+                (half_off_left, off_top),
+                (center_x, off_top),
+                (half_off_right, off_top),
+                (off_right, off_top),
+                (off_left, center_y),
+                (half_off_left, center_y),
+                (center_x, center_y),
+                (half_off_right, center_y),
+                (off_right, center_y),
+                (off_left, off_bottom),
+                (half_off_left, off_bottom),
+                (center_x, off_bottom),
+                (half_off_right, off_bottom),
+                (off_right, off_bottom),
+            )
+
+            for rect_pos in positions:
+                surface.fill(surface_color)  # Clear before each draw.
+                rect.topleft = rect_pos
+                collide_rect.topleft = rect_pos
+
+                self.draw_aaellipse(surface, ellipse_color, rect)
+
+                self._check_1_pixel_sized_aaellipse(
+                    surface, collide_rect, surface_color, ellipse_color
+                )
+
+    def test_aaellipse__1_pixel_height_spanning_surface(self):
+        """Ensures an ellipse with a height of 1 is drawn correctly
+        when spanning the width of the surface.
+
+        An ellipse with a height of 1 pixel is a horizontal line.
+        """
+        ellipse_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surf_w, surf_h = 20, 10
+
+        surface = pygame.Surface((surf_w, surf_h))
+        rect = pygame.Rect((0, 0), (surf_w + 2, 1))  # Wider than the surface.
+
+        # Draw the ellipse in different positions: on-surface and off-surface.
+        positions = (
+            (-1, -1),  # (off_left, off_top)
+            (-1, 0),  # (off_left, top_edge)
+            (-1, surf_h // 2),  # (off_left, center_y)
+            (-1, surf_h - 1),  # (off_left, bottom_edge)
+            (-1, surf_h),
+        )  # (off_left, off_bottom)
+
+        for rect_pos in positions:
+            surface.fill(surface_color)  # Clear before each draw.
+            rect.topleft = rect_pos
+
+            self.draw_aaellipse(surface, ellipse_color, rect)
+
+            self._check_1_pixel_sized_aaellipse(
+                surface, rect, surface_color, ellipse_color
+            )
+
+    def test_aaellipse__1_pixel_width_and_height(self):
+        """Ensures an ellipse with a width and height of 1 is drawn correctly.
+
+        An ellipse with a width and height of 1 pixel is a single pixel.
+        """
+        ellipse_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surf_w, surf_h = 10, 10
+
+        surface = pygame.Surface((surf_w, surf_h))
+        rect = pygame.Rect((0, 0), (1, 1))
+
+        # Calculate some positions.
+        off_left = -1
+        off_right = surf_w
+        off_top = -1
+        off_bottom = surf_h
+        left_edge = 0
+        right_edge = surf_w - 1
+        top_edge = 0
+        bottom_edge = surf_h - 1
+        center_x = surf_w // 2
+        center_y = surf_h // 2
+
+        # Draw the ellipse in different positions: center surface,
+        # top/bottom/left/right edges, and off-surface.
+        positions = (
+            (off_left, off_top),
+            (off_left, top_edge),
+            (off_left, center_y),
+            (off_left, bottom_edge),
+            (off_left, off_bottom),
+            (left_edge, off_top),
+            (left_edge, top_edge),
+            (left_edge, center_y),
+            (left_edge, bottom_edge),
+            (left_edge, off_bottom),
+            (center_x, off_top),
+            (center_x, top_edge),
+            (center_x, center_y),
+            (center_x, bottom_edge),
+            (center_x, off_bottom),
+            (right_edge, off_top),
+            (right_edge, top_edge),
+            (right_edge, center_y),
+            (right_edge, bottom_edge),
+            (right_edge, off_bottom),
+            (off_right, off_top),
+            (off_right, top_edge),
+            (off_right, center_y),
+            (off_right, bottom_edge),
+            (off_right, off_bottom),
+        )
+
+        for rect_pos in positions:
+            surface.fill(surface_color)  # Clear before each draw.
+            rect.topleft = rect_pos
+
+            self.draw_aaellipse(surface, ellipse_color, rect)
+
+            self._check_1_pixel_sized_aaellipse(
+                surface, rect, surface_color, ellipse_color
+            )
+
+    def test_aaellipse__bounding_rect(self):
+        """Ensures draw aaellipse returns the correct bounding rect.
+
+        Tests ellipses on and off the surface and a range of width/thickness
+        values.
+        """
+        ellipse_color = pygame.Color("red")
+        surf_color = pygame.Color("black")
+        min_width = min_height = 5
+        max_width = max_height = 7
+        sizes = ((min_width, min_height), (max_width, max_height))
+        surface = pygame.Surface((20, 20), 0, 32)
+        surf_rect = surface.get_rect()
+        # Make a rect that is bigger than the surface to help test drawing
+        # ellipses off and partially off the surface.
+        big_rect = surf_rect.inflate(min_width * 2 + 1, min_height * 2 + 1)
+
+        for pos in rect_corners_mids_and_center(
+            surf_rect
+        ) + rect_corners_mids_and_center(big_rect):
+            # Each of the ellipse's rect position attributes will be set to
+            # the pos value.
+            for attr in RECT_POSITION_ATTRIBUTES:
+                # Test using different rect sizes and thickness values.
+                for width, height in sizes:
+                    ellipse_rect = pygame.Rect((0, 0), (width, height))
+                    setattr(ellipse_rect, attr, pos)
+
+                    for thickness in (0, 1, 2, 3, min(width, height)):
+                        surface.fill(surf_color)  # Clear for each test.
+
+                        bounding_rect = self.draw_aaellipse(
+                            surface, ellipse_color, ellipse_rect, thickness
+                        )
+
+                        # Calculating the expected_rect after the ellipse
+                        # is drawn (it uses what is actually drawn).
+                        expected_rect = create_bounding_rect(
+                            surface, surf_color, ellipse_rect.topleft
+                        )
+
+                        self.assertEqual(bounding_rect, expected_rect)
+
+
+class DrawAAEllipseTest(DrawAAEllipseMixin, DrawTestCase):
+    """Test draw module function ellipse.
+
+    This class inherits the general tests from DrawAAEllipseMixin. It is also
+    the class to add any draw.aaellipse specific tests to.
     """
 
 
@@ -7380,6 +8035,7 @@ class DrawModuleTest(unittest.TestCase):
             draw.lines(surf, col, True, points)
             draw.arc(surf, col, pygame.Rect(0, 0, 3, 3), 15, 150)
             draw.ellipse(surf, col, pygame.Rect(0, 0, 3, 6), 1)
+            draw.aaellipse(surf, col, pygame.Rect(0, 0, 3, 6), 1)
             draw.circle(surf, col, (7, 3), 2)
             draw.aacircle(surf, col, (7, 3), 2)
             draw.polygon(surf, col, points, 0)
@@ -7403,6 +8059,9 @@ class DrawModuleTest(unittest.TestCase):
 
             with self.assertRaises(TypeError):
                 draw.ellipse(surf, col, pygame.Rect(0, 0, 3, 6), 1)
+
+            with self.assertRaises(TypeError):
+                draw.aaellipse(surf, col, pygame.Rect(0, 0, 3, 6), 1)
 
             with self.assertRaises(TypeError):
                 draw.circle(surf, col, (7, 3), 2)

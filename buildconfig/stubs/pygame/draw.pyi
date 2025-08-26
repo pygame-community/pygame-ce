@@ -316,6 +316,43 @@ def ellipse(surface: Surface, color: ColorLike, rect: RectLike, width: int = 0) 
     .. versionchangedold:: 2.0.0 Added support for keyword arguments.
     """
 
+def aaellipse(
+    surface: Surface, color: ColorLike, rect: RectLike, width: int = 0
+) -> Rect:
+    """Draw an antialiased ellipse`
+
+    Draws an antialiased ellipse on the given surface.
+    Uses Xiaolin Wu Circle Algorithm.
+    adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
+
+    :param Surface surface: surface to draw on
+    :param color: color to draw with, the alpha value is optional if using a
+       tuple ``(RGB[A])``
+    :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+    :param Rect rect: rectangle to indicate the position and dimensions of the
+       ellipse, the ellipse will be centered inside the rectangle and bounded
+       by it
+    :param int width: (optional) used for line thickness or to indicate that
+       the ellipse is to be filled (not to be confused with the width value
+       of the ``rect`` parameter)
+
+          | if ``width == 0``, (default) fill the ellipse
+          | if ``width > 0``, used for line thickness
+          | if ``width < 0``, nothing will be drawn
+          |
+
+          .. note::
+             When using ``width`` values ``> 1``, the edge lines will only grow
+             inward from the original boundary of the ``rect`` parameter.
+
+    :returns: a rect bounding the changed pixels, if nothing is drawn the
+       bounding rect's position will be the position of the given ``rect``
+       parameter and its width and height will be 0
+    :rtype: Rect
+
+    .. versionadded:: 2.5.6
+    """
+
 def arc(
     surface: Surface,
     color: ColorLike,
