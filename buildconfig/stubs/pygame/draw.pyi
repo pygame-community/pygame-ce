@@ -317,10 +317,7 @@ def ellipse(surface: Surface, color: ColorLike, rect: RectLike, width: int = 0) 
     """
 
 def aaellipse(
-    surface: Surface,
-    color: ColorLike,
-    rect: RectLike,
-    width: int = 0
+    surface: Surface, color: ColorLike, rect: RectLike, width: int = 0
 ) -> Rect:
     """Draw an antialiased ellipse`
 
