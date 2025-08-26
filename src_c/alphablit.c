@@ -1274,7 +1274,9 @@ blit_blend_overlay(SDL_BlitInfo *info)
     int dstpxskip = info->d_pxskip;
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
+    SDL_Palette *srcpal = info->src_palette;
     SDL_PixelFormat *dstfmt = info->dst;
+    SDL_Palette *dstpal = info->dst_palette;
     int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
     int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
@@ -1343,10 +1345,10 @@ blit_blend_overlay(SDL_BlitInfo *info)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcfmt);
-                        GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstfmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);
+                        GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);
                         BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
-                        SET_PIXELVAL(dst, dstfmt, dR, dG, dB, dA);
+                        SET_PIXELVAL(dst, dstfmt, dstpal, dR, dG, dB, dA);
                         src += srcpxskip;
                         dst += dstpxskip;
                     },
@@ -1361,9 +1363,10 @@ blit_blend_overlay(SDL_BlitInfo *info)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcfmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);
                         GET_PIXEL(pixel, dstbpp, dst);
-                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstppa);
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal,
+                                      dstppa);
                         BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
                         dst[offsetR] = dR;
                         dst[offsetG] = dG;
@@ -1381,9 +1384,10 @@ blit_blend_overlay(SDL_BlitInfo *info)
             while (height--) {
                 LOOP_UNROLLED4(
                     {
-                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcfmt);
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);
                         GET_PIXEL(pixel, dstbpp, dst);
-                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstppa);
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal,
+                                      dstppa);
                         BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
                         CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);
                         src += srcpxskip;
@@ -1402,11 +1406,11 @@ blit_blend_overlay(SDL_BlitInfo *info)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, srcbpp, src);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcppa);
-                        GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstfmt);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal,
+                                      srcppa);
+                        GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);
                         BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
-                        SET_PIXELVAL(dst, dstfmt, dR, dG, dB, dA);
-                        *dst = (Uint8)SDL_MapRGB(dstfmt, dR, dG, dB);
+                        SET_PIXELVAL(dst, dstfmt, dstpal, dR, dG, dB, dA);
                         src += srcpxskip;
                         dst += dstpxskip;
                     },
@@ -1422,9 +1426,11 @@ blit_blend_overlay(SDL_BlitInfo *info)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, srcbpp, src);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal,
+                                      srcppa);
                         GET_PIXEL(pixel, dstbpp, dst);
-                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstppa);
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal,
+                                      dstppa);
                         BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
                         dst[offsetR] = dR;
                         dst[offsetG] = dG;
@@ -1443,9 +1449,11 @@ blit_blend_overlay(SDL_BlitInfo *info)
                 LOOP_UNROLLED4(
                     {
                         GET_PIXEL(pixel, srcbpp, src);
-                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcppa);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal,
+                                      srcppa);
                         GET_PIXEL(pixel, dstbpp, dst);
-                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstppa);
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal,
+                                      dstppa);
                         BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
                         CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);
                         src += srcpxskip;
