@@ -469,7 +469,7 @@ def pixelate(
 
     ``pixel_size`` is an integer describing how large you want the pixels in the final pixelated image to be.
     An optional destination surface can be passed which is faster than creating a new Surface. This destination
-    surface must have the same dimensions (width, height) and smae depth as the source surface.
+    surface must have the same dimensions (width, height) and same depth and format as the source Surface.
 
     :param pygame.Surface surface: the surface to pixelate.
 
