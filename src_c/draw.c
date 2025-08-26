@@ -1314,7 +1314,7 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
-    static char *keywords[] = {"surface", "color", "start_point", NULL};
+    static char *keywords[] = {"surface", "color", "start_pos", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OO", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
@@ -1341,7 +1341,7 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (!pg_TwoIntsFromObj(start, &startx, &starty)) {
-        return RAISE(PyExc_TypeError, "invalid start_point argument");
+        return RAISE(PyExc_TypeError, "invalid start_pos argument");
     }
 
     if (SDL_MUSTLOCK(surf)) {

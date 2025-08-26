@@ -570,18 +570,18 @@ def aalines(
     """
 
 def flood_fill(
-    surface: Surface, color: Union[ColorLike, Surface], start_point: Point
+    surface: Surface, color: Union[ColorLike, Surface], start_pos: Point
 ) -> Rect:
     """Replace the color of a cluster of connected same-color pixels, beginning
-    from the starting point, with a repeating pattern or solid single color
+    from the starting poosition, with a repeating pattern or solid single color
 
     :param Surface surface: surface to draw on
     :param color: color, or surface pattern, to draw with. The alpha value is optional if using a
        tuple ``(RGB[A])``
     :type color: :data:`pygame.typing.ColorLike` or a pattern to fill with, as a Surface
-    :param start_point: starting point as a sequence of 2 ints/floats,
+    :param start_pos: starting position as a sequence of 2 ints/floats,
        e.g. ``(x, y)``
-    :type start_point: tuple(int or float, int or float) or
+    :type start_pos: tuple(int or float, int or float) or
        list(int or float, int or float) or Vector2(int or float, int or float)
 
     :returns: a rect bounding the changed pixels, if nothing is drawn the
