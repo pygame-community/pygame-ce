@@ -572,8 +572,10 @@ def aalines(
 def flood_fill(
     surface: Surface, color: Union[ColorLike, Surface], start_pos: Point
 ) -> Rect:
-    """Replace the color of a cluster of connected same-color pixels, beginning
-    from the starting poosition, with a repeating pattern or solid single color
+    """Fill an enclosed, same color area, on a surface.
+
+    Replace the color of a cluster of connected same-color pixels, beginning
+    from the starting position, with a repeating pattern or solid single color.
 
     :param Surface surface: surface to draw on
     :param color: color, or surface pattern, to draw with. The alpha value is optional if using a
