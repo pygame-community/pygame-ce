@@ -93,7 +93,7 @@
       and ``__new__()`` is assumed to take no arguments. So these methods should be
       overridden if any extra attributes need to be copied.
 
-   .. versionadded:: 2.5.2
+   .. versionadded:: 2.5.6
       ``relcenter`` added to Rect / FRect. This will return you a ``Point`` of
       the center relative to the topleft of the Rect. Setting a ``Point`` to it will
       modify the size of the rect to 2 times the ``Point`` used. Below you can find a
