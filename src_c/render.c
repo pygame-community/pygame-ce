@@ -1282,7 +1282,8 @@ image_draw(pgImageObject *self, PyObject *args, PyObject *kwargs)
     if (!Py_IsNone(dstrectobj)) {
         if (!(dstrectptr =
                   parse_dest_rect(self->texture, dstrectobj, &ftmp))) {
-            RAISE(PyExc_ValueError, "dstrect must be a point, Rect, or None");
+            return RAISE(PyExc_ValueError,
+                         "dstrect must be a point, Rect, or None");
         }
     }
     if (self->flip_x) {
@@ -1311,8 +1312,7 @@ static int
 image_set_alpha(pgImageObject *self, PyObject *arg, void *closure)
 {
     if (!PyNumber_Check(arg)) {
-        RAISE(PyExc_TypeError, "alpha must be real number");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "alpha must be real number", -1);
     }
     self->alpha = (float)PyFloat_AsDouble(arg);
     return 0;
@@ -1328,8 +1328,7 @@ static int
 image_set_angle(pgImageObject *self, PyObject *arg, void *closure)
 {
     if (!PyNumber_Check(arg)) {
-        RAISE(PyExc_TypeError, "angle must be real number");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "angle must be real number", -1);
     }
     self->angle = (float)PyFloat_AsDouble(arg);
     return 0;
@@ -1345,8 +1344,7 @@ static int
 image_set_blend_mode(pgImageObject *self, PyObject *arg, void *closure)
 {
     if (!PyLong_Check(arg)) {
-        RAISE(PyExc_TypeError, "Blend mode must be an integer");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "Blend mode must be an integer", -1);
     }
     self->blend_mode = (SDL_BlendMode)(PyLong_AsLong(arg));
     return 0;
@@ -1364,8 +1362,8 @@ image_set_color(pgImageObject *self, PyObject *arg, void *closure)
 {
     Uint8 color[4];
     if (!pg_RGBAFromObjEx(arg, color, PG_COLOR_HANDLE_ALL)) {
-        RAISE(PyExc_TypeError, "Unable to convert argument to Color");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "Unable to convert argument to Color",
+                    -1);
     }
     for (int i = 0; i < 3; i++) {
         self->color->data[i] = color[i];
@@ -1384,8 +1382,7 @@ image_set_flip_x(pgImageObject *self, PyObject *arg, void *closure)
 {
     int value = PyObject_IsTrue(arg);
     if (value == -1) {
-        RAISE(PyExc_TypeError, "flip_x must be boolean value");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "flip_x must be boolean value", -1);
     }
     self->flip_x = (SDL_bool)value;
     return 0;
@@ -1402,8 +1399,7 @@ image_set_flip_y(pgImageObject *self, PyObject *arg, void *closure)
 {
     int value = PyObject_IsTrue(arg);
     if (value == -1) {
-        RAISE(PyExc_TypeError, "flip_y must be boolean value");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "flip_y must be boolean value", -1);
     }
     self->flip_y = (SDL_bool)value;
     return 0;
@@ -1423,8 +1419,7 @@ image_set_origin(pgImageObject *self, PyObject *arg, void *closure)
 {
     if (!Py_IsNone(arg)) {
         if (!pg_TwoFloatsFromObj(arg, &self->origin.x, &self->origin.y)) {
-            RAISE(PyExc_TypeError, "origin must be pair of floats");
-            return -1;
+            RAISERETURN(PyExc_TypeError, "origin must be pair of floats", -1);
         }
         self->has_origin = SDL_TRUE;
     }
@@ -1446,8 +1441,7 @@ image_set_srcrect(pgImageObject *self, PyObject *arg, void *closure)
 {
     SDL_Rect *rect, temp;
     if (!(rect = pgRect_FromObject(arg, &temp))) {
-        RAISE(PyExc_TypeError, "srcrect must be a rectangle");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "srcrect must be a rectangle", -1);
     }
     self->srcrect = (pgRectObject *)pgRect_New(rect);
     return 0;
@@ -1464,8 +1458,7 @@ static int
 image_set_texture(pgImageObject *self, PyObject *arg, void *closure)
 {
     if (!pgTexture_Check(arg)) {
-        RAISE(PyExc_TypeError, "texture must be a Texture");
-        return -1;
+        RAISERETURN(PyExc_TypeError, "texture must be a Texture", -1);
     }
     self->texture = (pgTextureObject *)arg;
     return 0;
