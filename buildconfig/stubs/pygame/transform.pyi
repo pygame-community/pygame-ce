@@ -459,3 +459,28 @@ def hsl(
 
     .. versionadded:: 2.5.0
     """
+
+def pixelate(
+    surface: Surface,
+    pixel_size: int,
+    dest_surface: Optional[Surface] = None,
+) -> Surface:
+    """Returns a pixelated version of the original surface.
+
+    ``pixel_size`` is an integer describing how large you want the pixels in the final pixelated image to be.
+    An optional destination surface can be passed which is faster than creating a new Surface. This destination
+    surface must have the same dimensions (width, height) and same depth and format as the source Surface.
+
+    :param pygame.Surface surface: the surface to pixelate.
+
+    :param int pixel_size: how large the pixels in the pixelated image should be.
+
+    :param pygame.Surface dest_surface: An optional destination surface to store the pixelated image.
+        If provided, it should have the same dimensions and depth as the source surface.
+
+    :returns: A new surface that's been pixelated.
+
+    .. versionadded:: 2.5.6
+    .. note::
+        ``pixel_size`` must be >= 1. A ``ValueError`` is raised otherwise.
+    """
