@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_
+**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Pygame_ is a free and open-source cross-platform library
@@ -155,7 +155,7 @@ How to Contribute
 First of all, thank you for considering contributing to pygame-ce! It's people like you that make pygame-ce a great library. Please follow these steps to get started:
 
 1. Read the `Contribution Guidelines`_ and the `Many Ways to Contribute`_ wiki pages.
-2. Read the documentataion on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
+2. Read the documentation on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
 3. Read how to `label and link reported issues`_.
 4. Check the `issue tracker`_ for open issues that interest you or open a new issue to start a discussion about your idea.
 
@@ -222,3 +222,4 @@ See docs/licenses for licenses of dependencies.
 .. _日本語: ./docs/readmes/README.ja.rst
 .. _Italiano: ./docs/readmes/README.it.rst
 .. _Русский: ./docs/readmes/README.ru.rst
+.. _Ελληνικά: ./docs/readmes/README.gr.rst

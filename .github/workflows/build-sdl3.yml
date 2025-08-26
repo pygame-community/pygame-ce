@@ -52,7 +52,7 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v5.0.0
 
     - name: Install pygame deps (linux)
       if: matrix.os == 'ubuntu-24.04'

@@ -66,7 +66,7 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v5.0.0
 
     - name: Install pygame-ce deps
       # https://github.com/actions/runner-images/issues/7192
@@ -88,7 +88,7 @@ jobs:
 
     - name: Cache debug python build
       id: cache-python
-      uses: actions/cache@v4.2.3
+      uses: actions/cache@v4.2.4
       with:
         key: ${{ matrix.python }}
         path: ~/.pyenv/versions/${{ matrix.python }}-debug/**
@@ -135,7 +135,7 @@ jobs:
     needs: debug_coverage
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v5.0.0
       with:
         fetch-depth: 0  # fetch full history
 

@@ -33,10 +33,10 @@ jobs:
       CIBW_ARCHS: ${{ matrix.arch }}
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v5.0.0
 
     - name: Log in to the Container registry
-      uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772
+      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -74,7 +74,7 @@ jobs:
         CIBW_MANYLINUX_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v3.1.3
+      uses: pypa/cibuildwheel@v3.1.4
 
     # We upload the generated files under github actions assets
     - name: Upload dist
