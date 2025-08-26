@@ -4244,21 +4244,33 @@ surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (pixel_size < 1) {
         PyErr_SetString(PyExc_ValueError,
-                        "Pixel size must be a nonnegative integer");
+                        "pixel_size must be greater than 0");
         return NULL;
     }
 
-    int width = (int)round((double)src->surf->w / pixel_size);
-    int height = (int)round((double)src->surf->h / pixel_size);
+    SDL_Surface *src_surf = pgSurface_AsSurface(src);
+    SURF_INIT_CHECK(src_surf);
+
+    int width = (int)round((double)src_surf->w / pixel_size);
+    int height = (int)round((double)src_surf->h / pixel_size);
+    if (width < 1) {
+        width = 1;
+    }
+    if (height < 1) {
+        height = 1;
+    }
 
     SDL_Surface *temp = scale_to(src, NULL, width, height);
+    if (!temp) {
+        return NULL; /* Exception already set in scale_to */
+    }
     intermediate = pgSurface_New(temp);
     if (intermediate == NULL) {
         SDL_FreeSurface(temp);
         return NULL; /* Exception already set in scale_to */
     }
 
-    new_surf = scale_to(intermediate, dst, src->surf->w, src->surf->h);
+    new_surf = scale_to(intermediate, dst, src_surf->w, src_surf->h);
     Py_DECREF(intermediate);
 
     if (new_surf == NULL) {
