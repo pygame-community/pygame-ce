@@ -443,32 +443,42 @@ compose_custom_blend_mode(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &alpha_mode)) {
         return NULL;
     }
-    if (!PySequence_Check(color_mode))
+    if (!PySequence_Check(color_mode)) {
         return RAISE(PyExc_TypeError, "color_mode has to be sequence");
-    if (!PySequence_Check(alpha_mode))
+    }
+    if (!PySequence_Check(alpha_mode)) {
         return RAISE(PyExc_TypeError, "alpha_mode has to be sequence");
-    if (PySequence_Size(color_mode) != 3)
+    }
+    if (PySequence_Size(color_mode) != 3) {
         return RAISE(PyExc_TypeError, "color_mode has to have 3 elements");
-    if (PySequence_Size(alpha_mode) != 3)
+    }
+    if (PySequence_Size(alpha_mode) != 3) {
         return RAISE(PyExc_TypeError, "alpha_mode has to have 3 elements");
-    if (!pg_FloatFromObjIndex(color_mode, 0, &mode[0]))
+    }
+    if (!pg_FloatFromObjIndex(color_mode, 0, &mode[0])) {
         return RAISE(PyExc_TypeError,
                      "color_mode first element must be float");
-    if (!pg_FloatFromObjIndex(color_mode, 1, &mode[1]))
+    }
+    if (!pg_FloatFromObjIndex(color_mode, 1, &mode[1])) {
         return RAISE(PyExc_TypeError,
                      "color_mode second element must be float");
-    if (!pg_FloatFromObjIndex(color_mode, 2, &mode[2]))
+    }
+    if (!pg_FloatFromObjIndex(color_mode, 2, &mode[2])) {
         return RAISE(PyExc_TypeError,
                      "color_mode third element must be float");
-    if (!pg_FloatFromObjIndex(alpha_mode, 0, &mode[3]))
+    }
+    if (!pg_FloatFromObjIndex(alpha_mode, 0, &mode[3])) {
         return RAISE(PyExc_TypeError,
                      "alpha_mode first element must be float");
-    if (!pg_FloatFromObjIndex(alpha_mode, 1, &mode[4]))
+    }
+    if (!pg_FloatFromObjIndex(alpha_mode, 1, &mode[4])) {
         return RAISE(PyExc_TypeError,
                      "alpha_mode second element must be float");
-    if (!pg_FloatFromObjIndex(alpha_mode, 2, &mode[5]))
+    }
+    if (!pg_FloatFromObjIndex(alpha_mode, 2, &mode[5])) {
         return RAISE(PyExc_TypeError,
                      "alpha_mode third element must be float");
+    }
     blend_mode = SDL_ComposeCustomBlendMode(mode[0], mode[1], mode[2], mode[3],
                                             mode[4], mode[5]);
     return PyLong_FromLong((long)blend_mode);
@@ -828,10 +838,12 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         }
         originptr = &origin;
     }
-    if (flip_x)
+    if (flip_x) {
         flip |= SDL_FLIP_HORIZONTAL;
-    if (flip_y)
+    }
+    if (flip_y) {
         flip |= SDL_FLIP_VERTICAL;
+    }
     RENDERER_ERROR_CHECK(SDL_RenderCopyExF(self->renderer->renderer,
                                            self->texture, srcrectptr,
                                            dstrectptr, angle, originptr, flip))
@@ -887,8 +899,9 @@ texture_draw_triangle(pgTextureObject *self, PyObject *args, PyObject *kwargs)
             !pg_IntFromObjIndex(p1_modobj, 2, &p1_mod[2])) {
             return RAISE(PyExc_TypeError, "invalid p1_mod argument");
         }
-        if (PySequence_Size(p1_modobj) == 4)
+        if (PySequence_Size(p1_modobj) == 4) {
             pg_IntFromObjIndex(p1_modobj, 3, &p1_mod[3]);
+        }
     }
     if (!Py_IsNone(p2_modobj)) {
         if (!pg_IntFromObjIndex(p2_modobj, 0, &p2_mod[0]) ||
@@ -896,8 +909,9 @@ texture_draw_triangle(pgTextureObject *self, PyObject *args, PyObject *kwargs)
             !pg_IntFromObjIndex(p2_modobj, 2, &p2_mod[2])) {
             return RAISE(PyExc_TypeError, "invalid p2_mod argument");
         }
-        if (PySequence_Size(p2_modobj) == 4)
+        if (PySequence_Size(p2_modobj) == 4) {
             pg_IntFromObjIndex(p2_modobj, 3, &p2_mod[3]);
+        }
     }
     if (!Py_IsNone(p3_modobj)) {
         if (!pg_IntFromObjIndex(p3_modobj, 0, &p3_mod[0]) ||
@@ -905,8 +919,9 @@ texture_draw_triangle(pgTextureObject *self, PyObject *args, PyObject *kwargs)
             !pg_IntFromObjIndex(p3_modobj, 2, &p3_mod[2])) {
             return RAISE(PyExc_TypeError, "invalid p3_mod argument");
         }
-        if (PySequence_Size(p3_modobj) == 4)
+        if (PySequence_Size(p3_modobj) == 4) {
             pg_IntFromObjIndex(p3_modobj, 3, &p3_mod[3]);
+        }
     }
     RENDERER_ERROR_CHECK(
         SDL_GetTextureColorMod(self->texture, &_r_mod, &_g_mod, &_b_mod));
@@ -1008,8 +1023,9 @@ texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
             !pg_IntFromObjIndex(p1_modobj, 2, &p1_mod[2])) {
             return RAISE(PyExc_TypeError, "invalid p1_mod argument");
         }
-        if (PySequence_Size(p1_modobj) == 4)
+        if (PySequence_Size(p1_modobj) == 4) {
             pg_IntFromObjIndex(p1_modobj, 3, &p1_mod[3]);
+        }
     }
     if (!Py_IsNone(p2_modobj)) {
         if (!pg_IntFromObjIndex(p2_modobj, 0, &p2_mod[0]) ||
@@ -1017,8 +1033,9 @@ texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
             !pg_IntFromObjIndex(p2_modobj, 2, &p2_mod[2])) {
             return RAISE(PyExc_TypeError, "invalid p2_mod argument");
         }
-        if (PySequence_Size(p2_modobj) == 4)
+        if (PySequence_Size(p2_modobj) == 4) {
             pg_IntFromObjIndex(p2_modobj, 3, &p2_mod[3]);
+        }
     }
     if (!Py_IsNone(p3_modobj)) {
         if (!pg_IntFromObjIndex(p3_modobj, 0, &p3_mod[0]) ||
@@ -1026,8 +1043,9 @@ texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
             !pg_IntFromObjIndex(p3_modobj, 2, &p3_mod[2])) {
             return RAISE(PyExc_TypeError, "invalid p3_mod argument");
         }
-        if (PySequence_Size(p3_modobj) == 4)
+        if (PySequence_Size(p3_modobj) == 4) {
             pg_IntFromObjIndex(p3_modobj, 3, &p3_mod[3]);
+        }
     }
     if (!Py_IsNone(p4_modobj)) {
         if (!pg_IntFromObjIndex(p4_modobj, 0, &p4_mod[0]) ||
@@ -1035,8 +1053,9 @@ texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
             !pg_IntFromObjIndex(p4_modobj, 2, &p4_mod[2])) {
             return RAISE(PyExc_TypeError, "invalid p4_mod argument");
         }
-        if (PySequence_Size(p4_modobj) == 4)
+        if (PySequence_Size(p4_modobj) == 4) {
             pg_IntFromObjIndex(p4_modobj, 3, &p4_mod[3]);
+        }
     }
     RENDERER_ERROR_CHECK(
         SDL_GetTextureColorMod(self->texture, &_r_mod, &_g_mod, &_b_mod));
@@ -1149,8 +1168,9 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     if (format != surf->format->format) {
         RENDERER_ERROR_CHECK(SDL_GetSurfaceBlendMode(surf, &blend))
         pixel_format = SDL_AllocFormat(format);
-        if (pixel_format == NULL)
+        if (pixel_format == NULL) {
             return RAISE(pgExc_SDLError, SDL_GetError());
+        }
         converted_surf = SDL_ConvertSurface(surf, pixel_format, 0);
         if (SDL_SetSurfaceBlendMode(converted_surf, blend) < 0) {
             SDL_FreeSurface(converted_surf);
@@ -1167,8 +1187,9 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         res = SDL_UpdateTexture(self->texture, areaptr, surf->pixels,
                                 surf->pitch);
     }
-    if (res < 0)
+    if (res < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     Py_RETURN_NONE;
 }
 
@@ -1351,10 +1372,12 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
             RAISE(PyExc_ValueError, "dstrect must be a point, Rect, or None");
         }
     }
-    if (self->flip_x)
+    if (self->flip_x) {
         flip |= SDL_FLIP_HORIZONTAL;
-    if (self->flip_y)
+    }
+    if (self->flip_y) {
         flip |= SDL_FLIP_VERTICAL;
+    }
     set_texture_color_helper(self->texture->texture, self->color->data[0],
                              self->color->data[1], self->color->data[2]);
     set_texture_alpha_helper(self->texture->texture, (Uint8)self->alpha);
@@ -1400,10 +1423,12 @@ image_draw(pgImageObject *self, PyObject *args, PyObject *kwargs)
             RAISE(PyExc_ValueError, "dstrect must be a point, Rect, or None");
         }
     }
-    if (self->flip_x)
+    if (self->flip_x) {
         flip |= SDL_FLIP_HORIZONTAL;
-    if (self->flip_y)
+    }
+    if (self->flip_y) {
         flip |= SDL_FLIP_VERTICAL;
+    }
     set_texture_color_helper(self->texture->texture, self->color->data[0],
                              self->color->data[1], self->color->data[2]);
     set_texture_alpha_helper(self->texture->texture, (Uint8)self->alpha);
