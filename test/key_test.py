@@ -1,6 +1,6 @@
 import os
-import time
 import platform
+import time
 import unittest
 
 import pygame

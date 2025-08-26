@@ -1,8 +1,8 @@
-import unittest
-import pygame
 import os
 import platform
+import unittest
 
+import pygame
 from pygame import Window
 from pygame.version import SDL
 
@@ -150,8 +150,9 @@ class WindowTypeTest(unittest.TestCase):
         self.win.size = (640, 480)
 
     def test_position(self):
-        self.win.position = (12, 34)
-        self.assertTupleEqual(self.win.position, (12, 34))
+        new_pos = (self.win.position[0] + 20, self.win.position[1] + 10)
+        self.win.position = new_pos
+        self.assertTupleEqual(self.win.position, new_pos)
 
         self.win.position = pygame.WINDOWPOS_CENTERED
 
@@ -290,6 +291,11 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(win.resizable)
         win.destroy()
 
+        # test utility
+        win = Window(utility=True)
+        self.assertTrue(win.utility)
+        win.destroy()
+
         # should raise a TypeError if keyword is random
         self.assertRaises(TypeError, lambda: Window(aaa=True))
         self.assertRaises(TypeError, lambda: Window(aaa=False))
@@ -318,13 +324,13 @@ class WindowTypeTest(unittest.TestCase):
         pygame.init()
 
     def test_from_display_module(self):
-        pygame.display.set_mode((640, 480))
+        surf = pygame.display.set_mode((640, 480))
 
         win1 = Window.from_display_module()
         win2 = Window.from_display_module()
 
         self.assertIs(win1, win2)
-        self.assertFalse(win1.opengl)
+        self.assertIs(win1.get_surface(), surf)
 
         pygame.display.quit()
         pygame.init()

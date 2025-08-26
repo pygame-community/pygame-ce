@@ -26,7 +26,7 @@ static PyObject *
 controller_module_init(PyObject *module, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER)) {
-        if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
+        if (!PG_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
@@ -159,7 +159,7 @@ controller_attached(pgControllerObject *self, PyObject *_null)
 {
     CONTROLLER_INIT_CHECK();
     if (!self->controller) {
-        return RAISE(pgExc_SDLError, "Controller is not initalized");
+        return RAISE(pgExc_SDLError, "Controller is not initialized");
     }
 
     return PyBool_FromLong(SDL_GameControllerGetAttached(self->controller));
@@ -171,7 +171,7 @@ controller_as_joystick(pgControllerObject *self, PyObject *_null)
     CONTROLLER_INIT_CHECK();
     JOYSTICK_INIT_CHECK();
     if (!self->controller) {
-        return RAISE(pgExc_SDLError, "Controller is not initalized");
+        return RAISE(pgExc_SDLError, "Controller is not initialized");
     }
 
     return pgJoystick_New(self->id);
@@ -188,7 +188,7 @@ controller_get_axis(pgControllerObject *self, PyObject *args, PyObject *kwargs)
     }
     CONTROLLER_INIT_CHECK();
     if (!self->controller) {
-        return RAISE(pgExc_SDLError, "Controller is not initalized");
+        return RAISE(pgExc_SDLError, "Controller is not initialized");
     }
 
     if (axis < 0 || axis > SDL_CONTROLLER_AXIS_MAX - 1) {
@@ -210,7 +210,7 @@ controller_get_button(pgControllerObject *self, PyObject *args,
     }
     CONTROLLER_INIT_CHECK();
     if (!self->controller) {
-        return RAISE(pgExc_SDLError, "Controller is not initalized");
+        return RAISE(pgExc_SDLError, "Controller is not initialized");
     }
 
     if (button < 0 || button > SDL_CONTROLLER_BUTTON_MAX) {
@@ -230,7 +230,7 @@ controller_get_mapping(pgControllerObject *self, PyObject *_null)
 
     CONTROLLER_INIT_CHECK();
     if (!self->controller) {
-        return RAISE(pgExc_SDLError, "Controller is not initalized");
+        return RAISE(pgExc_SDLError, "Controller is not initialized");
     }
 
     mapping = SDL_GameControllerMapping(self->controller);
@@ -285,7 +285,7 @@ controller_set_mapping(pgControllerObject *self, PyObject *args,
 
     CONTROLLER_INIT_CHECK();
     if (!self->controller) {
-        return RAISE(pgExc_SDLError, "Controller is not initalized");
+        return RAISE(pgExc_SDLError, "Controller is not initialized");
     }
 
     char guid_str[64];
@@ -364,7 +364,7 @@ controller_rumble(pgControllerObject *self, PyObject *args, PyObject *kwargs)
 
     CONTROLLER_INIT_CHECK();
     if (!self->controller) {
-        return RAISE(pgExc_SDLError, "Controller is not initalized");
+        return RAISE(pgExc_SDLError, "Controller is not initialized");
     }
 
     // rumble takes values in range 0 to 0xFFFF (65535)
@@ -382,10 +382,39 @@ controller_stop_rumble(pgControllerObject *self, PyObject *_null)
 {
     CONTROLLER_INIT_CHECK();
     if (!self->controller) {
-        return RAISE(pgExc_SDLError, "Controller is not initalized");
+        return RAISE(pgExc_SDLError, "Controller is not initialized");
     }
     SDL_GameControllerRumble(self->controller, 0, 0, 1);
     Py_RETURN_NONE;
+}
+
+static PyObject*
+controller_set_led(pgControllerObject *self, PyObject *arg)
+{
+    CONTROLLER_INIT_CHECK();
+
+    Uint8 colors[4] = {0, 0, 0, 0};
+
+    if (!pg_RGBAFromObjEx(arg, colors, PG_COLOR_HANDLE_ALL)) {
+        // Exception already set
+        return NULL;
+    }
+
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    if (SDL_GameControllerSetLED(self->controller, colors[0], colors[1], colors[2]) < 0) {
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_TRUE;
+#else
+    // SDL3 renames the function and sets an error message on failure
+    bool result = SDL_SetGamepadLED(self->controller, colors[0], colors[1], colors[2]);
+    if (!result) {
+        // Clear the SDL error message that SDL set, for example if it didn't
+        // have an addressable LED
+        (void)SDL_GetError();
+    }
+    return PyBool_FromLong(result);
+#endif
 }
 
 static PyMethodDef controller_methods[] = {
@@ -414,6 +443,7 @@ static PyMethodDef controller_methods[] = {
      DOC_SDL2_CONTROLLER_CONTROLLER_RUMBLE},
     {"stop_rumble", (PyCFunction)controller_stop_rumble, METH_NOARGS,
      DOC_SDL2_CONTROLLER_CONTROLLER_STOPRUMBLE},
+    {"set_led", (PyCFunction)controller_set_led, METH_O, DOC_SDL2_CONTROLLER_CONTROLLER_SETLED},
     {NULL, NULL, 0, NULL}};
 
 static PyMemberDef controller_members[] = {
@@ -569,6 +599,11 @@ MODINIT_DEFINE(controller)
         return NULL;
     }
 
+    import_pygame_color();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
     import_pygame_joystick();
     if (PyErr_Occurred()) {
         return NULL;
@@ -584,14 +619,7 @@ MODINIT_DEFINE(controller)
         return NULL;
     }
 
-    if (PyType_Ready(&pgController_Type) < 0) {
-        return NULL;
-    }
-
-    Py_INCREF(&pgController_Type);
-    if (PyModule_AddObject(module, "Controller",
-                           (PyObject *)&pgController_Type)) {
-        Py_DECREF(&pgController_Type);
+    if (PyModule_AddType(module, &pgController_Type)) {
         Py_DECREF(module);
         return NULL;
     }

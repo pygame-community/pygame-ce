@@ -31,6 +31,7 @@ Enjoy!
 """
 
 import os
+
 import pygame
 import pygame.freetype as freetype
 

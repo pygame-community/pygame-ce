@@ -12,7 +12,7 @@ Contact: rumia0601@gmail.com
 
 KEYDOWN이 사용되었지만, 아직도 이 게임이 완전한 GUI가 아닌 것처럼 보이는 이유는 GUI가 입력은 없고 오직 출력(프린트)하는 데에만 사용되었기 때문이다. GUI에서의 입력이란 특정한 위치에서의 마우스 이벤트를 처리하는 것이다. HP를 증가시키거나 감소시키는 버튼 2개를 만드는 것은 어떨까?
 
-.. image:: ../../../assets/AdvancedInputOutput1.gif
+.. image:: ../../../assets/AdvancedInputOutput1.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -27,7 +27,7 @@ KEYDOWN이 사용되었지만, 아직도 이 게임이 완전한 GUI가 아닌 �
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedInputOutput1.gif")
+   ball = pygame.image.load("AdvancedInputOutput1.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -44,7 +44,7 @@ KEYDOWN이 사용되었지만, 아직도 이 게임이 완전한 GUI가 아닌 �
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: ../../../assets/AdvancedInputOutput2.gif
+.. image:: ../../../assets/AdvancedInputOutput2.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -59,7 +59,7 @@ KEYDOWN이 사용되었지만, 아직도 이 게임이 완전한 GUI가 아닌 �
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedInputOutput2.gif")
+   ball = pygame.image.load("AdvancedInputOutput2.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -78,7 +78,7 @@ KEYDOWN이 사용되었지만, 아직도 이 게임이 완전한 GUI가 아닌 �
 
 버튼 2개를 만드는 것은 쉽다. 버튼을 보면, 뭔가 특이한 효과가 적용되어 있음을 알 수 있다. 어떻게 한 것인가? 이전의 아이디어처럼 단순하다. 첫째, 큰 정사각형을 그린다. 둘째, 내용은 없고 두께만 있는 작은 정사각형을 그린다. 하지만 이 버튼들은 아직 출력용이다. 이 버튼들을 위한 클릭 가능 공간을 만들어야 한다.
 
-.. image:: ../../../assets/AdvancedInputOutput3.gif
+.. image:: ../../../assets/AdvancedInputOutput3.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -93,7 +93,7 @@ KEYDOWN이 사용되었지만, 아직도 이 게임이 완전한 GUI가 아닌 �
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedInputOutput3.gif")
+   ball = pygame.image.load("AdvancedInputOutput3.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -110,7 +110,7 @@ KEYDOWN이 사용되었지만, 아직도 이 게임이 완전한 GUI가 아닌 �
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: ../../../assets/AdvancedInputOutput4.gif
+.. image:: ../../../assets/AdvancedInputOutput4.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -125,7 +125,7 @@ KEYDOWN이 사용되었지만, 아직도 이 게임이 완전한 GUI가 아닌 �
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedInputOutput4.gif")
+   ball = pygame.image.load("AdvancedInputOutput4.webp")
    ballrect = ball.get_rect()
 
    while True:

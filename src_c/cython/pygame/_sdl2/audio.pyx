@@ -51,7 +51,7 @@ def get_audio_device_names(iscapture = False):
                            If True return devices available for capture.
 
     :return: list of devicenames.
-    :rtype: List[string]
+    :rtype: list[string]
     """
 
     cdef int count = SDL_GetNumAudioDevices(iscapture)

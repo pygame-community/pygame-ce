@@ -465,9 +465,10 @@ static PyObject *
 RectExport_moveTo(RectObject *self, PyObject *const *args, Py_ssize_t nargs,
                   PyObject *kwnames);
 static PyObject *
-RectExport_inflate(RectObject *self, PyObject *args);
+RectExport_inflate(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
-RectExport_inflateIp(RectObject *self, PyObject *args);
+RectExport_inflateIp(RectObject *self, PyObject *const *args,
+                     Py_ssize_t nargs);
 static PyObject *
 RectExport_scalebyIp(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
@@ -1052,12 +1053,12 @@ RectExport_moveTo(RectObject *self, PyObject *const *args, Py_ssize_t nargs,
 }
 
 static PyObject *
-RectExport_inflate(RectObject *self, PyObject *args)
+RectExport_inflate(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PrimitiveType x, y;
 
-    if (!twoPrimitivesFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+    if (!pgTwoValuesFromFastcallArgs(args, nargs, &x, &y)) {
+        return NULL;
     }
 
     return RectExport_subtypeNew4(Py_TYPE(self), self->r.x - x / 2,
@@ -1066,12 +1067,12 @@ RectExport_inflate(RectObject *self, PyObject *args)
 }
 
 static PyObject *
-RectExport_inflateIp(RectObject *self, PyObject *args)
+RectExport_inflateIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PrimitiveType x, y;
 
-    if (!twoPrimitivesFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+    if (!pgTwoValuesFromFastcallArgs(args, nargs, &x, &y)) {
+        return NULL;
     }
     self->r.x -= x / 2;
     self->r.y -= y / 2;
@@ -1183,8 +1184,9 @@ RectExport_unionIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     InnerRect *argrect, temp;
     PrimitiveType x, y, w, h;
 
-    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp)))
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
+    }
 
     x = MIN(self->r.x, argrect->x);
     y = MIN(self->r.y, argrect->y);
@@ -1783,8 +1785,9 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
     }
 
     ret = PyList_New(0);
-    if (!ret)
+    if (!ret) {
         return NULL;
+    }
 
     /* If the calling rect has 0 width or height, it cannot collide with
      * anything, hence return an empty list directly. */
@@ -1866,6 +1869,7 @@ RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 static PyObject *
 RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
+    PyObject *outer_rect = NULL;
     InnerRect *rect = &self->r, *rect_copy = NULL;
     PrimitiveType x1, y1, x2, y2;
 
@@ -1915,7 +1919,8 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     if ((self->r.w < 0) || (self->r.h < 0)) {
         /* Make a copy of the rect so it can be normalized. */
-        rect_copy = &pgRectAsRect(RectExport_RectNew(&self->r));
+        outer_rect = RectExport_RectNew(&self->r);
+        rect_copy = &pgRectAsRect(outer_rect);
 
         if (rect_copy == NULL) {
             return RAISE(PyExc_MemoryError, "cannot allocate memory for rect");
@@ -1926,16 +1931,17 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (!RectImport_IntersectRectAndLine(rect, &x1, &y1, &x2, &y2)) {
-        Py_XDECREF(rect_copy);
+        Py_XDECREF(outer_rect);
         return PyTuple_New(0);
     }
 
-    Py_XDECREF(rect_copy);
+    Py_XDECREF(outer_rect);
 
     PyObject *subtup1, *subtup2;
     subtup1 = TupleFromTwoPrimitives(x1, y1);
-    if (!subtup1)
+    if (!subtup1) {
         return NULL;
+    }
 
     subtup2 = TupleFromTwoPrimitives(x2, y2);
     if (!subtup2) {
@@ -2012,22 +2018,28 @@ RectExport_clamp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     if (self->r.w >= argrect->w) {
         x = argrect->x + argrect->w / 2 - self->r.w / 2;
     }
-    else if (self->r.x < argrect->x)
+    else if (self->r.x < argrect->x) {
         x = argrect->x;
-    else if (self->r.x + self->r.w > argrect->x + argrect->w)
+    }
+    else if (self->r.x + self->r.w > argrect->x + argrect->w) {
         x = argrect->x + argrect->w - self->r.w;
-    else
+    }
+    else {
         x = self->r.x;
+    }
 
     if (self->r.h >= argrect->h) {
         y = argrect->y + argrect->h / 2 - self->r.h / 2;
     }
-    else if (self->r.y < argrect->y)
+    else if (self->r.y < argrect->y) {
         y = argrect->y;
-    else if (self->r.y + self->r.h > argrect->y + argrect->h)
+    }
+    else if (self->r.y + self->r.h > argrect->y + argrect->h) {
         y = argrect->y + argrect->h - self->r.h;
-    else
+    }
+    else {
         y = self->r.y;
+    }
 
     return RectExport_subtypeNew4(Py_TYPE(self), x, y, self->r.w, self->r.h);
 }
@@ -2069,22 +2081,28 @@ RectExport_clampIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     if (self->r.w >= argrect->w) {
         x = argrect->x + argrect->w / 2 - self->r.w / 2;
     }
-    else if (self->r.x < argrect->x)
+    else if (self->r.x < argrect->x) {
         x = argrect->x;
-    else if (self->r.x + self->r.w > argrect->x + argrect->w)
+    }
+    else if (self->r.x + self->r.w > argrect->x + argrect->w) {
         x = argrect->x + argrect->w - self->r.w;
-    else
+    }
+    else {
         x = self->r.x;
+    }
 
     if (self->r.h >= argrect->h) {
         y = argrect->y + argrect->h / 2 - self->r.h / 2;
     }
-    else if (self->r.y < argrect->y)
+    else if (self->r.y < argrect->y) {
         y = argrect->y;
-    else if (self->r.y + self->r.h > argrect->y + argrect->h)
+    }
+    else if (self->r.y + self->r.h > argrect->y + argrect->h) {
         y = argrect->y + argrect->h - self->r.h;
-    else
+    }
+    else {
         y = self->r.y;
+    }
 
     self->r.x = x;
     self->r.y = y;
@@ -2160,14 +2178,10 @@ RectExport_subscript(RectObject *self, PyObject *op)
     PrimitiveType *data = (PrimitiveType *)&self->r;
 
     if (PyIndex_Check(op)) {
-        PyObject *index = PyNumber_Index(op);
-        Py_ssize_t i;
-
-        if (index == NULL) {
+        Py_ssize_t i = PyNumber_AsSsize_t(op, NULL);
+        if (i == -1 && PyErr_Occurred()) {
             return NULL;
         }
-        i = PyNumber_AsSsize_t(index, NULL);
-        Py_DECREF(index);
         return RectExport_item(self, i);
     }
     else if (op == Py_Ellipsis) {
@@ -2213,15 +2227,10 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
         return -1;
     }
     if (PyIndex_Check(op)) {
-        PyObject *index;
-        Py_ssize_t i;
-
-        index = PyNumber_Index(op);
-        if (index == NULL) {
+        Py_ssize_t i = PyNumber_AsSsize_t(op, NULL);
+        if (i == -1 && PyErr_Occurred()) {
             return -1;
         }
-        i = PyNumber_AsSsize_t(index, NULL);
-        Py_DECREF(index);
         return RectExport_assItem(self, i, value);
     }
     else if (op == Py_Ellipsis) {

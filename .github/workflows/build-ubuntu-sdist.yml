@@ -8,32 +8,13 @@
 name: Ubuntu sdist
 
 # Run CI only when a release is created, on changes to main branch, or any PR
-# to main. Do not run CI on any other branch. Also, skip any non-source changes
-# from running on CI
+# to main.
 on:
   push:
     branches: main
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-      - '.gitignore'
-      - '*.rst'
-      - '*.md'
-      - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/build-ubuntu-sdist.yml'
 
   pull_request:
     branches: main
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-      - '.gitignore'
-      - '*.rst'
-      - '*.md'
-      - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/build-ubuntu-sdist.yml'
 
   # the github release drafter can call this workflow
   workflow_call:
@@ -58,7 +39,7 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v5.0.0
 
     - name: Install deps
       # install numpy from pip and not apt because the one from pip is newer,
@@ -84,7 +65,7 @@ jobs:
 
     - name: Test typestubs
       run: |
-        pip3 install mypy
+        pip3 install mypy==1.13.0
         python3 buildconfig/stubs/stubcheck.py
 
     # We upload the generated files under github actions assets

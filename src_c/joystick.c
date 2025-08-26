@@ -39,8 +39,9 @@ static PyObject *
 init(PyObject *self, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
-        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK))
+        if (!PG_InitSubSystem(SDL_INIT_JOYSTICK)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
+        }
         PG_SetJoystickEventsEnabled(SDL_TRUE);
     }
     Py_RETURN_NONE;
@@ -112,7 +113,17 @@ static PyObject *
 get_count(PyObject *self, PyObject *_null)
 {
     JOYSTICK_INIT_CHECK();
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int ret;
+    SDL_JoystickID *joysticks = SDL_GetJoysticks(&ret);
+    if (!joysticks) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    SDL_free(joysticks);
+    return PyLong_FromLong(ret);
+#else
     return PyLong_FromLong(SDL_NumJoysticks());
+#endif
 }
 
 static PyObject *
@@ -200,18 +211,53 @@ joy_get_guid(PyObject *self, PyObject *_null)
         guid = SDL_JoystickGetGUID(joy);
     }
     else {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        return RAISE(pgExc_SDLError, "Invalid/closed joystick object");
+#else
         guid = SDL_JoystickGetDeviceGUID(pgJoystick_AsID(self));
+#endif
     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_GUIDToString(guid, strguid, 33);
+#else
     SDL_JoystickGetGUIDString(guid, strguid, 33);
+#endif
 
     return PyUnicode_FromString(strguid);
 }
 
 const char *
-_pg_powerlevel_string(SDL_JoystickPowerLevel level)
+_pg_powerlevel_string(SDL_Joystick *joy)
 {
-    switch (level) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int percent = -1;
+    SDL_PowerState state = SDL_GetJoystickPowerInfo(joy, &percent);
+    if (state == SDL_POWERSTATE_ON_BATTERY) {
+        /* These percentages are based on SDL_JoystickCurrentPowerLevel defined
+         * in sdl2-compat */
+        if (percent > 70) {
+            return "full";
+        }
+        else if (percent > 20) {
+            return "medium";
+        }
+        else if (percent > 5) {
+            return "low";
+        }
+        else {
+            return "empty";
+        }
+    }
+    else if (state == SDL_POWERSTATE_UNKNOWN ||
+             state == SDL_POWERSTATE_ERROR) {
+        return "unknown";
+    }
+    else {
+        return "wired";
+    }
+#else
+    switch (SDL_JoystickCurrentPowerLevel(joy)) {
         case SDL_JOYSTICK_POWER_EMPTY:
             return "empty";
         case SDL_JOYSTICK_POWER_LOW:
@@ -227,12 +273,12 @@ _pg_powerlevel_string(SDL_JoystickPowerLevel level)
         default:
             return "unknown";
     }
+#endif
 }
 
 static PyObject *
 joy_get_power_level(PyObject *self, PyObject *_null)
 {
-    SDL_JoystickPowerLevel level;
     const char *leveltext;
     SDL_Joystick *joy = pgJoystick_AsSDL(self);
 
@@ -241,8 +287,7 @@ joy_get_power_level(PyObject *self, PyObject *_null)
         return RAISE(pgExc_SDLError, "Joystick not initialized");
     }
 
-    level = SDL_JoystickCurrentPowerLevel(joy);
-    leveltext = _pg_powerlevel_string(level);
+    leveltext = _pg_powerlevel_string(joy);
 
     return PyUnicode_FromString(leveltext);
 }
@@ -287,7 +332,11 @@ joy_rumble(pgJoystickObject *self, PyObject *args, PyObject *kwargs)
     low = (Uint32)(lowf * 0xFFFF);
     high = (Uint32)(highf * 0xFFFF);
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_JoystickRumble(joy, low, high, duration)) {
+#else
     if (SDL_JoystickRumble(joy, low, high, duration) == -1) {
+#endif
         Py_RETURN_FALSE;
     }
     Py_RETURN_TRUE;
@@ -482,6 +531,40 @@ joy_get_hat(PyObject *self, PyObject *args)
     return pg_tuple_couple_from_values_int(px, py);
 }
 
+static PyObject *
+joy_set_led(PyObject *self, PyObject *arg)
+{
+    SDL_Joystick *joy = pgJoystick_AsSDL(self);
+
+    JOYSTICK_INIT_CHECK();
+    if (!joy) {
+        return RAISE(pgExc_SDLError, "Joystick not initialized");
+    }
+
+    Uint8 colors[4] = {0, 0, 0, 0};
+
+    if (!pg_RGBAFromObjEx(arg, colors, PG_COLOR_HANDLE_ALL)) {
+        // Exception already set
+        return NULL;
+    }
+
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    if (SDL_JoystickSetLED(joy, colors[0], colors[1], colors[2]) < 0) {
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_TRUE;
+#else
+    // SDL3 renames the function and sets an error message on failure
+    bool result = SDL_SetJoystickLED(joy, colors[0], colors[1], colors[2]);
+    if (!result) {
+        // Clear the SDL error message that SDL set, for example if it didn't
+        // have an addressable LED
+        (void)SDL_GetError();
+    }
+    return PyBool_FromLong(result);
+#endif
+}
+
 static PyMethodDef joy_methods[] = {
     {"init", joy_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_INIT},
     {"quit", joy_quit, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_QUIT},
@@ -511,6 +594,7 @@ static PyMethodDef joy_methods[] = {
     {"get_numhats", joy_get_numhats, METH_NOARGS,
      DOC_JOYSTICK_JOYSTICK_GETNUMHATS},
     {"get_hat", joy_get_hat, METH_VARARGS, DOC_JOYSTICK_JOYSTICK_GETHAT},
+    {"set_led", joy_set_led, METH_O, DOC_JOYSTICK_JOYSTICK_SETLED},
 
     {NULL, NULL, 0, NULL}};
 
@@ -545,9 +629,13 @@ pgJoystick_New(int id)
     JOYSTICK_INIT_CHECK();
 
     /* Open the SDL device */
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    /* This check should be redundant because SDL_JoystickOpen already checks
+     * and errors if id is out of bounds on SDL3 */
     if (id >= SDL_NumJoysticks()) {
         return RAISE(pgExc_SDLError, "Invalid joystick device number");
     }
+#endif
     joy = SDL_JoystickOpen(id);
     if (!joy) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -612,6 +700,11 @@ MODINIT_DEFINE(joystick)
         return NULL;
     }
 
+    import_pygame_color();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
     /* type preparation */
     if (PyType_Ready(&pgJoystick_Type) == -1) {
         return NULL;
@@ -623,10 +716,8 @@ MODINIT_DEFINE(joystick)
         return NULL;
     }
 
-    Py_INCREF(&pgJoystick_Type);
-    if (PyModule_AddObject(module, "JoystickType",
-                           (PyObject *)&pgJoystick_Type)) {
-        Py_DECREF(&pgJoystick_Type);
+    if (PyModule_AddObjectRef(module, "JoystickType",
+                              (PyObject *)&pgJoystick_Type)) {
         Py_DECREF(module);
         return NULL;
     }

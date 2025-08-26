@@ -98,7 +98,7 @@
          | :sl:`x and y coordinates of the center of the circle`
          | :sg:`center -> (float, float)`
 
-         It's a tuple containing the circle's `x` and `y` coordinates representing its center.
+         A tuple containing the circle's `x` and `y` coordinates representing its center.
          Reassigning it moves the circle to the new position.
 
          .. versionadded:: 2.4.0
@@ -147,7 +147,7 @@
          | :sl:`top coordinate of the circle`
          | :sg:`top -> (float, float)`
 
-         It's a tuple containing the `x` and `y` coordinates that represent the top
+         A tuple containing the `x` and `y` coordinates that represent the top
          of the circle.
          Reassigning it moves the circle to the new position. The radius will not be affected.
 
@@ -160,7 +160,7 @@
          | :sl:`bottom coordinate of the circle`
          | :sg:`bottom -> (float, float)`
 
-         It's a tuple containing the `x` and `y` coordinates that represent the bottom
+         A tuple containing the `x` and `y` coordinates that represent the bottom
          of the circle.
          Reassigning it moves the circle to the new position. The radius will not be affected.
 
@@ -173,7 +173,7 @@
          | :sl:`left coordinate of the circle`
          | :sg:`left -> (float, float)`
 
-         It's a tuple containing the `x` and `y` coordinates that represent the left
+         A tuple containing the `x` and `y` coordinates that represent the left
          of the circle.
          Reassigning it moves the circle to the new position. The radius will not be affected.
 
@@ -186,7 +186,7 @@
          | :sl:`right coordinate of the circle`
          | :sg:`right -> (float, float)`
 
-         It's a tuple containing the `x` and `y` coordinates that represent the right
+         A tuple containing the `x` and `y` coordinates that represent the right
          of the circle.
          Reassigning it moves the circle to the new position. The radius will not be affected.
 
@@ -574,7 +574,7 @@
          | :sl:`the first point of the line`
          | :sg:`a -> (float, float)`
 
-         It's a tuple containing the `ax` and `ay` attributes representing the line's first point.
+         A tuple containing the `ax` and `ay` attributes representing the line's first point.
          It can be reassigned to move the `Line`. If reassigned the `ax` and `ay` attributes
          will be changed to produce a `Line` with matching first point position.
          The `bx` and `by` attributes will not be affected.
@@ -588,7 +588,7 @@
          | :sl:`the second point of the line`
          | :sg:`b -> (float, float)`
 
-         It's a tuple containing `bx` and `by` attributes representing the line's second point.
+         A tuple containing `bx` and `by` attributes representing the line's second point.
          It can be reassigned to move the `Line`. If reassigned the `bx` and `by` attributes
          will be changed to produce a `Line` with matching second point position.
          The `ax` and `ay` attributes will not be affected.
@@ -596,6 +596,19 @@
          .. versionadded:: 2.5.2
 
          .. ## Line.b ##
+
+   .. attribute:: length
+
+         | :sl:`the length of the line`
+         | :sg:`length -> float`
+
+         The length of the line. Calculated using the `sqrt((bx-ax)**2 + (by-ay)**2)` formula.
+         This attribute is read-only, it cannot be reassigned. To change the line's length
+         use the `scale` method or change its `a` or `b` attributes.
+
+         .. versionadded:: 2.5.3
+
+         .. ## Line.length ##
 
    **Line Methods**
 
@@ -611,3 +624,146 @@
          .. versionadded:: 2.5.2
 
          .. ## Line.copy ##
+
+   .. method:: move
+
+         | :sl:`moves the line by a given amount`
+         | :sg:`move((x, y)) -> Line`
+         | :sg:`move(x, y) -> Line`
+
+         Returns a new `Line` that is moved by the given offset. The original `Line` is
+         not modified.
+
+         This method is equivalent to the following code:
+
+         .. code-block:: python
+
+             Line(line.ax + x, line.ay + y, line.bx + x, line.by + y)
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.move ##
+
+   .. method:: move_ip
+
+         | :sl:`moves the line by a given amount`
+         | :sg:`move_ip((x, y)) -> None`
+         | :sg:`move_ip(x, y) -> None`
+
+         Moves the `Line` by the given offset. The original `Line` is modified. Always returns
+         `None`.
+
+         This method is equivalent to the following code:
+
+         .. code-block:: python
+
+             line.ax += x
+             line.ay += y
+             line.bx += x
+             line.by += y
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.move_ip ##
+
+   .. method:: update
+
+         | :sl:`updates the line's attributes`
+         | :sg:`update((ax, ay), (bx, by)) -> None`
+         | :sg:`update(ax, ay, bx, by) -> None`
+         | :sg:`update(line) -> None`
+
+         Updates the `Line`'s attributes. The original `Line` is modified. Always returns `None`.
+
+         This method is equivalent to the following code:
+
+         .. code-block:: python
+
+             line.ax = ax
+             line.ay = ay
+             line.bx = bx
+             line.by = by
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.update ##
+
+   .. method:: scale
+
+         | :sl:`scales the line by the given factor from the given origin`
+         | :sg:`scale(factor, origin) -> Line`
+         | :sg:`scale(factor_and_origin) -> Line`
+
+         Returns a new `Line` which is scaled by the given factor from the specified origin with 0.0 being
+         the starting point, 0.5 being the center and 1.0 being the end point.
+         The original `Line` is not modified.
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.scale ##
+
+   .. method:: scale_ip
+
+         | :sl:`scales the line by the given factor from the given origin in place`
+         | :sg:`scale_ip(factor, origin) -> None`
+         | :sg:`scale_ip(factor_and_origin) -> None`
+
+         Scales the `Line` by the given factor from the specified origin with 0.0 being
+         the starting point, 0.5 being the center and 1.0 being the end point.
+         The original `Line` is modified.
+         Always returns `None`.
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.scale_ip ##
+
+   .. method:: flip_ab
+
+         | :sl:`flips the line a and b points`
+         | :sg:`flip_ab() -> Line`
+
+         Returns a new `Line` that has the `a` and `b` points flipped.
+         The original `Line` is not modified.
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.flip_ab ##
+
+   .. method:: flip_ab_ip
+
+         | :sl:`flips the line a and b points, in place`
+         | :sg:`flip_ab_ip() -> None`
+
+         Flips the `Line`'s `a` and `b` points. The original `Line` is modified.
+         Always returns `None`.
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.flip_ab_ip ##
+
+   .. method:: project
+
+         | :sl:`projects the line onto the given line`
+         | :sg:`project(point: tuple[float, float], clamp=False) -> tuple[float, float]`
+
+         This method takes in a point and one boolean keyword argument clamp. It outputs an orthogonally projected point onto the line.
+         If clamp is `True` it makes sure that the outputted point will be on the line segment (which might not be orthogonal), and if it is `False` (the default) then any point on the infinitely extended line may be outputted.
+         This method can be used to find the closest point on a line to the given point. The output is the unique point on the line or line segment that is the smallest distance away from the given point.
+
+
+         .. figure:: code_examples/project.png
+            :alt: project method image
+
+            Example of how it projects the point onto the line. The red point is the point we want to project and the blue point is what you would get as a result.
+
+
+         .. figure:: code_examples/project_clamp.png
+            :alt: project clamp argument image
+
+            Example of what the clamp argument changes. If it is `True`, the point is bounded between the line segment ends.
+
+            WARNING:  If the line has no length (i.e. the start and end points are the same) then the returned point of this function will be the same point as both ends of the line.
+
+         .. versionadded:: 2.5.6
+
+      .. ## Line.project ##

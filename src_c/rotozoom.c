@@ -236,8 +236,8 @@ transformSurfaceRGBA(SDL_Surface *src, SDL_Surface *dst, int cx, int cy,
     /*
      * Variable setup
      */
-    xd = ((src->w - dst->w) << 15);
-    yd = ((src->h - dst->h) << 15);
+    xd = ((unsigned long long)(src->w - dst->w) << 15);
+    yd = ((unsigned long long)(src->h - dst->h) << 15);
     ax = (cx << 16) - (icos * cx);
     ay = (cy << 16) - (isin * cx);
     sw = src->w - 1;
@@ -517,8 +517,9 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
     /*
      * Sanity check
      */
-    if (src == NULL)
+    if (src == NULL) {
         return (NULL);
+    }
 
     /*
      * Determine if source surface is 32bit or 8bit
@@ -584,15 +585,15 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
-        rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
+        rz_dst =
+            PG_CreateSurface(dstwidth, dstheight, PG_SURF_FORMATENUM(rz_src));
         if (SDL_HasColorKey(src)) {
             SDL_GetColorKey(src, &colorkey);
-            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+            if (!PG_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
-            if (PG_SurfaceHasRLE(src) &&
-                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+            if (PG_SurfaceHasRLE(src) && !PG_SetSurfaceRLE(rz_dst, SDL_TRUE)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
@@ -643,15 +644,15 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
 
-        rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
+        rz_dst =
+            PG_CreateSurface(dstwidth, dstheight, PG_SURF_FORMATENUM(rz_src));
         if (SDL_HasColorKey(src)) {
             SDL_GetColorKey(src, &colorkey);
-            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+            if (!PG_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
-            if (PG_SurfaceHasRLE(src) &&
-                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+            if (PG_SurfaceHasRLE(src) && !PG_SetSurfaceRLE(rz_dst, SDL_TRUE)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }

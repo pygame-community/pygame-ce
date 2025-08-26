@@ -8,15 +8,14 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ **Русский**
----------------------------------------------------------------------------------------------------
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ **Русский** `Ελληνικά`_
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Pygame_  - бесплатная кроссплатформенная библиотека с открытым исходным кодом
 для разработки мультимедийных приложений, таких как видеоигры, с использованием Python.
 Он использует `Simple DirectMedia Layer library`_ и несколько других популярных библиотек
 для абстрагирования наиболее распространенных функций,
 что делает написание этих программ более интуитивно понятной задачей.
-
 
 Этот дистрибутив называется **'pygame - Community Edition'** (сокращённо 'pygame-ce').
 
@@ -127,7 +126,6 @@ pygame.org, чтобы другие могли учиться и получат�
 Также большое спасибо Roger Dingledine и команде SEUL.ORG за наш
 отличный хостинг.
 
-
 Зависимости
 ------------
 
@@ -141,7 +139,7 @@ SDL_rotozoom, а gfxdraw имеет встроенную версию SDL_gfx.
 
 
 +----------+------------------------+
-| CPython  | >= 3.8 (Or use PyPy3)  |
+| CPython  | >= 3.9 (Or use PyPy3)  |
 +----------+------------------------+
 | SDL      | >= 2.0.14              |
 +----------+------------------------+
@@ -156,14 +154,14 @@ SDL_rotozoom, а gfxdraw имеет встроенную версию SDL_gfx.
 -----------------
 Прежде всего, спасибо, что согласились внести свой вклад в pygame-ce! Именно такие люди, как вы, делают pygame-ce отличной библиотекой. Пожалуйста, выполните следующие действия, чтобы начать:
 
-1. Read the `Contribution Guidelines`_ and the `Many Ways to Contribute`_ wiki pages.
-2. Read the documentataion on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
-3. Read how to `label and link reported issues`_.
-4. Check the `issue tracker`_ for open issues that interest you or open a new issue to start a discussion about your idea.
+1. Ознакомьтесь со страницами вики `Руководящие принципы по внесению вклада`_ и `Множество способов внести свой вклад`_.
+2. Ознакомьтесь с документацией `Отправка запроса на вытягивание`_ и `Отправка отличного запроса на вытягивание`_.
+3. Прочитайте, как `маркировать и связывать сообщённые проблемы`_.
+4. Проверьте `issue tracker`_ на наличие интересующих вас открытых проблем или создайте новую проблему, чтобы начать обсуждение своей идеи.
 
-There are many more resources throughout the `wiki pages`_ that can help you get started.
+На странице `вики-проекта`_ есть множество ресурсов, которые могут помочь вам начать.
 
-If you have any questions, please feel free to ask in the `Pygame Community Discord Server`_ or open an issue.
+Если у вас есть какие-то вопросы, не стесняйтесь задавать их на `сервере Discord Pygame Community`_ или открыв проблему (issue).
 
 License
 -------
@@ -175,8 +173,8 @@ License
 
 По сути, это означает, что вы можете использовать pygame в любом проекте, который захотите,
 но если вы вносите какие-либо изменения или дополнения в саму pygame, они
-должны быть выпущены с совместимой лицензией (preferably submitted
-back to the pygame-ce project).  Игры с закрытым исходным кодом и коммерческие игры - это нормально.
+должны быть выпущены с совместимой лицензией (желательно, чтобы они были отправлены
+обратно в проект pygame-ce ).  Игры с закрытым исходным кодом и коммерческие игры - это нормально.
 
 Программы в подкаталоге ``examples`` находятся в открытом доступе.
 
@@ -191,8 +189,8 @@ back to the pygame-ce project).  Игры с закрытым исходным �
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.4.1.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.4.1...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.2.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.2...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -207,14 +205,14 @@ back to the pygame-ce project).  Игры с закрытым исходным �
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
-.. _Contribution Guidelines: https://github.com/pygame-community/pygame-ce/wiki/Contribution-guidelines
-.. _Many Ways to Contribute: https://github.com/pygame-community/pygame-ce/wiki/Many-ways-to-contribute
-.. _Opening A Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-pull-request
-.. _Opening a Great Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
+.. _Руководящие принципы по внесению вклада: https://github.com/pygame-community/pygame-ce/wiki/Contribution-guidelines
+.. _Множество способов внести свой вклад: https://github.com/pygame-community/pygame-ce/wiki/Many-ways-to-contribute
+.. _Отправка запроса на вытягивание: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-pull-request
+.. _Отправка отличного запроса на вытягивание: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
 .. _issue tracker: https://github.com/pygame-community/pygame-ce/issues
-.. _label and link reported issues: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
-.. _Pygame Community Discord Server: https://discord.gg/pygame
-.. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
+.. _маркировать и связывать сообщённые проблемы: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
+.. _сервере Discord Pygame Community: https://discord.gg/pygame
+.. _вики-проекта: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _English: ./../../README.rst
 .. _简体中文: README.zh-cn.rst
@@ -224,3 +222,4 @@ back to the pygame-ce project).  Игры с закрытым исходным �
 .. _Español: README.es.rst
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
+.. _Ελληνικά: README.gr.rst

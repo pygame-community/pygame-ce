@@ -44,12 +44,12 @@ env:
     apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev -y
     apt-get install libfreetype6-dev libportmidi-dev fontconfig -y
     apt-get install python3-dev python3-pip python3-wheel python3-sphinx -y
-    pip3 install meson-python --break-system-packages
+    pip3 install meson-python "sphinx-autoapi<=3.3.2" --break-system-packages
 
 jobs:
   build-multiarch:
     name: Debian (Bookworm - 12) [${{ matrix.arch }}]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
@@ -65,10 +65,10 @@ jobs:
           - { arch: armv7, base_image: 'balenalib/raspberrypi3-debian:bookworm' }
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v5.0.0
 
     - name: Build sources and run tests
-      uses: uraimo/run-on-arch-action@v2.8.1
+      uses: uraimo/run-on-arch-action@v3.0.1
       id: build
       with:
         arch: ${{ matrix.base_image && 'none' || matrix.arch }}
@@ -96,13 +96,11 @@ jobs:
         install: ${{ env.INSTALL_CMD }}
 
         # Build a wheel, install it for running unit tests.
-        # --no-build-isolation is passed so that preinstalled meson-python can be used
-        # (done for optimization reasons)
+        # pip does not know that ninja is installed, and tries to install it again.
+        # so pass --ignore-dep ninja explicitly
         run: |
-          echo "\nBuilding pygame wheel\n"
-          pip3 wheel . --no-build-isolation --wheel-dir /artifacts -vvv
-          echo "\nInstalling wheel\n"
-          pip3 install --no-index --pre --break-system-packages --find-links /artifacts pygame-ce
+          echo "\nBuilding and installing pygame wheel\n"
+          PIP_BREAK_SYSTEM_PACKAGES=1 python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax
           echo "\nRunning tests\n"
           export SDL_VIDEODRIVER=dummy
           export SDL_AUDIODRIVER=disk
@@ -120,10 +118,10 @@ jobs:
   test-armv7-on-armv6:
     needs: build-multiarch
     name: Debian (Bookworm - 12) [build - armv7, test - armv6]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     steps:
     - name: Download all multiarch artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: pygame-multiarch-armv7-dist
         path: ~/artifacts
@@ -136,7 +134,7 @@ jobs:
         done
 
     - name: Test armv7 wheel on armv6
-      uses: uraimo/run-on-arch-action@v2.8.1
+      uses: uraimo/run-on-arch-action@v3.0.1
       with:
         arch: armv6
         distro: bookworm

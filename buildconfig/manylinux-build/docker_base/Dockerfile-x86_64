@@ -1,6 +1,6 @@
 # pin version on image for CI stability
-FROM quay.io/pypa/manylinux2014_x86_64:2024.10.07-1
-ENV MAKEFLAGS="-j 2"
+FROM quay.io/pypa/manylinux2014_x86_64:2025.07.25-1
+ENV MAKEFLAGS="-j 4"
 ENV PG_DEP_PREFIX="/usr/local"
 
 # Set up repoforge

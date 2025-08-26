@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Italiano** `Русский`_
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Italiano** `Русский`_ `Ελληνικά`_
 ---------------------------------------------------------------------------------------------------
 
 Pygame_ è una libreria open source gratuita e multipiattaforma
@@ -140,7 +140,7 @@ Le versioni dei requisiti:
 
 
 +----------+------------------------+
-| CPython  | >= 3.8 (Or use PyPy3)  |
+| CPython  | >= 3.9 (Or use PyPy3)  |
 +----------+------------------------+
 | SDL      | >= 2.0.14              |
 +----------+------------------------+
@@ -227,3 +227,4 @@ Controlla docs/licenses per le licenze dei requisiti.
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
+.. _Ελληνικά: README.gr.rst

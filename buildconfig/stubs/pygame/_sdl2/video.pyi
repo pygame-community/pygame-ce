@@ -1,11 +1,11 @@
-from typing import Any, Generator, Iterable, Optional, Tuple, Union
+from collections.abc import Generator, Iterable
+from typing import Any, Optional, Union
 
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
+from pygame.typing import ColorLike, Point, RectLike
 from pygame.window import Window as Window
-
-from pygame.typing import ColorLike, RectLike, Point
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
@@ -34,7 +34,7 @@ def messagebox(
     info: bool = False,
     warn: bool = False,
     error: bool = False,
-    buttons: Tuple[str, ...] = ("OK",),
+    buttons: tuple[str, ...] = ("OK",),
     return_button: int = 0,
     escape_button: int = 0,
 ) -> int: ...
@@ -44,10 +44,11 @@ class Texture:
         self,
         renderer: Renderer,
         size: Iterable[int],
+        depth: int = 0,
         static: bool = False,
         streaming: bool = False,
         target: bool = False,
-        scale_quality: Optional[int] =None
+        scale_quality: Optional[int] = None,
     ) -> None: ...
     @staticmethod
     def from_surface(renderer: Renderer, surface: Surface) -> Texture: ...
@@ -61,7 +62,6 @@ class Texture:
     def color(self) -> Color: ...
     @color.setter
     def color(self, value: ColorLike) -> None: ...
-
     def get_rect(self, **kwargs: Any) -> Rect: ...
     def draw(
         self,
@@ -146,6 +146,8 @@ class Renderer:
     def get_viewport(self) -> Rect: ...
     def set_viewport(self, area: Optional[RectLike]) -> None: ...
     logical_size: Iterable[int]
+    def coordinates_to_window(self, point: Point) -> tuple[float, float]: ...
+    def coordinates_from_window(self, point: Point) -> tuple[float, float]: ...
     scale: Iterable[float]
     target: Optional[Texture]
     def blit(
@@ -159,22 +161,14 @@ class Renderer:
     def draw_point(self, point: Point) -> None: ...
     def draw_rect(self, rect: RectLike) -> None: ...
     def fill_rect(self, rect: RectLike) -> None: ...
-    def draw_triangle(
-        self, p1: Point, p2: Point, p3: Point
-    ) -> None: ...
-    def fill_triangle(
-        self, p1: Point, p2: Point, p3: Point
-    ) -> None: ...
-    def draw_quad(
-        self, p1: Point, p2: Point, p3: Point, p4: Point
-    ) -> None: ...
-    def fill_quad(
-        self, p1: Point, p2: Point, p3: Point, p4: Point
-    ) -> None: ...
+    def draw_triangle(self, p1: Point, p2: Point, p3: Point) -> None: ...
+    def fill_triangle(self, p1: Point, p2: Point, p3: Point) -> None: ...
+    def draw_quad(self, p1: Point, p2: Point, p3: Point, p4: Point) -> None: ...
+    def fill_quad(self, p1: Point, p2: Point, p3: Point, p4: Point) -> None: ...
     def to_surface(
         self, surface: Optional[Surface] = None, area: Optional[RectLike] = None
     ) -> Surface: ...
     @staticmethod
     def compose_custom_blend_mode(
-        color_mode: Tuple[int, int, int], alpha_mode: Tuple[int, int, int]
+        color_mode: tuple[int, int, int], alpha_mode: tuple[int, int, int]
     ) -> int: ...

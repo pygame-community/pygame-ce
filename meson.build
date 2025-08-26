@@ -94,12 +94,38 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
     # yes, this is a bit ugly and hardcoded but it is what it is
     # TODO (middle-term goal) - Should migrate away from this
     # consider meson wraps? Hopefully can also get the same build path as below
+    sdl_ver = (sdl_api == 3) ? '3.2.18' : '2.32.8'
+    sdl_image_ver = (sdl_api == 3) ? '3.2.4' : '2.8.8'
+    sdl_mixer_ver = '2.8.1'
+    sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
+
     arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
     base_dir = meson.current_source_dir()
     prebuilt_dir = base_dir / 'prebuilt-' + arch_suffix
 
-    # download prebuilts (uses legacy builconfig code)
-    if not fs.is_dir(prebuilt_dir)
+    sdl_dir = prebuilt_dir / '@0@-@1@'.format(sdl, sdl_ver)
+    sdl_image_dir = prebuilt_dir / '@0@-@1@'.format(sdl_image, sdl_image_ver)
+    sdl_mixer_dir = prebuilt_dir / '@0@-@1@'.format(sdl_mixer, sdl_mixer_ver)
+    sdl_ttf_dir = prebuilt_dir / '@0@-@1@'.format(sdl_ttf, sdl_ttf_ver)
+    common_lib_dir = prebuilt_dir / 'lib'
+
+    # download prebuilts (uses legacy buildconfig code)
+    required_dirs = [
+        prebuilt_dir,
+        sdl_dir,
+        sdl_image_dir,
+        sdl_mixer_dir,
+        sdl_ttf_dir,
+        common_lib_dir,
+    ]
+    any_missing = false
+    foreach d : required_dirs
+        if not fs.is_dir(d)
+            any_missing = true
+            break
+        endif
+    endforeach
+    if any_missing
         run_command(
             [
                 find_program('python3', 'python'),
@@ -109,15 +135,9 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         )
     endif
 
-    sdl_ver = (sdl_api == 3) ? '3.1.6' : '2.30.9'
-    sdl_image_ver = '2.8.2'
-    sdl_mixer_ver = '2.8.0'
-    sdl_ttf_ver = '2.22.0'
-
     dlls = []
 
     # SDL
-    sdl_dir = prebuilt_dir / '@0@-@1@'.format(sdl, sdl_ver)
     sdl_lib_dir = sdl_dir / 'lib' / arch_suffix
     pg_inc_dirs += fs.relative_to(sdl_dir / 'include', base_dir)
     pg_lib_dirs += sdl_lib_dir
@@ -125,23 +145,27 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
 
     # SDL_image
     if get_option('image').enabled()
-        sdl_image_dir = prebuilt_dir / '@0@-@1@'.format(sdl_image, sdl_image_ver)
         sdl_image_lib_dir = sdl_image_dir / 'lib' / arch_suffix
         pg_inc_dirs += fs.relative_to(sdl_image_dir / 'include', base_dir)
         pg_lib_dirs += sdl_image_lib_dir
         dlls += [
             sdl_image_lib_dir / '@0@.dll'.format(sdl_image),
-            sdl_image_lib_dir / 'optional' / 'libjpeg-62.dll',
-            sdl_image_lib_dir / 'optional' / 'libpng16-16.dll',
-            sdl_image_lib_dir / 'optional' / 'libtiff-5.dll',
+            sdl_image_lib_dir / 'optional' / (sdl_api == 3 ? 'libtiff-6.dll' : 'libtiff-5.dll'),
             sdl_image_lib_dir / 'optional' / 'libwebp-7.dll',
             sdl_image_lib_dir / 'optional' / 'libwebpdemux-2.dll',
         ]
+        # temporary solution to get things compiling under SDL3_image. In the future
+        # we would want to have libpng and libjpeg on SDL3_image as well.
+        if sdl_api != 3
+            dlls += [
+                sdl_image_lib_dir / 'optional' / 'libjpeg-62.dll',
+                sdl_image_lib_dir / 'optional' / 'libpng16-16.dll',
+            ]
+        endif
     endif
 
     # SDL_mixer
     if get_option('mixer').enabled()
-        sdl_mixer_dir = prebuilt_dir / '@0@-@1@'.format(sdl_mixer, sdl_mixer_ver)
         sdl_mixer_lib_dir = sdl_mixer_dir / 'lib' / arch_suffix
         pg_inc_dirs += fs.relative_to(sdl_mixer_dir / 'include', base_dir)
         pg_lib_dirs += sdl_mixer_lib_dir
@@ -157,7 +181,6 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
 
     # SDL_ttf
     if get_option('font').enabled()
-        sdl_ttf_dir = prebuilt_dir / '@0@-@1@'.format(sdl_ttf, sdl_ttf_ver)
         sdl_ttf_lib_dir = sdl_ttf_dir / 'lib' / arch_suffix
         pg_inc_dirs += fs.relative_to(sdl_ttf_dir / 'include', base_dir)
         pg_lib_dirs += sdl_ttf_lib_dir
@@ -166,7 +189,6 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
 
     # freetype, portmidi and porttime
     if get_option('freetype').enabled() and get_option('midi').enabled()
-        common_lib_dir = prebuilt_dir / 'lib'
         pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
         pg_lib_dirs += common_lib_dir
         dlls += [common_lib_dir / 'freetype.dll', common_lib_dir / 'portmidi.dll']

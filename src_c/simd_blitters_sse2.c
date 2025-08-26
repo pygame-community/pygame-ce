@@ -151,8 +151,8 @@ alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
     Uint32 *dstp = (Uint32 *)info->d_pixels;
     int dstskip = info->d_skip >> 2;
 
-    SDL_PixelFormat *srcfmt = info->src;
-    SDL_PixelFormat *dstfmt = info->dst;
+    PG_PixelFormat *srcfmt = info->src;
+    PG_PixelFormat *dstfmt = info->dst;
 
     // int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
     // int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
@@ -293,8 +293,8 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     int height = info->height;
     int srcskip = info->s_skip >> 2;
     int dstskip = info->d_skip >> 2;
-    SDL_PixelFormat *srcfmt = info->src;
-    SDL_PixelFormat *dstfmt = info->dst;
+    PG_PixelFormat *srcfmt = info->src;
+    PG_PixelFormat *dstfmt = info->dst;
 
     /* Original 'Straight Alpha' blending equation:
        --------------------------------------------
@@ -719,7 +719,7 @@ blit_blend_premultiplied_sse2(SDL_BlitInfo *info)
     int srcskip = info->s_skip >> 2;
     Uint32 *dstp = (Uint32 *)info->d_pixels;
     int dstskip = info->d_skip >> 2;
-    SDL_PixelFormat *srcfmt = info->src;
+    PG_PixelFormat *srcfmt = info->src;
     Uint32 amask = srcfmt->Amask;
     // Uint64 multmask;
     Uint64 ones;
@@ -787,15 +787,14 @@ blit_blend_premultiplied_sse2(SDL_BlitInfo *info)
 }
 
 void
-premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
+premul_surf_color_by_alpha_sse2(SDL_Surface *src, PG_PixelFormat *srcfmt,
+                                SDL_Surface *dst)
 {
     int n;
     int width = src->w;
     int height = src->h;
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)dst->pixels;
-
-    SDL_PixelFormat *srcfmt = src->format;
     Uint32 amask = srcfmt->Amask;
     Uint64 ones;
 

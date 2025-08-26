@@ -339,7 +339,7 @@ and reference. The pygame.image module has a load() function which will do
 what we want. The lines to load the images should become this. ::
 
   >>> player = pygame.image.load('player.bmp').convert()
-  >>> background = pygame.image.load('liquid.bmp').convert()
+  >>> background = pygame.image.load('liquid.webp').convert()
 
 
 We can see that's pretty simple, the load function just takes a filename

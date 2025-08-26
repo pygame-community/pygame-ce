@@ -39,12 +39,12 @@ METADATA = {
         "Programming Language :: Cython",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Games/Entertainment",
@@ -63,7 +63,7 @@ METADATA = {
         "Operating System :: MacOS",
         "Typing :: Typed"
     ],
-    "python_requires": '>=3.8',
+    "python_requires": '>=3.9',
 }
 
 import re
@@ -156,11 +156,11 @@ def compilation_help():
     print('---\n')
 
 
-if not hasattr(sys, 'version_info') or sys.version_info < (3, 8):
+if not hasattr(sys, 'version_info') or sys.version_info < (3, 9):
     compilation_help()
-    raise SystemExit("Pygame-ce requires Python3 version 3.8 or above.")
+    raise SystemExit("Pygame-ce requires Python3 version 3.9 or above.")
 if IS_PYPY and sys.pypy_version_info < (7,):
-    raise SystemExit("Pygame-ce requires PyPy version 7.0.0 above, compatible with CPython >= 3.8")
+    raise SystemExit("Pygame-ce requires PyPy version 7.0.0 above, compatible with CPython >= 3.9")
 
 
 def consume_arg(name):
