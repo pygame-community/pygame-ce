@@ -1099,14 +1099,10 @@ aaellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     CHECK_LOAD_COLOR(colorobj)
 
-    /* limit size to a 1 pixel x 1 pixel minimum
-       to avoid algorithm breakdown */
-    if (rect->w < 1) {
-        rect->w = 1;
-    }
-
-    if (rect->h < 1) {
-        rect->h = 1;
+    /* Reject non-positive dimensions to avoid undefined behavior and
+       preserve the caller's rect unchanged on no-op. */
+    if (rect->w <= 0 || rect->h <= 0) {
+        return pgRect_New4(rect->x, rect->y, 0, 0);
     }
 
     if (width < 0) {
