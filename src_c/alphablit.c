@@ -1715,18 +1715,18 @@ premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst)
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     if ((PG_SURF_BytesPerPixel(src) == 4) && pg_has_avx2()) {
-        premul_surf_color_by_alpha_avx2(src, dst);
+        premul_surf_color_by_alpha_avx2(src, src_format, dst);
         return 0;
     }
 #if defined(__SSE2__)
     if ((PG_SURF_BytesPerPixel(src) == 4) && SDL_HasSSE2()) {
-        premul_surf_color_by_alpha_sse2(src, dst);
+        premul_surf_color_by_alpha_sse2(src, src_format, dst);
         return 0;
     }
 #endif /* __SSE2__*/
 #if PG_ENABLE_ARM_NEON
     if ((PG_SURF_BytesPerPixel(src) == 4) && SDL_HasNEON()) {
-        premul_surf_color_by_alpha_sse2(src, dst);
+        premul_surf_color_by_alpha_sse2(src, src_format, dst);
         return 0;
     }
 #endif /* PG_ENABLE_ARM_NEON */

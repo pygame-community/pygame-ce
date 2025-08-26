@@ -2201,6 +2201,39 @@ class LineTypeTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             line.update(1, 2, 3)
 
+    def test_meth_project(self):
+        line = Line(0, 0, 100, 100)
+        test_point1 = (25, 75)
+        test_clamp_point1 = (100, 300)
+        test_clamp_point2 = (-50, -150)
+        test_clamp_point3 = (-200, -200)
+
+        bad_line = Line(0, 0, 0, 0)
+        test_bad_line_point = (10, 10)
+
+        projected_point = line.project(test_point1)
+        self.assertEqual(math.ceil(projected_point[0]), 50)
+        self.assertEqual(math.ceil(projected_point[1]), 50)
+
+        projected_point = line.project(test_clamp_point1, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 100)
+        self.assertEqual(math.ceil(projected_point[1]), 100)
+
+        projected_point = line.project(test_clamp_point2, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = line.project(test_clamp_point3, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = bad_line.project(test_bad_line_point, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = bad_line.project(test_bad_line_point)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""
         l_str = "Line((10.1, 10.2), (4.3, 56.4))"
