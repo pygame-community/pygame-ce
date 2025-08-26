@@ -708,6 +708,30 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertRaises(AttributeError, _set_style_name)
 
+    def test_font_is_char_defined_true(self):
+        f = pygame_font.Font(None, 20)
+        self.assertTrue(f.is_char_defined("a"))
+
+    def test_font_is_char_defined_true_unicode(self):
+        f = pygame_font.Font(None, 20)
+        self.assertTrue(f.is_char_defined("\u003F"))
+
+    def test_font_is_char_defined_raises_value_error_if_too_long(self):
+        f = pygame_font.Font(None, 20)
+        self.assertRaises(ValueError, f.is_char_defined, "ab")
+
+    def test_font_is_char_defined_false_is_empty(self):
+        f = pygame_font.Font(None, 20)
+        self.assertFalse(f.is_char_defined(""))
+
+    def test_font_is_char_defined_false(self):
+        f = pygame_font.Font(None, 20)
+        self.assertFalse(f.is_char_defined("❤"))
+
+    def test_font_is_char_defined_false_unicode(self):
+        f = pygame_font.Font(None, 20)
+        self.assertFalse(f.is_char_defined("\uFF00"))
+
     def test_font_file_not_found(self):
         # A per BUG reported by Bo Jangeborg on pygame-user mailing list,
         # http://www.mail-archive.com/pygame-users@seul.org/msg11675.html
