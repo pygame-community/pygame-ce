@@ -54,6 +54,23 @@ class SysfontModuleTest(unittest.TestCase):
         self.assertNotEqual(arial_italic.style_name, arial_bold_italic.style_name)
         self.assertNotEqual(arial_bold.style_name, arial_bold_italic.style_name)
 
+    @unittest.skipIf("Windows" not in platform.platform(), "Just for windows")
+    def test_sysfont_no_clobbered_fonts(self):
+        import pygame.font
+
+        pygame.font.init()
+
+        # This tests that font variants like Calibri and Calibri Light are treated as
+        # distinct fonts. See https://github.com/pygame-community/pygame-ce/issues/3092
+
+        calibri = pygame.font.SysFont("Calibri", 40)
+        calibri_light = pygame.font.SysFont("Calibri Light", 40)
+
+        self.assertEqual(calibri.name, "Calibri")
+        self.assertEqual(calibri.style_name, "Regular")
+        self.assertEqual(calibri_light.name, "Calibri")
+        self.assertEqual(calibri_light.style_name, "Light")
+
     @unittest.skipIf(
         ("Darwin" in platform.platform() or "Windows" in platform.platform()),
         "Not unix we skip.",
