@@ -1109,7 +1109,6 @@ aaellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
         rect->h = 1;
     }
 
-
     if (width < 0) {
         return pgRect_New4(rect->x, rect->y, 0, 0);
     }
@@ -1147,6 +1146,7 @@ aaellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
         PyObject *args =
             Py_BuildValue("(OOOii)", surfobj, colorobj, center, radius, width);
         if (!args) {
+            pgSurface_Unlock(surfobj);
             return NULL; /* Exception already set. */
         }
         ret = aacircle(NULL, args, NULL);
@@ -3478,7 +3478,8 @@ draw_ellipse_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
     ll_height = (long long)height / 2;
     x = 0;
     y = ll_height;
-    d1 = (ll_height * ll_height) - (ll_width * ll_width * ll_height) + (0.25 * ll_width * ll_width);
+    d1 = (ll_height * ll_height) - (ll_width * ll_width * ll_height) +
+         (0.25 * ll_width * ll_width);
     dx = 2 * ll_height * ll_height * x;
     dy = 2 * ll_width * ll_width * y;
     while (dx < dy) {
@@ -3499,7 +3500,6 @@ draw_ellipse_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
             dx = dx + (2 * ll_height * ll_height);
             dy = dy - (2 * ll_width * ll_width);
             d1 = d1 + dx - dy + (ll_height * ll_height);
-
         }
     }
     d2 = (((double)ll_height * ll_height) * ((x + 0.5) * (x + 0.5))) +

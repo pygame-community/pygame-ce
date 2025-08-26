@@ -1136,13 +1136,13 @@ class DrawAAEllipseMixin:
         surface = pygame.Surface((1, 1))
 
         with self.assertRaises(TypeError):
-            bounds_rect = self.draw_aaellipse(surface, pygame.Color("red"))
+            self.draw_aaellipse(surface, pygame.Color("red"))
 
         with self.assertRaises(TypeError):
-            bounds_rect = self.draw_aaellipse(surface)
+            self.draw_aaellipse(surface)
 
         with self.assertRaises(TypeError):
-            bounds_rect = self.draw_aaellipse()
+            self.draw_aaellipse()
 
     def test_aaellipse__kwargs_missing(self):
         """Ensures draw aaellipse detects any missing required kwargs."""
@@ -1158,7 +1158,7 @@ class DrawAAEllipseMixin:
             invalid_kwargs.pop(name)  # Pop from a copy.
 
             with self.assertRaises(TypeError):
-                bounds_rect = self.draw_aaellipse(**invalid_kwargs)
+                self.draw_aaellipse(**invalid_kwargs)
 
     def test_aaellipse__arg_invalid_types(self):
         """Ensures draw aaellipse detects invalid arg types."""
@@ -1168,19 +1168,19 @@ class DrawAAEllipseMixin:
 
         with self.assertRaises(TypeError):
             # Invalid width.
-            bounds_rect = self.draw_aaellipse(surface, color, rect, "1")
+            self.draw_aaellipse(surface, color, rect, "1")
 
         with self.assertRaises(TypeError):
             # Invalid rect.
-            bounds_rect = self.draw_aaellipse(surface, color, (1, 2, 3, 4, 5), 1)
+            self.draw_aaellipse(surface, color, (1, 2, 3, 4, 5), 1)
 
         with self.assertRaises(TypeError):
             # Invalid color.
-            bounds_rect = self.draw_aaellipse(surface, 2.3, rect, 0)
+            self.draw_aaellipse(surface, 2.3, rect, 0)
 
         with self.assertRaises(TypeError):
             # Invalid surface.
-            bounds_rect = self.draw_aaellipse(rect, color, rect, 2)
+            self.draw_aaellipse(rect, color, rect, 2)
 
     def test_aaellipse__kwarg_invalid_types(self):
         """Ensures draw aaellipse detects invalid kwarg types."""
@@ -1211,7 +1211,7 @@ class DrawAAEllipseMixin:
 
         for kwargs in kwargs_list:
             with self.assertRaises(TypeError):
-                bounds_rect = self.draw_aaellipse(**kwargs)
+                self.draw_aaellipse(**kwargs)
 
     def test_aaellipse__kwarg_invalid_name(self):
         """Ensures draw aaellipse detects invalid kwarg names."""
@@ -1231,7 +1231,7 @@ class DrawAAEllipseMixin:
 
         for kwargs in kwargs_list:
             with self.assertRaises(TypeError):
-                bounds_rect = self.draw_aaellipse(**kwargs)
+                self.draw_aaellipse(**kwargs)
 
     def test_aaellipse__args_and_kwargs(self):
         """Ensures draw aaellipse accepts a combination of args/kwargs"""
@@ -1344,7 +1344,7 @@ class DrawAAEllipseMixin:
             kwargs["color"] = expected_color
 
             with self.assertRaises(TypeError):
-                bounds_rect = self.draw_aaellipse(**kwargs)
+                self.draw_aaellipse(**kwargs)
 
     def test_aaellipse__no_holes(self):
         width = 80
@@ -1354,7 +1354,6 @@ class DrawAAEllipseMixin:
         # thickness=1 can't be checked because of antialiasing
         for thickness in range(37, 5):
             surface.fill("BLACK")
-            print(rect, thickness)
             self.draw_aaellipse(surface, "RED", rect, thickness)
             for y in range(height):
                 number_of_changes = 0
