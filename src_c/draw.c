@@ -1099,6 +1099,17 @@ aaellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     CHECK_LOAD_COLOR(colorobj)
 
+    /* limit size to a 1 pixel x 1 pixel minimum
+       to avoid algorithm breakdown */
+    if (rect->w < 1) {
+        rect->w = 1;
+    }
+
+    if (rect->h < 1) {
+        rect->h = 1;
+    }
+
+
     if (width < 0) {
         return pgRect_New4(rect->x, rect->y, 0, 0);
     }
@@ -1142,6 +1153,9 @@ aaellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
         ret_rect = pgRect_FromObject(ret, &temp);
         if (ret_rect->w == 0 && ret_rect->h == 0) {
             ret = pgRect_New4(rect->x, rect->y, 0, 0);
+        }
+        if (!pgSurface_Unlock(surfobj)) {
+            return RAISE(PyExc_RuntimeError, "error unlocking surface");
         }
         Py_DECREF(args);
         return ret;
@@ -3443,7 +3457,7 @@ static void
 draw_ellipse_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
                     int width, int height, Uint32 color, int *drawn_area)
 {
-    long long dx, dy, x, y;
+    long long dx, dy, x, y, ll_width, ll_height;
     int x_offset, y_offset;
     double d1, d2;
     if (width == 1) {
@@ -3460,13 +3474,13 @@ draw_ellipse_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
     y0 = y0 + height / 2;
     x_offset = (width + 1) % 2;
     y_offset = (height + 1) % 2;
-    width = width / 2;
-    height = height / 2;
+    ll_width = (long long)width / 2;
+    ll_height = (long long)height / 2;
     x = 0;
-    y = height;
-    d1 = (height * height) - (width * width * height) + (0.25 * width * width);
-    dx = 2 * height * height * x;
-    dy = 2 * width * width * y;
+    y = ll_height;
+    d1 = (ll_height * ll_height) - (ll_width * ll_width * ll_height) + (0.25 * ll_width * ll_width);
+    dx = 2 * ll_height * ll_height * x;
+    dy = 2 * ll_width * ll_width * y;
     while (dx < dy) {
         drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                  y0 - (int)y, x0 + (int)x - x_offset,
@@ -3476,20 +3490,21 @@ draw_ellipse_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
                                  x0 + (int)x - x_offset, drawn_area);
         if (d1 < 0) {
             x++;
-            dx = dx + (2 * height * height);
-            d1 = d1 + dx + (height * height);
+            dx = dx + (2 * ll_height * ll_height);
+            d1 = d1 + dx + (ll_height * ll_height);
         }
         else {
             x++;
             y--;
-            dx = dx + (2 * height * height);
-            dy = dy - (2 * width * width);
-            d1 = d1 + dx - dy + (height * height);
+            dx = dx + (2 * ll_height * ll_height);
+            dy = dy - (2 * ll_width * ll_width);
+            d1 = d1 + dx - dy + (ll_height * ll_height);
+
         }
     }
-    d2 = (((double)height * height) * ((x + 0.5) * (x + 0.5))) +
-         (((double)width * width) * ((y - 1) * (y - 1))) -
-         ((double)width * width * height * height);
+    d2 = (((double)ll_height * ll_height) * ((x + 0.5) * (x + 0.5))) +
+         (((double)ll_width * ll_width) * ((y - 1) * (y - 1))) -
+         ((double)ll_width * ll_width * ll_height * ll_height);
     while (y >= 0) {
         drawhorzlineclipbounding(surf, surf_clip_rect, color, x0 - (int)x,
                                  y0 - (int)y, x0 + (int)x - x_offset,
@@ -3499,15 +3514,15 @@ draw_ellipse_filled(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x0, int y0,
                                  x0 + (int)x - x_offset, drawn_area);
         if (d2 > 0) {
             y--;
-            dy = dy - (2 * width * width);
-            d2 = d2 + (width * width) - dy;
+            dy = dy - (2 * ll_width * ll_width);
+            d2 = d2 + (ll_width * ll_width) - dy;
         }
         else {
             y--;
             x++;
-            dx = dx + (2 * height * height);
-            dy = dy - (2 * width * width);
-            d2 = d2 + dx - dy + (width * width);
+            dx = dx + (2 * ll_height * ll_height);
+            dy = dy - (2 * ll_width * ll_width);
+            d2 = d2 + dx - dy + (ll_width * ll_width);
         }
     }
 }
