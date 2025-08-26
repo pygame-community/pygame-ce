@@ -267,7 +267,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: ../assets/surfarray_allblack.png
+      .. image:: ../assets/surfarray_allblack.webp
          :alt: allblack
 
       ::
@@ -286,7 +286,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: ../assets/surfarray_striped.png
+      .. image:: ../assets/surfarray_striped.webp
          :alt: striped
 
       ::
@@ -307,12 +307,12 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: ../assets/surfarray_rgbarray.png
+      .. image:: ../assets/surfarray_rgbarray.webp
          :alt: rgbarray
 
       ::
 
-        imgsurface = pygame.image.load('surfarray.png')
+        imgsurface = pygame.image.load('surfarray.webp')
         rgbarray = surfarray.array3d(imgsurface)
         surfdemo_show(rgbarray, 'rgbarray')
 
@@ -330,7 +330,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: ../assets/surfarray_flipped.png
+      .. image:: ../assets/surfarray_flipped.webp
          :alt: flipped
 
       ::
@@ -347,7 +347,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: ../assets/surfarray_scaledown.png
+      .. image:: ../assets/surfarray_scaledown.webp
          :alt: scaledown
 
       ::
@@ -365,7 +365,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: ../assets/surfarray_scaleup.png
+      .. image:: ../assets/surfarray_scaleup.webp
          :alt: scaleup
 
       ::
@@ -392,7 +392,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: ../assets/surfarray_redimg.png
+      .. image:: ../assets/surfarray_redimg.webp
          :alt: redimg
 
       ::
@@ -412,7 +412,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: ../assets/surfarray_soften.png
+      .. image:: ../assets/surfarray_soften.webp
          :alt: soften
 
       ::
@@ -445,7 +445,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: ../assets/surfarray_xfade.png
+      .. image:: ../assets/surfarray_xfade.webp
          :alt: xfade
 
       ::
@@ -527,7 +527,7 @@ There is one very useful function though.
 
 .. function:: surfarray.blit_array(surface, array)
    :noindex:
-   
+
    This will transfer any type of 2D or 3D surface array onto a Surface
    of the same dimensions.
    This surfarray blit will generally be faster than assigning an array to a

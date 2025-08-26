@@ -11,13 +11,13 @@
 The pygame math module currently provides Vector classes in two and three
 dimensions, ``Vector2`` and ``Vector3`` respectively.
 
-They support the following numerical operations: ``vec + vec``, ``vec - vec``, 
-``vec * number``, ``number * vec``, ``vec / number``, ``vec // number``, ``vec += vec``, 
-``vec -= vec``, ``vec *= number``, ``vec /= number``, ``vec //= number``, ``round(vec, ndigits=0)``. 
+They support the following numerical operations: ``vec + vec``, ``vec - vec``,
+``vec * number``, ``number * vec``, ``vec / number``, ``vec // number``, ``vec += vec``,
+``vec -= vec``, ``vec *= number``, ``vec /= number``, ``vec //= number``, ``round(vec, ndigits=0)``.
 
 All these operations will be performed elementwise.
-In addition ``vec * vec`` will perform a scalar-product (a.k.a. dot-product). 
-If you want to multiply every element from vector v with every element from 
+In addition ``vec * vec`` will perform a scalar-product (a.k.a. dot-product).
+If you want to multiply every element from vector v with every element from
 vector w you can use the elementwise method: ``v.elementwise() * w``
 
 The coordinates of a vector can be retrieved or set using attributes or
@@ -35,13 +35,59 @@ subscripts
    v.y == v[1]
    v.z == v[2]
 
-Multiple coordinates can be set using slices or swizzling
+Multiple coordinates can be set and retrieved using slices or swizzling.
 
 ::
 
    v = pygame.Vector2()
    v.xy = 1, 2
    v[:] = 1, 2
+   print(v)  # Vector2(1, 2)
+   print(v.x)  # 1.0
+   print(v.y)  # 2.0
+   print(v.xy)  # Vector2(1, 2)
+   print(v.yx)  # Vector2(2, 1)
+   print(v.xyyx)  # (1.0, 2.0, 2.0, 1.0)
+
+Note above, that swizzling with 2 components will return a Vector2 instance
+again, while more than 2 components will result in a tuple. But since vectors
+support the iterator protocol, they can be unpacked, or converted to lists or
+tuples.
+
+::
+
+   v = Vector2(1, 2)
+   print(*v)  # 1.0 2.0
+   print(tuple(v))  # (1.0, 2.0)
+   print(tuple(v.yx))  # (2.0, 1.0)
+
+
+A vector can be converted to other data types using the built-in constructors
+
+::
+
+    v = pygame.Vector2(1, 2)
+
+    list(v) == [1.0, 2.0]
+    tuple(v) == (1.0, 2.0)
+    set(v) == {1.0, 2.0}
+
+Conversion can be combined with swizzling or slicing to create a new order
+
+::
+
+    v = pygame.Vector3(1, 2, 3)
+
+    list(v.xz) == [1.0, 3.0]
+    list(v.zyx) == [3.0, 2.0, 1.0]
+    list(v.yyy) == [2.0, 2.0, 2.0]
+    tuple(v.xyyzzz) == (1.0, 2.0, 2.0, 3.0, 3.0, 3.0)
+    tuple(v.zxyxzzyx) == (3.0, 1.0, 2.0, 1.0, 3.0, 3.0, 2.0, 1.0)
+    set(v.yxzxzyzxyx) == {1.0, 2.0, 3.0} # sets remove duplicates
+
+    list(v[:]) == [1.0, 2.0, 3.0]
+    tuple(v[::-1]) == (3.0, 2.0, 1.0)
+    set(v[1:3]) == {2.0, 3.0}
 
 .. versionaddedold:: 1.9.2pre
 .. versionchangedold:: 1.9.4 Removed experimental notice.
@@ -73,7 +119,7 @@ Multiple coordinates can be set using slices or swizzling
 
    The formula is:
 
-   ``a * value + (1 - value) * b``.
+   ``a + (b - a) * value``.
 
    .. versionadded:: 2.4.0
 
@@ -145,11 +191,11 @@ Multiple coordinates can be set using slices or swizzling
    Example:
 
    .. code-block:: python
-      
+
       > value = 50
       > pygame.math.remap(0, 100, 0, 200, value)
       > 100.0
-      
+
 
    .. versionadded:: 2.5.0
 
@@ -167,8 +213,8 @@ Multiple coordinates can be set using slices or swizzling
 
    Some general information about the ``Vector2`` class.
 
-   .. versionchanged:: 2.1.3 
-      Inherited methods of vector subclasses now correctly return an instance of the 
+   .. versionchanged:: 2.1.3
+      Inherited methods of vector subclasses now correctly return an instance of the
       subclass instead of the superclass
 
    .. method:: dot
@@ -224,7 +270,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`length_squared() -> float`
 
       calculates the Euclidean length of the vector which follows from the
-      Pythagorean theorem: ``vec.length_squared() == vec.x**2 + vec.y**2``. 
+      Pythagorean theorem: ``vec.length_squared() == vec.x**2 + vec.y**2``.
       This is faster than ``vec.length()`` because it avoids the square root.
 
       .. ## Vector2.length_squared ##
@@ -234,7 +280,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`returns a vector with the same direction but length 1.`
       | :sg:`normalize() -> Vector2`
 
-      Returns a new vector that has ``length`` equal to ``1`` and the same 
+      Returns a new vector that has ``length`` equal to ``1`` and the same
       direction as self.
 
       .. ## Vector2.normalize ##
@@ -244,7 +290,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`normalizes the vector in place so that its length is 1.`
       | :sg:`normalize_ip() -> None`
 
-      Normalizes the vector so that it has ``length`` equal to ``1``. 
+      Normalizes the vector so that it has ``length`` equal to ``1``.
       The direction of the vector is not changed.
 
       .. ## Vector2.normalize_ip ##
@@ -254,7 +300,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`tests if the vector is normalized i.e. has length == 1.`
       | :sg:`is_normalized() -> Bool`
 
-      Returns True if the vector has ``length`` equal to ``1``. Otherwise 
+      Returns True if the vector has ``length`` equal to ``1``. Otherwise
       it returns ``False``.
 
       .. ## Vector2.is_normalized ##
@@ -265,7 +311,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`scale_to_length(float, /) -> None`
 
       Scales the vector so that it has the given length. The direction of the
-      vector is not changed. You can also scale to length ``0``. If the vector 
+      vector is not changed. You can also scale to length ``0``. If the vector
       is the zero vector (i.e. has length ``0`` thus no direction) a
       ``ValueError`` is raised.
 
@@ -343,7 +389,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Returns a Vector which is a linear interpolation between self and the
       given Vector. The second parameter determines how far between self and
-      other the result is going to be. It must be a value between ``0`` and ``1`` 
+      other the result is going to be. It must be a value between ``0`` and ``1``
       where ``0`` means self and ``1`` means other will be returned.
 
       .. ## Vector2.lerp ##
@@ -462,7 +508,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`angle_to(Vector2, /) -> float`
 
       Returns the angle from self to the passed ``Vector2`` that would rotate self
-      to be aligned with the passed ``Vector2`` without crossing over the negative 
+      to be aligned with the passed ``Vector2`` without crossing over the negative
       x-axis.
 
       .. figure:: code_examples/angle_to.png
@@ -477,7 +523,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`returns a tuple with radial distance and azimuthal angle.`
       | :sg:`as_polar() -> (r, phi)`
 
-      Returns a tuple ``(r, phi)`` where r is the radial distance, and phi 
+      Returns a tuple ``(r, phi)`` where r is the radial distance, and phi
       is the azimuthal angle.
 
       .. ## Vector2.as_polar ##
@@ -497,14 +543,14 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`projects a vector onto another.`
       | :sg:`project(Vector2, /) -> Vector2`
 
-      Returns the projected vector. This is useful for collision detection in finding the components in a certain direction (e.g. in direction of the wall). 
+      Returns the projected vector. This is useful for collision detection in finding the components in a certain direction (e.g. in direction of the wall).
       For a more detailed explanation see `Wikipedia <https://en.wikipedia.org/wiki/Vector_projection>`_.
 
       .. versionaddedold:: 2.0.2
 
       .. ## Vector2.project ##
 
-   
+
    .. method:: copy
 
       | :sl:`Returns a copy of itself.`
@@ -515,7 +561,7 @@ Multiple coordinates can be set using slices or swizzling
       .. versionaddedold:: 2.1.1
 
       .. ## Vector2.copy ##
-   
+
 
    .. method:: clamp_magnitude
 
@@ -526,8 +572,8 @@ Multiple coordinates can be set using slices or swizzling
       **Experimental:** feature still in development available for testing and feedback. It may change.
       `Please leave clamp_magnitude feedback with authors <https://github.com/pygame-community/pygame-ce>`_
 
-      Returns a new copy of a vector with the magnitude clamped between 
-      ``max_length`` and ``min_length``. If only one argument is passed, it is 
+      Returns a new copy of a vector with the magnitude clamped between
+      ``max_length`` and ``min_length``. If only one argument is passed, it is
       taken to be the ``max_length``
 
       This function raises ``ValueError`` if ``min_length`` is greater than
@@ -537,12 +583,12 @@ Multiple coordinates can be set using slices or swizzling
 
       .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
          is unspecified or 0.
-      
+
       .. note::
          Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
 
       .. ## Vector2.clamp_magnitude ##
-   
+
 
    .. method:: clamp_magnitude_ip
 
@@ -560,7 +606,7 @@ Multiple coordinates can be set using slices or swizzling
 
       .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
          is unspecified or 0.
-      
+
       .. note::
          Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
 
@@ -583,11 +629,11 @@ Multiple coordinates can be set using slices or swizzling
 
       .. ## Vector2.update ##
 
-   
+
    .. attribute:: epsilon
-      
+
       | :sl:`Determines the tolerance of vector calculations.`
-      
+
       Both Vector classes have a value named ``epsilon`` that defaults to ``1e-6``.
       This value acts as a numerical margin in various methods to account for floating point
       arithmetic errors. Specifically, ``epsilon`` is used in the following places:
@@ -613,9 +659,30 @@ Multiple coordinates can be set using slices or swizzling
          print(v == u) # >> False
 
       You'll probably never have to change ``epsilon`` from the default value, but in rare situations you might
-      find that either the margin is too large or too small, in which case changing ``epsilon`` slightly 
+      find that either the margin is too large or too small, in which case changing ``epsilon`` slightly
       might help you out.
 
+   .. attribute:: angle
+
+      | :sl:`Gives the angle of the vector in degrees, relative to the X-axis, normalized to the interval [-180, 180].`
+
+      Read-only attribute representing the angle of the vector in degrees relative to the X-axis. This angle is normalized to
+      the interval [-180, 180].
+
+      Usage: Accessing `angle` provides the current angle of the vector in degrees within the predefined range of [-180, 180].
+
+      .. versionadded:: 2.5.5
+
+   .. attribute:: angle_rad
+
+      | :sl:`Gives the angle of the vector in radians, relative to the X-axis, normalized to the interval [-π, π].`
+
+      Read-only attribute representing the angle of the vector in radians relative to the X-axis. This value is equivalent
+      to the `angle` attribute converted to radians and is normalized to the interval [-π, π].
+
+      Usage: Accessing `angle_rad` provides the current angle of the vector in radians within the predefined range of [-π, π].
+
+      .. versionadded:: 2.5.5
 
    .. ## pygame.math.Vector2 ##
 
@@ -631,8 +698,8 @@ Multiple coordinates can be set using slices or swizzling
 
    Some general information about the Vector3 class.
 
-   .. versionchanged:: 2.1.3 
-      Inherited methods of vector subclasses now correctly return an instance of the 
+   .. versionchanged:: 2.1.3
+      Inherited methods of vector subclasses now correctly return an instance of the
       subclass instead of the superclass
 
    .. method:: dot
@@ -667,7 +734,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`magnitude_squared() -> float`
 
       calculates the magnitude of the vector which follows from the
-      theorem: 
+      theorem:
       ``vec.magnitude_squared() == vec.x**2 + vec.y**2 + vec.z**2``.
       This is faster than ``vec.magnitude()`` because it avoids the
       square root.
@@ -680,7 +747,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`length() -> float`
 
       calculates the Euclidean length of the vector which follows from the
-      Pythagorean theorem: 
+      Pythagorean theorem:
       ``vec.length() == math.sqrt(vec.x**2 + vec.y**2 + vec.z**2)``
 
       .. ## Vector3.length ##
@@ -691,8 +758,8 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`length_squared() -> float`
 
       calculates the Euclidean length of the vector which follows from the
-      Pythagorean theorem: 
-      ``vec.length_squared() == vec.x**2 + vec.y**2 + vec.z**2``. 
+      Pythagorean theorem:
+      ``vec.length_squared() == vec.x**2 + vec.y**2 + vec.z**2``.
       This is faster than ``vec.length()`` because it avoids the square root.
 
       .. ## Vector3.length_squared ##
@@ -702,7 +769,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`returns a vector with the same direction but length 1.`
       | :sg:`normalize() -> Vector3`
 
-      Returns a new vector that has ``length`` equal to ``1`` and the same 
+      Returns a new vector that has ``length`` equal to ``1`` and the same
       direction as self.
 
       .. ## Vector3.normalize ##
@@ -712,7 +779,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`normalizes the vector in place so that its length is 1.`
       | :sg:`normalize_ip() -> None`
 
-      Normalizes the vector so that it has ``length`` equal to ``1``. The 
+      Normalizes the vector so that it has ``length`` equal to ``1``. The
       direction of the vector is not changed.
 
       .. ## Vector3.normalize_ip ##
@@ -722,7 +789,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`tests if the vector is normalized i.e. has length == 1.`
       | :sg:`is_normalized() -> Bool`
 
-      Returns True if the vector has ``length`` equal to ``1``. Otherwise it 
+      Returns True if the vector has ``length`` equal to ``1``. Otherwise it
       returns ``False``.
 
       .. ## Vector3.is_normalized ##
@@ -733,7 +800,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`scale_to_length(float, /) -> None`
 
       Scales the vector so that it has the given length. The direction of the
-      vector is not changed. You can also scale to length ``0``. If the vector 
+      vector is not changed. You can also scale to length ``0``. If the vector
       is the zero vector (i.e. has length ``0`` thus no direction) a
       ``ValueError`` is raised.
 
@@ -811,7 +878,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Returns a Vector which is a linear interpolation between self and the
       given Vector. The second parameter determines how far between self an
-      other the result is going to be. It must be a value between ``0`` and 
+      other the result is going to be. It must be a value between ``0`` and
       ``1``, where ``0`` means self and ``1`` means other will be returned.
 
       .. ## Vector3.lerp ##
@@ -1096,7 +1163,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`rotate_z_ip_rad(angle, /) -> None`
 
       DEPRECATED: Use rotate_z_rad_ip() instead.
-      
+
       .. deprecatedold:: 2.1.1
 
       .. ## Vector3.rotate_z_ip_rad ##
@@ -1149,13 +1216,13 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`projects a vector onto another.`
       | :sg:`project(Vector3, /) -> Vector3`
 
-      Returns the projected vector. This is useful for collision detection in finding the components in a certain direction (e.g. in direction of the wall). 
+      Returns the projected vector. This is useful for collision detection in finding the components in a certain direction (e.g. in direction of the wall).
       For a more detailed explanation see `Wikipedia <https://en.wikipedia.org/wiki/Vector_projection>`_.
 
       .. versionaddedold:: 2.0.2
 
       .. ## Vector3.project ##
-   
+
    .. method:: copy
 
       | :sl:`Returns a copy of itself.`
@@ -1174,8 +1241,8 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude(max_length, /) -> Vector3`
       | :sg:`clamp_magnitude(min_length, max_length, /) -> Vector3`
 
-      Returns a new copy of a vector with the magnitude clamped between 
-      ``max_length`` and ``min_length``. If only one argument is passed, it is 
+      Returns a new copy of a vector with the magnitude clamped between
+      ``max_length`` and ``min_length``. If only one argument is passed, it is
       taken to be the ``max_length``
 
       This function raises ``ValueError`` if ``min_length`` is greater than
@@ -1185,12 +1252,12 @@ Multiple coordinates can be set using slices or swizzling
 
       .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
          is unspecified or 0.
-      
+
       .. note::
          Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
 
       .. ## Vector3.clamp_magnitude ##
-   
+
 
    .. method:: clamp_magnitude_ip
 
@@ -1208,7 +1275,7 @@ Multiple coordinates can be set using slices or swizzling
 
       .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
          is unspecified or 0.
-      
+
       .. note::
          Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
 
@@ -1233,9 +1300,9 @@ Multiple coordinates can be set using slices or swizzling
    .. attribute:: epsilon
 
       | :sl:`Determines the tolerance of vector calculations.`
-      
+
       With lengths within this number, vectors are considered equal. For more information see :attr:`pygame.math.Vector2.epsilon`
-            
+
    .. ##  ##
 
    .. ## pygame.math.Vector3 ##

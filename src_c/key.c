@@ -35,16 +35,19 @@ key_set_repeat(PyObject *self, PyObject *args)
 {
     int delay = 0, interval = 0;
 
-    if (!PyArg_ParseTuple(args, "|ii", &delay, &interval))
+    if (!PyArg_ParseTuple(args, "|ii", &delay, &interval)) {
         return NULL;
+    }
 
     VIDEO_INIT_CHECK();
 
-    if (delay && !interval)
+    if (delay && !interval) {
         interval = delay;
+    }
 
-    if (pg_EnableKeyRepeat(delay, interval) == -1)
+    if (pg_EnableKeyRepeat(delay, interval) == -1) {
         return NULL;
+    }
 
     Py_RETURN_NONE;
 }
@@ -78,9 +81,14 @@ pg_scancodewrapper_subscript(pgScancodeWrapper *self, PyObject *item)
 {
     long index;
     PyObject *adjustedvalue, *ret;
-    if ((index = PyLong_AsLong(item)) == -1 && PyErr_Occurred())
+    if ((index = PyLong_AsLong(item)) == -1 && PyErr_Occurred()) {
         return NULL;
+    }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    index = SDL_GetScancodeFromKey(index, NULL);
+#else
     index = SDL_GetScancodeFromKey(index);
+#endif
     adjustedvalue = PyLong_FromLong(index);
     ret = PyTuple_Type.tp_as_mapping->mp_subscript((PyObject *)self,
                                                    adjustedvalue);
@@ -163,33 +171,32 @@ static PyObject *
 key_get_pressed(PyObject *self, PyObject *_null)
 {
     int num_keys;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    const bool *key_state;
+#else
     const Uint8 *key_state;
+#endif
     PyObject *ret_obj = NULL;
     PyObject *key_tuple;
-    int i;
 
     VIDEO_INIT_CHECK();
 
     key_state = SDL_GetKeyboardState(&num_keys);
 
-    if (!key_state || !num_keys)
+    if (!key_state || !num_keys) {
         Py_RETURN_NONE;
-
-    if (!(key_tuple = PyTuple_New(num_keys)))
-        return NULL;
-
-    for (i = 0; i < num_keys; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(key_state[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
     }
 
-    ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
-                                           key_tuple, NULL);
+    if (!(key_tuple = PyTuple_New(num_keys))) {
+        return NULL;
+    }
+
+    for (int i = 0; i < num_keys; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(key_state[i]));
+    }
+
+    ret_obj =
+        PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
     Py_DECREF(key_tuple);
     return ret_obj;
 }
@@ -203,21 +210,15 @@ get_just_pressed(PyObject *self, PyObject *_null)
     PyObject *key_tuple = NULL;
     PyObject *ret_obj = NULL;
 
-    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES)))
+    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES))) {
         return NULL;
-
-    int i;
-    for (i = 0; i < SDL_NUM_SCANCODES; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(pressed_keys[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
     }
-    ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
-                                           key_tuple, NULL);
+
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(pressed_keys[i]));
+    }
+    ret_obj =
+        PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
     Py_DECREF(key_tuple);
     return ret_obj;
 }
@@ -231,21 +232,15 @@ get_just_released(PyObject *self, PyObject *_null)
     PyObject *key_tuple = NULL;
     PyObject *ret_obj = NULL;
 
-    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES)))
+    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES))) {
         return NULL;
-
-    int i;
-    for (i = 0; i < SDL_NUM_SCANCODES; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(released_keys[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
     }
-    ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
-                                           key_tuple, NULL);
+
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(released_keys[i]));
+    }
+    ret_obj =
+        PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
     Py_DECREF(key_tuple);
     return ret_obj;
 }
@@ -432,8 +427,9 @@ key_name(PyObject *self, PyObject *args, PyObject *kwargs)
     static char *kwids[] = {"key", "use_compat", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i|p", kwids, &key,
-                                     &use_compat))
+                                     &use_compat)) {
         return NULL;
+    }
 
     if (use_compat) {
         /* Use our backcompat function, that has names hardcoded in pygame
@@ -457,8 +453,9 @@ key_code(PyObject *self, PyObject *args, PyObject *kwargs)
 
     static char *kwids[] = {"name", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwids, &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwids, &name)) {
         return NULL;
+    }
 
     /* in the future, this should be an error. For now it's a warning to not
      * break existing code */
@@ -491,8 +488,9 @@ key_set_mods(PyObject *self, PyObject *args)
 {
     int mods;
 
-    if (!PyArg_ParseTuple(args, "i", &mods))
+    if (!PyArg_ParseTuple(args, "i", &mods)) {
         return NULL;
+    }
 
     VIDEO_INIT_CHECK();
 
@@ -511,16 +509,42 @@ key_get_focused(PyObject *self, PyObject *_null)
 static PyObject *
 key_start_text_input(PyObject *self, PyObject *_null)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* Can consider making this a method of the Window class, this function
+     * just does backcompat */
+    SDL_Window *win = pg_GetDefaultWindow();
+    if (!win) {
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+    if (!SDL_StartTextInput(win)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+#else
     /* https://wiki.libsdl.org/SDL_StartTextInput */
     SDL_StartTextInput();
+#endif
     Py_RETURN_NONE;
 }
 
 static PyObject *
 key_stop_text_input(PyObject *self, PyObject *_null)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* Can consider making this a method of the Window class, this function
+     * just does backcompat */
+    SDL_Window *win = pg_GetDefaultWindow();
+    if (!win) {
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+    if (!SDL_StopTextInput(win)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+#else
     /* https://wiki.libsdl.org/SDL_StopTextInput */
     SDL_StopTextInput();
+#endif
     Py_RETURN_NONE;
 }
 
@@ -536,8 +560,9 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
         Py_RETURN_NONE;
     }
     rect = pgRect_FromObject(obj, &temp);
-    if (!rect)
+    if (!rect) {
         return RAISE(PyExc_TypeError, "Invalid rect argument");
+    }
 
     if (sdlRenderer != NULL) {
         SDL_Rect vprect, rect2;
@@ -552,11 +577,23 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
         rect2.w = (int)(rect->w * scalex);
         rect2.h = (int)(rect->h * scaley);
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        /* Should consider how to expose the cursor argument to the user, maybe
+         * this should be new API in Window? */
+        SDL_SetTextInputArea(sdlWindow, &rect2, 0);
+#else
         SDL_SetTextInputRect(&rect2);
+#endif
         Py_RETURN_NONE;
     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* Should consider how to expose the cursor argument to the user, maybe
+     * this should be new API in Window? */
+    SDL_SetTextInputArea(sdlWindow, rect, 0);
+#else
     SDL_SetTextInputRect(rect);
+#endif
 
     Py_RETURN_NONE;
 }
@@ -626,10 +663,8 @@ MODINIT_DEFINE(key)
         return NULL;
     }
 
-    Py_INCREF(&pgScancodeWrapper_Type);
-    if (PyModule_AddObject(module, _PG_SCANCODEWRAPPER_TYPE_NAME,
-                           (PyObject *)&pgScancodeWrapper_Type)) {
-        Py_DECREF(&pgScancodeWrapper_Type);
+    if (PyModule_AddObjectRef(module, _PG_SCANCODEWRAPPER_TYPE_NAME,
+                              (PyObject *)&pgScancodeWrapper_Type)) {
         Py_DECREF(module);
         return NULL;
     }

@@ -44,14 +44,15 @@
 .. function:: get_finger
 
    | :sl:`get information about an active finger`
-   | :sg:`get_finger(touchid, index) -> int`
+   | :sg:`get_finger(touchid, index) -> dict | None`
 
    :param int touchid: The touch device id.
    :param int index: The index of the finger to return
                      information about, between 0 and the
                      :func:`number of active fingers <pygame._sdl2.touch.get_num_fingers()>`.
 
-   Return a dict for the finger ``index`` active on ``touchid``.
+   Return a dict for the finger ``index`` active on ``touchid``, or ``None`` if the
+   object does not exist.
    The dict contains these keys:
 
    ::

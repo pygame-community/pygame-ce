@@ -20,4 +20,3 @@ meson setup _build $PG_BASE_MESON_FLAGS --force-fallback-for libpcre2-8 -Dtests=
 
 meson compile -C _build
 meson install -C _build
-

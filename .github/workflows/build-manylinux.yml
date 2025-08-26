@@ -1,33 +1,14 @@
 name: ManyLinux
 
-# Run CI only when a release is created, on changes to main branch, or any PR 
-# to main. Do not run CI on any other branch. Also, skip any non-source changes 
-# from running on CI
+# Run CI only when a release is created, on changes to main branch, or any PR
+# to main.
 on:
   push:
     branches: main
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-      - '.gitignore'
-      - '*.rst'
-      - '*.md'
-      - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/build-manylinux.yml'
 
   pull_request:
     branches: main
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-      - '.gitignore'
-      - '*.rst'
-      - '*.md'
-      - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/build-manylinux.yml'
-  
+
   # the github release drafter can call this workflow
   workflow_call:
 
@@ -38,29 +19,29 @@ concurrency:
 jobs:
   build:
     name: ${{ matrix.arch }}
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     permissions:
       contents: read
       packages: write
-    
+
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        arch: [x86_64, i686]
-    
+        arch: [x86_64, i686, aarch64]
+
     env:
       CIBW_ARCHS: ${{ matrix.arch }}
 
     steps:
-    - uses: actions/checkout@v4.1.7
+    - uses: actions/checkout@v5.0.0
 
     - name: Log in to the Container registry
-      uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446
+      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Inspect image, skip build if image exists
       id: inspect
       continue-on-error: true
@@ -68,14 +49,14 @@ jobs:
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
-      uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81
+      uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f
       with:
         images: ghcr.io/${{ github.repository }}_${{ matrix.arch }}
         tags: type=raw,value=${{ hashFiles('buildconfig/manylinux-build/**') }}
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@1ca370b3a9802c92e886402e0dd88098a2533b12
+      uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
@@ -90,8 +71,10 @@ jobs:
         CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ghcr.io/${{ github.repository }}_x86_64:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
+        CIBW_MANYLINUX_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
+        CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v2.19.2
+      uses: pypa/cibuildwheel@v3.1.4
 
     # We upload the generated files under github actions assets
     - name: Upload dist
@@ -100,4 +83,3 @@ jobs:
         name: pygame-wheels-manylinux-${{ matrix.arch }}
         path: ./wheelhouse/*.whl
         compression-level: 0  # wheels are already zip files, no need for more compression
-

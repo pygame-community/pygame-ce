@@ -7,24 +7,25 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ **Français**  `فارسی`_ `Español`_
+`English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 `Pygame`_ est une bibliothèque multi-plateforme, libre et open-source
-permettant de développer des applications multimédias comme des jeux-vidéos, avec Python.
+permettant de développer des applications multimédias, comme des jeux-vidéos avec Python.
 Il utilise la bibliothèque « `Simple DirectMedia Layer`_ » (SDL) et plusieurs autres bibliothèques
 populaires pour abstraire les fonctions les plus courantes et rendre l’écriture de programmes
 la plus intuitive possible.
 
 Cette distribution se nomme **« pygame - Community Edition »** (abrégé « pygame-ce »).
 
-Ceci est un fork du projet initial par ses principaux anciens développeurs,
+Ceci est un fork du projet initial créé par ses principaux anciens développeurs,
 il a été créé suite à de nombreux obstacles impossibles à franchir, les empêchant de continuer
 le développement du projet initial. Cette nouvelle distribution a pour but d’offrir des mises à jour
 plus régulières, des améliorations et des correctifs, mais aussi un modèle de gouvernance plus
 démocratique.
 
-Tout nouveau contributeur est le bienvenu !
+Tout nouveau contributeur est le/la bienvenu(e) !
 
 Installation
 ------------
@@ -58,7 +59,7 @@ Build depuis le code source
 
 Si vous voulez utiliser des fonctionnalités en cours de développement,
 ou que vous voulez contribuer à pygame-ce, vous allez avoir besoin de
-build pygame-ce localement depuis le code source, plutôt que de l’installer avec
+compiler pygame-ce localement grâce à son code source, plutôt que de l’installer avec
 pip.
 
 Installer pygame-ce depuis le code source est assez automatisé. La majeure
@@ -72,7 +73,7 @@ sur `Compilation wiki page`_.
 Crédits
 -------
 
-Un très grand merci à toutes celles et ceux qui ont contribué et contribuent
+Un très grand merci à toutes celles et ceux qui ont contribué et qui contribuent
 toujours à ce module.
 Des remerciements particuliers s'imposent également.
 
@@ -145,9 +146,9 @@ multidimensionnels.
 Versions des dépendances:
 
 +----------+-----------------------------+
-| CPython  | >= 3.8 (Ou utiliser PyPy3)  |
+| CPython  | >= 3.9 (Ou utiliser PyPy3)  |
 +----------+-----------------------------+
-| SDL      | >= 2.0.10                   |
+| SDL      | >= 2.0.14                   |
 +----------+-----------------------------+
 | SDL_mixer| >= 2.0.4                    |
 +----------+-----------------------------+
@@ -165,7 +166,7 @@ peut être retrouvée dans le fichier ``docs/LGPL.txt``. Nous nous réservons
 le droit de placer les futures versions de cette bibliothèque sous une licence
 différente.
 
-Ceci veut en quelque sorte dire que vous êtes habilité à utiliser pygame-ce
+Ceci veut en quelque sorte dire que vous êtes en droit d'utiliser pygame-ce
 dans n’importe quel projet que souhaitez, mais que si vous voulez effectuer des
 changements ou des ajouts à pygame lui-même, alors vous serez dans l’obligation
 de les publier avec une licence compatible (de préférence en les soumettant au projet
@@ -175,6 +176,8 @@ Les programmes présents dans le sous-répertoire ``examples`` appartiennent
 au domaine public.
 
 Voir les docs/licences pour les licences des dépendances.
+
+**Last reviewed** : 05 October 2024 - **Dernière vérification** : 05 Octobre 2024
 
 
 .. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
@@ -203,6 +206,11 @@ Voir les docs/licences pour les licences des dépendances.
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
 .. _简体中文: README.zh-cn.rst
+.. _繁體中文: README.zh-tw.rst
 .. _English: ./../../README.rst
 .. _فارسی: README.fa.rst
 .. _Español: README.es.rst
+.. _日本語: README.ja.rst
+.. _Italiano: README.it.rst
+.. _Русский: README.ru.rst
+.. _Ελληνικά: README.gr.rst

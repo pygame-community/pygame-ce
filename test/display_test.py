@@ -1,13 +1,12 @@
-import unittest
 import os
 import sys
 import time
+import unittest
 
-import pygame, pygame.transform
-
-from pygame.tests.test_utils import question
-
+import pygame
+import pygame.transform
 from pygame import display
+from pygame.tests.test_utils import question
 
 
 class DisplayModuleTest(unittest.TestCase):
@@ -151,7 +150,11 @@ class DisplayModuleTest(unittest.TestCase):
         self.assertTrue(display.get_init())
 
     def test_get_surface(self):
-        """Ensures get_surface gets the current display surface."""
+        """Ensures get_surface gets the current display surface.
+        We can't guarantee small screen sizes get respected, so the
+        sizes of the surfaces returned from set_mode must be compared
+        to the size of the surface from get_surface.
+        """
         lengths = (1, 5, 100)
         correct_depth = pygame.display.Info().bitsize
 
@@ -169,7 +172,7 @@ class DisplayModuleTest(unittest.TestCase):
 
                 self.assertEqual(surface, expected_surface)
                 self.assertIsInstance(surface, pygame.Surface)
-                self.assertEqual(surface.get_size(), expected_size)
+                self.assertEqual(surface.get_size(), expected_surface.get_size())
                 self.assertEqual(surface.get_bitsize(), correct_depth)
 
     def test_get_surface__mode_not_set(self):
@@ -512,6 +515,10 @@ class DisplayModuleTest(unittest.TestCase):
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
         "Needs a non-null videodriver",
     )
+    @unittest.skipIf(
+        pygame.version.SDL >= (2, 32, 50),
+        "set_gamma is removed in SDL3, does not work in sdl2-compat either",
+    )
     def test_set_gamma(self):
         pygame.display.set_mode((1, 1))
 
@@ -526,6 +533,10 @@ class DisplayModuleTest(unittest.TestCase):
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
         "Needs a non-null videodriver",
     )
+    @unittest.skipIf(
+        pygame.version.SDL >= (2, 32, 50),
+        "set_gamma is removed in SDL3, does not work in sdl2-compat either",
+    )
     def test_set_gamma__tuple(self):
         pygame.display.set_mode((1, 1))
 
@@ -535,8 +546,8 @@ class DisplayModuleTest(unittest.TestCase):
                 self.assertEqual(pygame.display.set_gamma(r, g, b), True)
 
     @unittest.skipIf(
-        not hasattr(pygame.display, "set_gamma_ramp"),
-        "Not all systems and hardware support gamma ramps",
+        pygame.version.SDL >= (2, 32, 50),
+        "set_gamma_ramp is removed in SDL3, does not work in sdl2-compat either",
     )
     def test_set_gamma_ramp(self):
         # __doc__ (as of 2008-08-02) for pygame.display.set_gamma_ramp:
@@ -869,6 +880,10 @@ class DisplayInteractiveTest(unittest.TestCase):
         self.assertTrue(response)
         pygame.display.quit()
 
+    @unittest.skipIf(
+        pygame.version.SDL >= (2, 32, 50),
+        "set_gamma_ramp is removed in SDL3, does not work in sdl2-compat either",
+    )
     def test_set_gamma_ramp(self):
         os.environ["SDL_VIDEO_WINDOW_POS"] = "100,250"
         pygame.display.quit()

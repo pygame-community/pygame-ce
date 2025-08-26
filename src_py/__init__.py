@@ -30,16 +30,33 @@ import platform
 # Choose Windows display driver
 if os.name == "nt":
     pygame_dir = os.path.split(__file__)[0]
+    dll_parents = {pygame_dir}
+    try:
+        # For editable support, add some more folders where DLLs are available.
+        # This block only executes under an editable install. In a "normal"
+        # install, the json file will not be installed at the supplied path.
+        with open(
+            os.path.join(
+                os.path.dirname(pygame_dir), "buildconfig", "win_dll_dirs.json"
+            ),
+            encoding="utf-8",
+        ) as f:
+            import json
 
-    # pypy does not find the dlls, so we add package folder to PATH.
-    os.environ["PATH"] = os.environ["PATH"] + ";" + pygame_dir
+            dll_parents.update(json.load(f))
+            del json
+    except (FileNotFoundError, ValueError):
+        pass
 
-    # Windows store python does not find the dlls, so we run this
-    if sys.version_info > (3, 8):
-        os.add_dll_directory(pygame_dir)  # only available in 3.8+
+    d = ""  # define variable here so that we can consistently delete it
+    for d in dll_parents:
+        # adding to PATH is the legacy way, os.add_dll_directory is the new
+        # and recommended method. For extra safety we do both
+        os.environ["PATH"] = os.environ["PATH"] + ";" + d
+        os.add_dll_directory(d)
 
     # cleanup namespace
-    del pygame_dir
+    del pygame_dir, dll_parents, d
 
 # when running under X11, always set the SDL window WM_CLASS to make the
 #   window managers correctly match the pygame window.
@@ -56,9 +73,13 @@ class MissingModule:
 
     def __init__(self, name, urgent=0):
         self.name = name
-        exc_type, exc_msg = sys.exc_info()[:2]
-        self.info = str(exc_msg)
-        self.reason = f"{exc_type.__name__}: {self.info}"
+        exc_type, exc_msg, _ = sys.exc_info()
+        if exc_type is not None:
+            self.info = str(exc_msg)
+            self.reason = f"{exc_type.__name__}: {self.info}"
+        else:
+            self.info = "<no info>"
+            self.reason = f"<no exception>: {self.info}"
         self.urgent = urgent
         if urgent:
             self.warn()
@@ -90,21 +111,12 @@ class MissingModule:
 # mixing single phase (C) and multiphase modules (cython)
 if sys.platform in ("wasi", "emscripten"):
     try:
-        import pygame_static
+        import pygame.base as pygame_static
     except ModuleNotFoundError:
         pygame_static = None
 
     if pygame_static:
         pygame = sys.modules[__name__]
-
-        pygame.Color = pygame.color.Color
-
-        Vector2 = pygame.math.Vector2
-        Vector3 = pygame.math.Vector3
-
-        Rect = pygame.rect.Rect
-
-        BufferProxy = pygame.bufferproxy.BufferProxy
 
         # cython modules use multiphase initialisation when not in builtin Inittab.
 
@@ -127,19 +139,28 @@ if sys.platform in ("wasi", "emscripten"):
 from pygame.base import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
-from pygame.rect import Rect, FRect
 from pygame.rwobject import encode_string, encode_file_path
-import pygame.surflock
+
+
+import pygame.rect
+
+Rect = pygame.rect.Rect
+FRect = pygame.rect.FRect
+
+
 import pygame.color
 
 Color = pygame.color.Color
+
 import pygame.bufferproxy
 
 BufferProxy = pygame.bufferproxy.BufferProxy
+
 import pygame.math
 
 Vector2 = pygame.math.Vector2
 Vector3 = pygame.math.Vector3
+
 
 from pygame.base import __version__
 
@@ -193,18 +214,13 @@ except (ImportError, OSError):
 
 
 try:
-    import pygame.sprite
-except (ImportError, OSError):
-    sprite = MissingModule("sprite", urgent=1)
-
-
-try:
     import pygame.pixelcopy
 except (ImportError, OSError):
     pixelcopy = MissingModule("pixelcopy", urgent=1)
 
 
 try:
+    import pygame.surflock
     from pygame.surface import Surface, SurfaceType
 except (ImportError, OSError):
 
@@ -212,6 +228,13 @@ except (ImportError, OSError):
         _attribute_undefined("pygame.Surface")
 
     SurfaceType = Surface
+
+# sprite.py is using pygame.surface.Surface type
+try:
+    import pygame.sprite
+except (ImportError, OSError):
+    sprite = MissingModule("sprite", urgent=1)
+
 
 try:
     import pygame.mask
@@ -273,6 +296,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.mixer
+    from pygame.mixer import Sound
     from pygame.mixer import Channel
 except (ImportError, OSError):
     mixer = MissingModule("mixer", urgent=0)
@@ -282,15 +306,57 @@ try:
 except (ImportError, OSError):
     scrap = MissingModule("scrap", urgent=0)
 
-try:
-    import pygame.surfarray
-except (ImportError, OSError):
-    surfarray = MissingModule("surfarray", urgent=0)
+# Two lazily imported modules to avoid loading numpy unnecessarily
+
+from importlib.util import LazyLoader, find_spec, module_from_spec
+
+
+def lazy_import(name):
+    """Lazily import a pygame module.
+
+    See https://docs.python.org/3/library/importlib.html#implementing-lazy-imports
+    Only load the module upon its first attribute access.
+
+    Lazily imported modules are directly referenced in packager_imports function.
+    """
+    fullname = "pygame." + name
+    spec = find_spec(fullname)
+    if spec is None or spec.loader is None:
+        return MissingModule(name, urgent=0)
+    loader = LazyLoader(spec.loader)
+    spec.loader = loader
+    module = module_from_spec(spec)
+    sys.modules[fullname] = module
+    loader.exec_module(module)
+    return module
+
+
+# Check if numpy is available for surfarray and sndarray modules
+numpy_missing = find_spec("numpy") is None
 
 try:
-    import pygame.sndarray
+    if numpy_missing:
+        # Always fails here. Need the error message for MissingModule.reason
+        import numpy  # pylint: disable=ungrouped-imports
+    # Check that module dependencies are not missing, or get error message
+    import pygame.pixelcopy  # pylint: disable=ungrouped-imports
+except (ImportError, OSError):
+    surfarray = MissingModule("surfarray", urgent=0)
+else:
+    surfarray = lazy_import("surfarray")
+
+try:
+    if numpy_missing:
+        # Always fails here. Need the error message for MissingModule.reason
+        import numpy  # pylint: disable=ungrouped-imports
+    # Check that module dependencies are not missing, or get error message
+    import pygame.mixer  # pylint: disable=ungrouped-imports
 except (ImportError, OSError):
     sndarray = MissingModule("sndarray", urgent=0)
+else:
+    sndarray = lazy_import("sndarray")
+
+del LazyLoader, find_spec, lazy_import, module_from_spec, numpy_missing
 
 try:
     import pygame._debug
@@ -315,6 +381,12 @@ except (ImportError, OSError):
         _attribute_undefined("pygame.Window")
 
 
+try:
+    import pygame.typing
+except (ImportError, OSError):
+    typing = MissingModule("typing", urgent=0)
+
+
 # there's also a couple "internal" modules not needed
 # by users, but putting them here helps "dependency finder"
 # programs get everything they need (like py2exe)
@@ -335,12 +407,20 @@ except (ImportError, OSError):
 
 
 def packager_imports():
-    """some additional imports that py2app/py2exe will want to see"""
+    """Some additional imports that py2app/py2exe will want to see.
+
+    This function is never executed.
+    Some tools scan the source code for import statements.
+    """
     import atexit
     import numpy
     import OpenGL.GL
     import pygame.macosx
     import pygame.colordict
+
+    # lazy imports
+    import pygame.surfarray
+    import pygame.sndarray
 
 
 # make Rects pickleable
@@ -373,10 +453,22 @@ def __color_reduce(c):
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
+    import sysconfig
+
+    python_version = platform.python_version()
+
+    if (
+        sys.platform not in ("wasi", "emscripten")
+        and (sys.version_info >= (3, 13, 0))
+        and sysconfig.get_config_var("Py_GIL_DISABLED")
+    ):
+        python_version += f"t, {'' if sys._is_gil_enabled() else 'No '}GIL"
+
     print(
         f"pygame-ce {ver} (SDL {'.'.join(map(str, get_sdl_version()))}, "
-        f"Python {platform.python_version()})"
+        f"Python {python_version})"
     )
+    del python_version, sysconfig
 
 # cleanup namespace
 del pygame, os, sys, platform, MissingModule, copyreg, packager_imports

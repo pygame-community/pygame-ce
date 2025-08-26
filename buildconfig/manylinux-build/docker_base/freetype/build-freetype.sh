@@ -3,8 +3,11 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-FREETYPE="freetype-2.13.2"
-HARFBUZZ_VER=8.2.1
+# TODO: when freetype is updated, we can look into resolving the circular
+# dependency between freetype and harfbuzz by using the upcoming freetype
+# dynamic harfbuzz loading feature.
+FREETYPE="freetype-2.13.3"
+HARFBUZZ_VER=11.3.3
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
 curl -sL --retry 10 https://savannah.nongnu.org/download/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
@@ -36,11 +39,12 @@ cd ${HARFBUZZ_NAME}
 # Cairo and chafa are only needed for harfbuzz commandline utilities so we
 # don't use it. glib available is a bit old so we don't prefer it as of now.
 # we also don't compile-in icu so that harfbuzz uses built-in unicode handling
-./configure $PG_BASE_CONFIGURE_FLAGS --with-freetype=yes \
-    --with-cairo=no --with-chafa=no --with-glib=no --with-icu=no \
-    --disable-static
-make
-make install
+meson setup _build $PG_BASE_MESON_FLAGS -Dfreetype=enabled \
+    -Dglib=disabled -Dgobject=disabled -Dcairo=disabled -Dchafa=disabled -Dicu=disabled \
+    -Dtests=disabled -Dintrospection=disabled -Ddocs=disabled
+
+meson compile -C _build
+meson install -C _build
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # We do a little hack...
@@ -51,7 +55,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # contains "freetype". This is fine for now when the harfbuzz we are
     # building has no other dependencies
     sed -i '' '/freetype/d' $PG_DEP_PREFIX/lib/pkgconfig/harfbuzz.pc
-    sed -i '' 's/ [^ ]*libfreetype.la//g' $PG_DEP_PREFIX/lib/libharfbuzz.la
 fi
 
 cd ..

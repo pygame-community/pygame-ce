@@ -84,14 +84,14 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specific ones that aren't quite so general but fit into common
 # specialized cases.
 
-from warnings import warn
+import types
 from typing import Optional
+from warnings import warn
 
 import pygame
-
+from pygame.mask import from_surface
 from pygame.rect import Rect
 from pygame.time import get_ticks
-from pygame.mask import from_surface
 
 
 class Sprite:
@@ -371,6 +371,8 @@ class AbstractGroup:
 
     """
 
+    __class_getitem__ = classmethod(types.GenericAlias)
+
     # protected identifier value to identify sprite groups, and avoid infinite recursion
     _spritegroup = True
 
@@ -553,10 +555,10 @@ class AbstractGroup:
         for sprite in self.sprites():
             sprite.update(*args, **kwargs)
 
-    def draw(self, surface):
+    def draw(self, surface, bgd=None, special_flags=0):  # noqa pylint: disable=unused-argument; bgd arg used in LayeredDirty
         """draw all sprites onto the surface
 
-        Group.draw(surface): return Rect_list
+        Group.draw(surface, bgd=None, special_flags=0): return Rect_list
 
         Draws all of the member sprites onto the given surface.
 
@@ -564,11 +566,18 @@ class AbstractGroup:
         sprites = self.sprites()
         if hasattr(surface, "blits"):
             self.spritedict.update(
-                zip(sprites, surface.blits((spr.image, spr.rect) for spr in sprites))
+                zip(
+                    sprites,
+                    surface.blits(
+                        (spr.image, spr.rect, None, special_flags) for spr in sprites
+                    ),
+                )
             )
         else:
             for spr in sprites:
-                self.spritedict[spr] = surface.blit(spr.image, spr.rect)
+                self.spritedict[spr] = surface.blit(
+                    spr.image, spr.rect, None, special_flags
+                )
         self.lostsprites = []
         dirty = self.lostsprites
 
@@ -683,14 +692,14 @@ class RenderUpdates(Group):
 
     """
 
-    def draw(self, surface):
+    def draw(self, surface, bgd=None, special_flags=0):
         surface_blit = surface.blit
         dirty = self.lostsprites
         self.lostsprites = []
         dirty_append = dirty.append
         for sprite in self.sprites():
             old_rect = self.spritedict[sprite]
-            new_rect = surface_blit(sprite.image, sprite.rect)
+            new_rect = surface_blit(sprite.image, sprite.rect, None, special_flags)
             if old_rect:
                 if new_rect.colliderect(old_rect):
                     dirty_append(new_rect.union(old_rect))
@@ -852,10 +861,10 @@ class LayeredUpdates(AbstractGroup):
         """
         return self._spritelist.copy()
 
-    def draw(self, surface):
+    def draw(self, surface, bgd=None, special_flags=0):
         """draw all sprites in the right order onto the passed surface
 
-        LayeredUpdates.draw(surface): return Rect_list
+        LayeredUpdates.draw(surface, bgd=None, special_flags=0): return Rect_list
 
         """
         spritedict = self.spritedict
@@ -866,7 +875,7 @@ class LayeredUpdates(AbstractGroup):
         init_rect = self._init_rect
         for spr in self.sprites():
             rec = spritedict[spr]
-            newrect = surface_blit(spr.image, spr.rect)
+            newrect = surface_blit(spr.image, spr.rect, None, special_flags)
             if rec is init_rect:
                 dirty_append(newrect)
             else:
@@ -1125,13 +1134,16 @@ class LayeredDirty(LayeredUpdates):
 
         LayeredUpdates.add_internal(self, sprite, layer)
 
-    def draw(self, surface, bgd=None):  # noqa pylint: disable=arguments-differ; unable to change public interface
+    def draw(self, surface, bgd=None, special_flags=None):
         """draw all sprites in the right order onto the given surface
 
-        LayeredDirty.draw(surface, bgd=None): return Rect_list
+        LayeredDirty.draw(surface, bgd=None, special_flags=0): return Rect_list
 
         You can pass the background too. If a self.bgd is already set to some
         value that is not None, then the bgd argument has no effect.
+        Passing a value to special_flags will pass that value as the
+        special_flags argument to all Surface.blit calls, overriding
+        the sprite.blendmode attribute.
 
         """
         # functions and classes assigned locally to speed up loops
@@ -1171,21 +1183,29 @@ class LayeredDirty(LayeredUpdates):
 
             # clear using background
             if local_bgd is not None:
+                flags = 0 if special_flags is None else special_flags
                 for rec in local_update:
-                    surf_blit_func(local_bgd, rec, rec)
+                    surf_blit_func(local_bgd, rec, rec, flags)
 
             # 2. draw
             self._draw_dirty_internal(
-                local_old_rect, rect_type, local_sprites, surf_blit_func, local_update
+                local_old_rect,
+                rect_type,
+                local_sprites,
+                surf_blit_func,
+                local_update,
+                special_flags,
             )
             local_ret = list(local_update)
         else:  # flip, full screen mode
             if local_bgd is not None:
-                surf_blit_func(local_bgd, (0, 0))
+                flags = 0 if special_flags is None else special_flags
+                surf_blit_func(local_bgd, (0, 0), None, flags)
             for spr in local_sprites:
                 if spr.visible:
+                    flags = spr.blendmode if special_flags is None else special_flags
                     local_old_rect[spr] = surf_blit_func(
-                        spr.image, spr.rect, spr.source_rect, spr.blendmode
+                        spr.image, spr.rect, spr.source_rect, flags
                     )
             # return only the part of the screen changed
             local_ret = [rect_type(latest_clip)]
@@ -1207,8 +1227,11 @@ class LayeredDirty(LayeredUpdates):
         return local_ret
 
     @staticmethod
-    def _draw_dirty_internal(_old_rect, _rect, _sprites, _surf_blit, _update):
+    def _draw_dirty_internal(
+        _old_rect, _rect, _sprites, _surf_blit, _update, _special_flags
+    ):
         for spr in _sprites:
+            flags = spr.blendmode if _special_flags is None else _special_flags
             if spr.dirty < 1 and spr.visible:
                 # sprite not dirty; blit only the intersecting part
                 if spr.source_rect is not None:
@@ -1236,12 +1259,12 @@ class LayeredDirty(LayeredUpdates):
                             clip[2],
                             clip[3],
                         ),
-                        spr.blendmode,
+                        flags,
                     )
             else:  # dirty sprite
                 if spr.visible:
                     _old_rect[spr] = _surf_blit(
-                        spr.image, spr.rect, spr.source_rect, spr.blendmode
+                        spr.image, spr.rect, spr.source_rect, flags
                     )
                 if spr.dirty == 1:
                     spr.dirty = 0
@@ -1684,36 +1707,21 @@ def spritecollide(sprite, group, dokill, collided=None):
     which will be used to calculate the collision.
 
     """
-    # pull the default collision function in as a local variable outside
-    # the loop as this makes the loop run faster
-    default_sprite_collide_func = sprite.rect.colliderect
-
-    if dokill:
-        crashed = []
-        append = crashed.append
-
-        for group_sprite in group.sprites():
-            if collided is not None:
-                if collided(sprite, group_sprite):
-                    group_sprite.kill()
-                    append(group_sprite)
-            else:
-                if default_sprite_collide_func(group_sprite.rect):
-                    group_sprite.kill()
-                    append(group_sprite)
-
-        return crashed
-
     if collided is not None:
-        return [
+        collided_sprites = [
             group_sprite for group_sprite in group if collided(sprite, group_sprite)
         ]
-
-    return [
-        group_sprite
-        for group_sprite in group
-        if default_sprite_collide_func(group_sprite.rect)
-    ]
+    else:
+        sprite_rect_collide = sprite.rect.colliderect
+        collided_sprites = [
+            group_sprite
+            for group_sprite in group
+            if sprite_rect_collide(group_sprite.rect)
+        ]
+    if dokill:
+        for group_sprite in collided_sprites:
+            group_sprite.kill()
+    return collided_sprites
 
 
 def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
@@ -1734,22 +1742,18 @@ def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
     that will be used to calculate the collision.
 
     """
-    crashed = {}
+    collided_sprites = {}
     # pull the collision function in as a local variable outside
     # the loop as this makes the loop run faster
     sprite_collide_func = spritecollide
+    for group_a_sprite in groupa:
+        collisions = sprite_collide_func(group_a_sprite, groupb, dokillb, collided)
+        if collisions:
+            collided_sprites[group_a_sprite] = collisions
     if dokilla:
-        for group_a_sprite in groupa.sprites():
-            collision = sprite_collide_func(group_a_sprite, groupb, dokillb, collided)
-            if collision:
-                crashed[group_a_sprite] = collision
-                group_a_sprite.kill()
-    else:
-        for group_a_sprite in groupa:
-            collision = sprite_collide_func(group_a_sprite, groupb, dokillb, collided)
-            if collision:
-                crashed[group_a_sprite] = collision
-    return crashed
+        for group_a_sprite in collided_sprites:
+            group_a_sprite.kill()
+    return collided_sprites
 
 
 def spritecollideany(sprite, group, collided=None):
@@ -1770,19 +1774,16 @@ def spritecollideany(sprite, group, collided=None):
     sprites must have a "rect" value, which is a rectangle of the sprite area,
     which will be used to calculate the collision.
 
-
     """
-    # pull the default collision function in as a local variable outside
-    # the loop as this makes the loop run faster
-    default_sprite_collide_func = sprite.rect.colliderect
-
     if collided is not None:
         for group_sprite in group:
             if collided(sprite, group_sprite):
                 return group_sprite
     else:
-        # Special case old behaviour for speed.
+        # pull the default collision function in as a local variable outside
+        # the loop as this makes the loop run faster
+        sprite_rect_collide = sprite.rect.colliderect
         for group_sprite in group:
-            if default_sprite_collide_func(group_sprite.rect):
+            if sprite_rect_collide(group_sprite.rect):
                 return group_sprite
     return None

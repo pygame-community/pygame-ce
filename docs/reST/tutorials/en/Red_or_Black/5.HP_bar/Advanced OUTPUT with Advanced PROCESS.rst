@@ -12,7 +12,7 @@ with Advanced PROCESS - Functionalization
 
 First, Let’s print visualized geometry, not text. How about HP bar? If max HP of game is fixed and current HP of game can vary from 0 to max HP, what will be simplest way to print both two data?
 
-.. image:: ../../../assets/AdvancedOutputProcess1.gif
+.. image:: ../../../assets/AdvancedOutputProcess1.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -27,7 +27,7 @@ First, Let’s print visualized geometry, not text. How about HP bar? If max HP 
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedOutputProcess1.gif")
+   ball = pygame.image.load("AdvancedOutputProcess1.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -44,7 +44,7 @@ First, Let’s print visualized geometry, not text. How about HP bar? If max HP 
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: ../../../assets/AdvancedOutputProcess2.gif
+.. image:: ../../../assets/AdvancedOutputProcess2.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -59,7 +59,7 @@ First, Let’s print visualized geometry, not text. How about HP bar? If max HP 
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedOutputProcess2.gif")
+   ball = pygame.image.load("AdvancedOutputProcess2.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -76,7 +76,7 @@ First, Let’s print visualized geometry, not text. How about HP bar? If max HP 
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: ../../../assets/AdvancedOutputProcess3.gif
+.. image:: ../../../assets/AdvancedOutputProcess3.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -91,7 +91,7 @@ First, Let’s print visualized geometry, not text. How about HP bar? If max HP 
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedOutputProcess3.gif")
+   ball = pygame.image.load("AdvancedOutputProcess3.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -110,7 +110,7 @@ First, Let’s print visualized geometry, not text. How about HP bar? If max HP 
 
 Yeah, just re-rendering text when certain variable is changed. How to change variable? That logic is inside of Event statement. (Pressing up or down to adjust HP.) Same method as before. But they are still text, which means they are not visualized enough. How to visualize these two data more detail (max HP, current HP)? We can use idea of magazine (gun’s magazine). HP is integer value, which is discrete. So, it can be printed as below:
 
-.. image:: ../../../assets/AdvancedOutputProcess4.gif
+.. image:: ../../../assets/AdvancedOutputProcess4.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -125,7 +125,7 @@ Yeah, just re-rendering text when certain variable is changed. How to change var
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedOutputProcess4.gif")
+   ball = pygame.image.load("AdvancedOutputProcess4.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -142,7 +142,7 @@ Yeah, just re-rendering text when certain variable is changed. How to change var
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: ../../../assets/AdvancedOutputProcess5.gif
+.. image:: ../../../assets/AdvancedOutputProcess5.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -157,7 +157,7 @@ Yeah, just re-rendering text when certain variable is changed. How to change var
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedOutputProcess5.gif")
+   ball = pygame.image.load("AdvancedOutputProcess5.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -174,7 +174,7 @@ Yeah, just re-rendering text when certain variable is changed. How to change var
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: ../../../assets/AdvancedOutputProcess6.gif
+.. image:: ../../../assets/AdvancedOutputProcess6.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -189,7 +189,7 @@ Yeah, just re-rendering text when certain variable is changed. How to change var
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("AdvancedOutputProcess6.gif")
+   ball = pygame.image.load("AdvancedOutputProcess6.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -215,8 +215,8 @@ Furthermore, now it’s time to functionalize specifically. I push Always statem
 
     import pygame, sys
     from pygame.locals import*
-    
-    maxHP = 10 
+
+    maxHP = 10
     white = (255,255,255)
     gray = (127,127,127)
     black = (0,0,0)
@@ -233,18 +233,18 @@ Furthermore, now it’s time to functionalize specifically. I push Always statem
     myTextArea = myText.get_rect()
     myTextArea.center = (width/2, height/2) #3
     fpsClock = pygame.time.Clock()
-    
+
     def main(): #4
         HP = 5
-        
+
         while True:
             myText = myTextFont.render((str(HP) + "/" + str(maxHP)), True, red, gray)
-        
+
             myScreen.fill(gray)
-    
+
             myScreen.blit(myText, myTextArea)
             drawHP(HP) #5
-    
+
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
@@ -256,21 +256,21 @@ Furthermore, now it’s time to functionalize specifically. I push Always statem
                     elif event.key == K_DOWN:
                         if HP != 0:
                             HP = HP - 1
-        
+
             pygame.display.update()
             fpsClock.tick(60)
-    
+
     def drawHP(HP): #6
         r = int((height - 40) / maxHP)
-    
+
         pygame.draw.rect(myScreen, black, (20, 20, 20, 20 + ((maxHP - 0.5) * r)))
-    
+
         for i in range(maxHP):
             if HP >= (maxHP - i):
                 pygame.draw.rect(myScreen, red, (20, 20 + (i * r), 20, r))
             pygame.draw.rect(myScreen, white, (20, 20 + (i * r), 20, r), 1)
-    
+
         return
-    
+
     if __name__ == '__main__': #7
         main()

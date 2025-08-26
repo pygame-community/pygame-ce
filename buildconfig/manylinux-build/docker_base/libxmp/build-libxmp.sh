@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-XMP_VERSION=4.6.0
+XMP_VERSION=4.6.3
 XMP="libxmp-${XMP_VERSION}"
 
 
@@ -13,7 +13,7 @@ sha512sum -c libxmp.sha512
 tar xzf ${XMP}.tar.gz
 cd ${XMP}
 
-cmake . $PG_BASE_CMAKE_FLAGS
+cmake . $PG_BASE_CMAKE_FLAGS -DLIBXMP_PIC=1
 
 make
 make install

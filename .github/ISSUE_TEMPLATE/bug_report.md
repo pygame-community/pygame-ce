@@ -11,7 +11,7 @@ assignees: ''
 
 **Environment:**
 
-If possible, please include the output of `pygame.print_debug_info()` from your program in your bug report. It looks something 
+If possible, please include the output of `pygame.print_debug_info()` from your program in your bug report. It looks something
 like this:
 
 ```
@@ -33,7 +33,7 @@ Freetype versions:	Linked: 2.11.1	Compiled: 2.11.1
 Display Driver:		windows
 Mixer Driver:		wasapi
 ```
-If you can't get the debug output, any of the environment details included in it that you do know would be useful 
+If you can't get the debug output, any of the environment details included in it that you do know would be useful
 in diagnosing the issue & helping you.
 
 Other environment details, not included in `print_debug_info()`, that might help:

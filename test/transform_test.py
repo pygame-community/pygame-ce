@@ -1,13 +1,24 @@
-import unittest
 import os
 import platform
-
-from pygame.tests import test_utils
-from pygame.tests.test_utils import example_path
+import unittest
 
 import pygame
 import pygame.transform
 from pygame.locals import *
+from pygame.tests import test_utils
+from pygame.tests.test_utils import example_path
+
+
+def surfaces_have_same_pixels(surf1, surf2):
+    if surf1.get_size() != surf2.get_size():
+        return False
+
+    for row in range(surf1.get_height()):
+        for col in range(surf1.get_width()):
+            if surf1.get_at((col, row)) != surf2.get_at((col, row)):
+                return False
+
+    return True
 
 
 def show_image(s, images=[]):
@@ -173,6 +184,44 @@ class TransformModuleTest(unittest.TestCase):
         s3 = s.copy()
         self.assertEqual(s.get_alpha(), s3.get_alpha())
         self.assertEqual(s.get_alpha(), s2.get_alpha())
+
+    def test_scale__palette(self):
+        """see if palette information from source is kept.
+
+        Test for newsurf_fromsurf regression reported in
+        https://github.com/pygame-community/pygame-ce/issues/3463"""
+
+        s = pygame.Surface((32, 32), depth=8)
+        s.fill("red", [0, 0, 32, 16])
+        s.fill("purple", [0, 16, 32, 16])
+        self.assertTrue(len(s.get_palette()) > 0)
+
+        s2 = pygame.transform.scale(s, (64, 64))
+        self.assertEqual(s.get_palette()[0], s2.get_palette()[0])
+        self.assertEqual(s.get_at_mapped((0, 0)), s2.get_at_mapped((0, 0)))
+        self.assertEqual(s.get_at_mapped((0, 17)), s2.get_at_mapped((0, 35)))
+
+        # Also test with a custom palette to make sure the output doesn't just
+        # have a default palette.
+        s = pygame.Surface((32, 32), depth=8)
+        s.set_palette(
+            [
+                pygame.Color("red"),
+                pygame.Color("purple"),
+                pygame.Color("gold"),
+                pygame.Color("blue"),
+                pygame.Color("lightgreen"),
+            ]
+        )
+        s.fill("red", [0, 0, 32, 16])
+        s.fill("purple", [0, 16, 32, 16])
+        self.assertTrue(len(s.get_palette()) > 0)
+
+        s2 = pygame.transform.scale(s, (64, 64))
+        self.assertEqual(s.get_palette()[0], s2.get_palette()[0])
+        self.assertEqual(s.get_palette(), s2.get_palette())
+        self.assertEqual(s.get_at_mapped((0, 0)), s2.get_at_mapped((0, 0)))
+        self.assertEqual(s.get_at_mapped((0, 17)), s2.get_at_mapped((0, 35)))
 
     def test_scale__destination(self):
         """see if the destination surface can be passed in to use."""
@@ -493,6 +542,38 @@ class TransformModuleTest(unittest.TestCase):
                         for v1, v2 in zip(expected_rgb, actual_rgb):
                             self.assertAlmostEqual(v1, v2, delta=1)
                         self.assertEqual(c_a, actual_color.a)
+
+    def test_solid_overlay(self):
+        test_surface = pygame.Surface((20, 20), pygame.SRCALPHA)
+        test_surface.fill((0, 0, 0, 0))
+        pygame.draw.rect(test_surface, (0, 0, 0), (10, 10, 10, 10))
+
+        surface = pygame.Surface((20, 20), pygame.SRCALPHA)
+        surface.fill((0, 0, 0, 0))
+        pygame.draw.rect(surface, (255, 0, 0), (10, 10, 10, 10))
+
+        surface = pygame.transform.solid_overlay(surface, (0, 0, 0))
+
+        for x in range(20):
+            for y in range(20):
+                self.assertEqual(surface.get_at((x, y)), test_surface.get_at((x, y)))
+
+        pygame.transform.solid_overlay(surface, (0, 0, 0), surface)
+
+        for x in range(20):
+            for y in range(20):
+                self.assertEqual(surface.get_at((x, y)), test_surface.get_at((x, y)))
+
+        test_surface.fill((0, 0, 0, 0))
+        pygame.draw.polygon(test_surface, (200, 100, 50), [(0, 0), (4, 4), (4, 2)])
+
+        surface.fill((0, 0, 0, 0))
+        pygame.draw.polygon(surface, (255, 0, 0), [(0, 0), (4, 4), (4, 2)])
+        surface = pygame.transform.solid_overlay(surface, (200, 100, 50))
+
+        for x in range(20):
+            for y in range(20):
+                self.assertEqual(surface.get_at((x, y)), test_surface.get_at((x, y)))
 
     def test_grayscale_simd_assumptions(self):
         # The grayscale SIMD algorithm relies on the destination surface pitch
@@ -1115,6 +1196,13 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(dest_surface.get_size(), expected_size)
         self.assertEqual(dest_surface.get_flags(), expected_flags)
 
+    def test_threshold_all_color_types(self):
+        s1 = pygame.Surface((32, 32), SRCALPHA, 32)
+        s2 = pygame.Surface((32, 32), SRCALPHA, 32)
+
+        for color in [(0, 255, 0), (255, 0, 0, 0), 0, "blue", pygame.Color("#FFFFFF")]:
+            pygame.transform.threshold(s1, s2, color, color, color)
+
     def test_laplacian(self):
         """ """
 
@@ -1411,6 +1499,39 @@ class TransformModuleTest(unittest.TestCase):
         for pt, color in gradient:
             self.assertTrue(s.get_at(pt) == color)
 
+    def test_rotate_after_convert_regression(self):
+        # Tests a regression found from https://github.com/pygame-community/pygame-ce/pull/3314
+        # Reported in https://github.com/pygame-community/pygame-ce/issues/3463
+
+        pygame.display.set_mode((1, 1))
+
+        output1 = pygame.transform.rotate(
+            pygame.image.load(
+                os.path.join(
+                    os.path.abspath(os.path.dirname(__file__)),
+                    "../examples/data/alien1.png",
+                )
+            ).convert_alpha(),
+            180,
+        )
+        output2 = pygame.transform.rotate(
+            pygame.image.load(
+                os.path.join(
+                    os.path.abspath(os.path.dirname(__file__)),
+                    "../examples/data/alien1.png",
+                )
+            ),
+            180,
+        ).convert_alpha()
+
+        for x in range(50):
+            for y in range(50):
+                color1 = pygame.Color(output1.get_at((x, y)))
+                color2 = pygame.Color(output2.get_at((x, y)))
+                self.assertEqual(color1, color2)
+
+        pygame.quit()
+
     def test_scale2x(self):
         # __doc__ (as of 2008-06-25) for pygame.transform.scale2x:
 
@@ -1656,6 +1777,34 @@ class TransformModuleTest(unittest.TestCase):
             pygame.Surface((10, 10), depth=8),
         )
 
+    def test_invert__palette(self):
+        """see if palette information from source is kept.
+
+        Test for newsurf_fromsurf regression reported in
+        https://github.com/pygame-community/pygame-ce/issues/3463"""
+
+        s = pygame.Surface((32, 32), depth=8)
+        s.set_palette([pygame.Color("orange") for _ in range(256)])
+        s.set_palette(
+            [
+                pygame.Color("red"),
+                pygame.Color("purple"),
+                pygame.Color("gold"),
+                pygame.Color("blue"),
+                pygame.Color("lightgreen"),
+            ]
+        )
+        s.fill("red", [0, 0, 32, 16])
+        s.fill("blue", [0, 16, 32, 16])
+        self.assertTrue(len(s.get_palette()) > 0)
+
+        s2 = pygame.transform.invert(s)
+        self.assertEqual(s.get_palette()[0], s2.get_palette()[0])
+        self.assertEqual(s.get_palette(), s2.get_palette())
+
+        self.assertEqual(s2.get_at((0, 0)), pygame.Color("lightgreen"))
+        self.assertEqual(s2.get_at((0, 17)), pygame.Color("gold"))
+
     def test_smoothscale(self):
         """Tests the stated boundaries, sizing, and color blending of smoothscale function"""
         # __doc__ (as of 2008-08-02) for pygame.transform.smoothscale:
@@ -1721,6 +1870,42 @@ class TransformModuleTest(unittest.TestCase):
                 smaller_surface.get_at(((k // 2), 0)), pygame.Color(127, 127, 127)
             )
             self.assertEqual(smaller_surface.get_size(), (k, 1))
+
+    def test_pixelate(self):
+        """Test pygame.transform.pixelate"""
+        # test that pixelating the original with a pixel_size of 1 yields the original back
+        data_fname = example_path("data")
+        path = os.path.join(data_fname, "alien3.png")
+        image = pygame.image.load(path)  # Get an indexed surface.
+
+        no_change = pygame.transform.pixelate(image, 1)
+
+        self.assertTrue(surfaces_have_same_pixels(image, no_change))
+
+        # test that pixelating a square image with a pixel_size equal to the side length
+        # yields a surface of a single color, which is the average of the surf
+        square = pygame.transform.scale(image, (50, 50))
+        square_pixelated = pygame.transform.pixelate(square, 50)
+        square_resized = pygame.transform.scale(
+            pygame.transform.scale(square, (1, 1)), square.get_size()
+        )
+
+        self.assertTrue(surfaces_have_same_pixels(square_pixelated, square_resized))
+
+        # test a variety of arguments raise an exception
+        for arg in (0, -1):
+            with self.assertRaises(ValueError, msg=f"Running with pixel_size = {arg}"):
+                pygame.transform.pixelate(image, arg)
+
+        for arg in (-1_000_000_000_000_000_000, 1_000_000_000_000_000_000):
+            with self.assertRaises(
+                OverflowError, msg=f"Running with pixel_size = {arg}"
+            ):
+                pygame.transform.pixelate(image, arg)
+
+        for arg in ("one", 1.0, None):
+            with self.assertRaises(TypeError, msg=f"Running with pixel_size = {arg}"):
+                pygame.transform.pixelate(image, arg)
 
 
 class TransformDisplayModuleTest(unittest.TestCase):
@@ -1870,7 +2055,7 @@ class TransformDisplayModuleTest(unittest.TestCase):
 
     def test_flip(self):
         """honors the set_color key on the returned surface from flip."""
-        image_loaded = pygame.image.load(example_path("data/chimp.png"))
+        image_loaded = pygame.image.load(example_path("data/chimp.webp"))
 
         image = pygame.Surface(image_loaded.get_size(), 0, 32)
         image.blit(image_loaded, (0, 0))
@@ -1914,7 +2099,7 @@ class TransformDisplayModuleTest(unittest.TestCase):
 
     def test_flip_alpha(self):
         """returns a surface with the same properties as the input."""
-        image_loaded = pygame.image.load(example_path("data/chimp.png"))
+        image_loaded = pygame.image.load(example_path("data/chimp.webp"))
 
         image_alpha = pygame.Surface(image_loaded.get_size(), pygame.SRCALPHA, 32)
         image_alpha.blit(image_loaded, (0, 0))

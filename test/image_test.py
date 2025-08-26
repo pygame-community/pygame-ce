@@ -1,15 +1,17 @@
 import array
 import binascii
+import glob
 import io
 import os
+import pathlib
 import tempfile
 import unittest
-import glob
-import pathlib
 from concurrent.futures import ThreadPoolExecutor
 
+import pygame
+import pygame.image
+import pygame.pkgdata
 from pygame.tests.test_utils import example_path, png, tostring
-import pygame, pygame.image, pygame.pkgdata
 
 sdl_image_svg_jpeg_save_bug = False
 _sdl_image_ver = pygame.image.get_sdl_image_version()
@@ -266,6 +268,11 @@ class ImageModuleTest(unittest.TestCase):
             del reader
             os.remove(f_path)
 
+    @unittest.skipIf(
+        "PG_DEPS_FROM_SYSTEM" in os.environ,
+        "If we are using system dependencies, we don't know the backend used "
+        "for PNG saving, and this test only works with libpng.",
+    )
     def testSavePaletteAsPNG8(self):
         """see if we can save a png with color values in the proper channels."""
         # Create a PNG file with known colors
@@ -359,6 +366,50 @@ class ImageModuleTest(unittest.TestCase):
             pygame.image.save(s, temp_filename)
             s2 = pygame.image.load(temp_filename)
             self.assertEqual(s2.get_at((0, 0)), s.get_at((0, 0)))
+        finally:
+            # clean up the temp file, even if test fails
+            os.remove(temp_filename)
+
+        # Test palettized
+        s = pygame.Surface((3, 3), depth=8)
+        pixels = [
+            (223, 236, 110, 201),
+            (33, 82, 34, 26),
+            (226, 194, 83, 208),
+            (10, 181, 81, 165),
+            (220, 95, 96, 11),
+            (208, 7, 143, 158),
+            (194, 140, 64, 27),
+            (215, 152, 89, 126),
+            (36, 83, 107, 225),
+        ]
+        result_pixels = [
+            (255, 219, 85, 255),
+            (0, 73, 0, 255),
+            (255, 182, 85, 255),
+            (0, 182, 85, 255),
+            (255, 109, 85, 255),
+            (170, 0, 170, 255),
+            (170, 146, 85, 255),
+            (255, 146, 85, 255),
+            (0, 73, 85, 255),
+        ]
+        for pixelnum, pixelval in enumerate(pixels):
+            y, x = divmod(pixelnum, 3)
+            s.set_at((x, y), pixelval)
+
+        # No palette = pygame.error, this asserts there is a palette.
+        s.get_palette()
+
+        with tempfile.NamedTemporaryFile(suffix=".tga", delete=False) as f:
+            temp_filename = f.name
+
+        try:
+            pygame.image.save(s, temp_filename)
+            s2 = pygame.image.load(temp_filename)
+            for pixelnum, pixelval in enumerate(result_pixels):
+                y, x = divmod(pixelnum, 3)
+                self.assertEqual(s2.get_at((x, y)), pixelval)
         finally:
             # clean up the temp file, even if test fails
             os.remove(temp_filename)
@@ -506,9 +557,9 @@ class ImageModuleTest(unittest.TestCase):
                 for y in range(surface_to_modify.get_height()):
                     color = surface_to_modify.get_at((x, y))
                     premult_color = (
-                        color[0] * color[3] / 255,
-                        color[1] * color[3] / 255,
-                        color[2] * color[3] / 255,
+                        ((color[0] + 1) * color[3]) >> 8,
+                        ((color[1] + 1) * color[3]) >> 8,
+                        ((color[2] + 1) * color[3]) >> 8,
                         color[3],
                     )
                     surface_to_modify.set_at((x, y), premult_color)
@@ -1315,6 +1366,37 @@ class ImageModuleTest(unittest.TestCase):
                     example_path("data/teal.svg"),
                     value_error_size,
                 )
+
+    @unittest.skipIf(
+        pygame.image.get_sdl_image_version() < (2, 6, 0),
+        "load_animation requires SDL_image 2.6.0+",
+    )
+    def test_load_animation(self):
+        # test loading from a file
+        SAMPLE_FRAMES = 10
+        SAMPLE_DELAY = 150.0
+        SAMPLE_SIZE = (312, 312)
+        gif_path = pathlib.Path(example_path("data/animated_sample.gif"))
+        for inp in (
+            (str(gif_path),),  # string path, no namehint
+            (gif_path,),  # pathlib.Path path, no namehint
+            (io.BytesIO(gif_path.read_bytes()),),  # file-like object, no namehint
+            (
+                io.BytesIO(gif_path.read_bytes()),
+                gif_path.name,
+            ),  # file-like object, with namehint
+        ):
+            with self.subTest(f"Test load_animation", inp=inp):
+                s = pygame.image.load_animation(*inp)
+                self.assertIsInstance(s, list)
+                self.assertEqual(len(s), SAMPLE_FRAMES)
+                for val in s:
+                    self.assertIsInstance(val, tuple)
+                    frame, delay = val
+                    self.assertIsInstance(frame, pygame.Surface)
+                    self.assertEqual(frame.size, SAMPLE_SIZE)
+                    self.assertIsInstance(delay, float)
+                    self.assertEqual(delay, SAMPLE_DELAY)
 
     def test_load_pathlib(self):
         """works loading using a Path argument."""

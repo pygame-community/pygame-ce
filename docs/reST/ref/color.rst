@@ -92,6 +92,11 @@
    :returns: a newly created :class:`Color` object
    :rtype: Color
 
+   .. versionchanged:: 2.5.6
+      ``bytes(Color(...))`` (assuming `bytes <https://docs.python.org/3/library/stdtypes.html#bytes>`_ is
+      the built-in type) now returns a ``bytes`` object (of length 4) with the RGBA values of the color,
+      as opposed to :class:`Color` being interpreted as an integer (think ``int(Color(...))``) causing it
+      to return a ``bytes`` object filled with 0s the length of said integer.
    .. versionchangedold:: 2.0.0
       Support for tuples, lists, and :class:`Color` objects when creating
       :class:`Color` objects.
@@ -196,7 +201,7 @@
 
       | :sl:`Gets or sets the normalized representation of the Color.`
       | :sg:`normalized -> tuple`
-      
+
       The ``Normalized``` representation of the Color. The components of the ``Normalized``
       representation represent the basic ``RGBA`` values but normalized the
       ranges of the values are ``r`` = [0, 1], ``g`` = [0, 1], ``b`` = [0, 1]
@@ -209,7 +214,24 @@
       .. versionadded:: 2.5.0
 
       .. ## Color.normalized ##
-   
+
+   .. attribute:: hex
+
+      | :sl:`Gets or sets the stringified hexadecimal representation of the Color.`
+      | :sg:`hex -> str`
+
+      The stringified hexadecimal representation of the Color. The hexadecimal string
+      is formatted as ``"#rrggbbaa"`` where rr, gg, bb, and aa are two digit hex numbers
+      in the range from 0x00 to 0xff.
+
+      Setting this property means changing the color channels in place. Both lowercase
+      and uppercase letters are allowed, the alpha can be omitted (defaults to 0xff) and
+      the string can start with either ``#`` or ``0x``.
+
+      .. versionadded:: 2.5.4
+
+      .. ## Color.hex ##
+
    .. classmethod:: from_cmy
 
       | :sl:`Returns a Color object from a CMY representation`
@@ -222,7 +244,7 @@
       .. versionadded:: 2.3.1
 
       .. ## Color.from_cmy ##
-   
+
    .. classmethod:: from_hsva
 
       | :sl:`Returns a Color object from an HSVA representation`
@@ -235,7 +257,7 @@
       .. versionadded:: 2.3.1
 
       .. ## Color.from_hsva ##
-   
+
    .. classmethod:: from_hsla
 
       | :sl:`Returns a Color object from an HSLA representation`
@@ -275,6 +297,18 @@
 
       .. ## Color.from_normalized ##
 
+   .. classmethod:: from_hex
+
+      | :sl:`Returns a Color object from a Hexadecimal representation`
+      | :sg:`from_hex(hex, /) -> Color`
+
+      Creates a Color object from the given Hexadecimal components. Refer to :attr:`Color.hex`
+      for more information.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Color.from_hex ##
+
    .. method:: normalize
 
       | :sl:`Returns the normalized RGBA values of the Color.`
@@ -300,11 +334,11 @@
       | :sl:`Set the number of elements in the Color to 1,2,3, or 4.`
       | :sg:`set_length(len, /) -> None`
 
-      DEPRECATED: You may unpack the values you need like so, 
+      DEPRECATED: You may unpack the values you need like so,
       ``r, g, b, _ = pygame.Color(100, 100, 100)``
       If you only want r, g and b
-      Or 
-      ``r, g, *_ = pygame.Color(100, 100, 100)`` 
+      Or
+      ``r, g, *_ = pygame.Color(100, 100, 100)``
       if you only want r and g
 
       The default Color length is 4. Colors can have lengths 1,2,3 or 4. This
@@ -320,8 +354,8 @@
 
       | :sl:`returns the grayscale of a Color`
       | :sg:`grayscale() -> Color`
-      
-      Returns a new Color object which represents the grayscaled version of self, using the luminosity formula, 
+
+      Returns a new Color object which represents the grayscaled version of self, using the luminosity formula,
       which weights red, green, and blue according to their relative contribution to perceived brightness.
 
       .. versionadded:: 2.1.4

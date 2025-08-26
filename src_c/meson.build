@@ -1,4 +1,5 @@
 # first the "required" modules
+
 base = py.extension_module(
     'base',
     'base.c',
@@ -295,6 +296,20 @@ window = py.extension_module(
     subdir: pg,
 )
 
+# TODO: support SDL3
+if sdl_api != 3
+_render = py.extension_module(
+    '_render',
+    'render.c',
+    c_args: warnings_error,
+    dependencies: pg_base_deps,
+    install: true,
+    subdir: pg,
+)
+endif
+
+# TODO: support SDL3
+if sdl_api != 3
 gfxdraw = py.extension_module(
     'gfxdraw',
     ['gfxdraw.c', 'SDL_gfx/SDL_gfxPrimitives.c'],
@@ -303,9 +318,13 @@ gfxdraw = py.extension_module(
     install: true,
     subdir: pg,
 )
+endif
 
 # pygame._sdl2
+# TODO: support SDL3
+if sdl_api != 3
 subdir('_sdl2')
+endif
 
 # pygame._camera
 pg_camera_sources = ['_camera.c']
@@ -356,6 +375,7 @@ scrap = py.extension_module(
 )
 
 # optional modules
+
 if sdl_image_dep.found()
     imageext = py.extension_module(
         'imageext',
@@ -377,6 +397,9 @@ if sdl_ttf_dep.found()
         subdir: pg,
     )
 endif
+
+# TODO: support SDL3
+if sdl_api != 3
 
 if sdl_mixer_dep.found()
     mixer = py.extension_module(
@@ -415,6 +438,8 @@ if freetype_dep.found()
         install: true,
         subdir: pg,
     )
+endif
+
 endif
 
 if portmidi_dep.found()

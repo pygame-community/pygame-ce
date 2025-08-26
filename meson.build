@@ -63,7 +63,30 @@ if not cc.has_header('Python.h', dependencies: py_dep)
     )
 endif
 
+if get_option('coverage')
+    if cc.has_argument('--coverage')
+        add_global_arguments('--coverage', language: 'c')
+    else
+        error('Requested coverage but compiler doesn\'t seem to support it')
+    endif
+    if cc.has_link_argument('--coverage')
+        add_global_link_arguments('--coverage', language: 'c')
+    else
+        error('Requested coverage but compiler doesn\'t seem to support it')
+    endif
+endif
+
 pg_dir = py.get_install_dir() / pg
+
+sdl_api = get_option('sdl_api')
+sdl = 'SDL@0@'.format(sdl_api)
+sdl_mixer = '@0@_mixer'.format(sdl)
+sdl_ttf = '@0@_ttf'.format(sdl)
+sdl_image = '@0@_image'.format(sdl)
+
+if sdl_api == 3
+    add_global_arguments('-DPG_SDL3=1', '-DSDL_ENABLE_OLD_NAMES=1', language: 'c')
+endif
 
 pg_inc_dirs = []
 pg_lib_dirs = []
@@ -71,12 +94,38 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
     # yes, this is a bit ugly and hardcoded but it is what it is
     # TODO (middle-term goal) - Should migrate away from this
     # consider meson wraps? Hopefully can also get the same build path as below
+    sdl_ver = (sdl_api == 3) ? '3.2.18' : '2.32.8'
+    sdl_image_ver = (sdl_api == 3) ? '3.2.4' : '2.8.8'
+    sdl_mixer_ver = '2.8.1'
+    sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
+
     arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
     base_dir = meson.current_source_dir()
     prebuilt_dir = base_dir / 'prebuilt-' + arch_suffix
 
-    # download prebuilts (uses legacy builconfig code)
-    if not fs.is_dir(prebuilt_dir)
+    sdl_dir = prebuilt_dir / '@0@-@1@'.format(sdl, sdl_ver)
+    sdl_image_dir = prebuilt_dir / '@0@-@1@'.format(sdl_image, sdl_image_ver)
+    sdl_mixer_dir = prebuilt_dir / '@0@-@1@'.format(sdl_mixer, sdl_mixer_ver)
+    sdl_ttf_dir = prebuilt_dir / '@0@-@1@'.format(sdl_ttf, sdl_ttf_ver)
+    common_lib_dir = prebuilt_dir / 'lib'
+
+    # download prebuilts (uses legacy buildconfig code)
+    required_dirs = [
+        prebuilt_dir,
+        sdl_dir,
+        sdl_image_dir,
+        sdl_mixer_dir,
+        sdl_ttf_dir,
+        common_lib_dir,
+    ]
+    any_missing = false
+    foreach d : required_dirs
+        if not fs.is_dir(d)
+            any_missing = true
+            break
+        endif
+    endforeach
+    if any_missing
         run_command(
             [
                 find_program('python3', 'python'),
@@ -86,60 +135,64 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         )
     endif
 
-    sdl_ver = '2.30.5'
-    sdl_image_ver = '2.8.2'
-    sdl_mixer_ver = '2.8.0'
-    sdl_ttf_ver = '2.22.0'
-
     dlls = []
 
-    # SDL2
-    sdl_dir = prebuilt_dir / 'SDL2-@0@'.format(sdl_ver)
+    # SDL
     sdl_lib_dir = sdl_dir / 'lib' / arch_suffix
     pg_inc_dirs += fs.relative_to(sdl_dir / 'include', base_dir)
     pg_lib_dirs += sdl_lib_dir
-    dlls += sdl_lib_dir / 'SDL2.dll'
+    dlls += sdl_lib_dir / '@0@.dll'.format(sdl)
 
-    # SDL2_image
-    sdl_image_dir = prebuilt_dir / 'SDL2_image-@0@'.format(sdl_image_ver)
-    sdl_image_lib_dir = sdl_image_dir / 'lib' / arch_suffix
-    pg_inc_dirs += fs.relative_to(sdl_image_dir / 'include', base_dir)
-    pg_lib_dirs += sdl_image_lib_dir
-    dlls += [
-        sdl_image_lib_dir / 'SDL2_image.dll',
-        sdl_image_lib_dir / 'optional' / 'libjpeg-62.dll',
-        sdl_image_lib_dir / 'optional' / 'libpng16-16.dll',
-        sdl_image_lib_dir / 'optional' / 'libtiff-5.dll',
-        sdl_image_lib_dir / 'optional' / 'libwebp-7.dll',
-        sdl_image_lib_dir / 'optional' / 'libwebpdemux-2.dll',
-    ]
+    # SDL_image
+    if get_option('image').enabled()
+        sdl_image_lib_dir = sdl_image_dir / 'lib' / arch_suffix
+        pg_inc_dirs += fs.relative_to(sdl_image_dir / 'include', base_dir)
+        pg_lib_dirs += sdl_image_lib_dir
+        dlls += [
+            sdl_image_lib_dir / '@0@.dll'.format(sdl_image),
+            sdl_image_lib_dir / 'optional' / (sdl_api == 3 ? 'libtiff-6.dll' : 'libtiff-5.dll'),
+            sdl_image_lib_dir / 'optional' / 'libwebp-7.dll',
+            sdl_image_lib_dir / 'optional' / 'libwebpdemux-2.dll',
+        ]
+        # temporary solution to get things compiling under SDL3_image. In the future
+        # we would want to have libpng and libjpeg on SDL3_image as well.
+        if sdl_api != 3
+            dlls += [
+                sdl_image_lib_dir / 'optional' / 'libjpeg-62.dll',
+                sdl_image_lib_dir / 'optional' / 'libpng16-16.dll',
+            ]
+        endif
+    endif
 
-    # SDL2_mixer
-    sdl_mixer_dir = prebuilt_dir / 'SDL2_mixer-@0@'.format(sdl_mixer_ver)
-    sdl_mixer_lib_dir = sdl_mixer_dir / 'lib' / arch_suffix
-    pg_inc_dirs += fs.relative_to(sdl_mixer_dir / 'include', base_dir)
-    pg_lib_dirs += sdl_mixer_lib_dir
-    dlls += [
-        sdl_mixer_lib_dir / 'SDL2_mixer.dll',
-        sdl_mixer_lib_dir / 'optional' / 'libogg-0.dll',
-        sdl_mixer_lib_dir / 'optional' / 'libopus-0.dll',
-        sdl_mixer_lib_dir / 'optional' / 'libopusfile-0.dll',
-        sdl_mixer_lib_dir / 'optional' / 'libwavpack-1.dll',
-        sdl_mixer_lib_dir / 'optional' / 'libxmp.dll',
-    ]
+    # SDL_mixer
+    if get_option('mixer').enabled()
+        sdl_mixer_lib_dir = sdl_mixer_dir / 'lib' / arch_suffix
+        pg_inc_dirs += fs.relative_to(sdl_mixer_dir / 'include', base_dir)
+        pg_lib_dirs += sdl_mixer_lib_dir
+        dlls += [
+            sdl_mixer_lib_dir / '@0@.dll'.format(sdl_mixer),
+            sdl_mixer_lib_dir / 'optional' / 'libogg-0.dll',
+            sdl_mixer_lib_dir / 'optional' / 'libopus-0.dll',
+            sdl_mixer_lib_dir / 'optional' / 'libopusfile-0.dll',
+            sdl_mixer_lib_dir / 'optional' / 'libwavpack-1.dll',
+            sdl_mixer_lib_dir / 'optional' / 'libxmp.dll',
+        ]
+    endif
 
-    # SDL2_ttf
-    sdl_ttf_dir = prebuilt_dir / 'SDL2_ttf-@0@'.format(sdl_ttf_ver)
-    sdl_ttf_lib_dir = sdl_ttf_dir / 'lib' / arch_suffix
-    pg_inc_dirs += fs.relative_to(sdl_ttf_dir / 'include', base_dir)
-    pg_lib_dirs += sdl_ttf_lib_dir
-    dlls += sdl_ttf_lib_dir / 'SDL2_ttf.dll'
+    # SDL_ttf
+    if get_option('font').enabled()
+        sdl_ttf_lib_dir = sdl_ttf_dir / 'lib' / arch_suffix
+        pg_inc_dirs += fs.relative_to(sdl_ttf_dir / 'include', base_dir)
+        pg_lib_dirs += sdl_ttf_lib_dir
+        dlls += sdl_ttf_lib_dir / '@0@.dll'.format(sdl_ttf)
+    endif
 
     # freetype, portmidi and porttime
-    common_lib_dir = prebuilt_dir / 'lib'
-    pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
-    pg_lib_dirs += common_lib_dir
-    dlls += [common_lib_dir / 'freetype.dll', common_lib_dir / 'portmidi.dll']
+    if get_option('freetype').enabled() and get_option('midi').enabled()
+        pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
+        pg_lib_dirs += common_lib_dir
+        dlls += [common_lib_dir / 'freetype.dll', common_lib_dir / 'portmidi.dll']
+    endif
 
     # clean unneeded file that causes build issues
     unneeded_file = common_lib_dir / 'libportmidi.dll.a'
@@ -154,14 +207,33 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         )
     endif
 
+    run_command(
+        [
+            find_program('python3', 'python'),
+            base_dir / 'buildconfig' / '_meson_win_dll.py',
+            dlls,
+        ],
+        check: true,
+    )
+
+    foreach lib : dlls
+        if not fs.exists(lib)
+            error(f'''
+            File "@lib@" does not exist.
+            Please try to delete "prebuilt_downloads/", "prebuilt-x64/" and "prebuilt-x86/" directories, and retry the installation.
+            ''')
+        endif
+    endforeach
+
     # put dlls in root of install
     install_data(dlls, install_dir: pg_dir, install_tag: 'pg-tag')
+
 else
     bases = ['/usr/local', '/usr', '/opt/homebrew', '/opt/local']
     foreach inc_dir : bases
         foreach sub_inc : [
             '',
-            '/SDL2',
+            '/@0@'.format(sdl),
             '/freetype2',
         ]
             full_inc = inc_dir / 'include' + sub_inc
@@ -182,45 +254,45 @@ else
 endif
 
 # TODO: add version constraints?
-sdl_dep = dependency('sdl2', required: false)
+sdl_dep = dependency(sdl, required: false)
 if not sdl_dep.found()
     sdl_dep = declare_dependency(
         include_directories: pg_inc_dirs,
-        dependencies: cc.find_library('SDL2', dirs: pg_lib_dirs),
+        dependencies: cc.find_library(sdl, dirs: pg_lib_dirs),
     )
 endif
 
 # optional
-sdl_image_dep = dependency('SDL2_image', required: false)
+sdl_image_dep = dependency(sdl_image, required: false)
 if not sdl_image_dep.found()
     sdl_image_dep = declare_dependency(
         include_directories: pg_inc_dirs,
         dependencies: cc.find_library(
-            'SDL2_image',
+            sdl_image,
             dirs: pg_lib_dirs,
             required: get_option('image'),
         ),
     )
 endif
 
-sdl_mixer_dep = dependency('SDL2_mixer', required: false)
+sdl_mixer_dep = dependency(sdl_mixer, required: false)
 if not sdl_mixer_dep.found()
     sdl_mixer_dep = declare_dependency(
         include_directories: pg_inc_dirs,
         dependencies: cc.find_library(
-            'SDL2_mixer',
+            sdl_mixer,
             dirs: pg_lib_dirs,
             required: get_option('mixer'),
         ),
     )
 endif
 
-sdl_ttf_dep = dependency('SDL2_ttf', required: false)
+sdl_ttf_dep = dependency(sdl_ttf, required: false)
 if not sdl_ttf_dep.found()
     sdl_ttf_dep = declare_dependency(
         include_directories: pg_inc_dirs,
         dependencies: cc.find_library(
-            'SDL2_ttf',
+            sdl_ttf,
             dirs: pg_lib_dirs,
             required: get_option('font'),
         ),
@@ -274,10 +346,10 @@ pg_base_deps = [sdl_dep, py_dep]
 
 summary(
     {
-        'SDL2': sdl_dep.found(),
-        'SDL2_image': sdl_image_dep.found(),
-        'SDL2_mixer': sdl_mixer_dep.found(),
-        'SDL2_ttf': sdl_ttf_dep.found(),
+        sdl: sdl_dep.found(),
+        sdl_image: sdl_image_dep.found(),
+        sdl_mixer: sdl_mixer_dep.found(),
+        sdl_ttf: sdl_ttf_dep.found(),
         'freetype2': freetype_dep.found(),
         'portmidi': portmidi_dep.found(),
         'porttime': portmidi_dep.found() ? porttime_dep.found() : false,
@@ -349,6 +421,7 @@ else
             '-Wno-error=unused-but-set-variable',
             '-Wno-error=array-bounds',
         ]
+        warnings_temp_mask += '-Wno-error=array-bounds'
     endif
 
     if cc.sizeof('long') != 8

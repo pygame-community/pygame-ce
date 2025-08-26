@@ -46,7 +46,15 @@
 
 #include "pgopengl.h"
 
+#ifdef PG_SDL3
+#include <SDL3_image/SDL_image.h>
+
+// SDL3_images uses SDL3 error reporting API
+#define IMG_GetError SDL_GetError
+#else
 #include <SDL_image.h>
+#endif
+
 #ifdef WIN32
 #define strcasecmp _stricmp
 #else
@@ -93,8 +101,9 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
 
     rw = pgRWops_FromObject(obj, &ext);
-    if (rw == NULL) /* stop on NULL, error already set */
+    if (rw == NULL) { /* stop on NULL, error already set */
         return NULL;
+    }
 
     if (name) { /* override extension with namehint if given */
         type = iext_find_extension(name);
@@ -117,18 +126,27 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     SDL_UnlockMutex(_pg_img_mutex);
     */
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    surf = IMG_LoadTyped_IO(rw, 1, type);
+#else
     surf = IMG_LoadTyped_RW(rw, 1, type);
+#endif
     Py_END_ALLOW_THREADS;
-#else  /* ~WITH_THREAD */
+#else /* ~WITH_THREAD */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    surf = IMG_LoadTyped_IO(rw, 1, type);
+#else
     surf = IMG_LoadTyped_RW(rw, 1, type);
+#endif
 #endif /* ~WITH_THREAD */
 
     if (ext) {
         free(ext);
     }
 
-    if (surf == NULL)
+    if (surf == NULL) {
         return RAISE(pgExc_SDLError, IMG_GetError());
+    }
 
     final = (PyObject *)pgSurface_New(surf);
     if (final == NULL) {
@@ -166,7 +184,11 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    surf = IMG_LoadSizedSVG_IO(rw, width, height);
+#else
     surf = IMG_LoadSizedSVG_RW(rw, width, height);
+#endif
     SDL_RWclose(rw);
     Py_END_ALLOW_THREADS;
     if (surf == NULL) {
@@ -177,6 +199,85 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
         SDL_FreeSurface(surf);
     }
     return final;
+#else  /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
+    return RAISE(
+        pgExc_SDLError,
+        "pygame must be compiled with SDL_image 2.6.0+ to use this function");
+#endif /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
+}
+
+static PyObject *
+imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
+{
+#if SDL_IMAGE_VERSION_ATLEAST(2, 6, 0)
+    PyObject *obj, *ret = NULL;
+    char *name = NULL, *ext = NULL, *type = NULL;
+    IMG_Animation *surfs = NULL;
+    SDL_RWops *rw = NULL;
+    static char *kwds[] = {"file", "namehint", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O|s", kwds, &obj, &name)) {
+        return NULL;
+    }
+
+    rw = pgRWops_FromObject(obj, &ext);
+    if (rw == NULL) { /* stop on NULL, error already set */
+        return NULL;
+    }
+
+    if (name) { /* override extension with namehint if given */
+        type = (strlen(name) != 0) ? iext_find_extension(name) : NULL;
+    }
+    else { /* Otherwise type should be whatever ext is, even if ext is NULL */
+        type = ext;
+    }
+
+    Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    surfs = IMG_LoadAnimationTyped_IO(rw, 1, type);
+#else
+    surfs = IMG_LoadAnimationTyped_RW(rw, 1, type);
+#endif
+    Py_END_ALLOW_THREADS;
+
+    if (ext) {
+        free(ext);
+    }
+
+    if (surfs == NULL) {
+        return RAISE(pgExc_SDLError, IMG_GetError());
+    }
+
+    ret = PyList_New(surfs->count);
+    if (!ret) {
+        goto error;
+    }
+
+    for (int i = 0; i < surfs->count; i++) {
+        PyObject *frame = (PyObject *)pgSurface_New(surfs->frames[i]);
+        if (!frame) {
+            /* IMG_FreeAnimation takes care of freeing of member SDL surfaces
+             */
+            goto error;
+        }
+        /* The python surface object now "owns" the sdl surface, so set it
+         * to null in the animation to prevent double free */
+        surfs->frames[i] = NULL;
+
+        PyObject *listentry =
+            Py_BuildValue("(Od)", frame, (double)surfs->delays[i]);
+        Py_DECREF(frame);
+        if (!listentry) {
+            goto error;
+        }
+        PyList_SET_ITEM(ret, i, listentry);
+    }
+    IMG_FreeAnimation(surfs);
+    return ret;
+error:
+    Py_XDECREF(ret);
+    IMG_FreeAnimation(surfs);
+    return NULL;
 #else  /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
     return RAISE(
         pgExc_SDLError,
@@ -231,19 +332,35 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         char *ext = iext_find_extension(name);
         if (!strcasecmp(ext, "jpeg") || !strcasecmp(ext, "jpg")) {
             if (rw != NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = IMG_SaveJPG_IO(surf, rw, 0, JPEG_QUALITY) ? 0 : -1;
+#else
                 result = IMG_SaveJPG_RW(surf, rw, 0, JPEG_QUALITY);
+#endif
             }
             else {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = IMG_SaveJPG(surf, name, JPEG_QUALITY) ? 0 : -1;
+#else
                 result = IMG_SaveJPG(surf, name, JPEG_QUALITY);
+#endif
             }
         }
         else if (!strcasecmp(ext, "png")) {
             /*Py_BEGIN_ALLOW_THREADS; */
             if (rw != NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = IMG_SavePNG_IO(surf, rw, 0) ? 0 : -1;
+#else
                 result = IMG_SavePNG_RW(surf, rw, 0);
+#endif
             }
             else {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = IMG_SavePNG(surf, name) ? 0 : -1;
+#else
                 result = IMG_SavePNG(surf, name);
+#endif
             }
             /*Py_END_ALLOW_THREADS; */
         }
@@ -272,6 +389,12 @@ imageext_get_sdl_image_version(PyObject *self, PyObject *args,
                                PyObject *kwargs)
 {
     int linked = 1;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int version = SDL_IMAGE_VERSION;
+#else
+    SDL_version version;
+    SDL_IMAGE_VERSION(&version);
+#endif
 
     static char *keywords[] = {"linked", NULL};
 
@@ -280,14 +403,16 @@ imageext_get_sdl_image_version(PyObject *self, PyObject *args,
     }
 
     if (linked) {
-        const SDL_version *v = IMG_Linked_Version();
-        return Py_BuildValue("iii", v->major, v->minor, v->patch);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        version = IMG_Version();
+#else
+        version = *IMG_Linked_Version();
+#endif
     }
-    else {
-        SDL_version v;
-        SDL_IMAGE_VERSION(&v);
-        return Py_BuildValue("iii", v.major, v.minor, v.patch);
-    }
+
+    return Py_BuildValue("iii", PG_FIND_VNUM_MAJOR(version),
+                         PG_FIND_VNUM_MINOR(version),
+                         PG_FIND_VNUM_MICRO(version));
 }
 
 /*
@@ -313,6 +438,8 @@ static PyMethodDef _imageext_methods[] = {
      "_get_sdl_image_version() -> (major, minor, patch)\n"
      "Note: Should not be used directly."},
     {"_load_sized_svg", (PyCFunction)imageext_load_sized_svg,
+     METH_VARARGS | METH_KEYWORDS, "Note: Should not be used directly."},
+    {"_load_animation", (PyCFunction)imageext_load_animation,
      METH_VARARGS | METH_KEYWORDS, "Note: Should not be used directly."},
     {NULL, NULL, 0, NULL}};
 

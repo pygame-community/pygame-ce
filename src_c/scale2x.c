@@ -30,7 +30,12 @@
    surprised with this code!
 */
 
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
+#endif
+
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
@@ -68,7 +73,7 @@ scale2x(SDL_Surface *src, SDL_Surface *dst)
     const int height = src->h;
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    const Uint8 Bpp = src->format->bytes_per_pixel;
+    const Uint8 Bpp = SDL_BYTESPERPIXEL(src->format);
 #else
     const Uint8 Bpp = src->format->BytesPerPixel;
 #endif

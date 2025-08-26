@@ -8,8 +8,8 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-**English** `简体中文`_ `Français`_ `فارسی`_ `Español`_
----------------------------------------------------------------------------------------------------
+**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Pygame_ is a free and open-source cross-platform library
 for the development of multimedia applications like video games using Python.
@@ -139,9 +139,9 @@ Dependency versions:
 
 
 +----------+------------------------+
-| CPython  | >= 3.8 (Or use PyPy3)  |
+| CPython  | >= 3.9 (Or use PyPy3)  |
 +----------+------------------------+
-| SDL      | >= 2.0.10              |
+| SDL      | >= 2.0.14              |
 +----------+------------------------+
 | SDL_mixer| >= 2.0.4               |
 +----------+------------------------+
@@ -155,7 +155,7 @@ How to Contribute
 First of all, thank you for considering contributing to pygame-ce! It's people like you that make pygame-ce a great library. Please follow these steps to get started:
 
 1. Read the `Contribution Guidelines`_ and the `Many Ways to Contribute`_ wiki pages.
-2. Read the documentataion on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
+2. Read the documentation on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
 3. Read how to `label and link reported issues`_.
 4. Check the `issue tracker`_ for open issues that interest you or open a new issue to start a discussion about your idea.
 
@@ -189,8 +189,8 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.4.1.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.4.1...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.2.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.3...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -215,6 +215,11 @@ See docs/licenses for licenses of dependencies.
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
+.. _繁體中文: ./docs/readmes/README.zh-tw.rst
 .. _Français: ./docs/readmes/README.fr.rst
 .. _فارسی: ./docs/readmes/README.fa.rst
 .. _Español: ./docs/readmes/README.es.rst
+.. _日本語: ./docs/readmes/README.ja.rst
+.. _Italiano: ./docs/readmes/README.it.rst
+.. _Русский: ./docs/readmes/README.ru.rst
+.. _Ελληνικά: ./docs/readmes/README.gr.rst

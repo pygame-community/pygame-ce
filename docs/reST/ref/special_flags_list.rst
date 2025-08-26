@@ -94,9 +94,9 @@ Special Flags List
            accurate blending results when the color channels are already multiplied
            by the surface alpha channel.
            You should only use this blend mode if you previously premultiplied the Surface with
-           :meth:`pygame.Surface.premul_alpha()`, or if you know that the Surface was already 
-           created or loaded in with premultiplied alpha colors. You can read more about the 
-           advantages of `premultiplied alpha blending 
+           :meth:`pygame.Surface.premul_alpha()`, or if you know that the Surface was already
+           created or loaded in with premultiplied alpha colors. You can read more about the
+           advantages of `premultiplied alpha blending
            here <https://en.wikipedia.org/wiki/Alpha_compositing>`_.
 
     .. versionaddedold:: 2.0.0

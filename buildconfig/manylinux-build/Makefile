@@ -70,7 +70,7 @@ push-manylinux2014-x86:
 
 push-manylinux2014-aarch64:
 	docker push pygame/manylinux2014_base_aarch64
-	
+
 # push: push-manylinux1-x64 push-manylinux1-x86 push-manylinux2010-x64 push-manylinux2010-x86 push-manylinux2014-x64 push-manylinux2014-x86
 push: push-manylinux2010-x64 push-manylinux2010-x86 push-manylinux2014-x64 push-manylinux2014-x86 push-manylinux2014-aarch64
 
