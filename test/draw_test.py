@@ -2,6 +2,7 @@ import math
 import sys
 import unittest
 import warnings
+import itertools
 
 import pygame
 from pygame import draw
@@ -7312,8 +7313,8 @@ class DrawArcTest(DrawArcMixin, DrawTestCase):
     """
 
 
-class DrawFloodFillMixin(unittest.TestCase):
-    """Mixin tests for flood fill."""
+class DrawFloodFillTest(unittest.TestCase):
+    """Tests for flood fill."""
 
     def test_flood_fill(self):
         """Ensures flood fill fills with solid color"""
@@ -7356,6 +7357,37 @@ class DrawFloodFillMixin(unittest.TestCase):
         for pt in [(0, 0), (0, 1), (1, 0), (1, 1)]:
             self.assertEqual(surf.get_at(pt), pattern.get_at(pt), pt)
 
+    def test_flood_circle(self):
+        """Ensures flood fill doesn't overdraw"""
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+        pygame.draw.circle(surf, (255,0,255), (50,50), 40, 2)
+        pygame.draw.flood_fill(surf, (255,255,255), (10, 50))
+
+        surf2 = pygame.Surface((100, 100))
+        surf2.fill((0, 0, 0))
+        pygame.draw.circle(surf2, (255,255,255), (50,50), 40, 2)
+
+        for pt in itertools.product(range(100), range(100)):
+            self.assertEqual(surf.get_at(pt), surf2.get_at(pt))
+
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+        pygame.draw.circle(surf, (255,0,255), (50,50), 40, 1)
+        # fill outside of circle white
+        pygame.draw.flood_fill(surf, (255,255,255), (1,1))
+        # fill inside red
+        pygame.draw.flood_fill(surf, (255,0,0), (50,50))
+
+        surf2 = pygame.Surface((100, 100))
+        surf2.fill((255,255,255))
+        # draw filled circle red
+        pygame.draw.circle(surf2, (255,0,0), (50,50), 40)
+        # fill circle hot pink
+        pygame.draw.circle(surf2, (255,0,255), (50,50), 40, 1)
+
+        for pt in itertools.product(range(100), range(100)):
+            self.assertEqual(surf.get_at(pt), surf2.get_at(pt))
 
 ### Draw Module Testing #######################################################
 
