@@ -30,7 +30,6 @@ rendering through the Renderer, Texture and Image objects.
 from collections.abc import Iterable
 from typing import Any, Optional, Protocol, Union, final
 
-
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -209,7 +208,6 @@ class Renderer:
 
     def coordinates_to_window(self, point: Point) -> tuple[float, float]: ...
     def coordinates_from_window(self, point: Point) -> tuple[float, float]: ...
-
     def to_surface(
         self, surface: Optional[Surface] = None, area: Optional[RectLike] = None
     ) -> Surface:
