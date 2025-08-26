@@ -115,9 +115,9 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args);
 static PyObject *
 surf_get_colorkey(pgSurfaceObject *self, PyObject *args);
 static PyObject *
-surf_set_colorkey_raw(pgSurfaceObject *self, PyObject *args);
+surf_set_colorkey_mapped(pgSurfaceObject *self, PyObject *args);
 static PyObject *
-surf_get_colorkey_raw(pgSurfaceObject *self, PyObject *args);
+surf_get_colorkey_mapped(pgSurfaceObject *self, PyObject *args);
 static PyObject *
 surf_has_colorkey(pgSurfaceObject *self, PyObject *args);
 static PyObject *
@@ -262,12 +262,12 @@ static struct PyMethodDef surface_methods[] = {
 
     {"set_colorkey", (PyCFunction)surf_set_colorkey, METH_VARARGS,
      DOC_SURFACE_SETCOLORKEY},
-    {"set_colorkey_raw", (PyCFunction)surf_set_colorkey_raw, METH_VARARGS,
-     DOC_SURFACE_SETCOLORKEYRAW},
+    {"set_colorkey_mapped", (PyCFunction)surf_set_colorkey_mapped,
+     METH_VARARGS, DOC_SURFACE_SETCOLORKEYMAPPED},
     {"get_colorkey", (PyCFunction)surf_get_colorkey, METH_NOARGS,
      DOC_SURFACE_GETCOLORKEY},
-    {"get_colorkey_raw", (PyCFunction)surf_get_colorkey_raw, METH_NOARGS,
-     DOC_SURFACE_GETCOLORKEYRAW},
+    {"get_colorkey_mapped", (PyCFunction)surf_get_colorkey_mapped, METH_NOARGS,
+     DOC_SURFACE_GETCOLORKEYMAPPED},
     {"has_colorkey", (PyCFunction)surf_has_colorkey, METH_NOARGS,
      DOC_SURFACE_HASCOLORKEY},
     {"set_alpha", (PyCFunction)surf_set_alpha, METH_VARARGS,
@@ -1470,14 +1470,15 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args)
 }
 
 static PyObject *
-surf_set_colorkey_raw(pgSurfaceObject *self, PyObject *args)
+surf_set_colorkey_mapped(pgSurfaceObject *self, PyObject *args)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
     Uint32 color = 0;
     int result;
 
-    if (!PyArg_ParseTuple(args, "I", &color))
+    if (!PyArg_ParseTuple(args, "I", &color)) {
         return NULL;
+    }
 
     SURF_INIT_CHECK(surf)
 
@@ -1485,8 +1486,9 @@ surf_set_colorkey_raw(pgSurfaceObject *self, PyObject *args)
     result = SDL_SetColorKey(surf, SDL_TRUE, color);
     pgSurface_Unprep(self);
 
-    if (result == -1)
+    if (result < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 
     Py_RETURN_NONE;
 }
@@ -1523,7 +1525,7 @@ surf_get_colorkey(pgSurfaceObject *self, PyObject *_null)
 }
 
 static PyObject *
-surf_get_colorkey_raw(pgSurfaceObject *self, PyObject *_null)
+surf_get_colorkey_mapped(pgSurfaceObject *self, PyObject *_null)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
     Uint32 mapped_color;

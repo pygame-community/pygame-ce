@@ -913,6 +913,32 @@ class SurfaceTypeTest(unittest.TestCase):
 
             self.assertEqual(s.get_colorkey(), colorkey)
 
+    def test_setand_get_colorkey_mapped(self):
+        s = pygame.Surface((16, 16), pygame.SRCALPHA, 32)
+
+        colorkeys = ((20, 189, 20, 255), (128, 50, 50, 255), (23, 21, 255, 255))
+
+        for colorkey in colorkeys:
+            s.set_colorkey(colorkey)
+
+            mapped_color = s.get_colorkey_mapped()
+            s.set_colorkey_mapped(mapped_color)
+
+            self.assertEqual(s.get_colorkey(), colorkey)
+
+    def test_has_colorkey(self):
+        s = pygame.Surface((16, 16), pygame.SRCALPHA, 32)
+
+        self.assertFalse(s.has_colorkey())
+
+        colorkeys = ((20, 189, 20, 255), (128, 50, 50, 255), (23, 21, 255, 255))
+
+        for colorkey in colorkeys:
+            s.set_colorkey(colorkey)
+            self.assertTrue(s.has_colorkey())
+            s.set_colorkey(None)
+            self.assertFalse(s.has_colorkey())
+
     def test_set_masks(self):
         s = pygame.Surface((32, 32))
         r, g, b, a = s.get_masks()
