@@ -201,7 +201,7 @@ window_get_surface(pgWindowObject *self, PyObject *_null)
 static PyObject *
 window_flip(pgWindowObject *self, PyObject *_null)
 {
-    int result;
+    bool success;
 
     if (self->context == NULL) {
         if (!self->surf) {
@@ -211,9 +211,9 @@ window_flip(pgWindowObject *self, PyObject *_null)
         }
 
         Py_BEGIN_ALLOW_THREADS;
-        result = SDL_UpdateWindowSurface(self->_win);
+        success = PG_UpdateWindowSurface(self->_win);
         Py_END_ALLOW_THREADS;
-        if (result) {
+        if (!success) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
@@ -330,6 +330,10 @@ pg_window_set_fullscreen(SDL_Window *window, int desktop)
             SDL_SetError("Could not get fullscreen display mode");
             goto end;
         }
+    }
+
+    if (!SDL_SetWindowFullscreen(window, 1)) {
+        goto end;
     }
     if (!SDL_SetWindowFullscreenMode(window, chosen_mode)) {
         goto end;
@@ -879,7 +883,12 @@ window_set_opacity(pgWindowObject *self, PyObject *arg, void *v)
     if (PyErr_Occurred()) {
         return -1;
     }
-    if (SDL_SetWindowOpacity(self->_win, opacity)) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_SetWindowOpacity(self->_win, opacity))
+#else
+    if (SDL_SetWindowOpacity(self->_win, opacity))
+#endif
+    {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
@@ -911,6 +920,11 @@ window_get_opengl(pgWindowObject *self, void *v)
         hasGL = self->context != NULL;
     }
     else {
+        /* This is not a reliable way to test that OPENGL was requested by the
+         * user. SDL can implicitly create and use an opengl context in some
+         * platforms and in that case hasGL=1 even when the user didn't
+         * request for it. As borrowed windows are deprecated functionality we
+         * can ignore this issue. */
         hasGL = (SDL_GetWindowFlags(self->_win) & SDL_WINDOW_OPENGL) > 0;
     }
     return PyBool_FromLong(hasGL);
@@ -1251,13 +1265,8 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
     if (icon_colorkey != -1) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (!SDL_SetColorKey(pgSurface_AsSurface(icon), SDL_TRUE,
-                             icon_colorkey)) {
-#else
-        if (SDL_SetColorKey(pgSurface_AsSurface(icon), SDL_TRUE,
-                            icon_colorkey) < 0) {
-#endif
+        if (!PG_SetSurfaceColorKey(pgSurface_AsSurface(icon), SDL_TRUE,
+                                   icon_colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             return -1;
         }
@@ -1491,19 +1500,13 @@ MODINIT_DEFINE(window)
         return NULL;
     }
 
-    if (PyType_Ready(&pgWindow_Type) < 0) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (module == 0) {
         return NULL;
     }
 
-    Py_INCREF(&pgWindow_Type);
-    if (PyModule_AddObject(module, "Window", (PyObject *)&pgWindow_Type)) {
-        Py_DECREF(&pgWindow_Type);
+    if (PyModule_AddType(module, &pgWindow_Type)) {
         Py_DECREF(module);
         return NULL;
     }

@@ -27,7 +27,9 @@ rendering through the Renderer, Texture and Image objects.
 
 """
 
-from typing import Optional, Protocol, Union, final
+from collections.abc import Iterable
+from typing import Any, Optional, Protocol, Union, final
+
 
 from pygame.color import Color
 from pygame.rect import Rect
@@ -205,6 +207,9 @@ class Renderer:
         .. versionadded:: 2.5.4
         """
 
+    def coordinates_to_window(self, point: Point) -> tuple[float, float]: ...
+    def coordinates_from_window(self, point: Point) -> tuple[float, float]: ...
+
     def to_surface(
         self, surface: Optional[Surface] = None, area: Optional[RectLike] = None
     ) -> Surface:
@@ -300,6 +305,74 @@ class Texture:
 
     .. versionadded:: 2.5.4
     """
+    def __init__(
+        self,
+        renderer: Renderer,
+        size: Iterable[int],
+        depth: int = 0,
+        static: bool = False,
+        streaming: bool = False,
+        target: bool = False,
+        scale_quality: Optional[int] = None,
+    ) -> None: ...
+    @property
+    def alpha(self) -> int: ...
+    @alpha.setter
+    def alpha(self, value: int) -> None: ...
+    @property
+    def blend_mode(self) -> int: ...
+    @blend_mode.setter
+    def blend_mode(self, value: int) -> None: ...
+    @property
+    def color(self) -> Color: ...
+    @color.setter
+    def color(self, value: ColorLike) -> None: ...
+    @property
+    def width(self) -> int: ...
+    @property
+    def height(self) -> int: ...
+    @property
+    def renderer(self) -> Renderer: ...
+    @classmethod
+    def from_surface(cls, renderer: Renderer, surface: Surface) -> Texture: ...
+    def draw(
+        self,
+        srcrect: Optional[RectLike] = None,
+        dstrect: Optional[RectLike] = None,
+        angle: float = 0.0,
+        origin: Optional[Iterable[int]] = None,
+        flip_x: bool = False,
+        flip_y: bool = False,
+    ) -> None: ...
+    def draw_triangle(
+        self,
+        p1_xy: Point,
+        p2_xy: Point,
+        p3_xy: Point,
+        p1_uv: Point = (0.0, 0.0),
+        p2_uv: Point = (1.0, 1.0),
+        p3_uv: Point = (0.0, 1.0),
+        p1_mod: ColorLike = (255, 255, 255, 255),
+        p2_mod: ColorLike = (255, 255, 255, 255),
+        p3_mod: ColorLike = (255, 255, 255, 255),
+    ) -> None: ...
+    def draw_quad(
+        self,
+        p1_xy: Point,
+        p2_xy: Point,
+        p3_xy: Point,
+        p4_xy: Point,
+        p1_uv: Point = (0.0, 0.0),
+        p2_uv: Point = (1.0, 0.0),
+        p3_uv: Point = (1.0, 1.0),
+        p4_uv: Point = (0.0, 1.0),
+        p1_mod: ColorLike = (255, 255, 255, 255),
+        p2_mod: ColorLike = (255, 255, 255, 255),
+        p3_mod: ColorLike = (255, 255, 255, 255),
+        p4_mod: ColorLike = (255, 255, 255, 255),
+    ) -> None: ...
+    def get_rect(self, **kwargs: Any) -> Rect: ...
+    def update(self, surface: Surface, area: Optional[RectLike] = None) -> None: ...
 
 @final
 class Image:

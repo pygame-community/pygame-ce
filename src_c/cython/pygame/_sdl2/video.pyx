@@ -1037,6 +1037,35 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
+    def coordinates_to_window(self, point):
+        """Translates renderer coordinates to window coordinates
+
+        :param point: The coordinates in render space.
+        """
+        cdef int wx
+        cdef int wy
+
+        # Note: Must be changed to SDL_RenderCoordinatesToWindow for SDL3
+        # https://wiki.libsdl.org/SDL3/SDL_RenderCoordinatesToWindow
+        SDL_RenderLogicalToWindow(self._renderer, point[0], point[1], &wx, &wy);
+
+        # Return float for future compatibility with SDL3's RenderCoordinatesToWindow
+        return (float(wx), float(wy))
+
+    def coordinates_from_window(self, point):
+        """Translates window coordinates to renderer coordinates
+
+        :param point: The coordinates in window space.
+        """
+        cdef float lx
+        cdef float ly
+
+        # Note: Must be changed to SDL_RenderCoordinatesFromWindow for SDL3
+        # https://wiki.libsdl.org/SDL3/SDL_RenderCoordinatesFromWindow
+        SDL_RenderWindowToLogical(self._renderer, point[0], point[1], &lx, &ly);
+
+        return (lx, ly)
+
     def draw_point(self, point):
         """Draw a point
 

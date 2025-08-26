@@ -268,6 +268,11 @@ class ImageModuleTest(unittest.TestCase):
             del reader
             os.remove(f_path)
 
+    @unittest.skipIf(
+        "PG_DEPS_FROM_SYSTEM" in os.environ,
+        "If we are using system dependencies, we don't know the backend used "
+        "for PNG saving, and this test only works with libpng.",
+    )
     def testSavePaletteAsPNG8(self):
         """see if we can save a png with color values in the proper channels."""
         # Create a PNG file with known colors
@@ -1369,7 +1374,7 @@ class ImageModuleTest(unittest.TestCase):
     def test_load_animation(self):
         # test loading from a file
         SAMPLE_FRAMES = 10
-        SAMPLE_DELAY = 150
+        SAMPLE_DELAY = 150.0
         SAMPLE_SIZE = (312, 312)
         gif_path = pathlib.Path(example_path("data/animated_sample.gif"))
         for inp in (
@@ -1390,7 +1395,7 @@ class ImageModuleTest(unittest.TestCase):
                     frame, delay = val
                     self.assertIsInstance(frame, pygame.Surface)
                     self.assertEqual(frame.size, SAMPLE_SIZE)
-                    self.assertIsInstance(delay, int)
+                    self.assertIsInstance(delay, float)
                     self.assertEqual(delay, SAMPLE_DELAY)
 
     def test_load_pathlib(self):

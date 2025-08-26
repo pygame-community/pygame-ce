@@ -1,9 +1,13 @@
 if fs.is_dir('generated')
     # TODO: remove everything in exclude_directories except for 'doctrees'
+    # These should probably go in a separate package that the main pygame-ce
+    # package can depend on as optional extras
+    # https://github.com/pygame-community/pygame-ce/issues/3468
     install_subdir(
         'generated',
         exclude_directories: [
             'doctrees',
+            'tutorials/ko',
             '_sources/tutorials',
             '_sources/c_api',
         ],
