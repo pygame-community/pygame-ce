@@ -190,7 +190,7 @@ copy it into a 'fonts/' subdirectory or use an alternative font. The issue is vi
 fonts but more obvious on some fonts than others depending on how much they rely on alpha pixels
 for visibility. If you run this program you will get a result that looks like this:
 
-.. image:: ../assets/straight_alpha_composition.png
+.. image:: ../assets/straight_alpha_composition.webp
    :alt: Example of Straight Alpha Composition
 
 Which, to my eyes, makes the text difficult to read and something of a strain on the eyes.
@@ -245,7 +245,7 @@ If we rewrite the example to use premultiplied alpha composition instead:
 
 You then get a result that looks like this:
 
-.. image:: ../assets/premultiplied_alpha_composition.png
+.. image:: ../assets/premultiplied_alpha_composition.webp
    :alt: Example of Premultiplied Alpha Composition
 
 Which is a lot easier to read.

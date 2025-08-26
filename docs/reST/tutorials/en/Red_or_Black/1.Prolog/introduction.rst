@@ -12,7 +12,7 @@ Prolog? Why Pygame?
 As we know, every kind of game has 3 sections (Because game is a subgroup of program): **input**, **process** and **output**. If you want to make a game in C **console environment** (Write C source code then execute that on the console) simply, all you have to do is just using lots of scanf(or unnormalized getch function) functions and procedural complex algorithm followed by printf(with blinking clear function) functions with ASCII arts! However, when you get bored of making outdated, graphic-less CUI, discontinuous game, now it’s time to learn GUI based game making tool. You can directly enter into Unity **game engine** or Unreal game engine. However, there are too much barrier to overcome. Quaternion for 3D collision, Mechanim/Legacy animation compatibility, Larger memory/Faster CPU for simulate in high-graphic mod, and etc! So, there is a dilemma between console environment and game engine. Can this dilemma to be solved?
 
 
-.. image:: ../../../assets/introduction-PuyoPuyo.png
+.. image:: ../../../assets/introduction-PuyoPuyo.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -27,7 +27,7 @@ As we know, every kind of game has 3 sections (Because game is a subgroup of pro
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("introduction-PuyoPuyo.png")
+   ball = pygame.image.load("introduction-PuyoPuyo.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -47,7 +47,7 @@ As we know, every kind of game has 3 sections (Because game is a subgroup of pro
 (Example of C console game - PuyoPuyo)
 
 
-.. image:: ../../../assets/introduction-TPS.png
+.. image:: ../../../assets/introduction-TPS.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -62,7 +62,7 @@ As we know, every kind of game has 3 sections (Because game is a subgroup of pro
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("introduction-TPS.png")
+   ball = pygame.image.load("introduction-TPS.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -84,7 +84,7 @@ As we know, every kind of game has 3 sections (Because game is a subgroup of pro
 Yes. Pygame can solve that. Pygame is an external library of **Python** which enables you to make a **game**. Pygame has advantages of console environment. For example, single pygame project nearly equals single source code, so we have to focus on writing source code only. (with some sound file or some image file in the same directory). Because Pygame is not a tool but a library, single command “import pygame” makes current source code to use pygame’s everything. That is, Pygame is simple to access. Pygame has advantages of game engine, too. For example, Pygame provide input functions (which check every possible state of keyboard, mouse and even files) and output functions (drawing geometry, fill certain colors or set display) to user. That is, user can run the program on the GUI environment if it based on Pygame. Because Pygame is based on Python, functions in Pygame project can be executed selectively, even almost simultaneously. That is, Pygame is event-driven.
 
 
-.. image:: ../../../assets/introduction-Battleship.png
+.. image:: ../../../assets/introduction-Battleship.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -99,7 +99,7 @@ Yes. Pygame can solve that. Pygame is an external library of **Python** which en
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("introduction-Battleship.png")
+   ball = pygame.image.load("introduction-Battleship.webp")
    ballrect = ball.get_rect()
 
    while True:

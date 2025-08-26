@@ -35,13 +35,59 @@ subscripts
    v.y == v[1]
    v.z == v[2]
 
-Multiple coordinates can be set using slices or swizzling
+Multiple coordinates can be set and retrieved using slices or swizzling.
 
 ::
 
    v = pygame.Vector2()
    v.xy = 1, 2
    v[:] = 1, 2
+   print(v)  # Vector2(1, 2)
+   print(v.x)  # 1.0
+   print(v.y)  # 2.0
+   print(v.xy)  # Vector2(1, 2)
+   print(v.yx)  # Vector2(2, 1)
+   print(v.xyyx)  # (1.0, 2.0, 2.0, 1.0)
+
+Note above, that swizzling with 2 components will return a Vector2 instance
+again, while more than 2 components will result in a tuple. But since vectors
+support the iterator protocol, they can be unpacked, or converted to lists or
+tuples.
+
+::
+
+   v = Vector2(1, 2)
+   print(*v)  # 1.0 2.0
+   print(tuple(v))  # (1.0, 2.0)
+   print(tuple(v.yx))  # (2.0, 1.0)
+
+
+A vector can be converted to other data types using the built-in constructors
+
+::
+
+    v = pygame.Vector2(1, 2)
+
+    list(v) == [1.0, 2.0]
+    tuple(v) == (1.0, 2.0)
+    set(v) == {1.0, 2.0}
+
+Conversion can be combined with swizzling or slicing to create a new order
+
+::
+
+    v = pygame.Vector3(1, 2, 3)
+
+    list(v.xz) == [1.0, 3.0]
+    list(v.zyx) == [3.0, 2.0, 1.0]
+    list(v.yyy) == [2.0, 2.0, 2.0]
+    tuple(v.xyyzzz) == (1.0, 2.0, 2.0, 3.0, 3.0, 3.0)
+    tuple(v.zxyxzzyx) == (3.0, 1.0, 2.0, 1.0, 3.0, 3.0, 2.0, 1.0)
+    set(v.yxzxzyzxyx) == {1.0, 2.0, 3.0} # sets remove duplicates
+
+    list(v[:]) == [1.0, 2.0, 3.0]
+    tuple(v[::-1]) == (3.0, 2.0, 1.0)
+    set(v[1:3]) == {2.0, 3.0}
 
 .. versionaddedold:: 1.9.2pre
 .. versionchangedold:: 1.9.4 Removed experimental notice.
@@ -73,7 +119,7 @@ Multiple coordinates can be set using slices or swizzling
 
    The formula is:
 
-   ``a * value + (1 - value) * b``.
+   ``a + (b - a) * value``.
 
    .. versionadded:: 2.4.0
 
@@ -616,6 +662,27 @@ Multiple coordinates can be set using slices or swizzling
       find that either the margin is too large or too small, in which case changing ``epsilon`` slightly
       might help you out.
 
+   .. attribute:: angle
+
+      | :sl:`Gives the angle of the vector in degrees, relative to the X-axis, normalized to the interval [-180, 180].`
+
+      Read-only attribute representing the angle of the vector in degrees relative to the X-axis. This angle is normalized to
+      the interval [-180, 180].
+
+      Usage: Accessing `angle` provides the current angle of the vector in degrees within the predefined range of [-180, 180].
+
+      .. versionadded:: 2.5.5
+
+   .. attribute:: angle_rad
+
+      | :sl:`Gives the angle of the vector in radians, relative to the X-axis, normalized to the interval [-π, π].`
+
+      Read-only attribute representing the angle of the vector in radians relative to the X-axis. This value is equivalent
+      to the `angle` attribute converted to radians and is normalized to the interval [-π, π].
+
+      Usage: Accessing `angle_rad` provides the current angle of the vector in radians within the predefined range of [-π, π].
+
+      .. versionadded:: 2.5.5
 
    .. ## pygame.math.Vector2 ##
 

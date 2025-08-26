@@ -13,9 +13,10 @@ pygame to compare the results. I didn't bother porting the text and
 sound stuff, that's an easy enough challenge for the reader :]
 """
 
-import pygame
 import os
 from math import sin
+
+import pygame
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 
@@ -26,7 +27,7 @@ def main():
     screen = pygame.display.set_mode((640, 480), pygame.DOUBLEBUF)
 
     # load image and quadruple
-    imagename = os.path.join(main_dir, "data", "liquid.bmp")
+    imagename = os.path.join(main_dir, "data", "liquid.webp")
     bitmap = pygame.image.load(imagename)
     bitmap = pygame.transform.scale2x(bitmap)
     bitmap = pygame.transform.scale2x(bitmap)

@@ -28,8 +28,9 @@ AXISCOLOR = "white"
 if os.name != "nt" or sys.getwindowsversion()[0] < 6:
     raise NotImplementedError("this script requires Windows Vista or newer")
 
-import pygame
 import ctypes
+
+import pygame
 
 
 def main():

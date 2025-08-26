@@ -475,13 +475,13 @@ static struct PyMethodDef pg_rect_methods[] = {
     {"fit", (PyCFunction)pg_rect_fit, METH_FASTCALL, DOC_RECT_FIT},
     {"move", (PyCFunction)pg_rect_move, METH_FASTCALL, DOC_RECT_MOVE},
     {"update", (PyCFunction)pg_rect_update, METH_FASTCALL, DOC_RECT_UPDATE},
-    {"inflate", (PyCFunction)pg_rect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
+    {"inflate", (PyCFunction)pg_rect_inflate, METH_FASTCALL, DOC_RECT_INFLATE},
     {"union", (PyCFunction)pg_rect_union, METH_FASTCALL, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_rect_unionall, METH_O, DOC_RECT_UNIONALL},
     {"move_ip", (PyCFunction)pg_rect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
     {"move_to", (PyCFunction)pg_rect_move_to, METH_FASTCALL | METH_KEYWORDS,
      DOC_RECT_MOVETO},
-    {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_VARARGS,
+    {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_FASTCALL,
      DOC_RECT_INFLATEIP},
     {"scale_by", (PyCFunction)pg_rect_scale_by, METH_VARARGS | METH_KEYWORDS,
      DOC_RECT_SCALEBY},
@@ -526,13 +526,14 @@ static struct PyMethodDef pg_frect_methods[] = {
     {"fit", (PyCFunction)pg_frect_fit, METH_FASTCALL, DOC_RECT_FIT},
     {"move", (PyCFunction)pg_frect_move, METH_FASTCALL, DOC_RECT_MOVE},
     {"update", (PyCFunction)pg_frect_update, METH_FASTCALL, DOC_RECT_UPDATE},
-    {"inflate", (PyCFunction)pg_frect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
+    {"inflate", (PyCFunction)pg_frect_inflate, METH_FASTCALL,
+     DOC_RECT_INFLATE},
     {"union", (PyCFunction)pg_frect_union, METH_FASTCALL, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_frect_unionall, METH_O, DOC_RECT_UNIONALL},
     {"move_ip", (PyCFunction)pg_frect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
     {"move_to", (PyCFunction)pg_frect_move_to, METH_FASTCALL | METH_KEYWORDS,
      DOC_RECT_MOVETO},
-    {"inflate_ip", (PyCFunction)pg_frect_inflate_ip, METH_VARARGS,
+    {"inflate_ip", (PyCFunction)pg_frect_inflate_ip, METH_FASTCALL,
      DOC_RECT_INFLATEIP},
     {"scale_by", (PyCFunction)pg_frect_scale_by, METH_VARARGS | METH_KEYWORDS,
      DOC_RECT_SCALEBY},
@@ -809,27 +810,20 @@ MODINIT_DEFINE(rect)
         return NULL;
     }
 
-    Py_INCREF(&pgRect_Type);
-    if (PyModule_AddObject(module, "RectType", (PyObject *)&pgRect_Type)) {
-        Py_DECREF(&pgRect_Type);
+    if (PyModule_AddObjectRef(module, "RectType", (PyObject *)&pgRect_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&pgRect_Type);
-    if (PyModule_AddObject(module, "Rect", (PyObject *)&pgRect_Type)) {
-        Py_DECREF(&pgRect_Type);
+    if (PyModule_AddObjectRef(module, "Rect", (PyObject *)&pgRect_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&pgFRect_Type);
-    if (PyModule_AddObject(module, "FRectType", (PyObject *)&pgFRect_Type)) {
-        Py_DECREF(&pgFRect_Type);
+    if (PyModule_AddObjectRef(module, "FRectType",
+                              (PyObject *)&pgFRect_Type)) {
         Py_DECREF(module);
         return NULL;
     }
-    Py_INCREF(&pgFRect_Type);
-    if (PyModule_AddObject(module, "FRect", (PyObject *)&pgFRect_Type)) {
-        Py_DECREF(&pgFRect_Type);
+    if (PyModule_AddObjectRef(module, "FRect", (PyObject *)&pgFRect_Type)) {
         Py_DECREF(module);
         return NULL;
     }

@@ -7,14 +7,14 @@ A pygame 2 experiment.
 * play back the recorded sound
 """
 
-import pygame
 import time
 
+import pygame
 from pygame._sdl2 import (
-    get_audio_device_names,
-    AudioDevice,
-    AUDIO_F32,
     AUDIO_ALLOW_FORMAT_CHANGE,
+    AUDIO_F32,
+    AudioDevice,
+    get_audio_device_names,
 )
 from pygame._sdl2.mixer import set_post_mix
 

@@ -15,10 +15,10 @@ version 2. changes:
 """
 
 import os
-import pygame
-from numpy import zeros, int32, int16
 import time
 
+import pygame
+from numpy import int16, int32, zeros
 
 # pygame.mixer.init(44100, -16, 0)
 pygame.mixer.init()

@@ -1,24 +1,25 @@
 import os
 import unittest
+
 from pygame.tests import test_utils
 from pygame.tests.test_utils import (
-    example_path,
     SurfaceSubclass,
+    example_path,
 )
 
 try:
     from pygame.tests.test_utils.arrinter import *
 except (ImportError, NameError):
     pass
-import pygame
-from pygame.locals import *
-from pygame.bufferproxy import BufferProxy
-
-import platform
-import gc
-import weakref
 import ctypes
+import gc
 import itertools
+import platform
+import weakref
+
+import pygame
+from pygame.bufferproxy import BufferProxy
+from pygame.locals import *
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 

@@ -2,7 +2,7 @@ import math
 import unittest
 from math import sqrt
 
-from pygame import Vector2, Vector3, Rect, FRect
+from pygame import FRect, Rect, Vector2, Vector3
 from pygame.geometry import Circle, Line
 
 
@@ -619,14 +619,14 @@ class CircleTypeTest(unittest.TestCase):
 
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""
-        c_str = "<Circle((10.3, 3.2), 4.3)>"
+        c_str = "Circle((10.3, 3.2), 4.3)"
         circle = Circle((10.3, 3.2), 4.3)
         self.assertEqual(str(circle), c_str)
         self.assertEqual(circle.__str__(), c_str)
 
     def test__repr__(self):
         """Checks whether the __repr__ method works correctly."""
-        c_repr = "<Circle((10.3, 3.2), 4.3)>"
+        c_repr = "Circle((10.3, 3.2), 4.3)"
         circle = Circle((10.3, 3.2), 4.3)
         self.assertEqual(repr(circle), c_repr)
         self.assertEqual(circle.__repr__(), c_repr)
@@ -2201,16 +2201,49 @@ class LineTypeTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             line.update(1, 2, 3)
 
+    def test_meth_project(self):
+        line = Line(0, 0, 100, 100)
+        test_point1 = (25, 75)
+        test_clamp_point1 = (100, 300)
+        test_clamp_point2 = (-50, -150)
+        test_clamp_point3 = (-200, -200)
+
+        bad_line = Line(0, 0, 0, 0)
+        test_bad_line_point = (10, 10)
+
+        projected_point = line.project(test_point1)
+        self.assertEqual(math.ceil(projected_point[0]), 50)
+        self.assertEqual(math.ceil(projected_point[1]), 50)
+
+        projected_point = line.project(test_clamp_point1, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 100)
+        self.assertEqual(math.ceil(projected_point[1]), 100)
+
+        projected_point = line.project(test_clamp_point2, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = line.project(test_clamp_point3, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = bad_line.project(test_bad_line_point, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = bad_line.project(test_bad_line_point)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""
-        l_str = "<Line((10.1, 10.2), (4.3, 56.4))>"
+        l_str = "Line((10.1, 10.2), (4.3, 56.4))"
         line = Line(10.1, 10.2, 4.3, 56.4)
         self.assertEqual(str(line), l_str)
         self.assertEqual(line.__str__(), l_str)
 
     def test__repr__(self):
         """Checks whether the __repr__ method works correctly."""
-        l_repr = "<Line((10.1, 10.2), (4.3, 56.4))>"
+        l_repr = "Line((10.1, 10.2), (4.3, 56.4))"
         line = Line(10.1, 10.2, 4.3, 56.4)
         self.assertEqual(repr(line), l_repr)
         self.assertEqual(line.__repr__(), l_repr)

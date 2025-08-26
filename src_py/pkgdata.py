@@ -18,8 +18,8 @@ object (such as StringIO).
 """
 
 __all__ = ["getResource"]
-import sys
 import os
+import sys
 
 try:
     from importlib.resources import files

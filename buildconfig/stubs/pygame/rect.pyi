@@ -1,28 +1,39 @@
 import sys
 from collections.abc import Callable, Collection, Iterator
 from typing import (
+    ClassVar,
     Literal,
+    Optional,
     SupportsIndex,
     TypeVar,
     Union,
     overload,
     Optional,
-    Tuple,
 )
 
 from pygame.typing import Point, RectLike, SequenceLike
+from typing_extensions import deprecated  # added in 3.13
 
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
     from typing_extensions import Self
 
+# 'ellipsis' existed in typeshed pre 3.10, now we use EllipsisType which is
+# the modern standard library equivalent.
+if sys.version_info >= (3, 10):
+    from types import EllipsisType
+else:
+    EllipsisType = ellipsis
+
 _N = TypeVar("_N", int, float)
 _K = TypeVar("_K")
 _V = TypeVar("_V")
 _T = TypeVar("_T")
 
-_RectTypeCompatible_co = TypeVar("_RectTypeCompatible_co", bound=RectLike, covariant=True)
+_RectTypeCompatible_co = TypeVar(
+    "_RectTypeCompatible_co", bound=RectLike, covariant=True
+)
 
 class _GenericRect(Collection[_N]):
     @property
@@ -86,7 +97,7 @@ class _GenericRect(Collection[_N]):
     @center.setter
     def center(self, value: Point) -> None: ...
     @property
-    def relcenter(self) -> Tuple[_N, _N]: ...
+    def relcenter(self) -> tuple[_N, _N]: ...
     @relcenter.setter
     def relcenter(self, value: Point) -> None: ...
     @property
@@ -117,8 +128,9 @@ class _GenericRect(Collection[_N]):
     def h(self) -> _N: ...
     @h.setter
     def h(self, value: float) -> None: ...
-    __hash__: None  # type: ignore
-    __safe_for_unpickling__: Literal[True]
+    __hash__: ClassVar[None]  # type: ignore[assignment]
+    @property
+    def __safe_for_unpickling__(self) -> Literal[True]: ...
     @overload
     def __init__(
         self, left: float, top: float, width: float, height: float
@@ -134,11 +146,13 @@ class _GenericRect(Collection[_N]):
     @overload
     def __getitem__(self, i: SupportsIndex) -> _N: ...
     @overload
-    def __getitem__(self, s: slice) -> list[_N]: ...
+    def __getitem__(self, s: Union[slice, EllipsisType]) -> list[_N]: ...
     @overload
     def __setitem__(self, key: int, value: float) -> None: ...
     @overload
-    def __setitem__(self, key: slice, value: Union[float, RectLike]) -> None: ...
+    def __setitem__(
+        self, key: Union[slice, EllipsisType], value: Union[float, RectLike]
+    ) -> None: ...
     def __copy__(self) -> Self: ...
     def copy(self) -> Self: ...
     @overload
@@ -167,7 +181,9 @@ class _GenericRect(Collection[_N]):
     @overload
     def scale_by_ip(self, scale_by: Point) -> None: ...
     @overload
-    def update(self, left: float, top: float, width: float, height: float, /) -> None: ...
+    def update(
+        self, left: float, top: float, width: float, height: float, /
+    ) -> None: ...
     @overload
     def update(self, left_top: Point, width_height: Point, /) -> None: ...
     @overload
@@ -177,7 +193,9 @@ class _GenericRect(Collection[_N]):
     @overload
     def clamp(self, left_top: Point, width_height: Point, /) -> Self: ...
     @overload
-    def clamp(self, left: float, top: float, width: float, height: float, /) -> Self: ...
+    def clamp(
+        self, left: float, top: float, width: float, height: float, /
+    ) -> Self: ...
     @overload
     def clamp_ip(self, rect: RectLike, /) -> None: ...
     @overload
@@ -209,7 +227,9 @@ class _GenericRect(Collection[_N]):
     @overload
     def union(self, left_top: Point, width_height: Point, /) -> Self: ...
     @overload
-    def union(self, left: float, top: float, width: float, height: float, /) -> Self: ...
+    def union(
+        self, left: float, top: float, width: float, height: float, /
+    ) -> Self: ...
     @overload
     def union_ip(self, rect: RectLike, /) -> None: ...
     @overload
@@ -219,7 +239,9 @@ class _GenericRect(Collection[_N]):
         self, left: float, top: float, width: float, height: float, /
     ) -> None: ...
     def unionall(self, rect: SequenceLike[_RectTypeCompatible_co], /) -> Self: ...
-    def unionall_ip(self, rect_SequenceLike: SequenceLike[_RectTypeCompatible_co], /) -> None: ...
+    def unionall_ip(
+        self, rect_SequenceLike: SequenceLike[_RectTypeCompatible_co], /
+    ) -> None: ...
     @overload
     def fit(self, rect: RectLike, /) -> Self: ...
     @overload
@@ -248,8 +270,12 @@ class _GenericRect(Collection[_N]):
     def colliderect(
         self, left: float, top: float, width: float, height: float, /
     ) -> bool: ...
-    def collidelist(self, rect_list: SequenceLike[_RectTypeCompatible_co], /) -> int: ...
-    def collidelistall(self, rect_list: SequenceLike[_RectTypeCompatible_co], /) -> list[int]: ...
+    def collidelist(
+        self, rect_list: SequenceLike[_RectTypeCompatible_co], /
+    ) -> int: ...
+    def collidelistall(
+        self, rect_list: SequenceLike[_RectTypeCompatible_co], /
+    ) -> list[int]: ...
     def collideobjectsall(
         self, objects: SequenceLike[_T], key: Optional[Callable[[_T], RectLike]] = None
     ) -> list[_T]: ...
@@ -258,7 +284,9 @@ class _GenericRect(Collection[_N]):
     ) -> Optional[_T]: ...
     @overload
     def collidedict(
-        self, rect_dict: dict[_RectTypeCompatible_co, _V], values: Literal[False] = False
+        self,
+        rect_dict: dict[_RectTypeCompatible_co, _V],
+        values: Literal[False] = False,
     ) -> Optional[tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedict(
@@ -266,7 +294,9 @@ class _GenericRect(Collection[_N]):
     ) -> Optional[tuple[_K, _RectTypeCompatible_co]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: dict[_RectTypeCompatible_co, _V], values: Literal[False] = False
+        self,
+        rect_dict: dict[_RectTypeCompatible_co, _V],
+        values: Literal[False] = False,
     ) -> list[tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedictall(
@@ -275,11 +305,11 @@ class _GenericRect(Collection[_N]):
 
 # Rect confirms to the Collection ABC, since it also confirms to
 # Sized, Iterable and Container ABCs
-class Rect(_GenericRect[int]):
-    ...
+class Rect(_GenericRect[int]): ...
+class FRect(_GenericRect[float]): ...
 
-class FRect(_GenericRect[float]):
-    ...
+@deprecated("Use `Rect` instead (RectType is an old alias)")
+class RectType(Rect): ...
 
-RectType = Rect
-FRectType = FRect
+@deprecated("Use `FRect` instead (FRectType is an old alias)")
+class FRectType(FRect): ...

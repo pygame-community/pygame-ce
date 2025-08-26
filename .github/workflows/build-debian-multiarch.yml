@@ -49,7 +49,7 @@ env:
 jobs:
   build-multiarch:
     name: Debian (Bookworm - 12) [${{ matrix.arch }}]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
@@ -65,10 +65,10 @@ jobs:
           - { arch: armv7, base_image: 'balenalib/raspberrypi3-debian:bookworm' }
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v5.0.0
 
     - name: Build sources and run tests
-      uses: uraimo/run-on-arch-action@v2.8.1
+      uses: uraimo/run-on-arch-action@v3.0.1
       id: build
       with:
         arch: ${{ matrix.base_image && 'none' || matrix.arch }}
@@ -118,10 +118,10 @@ jobs:
   test-armv7-on-armv6:
     needs: build-multiarch
     name: Debian (Bookworm - 12) [build - armv7, test - armv6]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     steps:
     - name: Download all multiarch artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: pygame-multiarch-armv7-dist
         path: ~/artifacts
@@ -134,7 +134,7 @@ jobs:
         done
 
     - name: Test armv7 wheel on armv6
-      uses: uraimo/run-on-arch-action@v2.8.1
+      uses: uraimo/run-on-arch-action@v3.0.1
       with:
         arch: armv6
         distro: bookworm

@@ -13,6 +13,7 @@ error codes.
 """
 
 import os
+
 import pygame
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
@@ -68,7 +69,7 @@ def main():
 
     player = load_image("player1.gif")
     entity = load_image("alien1.gif")
-    background = load_image("liquid.bmp")
+    background = load_image("liquid.webp")
 
     # scale the background image so that it fills the window and
     # successfully overwrites the old sprite position.

@@ -1,11 +1,14 @@
+import sys
 from typing import Any, Optional, Union, overload
 
-import numpy
-
 from pygame.event import Event
+from pygame.typing import FileLike
+from typing_extensions import (
+    Buffer,  # collections.abc 3.12
+    deprecated,  # added in 3.13
+)
 
 from . import mixer_music
-from pygame.typing import FileLike
 
 # export mixer_music as mixer.music
 music = mixer_music
@@ -46,13 +49,7 @@ class Sound:
     @overload
     def __init__(self, file: FileLike) -> None: ...
     @overload
-    def __init__(
-        self, buffer: Any
-    ) -> None: ...  # Buffer protocol is still not implemented in typing
-    @overload
-    def __init__(
-        self, array: numpy.ndarray
-    ) -> None: ...  # Buffer protocol is still not implemented in typing
+    def __init__(self, buffer: Buffer) -> None: ...
     def play(
         self,
         loops: int = 0,
@@ -61,8 +58,13 @@ class Sound:
     ) -> Channel: ...
     # possibly going to be deprecated/removed soon, in which case these
     # typestubs must be removed too
-    __array_interface__: dict[str, Any]
-    __array_struct__: Any
+    @property
+    def __array_interface__(self) -> dict[str, Any]: ...
+    @property
+    def __array_struct__(self) -> Any: ...
+    if sys.version_info >= (3, 12):
+        def __buffer__(self, flags: int, /) -> memoryview[int]: ...
+        def __release_buffer__(self, view: memoryview[int], /) -> None: ...
     def stop(self) -> None: ...
     def fadeout(self, time: int, /) -> None: ...
     def set_volume(self, value: float, /) -> None: ...
@@ -70,7 +72,6 @@ class Sound:
     def get_num_channels(self) -> int: ...
     def get_length(self) -> float: ...
     def get_raw(self) -> bytes: ...
-
 
 class Channel:
     def __init__(self, id: int) -> None: ...
@@ -100,5 +101,8 @@ class Channel:
     def set_endevent(self, type: Union[int, Event] = 0, /) -> None: ...
     def get_endevent(self) -> int: ...
 
-SoundType = Sound
-ChannelType = Channel
+@deprecated("Use `Sound` instead (SoundType is an old alias)")
+class SoundType(Sound): ...
+
+@deprecated("Use `Channel` instead (ChannelType is an old alias)")
+class ChannelType(Channel): ...

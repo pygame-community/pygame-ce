@@ -1,11 +1,11 @@
 import os
-import sys
 import platform
-import unittest
+import sys
 import time
+import unittest
 
-from pygame.tests.test_utils import example_path
 import pygame
+from pygame.tests.test_utils import example_path
 
 
 class MixerMusicModuleTest(unittest.TestCase):
@@ -517,8 +517,8 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_init(self):
         """pygame-ce issue #622. unload music whenever mixer.quit() is called"""
-        import tempfile
         import shutil
+        import tempfile
 
         testfile = example_path(os.path.join("data", "house_lo.wav"))
         tempcopy = os.path.join(tempfile.gettempdir(), "tempfile.wav")

@@ -1,15 +1,17 @@
 import array
 import binascii
+import glob
 import io
 import os
+import pathlib
 import tempfile
 import unittest
-import glob
-import pathlib
 from concurrent.futures import ThreadPoolExecutor
 
+import pygame
+import pygame.image
+import pygame.pkgdata
 from pygame.tests.test_utils import example_path, png, tostring
-import pygame, pygame.image, pygame.pkgdata
 
 sdl_image_svg_jpeg_save_bug = False
 _sdl_image_ver = pygame.image.get_sdl_image_version()
@@ -266,6 +268,11 @@ class ImageModuleTest(unittest.TestCase):
             del reader
             os.remove(f_path)
 
+    @unittest.skipIf(
+        "PG_DEPS_FROM_SYSTEM" in os.environ,
+        "If we are using system dependencies, we don't know the backend used "
+        "for PNG saving, and this test only works with libpng.",
+    )
     def testSavePaletteAsPNG8(self):
         """see if we can save a png with color values in the proper channels."""
         # Create a PNG file with known colors
@@ -1359,6 +1366,37 @@ class ImageModuleTest(unittest.TestCase):
                     example_path("data/teal.svg"),
                     value_error_size,
                 )
+
+    @unittest.skipIf(
+        pygame.image.get_sdl_image_version() < (2, 6, 0),
+        "load_animation requires SDL_image 2.6.0+",
+    )
+    def test_load_animation(self):
+        # test loading from a file
+        SAMPLE_FRAMES = 10
+        SAMPLE_DELAY = 150.0
+        SAMPLE_SIZE = (312, 312)
+        gif_path = pathlib.Path(example_path("data/animated_sample.gif"))
+        for inp in (
+            (str(gif_path),),  # string path, no namehint
+            (gif_path,),  # pathlib.Path path, no namehint
+            (io.BytesIO(gif_path.read_bytes()),),  # file-like object, no namehint
+            (
+                io.BytesIO(gif_path.read_bytes()),
+                gif_path.name,
+            ),  # file-like object, with namehint
+        ):
+            with self.subTest(f"Test load_animation", inp=inp):
+                s = pygame.image.load_animation(*inp)
+                self.assertIsInstance(s, list)
+                self.assertEqual(len(s), SAMPLE_FRAMES)
+                for val in s:
+                    self.assertIsInstance(val, tuple)
+                    frame, delay = val
+                    self.assertIsInstance(frame, pygame.Surface)
+                    self.assertEqual(frame.size, SAMPLE_SIZE)
+                    self.assertIsInstance(delay, float)
+                    self.assertEqual(delay, SAMPLE_DELAY)
 
     def test_load_pathlib(self):
         """works loading using a Path argument."""

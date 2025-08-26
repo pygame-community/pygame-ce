@@ -135,9 +135,14 @@ static PyObject *
 fontmodule_init(PyObject *self, PyObject *_null)
 {
     if (!font_initialized) {
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+        if (!TTF_Init())
+#else
         if (TTF_Init())
+#endif
+        {
             return RAISE(pgExc_SDLError, SDL_GetError());
-
+        }
         font_initialized = 1;
     }
     Py_RETURN_NONE;
@@ -169,7 +174,11 @@ font_get_height(PyObject *self, PyObject *_null)
     }
 
     TTF_Font *font = PyFont_AsFont(self);
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    return PyLong_FromLong(TTF_GetFontHeight(font));
+#else
     return PyLong_FromLong(TTF_FontHeight(font));
+#endif
 }
 
 static PyObject *
@@ -180,7 +189,11 @@ font_get_descent(PyObject *self, PyObject *_null)
     }
 
     TTF_Font *font = PyFont_AsFont(self);
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    return PyLong_FromLong(TTF_GetFontDescent(font));
+#else
     return PyLong_FromLong(TTF_FontDescent(font));
+#endif
 }
 
 static PyObject *
@@ -191,7 +204,11 @@ font_get_ascent(PyObject *self, PyObject *_null)
     }
 
     TTF_Font *font = PyFont_AsFont(self);
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    return PyLong_FromLong(TTF_GetFontAscent(font));
+#else
     return PyLong_FromLong(TTF_FontAscent(font));
+#endif
 }
 
 static PyObject *
@@ -202,7 +219,43 @@ font_get_linesize(PyObject *self, PyObject *_null)
     }
 
     TTF_Font *font = PyFont_AsFont(self);
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    return PyLong_FromLong(TTF_GetFontLineSkip(font));
+#else
     return PyLong_FromLong(TTF_FontLineSkip(font));
+#endif
+}
+
+static PyObject *
+font_set_linesize(PyObject *self, PyObject *arg)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
+#if SDL_TTF_VERSION_ATLEAST(2, 24, 0)
+    TTF_Font *font = PyFont_AsFont(self);
+
+    if (!PyLong_Check(arg)) {
+        return RAISE(PyExc_TypeError, "linesize must be an integer");
+    }
+    int linesize = PyLong_AsLong(arg);
+    if (linesize == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
+
+    if (linesize < 0) {
+        return RAISE(PyExc_ValueError, "linesize must be >= 0");
+    }
+
+    TTF_SetFontLineSkip(font, linesize);
+
+    Py_RETURN_NONE;
+#else
+    return RAISE(
+        PyExc_NotImplementedError,
+        "TTF_SetFontLineSkip is not available in this version of SDL_ttf");
+#endif
 }
 
 static PyObject *
@@ -216,10 +269,12 @@ static void
 _font_set_or_clear_style_flag(TTF_Font *font, int flag, int set_flag)
 {
     int style = TTF_GetFontStyle(font);
-    if (set_flag)
+    if (set_flag) {
         style |= flag;
-    else
+    }
+    else {
         style &= ~flag;
+    }
     TTF_SetFontStyle(font, style);
 }
 
@@ -453,7 +508,10 @@ font_getter_align(PyObject *self, void *closure)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    TTF_Font *font = PyFont_AsFont(self);
+    return PyLong_FromLong(TTF_GetFontWrapAlignment(font));
+#elif SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_GetFontWrappedAlign(font));
 #else
@@ -492,7 +550,11 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
         return -1;
     }
 
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    TTF_SetFontWrapAlignment(font, val);
+#else
     TTF_SetFontWrappedAlign(font, val);
+#endif
     return 0;
 #else
     PyErr_SetString(pgExc_SDLError,
@@ -611,12 +673,19 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
        length string */
 
     if (strlen(astring) == 0) { /* special 0 string case */
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+        int height = TTF_GetFontHeight(font);
+#else
         int height = TTF_FontHeight(font);
+#endif
         surf = PG_CreateSurface(0, height, SDL_PIXELFORMAT_XRGB8888);
     }
     else { /* normal case */
         if (antialias && bg_rgba_obj == Py_None) {
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+            surf = TTF_RenderText_Blended_Wrapped(font, astring, 0, foreg,
+                                                  wraplength);
+#elif SDL_TTF_VERSION_ATLEAST(2, 0, 18)
             surf = TTF_RenderUTF8_Blended_Wrapped(font, astring, foreg,
                                                   wraplength);
 #else
@@ -624,7 +693,10 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 #endif
         }
         else if (antialias) {
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+            surf = TTF_RenderText_Shaded_Wrapped(font, astring, 0, foreg,
+                                                 backg, wraplength);
+#elif SDL_TTF_VERSION_ATLEAST(2, 0, 18)
             surf = TTF_RenderUTF8_Shaded_Wrapped(font, astring, foreg, backg,
                                                  wraplength);
 #else
@@ -632,7 +704,10 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 #endif
         }
         else {
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+            surf = TTF_RenderText_Solid_Wrapped(font, astring, 0, foreg,
+                                                wraplength);
+#elif SDL_TTF_VERSION_ATLEAST(2, 0, 18)
             surf =
                 TTF_RenderUTF8_Solid_Wrapped(font, astring, foreg, wraplength);
 #else
@@ -642,9 +717,16 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
             resolve to Render_Solid, that needs to be explicitly handled. */
             if (surf != NULL && bg_rgba_obj != Py_None) {
                 SDL_SetColorKey(surf, 0, 0);
-                surf->format->palette->colors[0].r = backg.r;
-                surf->format->palette->colors[0].g = backg.g;
-                surf->format->palette->colors[0].b = backg.b;
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+                SDL_Palette *palette = SDL_GetSurfacePalette(surf);
+#else
+                SDL_Palette *palette = surf->format->palette;
+#endif
+                if (palette) {
+                    palette->colors[0].r = backg.r;
+                    palette->colors[0].g = backg.g;
+                    palette->colors[0].b = backg.b;
+                }
             }
         }
     }
@@ -683,7 +765,11 @@ font_size(PyObject *self, PyObject *text)
             return NULL;
         }
         string = PyBytes_AS_STRING(bytes);
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+        ecode = TTF_GetStringSize(font, string, 0, &w, &h) ? 0 : -1;
+#else
         ecode = TTF_SizeUTF8(font, string, &w, &h);
+#endif
         Py_DECREF(bytes);
         if (ecode) {
             return RAISE(pgExc_SDLError, TTF_GetError());
@@ -691,7 +777,12 @@ font_size(PyObject *self, PyObject *text)
     }
     else if (PyBytes_Check(text)) {
         string = PyBytes_AS_STRING(text);
-        if (TTF_SizeText(font, string, &w, &h)) {
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+        if (!TTF_GetStringSize(font, string, 0, &w, &h))
+#else
+        if (TTF_SizeText(font, string, &w, &h))
+#endif
+        {
             return RAISE(pgExc_SDLError, TTF_GetError());
         }
     }
@@ -737,7 +828,13 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
         return -1;
     }
 
-    if (TTF_SetFontSize(font, val) == -1) {
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    /* TODO: can consider supporting float in python API */
+    if (!TTF_SetFontSize(font, (float)val))
+#else
+    if (TTF_SetFontSize(font, val) == -1)
+#endif
+    {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
@@ -786,7 +883,13 @@ font_set_ptsize(PyObject *self, PyObject *arg)
                      "point_size cannot be equal to, or less than 0");
     }
 
-    if (TTF_SetFontSize(font, val) == -1) {
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    /* TODO: can consider supporting float in python API */
+    if (!TTF_SetFontSize(font, (float)val))
+#else
+    if (TTF_SetFontSize(font, val) == -1)
+#endif
+    {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     ((PyFontObject *)self)->ptsize = val;
@@ -806,7 +909,11 @@ font_getter_name(PyObject *self, void *closure)
     }
 
     TTF_Font *font = PyFont_AsFont(self);
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    const char *font_name = TTF_GetFontFamilyName(font);
+#else
     const char *font_name = TTF_FontFaceFamilyName(font);
+#endif
 
     return PyUnicode_FromString(font_name ? font_name : "");
 }
@@ -819,7 +926,11 @@ font_getter_style_name(PyObject *self, void *closure)
     }
 
     TTF_Font *font = PyFont_AsFont(self);
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    const char *font_style_name = TTF_GetFontStyleName(font);
+#else
     const char *font_style_name = TTF_FontFaceStyleName(font);
+#endif
     return PyUnicode_FromString(font_style_name ? font_style_name : "");
 }
 
@@ -832,85 +943,91 @@ font_metrics(PyObject *self, PyObject *textobj)
 
     TTF_Font *font = PyFont_AsFont(self);
     PyObject *list;
-    Py_ssize_t length;
     Py_ssize_t i;
     int minx;
     int maxx;
     int miny;
     int maxy;
     int advance;
-    PyObject *obj;
     PyObject *listitem;
-    Uint16 *buffer;
-    Uint16 ch;
-    PyObject *temp;
-    int surrogate;
+    Py_UCS4 *buffer;
+    Py_UCS4 ch;
     if (!PgFont_GenerationCheck(self)) {
         return RAISE_FONT_QUIT_ERROR();
     }
 
     if (PyUnicode_Check(textobj)) {
-        obj = textobj;
-        Py_INCREF(obj);
+        Py_INCREF(textobj);
     }
     else if (PyBytes_Check(textobj)) {
-        obj = PyUnicode_FromEncodedObject(textobj, "UTF-8", NULL);
-        if (!obj) {
+        textobj = PyUnicode_FromEncodedObject(textobj, "UTF-8", NULL);
+        if (!textobj) {
             return NULL;
         }
     }
     else {
         return RAISE_TEXT_TYPE_ERROR();
     }
-    temp = PyUnicode_AsUTF16String(obj);
-    Py_DECREF(obj);
-    if (!temp)
+    buffer = PyUnicode_AsUCS4Copy(textobj);
+    Py_DECREF(textobj);
+    if (!buffer) {
         return NULL;
-    obj = temp;
+    }
 
     list = PyList_New(0);
     if (!list) {
-        Py_DECREF(obj);
+        PyMem_Free(buffer);
         return NULL;
     }
-    buffer = (Uint16 *)PyBytes_AS_STRING(obj);
-    length = PyBytes_GET_SIZE(obj) / sizeof(Uint16);
-    for (i = 1 /* skip BOM */; i < length; i++) {
-        ch = buffer[i];
-        surrogate = Py_UNICODE_IS_SURROGATE(ch);
+    for (i = 0; (ch = buffer[i]); i++) {
         /* TODO:
          * TTF_GlyphMetrics() seems to return a value for any character,
          * using the default invalid character, if the char is not found.
          */
-        if (!surrogate && /* conditional and */
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+        if (TTF_GetGlyphMetrics(font, ch, &minx, &maxx, &miny, &maxy,
+                                &advance))
+#elif SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+        if (!TTF_GlyphMetrics32(font, ch, &minx, &maxx, &miny, &maxy,
+                                &advance))
+#else
+        if (ch <= 0xFFFF && /* conditional and */
             !TTF_GlyphMetrics(font, (Uint16)ch, &minx, &maxx, &miny, &maxy,
-                              &advance)) {
+                              &advance))
+#endif
+        {
             listitem =
                 Py_BuildValue("(iiiii)", minx, maxx, miny, maxy, advance);
             if (!listitem) {
                 Py_DECREF(list);
-                Py_DECREF(obj);
+                PyMem_Free(buffer);
                 return NULL;
             }
         }
         else {
-            /* Not UCS-2 or no matching metrics. */
+            /* Not UCS-2 (and old SDL) or no matching metrics. */
             Py_INCREF(Py_None);
             listitem = Py_None;
-            if (surrogate)
-                i++;
         }
         if (0 != PyList_Append(list, listitem)) {
             Py_DECREF(list);
             Py_DECREF(listitem);
-            Py_DECREF(obj);
+            PyMem_Free(buffer);
             return NULL; /* Exception already set. */
         }
         Py_DECREF(listitem);
     }
-    Py_DECREF(obj);
+    PyMem_Free(buffer);
     return list;
 }
+
+/* This is taken from the harfbuzz header file. It converts script name in the
+ * format expected by sdl2 (a 4 char string) to the format expected by sdl3
+ * (a single uint32 tag) */
+#define HB_TAG(c1, c2, c3, c4)                  \
+    ((Uint32)((((uint32_t)(c1) & 0xFF) << 24) | \
+              (((uint32_t)(c2) & 0xFF) << 16) | \
+              (((uint32_t)(c3) & 0xFF) << 8) | ((uint32_t)(c4) & 0xFF)))
 
 static PyObject *
 font_set_script(PyObject *self, PyObject *arg)
@@ -935,7 +1052,13 @@ font_set_script(PyObject *self, PyObject *arg)
                      "script code must be exactly 4 characters");
     }
 
-    if (TTF_SetFontScriptName(font, script_code) < 0) {
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    if (!TTF_SetFontScript(font, HB_TAG(script_code[0], script_code[1],
+                                        script_code[2], script_code[3])))
+#else
+    if (TTF_SetFontScriptName(font, script_code) < 0)
+#endif
+    {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 #else
@@ -1013,8 +1136,12 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
                          " to https://github.com/pygame-community/pygame-ce");
         }
     }
-
-    if (TTF_SetFontDirection(font, dir)) {
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    if (!TTF_SetFontDirection(font, dir))
+#else
+    if (TTF_SetFontDirection(font, dir))
+#endif
+    {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1053,6 +1180,7 @@ static PyMethodDef font_methods[] = {
     {"get_ascent", font_get_ascent, METH_NOARGS, DOC_FONT_FONT_GETASCENT},
     {"get_linesize", font_get_linesize, METH_NOARGS,
      DOC_FONT_FONT_GETLINESIZE},
+    {"set_linesize", font_set_linesize, METH_O, DOC_FONT_FONT_SETLINESIZE},
     {"get_bold", font_get_bold, METH_NOARGS, DOC_FONT_FONT_GETBOLD},
     {"set_bold", font_set_bold, METH_O, DOC_FONT_FONT_SETBOLD},
     {"get_italic", font_get_italic, METH_NOARGS, DOC_FONT_FONT_GETITALIC},
@@ -1082,6 +1210,17 @@ font_dealloc(PyFontObject *self)
 {
     TTF_Font *font = PyFont_AsFont(self);
     if (font && font_initialized) {
+        // In SDL3_ttf, it seems that closing a font after its library was
+        // destroyed segfaults. So only close if same generation.
+        // TODO SDL3:
+        // TTF docs say "A well-written program should call TTF_CloseFont()
+        // on any open fonts before calling this function!"
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (self->ttf_init_generation == current_ttf_generation) {
+            TTF_CloseFont(font);
+        }
+        self->font = NULL;
+#else
         if (self->ttf_init_generation != current_ttf_generation) {
             // Since TTF_Font is a private structure
             // it's impossible to access face field in a common way.
@@ -1090,10 +1229,12 @@ font_dealloc(PyFontObject *self)
         }
         TTF_CloseFont(font);
         self->font = NULL;
+#endif
     }
 
-    if (self->weakreflist)
+    if (self->weakreflist) {
         PyObject_ClearWeakRefs((PyObject *)self);
+    }
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -1171,8 +1312,9 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
         goto error;
     }
 
-    if (fontsize <= 1)
+    if (fontsize <= 1) {
         fontsize = 1;
+    }
 
     if (SDL_RWsize(rw) <= 0) {
         PyErr_Format(PyExc_ValueError,
@@ -1183,7 +1325,8 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
 
     Py_BEGIN_ALLOW_THREADS;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    font = TTF_OpenFontIO(rw, 1, fontsize);
+    /* TODO: can consider supporting float in python API */
+    font = TTF_OpenFontIO(rw, 1, (float)fontsize);
 #else
     font = TTF_OpenFontRW(rw, 1, fontsize);
 #endif
@@ -1266,12 +1409,14 @@ PyFont_New(TTF_Font *font)
 {
     PyFontObject *fontobj;
 
-    if (!font)
+    if (!font) {
         return RAISE(PyExc_RuntimeError, "unable to load font.");
+    }
     fontobj = (PyFontObject *)PyFont_Type.tp_new(&PyFont_Type, NULL, NULL);
 
-    if (fontobj)
+    if (fontobj) {
         fontobj->font = font;
+    }
 
     return (PyObject *)fontobj;
 }
@@ -1322,16 +1467,12 @@ MODINIT_DEFINE(font)
         return NULL;
     }
 
-    Py_INCREF(&PyFont_Type);
-    if (PyModule_AddObject(module, "FontType", (PyObject *)&PyFont_Type)) {
-        Py_DECREF(&PyFont_Type);
+    if (PyModule_AddObjectRef(module, "FontType", (PyObject *)&PyFont_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&PyFont_Type);
-    if (PyModule_AddObject(module, "Font", (PyObject *)&PyFont_Type)) {
-        Py_DECREF(&PyFont_Type);
+    if (PyModule_AddObjectRef(module, "Font", (PyObject *)&PyFont_Type)) {
         Py_DECREF(module);
         return NULL;
     }

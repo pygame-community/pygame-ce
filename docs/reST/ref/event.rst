@@ -62,7 +62,7 @@ display of its type and members. The function :func:`pygame.event.event_name()`
 can be used to get a string representing the name of the event type.
 
 Events that come from the system will have a guaranteed set of member
-attributes based on the type. The following is a list event types with their
+attributes based on the type. The following is a list of event types with their
 specific attributes.
 
 ::
@@ -324,9 +324,14 @@ On Android, the following events can be generated
    queue. If a sequence of event types is passed, this will return ``True`` if
    any of those events are on the queue.
 
+   When ``eventtype`` is not passed or ``None``, this function will return ``True`` if
+   there's any event on the queue, and return ``False`` if the queue is empty.
+
    If ``pump`` is ``True`` (the default), then :func:`pygame.event.pump()` will be called.
 
    .. versionchangedold:: 1.9.5 Added ``pump`` argument
+
+   .. versionchanged:: 2.5.3 no longer mistakenly returns an event when ``eventtype`` is None or not passed.
 
    .. ## pygame.event.peek ##
 
@@ -491,7 +496,7 @@ On Android, the following events can be generated
 
       Read-only. The event type identifier. For user created event
       objects, this is the ``type`` argument passed to
-      :func:`pygame.event.Event()`.
+      :class:`pygame.event.Event()`.
 
       For example, some predefined event identifiers are ``QUIT`` and
       ``MOUSEMOTION``.

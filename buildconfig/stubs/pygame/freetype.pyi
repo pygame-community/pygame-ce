@@ -1,12 +1,11 @@
 from collections.abc import Callable, Iterable
 from typing import Any, Optional, Union
-from typing_extensions import deprecated # added in 3.13
 
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
-
 from pygame.typing import ColorLike, FileLike, RectLike
+from typing_extensions import deprecated  # added in 3.13
 
 def get_error() -> str: ...
 def get_version(linked: bool = True) -> tuple[int, int, int]: ...
@@ -17,7 +16,7 @@ def get_init() -> bool: ...
 def was_init() -> bool: ...
 def get_cache_size() -> int: ...
 def get_default_resolution() -> int: ...
-def set_default_resolution(resolution: int, /) -> None: ...
+def set_default_resolution(resolution: int = 0, /) -> None: ...
 def SysFont(
     name: Union[str, bytes, Iterable[Union[str, bytes]], None],
     size: int,
@@ -143,7 +142,7 @@ class Font:
     ) -> None: ...
     def get_rect(
         self,
-        text: str,
+        text: Optional[str],
         style: int = STYLE_DEFAULT,
         rotation: int = 0,
         size: float = 0,
@@ -158,7 +157,7 @@ class Font:
     def get_sizes(self) -> list[tuple[int, int, int, float, float]]: ...
     def render(
         self,
-        text: str,
+        text: Optional[str],
         fgcolor: Optional[ColorLike] = None,
         bgcolor: Optional[ColorLike] = None,
         style: int = STYLE_DEFAULT,
@@ -169,7 +168,7 @@ class Font:
         self,
         surf: Surface,
         dest: RectLike,
-        text: str,
+        text: Optional[str],
         fgcolor: Optional[ColorLike] = None,
         bgcolor: Optional[ColorLike] = None,
         style: int = STYLE_DEFAULT,
@@ -178,7 +177,7 @@ class Font:
     ) -> Rect: ...
     def render_raw(
         self,
-        text: str,
+        text: Optional[str],
         style: int = STYLE_DEFAULT,
         rotation: int = 0,
         size: float = 0,
@@ -187,7 +186,7 @@ class Font:
     def render_raw_to(
         self,
         array: Any,
-        text: str,
+        text: Optional[str],
         dest: Optional[RectLike] = None,
         style: int = STYLE_DEFAULT,
         rotation: int = 0,

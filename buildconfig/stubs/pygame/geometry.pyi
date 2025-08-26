@@ -1,7 +1,7 @@
 from collections.abc import Callable
-from typing import overload, Union, Protocol
+from typing import Protocol, Union, overload
 
-from pygame import Rect, FRect
+from pygame import FRect, Rect
 from pygame.typing import Point, RectLike, SequenceLike
 
 class _HasCircleAttribute(Protocol):
@@ -197,3 +197,4 @@ class Line:
     def scale_ip(self, factor_and_origin: Point, /) -> None: ...
     def flip_ab(self) -> Line: ...
     def flip_ab_ip(self) -> None: ...
+    def project(self, point: Point, clamp: bool = False) -> tuple[float, float]: ...

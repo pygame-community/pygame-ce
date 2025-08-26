@@ -28,8 +28,6 @@
 
 #include "doc/pixelcopy_doc.h"
 
-#include <SDL_endian.h>
-
 typedef enum {
     PXC_VIEWKIND_RED,
     PXC_VIEWKIND_GREEN,
@@ -256,7 +254,6 @@ static int
 _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
                  _pc_view_kind_t view_kind, Uint8 opaque, Uint8 clear)
 {
-    SDL_PixelFormat *format = surf->format;
     int pixelsize = PG_SURF_BytesPerPixel(surf);
     SDL_BlendMode mode;
     int intsize = (int)view_p->itemsize;
@@ -275,6 +272,8 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
     Uint8 *element = 0;
     _pc_pixel_t pixel = {0};
     Uint32 colorkey;
+    PG_PixelFormat *format;
+    SDL_Palette *palette;
 
     if (view_p->shape[0] != w || view_p->shape[1] != h) {
         PyErr_Format(PyExc_ValueError,
@@ -288,10 +287,16 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
                      intsize);
         return -1;
     }
-    if (SDL_GetSurfaceBlendMode(surf, &mode) < 0) {
+    if (!PG_GetSurfaceBlendMode(surf, &mode)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
+
+    if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+
     /* Select appropriate color plane element within the pixel */
     switch (view_kind) {
         case PXC_VIEWKIND_RED:
@@ -344,7 +349,7 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
                 for (z = 0; z < pixelsize; ++z) {
                     pixel.bytes[dz_pix + z] = src[dx_src * x + dy_src * y + z];
                 }
-                SDL_GetRGBA(pixel.value, format, &r, &g, &b, &a);
+                PG_GetRGBA(pixel.value, format, palette, &r, &g, &b, &a);
                 dst[dx_dst * x + dy_dst * y] = *element;
                 for (z = 1; z < intsize; ++z) {
                     dst[dx_dst * x + dy_dst * y + dz_dst * z] = 0;
@@ -369,7 +374,6 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
 static int
 _copy_unmapped(Py_buffer *view_p, SDL_Surface *surf)
 {
-    SDL_PixelFormat *format = surf->format;
     int pixelsize = PG_SURF_BytesPerPixel(surf);
     int intsize = (int)view_p->itemsize;
     char *src = (char *)surf->pixels;
@@ -414,12 +418,21 @@ _copy_unmapped(Py_buffer *view_p, SDL_Surface *surf)
         dz_dst = -1;
     }
 #endif
+
+    PG_PixelFormat *format;
+    SDL_Palette *palette;
+
+    if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+
     for (x = 0; x < w; ++x) {
         for (y = 0; y < h; ++y) {
             for (z = 0; z < pixelsize; ++z) {
                 pixel.bytes[dz_pix + z] = src[dx_src * x + dy_src * y + z];
             }
-            SDL_GetRGB(pixel.value, format, &r, &g, &b);
+            PG_GetRGB(pixel.value, format, palette, &r, &g, &b);
             dst[dx_dst * x + dy_dst * y] = r;
             for (z = 1; z < intsize; ++z) {
                 dst[dx_dst * x + dy_dst * y + dz_dst * z] = 0;
@@ -469,16 +482,14 @@ array_to_surface(PyObject *self, PyObject *arg)
     Py_buffer *view_p = (Py_buffer *)&pg_view;
     char *array_data;
     SDL_Surface *surf;
-    SDL_PixelFormat *format;
     int loopx, loopy;
     Py_ssize_t stridex, stridey, stridez = 0, stridez2 = 0, sizex, sizey;
-    int Rloss, Gloss, Bloss, Rshift, Gshift, Bshift;
+    int Rloss, Gloss, Bloss, Aloss, Rshift, Gshift, Bshift, Ashift;
 
     if (!PyArg_ParseTuple(arg, "O!O", &pgSurface_Type, &surfobj, &arrayobj)) {
         return NULL;
     }
     surf = pgSurface_AsSurface(surfobj);
-    format = surf->format;
 
     if (pgObject_GetBuffer(arrayobj, &pg_view, PyBUF_RECORDS_RO)) {
         return 0;
@@ -492,8 +503,9 @@ array_to_surface(PyObject *self, PyObject *arg)
         return RAISE(PyExc_ValueError, "must be a valid 2d or 3d array\n");
     }
 
-    if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4)
+    if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return RAISE(PyExc_ValueError, "unsupported bit depth for surface");
+    }
 
     stridex = view_p->strides[0];
     stridey = view_p->strides[1];
@@ -507,12 +519,21 @@ array_to_surface(PyObject *self, PyObject *arg)
     }
     sizex = view_p->shape[0];
     sizey = view_p->shape[1];
-    Rloss = format->Rloss;
-    Gloss = format->Gloss;
-    Bloss = format->Bloss;
+
+    PG_PixelFormat *format;
+    SDL_Palette *palette;
+    if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     Rshift = format->Rshift;
     Gshift = format->Gshift;
     Bshift = format->Bshift;
+    Ashift = format->Ashift;
+    Rloss = PG_FORMAT_R_LOSS(format);
+    Gloss = PG_FORMAT_G_LOSS(format);
+    Bloss = PG_FORMAT_B_LOSS(format);
+    Aloss = PG_FORMAT_A_LOSS(format);
 
     /* Do any required broadcasting. */
     if (sizex == 1) {
@@ -593,7 +614,7 @@ array_to_surface(PyObject *self, PyObject *arg)
             else {
                 Uint16 alpha = 0;
                 if (format->Amask) {
-                    alpha = 255 >> format->Aloss << format->Ashift;
+                    alpha = 255 >> Aloss << Ashift;
                 }
                 switch (view_p->itemsize) {
                     case sizeof(Uint8):
@@ -713,7 +734,7 @@ array_to_surface(PyObject *self, PyObject *arg)
             else {
                 Uint32 alpha = 0;
                 if (format->Amask) {
-                    alpha = 255 >> format->Aloss << format->Ashift;
+                    alpha = 255u >> Aloss << Ashift;
                 }
                 switch (view_p->itemsize) {
                     case sizeof(Uint8):
@@ -839,7 +860,6 @@ map_array(PyObject *self, PyObject *args)
     PyObject *src_array;
     PyObject *tar_array;
     pgSurfaceObject *format_surf;
-    SDL_PixelFormat *format;
     pg_buffer src_pg_view;
     Py_buffer *src_view_p;
     Uint8 is_src_alloc = 0;
@@ -962,7 +982,14 @@ map_array(PyObject *self, PyObject *args)
 
     /* Determine source and destination pixel formats
      */
-    format = pgSurface_AsSurface(format_surf)->format;
+
+    PG_PixelFormat *format;
+    SDL_Palette *palette;
+    if (!PG_GetSurfaceDetails(pgSurface_AsSurface(format_surf), &format,
+                              &palette)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     pix_bytesize = PG_FORMAT_BytesPerPixel(format);
     if (tar_itemsize < pix_bytesize) {
         PyErr_SetString(PyExc_ValueError,
@@ -1078,8 +1105,8 @@ map_array(PyObject *self, PyObject *args)
         else if (dim == topdim) {
             /* Next iteration of inner most loop: copy pixel
              */
-            pixel.value = SDL_MapRGB(format, src[src_red], src[src_green],
-                                     src[src_blue]);
+            pixel.value = PG_MapRGB(format, palette, src[src_red],
+                                    src[src_green], src[src_blue]);
             /* Bytes are copied from the pixel in most to least significant
              * byte order. If destination bytes get overwritten, when the
              * destination size is less than 4 bytes, only zero pad bytes
@@ -1170,11 +1197,16 @@ make_surface(PyObject *self, PyObject *arg)
         pgBuffer_Release(&pg_view);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    if (SDL_ISPIXELFORMAT_INDEXED(surf->format->format)) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_Palette *palette = SDL_GetSurfacePalette(surf);
+#else
+    SDL_Palette *palette = surf->format->palette;
+#endif
+    if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         /* Give the surface something other than an all white palette.
          *          */
-        if (SDL_SetPaletteColors(surf->format->palette, default_palette_colors,
-                                 0, default_palette_size - 1) != 0) {
+        if (!PG_SetPaletteColors(palette, default_palette_colors, 0,
+                                 default_palette_size - 1)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(surf);
             return 0;

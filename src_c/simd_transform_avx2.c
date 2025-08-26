@@ -46,7 +46,7 @@ pg_avx2_at_runtime_but_uncompiled()
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
 void
-grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
+grayscale_avx2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf)
 {
     /* See the SSE2 code for a simpler overview of this algorithm
      * Current AVX2 process
@@ -85,12 +85,11 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    Uint32 amask = src->format->Amask;
+    Uint32 amask = src_fmt->Amask;
     Uint32 rgbmask = ~amask;
 
-    int rgb_weights =
-        ((0x4C << src->format->Rshift) | (0x96 << src->format->Gshift) |
-         (0x1D << src->format->Bshift));
+    int rgb_weights = ((0x4C << src_fmt->Rshift) | (0x96 << src_fmt->Gshift) |
+                       (0x1D << src_fmt->Bshift));
 
     __m256i *srcp256 = (__m256i *)src->pixels;
     __m256i *dstp256 = (__m256i *)newsurf->pixels;
@@ -216,7 +215,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
 }
 
 void
-invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
+invert_avx2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf)
 {
     int s_row_skip = (src->pitch - src->w * 4) / 4;
 
@@ -237,7 +236,7 @@ invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    Uint32 amask = src->format->Amask;
+    Uint32 amask = src_fmt->Amask;
     Uint32 rgbmask = ~amask;
 
     __m256i *srcp256 = (__m256i *)src->pixels;
@@ -300,12 +299,12 @@ invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
 }
 #else
 void
-grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
+grayscale_avx2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
 void
-invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
+invert_avx2(SDL_Surface *src, PG_PixelFormat *src_fmt, SDL_Surface *newsurf)
 {
     BAD_AVX2_FUNCTION_CALL;
 }

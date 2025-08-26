@@ -10,8 +10,9 @@ Keyboard Controls:
 * Press R to restart the demo
 """
 
-import pygame
 import random
+
+import pygame
 
 MIN_SPEED = 0.25
 MAX_SPEED = 5

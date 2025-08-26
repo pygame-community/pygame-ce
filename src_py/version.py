@@ -27,7 +27,7 @@ The python version information should always compare greater than any previous
 releases. (hmm, until we get to versions > 10)
 """
 
-from pygame.base import get_sdl_version, __version__
+from pygame.base import __version__, get_sdl_version
 
 
 class SoftwareVersion(tuple):
