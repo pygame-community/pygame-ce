@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_ "the top level pygame package"
 #define DOC_ISCE "IS_CE = 1\nexists if current pygame is pygame-ce"
 #define DOC_INIT "init() -> (numpass, numfail)\ninitialize all imported pygame modules"

@@ -56,7 +56,9 @@ def _pre_init_placeholder_varargs(*_, **__):
 
 
 class _PreInitPlaceholderCamera(AbstractCamera):
-    __init__ = _pre_init_placeholder_varargs
+    def __init__(self, *args, **kwargs):
+        _pre_init_placeholder()
+
     start = _pre_init_placeholder_varargs
     stop = _pre_init_placeholder_varargs
     get_controls = _pre_init_placeholder_varargs
@@ -114,7 +116,7 @@ def get_backends():
     if sys.platform == "win32" and int(platform.win32_ver()[0].split(".")[0]) >= 8:
         possible_backends.append("_camera (MSMF)")
 
-    if "linux" in sys.platform:
+    if sys.platform == "linux":
         possible_backends.append("_camera (V4L2)")
 
     if "darwin" in sys.platform:

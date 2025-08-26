@@ -2,14 +2,10 @@
 # listed here are not checked by the mypy stubtest program
 # This allowlist supports regex
 
-# This is not a real typestub file, it is used only in the typestubs to export
-# a few utility typestub definitions
-pygame\._common
-
 # cython files have this top level dunder
 pygame\._sdl2\..*\.__test__
 
-# cython classes have some special dunders for internal use, ignore that in 
+# cython classes have some special dunders for internal use, ignore that in
 # stubtest
 pygame\._sdl2\..*\.__pyx_.*__
 
@@ -19,6 +15,7 @@ pygame\.tests.*
 
 # don't look for stubs for pyinstaller hook
 pygame\.__pyinstaller.*
+pygame\.__briefcase.*
 
 # don't look for stubs for these private modules either
 pygame\.ftfont
@@ -30,7 +27,3 @@ pygame\.pypm
 pygame\._sdl2\.mixer
 pygame\.sysfont.*
 pygame\.docs.*
-
-# temporarily ignore the controller module while it is being converted
-# to C
-pygame\._sdl2\.controller

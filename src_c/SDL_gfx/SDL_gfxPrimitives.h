@@ -14,7 +14,11 @@ LGPL (c) A. Schiffler
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
-#include "SDL.h"
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
+#include <SDL.h>
+#endif
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -133,9 +137,9 @@ lineRGBA(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r,
 		Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 	/* Thick Line */
-	SDL_GFXPRIMITIVES_SCOPE int thickLineColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, 
+	SDL_GFXPRIMITIVES_SCOPE int thickLineColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
 		Uint8 width, Uint32 color);
-	SDL_GFXPRIMITIVES_SCOPE int thickLineRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, 
+	SDL_GFXPRIMITIVES_SCOPE int thickLineRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
 		Uint8 width, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 #endif /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
 

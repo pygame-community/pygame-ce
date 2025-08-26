@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_FONT "pygame module for loading and rendering fonts"
 #define DOC_FONT_INIT "init() -> None\ninitialize the font module"
 #define DOC_FONT_QUIT "quit() -> None\nuninitialize the font module"
@@ -29,8 +29,9 @@
 #define DOC_FONT_FONT_METRICS "metrics(text, /) -> list\ngets the metrics for each character in the passed string"
 #define DOC_FONT_FONT_GETITALIC "get_italic() -> bool\ncheck if the text will be rendered italic"
 #define DOC_FONT_FONT_GETLINESIZE "get_linesize() -> int\nget the line space of the font text"
+#define DOC_FONT_FONT_SETLINESIZE "set_linesize(linesize) -> None\nset the line space of the font text"
 #define DOC_FONT_FONT_GETHEIGHT "get_height() -> int\nget the height of the font"
-#define DOC_FONT_FONT_SETPOINTSIZE "set_point_size(size, /) -> int\nset the point size of the font"
+#define DOC_FONT_FONT_SETPOINTSIZE "set_point_size(size, /) -> None\nset the point size of the font"
 #define DOC_FONT_FONT_GETPOINTSIZE "get_point_size() -> int\nget the point size of the font"
 #define DOC_FONT_FONT_GETASCENT "get_ascent() -> int\nget the ascent of the font"
 #define DOC_FONT_FONT_GETDESCENT "get_descent() -> int\nget the descent of the font"

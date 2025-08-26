@@ -147,8 +147,9 @@ _PGFT_Cache_Init(FreeTypeInstance *ft, FontCache *cache)
     cache_size = cache_size + 1;
 
     cache->nodes = _PGFT_calloc((size_t)cache_size, sizeof(FontGlyph *));
-    if (!cache->nodes)
+    if (!cache->nodes) {
         return -1;
+    }
     cache->depths = _PGFT_calloc((size_t)cache_size, sizeof(FT_Byte));
     if (!cache->depths) {
         _PGFT_free(cache->nodes);

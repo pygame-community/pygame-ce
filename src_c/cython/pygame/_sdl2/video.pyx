@@ -167,7 +167,7 @@ cdef Uint32 format_from_depth(int depth):
                                       Rmask, Gmask, Bmask, Amask)
 
 
-# disable auto_pickle since it causes stubcheck error 
+# disable auto_pickle since it causes stubcheck error
 @cython.auto_pickle(False)
 cdef class Texture:
 
@@ -320,7 +320,7 @@ cdef class Texture:
         """Get or set the blend mode for texture drawing operations
 
         Gets or sets the blend mode for the texture's drawing operations.
-        Valid blend modes are any of the ``BLENDMODE_*`` constants or a custom one. 
+        Valid blend modes are any of the ``BLENDMODE_*`` constants or a custom one.
         """
         # https://wiki.libsdl.org/SDL_GetTextureBlendMode
         cdef SDL_BlendMode blendMode
@@ -342,13 +342,13 @@ cdef class Texture:
         """Get or set the additional color value multiplied into texture drawing operations
         """
         cdef Uint8[4] rgba
-        
+
         # https://wiki.libsdl.org/SDL_GetTextureColorMod
         cdef int res = SDL_GetTextureColorMod(self._tex,
                                               &(rgba[0]),
                                               &(rgba[1]),
                                               &(rgba[2]))
-        rgba[3] = 255    
+        rgba[3] = 255
 
         if res < 0:
             raise error()
@@ -570,7 +570,7 @@ cdef class Texture:
 
         if rectptr == NULL and area is not None:
             raise TypeError('area must be a rectangle or None')
-        
+
         cdef int dst_width, dst_height
         if rectptr == NULL:
             dst_width = self.width
@@ -578,7 +578,7 @@ cdef class Texture:
         else:
             dst_width = rect.w
             dst_height = rect.h
-        
+
         if dst_height > surf.h or dst_width > surf.w:
             # if the surface is smaller than the destination rect,
             # clip the rect to prevent segfault
@@ -619,8 +619,8 @@ cdef class Texture:
         if res < 0:
             raise error()
 
-# disable auto_pickle since it causes stubcheck error 
-@cython.auto_pickle(False) 
+# disable auto_pickle since it causes stubcheck error
+@cython.auto_pickle(False)
 cdef class Image:
 
     def __cinit__(self):
@@ -745,8 +745,8 @@ cdef class Image:
             self.flip_x,
             self.flip_y)
 
-# disable auto_pickle since it causes stubcheck error 
-@cython.auto_pickle(False) 
+# disable auto_pickle since it causes stubcheck error
+@cython.auto_pickle(False)
 cdef class Renderer:
 
     @classmethod
@@ -786,7 +786,7 @@ cdef class Renderer:
                            the refresh rate.
         :param bool target_texture: Whether the renderer should support setting
                                    :class:`Texture` objects as target textures, to
-                                   enable drawing onto them. 
+                                   enable drawing onto them.
 
 
         :class:`Renderer` objects provide a cross-platform API for rendering 2D
@@ -800,7 +800,7 @@ cdef class Renderer:
         If configured correctly and supported by an underlying rendering driver, Renderer
         objects can have a :class:`Texture` object temporarily set as a target texture
         (the Texture object must have been created with target texture usage support),
-        which allows those textures to be drawn onto. 
+        which allows those textures to be drawn onto.
 
         To present drawn content onto the window, :meth:`Renderer.present` should be
         called. :meth:`Renderer.clear` should be called to clear any drawn content
@@ -920,7 +920,7 @@ cdef class Renderer:
 
         :param area: A :class:`pygame.Rect` or tuple representing the
                      drawing area on the target, or ``None`` to use the
-                     entire area of the current rendering target. 
+                     entire area of the current rendering target.
         """
         # https://wiki.libsdl.org/SDL_RenderSetViewport
         if area is None:
@@ -1037,6 +1037,35 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
+    def coordinates_to_window(self, point):
+        """Translates renderer coordinates to window coordinates
+
+        :param point: The coordinates in render space.
+        """
+        cdef int wx
+        cdef int wy
+
+        # Note: Must be changed to SDL_RenderCoordinatesToWindow for SDL3
+        # https://wiki.libsdl.org/SDL3/SDL_RenderCoordinatesToWindow
+        SDL_RenderLogicalToWindow(self._renderer, point[0], point[1], &wx, &wy);
+
+        # Return float for future compatibility with SDL3's RenderCoordinatesToWindow
+        return (float(wx), float(wy))
+
+    def coordinates_from_window(self, point):
+        """Translates window coordinates to renderer coordinates
+
+        :param point: The coordinates in window space.
+        """
+        cdef float lx
+        cdef float ly
+
+        # Note: Must be changed to SDL_RenderCoordinatesFromWindow for SDL3
+        # https://wiki.libsdl.org/SDL3/SDL_RenderCoordinatesFromWindow
+        SDL_RenderWindowToLogical(self._renderer, point[0], point[1], &lx, &ly);
+
+        return (lx, ly)
+
     def draw_point(self, point):
         """Draw a point
 
@@ -1078,7 +1107,7 @@ cdef class Renderer:
         cdef SDL_FRect *frectptr
         cdef int res
 
-        
+
         frectptr = pgFRect_FromObject(rect, &_frect)
         if frectptr == NULL:
             raise TypeError('expected a rectangle')
@@ -1105,7 +1134,7 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_triangle requires SDL 2.0.18 or newer")
-        
+
         cdef Uint8[4] rgba
 
         cdef int res = SDL_GetRenderDrawColor(self._renderer,
@@ -1146,7 +1175,7 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_quad requires SDL 2.0.18 or newer")
-        
+
         cdef Uint8[4] rgba
 
         cdef int res = SDL_GetRenderDrawColor(self._renderer,

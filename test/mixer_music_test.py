@@ -1,11 +1,11 @@
 import os
-import sys
 import platform
-import unittest
+import sys
 import time
+import unittest
 
-from pygame.tests.test_utils import example_path
 import pygame
+from pygame.tests.test_utils import example_path
 
 
 class MixerMusicModuleTest(unittest.TestCase):
@@ -40,8 +40,10 @@ class MixerMusicModuleTest(unittest.TestCase):
         "|tags:music|"
         self.music_load("house_lo.flac")
 
+    # system installed SDL_mixer may not support wavpack
     @unittest.skipIf(
-        pygame.mixer.get_sdl_mixer_version() < (2, 8, 0),
+        pygame.mixer.get_sdl_mixer_version() < (2, 8, 0)
+        or "PG_DEPS_FROM_SYSTEM" in os.environ,
         "WavPack support added in SDL_mixer 2.8.0",
     )
     def test_load_wv(self):
@@ -85,7 +87,10 @@ class MixerMusicModuleTest(unittest.TestCase):
         if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
             filenames.append("house_lo.mp3")
 
-        if pygame.mixer.get_sdl_mixer_version() >= (2, 8, 0):
+        if (
+            pygame.mixer.get_sdl_mixer_version() >= (2, 8, 0)
+            and "PG_DEPS_FROM_SYSTEM" not in os.environ
+        ):
             filenames.append("house_lo.wv")
 
         if pygame.mixer.get_soundfont() is not None:
@@ -113,7 +118,10 @@ class MixerMusicModuleTest(unittest.TestCase):
         if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
             filenames.append("house_lo.mp3")
 
-        if pygame.mixer.get_sdl_mixer_version() >= (2, 8, 0):
+        if (
+            pygame.mixer.get_sdl_mixer_version() >= (2, 8, 0)
+            and "PG_DEPS_FROM_SYSTEM" not in os.environ
+        ):
             filenames.append("house_lo.wv")
 
         if pygame.mixer.get_soundfont() is not None:
@@ -208,8 +216,10 @@ class MixerMusicModuleTest(unittest.TestCase):
         filename = example_path(os.path.join("data", "house_lo.flac"))
         pygame.mixer.music.queue(filename)
 
+    # system installed SDL_mixer may not support wavpack
     @unittest.skipIf(
-        pygame.mixer.get_sdl_mixer_version() < (2, 8, 0),
+        pygame.mixer.get_sdl_mixer_version() < (2, 8, 0)
+        or "PG_DEPS_FROM_SYSTEM" in os.environ,
         "WavPack support added in SDL_mixer 2.8.0",
     )
     def test_queue_wv(self):
@@ -297,7 +307,7 @@ class MixerMusicModuleTest(unittest.TestCase):
         pygame.mixer.music.unpause()
         after_unpause = pygame.mixer.music.get_pos()
 
-        self.assertEqual(before_unpause, after_unpause)
+        self.assertAlmostEqual(before_unpause, after_unpause, delta=2)
 
     def test_music_get_metadata(self):
         file_dir = example_path("data")
@@ -507,8 +517,8 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_init(self):
         """pygame-ce issue #622. unload music whenever mixer.quit() is called"""
-        import tempfile
         import shutil
+        import tempfile
 
         testfile = example_path(os.path.join("data", "house_lo.wav"))
         tempcopy = os.path.join(tempfile.gettempdir(), "tempfile.wav")

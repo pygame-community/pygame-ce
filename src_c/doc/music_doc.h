@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MIXER_MUSIC "pygame module for controlling streamed audio"
 #define DOC_MIXER_MUSIC_LOAD "load(filename) -> None\nload(fileobj, namehint="") -> None\nLoad a music file for playback"
 #define DOC_MIXER_MUSIC_UNLOAD "unload() -> None\nUnload the currently loaded music to free up resources"

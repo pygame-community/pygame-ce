@@ -23,8 +23,8 @@ Controls
 
 """
 
-import random
 import os
+import random
 
 # import basic pygame modules
 import pygame
@@ -83,9 +83,10 @@ class Player(pygame.sprite.Sprite):
     bounce = 24
     gun_offset = -11
     images = []
+    containers = None
 
     def __init__(self):
-        pygame.sprite.Sprite.__init__(self, self.containers)
+        super().__init__(self.containers)
         self.image = self.images[0]
         self.rect = self.image.get_rect(midbottom=SCREENRECT.midbottom)
         self.reloading = False
@@ -114,6 +115,7 @@ class Alien(pygame.sprite.Sprite):
     speed = 13
     animcycle = 12
     images = []
+    containers = None
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, self.containers)
@@ -140,6 +142,7 @@ class Explosion(pygame.sprite.Sprite):
     defaultlife = 12
     animcycle = 3
     images = []
+    containers = None
 
     def __init__(self, actor):
         pygame.sprite.Sprite.__init__(self, self.containers)
@@ -166,6 +169,7 @@ class Shot(pygame.sprite.Sprite):
 
     speed = -11
     images = []
+    containers = None
 
     def __init__(self, pos):
         pygame.sprite.Sprite.__init__(self, self.containers)
@@ -187,6 +191,7 @@ class Bomb(pygame.sprite.Sprite):
 
     speed = 9
     images = []
+    containers = None
 
     def __init__(self, alien):
         pygame.sprite.Sprite.__init__(self, self.containers)
@@ -214,7 +219,7 @@ class Score(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.font = pygame.Font(None, 20)
-        self.font.set_italic(1)
+        self.font.set_italic(True)
         self.color = "white"
         self.lastscore = -1
         self.update()
@@ -225,10 +230,10 @@ class Score(pygame.sprite.Sprite):
         if SCORE != self.lastscore:
             self.lastscore = SCORE
             msg = "Score: %d" % SCORE
-            self.image = self.font.render(msg, 0, self.color)
+            self.image = self.font.render(msg, False, self.color)
 
 
-def main(winstyle=0):
+def main():
     # Initialize pygame
     pygame.mixer.pre_init(44100, 32, 2, 1024)
     pygame.init()
@@ -244,9 +249,9 @@ def main(winstyle=0):
     # Load images, assign to sprite classes
     # (do this before the classes are used, after screen setup)
     img = load_image("player1.gif")
-    Player.images = [img, pygame.transform.flip(img, 1, 0)]
+    Player.images = [img, pygame.transform.flip(img, True, False)]
     img = load_image("explosion1.gif")
-    Explosion.images = [img, pygame.transform.flip(img, 1, 1)]
+    Explosion.images = [img, pygame.transform.flip(img, True, True)]
     Alien.images = [load_image(im) for im in ("alien1.gif", "alien2.gif", "alien3.gif")]
     Bomb.images = [load_image("bomb.gif")]
     Shot.images = [load_image("shot.gif")]
@@ -255,14 +260,13 @@ def main(winstyle=0):
     icon = pygame.transform.scale(Alien.images[0], (32, 32))
     pygame.display.set_icon(icon)
     pygame.display.set_caption("Pygame Aliens")
-    pygame.mouse.set_visible(0)
+    pygame.mouse.set_visible(False)
 
     # create the background, tile the bgd image
     bgdtile = load_image("background.gif")
     background = pygame.Surface(SCREENRECT.size)
     for x in range(0, SCREENRECT.width, bgdtile.get_width()):
         background.blit(bgdtile, (x, 0))
-    screen.blit(background, (0, 0))
     pygame.display.flip()
 
     # load the sound effects
@@ -277,19 +281,18 @@ def main(winstyle=0):
     aliens = pygame.sprite.Group()
     shots = pygame.sprite.Group()
     bombs = pygame.sprite.Group()
-    all = pygame.sprite.RenderUpdates()
+    all_sprites = pygame.sprite.Group()
     lastalien = pygame.sprite.GroupSingle()
 
     # assign default groups to each sprite class
-    Player.containers = all
-    Alien.containers = aliens, all, lastalien
-    Shot.containers = shots, all
-    Bomb.containers = bombs, all
-    Explosion.containers = all
-    Score.containers = all
+    Player.containers = all_sprites
+    Alien.containers = aliens, all_sprites, lastalien
+    Shot.containers = shots, all_sprites
+    Bomb.containers = bombs, all_sprites
+    Explosion.containers = all_sprites
+    Score.containers = all_sprites
 
     # Create Some Starting Values
-    global score
     alienreload = ALIEN_RELOAD
     clock = pygame.Clock()
 
@@ -298,10 +301,13 @@ def main(winstyle=0):
     player = Player()
     Alien()  # note, this 'lives' because it goes into a sprite group
     if pygame.font:
-        all.add(Score())
+        all_sprites.add(Score())
 
     # Run our main loop whilst the player is alive.
     while player.alive():
+        # Erase last frame by blitting the background to the screen
+        screen.blit(background, (0, 0))
+
         # get input
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -314,7 +320,8 @@ def main(winstyle=0):
                         print("Changing to FULLSCREEN")
                         screen_backup = screen.copy()
                         screen = pygame.display.set_mode(
-                            SCREENRECT.size, winstyle | pygame.FULLSCREEN
+                            SCREENRECT.size,
+                            winstyle | pygame.FULLSCREEN | pygame.SCALED,
                         )
                         screen.blit(screen_backup, (0, 0))
                     else:
@@ -327,11 +334,8 @@ def main(winstyle=0):
 
         keystate = pygame.key.get_pressed()
 
-        # clear/erase the last drawn sprites
-        all.clear(screen, background)
-
         # update all the sprites
-        all.update()
+        all_sprites.update()
 
         # handle player input
         direction = keystate[pygame.K_RIGHT] - keystate[pygame.K_LEFT]
@@ -355,7 +359,7 @@ def main(winstyle=0):
             Bomb(lastalien.sprite)
 
         # Detect collisions between aliens and players.
-        for alien in pygame.sprite.spritecollide(player, aliens, 1):
+        for alien in pygame.sprite.spritecollide(player, aliens, True):
             if pygame.mixer:
                 boom_sound.play()
             Explosion(alien)
@@ -364,14 +368,14 @@ def main(winstyle=0):
             player.kill()
 
         # See if shots hit the aliens.
-        for alien in pygame.sprite.groupcollide(aliens, shots, 1, 1).keys():
+        for alien in pygame.sprite.groupcollide(aliens, shots, True, True).keys():
             if pygame.mixer:
                 boom_sound.play()
             Explosion(alien)
             SCORE = SCORE + 1
 
         # See if alien bombs hit the player.
-        for bomb in pygame.sprite.spritecollide(player, bombs, 1):
+        for bomb in pygame.sprite.spritecollide(player, bombs, True):
             if pygame.mixer:
                 boom_sound.play()
             Explosion(player)
@@ -379,8 +383,8 @@ def main(winstyle=0):
             player.kill()
 
         # draw the scene
-        dirty = all.draw(screen)
-        pygame.display.update(dirty)
+        all_sprites.draw(screen)
+        pygame.display.flip()
 
         # cap the framerate at 40fps. Also called 40HZ or 40 times per second.
         clock.tick(40)

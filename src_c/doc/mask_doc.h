@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MASK "pygame module for image masks."
 #define DOC_MASK_FROMSURFACE "from_surface(surface) -> Mask\nfrom_surface(surface, threshold=127) -> Mask\nCreates a Mask from the given surface"
 #define DOC_MASK_FROMTHRESHOLD "from_threshold(surface, color) -> Mask\nfrom_threshold(surface, color, threshold=(0, 0, 0, 255), othersurface=None, palette_colors=1) -> Mask\nCreates a mask by thresholding Surfaces"
@@ -25,4 +25,4 @@
 #define DOC_MASK_MASK_CONNECTEDCOMPONENT "connected_component() -> Mask\nconnected_component(pos) -> Mask\nReturns a mask containing a connected component"
 #define DOC_MASK_MASK_CONNECTEDCOMPONENTS "connected_components() -> [Mask, ...]\nconnected_components(minimum=0) -> [Mask, ...]\nReturns a list of masks of connected components"
 #define DOC_MASK_MASK_GETBOUNDINGRECTS "get_bounding_rects() -> [Rect, ...]\nReturns a list of bounding rects of connected components"
-#define DOC_MASK_MASK_TOSURFACE "to_surface() -> Surface\nto_surface(surface=None, setsurface=None, unsetsurface=None, setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 255), dest=(0, 0)) -> Surface\nReturns a surface with the mask drawn on it"
+#define DOC_MASK_MASK_TOSURFACE "to_surface() -> Surface\nto_surface(surface=None, setsurface=None, unsetsurface=None, setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 255), dest=(0, 0), area=None) -> Surface\nReturns a surface with the mask drawn on it"

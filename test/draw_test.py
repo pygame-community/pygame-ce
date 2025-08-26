@@ -1,14 +1,13 @@
 import math
-import unittest
 import sys
+import unittest
 import warnings
 
 import pygame
 from pygame import draw
 from pygame.locals import SRCALPHA
-from pygame.tests import test_utils
 from pygame.math import Vector2
-
+from pygame.tests import test_utils
 
 RED = BG_RED = pygame.Color("red")
 GREEN = FG_GREEN = pygame.Color("green")
@@ -167,6 +166,7 @@ class DrawTestCase(unittest.TestCase):
     draw_rect = staticmethod(draw.rect)
     draw_polygon = staticmethod(draw.polygon)
     draw_circle = staticmethod(draw.circle)
+    draw_aacircle = staticmethod(draw.aacircle)
     draw_ellipse = staticmethod(draw.ellipse)
     draw_arc = staticmethod(draw.arc)
     draw_line = staticmethod(draw.line)
@@ -2447,18 +2447,26 @@ class AALineMixin(BaseLineMixin):
 
     def test_aaline__blend_warning(self):
         """Using the blend argument should raise a DeprecationWarning"""
-        faulty_blend_values = [0, 1, True, False, None, "", [], type]
+        faulty_blend_values = [0, 1, True, False]
         with warnings.catch_warnings(record=True) as w:
             for count, blend in enumerate(faulty_blend_values):
                 # Cause all warnings to always be triggered.
                 warnings.simplefilter("always")
                 # Trigger DeprecationWarning.
-                self.draw_aaline(
+                bounding1 = self.draw_aaline(
+                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), blend=blend
+                )
+                # Doesn't trigger DeprecationWarning, interepreted as width
+                bounding2 = self.draw_aaline(
                     pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), blend
                 )
                 # Check if there is only one warning and is a DeprecationWarning.
                 self.assertEqual(len(w), count + 1)
                 self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
+
+                # check that the line gets drawn
+                self.assertEqual(bounding1, bounding2)
+                self.assertEqual(bounding1, (0, 0, 2, 2))
 
     def test_aaline__kwargs(self):
         """Ensures draw aaline accepts the correct kwargs"""
@@ -2466,12 +2474,14 @@ class AALineMixin(BaseLineMixin):
         color = pygame.Color("yellow")
         start_pos = (1, 1)
         end_pos = (2, 2)
+        width = 2
         kwargs_list = [
             {
                 "surface": surface,
                 "color": color,
                 "start_pos": start_pos,
                 "end_pos": end_pos,
+                "width": width,
             },
         ]
 
@@ -2484,6 +2494,7 @@ class AALineMixin(BaseLineMixin):
         """Ensures draw aaline's kwargs are not order dependent."""
         bounds_rect = self.draw_aaline(
             start_pos=(1, 2),
+            width=2,
             end_pos=(2, 1),
             color=(10, 20, 30),
             surface=pygame.Surface((3, 2)),
@@ -2515,6 +2526,7 @@ class AALineMixin(BaseLineMixin):
             "color": pygame.Color("red"),
             "start_pos": (2, 1),
             "end_pos": (2, 2),
+            "width": 2,
         }
 
         for name in ("end_pos", "start_pos", "color", "surface"):
@@ -2553,30 +2565,42 @@ class AALineMixin(BaseLineMixin):
         color = pygame.Color("green")
         start_pos = (1, 0)
         end_pos = (2, 0)
+        width = 1
         kwargs_list = [
             {
                 "surface": pygame.Surface,  # Invalid surface.
                 "color": color,
                 "start_pos": start_pos,
                 "end_pos": end_pos,
+                "width": width,
             },
             {
                 "surface": surface,
                 "color": 2.3,  # Invalid color.
                 "start_pos": start_pos,
                 "end_pos": end_pos,
+                "width": width,
             },
             {
                 "surface": surface,
                 "color": color,
                 "start_pos": (0, 0, 0),  # Invalid start_pos.
                 "end_pos": end_pos,
+                "width": width,
             },
             {
                 "surface": surface,
                 "color": color,
                 "start_pos": start_pos,
                 "end_pos": (0,),  # Invalid end_pos.
+                "width": width,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "start_pos": start_pos,
+                "end_pos": (0,),
+                "width": 1.2,  # Invalid width.
             },
         ]
 
@@ -2590,12 +2614,14 @@ class AALineMixin(BaseLineMixin):
         color = pygame.Color("cyan")
         start_pos = (1, 1)
         end_pos = (2, 0)
+        width = 1
         kwargs_list = [
             {
                 "surface": surface,
                 "color": color,
                 "start_pos": start_pos,
                 "end_pos": end_pos,
+                "width": width,
                 "invalid": 1,
             },
             {
@@ -2617,14 +2643,16 @@ class AALineMixin(BaseLineMixin):
         color = (255, 255, 0, 0)
         start_pos = (0, 1)
         end_pos = (1, 2)
+        width = 1
         kwargs = {
             "surface": surface,
             "color": color,
             "start_pos": start_pos,
             "end_pos": end_pos,
+            "width": width,
         }
 
-        for name in ("surface", "color", "start_pos", "end_pos"):
+        for name in ("surface", "color", "start_pos", "end_pos", "width"):
             kwargs.pop(name)
 
             if "surface" == name:
@@ -2644,6 +2672,29 @@ class AALineMixin(BaseLineMixin):
 
             self.assertIsInstance(bounds_rect, pygame.Rect)
 
+    def test_aaline__valid_width_values(self):
+        """Ensures draw aaline accepts different width values."""
+        line_color = pygame.Color("yellow")
+        surface_color = pygame.Color("white")
+        surface = pygame.Surface((3, 4))
+        pos = (2, 1)
+        kwargs = {
+            "surface": surface,
+            "color": line_color,
+            "start_pos": pos,
+            "end_pos": (2, 2),
+            "width": None,
+        }
+
+        for width in (-100, -10, -1, 0, 1, 10, 100):
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["width"] = width
+
+            bounds_rect = self.draw_aaline(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), line_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
     def test_aaline__valid_start_pos_formats(self):
         """Ensures draw aaline accepts different start_pos formats."""
         expected_color = pygame.Color("red")
@@ -2654,6 +2705,7 @@ class AALineMixin(BaseLineMixin):
             "color": expected_color,
             "start_pos": None,
             "end_pos": (2, 2),
+            "width": 2,
         }
         x, y = 2, 1  # start position
         positions = ((x, y), (x + 0.01, y), (x, y + 0.01), (x + 0.01, y + 0.01))
@@ -2682,6 +2734,7 @@ class AALineMixin(BaseLineMixin):
             "color": expected_color,
             "start_pos": (2, 1),
             "end_pos": None,
+            "width": 2,
         }
         x, y = 2, 2  # end position
         positions = ((x, y), (x + 0.02, y), (x, y + 0.02), (x + 0.02, y + 0.02))
@@ -2707,6 +2760,7 @@ class AALineMixin(BaseLineMixin):
             "color": pygame.Color("red"),
             "start_pos": None,
             "end_pos": (2, 2),
+            "width": 2,
         }
 
         start_pos_fmts = (
@@ -2730,6 +2784,7 @@ class AALineMixin(BaseLineMixin):
             "color": pygame.Color("red"),
             "start_pos": (2, 2),
             "end_pos": None,
+            "width": 2,
         }
 
         end_pos_fmts = (
@@ -2757,6 +2812,7 @@ class AALineMixin(BaseLineMixin):
             "color": None,
             "start_pos": pos,
             "end_pos": (2, 1),
+            "width": 2,
         }
         greens = (
             (0, 255, 0),
@@ -2786,6 +2842,7 @@ class AALineMixin(BaseLineMixin):
             "color": None,
             "start_pos": (1, 1),
             "end_pos": (2, 1),
+            "width": 2,
         }
 
         for expected_color in (2.3, self):
@@ -2803,6 +2860,17 @@ class AALineMixin(BaseLineMixin):
 
                 self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
 
+    def test_aaline__color_with_thickness(self):
+        """Ensures a thick aaline is drawn using the correct color."""
+        from_x = 5
+        to_x = 10
+        y = 5
+        for surface in self._create_surfaces():
+            for expected_color in self.COLORS:
+                self.draw_aaline(surface, expected_color, (from_x, y), (to_x, y), 5)
+                for pos in ((x, y + i) for i in (-2, 0, 2) for x in (from_x, to_x)):
+                    self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
+
     def test_aaline__gaps(self):
         """Tests if the aaline drawn contains any gaps.
 
@@ -2817,11 +2885,30 @@ class AALineMixin(BaseLineMixin):
                 pos = (x, 0)
                 self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
 
+    def test_aaline__gaps_with_thickness(self):
+        """Ensures a thick aaline is drawn without any gaps."""
+        background_color = (0, 0, 0)
+        thickness = 5
+        for surface in self._create_surfaces():
+            width = surface.get_width() - 1
+            h = width // 5
+            w = h * 5
+            self.draw_aaline(surface, (255, 255, 255), (0, 5), (w, 5 + h), thickness)
+
+            for x in range(w + 1):
+                for y in range(3, 8):
+                    pos = (x, y + ((x + 2) // 5))
+                    self.assertNotEqual(
+                        surface.get_at(pos), background_color, f"pos={pos}"
+                    )
+
     def test_aaline__bounding_rect(self):
         """Ensures draw aaline returns the correct bounding rect.
 
-        Test lines with endpoints on and off the surface.
+        Test lines with endpoints on and off the surface and a range of
+        width/thickness values.
         """
+
         line_color = pygame.Color("red")
         surf_color = pygame.Color("blue")
         width = height = 30
@@ -2839,16 +2926,24 @@ class AALineMixin(BaseLineMixin):
             for pos in rect_corners_mids_and_center(surf_rect):
                 helper_rect.center = pos
 
-                for start, end in self._rect_lines(helper_rect):
-                    surface.fill(surf_color)  # Clear for each test.
+                # Draw using different thicknesses.
+                for thickness in range(-1, 5):
+                    for start, end in self._rect_lines(helper_rect):
+                        surface.fill(surf_color)  # Clear for each test.
 
-                    bounding_rect = self.draw_aaline(surface, line_color, start, end)
+                        bounding_rect = self.draw_aaline(
+                            surface, line_color, start, end, thickness
+                        )
 
-                    # Calculating the expected_rect after the line is
-                    # drawn (it uses what is actually drawn).
-                    expected_rect = create_bounding_rect(surface, surf_color, start)
+                        # Calculating the expected_rect after the line is
+                        # drawn (it uses what is actually drawn).
+                        expected_rect = create_bounding_rect(surface, surf_color, start)
 
-                    self.assertEqual(bounding_rect, expected_rect)
+                        self.assertEqual(
+                            bounding_rect,
+                            expected_rect,
+                            f"start={start}, end={end}, size={size}, thickness={thickness}",
+                        )
 
     def test_aaline__surface_clip(self):
         """Ensures draw aaline respects a surface's clip area."""
@@ -2862,37 +2957,62 @@ class AALineMixin(BaseLineMixin):
         clip_rect.center = surface.get_rect().center
         pos_rect = clip_rect.copy()  # Manages the aaline's pos.
 
-        # Test centering the pos_rect along the clip rect's edge to allow for
-        # drawing the aaline over the clip_rect's bounds.
-        for center in rect_corners_mids_and_center(clip_rect):
-            pos_rect.center = center
+        for thickness in (1, 3):  # Test different line widths.
+            # Test centering the pos_rect along the clip rect's edge to allow for
+            # drawing the aaline over the clip_rect's bounds.
+            for center in rect_corners_mids_and_center(clip_rect):
+                pos_rect.center = center
+                start = pos_rect.midtop
+                end = pos_rect.midbottom
 
-            # Get the expected points by drawing the aaline without the
-            # clip area set.
-            surface.set_clip(None)
-            surface.fill(surface_color)
-            self.draw_aaline(surface, aaline_color, pos_rect.midtop, pos_rect.midbottom)
+                # Get the expected points by drawing the aaline without the
+                # clip area set.
+                surface.set_clip(None)
+                surface.fill(surface_color)
+                self.draw_aaline(
+                    surface,
+                    aaline_color,
+                    start,
+                    end,
+                    thickness,
+                )
 
-            expected_pts = get_color_points(surface, surface_color, clip_rect, False)
+                expected_pts = get_color_points(
+                    surface, surface_color, clip_rect, False
+                )
 
-            # Clear the surface and set the clip area. Redraw the aaline
-            # and check that only the clip area is modified.
-            surface.fill(surface_color)
-            surface.set_clip(clip_rect)
+                # Clear the surface and set the clip area. Redraw the aaline
+                # and check that only the clip area is modified.
+                surface.fill(surface_color)
+                surface.set_clip(clip_rect)
 
-            self.draw_aaline(surface, aaline_color, pos_rect.midtop, pos_rect.midbottom)
+                self.draw_aaline(
+                    surface,
+                    aaline_color,
+                    start,
+                    end,
+                    thickness,
+                )
 
-            surface.lock()  # For possible speed up.
+                surface.lock()  # For possible speed up.
 
-            # Check all the surface points to ensure the expected_pts
-            # are not surface_color.
-            for pt in ((x, y) for x in range(surfw) for y in range(surfh)):
-                if pt in expected_pts:
-                    self.assertNotEqual(surface.get_at(pt), surface_color, pt)
-                else:
-                    self.assertEqual(surface.get_at(pt), surface_color, pt)
+                # Check all the surface points to ensure the expected_pts
+                # are not surface_color.
+                for pt in ((x, y) for x in range(surfw) for y in range(surfh)):
+                    if pt in expected_pts:
+                        self.assertNotEqual(
+                            surface.get_at(pt),
+                            surface_color,
+                            f"start={start}, end={end}, thickness={thickness}, point={pt}",
+                        )
+                    else:
+                        self.assertEqual(
+                            surface.get_at(pt),
+                            surface_color,
+                            f"start={start}, end={end}, thickness={thickness}, point={pt}",
+                        )
 
-            surface.unlock()
+                surface.unlock()
 
 
 class DrawAALineTest(AALineMixin, DrawTestCase):
@@ -3644,6 +3764,60 @@ class DrawAALinesTest(AALinesMixin, DrawTestCase):
     This class inherits the general tests from AALinesMixin. It is also the
     class to add any draw.aalines specific tests to.
     """
+
+    def test_aalines__overlap(self):
+        """Ensures that two adjacent antialiased lines are not overlapping.
+
+        Draws two lines, and checks if 2 pixels, at shared point between those
+        two lines, are too bright.
+
+        See: https://github.com/pygame-community/pygame-ce/pull/2912
+        """
+        line_color = (150, 150, 150)
+        max_expected_colors = ((70, 70, 70), (100, 100, 100))
+        test_points = [[20.1, 25.4], [25.1, 25.6], [30.1, 25.8]]
+
+        surface = pygame.display.set_mode((50, 50))
+        self.draw_aalines(surface, line_color, False, test_points)
+
+        for i, y in enumerate((25, 26)):
+            check_color = tuple(surface.get_at((25, y)))
+            self.assertLess(
+                check_color,
+                max_expected_colors[i],
+                f"aalines are overlapping, pos={(25, y)}",
+            )
+
+    def test_aalines__steep_missing_pixel(self):
+        """Ensures there are no missing pixels between steep and non-steep lines.
+
+        Draws two adjacent lines: first is not steep and second is, then
+        checks if there is missing pixel at shared point between those two lines.
+
+        See: https://github.com/pygame-community/pygame-ce/pull/2912
+        """
+        line_color = (150, 150, 150)
+        min_expected_color = (40, 40, 40)
+        test_points = [[11.2, 8.5], [17.1, 25.7], [35.8, 25.5], [47.6, 41.8]]
+
+        surface = pygame.display.set_mode((50, 50))
+        self.draw_aalines(surface, line_color, False, test_points)
+
+        # First line is steep, and other line is not steep
+        check_color = tuple(surface.get_at((17, 26)))
+        self.assertGreater(
+            check_color,
+            min_expected_color,
+            "Pixel is missing between steep and non-steep line, pos=(17, 26)",
+        )
+
+        # First line is not steep, and other line is steep
+        check_color = tuple(surface.get_at((36, 25)))
+        self.assertGreater(
+            check_color,
+            min_expected_color,
+            "Pixel is missing between non-steep and steep line, pos=(26, 25)",
+        )
 
 
 ### Polygon Testing ###########################################################
@@ -5739,6 +5913,769 @@ class DrawCircleTest(DrawCircleMixin, DrawTestCase):
     """
 
 
+### AACircle Testing ############################################################
+
+
+class DrawAACircleMixin:
+    """Mixin tests for drawing antialiased circles.
+
+    This class contains all the general antialiased aacircle drawing tests.
+    Most of test are taken from DrawCircleMixin class
+    """
+
+    def test_aacircle__args(self):
+        """Ensures draw aacircle accepts the correct args."""
+        bounds_rect = self.draw_aacircle(
+            pygame.Surface((3, 3)), (0, 10, 0, 50), (0, 0), 3, 1, 1, 0, 1, 1
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aacircle__args_without_width(self):
+        """Ensures draw aacircle accepts the args without a width and
+        quadrants."""
+        bounds_rect = self.draw_aacircle(
+            pygame.Surface((2, 2)), (0, 0, 0, 50), (1, 1), 1
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aacircle__args_with_negative_width(self):
+        """Ensures draw aacircle accepts the args with negative width."""
+        bounds_rect = self.draw_aacircle(
+            pygame.Surface((2, 2)), (0, 0, 0, 50), (1, 1), 1, -1
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+        self.assertEqual(bounds_rect, pygame.Rect(1, 1, 0, 0))
+
+    def test_aacircle__args_with_width_gt_radius(self):
+        """Ensures draw aacircle accepts the args with width > radius."""
+        bounds_rect = self.draw_aacircle(
+            pygame.Surface((2, 2)), (0, 0, 0, 50), (1, 1), 2, 3, 0, 0, 0, 0
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+        self.assertEqual(bounds_rect, pygame.Rect(0, 0, 2, 2))
+
+    def test_aacircle__kwargs(self):
+        """Ensures draw aacircle accepts the correct kwargs
+        with and without a width and quadrant arguments.
+        """
+        kwargs_list = [
+            {
+                "surface": pygame.Surface((4, 4)),
+                "color": pygame.Color("yellow"),
+                "center": (2, 2),
+                "radius": 2,
+                "width": 1,
+                "draw_top_right": True,
+                "draw_top_left": True,
+                "draw_bottom_left": False,
+                "draw_bottom_right": True,
+            },
+            {
+                "surface": pygame.Surface((2, 1)),
+                "color": (0, 10, 20),
+                "center": (1, 1),
+                "radius": 1,
+            },
+        ]
+
+        for kwargs in kwargs_list:
+            bounds_rect = self.draw_aacircle(**kwargs)
+
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aacircle__kwargs_order_independent(self):
+        """Ensures draw aacircle's kwargs are not order dependent."""
+        bounds_rect = self.draw_aacircle(
+            draw_top_right=False,
+            color=(10, 20, 30),
+            surface=pygame.Surface((3, 2)),
+            width=0,
+            draw_bottom_left=False,
+            center=(1, 0),
+            draw_bottom_right=False,
+            radius=2,
+            draw_top_left=True,
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aacircle__args_missing(self):
+        """Ensures draw aacircle detects any missing required args."""
+        surface = pygame.Surface((1, 1))
+        color = pygame.Color("blue")
+
+        with self.assertRaises(TypeError):
+            bounds_rect = self.draw_aacircle(surface, color, (0, 0))
+
+        with self.assertRaises(TypeError):
+            bounds_rect = self.draw_aacircle(surface, color)
+
+        with self.assertRaises(TypeError):
+            bounds_rect = self.draw_aacircle(surface)
+
+        with self.assertRaises(TypeError):
+            bounds_rect = self.draw_aacircle()
+
+    def test_aacircle__kwargs_missing(self):
+        """Ensures draw aacircle detects any missing required kwargs."""
+        kwargs = {
+            "surface": pygame.Surface((1, 2)),
+            "color": pygame.Color("red"),
+            "center": (1, 0),
+            "radius": 2,
+            "width": 1,
+            "draw_top_right": False,
+            "draw_top_left": False,
+            "draw_bottom_left": False,
+            "draw_bottom_right": True,
+        }
+
+        for name in ("radius", "center", "color", "surface"):
+            invalid_kwargs = dict(kwargs)
+            invalid_kwargs.pop(name)  # Pop from a copy.
+
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aacircle(**invalid_kwargs)
+
+    def test_aacircle__arg_invalid_types(self):
+        """Ensures draw aacircle detects invalid arg types."""
+        surface = pygame.Surface((2, 2))
+        color = pygame.Color("blue")
+        center = (1, 1)
+        radius = 1
+
+        with self.assertRaises(TypeError):
+            # Invalid draw_top_right.
+            bounds_rect = self.draw_aacircle(
+                surface, color, center, radius, 1, "a", 1, 1, 1
+            )
+
+        with self.assertRaises(TypeError):
+            # Invalid draw_top_left.
+            bounds_rect = self.draw_aacircle(
+                surface, color, center, radius, 1, 1, "b", 1, 1
+            )
+
+        with self.assertRaises(TypeError):
+            # Invalid draw_bottom_left.
+            bounds_rect = self.draw_aacircle(
+                surface, color, center, radius, 1, 1, 1, "c", 1
+            )
+
+        with self.assertRaises(TypeError):
+            # Invalid draw_bottom_right.
+            bounds_rect = self.draw_aacircle(
+                surface, color, center, radius, 1, 1, 1, 1, "d"
+            )
+
+        with self.assertRaises(TypeError):
+            # Invalid width.
+            bounds_rect = self.draw_aacircle(surface, color, center, radius, "1")
+
+        with self.assertRaises(TypeError):
+            # Invalid radius.
+            bounds_rect = self.draw_aacircle(surface, color, center, "2")
+
+        with self.assertRaises(TypeError):
+            # Invalid center.
+            bounds_rect = self.draw_aacircle(surface, color, (1, 2, 3), radius)
+
+        with self.assertRaises(TypeError):
+            # Invalid color.
+            bounds_rect = self.draw_aacircle(surface, 2.3, center, radius)
+
+        with self.assertRaises(TypeError):
+            # Invalid surface.
+            bounds_rect = self.draw_aacircle((1, 2, 3, 4), color, center, radius)
+
+    def test_aacircle__kwarg_invalid_types(self):
+        """Ensures draw aacircle detects invalid kwarg types."""
+        surface = pygame.Surface((3, 3))
+        color = pygame.Color("green")
+        center = (0, 1)
+        radius = 1
+        width = 1
+        quadrant = 1
+        kwargs_list = [
+            {
+                "surface": pygame.Surface,  # Invalid surface.
+                "color": color,
+                "center": center,
+                "radius": radius,
+                "width": width,
+                "draw_top_right": True,
+                "draw_top_left": True,
+                "draw_bottom_left": True,
+                "draw_bottom_right": True,
+            },
+            {
+                "surface": surface,
+                "color": 2.3,  # Invalid color.
+                "center": center,
+                "radius": radius,
+                "width": width,
+                "draw_top_right": True,
+                "draw_top_left": True,
+                "draw_bottom_left": True,
+                "draw_bottom_right": True,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "center": (1, 1, 1),  # Invalid center.
+                "radius": radius,
+                "width": width,
+                "draw_top_right": True,
+                "draw_top_left": True,
+                "draw_bottom_left": True,
+                "draw_bottom_right": True,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "center": center,
+                "radius": "1",  # Invalid radius.
+                "width": width,
+                "draw_top_right": True,
+                "draw_top_left": True,
+                "draw_bottom_left": True,
+                "draw_bottom_right": True,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "center": center,
+                "radius": radius,
+                "width": 1.2,  # Invalid width.
+                "draw_top_right": True,
+                "draw_top_left": True,
+                "draw_bottom_left": True,
+                "draw_bottom_right": True,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "center": center,
+                "radius": radius,
+                "width": width,
+                "draw_top_right": "True",  # Invalid draw_top_right
+                "draw_top_left": True,
+                "draw_bottom_left": True,
+                "draw_bottom_right": True,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "center": center,
+                "radius": radius,
+                "width": width,
+                "draw_top_right": True,
+                "draw_top_left": "True",  # Invalid draw_top_left
+                "draw_bottom_left": True,
+                "draw_bottom_right": True,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "center": center,
+                "radius": radius,
+                "width": width,
+                "draw_top_right": True,
+                "draw_top_left": True,
+                "draw_bottom_left": 3.14,  # Invalid draw_bottom_left
+                "draw_bottom_right": True,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "center": center,
+                "radius": radius,
+                "width": width,
+                "draw_top_right": True,
+                "draw_top_left": True,
+                "draw_bottom_left": True,
+                "draw_bottom_right": "quadrant",  # Invalid draw_bottom_right
+            },
+        ]
+
+        for kwargs in kwargs_list:
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aacircle(**kwargs)
+
+    def test_aacircle__kwarg_invalid_name(self):
+        """Ensures draw aacircle detects invalid kwarg names."""
+        surface = pygame.Surface((2, 3))
+        color = pygame.Color("cyan")
+        center = (0, 0)
+        radius = 2
+        kwargs_list = [
+            {
+                "surface": surface,
+                "color": color,
+                "center": center,
+                "radius": radius,
+                "width": 1,
+                "quadrant": 1,
+                "draw_top_right": True,
+                "draw_top_left": True,
+                "draw_bottom_left": True,
+                "draw_bottom_right": True,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "center": center,
+                "radius": radius,
+                "invalid": 1,
+            },
+        ]
+
+        for kwargs in kwargs_list:
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aacircle(**kwargs)
+
+    def test_aacircle__args_and_kwargs(self):
+        """Ensures draw aacircle accepts a combination of args/kwargs"""
+        surface = pygame.Surface((3, 1))
+        color = (255, 255, 0, 0)
+        center = (1, 0)
+        radius = 2
+        width = 0
+        draw_top_right = True
+        draw_top_left = False
+        draw_bottom_left = False
+        draw_bottom_right = True
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "center": center,
+            "radius": radius,
+            "width": width,
+            "draw_top_right": True,
+            "draw_top_left": True,
+            "draw_bottom_left": True,
+            "draw_bottom_right": True,
+        }
+
+        for name in (
+            "surface",
+            "color",
+            "center",
+            "radius",
+            "width",
+            "draw_top_right",
+            "draw_top_left",
+            "draw_bottom_left",
+            "draw_bottom_right",
+        ):
+            kwargs.pop(name)
+
+            if "surface" == name:
+                bounds_rect = self.draw_aacircle(surface, **kwargs)
+            elif "color" == name:
+                bounds_rect = self.draw_aacircle(surface, color, **kwargs)
+            elif "center" == name:
+                bounds_rect = self.draw_aacircle(surface, color, center, **kwargs)
+            elif "radius" == name:
+                bounds_rect = self.draw_aacircle(
+                    surface, color, center, radius, **kwargs
+                )
+            elif "width" == name:
+                bounds_rect = self.draw_aacircle(
+                    surface, color, center, radius, width, **kwargs
+                )
+            elif "draw_top_right" == name:
+                bounds_rect = self.draw_aacircle(
+                    surface, color, center, radius, width, draw_top_right, **kwargs
+                )
+            elif "draw_top_left" == name:
+                bounds_rect = self.draw_aacircle(
+                    surface,
+                    color,
+                    center,
+                    radius,
+                    width,
+                    draw_top_right,
+                    draw_top_left,
+                    **kwargs,
+                )
+            elif "draw_bottom_left" == name:
+                bounds_rect = self.draw_aacircle(
+                    surface,
+                    color,
+                    center,
+                    radius,
+                    width,
+                    draw_top_right,
+                    draw_top_left,
+                    draw_bottom_left,
+                    **kwargs,
+                )
+            else:
+                bounds_rect = self.draw_aacircle(
+                    surface,
+                    color,
+                    center,
+                    radius,
+                    width,
+                    draw_top_right,
+                    draw_top_left,
+                    draw_bottom_left,
+                    draw_bottom_right,
+                    **kwargs,
+                )
+
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aacircle__valid_width_values(self):
+        """Ensures draw aacircle accepts different width values."""
+        center = (2, 2)
+        radius = 1
+        pos = (center[0] - radius, center[1])
+        surface_color = pygame.Color("white")
+        surface = pygame.Surface((3, 4))
+        color = (10, 20, 30, 255)
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "center": center,
+            "radius": radius,
+            "width": None,
+            "draw_top_right": True,
+            "draw_top_left": True,
+            "draw_bottom_left": True,
+            "draw_bottom_right": True,
+        }
+
+        for width in (-100, -10, -1, 0, 1, 10, 100):
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["width"] = width
+            expected_color = color if width >= 0 else surface_color
+
+            bounds_rect = self.draw_aacircle(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aacircle__valid_radius_values(self):
+        """Ensures draw aacircle accepts different radius values."""
+        pos = center = (2, 2)
+        surface_color = pygame.Color("white")
+        surface = pygame.Surface((3, 4))
+        color = (10, 20, 30, 255)
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "center": center,
+            "radius": None,
+            "width": 0,
+            "draw_top_right": True,
+            "draw_top_left": True,
+            "draw_bottom_left": True,
+            "draw_bottom_right": True,
+        }
+
+        for radius in (-10, -1, 0, 1, 10):
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["radius"] = radius
+            expected_color = color if radius > 0 else surface_color
+
+            bounds_rect = self.draw_aacircle(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aacircle__valid_center_formats(self):
+        """Ensures draw aacircle accepts different center formats."""
+        expected_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((4, 4))
+        kwargs = {
+            "surface": surface,
+            "color": expected_color,
+            "center": None,
+            "radius": 1,
+            "width": 0,
+            "draw_top_right": True,
+            "draw_top_left": True,
+            "draw_bottom_left": True,
+            "draw_bottom_right": True,
+        }
+        x, y = 2, 2  # center position
+
+        # The center values can be ints or floats.
+        for center in ((x, y), (x + 0.1, y), (x, y + 0.1), (x + 0.1, y + 0.1)):
+            # The center type can be a tuple/list/Vector2.
+            for seq_type in (tuple, list, Vector2):
+                surface.fill(surface_color)  # Clear for each test.
+                kwargs["center"] = seq_type(center)
+
+                bounds_rect = self.draw_aacircle(**kwargs)
+
+                self.assertEqual(surface.get_at((x, y)), expected_color)
+                self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aacircle__valid_color_formats(self):
+        """Ensures draw aacircle accepts different color formats."""
+        center = (2, 2)
+        radius = 1
+        pos = (center[0] - radius, center[1])
+        green_color = pygame.Color("green")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((3, 4))
+        kwargs = {
+            "surface": surface,
+            "color": None,
+            "center": center,
+            "radius": radius,
+            "width": 0,
+            "draw_top_right": True,
+            "draw_top_left": True,
+            "draw_bottom_left": True,
+            "draw_bottom_right": True,
+        }
+        greens = (
+            (0, 255, 0),
+            (0, 255, 0, 255),
+            surface.map_rgb(green_color),
+            green_color,
+        )
+
+        for color in greens:
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["color"] = color
+
+            if isinstance(color, int):
+                expected_color = surface.unmap_rgb(color)
+            else:
+                expected_color = green_color
+
+            bounds_rect = self.draw_aacircle(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aacircle__invalid_color_formats(self):
+        """Ensures draw aacircle handles invalid color formats correctly."""
+        kwargs = {
+            "surface": pygame.Surface((4, 3)),
+            "color": None,
+            "center": (1, 2),
+            "radius": 1,
+            "width": 0,
+            "draw_top_right": True,
+            "draw_top_left": True,
+            "draw_bottom_left": True,
+            "draw_bottom_right": True,
+        }
+
+        for expected_color in (2.3, self):
+            kwargs["color"] = expected_color
+
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aacircle(**kwargs)
+
+    def test_aacircle__floats(self):
+        """Ensure that floats are accepted."""
+        draw.aacircle(
+            surface=pygame.Surface((4, 4)),
+            color=(255, 255, 127),
+            center=(1.5, 1.5),
+            radius=1.3,
+            width=0,
+            draw_top_right=True,
+            draw_top_left=True,
+            draw_bottom_left=True,
+            draw_bottom_right=True,
+        )
+
+        draw.aacircle(
+            surface=pygame.Surface((4, 4)),
+            color=(255, 255, 127),
+            center=Vector2(1.5, 1.5),
+            radius=1.3,
+            width=0,
+            draw_top_right=True,
+            draw_top_left=True,
+            draw_bottom_left=True,
+            draw_bottom_right=True,
+        )
+
+        draw.aacircle(pygame.Surface((2, 2)), (0, 0, 0, 50), (1.3, 1.3), 1.2)
+
+    def test_aacircle__bounding_rect(self):
+        """Ensures draw aacircle returns the correct bounding rect.
+
+        Test circles on and off the surface and a range of width/thickness
+        values.
+        """
+        circle_color = pygame.Color("red")
+        surf_color = pygame.Color("black")
+        max_radius = 3
+        surface = pygame.Surface((30, 30), 0, 32)
+        surf_rect = surface.get_rect()
+        # Make a rect that is bigger than the surface to help test drawing
+        # circles off and partially off the surface. Make this rect such that
+        # when centering the test aacircle on one of its corners, the aacircle is
+        # drawn fully off the test surface, but a rect bounding the aacircle
+        # would still overlap with the test surface.
+        big_rect = surf_rect.inflate(max_radius * 2 - 1, max_radius * 2 - 1)
+
+        for pos in rect_corners_mids_and_center(
+            surf_rect
+        ) + rect_corners_mids_and_center(big_rect):
+            # Test using different radius and thickness values.
+            for radius in range(max_radius + 1):
+                for thickness in range(radius + 1):
+                    surface.fill(surf_color)  # Clear for each test.
+
+                    bounding_rect = self.draw_aacircle(
+                        surface, circle_color, pos, radius, thickness
+                    )
+
+                    # Calculating the expected_rect after the aacircle is
+                    # drawn (it uses what is actually drawn).
+                    expected_rect = create_bounding_rect(surface, surf_color, pos)
+                    # print("pos:%s:, radius:%s:, thickness:%s:" % (pos, radius, thickness))
+                    self.assertEqual(bounding_rect, expected_rect)
+
+    def test_aacircle_negative_radius(self):
+        """Ensures negative radius circles return zero sized bounding rect."""
+        surf = pygame.Surface((200, 200))
+        color = (0, 0, 0, 50)
+        center = surf.get_height() // 2, surf.get_height() // 2
+
+        bounding_rect = self.draw_aacircle(surf, color, center, radius=-1, width=1)
+        self.assertEqual(bounding_rect.size, (0, 0))
+
+    def test_aacircle_zero_radius(self):
+        """Ensures zero radius circles does not draw a center pixel.
+
+        NOTE: This is backwards incompatible behaviour with 1.9.x.
+        """
+        surf = pygame.Surface((200, 200))
+        circle_color = pygame.Color("red")
+        surf_color = pygame.Color("black")
+        center = (100, 100)
+        radius = 0
+        width = 1
+
+        bounding_rect = self.draw_aacircle(surf, circle_color, center, radius, width)
+        expected_rect = create_bounding_rect(surf, surf_color, center)
+        self.assertEqual(bounding_rect, expected_rect)
+        self.assertEqual(bounding_rect, pygame.Rect(100, 100, 0, 0))
+
+    def test_aacircle_shape(self):
+        """Ensures there are no holes in the aacircle, and no overdrawing.
+
+        Tests drawing a thick aacircle.
+        Measures the distance of the drawn pixels from the aacircle center.
+        """
+        surfw = surfh = 100
+        circle_color = pygame.Color("red")
+        surface_color = pygame.Color("green")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        (cx, cy) = center = (50, 50)
+        radius = 45
+        width = 25
+
+        dest_rect = self.draw_aacircle(surface, circle_color, center, radius, width)
+
+        for pt in test_utils.rect_area_pts(dest_rect):
+            x, y = pt
+            sqr_distance = (x - cx) ** 2 + (y - cy) ** 2
+            if (radius - width + 1) ** 2 < sqr_distance < (radius - 1) ** 2:
+                self.assertEqual(surface.get_at(pt), circle_color)
+            if (
+                sqr_distance < (radius - width - 1) ** 2
+                or sqr_distance > (radius + 1) ** 2
+            ):
+                self.assertEqual(surface.get_at(pt), surface_color)
+
+    def test_aacircle__diameter(self):
+        """Ensures draw aacircle is twice size of radius high and wide."""
+        surf = pygame.Surface((200, 200))
+        color = (0, 0, 0, 50)
+        center = surf.get_height() // 2, surf.get_height() // 2
+        width = 1
+        radius = 6
+        for radius in range(1, 65):
+            bounding_rect = self.draw_aacircle(surf, color, center, radius, width)
+            # antialiased circles has off-by-one error
+            self.assertEqual(bounding_rect.width, radius * 2 + 1)
+            self.assertEqual(bounding_rect.height, radius * 2 + 1)
+
+    def test_aacircle__offscreen(self):
+        """Ensures that drawing a aacircle completely off-screen doesn't create
+        a solid band across the screen
+        see https://github.com/pygame/pygame/issues/3143
+        """
+        width = 200
+        height = 200
+        surf = pygame.Surface((width, height))
+        surf_center = surf.get_rect().center
+        radius = 10
+
+        # way way outside the screen
+        test_centers = [
+            (-1e30, height / 2),
+            (1e30, height / 2),
+            (width / 2, -1e30),
+            (width / 2, 1e30),
+        ]
+        for center in test_centers:
+            surf.fill("black")
+            self.draw_aacircle(surf, "white", center, radius)
+
+            self.assertEqual(
+                surf.get_at(surf_center)[0:3],
+                (0, 0, 0),
+                msg="pixel at center should be black, not white",
+            )
+
+    def test_aacircle__no_band(self):
+        """Ensures that drawing a aacircle with the center off-screen doesn't create a
+        solid band across the screen
+        This tests a bug introduced in
+        https://github.com/pygame-community/pygame-ce/commit/c88a1d8f7b31099cec84dc5cb7aeebdada783e83
+        """
+        width = 200
+        height = 200
+        surf = pygame.Surface((width, height))
+        surf_center = surf.get_rect().center
+        radius = 10
+
+        # one pixel outside the screen on the center of each edge
+        test_centers = [
+            (-1, height / 2),
+            (width + 1, height / 2),
+            (width / 2, -1),
+            (width / 2, height + 1),
+        ]
+        for center in test_centers:
+            surf.fill("black")
+            self.draw_aacircle(surf, "white", center, radius)
+
+            self.assertEqual(
+                surf.get_at(surf_center)[0:3],
+                (0, 0, 0),
+                msg="pixel at center should be black, not white",
+            )
+
+
+class DrawAACircleTest(DrawAACircleMixin, DrawTestCase):
+    """Test draw module function aacircle.
+
+    This class inherits the general tests from DrawAACircleMixin. It is also
+    the class to add any draw.aacircle specific tests to."""
+
+
 ### Arc Testing ###############################################################
 
 
@@ -6194,9 +7131,73 @@ class DrawArcMixin:
             with self.assertRaises(TypeError):
                 bounds_rect = self.draw_arc(**kwargs)
 
-    def todo_test_arc(self):
+    def test_arc__correct_drawing(self):
         """Ensure draw arc works correctly."""
-        self.fail()
+        surfw, surfh = 500, 500
+        surface = pygame.Surface((surfw, surfh))
+        surface_color = pygame.Color("black")
+        surface.fill(surface_color)
+        arc_color = pygame.Color("white")
+        rectangles = [
+            pygame.Rect((200, 200), (300 + i, 200 + i)) for i in range(-100, 50, 30)
+        ]  # Test on different bounding rectangles
+        angle_pairs = [
+            (0, 2),
+            (0, 3.14),
+            (1, 4),
+            (2, 5.5),
+            (0, 6.28),
+        ]  # Test a variety of start and stop angles
+        widths = [
+            -10,
+            -5,
+            -1,
+            0,
+            1,
+            2,
+            5,
+            10,
+            20,
+            50,
+            100,
+        ]  # Test a wider range of stroke width
+
+        for rect in rectangles:
+            for start, stop in angle_pairs:
+                for width in widths:
+                    # A tolerance value that adapt to the width
+                    tolerance_radius = min(max(0, width // 10), 1)
+                    kwargs = {
+                        "surface": surface,
+                        "color": arc_color,
+                        "rect": rect,
+                        "start_angle": start,
+                        "stop_angle": stop,
+                        "width": width,
+                    }
+
+                    pygame.draw.arc(**kwargs)
+
+                    a, b = rect.width / 2, rect.height / 2
+                    number_of_valid_arc_points = 0
+                    number_of_invalid_arc_points = 0
+                    # Define a threshold for comparison
+                    eps = 0.01
+                    center_x = rect.centerx
+                    center_y = rect.centery
+
+            for x in range(surfw):
+                for y in range(surfh):
+                    # Check whether the point on the arc belongs to the ellipse defined by the bounding rectangle
+                    if (surface.get_at((x, y)) == arc_color) and abs(
+                        ((x - center_x) / a) ** 2 + ((y - center_y) / b) ** 2 - 1
+                    ) <= eps + tolerance_radius:
+                        number_of_valid_arc_points += 1
+                    elif surface.get_at((x, y)) == arc_color:
+                        number_of_invalid_arc_points += 1
+            surface.fill(surface_color)  # Clear for the next test
+
+            self.assertEqual(number_of_invalid_arc_points, 0)
 
     def test_arc__bounding_rect(self):
         """Ensures draw arc returns the correct bounding rect.
@@ -6380,6 +7381,7 @@ class DrawModuleTest(unittest.TestCase):
             draw.arc(surf, col, pygame.Rect(0, 0, 3, 3), 15, 150)
             draw.ellipse(surf, col, pygame.Rect(0, 0, 3, 6), 1)
             draw.circle(surf, col, (7, 3), 2)
+            draw.aacircle(surf, col, (7, 3), 2)
             draw.polygon(surf, col, points, 0)
 
         # 2. invalid colors
@@ -6406,7 +7408,55 @@ class DrawModuleTest(unittest.TestCase):
                 draw.circle(surf, col, (7, 3), 2)
 
             with self.assertRaises(TypeError):
+                draw.aacircle(surf, col, (7, 3), 2)
+
+            with self.assertRaises(TypeError):
                 draw.polygon(surf, col, points, 0)
+
+    def test_aafunctions_depth_segfault(self):
+        """Ensure future commits don't break the segfault fixed by pull request
+        https://github.com/pygame-community/pygame-ce/pull/3008
+        """
+
+        pixels_to_check = [(160, 102), (499, 300), (320, 258), (192, 252)]
+        pixel_colors_8 = [
+            pygame.Color(0, 182, 0, 255),
+            pygame.Color(0, 0, 170, 255),
+            pygame.Color(255, 0, 0, 255),
+            pygame.Color(255, 0, 0, 255),
+        ]
+
+        pixel_colors_16 = [
+            pygame.Color(0, 178, 0, 255),
+            pygame.Color(0, 0, 213, 255),
+            pygame.Color(246, 0, 0, 255),
+            pygame.Color(222, 0, 0, 255),
+        ]
+
+        pixel_colors_24_32 = [
+            pygame.Color(0, 178, 0, 255),
+            pygame.Color(0, 0, 209, 255),
+            pygame.Color(247, 0, 0, 255),
+            pygame.Color(223, 0, 0, 255),
+        ]
+
+        for depth in (8, 16, 24, 32):
+            # all values must stay so to reproduce the segfault
+            surf = pygame.Surface(size=(512, 512), flags=0, depth=depth)
+
+            draw.aacircle(surf, pygame.Color("red"), (256, 256), 64)
+            draw.aaline(surf, pygame.Color("blue"), (256, 256), (500, 300))
+            draw.aalines(
+                surf, pygame.Color("green"), False, [(100, 100), (100, 500), (160, 100)]
+            )
+
+            for i, pixel in enumerate(pixels_to_check):
+                if depth == 8:
+                    self.assertEqual(surf.get_at(pixel), pixel_colors_8[i])
+                elif depth == 16:
+                    self.assertEqual(surf.get_at(pixel), pixel_colors_16[i])
+                else:
+                    self.assertEqual(surf.get_at(pixel), pixel_colors_24_32[i])
 
 
 ###############################################################################

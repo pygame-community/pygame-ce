@@ -1,5 +1,6 @@
-FROM quay.io/pypa/manylinux2014_i686
-ENV MAKEFLAGS="-j 2"
+# pin version on image for CI stability
+FROM quay.io/pypa/manylinux2014_i686:2025.07.25-1
+ENV MAKEFLAGS="-j 4"
 ENV PG_DEP_PREFIX="/usr/local"
 
 # Set up repoforge
@@ -38,6 +39,9 @@ ENV PG_BASE_MESON_FLAGS="--prefix=$PG_DEP_PREFIX \
 
 # remember to keep this updated when we drop 3.11 support
 ENV PATH="/opt/python/cp311-cp311/bin:$PATH"
+
+# libraries installed in dep prefix must be usable everywhere
+ENV LD_LIBRARY_PATH="$PG_DEP_PREFIX/lib:$LD_LIBRARY_PATH"
 
 ADD pkg-config /pkg-config_build/
 RUN ["linux32", "bash", "/pkg-config_build/build-pkg-config.sh"]

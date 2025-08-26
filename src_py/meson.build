@@ -18,6 +18,7 @@ python_sources = files(
     'sprite.py',
     'surfarray.py',
     'sysfont.py',
+    'typing.py',
     'version.py',
 )
 py.install_sources(python_sources, subdir: pg)
@@ -39,3 +40,4 @@ install_data(data_files, install_dir: pg_dir, install_tag: 'pg-tag')
 
 subdir('_sdl2')
 subdir('__pyinstaller')
+subdir('__briefcase')

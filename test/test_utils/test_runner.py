@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 if __name__ == "__main__":
     pkg_dir = os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
@@ -56,7 +56,7 @@ opt_parser.add_option(
     "-s",
     "--usesubprocess",
     action="store_true",
-    help="run everything in a single process " " (default: use no subprocesses)",
+    help="run everything in a single process  (default: use no subprocesses)",
 )
 
 opt_parser.add_option(

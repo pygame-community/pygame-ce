@@ -11,7 +11,6 @@ the basics of creating a window, simple pixel plotting, and event management.
 """
 
 import random
-from typing import List
 
 import pygame
 
@@ -19,7 +18,7 @@ import pygame
 class Particle:
     def __init__(
         self,
-        pos: List[int],
+        pos: list[int],
         vel: pygame.Vector2,
     ):
         """
@@ -55,7 +54,7 @@ class Particle:
         self.pos += self.vel
 
 
-def create_particle(particle_list: List[Particle], pos: pygame.Vector2):
+def create_particle(particle_list: list[Particle], pos: pygame.Vector2):
     """
     Creates a new particle
     Parameters:
@@ -71,7 +70,7 @@ def create_particle(particle_list: List[Particle], pos: pygame.Vector2):
     )
 
 
-def update_particles(particle_list: List[Particle], screen_rect: pygame.Rect):
+def update_particles(particle_list: list[Particle], screen_rect: pygame.Rect):
     """
     Updates the particles
     Parameters:
@@ -87,7 +86,7 @@ def update_particles(particle_list: List[Particle], screen_rect: pygame.Rect):
         particle.update()
 
 
-def draw_particles(particle_list: List[Particle], display: pygame.Surface):
+def draw_particles(particle_list: list[Particle], display: pygame.Surface):
     """
     Draws the particles
     Parameters:

@@ -19,11 +19,7 @@ always the leftmost button of the 4 buttons on the right.
 Controllers can generate the following events::
 
    CONTROLLERAXISMOTION, CONTROLLERBUTTONDOWN, CONTROLLERBUTTONUP,
-   CONTROLLERDEVICEREMAPPED, CONTROLLERDEVICEADDED, CONTROLLERDEVICEREMOVED
-
-Additionally if pygame is built with SDL 2.0.14 or higher the following events can also be generated
-(to get the version of sdl pygame is built with use :meth:`pygame.version.SDL`)::
-
+   CONTROLLERDEVICEREMAPPED, CONTROLLERDEVICEADDED, CONTROLLERDEVICEREMOVED,
    CONTROLLERTOUCHPADDOWN, CONTROLLERTOUCHPADMOTION, CONTROLLERTOUCHPADUP
 
 These events can be enabled/disabled by :meth:`pygame._sdl2.controller.set_eventstate`
@@ -127,6 +123,14 @@ events related to controllers.
     ``pygame._sdl2.controller.from_joystick``. Controllers are
     initialized on creation.
 
+   .. method:: init
+
+      | :sl:`Initialize the Controller`
+      | :sg:`init() -> None`
+
+      Initialize a controller object. This should not be used much, since
+      Controllers are initialised on creation.
+
    .. method:: quit
 
       | :sl:`uninitialize the Controller`
@@ -229,7 +233,7 @@ events related to controllers.
       | :sl:`Assign a mapping to the controller`
       | :sg:`set_mapping(mapping) -> int`
 
-      Rebind buttons, axes, triggers and dpads. The mapping should be a 
+      Rebind buttons, axes, triggers and dpads. The mapping should be a
       dict containing all buttons, hats and axes. The easiest way to get this
       is to use the dict returned by :meth:`Controller.get_mapping`. To edit
       this mapping assign a value to the original button. The value of the
@@ -266,7 +270,7 @@ events related to controllers.
       playing, then it will be overwritten.
 
       Returns True if the rumble was played successfully or False if the
-      controller does not support it or :meth:`pygame.version.SDL` is below 2.0.9.
+      controller does not support it.
 
       .. versionaddedold:: 2.0.2
 
@@ -283,5 +287,21 @@ events related to controllers.
       .. versionaddedold:: 2.0.2
 
       .. ## Controller.stop_rumble ##
+
+   .. method:: set_led
+
+      | :sl:`Set the LED color of the controller`
+      | :sg:`set_led(color_arg) -> bool`
+
+      Set the color of the LED on the controller. The argument is a
+      ``pygame.Color``-compatible value (alpha being ignored). The
+      controller's LED, if it has one, will be set to the input color.
+      If the controller does not have an addressable LED, then this
+      method will do nothing and return False. Returns True if the
+      LED was set successfully.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Controller.set_led ##
 
 .. ## pygame._sdl2.controller ##

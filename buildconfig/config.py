@@ -19,6 +19,7 @@ try:
     import msysio
 except ImportError:
     import buildconfig.msysio as msysio
+from buildconfig.make_docs import run as docs_run
 import sys, os, shutil, logging
 import sysconfig
 import re
@@ -165,6 +166,11 @@ def main(auto=False):
 Only SDL2 is supported now.""")
 
     kwds = {}
+
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "docs":
+            sys.exit(docs_run())
+
     if sys.platform == 'win32':
         if sys.version_info >= (3, 8) and is_msys2():
             print_('Using WINDOWS MSYS2 configuration...\n')

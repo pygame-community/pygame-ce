@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MIDI "pygame module for interacting with midi input and output."
 #define DOC_MIDI_INIT "init() -> None\ninitialize the midi module"
 #define DOC_MIDI_QUIT "quit() -> None\nuninitialize the midi module"

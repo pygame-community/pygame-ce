@@ -16,7 +16,7 @@ Basic TEMPLATE and OUTPUT
 As I said, Pygame is based on GUI environment. Furthermore, Pygame is good for making 2D game because of its input/output format. So, you have to say good-bye for print or input standard function of Python (Because they work only on CUI environment). Then, what functions in Pygame replace these functions? First, we have to go back to friendly “Hello World!” project, which is learning about basic template and output. **(Requiring any font file(.ttf) in the same project directory)**
 
 
-.. image:: Basic-ouput-sourcecode.png
+.. image:: ../../../assets/Basic-ouput-sourcecode.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -31,7 +31,7 @@ As I said, Pygame is based on GUI environment. Furthermore, Pygame is good for m
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Basic-ouput-sourcecode.png")
+   ball = pygame.image.load("Basic-ouput-sourcecode.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -49,7 +49,7 @@ As I said, Pygame is based on GUI environment. Furthermore, Pygame is good for m
        pygame.display.flip()
 
 
-.. image:: Bagic-ouput-result-screen.png
+.. image:: ../../../assets/Bagic-ouput-result-screen.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -64,7 +64,7 @@ As I said, Pygame is based on GUI environment. Furthermore, Pygame is good for m
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Bagic-ouput-result-screen.png")
+   ball = pygame.image.load("Bagic-ouput-result-screen.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -114,7 +114,7 @@ That was the explanation of the entire source code, which has 20 lines. It seems
     pygame.display.set_caption("Hello World Project") #7
     myScreen = pygame.display.set_mode((640, 480)) #8
     myTextFont = pygame.font.Font("HoonWhitecatR.ttf", 32) #9
-    myText = myTextFont.render("Hello World!", True, red, green) #10 
+    myText = myTextFont.render("Hello World!", True, red, green) #10
     myTextArea = myText.get_rect() #11
     myTextArea.center = (320, 240) #12
 
@@ -128,4 +128,3 @@ That was the explanation of the entire source code, which has 20 lines. It seems
                 sys.exit() #19
 
         pygame.display.update() #20
-

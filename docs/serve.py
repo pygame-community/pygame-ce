@@ -2,9 +2,11 @@
 
 import sys
 import webbrowser
-from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
-from pygame.docs import PKG_DIR, has_local_docs
+# use relative import here and not absolute, so that `python -m docs` works at
+# development time
+from . import PKG_DIR, has_local_docs
 
 
 class DocsHandler(SimpleHTTPRequestHandler):

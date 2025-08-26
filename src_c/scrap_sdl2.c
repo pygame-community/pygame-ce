@@ -1,5 +1,10 @@
-#include "SDL.h"
-#include "SDL_clipboard.h"
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_clipboard.h>
+#else
+#include <SDL.h>
+#include <SDL_clipboard.h>
+#endif
 
 #define PYGAME_SCRAP_FREE_STRING 1
 

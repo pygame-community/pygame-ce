@@ -39,8 +39,9 @@ We render three sets of items based on how useful to most apps.
 
 #}
 {%- set basic = ['Color', 'display', 'draw', 'event', 'font', 'image', 'key', 'locals', 'mixer', 'mouse', 'music', 'pygame', 'Rect', 'Surface', 'time'] %}
+{%- set experimental = ['sdl2_video', 'controller', 'geometry', 'Window'] %}
 {%- set advanced = ['BufferProxy', 'freetype', 'gfxdraw', 'midi', 'PixelArray', 'pixelcopy', 'sndarray', 'surfarray', 'cursors', 'joystick', 'mask', 'math', 'sprite', 'transform'] %}
-{%- set hidden = ['sdl2_video', 'sdl2_controller', 'geometry', 'Window'] %}
+{%- set hidden = ['sdl2_video', 'geometry'] %}
 {%-   if pyg_sections %}
 	  <p class="bottom"><b>Most useful stuff</b>:
 {%      set sep = joiner(" | \n") %}
@@ -104,8 +105,3 @@ We render three sets of items based on how useful to most apps.
 <hr />
 <a href="{{ edit_on_github_url }}" rel="nofollow">{{ _('Edit on GitHub') }}</a>
 {%- endblock %}
-
-
-{%- block relbaritems %}
-    <script type="text/javascript" src="https://www.pygame.org/comment/jquery.plugin.docscomments.js"></script>
-{% endblock %}

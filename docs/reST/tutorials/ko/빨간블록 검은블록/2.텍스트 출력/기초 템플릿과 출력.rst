@@ -16,7 +16,7 @@ Contact: rumia0601@gmail.com
 앞서 말했듯, 파이게임은 GUI를 기반으로 한다. 정확히는, 파이게임은 2D용 입력, 출력 함수를 사용하여 2D GUI를 기반으로 한다. 어찌됐든, CUI환경에서만 먹히는 파이썬의 print함수나 input함수와는 이별을 해야 한다. 그렇다면, 파이게임의 어떤 함수가 print/input함수를 대체하는가? 우선, 프로그래밍 언어의 기본 형식과 출력을 배우는 친숙한 예제인 “Hello World!”프로젝트로 되돌아가야 한다. (이 프로젝트는 같은 디렉토리에 .ttf확장자를 가지는 폰트 파일을 필요로 한다.)
 
 
-.. image:: Basic-ouput-sourcecode.png
+.. image:: ../../../assets/Basic-ouput-sourcecode.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -31,7 +31,7 @@ Contact: rumia0601@gmail.com
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Basic-ouput-sourcecode.png")
+   ball = pygame.image.load("Basic-ouput-sourcecode.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -49,7 +49,7 @@ Contact: rumia0601@gmail.com
        pygame.display.flip()
 
 
-.. image:: Bagic-ouput-result-screen.png
+.. image:: ../../../assets/Bagic-ouput-result-screen.webp
    :class: inlined-right
 
 .. code-block:: python
@@ -64,7 +64,7 @@ Contact: rumia0601@gmail.com
 
    screen = pygame.display.set_mode(size)
 
-   ball = pygame.image.load("Bagic-ouput-result-screen.png")
+   ball = pygame.image.load("Bagic-ouput-result-screen.webp")
    ballrect = ball.get_rect()
 
    while True:
@@ -89,7 +89,7 @@ Contact: rumia0601@gmail.com
 우선, 무언가를 출력하기 위해선 소스코드가 어떻게 작성되어야 하는지 그 형식을 살펴보자. 소스코드는 4개의 부분으로 나눠질 수 있다. Header(#1-#2), Initial문(#3-#12), Always문(#13-#20), Event문(#16-#19)가 그것이다.
 
 Header에선, 모듈들을 import하는 작업이 실행된다. 여기에 import pygame, sys는 항상 필요하다. 이 프로젝트가 파이게임 프로젝트이며, 사용자가 프로그램을 종료하고 싶을 때 종료되어야 하기 때문에(실제로 #19에서 sys.exit()가 실행된다) 추가적인 설명이 필요 없는 당연한 문구이다. from pygame.locals import*는 #17에서의 QUIT같은 유용한 상수들을 선언 없이 사용하기 위해 거의 반필수적으로 필요하다.
- 
+
 Initial문(무한 반복문 이전의 문장들)에선, 전역 변수가 한번만 초기화되거나 몇몇 함수가 한번만 호출된다. 주로 색상과 같은 전역 변수들이 가독성을 높이기 위해 초기화된다. 파이게임은 여러가지 색상을 사용하는 화려한 GUI임을 까먹어선 안된다. (게임이므로) 하나의 색상은 R값, G값, B값 3개의 구성 요소를 가진다. 그래서 색상 변수는 red = (255, 0, 0)와 같이 선언되어야 한다. pygame.init()과 같은 함수는 나중에 사용할 함수를 위해선 가장 앞서서 호출되어야 한다. (이 외의 함수들은 나중에 언급하겠다.)
 
 Always문(무한 반복문)에선, 전역 변수가 계속 업데이트되거나 몇몇 함수가 계속 호출된다. (물론, 조건문이 있는 경우 조건이 맞을 때만) pygame.display.update() 라는 함수는 일반적으로 다른 변수/함수의 처리가 끝난 이후에 호출되는데, 이 함수는 처리의 결과물들을 스크린(= 모니터)에 출력하는 함수이기 때문이다. 이 함수가 Always문 마지막에 실행되지 않으면, 출력되는 화면과 게임 내부 데이터가 서로 일치하지 않는 문제가 생길 수 있다. (이 외의 함수들은 나중에 언급하겠다.)
@@ -117,7 +117,7 @@ Event문(모든 이벤트를 체크하는 반복문)에선, 특정 이벤트가 
     pygame.display.set_caption("Hello World Project") #7
     myScreen = pygame.display.set_mode((640, 480)) #8
     myTextFont = pygame.font.Font("HoonWhitecatR.ttf", 32) #9
-    myText = myTextFont.render("Hello World!", True, red, green) #10 
+    myText = myTextFont.render("Hello World!", True, red, green) #10
     myTextArea = myText.get_rect() #11
     myTextArea.center = (320, 240) #12
 
@@ -131,4 +131,3 @@ Event문(모든 이벤트를 체크하는 반복문)에선, 특정 이벤트가 
                 sys.exit() #19
 
         pygame.display.update() #20
-

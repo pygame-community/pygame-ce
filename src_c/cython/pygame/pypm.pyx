@@ -106,14 +106,13 @@ cdef extern from "portmidi.h":
                          PmDeviceID inputDevice,
                          void *inputDriverInfo,
                          long bufferSize,
-                         long (*PmPtr) (), # long = PtTimestamp
+                         PmTimeProcPtr time_proc, # long = PtTimestamp
                          void *time_info)
 
     PmError Pm_OpenOutput(PortMidiStream** stream,
                           PmDeviceID outputDevice,
                           void *outputDriverInfo,
                           long bufferSize,
-                          #long (*PmPtr) (), # long = PtTimestamp
                           PmTimeProcPtr time_proc, # long = PtTimestamp
                           void *time_info,
                           long latency)
@@ -147,6 +146,7 @@ cdef extern from "porttime.h":
     ctypedef long PtTimestamp
     ctypedef void (* PtCallback)(PtTimestamp timestamp, void *userData)
     PtError Pt_Start(int resolution, PtCallback *callback, void *userData)
+    PtError Pt_Stop()
     PtTimestamp Pt_Time()
 
 cdef long _pypm_initialized
@@ -172,6 +172,7 @@ def Terminate():
     your system may crash.
 
     """
+    Pt_Stop()
     Pm_Terminate()
     _pypm_initialized = 0
 
@@ -521,6 +522,11 @@ cdef class Output:
         while Pt_Time() == cur_time:
             pass
 
+# in commit 64314cc3d1a6fdddfc6ff5408a3f83af685b8cea
+# portmidi changed the signature of Pt_Time from `PMEXPORT PtTimestamp Pt_Time()` to `PMEXPORT PtTimestamp Pt_Time(void)`
+# this change is significant in that no args in a C function declaration is treated differently than void
+cdef PtTimestamp pgCompat_Pt_Time(void* arg) noexcept:
+    return Pt_Time()
 
 cdef class Input:
     """Represents an input MIDI stream device.
@@ -542,7 +548,7 @@ cdef class Input:
         self.debug = 0
 
         err = Pm_OpenInput(&(self.midi), input_device, NULL, buffersize,
-                           &Pt_Time, NULL)
+                           &pgCompat_Pt_Time, NULL)
         if err < 0:
             raise Exception(Pm_GetErrorText(err))
 

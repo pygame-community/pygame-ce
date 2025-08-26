@@ -15,8 +15,10 @@ Keyboard Controls:
 * Press any other button to skip to the next music file in the list
 """
 
+import os
+import sys
+
 import pygame
-import os, sys
 
 VOLUME_CHANGE_AMOUNT = 0.02  # how fast should up and down arrows change the volume?
 SCREEN_SIZE = (640, 480)

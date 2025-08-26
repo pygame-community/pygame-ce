@@ -59,8 +59,9 @@ endmusic_callback(void)
     }
 
     if (queue_music) {
-        if (current_music)
+        if (current_music) {
             Mix_FreeMusic(current_music);
+        }
         current_music = queue_music;
         queue_music = NULL;
         Mix_HookMusicFinished(endmusic_callback);
@@ -84,12 +85,14 @@ music_play(PyObject *self, PyObject *args, PyObject *keywds)
 
     static char *kwids[] = {"loops", "start", "fade_ms", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, keywds, "|ifi", kwids, &loops,
-                                     &startpos, &fade_ms))
+                                     &startpos, &fade_ms)) {
         return NULL;
+    }
 
     MIXER_INIT_CHECK();
-    if (!current_music)
+    if (!current_music) {
         return RAISE(pgExc_SDLError, "music not loaded");
+    }
 
     Py_BEGIN_ALLOW_THREADS;
     Mix_HookMusicFinished(endmusic_callback);
@@ -102,8 +105,9 @@ music_play(PyObject *self, PyObject *args, PyObject *keywds)
     val = Mix_FadeInMusicPos(current_music, loops, fade_ms, startpos);
     Mix_VolumeMusic(volume);
     Py_END_ALLOW_THREADS;
-    if (val == -1)
+    if (val == -1) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 
     Py_RETURN_NONE;
 }
@@ -126,8 +130,9 @@ static PyObject *
 music_fadeout(PyObject *self, PyObject *args)
 {
     int _time;
-    if (!PyArg_ParseTuple(args, "i", &_time))
+    if (!PyArg_ParseTuple(args, "i", &_time)) {
         return NULL;
+    }
 
     MIXER_INIT_CHECK();
 
@@ -201,8 +206,9 @@ music_set_volume(PyObject *self, PyObject *args)
 {
     float volume;
 
-    if (!PyArg_ParseTuple(args, "f", &volume))
+    if (!PyArg_ParseTuple(args, "f", &volume)) {
         return NULL;
+    }
 
     MIXER_INIT_CHECK();
 
@@ -239,8 +245,9 @@ music_set_pos(PyObject *self, PyObject *arg)
     position_set = Mix_SetMusicPosition(pos);
     Py_END_ALLOW_THREADS;
 
-    if (position_set == -1)
+    if (position_set == -1) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 
     Py_RETURN_NONE;
 }
@@ -259,8 +266,9 @@ music_get_pos(PyObject *self, PyObject *_null)
     }
 
     ticks = (long)(1000 * music_pos / denominator);
-    if (!Mix_PausedMusic())
+    if (!Mix_PausedMusic()) {
         ticks += PG_GetTicks() - music_pos_time;
+    }
 
     return PyLong_FromUnsignedLongLong(ticks);
 }
@@ -270,8 +278,9 @@ music_set_endevent(PyObject *self, PyObject *args)
 {
     int eventid = SDL_NOEVENT;
 
-    if (!PyArg_ParseTuple(args, "|i", &eventid))
+    if (!PyArg_ParseTuple(args, "|i", &eventid)) {
         return NULL;
+    }
     endmusic_event = eventid;
     Py_RETURN_NONE;
 }
@@ -388,7 +397,11 @@ _load_music(PyObject *obj, char *namehint)
     }
 
     Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    new_music = Mix_LoadMUSType_IO(rw, _get_type_from_hint(type), SDL_TRUE);
+#else
     new_music = Mix_LoadMUSType_RW(rw, _get_type_from_hint(type), SDL_TRUE);
+#endif
     Py_END_ALLOW_THREADS;
 
     if (ext) {
@@ -411,14 +424,16 @@ music_load(PyObject *self, PyObject *args, PyObject *keywds)
     static char *kwids[] = {"filename", "namehint", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, keywds, "O|s", kwids, &obj,
-                                     &namehint))
+                                     &namehint)) {
         return NULL;
+    }
 
     MIXER_INIT_CHECK();
 
     new_music = _load_music(obj, namehint);
-    if (new_music == NULL)  // meaning it has an error to return
+    if (new_music == NULL) {  // meaning it has an error to return
         return NULL;
+    }
 
     Py_BEGIN_ALLOW_THREADS;
     if (current_music != NULL) {
@@ -466,16 +481,18 @@ music_queue(PyObject *self, PyObject *args, PyObject *keywds)
     static char *kwids[] = {"filename", "namehint", "loops", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, keywds, "O|si", kwids, &obj,
-                                     &namehint, &loops))
+                                     &namehint, &loops)) {
         return NULL;
+    }
 
     MIXER_INIT_CHECK();
 
     queue_music_loops = loops;
 
     local_queue_music = _load_music(obj, namehint);
-    if (local_queue_music == NULL)  // meaning it has an error to return
+    if (local_queue_music == NULL) {  // meaning it has an error to return
         return NULL;
+    }
 
     Py_BEGIN_ALLOW_THREADS;
     /* Free any existing queued music. */
@@ -500,8 +517,9 @@ music_get_metadata(PyObject *self, PyObject *args, PyObject *keywds)
     static char *kwids[] = {"filename", "namehint", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, keywds, "|Os", kwids, &obj,
-                                     &namehint))
+                                     &namehint)) {
         return NULL;
+    }
 
     MIXER_INIT_CHECK();
 
