@@ -8,7 +8,6 @@ from typing import (
     TypeVar,
     Union,
     overload,
-    Optional,
 )
 
 from pygame.typing import Point, RectLike, SequenceLike
