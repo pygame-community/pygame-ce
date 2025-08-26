@@ -392,11 +392,11 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
-                        src->format->Rmask == dst->format->Rmask &&
-                        src->format->Gmask == dst->format->Gmask &&
-                        src->format->Bmask == dst->format->Bmask &&
-                        !(src->format->Amask != 0 && dst->format->Amask != 0 &&
-                          src->format->Amask != dst->format->Amask) &&
+                        info.src->Rmask == info.dst->Rmask &&
+                        info.src->Gmask == info.dst->Gmask &&
+                        info.src->Bmask == info.dst->Bmask &&
+                        !(info.src->Amask != 0 && info.dst->Amask != 0 &&
+                          info.src->Amask != info.dst->Amask) &&
                         pg_has_avx2() && (src != dst)) {
                         blit_blend_rgb_overlay_avx2(&info);
                         break;
@@ -404,11 +404,11 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 #if PG_ENABLE_SSE_NEON
                     if (PG_SURF_BytesPerPixel(src) == 4 &&
                         PG_SURF_BytesPerPixel(dst) == 4 &&
-                        src->format->Rmask == dst->format->Rmask &&
-                        src->format->Gmask == dst->format->Gmask &&
-                        src->format->Bmask == dst->format->Bmask &&
-                        !(src->format->Amask != 0 && dst->format->Amask != 0 &&
-                          src->format->Amask != dst->format->Amask) &&
+                        info.src->Rmask == info.dst->Rmask &&
+                        info.src->Gmask == info.dst->Gmask &&
+                        info.src->Bmask == info.dst->Bmask &&
+                        !(info.src->Amask != 0 && info.dst->Amask != 0 &&
+                          info.src->Amask != info.dst->Amask) &&
                         pg_HasSSE_NEON() && (src != dst)) {
                         blit_blend_rgb_overlay_sse2(&info);
                         break;
