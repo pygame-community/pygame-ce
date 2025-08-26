@@ -926,6 +926,53 @@ class SurfaceTypeTest(unittest.TestCase):
 
             self.assertEqual(s.get_colorkey(), colorkey)
 
+    def test_colorkey_mapped_with_palette(self):
+        BLACK=0,0,0
+        BLUE=0,0,255
+        PINK=255,0,255
+        WHITE=255,255,255
+
+        target=pygame.Surface((16,16))
+
+        surf = pygame.Surface((16, 16), depth=8)
+        # common when using ASEprite:
+        # transparent color is black, outline color is also black.
+        surf.set_palette([BLACK, PINK, BLACK, WHITE])
+        surf.fill(PINK)
+
+
+        surf.set_at((0,0),  WHITE)
+
+        # should default to first palette entry
+        surf.set_at((15,15),  BLACK)
+
+        target.fill(BLUE)
+        target.blit(surf, (0,0))
+
+        self.assertEqual(target.get_at((5,5)), PINK)
+        self.assertEqual(target.get_at((0,0)),  WHITE)
+        self.assertEqual(target.get_at((15,15)),  BLACK)
+
+        surf.set_palette_at(1, (0,0,0))
+        # defaults to index 0
+        surf.set_colorkey((0,0,0))
+        surf.set_palette_at(0, (0,0,0))
+
+        target.fill(BLUE)
+        target.blit(surf, (0,0))
+        self.assertEqual(target.get_at((5,5)), BLACK)
+        self.assertEqual(target.get_at((0,0)),  WHITE)
+        self.assertEqual(target.get_at((15,15)),  BLUE)
+
+        # cannot be done with `surf.set_colorkey`
+        # we need to go by index!
+        surf.set_colorkey_mapped(1)
+        target.fill(BLUE)
+        target.blit(surf, (0,0))
+        self.assertEqual(target.get_at((5,5)), BLUE)
+        self.assertEqual(target.get_at((0,0)),  WHITE)
+        self.assertEqual(target.get_at((15,15)),  BLACK)
+
     def test_has_colorkey(self):
         s = pygame.Surface((16, 16), pygame.SRCALPHA, 32)
 
