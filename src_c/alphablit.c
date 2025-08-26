@@ -1273,9 +1273,9 @@ blit_blend_overlay(SDL_BlitInfo *info)
     Uint8 *dst = info->d_pixels;
     int dstpxskip = info->d_pxskip;
     int dstskip = info->d_skip;
-    SDL_PixelFormat *srcfmt = info->src;
+    PG_PixelFormat *srcfmt = info->src;
     SDL_Palette *srcpal = info->src_palette;
-    SDL_PixelFormat *dstfmt = info->dst;
+    PG_PixelFormat *dstfmt = info->dst;
     SDL_Palette *dstpal = info->dst_palette;
     int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
     int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
