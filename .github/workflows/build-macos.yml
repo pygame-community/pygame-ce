@@ -1,32 +1,13 @@
 name: macOS
 
 # Run CI only when a release is created, on changes to main branch, or any PR
-# to main. Do not run CI on any other branch. Also, skip any non-source changes
-# from running on CI
+# to main.
 on:
   push:
     branches: main
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-      - '.gitignore'
-      - '*.rst'
-      - '*.md'
-      - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/build-macos.yml'
 
   pull_request:
     branches: main
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-      - '.gitignore'
-      - '*.rst'
-      - '*.md'
-      - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/build-macos.yml'
 
   # the github release drafter can call this workflow
   workflow_call:
@@ -47,11 +28,11 @@ jobs:
           - { macarch: x86_64, os: macos-13 }
 
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
-        uses: actions/cache@v4.1.2
+        uses: actions/cache@v4.2.4
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           # The hash of all files in buildconfig manylinux-build and macdependencies is
@@ -115,29 +96,29 @@ jobs:
       CIBW_BEFORE_TEST: rm -rf ${{ github.workspace }}/pygame_mac_deps
 
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
 
       - name: pip cache
-        uses: actions/cache@v4.1.2
+        uses: actions/cache@v4.2.4
         with:
           path: ~/Library/Caches/pip  # This cache path is only right on mac
           key: pip-cache-${{ matrix.macarch }}-${{ matrix.os }}
 
       - name: Fetch Mac deps
         id: macdep-cache
-        uses: actions/cache@v4.1.2
+        uses: actions/cache@v4.2.4
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
           fail-on-cache-miss: true
 
       - name: Install uv for speed
-        uses: yezz123/setup-uv@v4
+        uses: astral-sh/setup-uv@v6
         with:
-          uv-version: "0.4.10"
+          version: "0.8.3"
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.22.0
+        uses: pypa/cibuildwheel@v3.1.4
 
       - uses: actions/upload-artifact@v4
         with:

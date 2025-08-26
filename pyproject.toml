@@ -1,6 +1,6 @@
 [project]
 name = "pygame-ce"
-version = "2.5.3.dev1"
+version = "2.5.6.dev1"
 description = "Python Game Development"
 readme = "README.rst" # for long description
 requires-python = ">=3.9"
@@ -19,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Games/Entertainment",
@@ -53,11 +54,13 @@ pygame_ce = 'pygame.__briefcase.pygame_ce:PygameCEGuiBootstrap'
 
 [build-system]
 requires = [
-  "meson-python<=0.16.0",
-  "meson<=1.5.1",
-  "ninja<=1.11.1.1",
-  "cython<=3.0.11",
-  "sphinx<=7.2.6",
+  "meson-python<=0.18.0",
+  "meson<=1.8.2",
+  "ninja<=1.12.1",
+  "cython<=3.1.2",
+  "sphinx<=8.2.3",
+  "sphinx-autoapi<=3.6.0",
+  "pyproject-metadata!=0.9.1",
 ]
 build-backend = 'mesonpy'
 
@@ -73,10 +76,15 @@ install = ['--tags=runtime,python-runtime,pg-tag']
 # dependencies. Here is where uv comes into the picture. It is an "installer" like pip,
 # but faster. It has been observed to save a couple of minutes of CI time.
 build-frontend = "build[uv]"
-build = "cp3{9,10,11,12,13}-* pp3{9,10}-*"
-skip = "*-musllinux_*"
+build = "cp3{9,10,11,12,13,14}-* pp3{10,11}-*"
+skip = ["*-musllinux_*", "cp31?t-*"]
 # build[uv] is verbose by default, so below flag is not needed here
 # build-verbosity = 3
+
+# In CIBW 2, defaults to pypy-enabled, but is throwing warnings about the
+# default changing in CIBW 3. So since we use pypy, lets explicitly enable it.
+# https://cibuildwheel.pypa.io/en/stable/options/#enable
+enable = ["pypy"]
 
 environment = { SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="disk" }
 test-command = "python -m pygame.tests -v --exclude opengl,music,timing --time_out 300"
@@ -91,10 +99,17 @@ setup-args = [
 
 [tool.ruff]
 exclude = [
-  "buildconfig/",
+  "buildconfig/*.py",
+  "buildconfig/stubs/pygame/typing.pyi",
   "docs/reST/",
   "setup.py",
 ]
+
+[tool.ruff.lint]
+select = ["I"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
 
 [tool.ruff.format]
 quote-style = "preserve"
@@ -108,6 +123,8 @@ only-binary = ["numpy"]
 
 # 1. skip all 32-bit manylinux (i686)
 # 2. skip all pypy+arm combinations
+# 3. skip pypy 3.11 manylinux and cpython 3.14 manylinux (numpy has newer manylinux
+# wheels for this which is incompatible with our manylinux version)
 [[tool.cibuildwheel.overrides]]
-select = "{*-manylinux_i686,pp*-*{arm64,aarch64}}"
+select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp314-manylinux_*}"
 test-requires = []

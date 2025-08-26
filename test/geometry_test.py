@@ -2,7 +2,7 @@ import math
 import unittest
 from math import sqrt
 
-from pygame import Vector2, Vector3, Rect, FRect
+from pygame import FRect, Rect, Vector2, Vector3
 from pygame.geometry import Circle, Line
 
 
@@ -619,14 +619,14 @@ class CircleTypeTest(unittest.TestCase):
 
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""
-        c_str = "<Circle((10.3, 3.2), 4.3)>"
+        c_str = "Circle((10.3, 3.2), 4.3)"
         circle = Circle((10.3, 3.2), 4.3)
         self.assertEqual(str(circle), c_str)
         self.assertEqual(circle.__str__(), c_str)
 
     def test__repr__(self):
         """Checks whether the __repr__ method works correctly."""
-        c_repr = "<Circle((10.3, 3.2), 4.3)>"
+        c_repr = "Circle((10.3, 3.2), 4.3)"
         circle = Circle((10.3, 3.2), 4.3)
         self.assertEqual(repr(circle), c_repr)
         self.assertEqual(circle.__repr__(), c_repr)
@@ -1967,6 +1967,56 @@ class LineTypeTest(unittest.TestCase):
         with self.assertRaises(AttributeError):
             del line.b
 
+    def test_attrib_length(self):
+        """a full test for the length attribute"""
+        expected_length = 3.0
+        line = Line(1, 4, 4, 4)
+        self.assertEqual(line.length, expected_length)
+
+        line.ax = 2
+        expected_length = 2.0
+        self.assertEqual(line.length, expected_length)
+
+        line.ax = 2.7
+        expected_length = 1.2999999999999998
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.ay = 2
+        expected_length = 2.3853720883753127
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.ay = 2.7
+        expected_length = 1.8384776310850233
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.bx = 2
+        expected_length = 1.4764823060233399
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.bx = 2.7
+        expected_length = 1.2999999999999998
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.by = 2
+        expected_length = 0.7000000000000002
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line.by = 2.7
+        expected_length = 0.0
+        self.assertEqual(line.length, expected_length)
+
+        line1 = Line(7, 3, 2, 3)
+        line2 = Line(9, 5, 4, 5)
+        self.assertEqual(line1.length, line2.length)
+
+        line = Line(7.6, 3.2, 2.1, 3.8)
+        expected_length = 5.532630477449222
+        self.assertAlmostEqual(line.length, expected_length)
+
+        line = Line(-9.8, -5.2, -4.4, -5.6)
+        expected_length = 5.414794548272353
+        self.assertAlmostEqual(line.length, expected_length)
+
     def test_meth_copy(self):
         line = Line(1, 2, 3, 4)
         # check 1 arg passed
@@ -1981,16 +2031,219 @@ class LineTypeTest(unittest.TestCase):
 
         self.assertIsNot(line, line_2)
 
+    def test_meth_move(self):
+        line = Line(1.1, 2.2, 3.3, 4.4)
+
+        ret = line.move(1, 2)
+
+        self.assertEqual(ret.ax, 2.1)
+        self.assertEqual(ret.ay, 4.2)
+        self.assertEqual(ret.bx, 4.3)
+        self.assertEqual(ret.by, 6.4)
+
+        with self.assertRaises(TypeError):
+            line.move()
+
+        with self.assertRaises(TypeError):
+            line.move(1)
+
+        with self.assertRaises(TypeError):
+            line.move(1, 2, 3)
+
+        with self.assertRaises(TypeError):
+            line.move("1", "2")
+
+    def test_meth_move_ip(self):
+        line = Line(1.1, 2.2, 3.3, 4.4)
+
+        line.move_ip(1, 2)
+
+        self.assertEqual(line.ax, 2.1)
+        self.assertEqual(line.ay, 4.2)
+        self.assertEqual(line.bx, 4.3)
+        self.assertEqual(line.by, 6.4)
+
+        with self.assertRaises(TypeError):
+            line.move_ip()
+
+        with self.assertRaises(TypeError):
+            line.move_ip(1)
+
+        with self.assertRaises(TypeError):
+            line.move_ip(1, 2, 3)
+
+        with self.assertRaises(TypeError):
+            line.move_ip("1", "2")
+
+    def test_meth_scale(self):
+        line = Line(0, 0, 10, 0).scale(2, 0)
+        self.assertEqual(line.length, 20)
+        line = Line(0, 0, 20, 0).scale(2.1, 0)
+        self.assertEqual(line.length, 42)
+        line = Line(0, 0, 10, 0).scale(4, 0)
+        self.assertEqual(line.length, 40)
+        line = Line(0, 0, 10, 0).scale(3, 0)
+        self.assertEqual(line.length, 30)
+        line = Line(10, 10, 20, 20).scale(2, 0)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+        line = Line(10, 10, 20, 20).scale(2, 0.5)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+        line = Line(10, 10, 20, 20).scale(2, 1)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+
+        with self.assertRaises(ValueError):
+            line = line.scale(0, 0.5)
+
+        with self.assertRaises(ValueError):
+            line = line.scale(2, -0.1)
+
+        with self.assertRaises(ValueError):
+            line = line.scale(-2, -0.5)
+
+        with self.assertRaises(ValueError):
+            line = line.scale(17, 1.1)
+
+        with self.assertRaises(ValueError):
+            line = line.scale(17, 10.0)
+
+    def test_meth_scale_ip(self):
+        line = Line(0, 0, 10, 0)
+        line.scale_ip(2, 0)
+        self.assertEqual(line.length, 20)
+        line = Line(0, 0, 20, 0)
+        line.scale_ip(2.1, 0)
+        self.assertEqual(line.length, 42)
+        line = Line(0, 0, 10, 0)
+        line.scale_ip(4, 0)
+        self.assertEqual(line.length, 40)
+        line = Line(0, 0, 10, 0)
+        line.scale_ip(3, 0)
+        self.assertEqual(line.length, 30)
+        line = Line(10, 10, 20, 20)
+        line.scale_ip(2, 0)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+        line = Line(10, 10, 20, 20)
+        line.scale_ip(2, 0.5)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+        line = Line(10, 10, 20, 20)
+        line.scale_ip(2, 1.0)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
+
+        with self.assertRaises(ValueError):
+            line.scale_ip(0, 0.5)
+
+        with self.assertRaises(ValueError):
+            line.scale_ip(2, -0.1)
+
+        with self.assertRaises(ValueError):
+            line.scale_ip(-2, -0.5)
+
+        with self.assertRaises(ValueError):
+            line.scale_ip(17, 1.1)
+
+        with self.assertRaises(ValueError):
+            line.scale_ip(17, 10.0)
+
+    def test_meth_flip(self):
+        line = Line(1.1, 2.2, 3.3, 4.4)
+
+        ret = line.flip_ab()
+
+        self.assertIsInstance(ret, Line)
+        self.assertEqual(ret.ax, 3.3)
+        self.assertEqual(ret.ay, 4.4)
+        self.assertEqual(ret.bx, 1.1)
+        self.assertEqual(ret.by, 2.2)
+
+        with self.assertRaises(TypeError):
+            line.flip_ab(1)
+
+    def test_meth_flip_ab_ip(self):
+        line = Line(1.1, 2.2, 3.3, 4.4)
+
+        line.flip_ab_ip()
+
+        self.assertEqual(line.ax, 3.3)
+        self.assertEqual(line.ay, 4.4)
+        self.assertEqual(line.bx, 1.1)
+        self.assertEqual(line.by, 2.2)
+
+        with self.assertRaises(TypeError):
+            line.flip_ab_ip(1)
+
+    def test_meth_update(self):
+        line = Line(0, 0, 1, 1)
+
+        line.update(1, 2, 3, 4)
+        self.assertEqual(line.ax, 1)
+        self.assertEqual(line.ay, 2)
+        self.assertEqual(line.bx, 3)
+        self.assertEqual(line.by, 4)
+
+        line.update((5, 6), (7, 8))
+        self.assertEqual(line.ax, 5)
+        self.assertEqual(line.ay, 6)
+        self.assertEqual(line.bx, 7)
+        self.assertEqual(line.by, 8)
+
+        line.update((9, 10, 11, 12))
+        self.assertEqual(line.ax, 9)
+        self.assertEqual(line.ay, 10)
+        self.assertEqual(line.bx, 11)
+        self.assertEqual(line.by, 12)
+
+        with self.assertRaises(TypeError):
+            line.update()
+
+        with self.assertRaises(TypeError):
+            line.update(1, 2, 3, 4, 5)
+
+        with self.assertRaises(TypeError):
+            line.update(1, 2, 3)
+
+    def test_meth_project(self):
+        line = Line(0, 0, 100, 100)
+        test_point1 = (25, 75)
+        test_clamp_point1 = (100, 300)
+        test_clamp_point2 = (-50, -150)
+        test_clamp_point3 = (-200, -200)
+
+        bad_line = Line(0, 0, 0, 0)
+        test_bad_line_point = (10, 10)
+
+        projected_point = line.project(test_point1)
+        self.assertEqual(math.ceil(projected_point[0]), 50)
+        self.assertEqual(math.ceil(projected_point[1]), 50)
+
+        projected_point = line.project(test_clamp_point1, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 100)
+        self.assertEqual(math.ceil(projected_point[1]), 100)
+
+        projected_point = line.project(test_clamp_point2, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = line.project(test_clamp_point3, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = bad_line.project(test_bad_line_point, clamp=True)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+        self.assertEqual(math.ceil(projected_point[1]), 0)
+
+        projected_point = bad_line.project(test_bad_line_point)
+        self.assertEqual(math.ceil(projected_point[0]), 0)
+
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""
-        l_str = "<Line((10.1, 10.2), (4.3, 56.4))>"
+        l_str = "Line((10.1, 10.2), (4.3, 56.4))"
         line = Line(10.1, 10.2, 4.3, 56.4)
         self.assertEqual(str(line), l_str)
         self.assertEqual(line.__str__(), l_str)
 
     def test__repr__(self):
         """Checks whether the __repr__ method works correctly."""
-        l_repr = "<Line((10.1, 10.2), (4.3, 56.4))>"
+        l_repr = "Line((10.1, 10.2), (4.3, 56.4))"
         line = Line(10.1, 10.2, 4.3, 56.4)
         self.assertEqual(repr(line), l_repr)
         self.assertEqual(line.__repr__(), l_repr)

@@ -22,12 +22,11 @@ New in pygame 1.9.0.
 #        - that can automatically inject input into the event queue
 #          once the input object is running.  Like joysticks.
 
-import math
 import atexit
+import math
 
 import pygame
 import pygame.locals
-
 import pygame.pypm as _pypm
 
 # For backward compatibility.

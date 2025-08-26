@@ -19,16 +19,15 @@
 # pete@shinners.org
 """sysfont, used in the font module to find system fonts"""
 
-import warnings
+import difflib
+import itertools
 import os
 import sys
-import itertools
-import difflib
+import warnings
 from os.path import basename, dirname, exists, join, splitext
 
-from pygame.font import Font
 from pygame import __file__ as pygame_main_file
-
+from pygame.font import Font
 
 OpenType_extensions = frozenset((".ttf", ".ttc", ".otf"))
 Sysfonts = {}
@@ -437,12 +436,13 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
     fall back on the builtin pygame font if the given font
     is not found.
 
-    Name can also be an iterable of font names, a string of
-    comma-separated font names, or a bytes of comma-separated
-    font names, in which case the set of names will be searched
-    in order. Pygame uses a small set of common font aliases. If the
-    specific font you ask for is not available, a reasonable
-    alternative may be used.
+    Name shall be supplied as the plain font name without
+    file extensions. Name can also be an iterable of font names,
+    a string of comma-separated font names, or a bytes of
+    comma-separated font names, in which case the set of names
+    will be searched in order. Pygame uses a small set of common
+    font aliases. If the specific font you ask for is not available,
+    a reasonable alternative may be used.
 
     If optional constructor is provided, it must be a function with
     signature constructor(fontpath, size, bold, italic) which returns
@@ -469,12 +469,16 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                 break
 
         else:
+            font_verification_message = (
+                "Verify your font name input. Using the default font instead."
+            )
+
             if len(name) > 1:
                 names = "', '".join(name)
                 warnings.warn(
                     "None of the specified system fonts "
                     f"('{names}') could be found. "
-                    "Using the default font instead."
+                    f"{font_verification_message}"
                 )
             else:
                 # Identifies the closest matches to the font provided by
@@ -490,7 +494,7 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                 warnings.warn(
                     f"The system font '{name[0]}' couldn't be "
                     f"found. {match_text}"
-                    "Using the default font instead."
+                    f"{font_verification_message}"
                 )
     else:
         fontname = None

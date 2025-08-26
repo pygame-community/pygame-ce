@@ -47,7 +47,7 @@ jobs:
           # - { sys: clangarm64, env: clang-aarch64 }
 
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.sys }}
@@ -68,12 +68,10 @@ jobs:
           # mingw-w64-${{ matrix.env }}-freetype
           # mingw-w64-${{ matrix.env }}-portmidi
 
-      - name: Building pygame wheel
-        run: |
-          pip3 wheel . --wheel-dir /artifacts -vvv --no-build-isolation
-
-      - name: Installing wheel
-        run: pip3 install --no-index --pre --find-links /artifacts pygame-ce
+      # pip does not know that ninja is installed, and tries to install it again.
+      # so pass --ignore-dep ninja explicitly
+      - name: Build and install pygame wheel
+        run: python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax
 
       - name: Run tests
         env:

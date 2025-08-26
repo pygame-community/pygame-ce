@@ -9,9 +9,7 @@
 | :sl:`pygame module for loading and playing sounds`
 
 This module contains classes for loading Sound objects and controlling
-playback. The mixer module is optional and depends on SDL_mixer. Your program
-should test that :mod:`pygame.mixer` is available and initialized before using
-it.
+playback.
 
 The mixer module has a limited number of channels for playback of sounds.
 Usually programs tell pygame to start playing audio and it selects an available
@@ -30,9 +28,7 @@ streams the music from the files without loading music at once into memory.
 
 The mixer module must be initialized like other pygame modules, but it has some
 extra conditions. The ``pygame.mixer.init()`` function takes several optional
-arguments to control the playback rate and sample size. Pygame will default to
-reasonable values, but pygame cannot perform Sound resampling, so the mixer
-should be initialized to match the values of your audio resources.
+arguments to control the playback rate and sample size.
 
 ``NOTE``: For less laggy sound use a smaller buffer size. The default
 is set to reduce the chance of scratchy sounds on some computers. You can
@@ -91,7 +87,7 @@ The following file formats are supported
    the next nearest power of 2).
 
    The devicename parameter is the name of sound device to open for audio
-   playback.  Allowed device names will vary based on the host system.
+   playback. Allowed device names will vary based on the host system.
    If left as ``None`` then a sensible default will be chosen for you.
 
    Some platforms require the :mod:`pygame.mixer` module to be initialized
@@ -331,7 +327,7 @@ The following file formats are supported
    :rtype: tuple
 
    .. note::
-      The linked and compile version numbers should be the same.
+      The linked and compiled version numbers should be the same.
 
    .. versionaddedold:: 2.0.0
 
@@ -368,7 +364,7 @@ The following file formats are supported
    it and the Sound object.
 
    For now buffer and array support is consistent with ``sndarray.make_sound``
-   for Numeric arrays, in that sample sign and byte order are ignored. This
+   for NumPy arrays, in that sample sign and byte order are ignored. This
    will change, either by correctly handling sign and byte order, or by raising
    an exception when different. Also, source samples are truncated to fit the
    audio sample size. This will not change.
@@ -442,6 +438,25 @@ The following file formats are supported
          | If value < 0.0, the volume will not be changed
          | If value > 1.0, the volume will be set to 1.0
 
+      .. note::
+         The values are internally converted and kept as integer values in range [0, 128], which means
+         that ``get_volume()`` may return a different volume than it was set to. For example,
+
+            >>> sound.set_volume(0.1)
+            >>> sound.get_volume()
+            0.09375
+
+         This is because when you ``set_volume(0.1)``, the volume is internally calculated like so
+
+            >>> int(0.1 * 128)
+            12
+
+         This means that some of the precision is lost, so when you retrieve it again using ``get_volume()``,
+         it is converted back to a ``float`` using that integer
+
+            >>> 12 / 128
+            0.09375
+
       .. ## Sound.set_volume ##
 
    .. method:: get_volume
@@ -450,6 +465,9 @@ The following file formats are supported
       | :sg:`get_volume() -> value`
 
       Return a value from 0.0 to 1.0 (inclusive) representing the volume for this Sound.
+
+      .. note::
+         See :func:`Sound.set_volume` for more information regarding the returned value
 
       .. ## Sound.get_volume ##
 
@@ -508,7 +526,7 @@ The following file formats are supported
       This simply returns the channel id used to create the ``Channel`` instance
       as a read-only attribute
 
-      ..versionadded:: 2.4.0
+      .. versionadded:: 2.4.0
 
       .. ## Channel.id ##
 
@@ -579,7 +597,7 @@ The following file formats are supported
 
       Set the position (angle, distance) of a playing channel.
 
-      `angle`: Angle is in degrees.
+      `angle`: Angle in degrees.
 
       `distance`: Range from 0 to 255.
 
@@ -631,6 +649,9 @@ The following file formats are supported
           sound.set_volume(0.6)   # Now plays at 60% (previous value replaced).
           channel.set_volume(0.5) # Now plays at 30% (0.6 * 0.5).
 
+      .. note::
+         See :func:`Sound.set_volume` for more information regarding how the value is stored internally
+
       .. ## Channel.set_volume ##
 
    .. method:: get_volume
@@ -643,6 +664,9 @@ The following file formats are supported
       not take into account stereo separation used by
       :meth:`Channel.set_volume`. The Sound object also has its own volume
       which is mixed with the channel.
+
+      .. note::
+         See :func:`Sound.set_volume` for more information regarding the returned value
 
       .. ## Channel.get_volume ##
 

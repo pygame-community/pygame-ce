@@ -1,8 +1,6 @@
 # define files/directories that won't be exported in an sdist
 # Keep in sync with MANIFEST.in
-.circleci/ export-ignore
 .github/ export-ignore
-buildconfig/ci/ export-ignore
 buildconfig/macdependencies/ export-ignore
 buildconfig/manylinux-build/ export-ignore
 

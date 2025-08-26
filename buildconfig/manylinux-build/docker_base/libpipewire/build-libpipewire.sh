@@ -3,7 +3,8 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-PIPEWIRE_VER="1.2.4"
+# pipewire 1.4.5 has some compilation issues, stay at an older version for now
+PIPEWIRE_VER="1.2.7"
 PIPEWIRE="pipewire-$PIPEWIRE_VER"
 
 curl -sL --retry 10 https://gitlab.freedesktop.org/pipewire/pipewire/-/archive/${PIPEWIRE_VER}/${PIPEWIRE}.tar.gz > ${PIPEWIRE}.tar.gz
