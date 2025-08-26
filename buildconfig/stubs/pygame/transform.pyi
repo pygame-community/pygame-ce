@@ -480,5 +480,7 @@ def pixelate(
 
     :returns: A new surface that's been pixelated.
 
-    ..versionadded:: 2.5.6
+    .. versionadded:: 2.5.6
+    .. note::
+        ``pixel_size`` must be >= 1. A ``ValueError`` is raised otherwise.
     """
