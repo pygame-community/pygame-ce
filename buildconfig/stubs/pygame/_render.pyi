@@ -147,6 +147,11 @@ class Texture:
 
 @final
 class Image:
+    def __init__(
+        self,
+        texture_or_image: Union['Texture', 'Image'],
+        srcrect: Optional[RectLike] = None,
+    ) -> None: ...
     @property
     def alpha(self) -> int: ...
     @alpha.setter
@@ -183,3 +188,9 @@ class Image:
     def texture(self) -> "Texture": ...
     @texture.setter
     def texture(self, value: "Texture") -> None: ...
+    def get_rect(self, **kwargs: Any) -> Rect: ...
+    def draw(
+        self,
+        srcrect: Optional[RectLike] = None,
+        dstrect: Optional[RectLike] = None,
+    ) -> None: ...
