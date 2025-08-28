@@ -1486,9 +1486,9 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
         temp = ((pgImageObject *)texture_or_imageobj)->srcrect->r;
     }
     else {
-        RAISE(PyExc_AttributeError,
-              "First argument must be either Texture or Image object");
-        return -1;
+        RAISERETURN(PyExc_AttributeError,
+                    "First argument must be either Texture or Image object",
+                    -1);
     }
     self->texture = textureprt;
     Py_INCREF(self->texture);
@@ -1498,14 +1498,14 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
     else {
         old_srcrect = temp;
         if (!(rect = pgRect_FromObject(srcrectobj, &temp))) {
-            RAISE(PyExc_TypeError, "srcrect must be a rectangle or None");
-            return -1;
+            RAISERETURN(PyExc_TypeError, "srcrect must be a rectangle or None",
+                        -1);
         }
         if (rect->x < 0 || rect->y < 0 || rect->w < 0 || rect->h < 0 ||
             rect->x + rect->w > old_srcrect.w ||
             rect->y + rect->h > old_srcrect.h) {
-            RAISE(PyExc_ValueError, "srcrect values are out of range");
-            return -1;
+            RAISERETURN(PyExc_ValueError, "srcrect values are out of range",
+                        -1);
         }
         rect->x += old_srcrect.x;
         rect->y += old_srcrect.y;
