@@ -20,6 +20,8 @@ if _sdl_image_ver is not None:
         _sdl_image_ver <= (2, 0, 5) and pygame.get_sdl_byteorder() == pygame.BIG_ENDIAN
     )
 
+PG_DEPS_FROM_SYSTEM = "PG_DEPS_FROM_SYSTEM" in os.environ
+
 
 def check_magic(f, magic_hexes):
     """Tests a given file to see if the magic hex matches."""
@@ -203,6 +205,11 @@ class ImageModuleTest(unittest.TestCase):
         pygame.image.get_sdl_image_version() == (2, 0, 5),
         "SDL image 2.0.5 png saving will save this 24 bit as RGBA, causing reader.asRGB8 to fail",
     )
+    @unittest.skipIf(
+        PG_DEPS_FROM_SYSTEM,
+        "If we are using system dependencies, we don't know the backend used "
+        "for PNG saving, and this test only works with libpng.",
+    )
     def testSavePNG24(self):
         """see if we can save a png with color values in the proper channels."""
         # Create a PNG file with known colors
@@ -238,6 +245,11 @@ class ImageModuleTest(unittest.TestCase):
             del reader
             os.remove(f_path)
 
+    @unittest.skipIf(
+        PG_DEPS_FROM_SYSTEM,
+        "If we are using system dependencies, we don't know the backend used "
+        "for PNG saving, and this test only works with libpng.",
+    )
     def testSavePNG8(self):
         """see if we can save an 8 bit png correctly"""
         # Create an 8-bit PNG file with known colors
@@ -269,7 +281,7 @@ class ImageModuleTest(unittest.TestCase):
             os.remove(f_path)
 
     @unittest.skipIf(
-        "PG_DEPS_FROM_SYSTEM" in os.environ,
+        PG_DEPS_FROM_SYSTEM,
         "If we are using system dependencies, we don't know the backend used "
         "for PNG saving, and this test only works with libpng.",
     )
