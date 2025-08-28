@@ -1,8 +1,8 @@
+import itertools
 import math
 import sys
 import unittest
 import warnings
-import itertools
 
 import pygame
 from pygame import draw
@@ -7361,33 +7361,39 @@ class DrawFloodFillTest(unittest.TestCase):
         """Ensures flood fill doesn't overdraw"""
         surf = pygame.Surface((100, 100))
         surf.fill((0, 0, 0))
-        pygame.draw.circle(surf, (255,0,255), (50,50), 40, 2)
-        pygame.draw.flood_fill(surf, (255,255,255), (10, 50))
+        pygame.draw.circle(surf, (255, 0, 255), (50, 50), 40, 2)
+        pygame.draw.flood_fill(surf, (255, 255, 255), (10, 50))
 
         surf2 = pygame.Surface((100, 100))
         surf2.fill((0, 0, 0))
-        pygame.draw.circle(surf2, (255,255,255), (50,50), 40, 2)
+        pygame.draw.circle(surf2, (255, 255, 255), (50, 50), 40, 2)
 
         for pt in itertools.product(range(100), range(100)):
             self.assertEqual(surf.get_at(pt), surf2.get_at(pt))
 
         surf = pygame.Surface((100, 100))
         surf.fill((0, 0, 0))
-        pygame.draw.circle(surf, (255,0,255), (50,50), 40, 1)
+        pygame.draw.circle(surf, (255, 0, 255), (50, 50), 40, 1)
         # fill outside of circle white
-        pygame.draw.flood_fill(surf, (255,255,255), (1,1))
+        pygame.draw.flood_fill(surf, (255, 255, 255), (1, 1))
         # fill inside red
-        pygame.draw.flood_fill(surf, (255,0,0), (50,50))
+        pygame.draw.flood_fill(surf, (255, 0, 0), (50, 50))
 
         surf2 = pygame.Surface((100, 100))
-        surf2.fill((255,255,255))
+        surf2.fill((255, 255, 255))
         # draw filled circle red
-        pygame.draw.circle(surf2, (255,0,0), (50,50), 40)
-        # fill circle hot pink
-        pygame.draw.circle(surf2, (255,0,255), (50,50), 40, 1)
+        pygame.draw.circle(surf2, (255, 0, 0), (50, 50), 40)
+        # draw outer edge circle hot pink
+        pygame.draw.circle(surf2, (255, 0, 255), (50, 50), 40, 1)
+
+        # both should be identical: white outside, thin pink line, red inside
+        # no black pixels missed, no spillover between inside and outside
+        # This assumes circle drawing works correctly:
+        # if circle is broken, this may or may not fail
 
         for pt in itertools.product(range(100), range(100)):
             self.assertEqual(surf.get_at(pt), surf2.get_at(pt))
+
 
 ### Draw Module Testing #######################################################
 
