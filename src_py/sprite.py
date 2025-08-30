@@ -1323,7 +1323,7 @@ class LayeredDirty(LayeredUpdates):
     def get_clip(self):
         """get the area where drawing will occur
 
-        LayeredDirty.get_clip(): return Rect
+        LayeredDirty.get_clip(): return Rect or None
 
         """
         return self._clip
