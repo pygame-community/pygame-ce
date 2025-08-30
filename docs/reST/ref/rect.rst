@@ -47,8 +47,8 @@
        top, left, bottom, right
        topleft, bottomleft, topright, bottomright
        midtop, midleft, midbottom, midright
-       center, relcenter, centerx, centery
-       size, width, height
+       center, centerx, centery
+       size, width, height, relcenter
        w,h
 
    All of these attributes can be assigned to:
@@ -58,7 +58,7 @@
        rect1.right = 10
        rect2.center = (20,30)
 
-   Assigning to size, width or height changes the dimensions of the rectangle;
+   Assigning to size, width, height, or relcenter changes the dimensions of the rectangle;
    all other assignments move the rectangle without resizing it. Notice that
    some attributes are integers and others are pairs of integers.
 
@@ -94,22 +94,22 @@
       overridden if any extra attributes need to be copied.
 
    .. versionadded:: 2.5.6
-      ``relcenter`` added to Rect / FRect. This will return you a ``Point`` of
-      the center relative to the topleft of the Rect. Setting a ``Point`` to it will
-      modify the size of the rect to 2 times the ``Point`` used. Below you can find a
-      code example of how it should work :
+      ``relcenter`` added to Rect / FRect. This will return a tuple containing half
+      the Rect's size; the center relative to the topleft of the Rect.
+      Setting it to a ``Point`` will modify the size of the rect to 2 times
+      the ``Point`` given. Below you can find a code example of how it should work:
 
       .. code-block:: python
 
-         > my_rect = pygame.Rect(0, 0, 2, 2)
-         > my_rect.relcenter
-         > (1, 1)
-         > my_rect.relcenter = (128, 128)
-         > my_rect.relcenter, my_rect.size
-         > ((128, 128), (256, 256))
+         >>> my_rect = pygame.Rect(0, 0, 2, 2)
+         >>> my_rect.relcenter
+         (1, 1)
+         >>> my_rect.relcenter = (128, 128)
+         >>> my_rect.size
+         (256, 256)
 
-      Beware of non integer relative centers ! Using a Rect instead of FRect will round down
-      the values of the returned ``Point``.
+      Beware of non-integer relative centers! For Rects (but not FRects), ``relcenter``
+      will truncate the numbers in the returned tuple.
 
 
    .. method:: copy
