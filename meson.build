@@ -452,4 +452,9 @@ if not get_option('stripped')
     subdir('buildconfig/stubs')
     install_subdir('examples', install_dir: pg_dir, install_tag: 'pg-tag')
     # TODO: install headers? not really important though
+
+    if get_option('ctest')
+        subproject('unity')
+        subdir('ctest')
+    endif
 endif
