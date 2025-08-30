@@ -68,7 +68,7 @@ class Sprite(_HasImageAndRect):
 class DirtySprite(Sprite):
     dirty: int
     blendmode: int
-    source_rect: Union[FRect, Rect]
+    source_rect: Optional[Union[FRect, Rect]]
     visible: int
     _layer: int
 
