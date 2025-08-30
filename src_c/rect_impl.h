@@ -2836,7 +2836,7 @@ RectExport_getcenter(RectObject *self, void *closure)
                                   self->r.y + (self->r.h / 2));
 }
 
-/*center*/
+/*relcenter*/
 static PyObject *
 RectExport_getrelcenter(RectObject *self, void *closure)
 {

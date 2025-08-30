@@ -579,7 +579,7 @@ class RectTypeTest(unittest.TestCase):
                 r.relcenter = value
 
     def test_relcenter__del(self):
-        """Ensures the center attribute can't be deleted."""
+        """Ensures the relcenter attribute can't be deleted."""
         r = Rect(0, 0, 1, 1)
 
         with self.assertRaises(AttributeError):
