@@ -1440,10 +1440,13 @@ static int
 image_set_srcrect(pgImageObject *self, PyObject *arg, void *closure)
 {
     SDL_Rect *rect, temp;
+    pgRectObject *old_srcrect;
     if (!(rect = pgRect_FromObject(arg, &temp))) {
         RAISERETURN(PyExc_TypeError, "srcrect must be a rectangle", -1);
     }
+    old_srcrect = self->srcrect;
     self->srcrect = (pgRectObject *)pgRect_New(rect);
+    Py_XDECREF(old_srcrect);
     return 0;
 }
 
@@ -1457,10 +1460,14 @@ image_get_texture(pgImageObject *self, void *closure)
 static int
 image_set_texture(pgImageObject *self, PyObject *arg, void *closure)
 {
+    pgTextureObject *old_texture;
     if (!pgTexture_Check(arg)) {
         RAISERETURN(PyExc_TypeError, "texture must be a Texture", -1);
     }
+    old_texture = self->texture;
     self->texture = (pgTextureObject *)arg;
+    Py_INCREF(self->texture);
+    Py_XDECREF(old_texture);
     return 0;
 }
 
@@ -1526,8 +1533,11 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static void
-image_dealloc(pgTextureObject *self, PyObject *_null)
+image_dealloc(pgImageObject *self, PyObject *_null)
 {
+    Py_XDECREF(self->texture);
+    Py_XDECREF(self->srcrect);
+    Py_XDECREF(self->color);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -1573,7 +1583,7 @@ static PyMethodDef renderer_methods[] = {
     {"to_surface", (PyCFunction)renderer_to_surface,
      METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_TOSURFACE},
     {"blit", (PyCFunction)renderer_blit, METH_VARARGS | METH_KEYWORDS,
-     DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT},
+     DOC_SDL2_VIDEO_RENDERER_BLIT},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef renderer_getset[] = {
