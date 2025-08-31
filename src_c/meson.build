@@ -421,6 +421,8 @@ if sdl_mixer_dep.found()
     )
 endif
 
+endif
+
 if freetype_dep.found()
     _freetype = py.extension_module(
         '_freetype',
@@ -438,8 +440,6 @@ if freetype_dep.found()
         install: true,
         subdir: pg,
     )
-endif
-
 endif
 
 if portmidi_dep.found()
