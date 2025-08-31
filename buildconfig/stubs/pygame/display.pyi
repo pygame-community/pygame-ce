@@ -745,6 +745,9 @@ def set_window_position(position: Point) -> None:
     still be able to move the window after this call. See also
     :func:`pygame.display.get_window_position()`.
 
+    .. note:: This function is not supported on some video drivers (like wayland)
+        and a :exc:`pygame.error` exception may be raised in such cases.
+
     .. versionadded:: 2.5.0
     """
 

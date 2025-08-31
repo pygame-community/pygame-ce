@@ -222,6 +222,9 @@ class Window:
 
     Setting the always-on-top mode requires SDL 2.0.16+.
 
+    .. note:: Setting this property is not supported on some video drivers (like wayland)
+        and a :exc:`pygame.error` exception may be raised in such cases.
+
     .. versionadded:: 2.3.1
     """
 
@@ -296,12 +299,19 @@ class Window:
 
         The position may be a tuple of (x, y) coordinates or ``WINDOWPOS_CENTERED`` or
         ``WINDOWPOS_UNDEFINED``. The origin is the topleft of the main display.
+
+        .. note:: Setting this property is not supported on some video drivers (like wayland)
+            and a :exc:`pygame.error` exception may be raised in such cases.
         """
 
     @position.setter
     def position(self, value: Union[int, Point]) -> None: ...
     opacity: float
-    """Get or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque)."""
+    """Get or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque).
+
+    .. note:: Setting this property is not supported on some video drivers (like wayland)
+        and a :exc:`pygame.error` exception may be raised in such cases.
+    """
 
     @property
     def opengl(self) -> bool:
