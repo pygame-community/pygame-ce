@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_
+`English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -214,3 +214,4 @@ Voir les docs/licences pour les licences des dépendances.
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
+.. _Português (Brasil): README.pt-br.rst

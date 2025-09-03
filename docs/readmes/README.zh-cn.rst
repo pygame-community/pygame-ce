@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ **简体中文** `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_
+`English`_ **简体中文** `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
 ----
 
 Pygame_ 是一款自由且开源的跨平台库，用于开发电子游戏等多媒体应用。Pygame基于 `Simple DirectMedia Layer library`_ 以及其他几个广受欢迎的库，汲取其中最常见的函数，让编写游戏成为更加符合直觉的事情。
@@ -163,3 +163,4 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
+.. _Português (Brasil): README.pt-br.rst
