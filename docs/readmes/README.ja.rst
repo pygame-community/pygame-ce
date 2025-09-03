@@ -242,4 +242,4 @@ gfxdraw には SDL_gfx の埋め込みバージョンが含まれています。
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
-.. _Português (Brasil): README.pt_BR.rst
+.. _Português (Brasil): README.pt-br.rst

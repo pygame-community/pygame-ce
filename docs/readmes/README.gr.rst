@@ -224,4 +224,4 @@ pygame.org ιστοσελίδα ώστε άλλοι να μάθουν και ν�
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
-.. _Português (Brasil): README.pt_BR.rst
+.. _Português (Brasil): README.pt-br.rst

@@ -260,4 +260,4 @@ LGPL-2.1-or-later **شناسه مجوز:**
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
-.. _Português (Brasil): README.pt_BR.rst
+.. _Português (Brasil): README.pt-br.rst

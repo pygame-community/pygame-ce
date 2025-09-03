@@ -163,4 +163,4 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
-.. _Português (Brasil): README.pt_BR.rst
+.. _Português (Brasil): README.pt-br.rst

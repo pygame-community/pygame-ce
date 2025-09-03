@@ -223,4 +223,4 @@ License
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
 .. _Ελληνικά: README.gr.rst
-.. _Português (Brasil): README.pt_BR.rst
+.. _Português (Brasil): README.pt-br.rst

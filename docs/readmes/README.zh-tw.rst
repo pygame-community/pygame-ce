@@ -182,4 +182,4 @@ pygame顯然依賴SDL和Python。此外pygame也嵌入了幾個較小的函式�
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
-.. _Português (Brasil): README.pt_BR.rst
+.. _Português (Brasil): README.pt-br.rst
