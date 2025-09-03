@@ -200,8 +200,8 @@ Veja em docs/licenses as licenças das dependências.
     :target: https://github.com/psf/black
 
 .. _Pygame: https://pyga.me
-.. _pygame-ce documentation: https://pyga.me/docs/
-.. _pygame documentation: https://www.pygame.org/docs/
+.. _documentação do pygame-ce: https://pyga.me/docs/
+.. _documentação do pygame: https://www.pygame.org/docs/
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _página de compilação do wiki: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _página de docs: https://pyga.me/docs
