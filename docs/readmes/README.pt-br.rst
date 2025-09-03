@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English` `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ **Português (Brasil)**
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ **Português (Brasil)**
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Pygame_ é uma biblioteca gratuita e de código aberto, multiplataforma,
@@ -215,6 +215,7 @@ Veja em docs/licenses as licenças das dependências.
 .. _Servidor Discord da Comunidade Pygame: https://discord.gg/pygame
 .. _páginas do wiki: https://github.com/pygame-community/pygame-ce/wiki
 
+.. _English: ./../../README.rst
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
 .. _繁體中文: ./docs/readmes/README.zh-tw.rst
 .. _Français: ./docs/readmes/README.fr.rst
