@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English` `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ **日本語** `Italiano`_ `Русский`_ `Ελληνικά`_
+`English` `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ **日本語** `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
 
 ---------------------------------------------------------------------------------------------------
 
@@ -242,3 +242,4 @@ gfxdraw には SDL_gfx の埋め込みバージョンが含まれています。
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
+.. _Português (Brasil): README.pt_BR.rst
