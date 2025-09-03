@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English` `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ **日本語** `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ **日本語** `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
 
 ---------------------------------------------------------------------------------------------------
 
