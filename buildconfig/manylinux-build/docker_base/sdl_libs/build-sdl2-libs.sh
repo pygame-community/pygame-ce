@@ -20,10 +20,15 @@ curl -sL --retry 10 https://github.com/libsdl-org/SDL_mixer/releases/download/re
 curl -sL --retry 10 https://github.com/libsdl-org/SDL_ttf/releases/download/release-$TTF2_VER/$TTF2.tar.gz > ${TTF2}.tar.gz
 sha512sum -c sdl2.sha512
 
-# On mac/manylinux we have to make use of standard dynamic linking rather than
-# dlopen-ing the library itself. This is important for when auditwheel/delocate
-# moves libraries into the wheel.
-PG_DEPS_SHARED=0
+if [ -n "$WIN_ARCH" ]; then
+  # on windows, do SDL-style shared deps (SDL's default strategy)
+  PG_DEPS_SHARED=1
+else
+  # On mac/manylinux we have to make use of standard dynamic linking rather than
+  # dlopen-ing the library itself. This is important for when auditwheel/delocate
+  # moves libraries into the wheel.
+  PG_DEPS_SHARED=0
+fi
 
 # Build SDL
 tar xzf ${SDL2}.tar.gz

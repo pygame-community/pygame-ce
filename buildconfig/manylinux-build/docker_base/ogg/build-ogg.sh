@@ -22,6 +22,11 @@ cd ..
 tar xzf ${VORBIS}.tar.gz
 cd $VORBIS
 
+# some hackery needed to make libvorbis build under mingw
+if [ -n "$WIN_ARCH" ]; then
+  sed -i '/LIBRARY/d' win32/*.def
+fi
+
 # CMake 3.5 or higher policy is required for buiding under CMake 4
 cmake . $PG_BASE_CMAKE_FLAGS -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 make
