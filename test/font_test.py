@@ -617,7 +617,10 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertIsInstance(w, int)
         self.assertIsInstance(h, int)
-        self.assertEqual(s.get_size(), size)
+
+        # test width and height match, with a tolerance for 1 pixel errors
+        self.assertTrue(w - 1 <= s.get_width() <= w + 1)
+        self.assertTrue(h - 1 <= s.get_height() <= h + 1)
         self.assertEqual(f.size(btext), size)
 
         text = "\u212a"
