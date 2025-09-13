@@ -11,9 +11,7 @@ curl -sL --retry 10 https://github.com/libsndfile/libsndfile/releases/download/$
 sha512sum -c sndfile.sha512
 tar xf ${SNDFILE}
 cd $SNDNAME
-# autoreconf -fvi
 
-# alsa is only needed for examples here
-./configure $PG_BASE_CONFIGURE_FLAGS --disable-mpeg --disable-alsa
+cmake . $PG_BASE_CMAKE_FLAGS -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 make
 make install
