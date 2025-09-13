@@ -142,8 +142,8 @@ RUN ["linux32", "bash", "/libxmp_build/build-libxmp.sh"]
 # ADD gettext /gettext_build/
 # RUN ["bash", "/gettext_build/build-gettext.sh"]
 
-ADD glib /glib_build/
-RUN ["linux32", "bash", "/glib_build/build-glib.sh"]
+# ADD glib /glib_build/
+# RUN ["linux32", "bash", "/glib_build/build-glib.sh"]
 
 ADD fluidsynth /fluidsynth_build/
 RUN ["linux32", "bash", "/fluidsynth_build/build-fluidsynth.sh"]

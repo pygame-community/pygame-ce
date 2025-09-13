@@ -90,7 +90,7 @@ bash wavpack/build-wavpack.sh
 
 # fluidsynth (for sdl_mixer)
 # bash gettext/build-gettext.sh
-bash glib/build-glib.sh
+# bash glib/build-glib.sh
 bash sndfile/build-sndfile.sh
 bash fluidsynth/build-fluidsynth.sh
 
