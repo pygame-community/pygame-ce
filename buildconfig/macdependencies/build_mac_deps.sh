@@ -46,9 +46,6 @@ if [[ "$MAC_ARCH" == "arm64" ]]; then
     # we don't need mac 10.9 support while compiling for apple M1 macs
     export MACOSX_DEPLOYMENT_TARGET=11.0
 else
-    # install NASM to generate optimised x86_64 libjpegturbo builds
-    brew install nasm
-
     # SDL 2.26.5 new minimum macos is 10.11, so we build our x86 mac deps
     # for 10.11 as well.
     export MACOSX_DEPLOYMENT_TARGET=10.11
