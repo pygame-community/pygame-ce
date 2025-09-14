@@ -11,6 +11,7 @@ import os
 import re
 import subprocess
 import sys
+import sysconfig
 from enum import Enum
 from pathlib import Path
 from typing import Any, Union
@@ -34,6 +35,19 @@ COVERAGE_ARGS = ["-Csetup-args=-Dcoverage=true"]
 
 # We assume this script works with any pip version above this.
 PIP_MIN_VERSION = "23.1"
+
+# we will assume dev.py wasm builds are made for pygbag.
+host_gnu_type = sysconfig.get_config_var("HOST_GNU_TYPE")
+if isinstance(host_gnu_type, str) and "wasm" in host_gnu_type:
+    wasm = "wasi" if "wasi" in host_gnu_type else "emscripten"
+else:
+    wasm = ""
+
+wasm_cross_file = (source_tree / "buildconfig" / f"meson-cross-{wasm}.ini").resolve()
+wasm_args = [
+    f"-Csetup-args=--cross-file={wasm_cross_file}",
+    "-Csetup-args=-Demscripten_type=pygbag",
+]
 
 
 class Colors(Enum):
@@ -189,7 +203,11 @@ def check_module_in_constraint(mod: str, constraint: str):
 
 class Dev:
     def __init__(self) -> None:
-        self.py: Path = Path(sys.executable)
+        self.py: Path = (
+            Path(os.environ["SDKROOT"]) / "python3-wasm"
+            if wasm
+            else Path(sys.executable)
+        )
         self.args: dict[str, Any] = {}
 
         self.deps: dict[str, set[str]] = {
@@ -233,6 +251,14 @@ class Dev:
         ]
 
         if not wheel_dir:
+            if wasm:
+                pprint(
+                    "Editable builds are not supported on WASM as of now. "
+                    "Pass --wheel to do a regular build",
+                    Colors.RED,
+                )
+                sys.exit(1)
+
             # editable install
             if not quiet:
                 install_args.append("-Ceditable-verbose=true")
@@ -258,6 +284,9 @@ class Dev:
 
         if sanitize:
             install_args.append(f"-Csetup-args=-Db_sanitize={sanitize}")
+
+        if wasm:
+            install_args.extend(wasm_args)
 
         info_str = (
             f"with {debug=}, {lax=}, {sdl3=}, {stripped=}, {coverage=} and {sanitize=}"
@@ -484,6 +513,12 @@ class Dev:
         # set PATH to give high priority to executables in the python bin folder
         # this is where the binaries for meson/ninja/cython/sphinx/etc are installed
         os.environ["PATH"] = f"{self.py.parent}{os.pathsep}{os.environ.get('PATH', '')}"
+        if wasm:
+            for wasm_path in [
+                self.py.parent / "devices" / "emsdk" / "usr" / "bin",
+                self.py.parent / "emsdk" / "upstream" / "emscripten",
+            ]:
+                os.environ["PATH"] = f"{wasm_path}{os.pathsep}{os.environ['PATH']}"
 
         pprint("Checking pip version")
         pip_v = cmd_run([self.py, "-m", "pip", "-V"], capture_output=True)
@@ -496,6 +531,10 @@ class Dev:
         if not check_version_atleast(pip_version, PIP_MIN_VERSION):
             pprint("pip version is too old or unknown, attempting pip upgrade")
             pip_install(self.py, ["-U", "pip"])
+
+        if wasm:
+            # dont try to install any deps on WASM
+            return
 
         deps = self.deps.get(self.args["command"], set())
         ignored_deps = self.args["ignore_dep"]
