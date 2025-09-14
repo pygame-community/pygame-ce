@@ -94,11 +94,11 @@ RUN ["linux32", "bash", "/libjpegturbo_build/build-jpeg-turbo.sh"]
 ADD libpng /libpng_build/
 RUN ["linux32", "bash", "/libpng_build/build-png.sh"]
 
-ADD libwebp /webp_build/
-RUN ["linux32", "bash", "/webp_build/build-webp.sh"]
-
 ADD libtiff /libtiff_build/
 RUN ["linux32", "bash", "/libtiff_build/build-tiff.sh"]
+
+ADD libwebp /webp_build/
+RUN ["linux32", "bash", "/webp_build/build-webp.sh"]
 
 ADD brotli /brotli_build/
 RUN ["linux32", "bash", "/brotli_build/build-brotli.sh"]
