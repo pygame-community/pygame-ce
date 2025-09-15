@@ -34,11 +34,7 @@ elif host_machine.system() == 'android'
         'However it may be added in the future',
     )
 elif host_machine.system() == 'emscripten'
-    plat = 'emscripten'
-    error(
-        'The meson buildconfig of pygame-ce does not support emscripten for now. ',
-        'However it may be added in the future',
-    )
+    plat = 'emscripten-@0@'.format(get_option('emscripten_type'))
 else
     # here it one of: cygwin, dragonfly, freebsd, gnu, haiku, netbsd, openbsd, sunos
     plat = 'unix'
@@ -80,7 +76,7 @@ pg_dir = py.get_install_dir() / pg
 
 sdl_api = get_option('sdl_api')
 sdl = 'SDL@0@'.format(sdl_api)
-sdl_mixer = '@0@_mixer'.format(sdl)
+sdl_mixer = (plat == 'emscripten-pygbag') ? '@0@_mixer_ogg'.format(sdl) : '@0@_mixer'.format(sdl)
 sdl_ttf = '@0@_ttf'.format(sdl)
 sdl_image = '@0@_image'.format(sdl)
 
@@ -229,7 +225,20 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
     install_data(dlls, install_dir: pg_dir, install_tag: 'pg-tag')
 
 else
-    bases = ['/usr/local', '/usr', '/opt/homebrew', '/opt/local']
+    if plat == 'emscripten-pygbag'
+        bases = [
+            '/opt/python-wasm-sdk/emsdk/upstream/emscripten/cache/sysroot',
+            '/opt/python-wasm-sdk/devices/emsdk/usr'
+        ]
+        add_global_arguments(['-DBUILD_STATIC'], language: 'c')
+    elif plat == 'emscripten-generic'
+        # TODO: check if these bases are valid in pyodide
+        bases = ['/usr/local', '/usr', '/opt/local']
+        add_global_arguments(['-DBUILD_STATIC'], language: 'c')
+    else
+        bases = ['/usr/local', '/usr', '/opt/homebrew', '/opt/local']
+    endif
+
     foreach inc_dir : bases
         foreach sub_inc : [
             '',
@@ -244,7 +253,7 @@ else
     endforeach
 
     foreach lib_dir : bases
-        foreach sub_lib : ['lib', 'lib64']
+        foreach sub_lib : ['lib', 'lib64', 'lib/wasm32-emscripten/pic', 'lib/wasm32-emscripten']
             full_lib = lib_dir / sub_lib
             if fs.exists(full_lib)
                 pg_lib_dirs += full_lib
@@ -312,7 +321,7 @@ if not freetype_dep.found()
 endif
 
 portmidi_dep = dependency('portmidi', required: false)
-if not portmidi_dep.found()
+if not portmidi_dep.found() and not plat.startswith('emscripten')
     portmidi_dep = declare_dependency(
         include_directories: pg_inc_dirs,
         dependencies: cc.find_library(
@@ -436,7 +445,7 @@ endif
 subdir('src_c')
 subdir('src_py')
 
-if not get_option('stripped')
+if not get_option('stripped') and not plat.startswith('emscripten')
     # run make_docs and make docs
     if not fs.is_dir('docs/generated')
         make_docs = files('buildconfig/make_docs.py')
