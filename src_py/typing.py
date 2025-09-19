@@ -14,8 +14,9 @@ __all__ = [
 
 from abc import abstractmethod
 from collections.abc import Callable
+from dataclasses import dataclass
 from os import PathLike as _PathProtocol
-from typing import IO, Protocol, TypeVar, Union
+from typing import IO, Protocol, TypeVar, Union, Optional
 
 from pygame.color import Color
 from pygame.rect import FRect, Rect
@@ -62,6 +63,18 @@ RectLike = Union[
 ]
 
 
+@dataclass(frozen=True)
+class PowerState:
+    battery_percent: Optional[int]
+    battery_seconds: Optional[int]
+    on_battery: bool
+    no_battery: bool
+    charging: bool
+    charged: bool
+    plugged_in: bool
+    has_battery: bool
+
+
 # cleanup namespace
 del (
     abstractmethod,
@@ -73,4 +86,6 @@ del (
     Union,
     TypeVar,
     Protocol,
+    Optional,
+    dataclass,
 )
