@@ -698,8 +698,8 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
                         data[0] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[1] = (char)(((color & Gmask) >> Gshift) << Rloss);
-                        data[2] = (char)(((color & Bmask) >> Bshift) << Rloss);
+                        data[1] = (char)(((color & Gmask) >> Gshift) << Gloss);
+                        data[2] = (char)(((color & Bmask) >> Bshift) << Bloss);
                         data += 3;
                     }
                     pad(&data, padding);
