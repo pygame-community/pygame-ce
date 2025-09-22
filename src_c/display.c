@@ -894,10 +894,10 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     SDL_Window *window;
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (event->type >= SDL_EVENT_WINDOW_FIRST &&
-        event->type <= SDL_EVENT_WINDOW_LAST)
+    if (!(event->type >= SDL_EVENT_WINDOW_FIRST &&
+          event->type <= SDL_EVENT_WINDOW_LAST))
 #else
-    if (event->type == SDL_WINDOWEVENT)
+    if (event->type != SDL_WINDOWEVENT)
 #endif
     {
         return 0;
@@ -1832,12 +1832,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     if (!state->using_gl && ((flags & (PGS_SCALED | PGS_FULLSCREEN)) == 0) &&
         !vsync && (((flags & PGS_RESIZABLE) == 0) || !zero_size)) {
         if (((surface->surf->w != w_actual) ||
-             (surface->surf->h != h_actual)) &&
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-            ((surface->surf->flags & SDL_WINDOW_FULLSCREEN) != 0)) {
-#else
-            ((surface->surf->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)) {
-#endif
+             (surface->surf->h != h_actual))) {
             char buffer[150];
             char *format_string =
                 "Requested window was forcibly resized by the OS.\n\t"

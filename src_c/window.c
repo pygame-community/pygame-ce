@@ -473,7 +473,7 @@ window_set_modal_for(pgWindowObject *self, PyObject *arg)
         return RAISE(PyExc_TypeError,
                      "Argument to set_modal_for must be a Window.");
     }
-    if (!PG_SetWindowModalFor(self->_win, ((pgWindowObject *)arg)->_win)) {
+    if (PG_SetWindowModalFor(self->_win, ((pgWindowObject *)arg)->_win) < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
