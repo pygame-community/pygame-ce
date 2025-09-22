@@ -301,9 +301,16 @@ _resize_event_watch(void *userdata, SDL_Event *event)
 static PyObject *
 window_set_windowed(pgWindowObject *self, PyObject *_null)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_SetWindowFullscreen(self->_win, 0)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    SDL_SyncWindow(self->_win);
+#else
     if (SDL_SetWindowFullscreen(self->_win, 0)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
+#endif
     Py_RETURN_NONE;
 }
 
@@ -339,6 +346,7 @@ pg_window_set_fullscreen(SDL_Window *window, int desktop)
         goto end;
     }
 
+    SDL_SyncWindow(window);
     ret = 1;
 end:
     SDL_free(modes);
@@ -371,7 +379,7 @@ window_set_fullscreen(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 {
-    SDL_bool input_only = SDL_FALSE;
+    int input_only = SDL_FALSE;
     char *kwids[] = {"input_only", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &input_only)) {
         return NULL;
@@ -423,6 +431,9 @@ static PyObject *
 window_restore(pgWindowObject *self, PyObject *_null)
 {
     SDL_RestoreWindow(self->_win);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(self->_win);
+#endif
     Py_RETURN_NONE;
 }
 
@@ -430,6 +441,9 @@ static PyObject *
 window_maximize(pgWindowObject *self, PyObject *_null)
 {
     SDL_MaximizeWindow(self->_win);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(self->_win);
+#endif
     Py_RETURN_NONE;
 }
 
@@ -437,6 +451,9 @@ static PyObject *
 window_minimize(pgWindowObject *self, PyObject *_null)
 {
     SDL_MinimizeWindow(self->_win);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(self->_win);
+#endif
     Py_RETURN_NONE;
 }
 
@@ -739,6 +756,9 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
     }
 
     SDL_SetWindowSize(self->_win, w, h);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(self->_win);
+#endif
     if (self->surf) {
         /* Ensure that the underlying surf is immediately updated, instead of
          * relying on the event callback */
@@ -791,6 +811,9 @@ window_set_minimum_size(pgWindowObject *self, PyObject *arg, void *v)
     }
 
     SDL_SetWindowMinimumSize(self->_win, w, h);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(self->_win);
+#endif
 
     return 0;
 }
@@ -831,6 +854,9 @@ window_set_maximum_size(pgWindowObject *self, PyObject *arg, void *v)
     }
 
     SDL_SetWindowMaximumSize(self->_win, w, h);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(self->_win);
+#endif
 
     return 0;
 }
@@ -862,6 +888,9 @@ window_set_position(pgWindowObject *self, PyObject *arg, void *v)
     }
 
     SDL_SetWindowPosition(self->_win, x, y);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(self->_win);
+#endif
 
     return 0;
 }
