@@ -447,12 +447,18 @@ _init(int freq, int size, int channels, int chunk, char *devicename,
         if (!PG_InitSubSystem(SDL_INIT_AUDIO)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
-
+#if __EMSCRIPTEN__
+        if (Mix_OpenAudio(freq, fmt, channels, chunk) == -1) {
+            SDL_QuitSubSystem(SDL_INIT_AUDIO);
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+#else
         if (Mix_OpenAudioDevice(freq, fmt, channels, chunk, devicename,
                                 allowedchanges) == -1) {
             SDL_QuitSubSystem(SDL_INIT_AUDIO);
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
+#endif
         Mix_ChannelFinished(endsound_callback);
         Mix_VolumeMusic(127);
     }
