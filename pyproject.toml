@@ -97,6 +97,13 @@ setup-args = [
     "-Derror_docs_missing=true",
 ]
 
+[tool.cibuildwheel.pyodide]
+build = "cp313-*"  # build only for the latest python version.
+# TODO: png has issues, fix it and add support for it
+before-build = "embuilder build sdl2 'sdl2_mixer:formats=ogg,mp3,mod,mid' 'sdl2_image:formats=bmp,gif,jpg,qoi,svg,tga' sdl2_ttf freetype-legacysjlj libpng-legacysjlj libhtml5 --pic"
+test-command = ""  # TODO: fix runtime issues and then figure out how to test
+
+
 [tool.ruff]
 exclude = [
   "buildconfig/*.py",

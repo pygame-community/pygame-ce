@@ -1,3 +1,27 @@
+if plat == 'emscripten-pygbag'  # do a static build
+
+base_files = ['base.c', 'bitmask.c', 'SDL_gfx/SDL_gfxPrimitives.c']
+cython_files = [
+    'cython/pygame/_sdl2/audio.pyx',
+    'cython/pygame/_sdl2/mixer.pyx',
+    'cython/pygame/_sdl2/sdl2.pyx',
+    'cython/pygame/_sdl2/video.pyx',
+    'pgcompat.c'
+]
+
+# make one big static build on emscripten
+pygame = static_library(
+    'pygame',
+    base_files + cython_files,
+    # c_args: warnings_error,
+    dependencies: pg_base_deps + [sdl_image_dep, sdl_mixer_dep, sdl_ttf_dep, freetype_dep],
+    install: true,
+    install_dir: pg_dir,
+    install_tag: 'pg-tag'
+)
+
+else  # regular build
+
 # first the "required" modules
 
 base = py.extension_module(
@@ -327,6 +351,7 @@ subdir('_sdl2')
 endif
 
 # pygame._camera
+if not plat.startswith('emscripten')
 pg_camera_sources = ['_camera.c']
 pg_camera_link = []
 if plat == 'win'
@@ -357,6 +382,7 @@ _camera = py.extension_module(
     install: true,
     subdir: pg,
 )
+endif
 
 # pygame.scrap
 pg_scrap_link = [] # TODO: should this link logic be improved/made meson-ey?
@@ -452,3 +478,5 @@ if portmidi_dep.found()
         subdir: pg,
     )
 endif
+
+endif # emscripten

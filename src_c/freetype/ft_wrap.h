@@ -23,7 +23,7 @@
 
 #define PYGAME_FREETYPE_INTERNAL
 #include "../_pygame.h"
-#include "../freetype.h"
+#include "ft_freetype.h"
 
 /**********************************************************
  * Internal module defines

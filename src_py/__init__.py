@@ -115,7 +115,7 @@ if sys.platform in ("wasi", "emscripten"):
     except ModuleNotFoundError:
         pygame_static = None
 
-    if pygame_static:
+    if pygame_static and hasattr(pygame_static, 'import_cython'):
         pygame = sys.modules[__name__]
 
         # cython modules use multiphase initialisation when not in builtin Inittab.
