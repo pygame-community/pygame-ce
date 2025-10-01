@@ -1,3 +1,25 @@
+if plat.startswith('emscripten')  # single build
+
+base_files = ['base.c', 'bitmask.c', 'rotozoom.c', 'SDL_gfx/SDL_gfxPrimitives.c']
+cython_files = [
+    'cython/pygame/_sdl2/audio.pyx',
+    'cython/pygame/_sdl2/mixer.pyx',
+    'cython/pygame/_sdl2/sdl2.pyx',
+    'cython/pygame/_sdl2/video.pyx',
+]
+
+# make one big shared build on emscripten
+pygame = py.extension_module(
+    'base',
+    base_files + cython_files,
+    c_args: ['-DBUILD_STATIC=1'],
+    dependencies: pg_base_deps + [sdl_image_dep, sdl_mixer_dep, sdl_ttf_dep, freetype_dep],
+    install: true,
+    subdir: pg,
+)
+
+else  # regular build
+
 # first the "required" modules
 
 base = py.extension_module(
@@ -452,3 +474,5 @@ if portmidi_dep.found()
         subdir: pg,
     )
 endif
+
+endif # regular build

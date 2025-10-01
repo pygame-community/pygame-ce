@@ -11,6 +11,7 @@ import os
 import re
 import subprocess
 import sys
+import sysconfig
 from enum import Enum
 from pathlib import Path
 from typing import Any, Union
@@ -34,6 +35,13 @@ COVERAGE_ARGS = ["-Csetup-args=-Dcoverage=true"]
 
 # We assume this script works with any pip version above this.
 PIP_MIN_VERSION = "23.1"
+
+# we will assume dev.py wasm builds are made for pygbag.
+host_gnu_type = sysconfig.get_config_var("HOST_GNU_TYPE")
+if isinstance(host_gnu_type, str) and "wasm" in host_gnu_type:
+    wasm = "wasi" if "wasi" in host_gnu_type else "emscripten"
+else:
+    wasm = ""
 
 
 class Colors(Enum):
@@ -187,9 +195,62 @@ def check_module_in_constraint(mod: str, constraint: str):
     return mod.lower().strip() == constraint_mod[0]
 
 
+def get_wasm_cross_file(sdkroot: Path):
+    """
+    This returns a meson cross file for pygbag wasm sdk (pygame-web/python-wasm-sdk)
+    as a string.
+    Here we set paths to the compiler tooling and include/library paths to ensure that
+    meson can pick up the compiler and build dependencies from the sdk.
+    """
+    emsdk_dir = sdkroot / "emsdk"
+    bin_dir = emsdk_dir / "upstream" / "emscripten"
+
+    node_matches = sorted(emsdk_dir.glob("node/*/bin/node"))
+    node_path = node_matches[-1] if node_matches else Path("node")
+
+    sysroot_dir = bin_dir / "cache" / "sysroot"
+    inc_dir = sysroot_dir / "include"
+    lib_dir = sysroot_dir / "lib" / "wasm32-emscripten" / "pic"
+
+    c_args = [
+        f"-I{x}"
+        for x in [
+            inc_dir / "SDL2",
+            inc_dir / "freetype2",
+            sdkroot / "devices" / "emsdk" / "usr" / "include" / "SDL2",
+        ]
+    ]
+    c_link_args = [f"-L{lib_dir}"]
+    return f"""
+[host_machine]
+system = 'emscripten'
+cpu_family = 'wasm32'
+cpu = 'wasm'
+endian = 'little'
+
+[binaries]
+c = {str(bin_dir / 'emcc')!r}
+cpp = {str(bin_dir / 'em++')!r}
+ar = {str(bin_dir / 'emar')!r}
+strip = {str(bin_dir / 'emstrip')!r}
+exe_wrapper = {str(node_path)!r}
+
+[project options]
+emscripten_type = 'pygbag'
+
+[built-in options]
+c_args = {c_args!r}
+c_link_args = {c_link_args!r}
+"""
+
+
 class Dev:
     def __init__(self) -> None:
-        self.py: Path = Path(sys.executable)
+        self.py: Path = (
+            Path(os.environ["SDKROOT"]) / "python3-wasm"
+            if wasm
+            else Path(sys.executable)
+        )
         self.args: dict[str, Any] = {}
 
         self.deps: dict[str, set[str]] = {
@@ -227,12 +288,24 @@ class Dev:
             build_suffix += "-sdl3"
         if coverage:
             build_suffix += "-cov"
+        if wasm:
+            build_suffix += "-wasm"
+
+        build_dir = Path(f".mesonpy-build{build_suffix}")
         install_args = [
             "--no-build-isolation",
-            f"-Cbuild-dir=.mesonpy-build{build_suffix}",
+            f"-Cbuild-dir={build_dir}",
         ]
 
         if not wheel_dir:
+            if wasm:
+                pprint(
+                    "Editable builds are not supported on WASM as of now. "
+                    "Pass --wheel to do a regular build",
+                    Colors.RED,
+                )
+                sys.exit(1)
+
             # editable install
             if not quiet:
                 install_args.append("-Ceditable-verbose=true")
@@ -258,6 +331,19 @@ class Dev:
 
         if sanitize:
             install_args.append(f"-Csetup-args=-Db_sanitize={sanitize}")
+
+        if wasm:
+            wasm_cross_file = build_dir / "meson-cross-wasm.ini"
+            build_dir.mkdir(exist_ok=True)
+            wasm_cross_file.write_text(get_wasm_cross_file(self.py.parent))
+            install_args.append(
+                f"-Csetup-args=--cross-file={wasm_cross_file.resolve()}"
+            )
+            if not debug:
+                # sdk uses this environment variable for extra compiler arguments.
+                # So here we pass optimization flags. If this isn't set, sdk will
+                # build for debug by default and we don't want that for release builds.
+                os.environ["COPTS"] = "-Os -g0"
 
         info_str = (
             f"with {debug=}, {lax=}, {sdl3=}, {stripped=}, {coverage=} and {sanitize=}"
@@ -496,6 +582,10 @@ class Dev:
         if not check_version_atleast(pip_version, PIP_MIN_VERSION):
             pprint("pip version is too old or unknown, attempting pip upgrade")
             pip_install(self.py, ["-U", "pip"])
+
+        if wasm:
+            # dont try to install any deps on WASM, exit early
+            return
 
         deps = self.deps.get(self.args["command"], set())
         ignored_deps = self.args["ignore_dep"]
