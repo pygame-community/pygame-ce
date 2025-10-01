@@ -40,3 +40,6 @@ option('coverage', type: 'boolean', value: false)
 
 # Controls whether to use SDL3 instead of SDL2. The default is to use SDL2
 option('sdl_api', type: 'integer', min: 2, max: 3, value: 2)
+
+# Specify the type of emscripten build being done.
+option('emscripten_type', type: 'combo', choices: ['pyodide', 'pygbag'])

@@ -55,9 +55,9 @@ pygame_ce = 'pygame.__briefcase.pygame_ce:PygameCEGuiBootstrap'
 [build-system]
 requires = [
   "meson-python<=0.18.0",
-  "meson<=1.8.2",
-  "ninja<=1.12.1",
-  "cython<=3.1.2",
+  "meson<=1.9.1",
+  "ninja<=1.13.0",
+  "cython<=3.1.4",
   "sphinx<=8.2.3",
   "sphinx-autoapi<=3.6.0",
   "pyproject-metadata!=0.9.1",
@@ -96,6 +96,21 @@ setup-args = [
     "-Dvsenv=true",  # same effect as passing --vsenv
     "-Derror_docs_missing=true",
 ]
+
+[tool.cibuildwheel.pyodide]
+build = "cp313-*"  # build only for the latest python version.
+
+# EMSDK path is hardcoded here, and has to be manually kept updated with updates
+# to cibuildwheel and/or pyodide.
+before-build = """
+sed -i 's/var SUPPORT_LONGJMP *= *[^;]*;/var SUPPORT_LONGJMP = "wasm";/' \
+  /home/runner/.cache/cibuildwheel/emsdk-4.0.9/emsdk-4.0.9/upstream/emscripten/src/settings.js &&
+embuilder --pic --force build \
+  sdl2 libhtml5 sdl2_ttf 'sdl2_mixer:formats=ogg,mp3,mod,mid' \
+  'sdl2_image:formats=bmp,gif,jpg,lbm,pcx,png,pnm,qoi,svg,tga,xcf,xpm,xv'
+"""
+test-command = ""  # TODO: figure out how to test
+
 
 [tool.ruff]
 exclude = [
