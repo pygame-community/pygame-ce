@@ -701,6 +701,7 @@ class DisplayModuleTest(unittest.TestCase):
         bounds = pygame.display.get_desktop_usable_bounds()
         sizes = pygame.display.get_desktop_sizes()
         self.assertIsInstance(bounds, list)
+        self.assertEqual(len(bounds), len(sizes))
         for i, bound in enumerate(bounds):
             self.assertIsInstance(bound, pygame.Rect)
             size = sizes[i]
