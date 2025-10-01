@@ -306,6 +306,22 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.point_size ##
 
+
+   .. attribute:: outline
+
+      | :sl:`Gets or sets the font's outline value`
+      | :sg:`outline -> int`
+
+      The outline value of the font.
+
+      When set to 0, the font will be drawn normally. When positive,
+      the text will be drawn as a hollow outline. This can be drawn
+      underneath unoutlined text to create a text outline effect.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Font.outline ##
+
    .. method:: render
 
       | :sl:`draw text on a new Surface`
@@ -561,6 +577,32 @@ solves no longer exists, it will likely be removed in the future.
       .. versionadded:: 2.3.1
 
       .. ## Font.get_point_size ##
+
+   .. method:: set_outline
+
+      | :sl:`set the outline value of the font`
+      | :sg:`set_outline(size, /) -> None`
+
+      Sets the outline value of the font.
+
+      .. note:: This is the same as the :attr:`outline` attribute.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Font.set_outline ##
+
+   .. method:: get_outline
+
+      | :sl:`get the outline value of the font`
+      | :sg:`get_outline() -> int`
+
+      Returns the outline value of the font.
+
+      .. note:: This is the same as the :attr:`outline` attribute.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Font.get_outline ##
 
    .. method:: get_ascent
 
