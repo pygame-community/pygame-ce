@@ -2,10 +2,9 @@ import sys
 from collections.abc import Collection, Iterator
 from typing import Any, ClassVar, SupportsIndex, Union, overload
 
+from pygame.colordict import THECOLORS as THECOLORS
 from pygame.typing import ColorLike
 from typing_extensions import deprecated  # added in 3.13
-
-THECOLORS: dict[str, tuple[int, int, int, int]]
 
 # Color confirms to the Collection ABC, since it also confirms to
 # Sized, Iterable and Container ABCs
