@@ -954,7 +954,8 @@ font_setter_outline(PyObject *self, PyObject *value, void *closure)
 static PyObject *
 font_get_outline(PyObject *self, PyObject *_null)
 {
-    /* logic is identical to the getter, aside from the closure in the signature */
+    /* logic is identical to the getter, aside from the closure in the
+     * signature */
     return font_getter_outline(self, NULL);
 }
 
@@ -963,8 +964,7 @@ font_set_outline(PyObject *self, PyObject *arg)
 {
     /* logic is identical to the setter, but we need to massage the return type
         from int to PyObject*) */
-    if(font_setter_outline(self, arg, NULL) < 0)
-    {
+    if (font_setter_outline(self, arg, NULL) < 0) {
         return NULL;
     }
     return Py_None;
