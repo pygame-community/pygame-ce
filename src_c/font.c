@@ -954,41 +954,20 @@ font_setter_outline(PyObject *self, PyObject *value, void *closure)
 static PyObject *
 font_get_outline(PyObject *self, PyObject *_null)
 {
-    if (!PgFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
-    }
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
-    TTF_Font *font = PyFont_AsFont(self);
-    return PyLong_FromLong(TTF_GetFontOutline(font));
-#else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.0.12 or above.");
-#endif
+    /* logic is identical to the getter, aside from the closure in the signature */
+    return font_getter_outline(self, NULL);
 }
 
 static PyObject *
 font_set_outline(PyObject *self, PyObject *arg)
 {
-    if (!PgFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
-    }
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
-    TTF_Font *font = PyFont_AsFont(self);
-    long val = PyLong_AsLong(arg);
-    if (val == -1 && PyErr_Occurred()) {
+    /* logic is identical to the setter, but we need to massage the return type
+        from int to PyObject*) */
+    if(font_setter_outline(self, arg, NULL) < 0)
+    {
         return NULL;
     }
-    if (val < 0) {
-        return RAISE(PyExc_ValueError, "outline must be >= 0");
-    }
-    TTF_SetFontOutline(font, (int)val);
-    Py_RETURN_NONE;
-#else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.0.12 or above.");
-#endif
+    return Py_None;
 }
 
 static PyObject *
