@@ -689,7 +689,8 @@ class FontTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, f.set_point_size, "15")
 
     @unittest.skipIf(
-        pygame.font.get_sdl_ttf_version() < (2, 0, 12), "outlines were added in SDL_TTF 2.0.12"
+        pygame.font.get_sdl_ttf_version() < (2, 0, 12),
+        "outlines were added in SDL_TTF 2.0.12",
     )
     def test_outline_property(self):
         if pygame_font.__name__ == "pygame.ftfont":
@@ -723,7 +724,8 @@ class FontTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, test_incorrect_type)
 
     @unittest.skipIf(
-        pygame.font.get_sdl_ttf_version() >= (2, 0, 12), "outlines were added in SDL_TTF 2.0.12"
+        pygame.font.get_sdl_ttf_version() >= (2, 0, 12),
+        "outlines were added in SDL_TTF 2.0.12",
     )
     def test_outline_property_stub(self):
         if pygame_font.__name__ == "pygame.ftfont":
@@ -740,9 +742,9 @@ class FontTypeTest(unittest.TestCase):
         with self.assertRaises(pygame.error):
             _ = f.outline
 
-
     @unittest.skipIf(
-        pygame.font.get_sdl_ttf_version() < (2, 0, 12), "outlines were added in SDL_TTF 2.0.12"
+        pygame.font.get_sdl_ttf_version() < (2, 0, 12),
+        "outlines were added in SDL_TTF 2.0.12",
     )
     def test_outline_method(self):
         if pygame_font.__name__ == "pygame.ftfont":
@@ -764,7 +766,8 @@ class FontTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, f.set_outline, "2")
 
     @unittest.skipIf(
-        pygame.font.get_sdl_ttf_version() >= (2, 0, 12), "outlines were added in SDL_TTF 2.0.12"
+        pygame.font.get_sdl_ttf_version() >= (2, 0, 12),
+        "outlines were added in SDL_TTF 2.0.12",
     )
     def test_outline_method_stub(self):
         if pygame_font.__name__ == "pygame.ftfont":
@@ -1288,7 +1291,8 @@ class VisualTestsInteractive(unittest.TestCase):
         self.assertTrue(self.query(bold=True, strikethrough=True))
 
     @unittest.skipIf(
-        pygame.font.get_sdl_ttf_version() < (2, 0, 12), "outlines were added in SDL_TTF 2.0.12"
+        pygame.font.get_sdl_ttf_version() < (2, 0, 12),
+        "outlines were added in SDL_TTF 2.0.12",
     )
     def test_outline(self):
         self.assertTrue(self.query(outline=1))
