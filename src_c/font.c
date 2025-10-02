@@ -967,7 +967,7 @@ font_set_outline(PyObject *self, PyObject *arg)
     if (font_setter_outline(self, arg, NULL) < 0) {
         return NULL;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *
