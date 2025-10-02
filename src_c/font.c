@@ -945,7 +945,8 @@ font_setter_outline(PyObject *self, PyObject *value, void *closure)
     return 0;
 #else
     RAISE(pgExc_SDLError,
-          "pygame.font not compiled with a new enough SDL_ttf version. Needs SDL_ttf 2.0.12 or above.");
+          "pygame.font not compiled with a new enough SDL_ttf version. Needs "
+          "SDL_ttf 2.0.12 or above.");
     return -1;
 #endif
 }
@@ -989,7 +990,6 @@ font_set_outline(PyObject *self, PyObject *arg)
                  "Needs SDL_ttf 2.0.12 or above.");
 #endif
 }
-
 
 static PyObject *
 font_getter_name(PyObject *self, void *closure)
