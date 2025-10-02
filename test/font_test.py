@@ -1176,7 +1176,7 @@ class VisualTestsInteractive(unittest.TestCase):
         underline=False,
         strikethrough=False,
         antialiase=False,
-        outline=0
+        outline=0,
     ):
         if self.aborted:
             return False
