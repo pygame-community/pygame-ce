@@ -944,9 +944,10 @@ font_setter_outline(PyObject *self, PyObject *value, void *closure)
     TTF_SetFontOutline(font, (int)val);
     return 0;
 #else
-    PyErr_SetString(pgExc_SDLError,
-          "pygame.font not compiled with a new enough SDL_ttf version. Needs "
-          "SDL_ttf 2.0.12 or above.");
+    PyErr_SetString(
+        pgExc_SDLError,
+        "pygame.font not compiled with a new enough SDL_ttf version. Needs "
+        "SDL_ttf 2.0.12 or above.");
     return -1;
 #endif
 }
