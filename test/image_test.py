@@ -4,6 +4,7 @@ import glob
 import io
 import os
 import pathlib
+import random
 import tempfile
 import unittest
 from concurrent.futures import ThreadPoolExecutor
@@ -422,6 +423,39 @@ class ImageModuleTest(unittest.TestCase):
             for pixelnum, pixelval in enumerate(result_pixels):
                 y, x = divmod(pixelnum, 3)
                 self.assertEqual(s2.get_at((x, y)), pixelval)
+        finally:
+            # clean up the temp file, even if test fails
+            os.remove(temp_filename)
+
+    def test_save_tga_srcalpha(self):
+        WIDTH = 10
+        HEIGHT = 10
+        s = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        pixels = [
+            [
+                (
+                    random.randint(0, 255),
+                    random.randint(0, 255),
+                    random.randint(0, 255),
+                    random.randint(0, 255),
+                )
+                for _ in range(WIDTH)
+            ]
+            for _ in range(HEIGHT)
+        ]
+        for y in range(HEIGHT):
+            for x in range(WIDTH):
+                s.set_at((x, y), pixels[y][x])
+
+        with tempfile.NamedTemporaryFile(suffix=".tga", delete=False) as f:
+            temp_filename = f.name
+
+        try:
+            pygame.image.save(s, temp_filename)
+            s2 = pygame.image.load(temp_filename)
+            for y in range(HEIGHT):
+                for x in range(WIDTH):
+                    self.assertEqual(s2.get_at((x, y)), pixels[y][x])
         finally:
             # clean up the temp file, even if test fails
             os.remove(temp_filename)
