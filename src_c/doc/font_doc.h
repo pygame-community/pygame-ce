@@ -34,8 +34,6 @@
 #define DOC_FONT_FONT_GETHEIGHT "get_height() -> int\nget the height of the font"
 #define DOC_FONT_FONT_SETPOINTSIZE "set_point_size(size, /) -> None\nset the point size of the font"
 #define DOC_FONT_FONT_GETPOINTSIZE "get_point_size() -> int\nget the point size of the font"
-#define DOC_FONT_FONT_SETOUTLINE "set_outline(size, /) -> None\nset the outline value of the font"
-#define DOC_FONT_FONT_GETOUTLINE "get_outline() -> int\nget the outline value of the font"
 #define DOC_FONT_FONT_GETASCENT "get_ascent() -> int\nget the ascent of the font"
 #define DOC_FONT_FONT_GETDESCENT "get_descent() -> int\nget the descent of the font"
 #define DOC_FONT_FONT_SETSCRIPT "set_script(str, /) -> None\nset the script code for text shaping"

@@ -579,32 +579,6 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.get_point_size ##
 
-   .. method:: set_outline
-
-      | :sl:`set the outline value of the font`
-      | :sg:`set_outline(size, /) -> None`
-
-      Sets the outline value of the font.
-
-      .. note:: This is the same as the :attr:`outline` attribute.
-
-      .. versionadded:: 2.5.6
-
-      .. ## Font.set_outline ##
-
-   .. method:: get_outline
-
-      | :sl:`get the outline value of the font`
-      | :sg:`get_outline() -> int`
-
-      Returns the outline value of the font.
-
-      .. note:: This is the same as the :attr:`outline` attribute.
-
-      .. versionadded:: 2.5.6
-
-      .. ## Font.get_outline ##
-
    .. method:: get_ascent
 
       | :sl:`get the ascent of the font`
