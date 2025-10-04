@@ -953,25 +953,6 @@ font_setter_outline(PyObject *self, PyObject *value, void *closure)
 }
 
 static PyObject *
-font_get_outline(PyObject *self, PyObject *_null)
-{
-    /* logic is identical to the getter, aside from the closure in the
-     * signature */
-    return font_getter_outline(self, NULL);
-}
-
-static PyObject *
-font_set_outline(PyObject *self, PyObject *arg)
-{
-    /* logic is identical to the setter, but we need to massage the return type
-        from int to PyObject*) */
-    if (font_setter_outline(self, arg, NULL) < 0) {
-        return NULL;
-    }
-    Py_RETURN_NONE;
-}
-
-static PyObject *
 font_getter_name(PyObject *self, void *closure)
 {
     if (!PgFont_GenerationCheck(self)) {
@@ -1264,8 +1245,6 @@ static PyMethodDef font_methods[] = {
      DOC_FONT_FONT_GETSTRIKETHROUGH},
     {"set_strikethrough", font_set_strikethrough, METH_O,
      DOC_FONT_FONT_SETSTRIKETHROUGH},
-    {"get_outline", font_get_outline, METH_NOARGS, DOC_FONT_FONT_GETOUTLINE},
-    {"set_outline", font_set_outline, METH_O, DOC_FONT_FONT_SETOUTLINE},
     {"get_point_size", font_get_ptsize, METH_NOARGS,
      DOC_FONT_FONT_GETPOINTSIZE},
     {"set_point_size", font_set_ptsize, METH_O, DOC_FONT_FONT_SETPOINTSIZE},
