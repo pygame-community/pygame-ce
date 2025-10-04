@@ -742,7 +742,6 @@ class FontTypeTest(unittest.TestCase):
         with self.assertRaises(pygame.error):
             _ = f.outline
 
-
     def test_font_name(self):
         f = pygame_font.Font(None, 20)
         self.assertEqual(f.name, "FreeSans")
