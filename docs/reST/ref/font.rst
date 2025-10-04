@@ -306,6 +306,23 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.point_size ##
 
+
+   .. attribute:: outline
+
+      | :sl:`Gets or sets the font's outline value`
+      | :sg:`outline -> int`
+
+      The outline value of the font.
+
+      When set to 0, the font will be drawn normally. When positive,
+      the text will be drawn as a hollow outline. This can be drawn
+      underneath unoutlined text to create a text outline effect. Larger values
+      produce a thicker outline. Negative values are not valid.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Font.outline ##
+
    .. method:: render
 
       | :sl:`draw text on a new Surface`
