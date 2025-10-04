@@ -11,6 +11,6 @@ sha512sum -c png.sha512
 tar xzf ${PNG}.tar.gz
 cd $PNG
 
-./configure --with-zlib-prefix=$PG_DEP_PREFIX $PG_BASE_CONFIGURE_FLAGS
+cmake . $PG_BASE_CMAKE_FLAGS -DPNG_TESTS=0 -DPNG_TOOLS=0 -DPNG_STATIC=0 -DPNG_FRAMEWORK=0
 make
 make install
