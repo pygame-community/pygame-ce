@@ -369,6 +369,8 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderSetLogicalSize
     # https://wiki.libsdl.org/SDL_RenderGetLogicalSize
     # https://wiki.libsdl.org/SDL_RenderGetIntegerScale
+    # https://wiki.libsdl.org/SDL2/SDL_RenderLogicalToWindow
+    # https://wiki.libsdl.org/SDL2/SDL_RenderWindowToLogical
     int SDL_RenderSetScale(SDL_Renderer* renderer,
                            float         scaleX,
                            float         scaleY)
@@ -382,6 +384,20 @@ cdef extern from "SDL.h" nogil:
                                   int*          w,
                                   int*          h)
     int SDL_RenderGetIntegerScale(SDL_Renderer* renderer)
+    # Note: Must be changed to SDL_RenderCoordinatesToWindow for SDL3
+    # https://wiki.libsdl.org/SDL3/SDL_RenderCoordinatesToWindow
+    void SDL_RenderLogicalToWindow(SDL_Renderer* renderer,
+                                   float lx,
+                                   float ly,
+                                   int *wx,
+                                   int *wy);
+    # Note: Must be changed to SDL_RenderCoordinatesFromWindow for SDL3
+    # https://wiki.libsdl.org/SDL3/SDL_RenderCoordinatesFromWindow
+    void SDL_RenderWindowToLogical(SDL_Renderer* renderer,
+                                   int wx,
+                                   int wy,
+                                   float *lx,
+                                   float *ly);
 
     int SDL_VERSION_ATLEAST(int major, int minor, int patch)
 

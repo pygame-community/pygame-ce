@@ -87,6 +87,8 @@
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
 
+#define PG_UpdateWindowSurface SDL_UpdateWindowSurface
+
 /* Emulating SDL2 SDL_LockMutex API. In SDL3, it returns void. */
 static inline int
 PG_LockMutex(SDL_mutex *mutex)
@@ -103,7 +105,32 @@ PG_UnlockMutex(SDL_mutex *mutex)
     return 0;
 }
 
-#define PG_SURF_BitsPerPixel(surf) SDL_BITSPERPIXEL(surf->format)
+// Implementation from SDL_GetMasksForPixelFormat, which is used by
+// SDL_InitPixelFormatDetails in SDL_pixels.c
+// Created to match surf->format->BitsPerPixel in SDL2,
+// details->bits_per_pixel in SDL3.
+static inline int
+PG_SURF_BitsPerPixel(SDL_Surface *surf)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(surf->format)) {
+        // however, some of these are packed formats, and can legit declare
+        // bits-per-pixel!
+        switch (surf->format) {
+            case SDL_PIXELFORMAT_YUY2:
+            case SDL_PIXELFORMAT_UYVY:
+            case SDL_PIXELFORMAT_YVYU:
+                return 32;
+            default:
+                return 0;  // oh well.
+        }
+    }
+
+    if (SDL_BYTESPERPIXEL(surf->format) <= 2) {
+        return SDL_BITSPERPIXEL(surf->format);
+    }
+    return SDL_BYTESPERPIXEL(surf->format) * 8;
+}
+
 #define PG_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
@@ -197,6 +224,12 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect)
+
+static inline bool
+PG_UpdateWindowSurface(SDL_Window *window)
+{
+    return SDL_UpdateWindowSurface(window) == 0;
+}
 
 static inline int
 PG_LockMutex(SDL_mutex *mutex)
@@ -431,8 +464,6 @@ typedef enum {
 
     PGE_MIDIIN,
     PGE_MIDIOUT,
-    PGE_KEYREPEAT, /* Special internal pygame event, for managing key-presses
-                    */
 
     /* DO NOT CHANGE THE ORDER OF EVENTS HERE */
     PGE_WINDOWSHOWN,

@@ -198,13 +198,14 @@ class Dev:
             "build": get_build_deps(),
             "docs": get_build_deps(),
             "test": {"numpy"},
-            "lint": {"pylint==3.3.1", "numpy"},
+            "lint": {"pylint==3.3.7", "numpy"},
             "stubs": {"mypy==1.13.0", "numpy"},
-            "format": {"pre-commit==4.0.1"},
+            "format": {"pre-commit==4.2.0"},
         }
         self.deps["all"] = set()
         for k in self.deps.values():
             self.deps["all"] |= k
+        self.deps["install"] = self.deps["build"]
 
     def cmd_build(self):
         wheel_dir = self.args.get("wheel", DIST_DIR)
@@ -281,6 +282,8 @@ class Dev:
         else:
             pprint(f"Installing in editable mode ({info_str})")
             pip_install(self.py, install_args)
+
+    cmd_install = cmd_build
 
     def cmd_docs(self):
         full = self.args.get("full", False)
@@ -362,7 +365,9 @@ class Dev:
         )
 
         # Build command
-        build_parser = subparsers.add_parser("build", help="Build the project")
+        build_parser = subparsers.add_parser(
+            "build", help="Build and install the project", aliases=["install"]
+        )
         build_parser.add_argument(
             "--wheel",
             nargs="?",
@@ -455,11 +460,18 @@ class Dev:
         subparsers.add_parser("format", help="Format code")
 
         # All command
-        subparsers.add_parser(
+        all_parser = subparsers.add_parser(
             "all",
             help=(
                 "Run all the subcommands. This is handy for checking that your work is "
                 "ready to be submitted"
+            ),
+        )
+        all_parser.add_argument(
+            "mod",
+            nargs="*",
+            help=(
+                "Name(s) of sub-module(s) to test. If no args are given all are tested"
             ),
         )
 

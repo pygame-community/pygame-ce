@@ -27,8 +27,6 @@ constants = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 display = py.extension_module(
     'display',
     'display.c',
@@ -37,7 +35,6 @@ display = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 event = py.extension_module(
     'event',
@@ -424,6 +421,8 @@ if sdl_mixer_dep.found()
     )
 endif
 
+endif
+
 if freetype_dep.found()
     _freetype = py.extension_module(
         '_freetype',
@@ -441,8 +440,6 @@ if freetype_dep.found()
         install: true,
         subdir: pg,
     )
-endif
-
 endif
 
 if portmidi_dep.found()

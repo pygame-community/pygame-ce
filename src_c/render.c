@@ -469,6 +469,61 @@ renderer_set_logical_size(pgRendererObject *self, PyObject *arg, void *closure)
 }
 
 static PyObject *
+renderer_coordinates_to_window(pgRendererObject *self, PyObject *args,
+                               PyObject *kwargs)
+{
+    float lx, ly;
+    PyObject *point;
+
+    static char *keywords[] = {"point", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &point)) {
+        return NULL;
+    }
+    if (!pg_TwoFloatsFromObj(point, &lx, &ly)) {
+        return RAISE(PyExc_TypeError,
+                     "point must be a sequence of two numbers");
+    }
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    float wx, wy;
+    SDL_RenderCoordinatesToWindow(self->renderer, lx, ly, &wx, &wy);
+
+    return pg_tuple_couple_from_values_double(wx, wy);
+#else
+    int wx, wy;
+    SDL_RenderLogicalToWindow(self->renderer, lx, ly, &wx, &wy);
+
+    return pg_tuple_couple_from_values_double((float)wx, (float)wy);
+#endif
+}
+
+static PyObject *
+renderer_coordinates_from_window(pgRendererObject *self, PyObject *args,
+                                 PyObject *kwargs)
+{
+    float lx, ly;
+    float wx, wy;
+    PyObject *point;
+
+    static char *keywords[] = {"point", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &point)) {
+        return NULL;
+    }
+    if (!pg_TwoFloatsFromObj(point, &wx, &wy)) {
+        return RAISE(PyExc_TypeError,
+                     "point must be a sequence of two numbers");
+    }
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_RenderCoordinatesFromWindow(self->renderer, wx, wy, &lx, &ly);
+#else
+    SDL_RenderWindowToLogical(self->renderer, (int)wx, (int)wy, &lx, &ly);
+#endif
+
+    return pg_tuple_couple_from_values_double(lx, ly);
+}
+
+static PyObject *
 renderer_get_scale(pgRendererObject *self, void *closure)
 {
     float x, y;
@@ -627,6 +682,7 @@ texture_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_XINCREF(new_texture->renderer);
     new_texture->width = surf->w;
     new_texture->height = surf->h;
+    new_texture->weakreflist = NULL;
     return (PyObject *)new_texture;
 }
 
@@ -1114,6 +1170,9 @@ texture_dealloc(pgTextureObject *self, PyObject *_null)
     if (self->texture) {
         SDL_DestroyTexture(self->texture);
     }
+    if (self->weakreflist) {
+        PyObject_ClearWeakRefs((PyObject *)self);
+    }
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -1150,6 +1209,12 @@ static PyMethodDef renderer_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT},
     {"get_viewport", (PyCFunction)renderer_get_viewport, METH_NOARGS,
      DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT},
+    {"coordinates_to_window", (PyCFunction)renderer_coordinates_to_window,
+     METH_VARARGS | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_RENDERER_COORDINATESTOWINDOW},
+    {"coordinates_from_window", (PyCFunction)renderer_coordinates_from_window,
+     METH_VARARGS | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_RENDERER_COORDINATESFROMWINDOW},
     {"compose_custom_blend_mode",
      (PyCFunction)renderer_compose_custom_blend_mode,
      METH_VARARGS | METH_KEYWORDS | METH_CLASS,
@@ -1228,6 +1293,7 @@ static PyTypeObject pgTexture_Type = {
     .tp_basicsize = sizeof(pgTextureObject),
     .tp_dealloc = (destructor)texture_dealloc,
     .tp_doc = DOC_SDL2_VIDEO_TEXTURE,
+    .tp_weaklistoffset = offsetof(pgTextureObject, weakreflist),
     .tp_methods = texture_methods,
     .tp_init = (initproc)texture_init,
     .tp_new = PyType_GenericNew,

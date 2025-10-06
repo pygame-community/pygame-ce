@@ -5,6 +5,10 @@ import unittest
 
 import pygame
 
+pygame.display.init()
+is_wayland = pygame.display.get_driver() == "wayland"
+pygame.display.quit()
+
 EVENT_TYPES = (
     #   pygame.NOEVENT,
     #   pygame.ACTIVEEVENT,
@@ -837,8 +841,9 @@ class EventModuleTest(unittest.TestCase):
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
-        'requires the SDL_VIDEODRIVER to be a non-null value',
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
+    @unittest.skipIf(is_wayland, "broken on wayland")
     def test_set_grab__and_get_symmetric(self):
         """Ensure event grabbing can be enabled and disabled.
 
@@ -905,8 +910,9 @@ class EventModuleTest(unittest.TestCase):
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
-        'requires the SDL_VIDEODRIVER to be a non-null value',
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
+    @unittest.skipIf(is_wayland, "broken on wayland")
     def test_get_grab(self):
         """Ensure get_grab() works as expected"""
         surf = pygame.display.set_mode((10, 10))

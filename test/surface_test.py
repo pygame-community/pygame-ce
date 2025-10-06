@@ -1228,8 +1228,12 @@ class GeneralSurfaceTests(unittest.TestCase):
             im = pygame.image.load(example_path(os.path.join("data", "city.png")))
             im2 = pygame.image.load(example_path(os.path.join("data", "brick.png")))
 
-            self.assertEqual(im.get_palette(), ((0, 0, 0, 255), (255, 255, 255, 255)))
-            self.assertEqual(im2.get_palette(), ((0, 0, 0, 255), (0, 0, 0, 255)))
+            # Only validate the first two entries; stbimage backend gives a 256
+            # length palette while libpng doesn't.
+            self.assertEqual(
+                im.get_palette()[:2], ((0, 0, 0, 255), (255, 255, 255, 255))
+            )
+            self.assertEqual(im2.get_palette()[:2], ((0, 0, 0, 255), (0, 0, 0, 255)))
 
             self.assertEqual(
                 repr(im.convert(32)), "<Surface(24x24x32, colorkey=(0, 0, 0, 255))>"
