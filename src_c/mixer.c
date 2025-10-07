@@ -520,14 +520,8 @@ mixer_quit(PyObject *self, PyObject *_null)
 
         if (channeldata) {
             for (i = 0; i < numchanneldata; ++i) {
-                if (channeldata[i].sound) {
-                    Mix_HaltGroup(
-                        (int)(intptr_t)pgSound_AsChunk(channeldata[i].sound));
-                }
-                if (channeldata[i].queue) {
-                    Mix_HaltGroup(
-                        (int)(intptr_t)pgSound_AsChunk(channeldata[i].queue));
-                }
+                Py_XDECREF(channeldata[i].sound);
+                Py_XDECREF(channeldata[i].queue);
             }
             free(channeldata);
             channeldata = NULL;
