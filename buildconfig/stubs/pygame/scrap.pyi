@@ -1,7 +1,9 @@
-from collections.abc import ByteString
 from typing import Optional
 
-from typing_extensions import deprecated  # added in 3.13
+from typing_extensions import (
+    Buffer,  # added in 3.12,
+    deprecated,  # added in 3.13
+)
 
 @deprecated("since 2.2.0. Use the new API instead, which only requires display init")
 def init() -> None: ...
@@ -12,7 +14,7 @@ def get(data_type: str, /) -> Optional[bytes]: ...
 @deprecated("since 2.2.0. Use the new API instead, which only supports strings")
 def get_types() -> list[str]: ...
 @deprecated("since 2.2.0. Use the new API instead: `pygame.scrap.put_text`")
-def put(data_type: str, data: ByteString, /) -> None: ...
+def put(data_type: str, data: Buffer, /) -> None: ...
 @deprecated("since 2.2.0. Use the new API instead: `pygame.scrap.has_text`")
 def contains(data_type: str, /) -> bool: ...
 @deprecated("since 2.2.0. Use the new API instead, which uses system clipboard")
