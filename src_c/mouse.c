@@ -324,8 +324,9 @@ mouse_get_visible(PyObject *self, PyObject *_null)
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_Window *win = pg_GetDefaultWindow();
-    result =
-        win ? (PG_CursorVisible() && !SDL_GetWindowRelativeMouseMode(win)) : 0;
+
+    /* If win is NULL, SDL_GetWindowRelativeMouseMode returns false */
+    result = (PG_CursorVisible() && !SDL_GetWindowRelativeMouseMode(win));
 #else
     result = (PG_CursorVisible() && !SDL_GetRelativeMouseMode());
 #endif
@@ -618,8 +619,8 @@ mouse_set_relative_mode(PyObject *self, PyObject *arg)
     if (mode == -1) {
         return NULL;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_Window *win = pg_GetDefaultWindow();
+#if SDL_VERSION_ATLEAST(3, 0, 0)
     if (!win) {
         return RAISE(pgExc_SDLError,
                      "display.set_mode has not been called yet.");
@@ -628,6 +629,15 @@ mouse_set_relative_mode(PyObject *self, PyObject *arg)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 #else
+    if (!win) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "Calling mouse.set_relative_mode before calling "
+                         "display.set_mode has been deprecated and may raise "
+                         "errors in the future.",
+                         1) == -1) {
+            return NULL;
+        }
+    }
     if (SDL_SetRelativeMouseMode((SDL_bool)mode)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }

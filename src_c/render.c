@@ -682,6 +682,7 @@ texture_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_XINCREF(new_texture->renderer);
     new_texture->width = surf->w;
     new_texture->height = surf->h;
+    new_texture->weakreflist = NULL;
     return (PyObject *)new_texture;
 }
 
@@ -1169,6 +1170,9 @@ texture_dealloc(pgTextureObject *self, PyObject *_null)
     if (self->texture) {
         SDL_DestroyTexture(self->texture);
     }
+    if (self->weakreflist) {
+        PyObject_ClearWeakRefs((PyObject *)self);
+    }
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -1289,6 +1293,7 @@ static PyTypeObject pgTexture_Type = {
     .tp_basicsize = sizeof(pgTextureObject),
     .tp_dealloc = (destructor)texture_dealloc,
     .tp_doc = DOC_SDL2_VIDEO_TEXTURE,
+    .tp_weaklistoffset = offsetof(pgTextureObject, weakreflist),
     .tp_methods = texture_methods,
     .tp_init = (initproc)texture_init,
     .tp_new = PyType_GenericNew,

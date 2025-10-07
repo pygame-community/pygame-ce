@@ -1605,6 +1605,13 @@ class FreeTypeFontTest(unittest.TestCase):
         for i in range(n):
             self.assertIsNone(refs[i](), "ref %d not collected" % i)
 
+        font2 = ft.Font(self._fixed_path)
+        ref = weakref.ref(font2)
+        del font2
+        for i in range(2):
+            gc.collect()
+        self.assertIsNone(ref(), "ref not collected")
+
         try:
             from sys import getrefcount
         except ImportError:
