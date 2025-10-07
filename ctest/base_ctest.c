@@ -3,8 +3,6 @@
 #include "base.h"
 #include "test_common.h"
 
-static PyObject *base_module;
-
 /* setUp and tearDown must be nonstatic void(void) */
 void setUp(void) {}
 
@@ -15,12 +13,30 @@ void tearDown(void) {}
  */
 PG_CTEST(test__pg_is_int_tuple_nominal)(PyObject *self, PyObject *_null) {
   PyObject *arg1 = Py_BuildValue("(iii)", 1, 2, 3);
+  if (!arg1) {
+    // exception already set by Py_BuildValue
+    return NULL;
+  }
+
   PyObject *arg2 = Py_BuildValue("(iii)", -1, -2, -3);
+  if (!arg2) {
+    // exception already set by Py_BuildValue
+    return NULL;
+  }
+
   PyObject *arg3 = Py_BuildValue("(iii)", 1, -2, -3);
+  if (!arg3) {
+    // exception already set by Py_BuildValue
+    return NULL;
+  }
 
   TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg1));
   TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg2));
   TEST_ASSERT_EQUAL(1, _pg_is_int_tuple(arg3));
+
+  Py_DECREF(arg1);
+  Py_DECREF(arg2);
+  Py_DECREF(arg3);
 
   Py_RETURN_NONE;
 }
@@ -31,13 +47,30 @@ PG_CTEST(test__pg_is_int_tuple_nominal)(PyObject *self, PyObject *_null) {
 PG_CTEST(test__pg_is_int_tuple_failureModes)(PyObject *self, PyObject *_null) {
   PyObject *arg1 =
       Py_BuildValue("(sss)", (char *)"Larry", (char *)"Moe", (char *)"Curly");
-  PyObject *arg2 = Py_BuildValue("(sss)", (char *)NULL, (char *)NULL,
-                                 (char *)NULL); // tuple of None's
+  if (!arg1) {
+    // exception already set by Py_BuildValue
+    return NULL;
+  }
+
+  PyObject *arg2 = Py_BuildValue("(zzz)", NULL, NULL, NULL); // tuple of None's
+  if (!arg2) {
+    // exception already set by Py_BuildValue
+    return NULL;
+  }
+
   PyObject *arg3 = Py_BuildValue("(OOO)", arg1, arg2, arg1);
+  if (!arg3) {
+    // exception already set by Py_BuildValue
+    return NULL;
+  }
 
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg1));
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg2));
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg3));
+
+  Py_DECREF(arg1);
+  Py_DECREF(arg2);
+  Py_DECREF(arg3);
 
   Py_RETURN_NONE;
 }
@@ -47,12 +80,30 @@ PG_CTEST(test__pg_is_int_tuple_failureModes)(PyObject *self, PyObject *_null) {
  */
 PG_CTEST(test__pg_is_int_tuple_floats)(PyObject *self, PyObject *_null) {
   PyObject *arg1 = Py_BuildValue("(ddd)", 1.0, 2.0, 3.0);
+  if (!arg1) {
+    // exception already set by Py_BuildValue
+    return NULL;
+  }
+
   PyObject *arg2 = Py_BuildValue("(ddd)", -1.1, -2.2, -3.3);
+  if (!arg2) {
+    // exception already set by Py_BuildValue
+    return NULL;
+  }
+
   PyObject *arg3 = Py_BuildValue("(ddd)", 1.0, -2.0, -3.1);
+  if (!arg3) {
+    // exception already set by Py_BuildValue
+    return NULL;
+  }
 
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg1));
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg2));
   TEST_ASSERT_EQUAL(0, _pg_is_int_tuple(arg3));
+
+  Py_DECREF(arg1);
+  Py_DECREF(arg2);
+  Py_DECREF(arg3);
 
   Py_RETURN_NONE;
 }
@@ -74,6 +125,8 @@ static PyObject *reset_test(PyObject *self, PyObject *_null) {
 /*=======Run The Tests=======*/
 static PyObject *run_tests(PyObject *self, PyObject *_null) {
   UnityBegin("base_ctest.c");
+  // This macro has calls to setUp and tearDown already baked into it
+  // so there's no need to explicitly call resetTest between test cases
   RUN_TEST_PG_INTERNAL(test__pg_is_int_tuple_nominal);
   RUN_TEST_PG_INTERNAL(test__pg_is_int_tuple_failureModes);
   RUN_TEST_PG_INTERNAL(test__pg_is_int_tuple_floats);
@@ -91,10 +144,11 @@ static PyMethodDef base_test_methods[] = {
     {"test__pg_is_int_tuple_floats", (PyCFunction)test__pg_is_int_tuple_floats,
      METH_NOARGS, "Tests _pg_is_int_tuple when passed a tuple of floats"},
     {"reset_test", (PyCFunction)reset_test, METH_NOARGS,
-     "Resets the test suite between tests, run_tests automatically calls this "
-     "after each test case it calls"},
+     "Explicitly runs tearDown(); setUp(). Note: RUN_TEST_PG_INTERNAL calls "
+     "setUp/tearDown around each test; run_tests does not call reset_test "
+     "explicitly."},
     {"run_tests", (PyCFunction)run_tests, METH_NOARGS,
-     "Runs all the tests in this test wuite"},
+     "Runs all the tests in this test suite"},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(base_ctest) {
