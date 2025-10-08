@@ -52,51 +52,57 @@ class Surface:
     the format will best match the display Surface if one was initialized, otherwise
     the most suitable format is chosen for the current platform.
 
-    One way to control the pixel format/charateristics is providing a bitmask of flags:
-       * ``SRCALPHA``: The Surface will include an alpha channel.
-       * ``HWSURFACE``: Creates the image in video memory but is obsolete in pygame 2.
+    One way to control the pixel format/characteristics is providing a bitmask of flags:
+       * ``SRCALPHA``: The Surface will include a per-pixel alpha channel (transparency).
+       * ``HWSURFACE``: (Obsolete in pygame 2) Creates the image in video memory.
 
-    Otherwise The pixel format can be controlled in different ways:
-       * Providing another ``Surface`` after the flags argument. In this case that Surface's
-         format will be used.
-       * Advanced users can provide a bit depth and masks to precisely control how the
+    Other exclusive ways to control the pixel format are available:
+       * Providing another ``Surface`` after the flags argument. That Surface's
+         format will be used and other arguments will be ignored.
+       * Advanced users can provide a bit depth and masks to precisely control how a
          pixel's channels are organized in memory. If no masks are provided they will
-         be selected optimally from the bit depth. Normal usage of Surfaces should
-         only use the default format.
+         be selected optimally from the bit depth. Normal usage of Surfaces is to leave
+         bit depth and masks as default.
 
-    An indexed format requires a palette for its colors. While pygame provides a default
-    palette, it can also be controlled with the appropriate methods.
+    An indexed format stores an index up to 255 instead of a color for each pixel,
+    therefore requires an associated palette. While pygame provides a default palette,
+    it can be controlled with the appropriate methods.
 
     Surfaces additionally have alpha, colorkey and rectangle clipping. These characteristics
     mainly affect how the Surface is blitted to other Surfaces. The blit routines will
     attempt to use hardware acceleration when possible, otherwise they will use highly
-    optimized software blitting methods. The default clipping area is the whole
-    Surface. Otherwise, only that area will be able to be modified.
+    optimized software blitting methods.
+    The clipping area is a rect defining the only area of the Surface that can be
+    modified. By default the whole Surface can be modified.
 
-    There are three types of transparency supported for a pygame Surface:
-       * Per-pixel alpha. It requires a format with an alpha channel where
-         very pixel has its own alpha value, making it very flexible.
-       * Premultiplied alpha: An advanced usage of per-pixel alpha. See
+    There are four types of transparency supported for a pygame Surface:
+       * Per-pixel alpha. Provided by a format with an alpha channel where
+         every pixel has its own alpha value.
+       * Pre-multiplied alpha: An advanced usage of per-pixel alpha. See
          :meth:`Surface.premul_alpha` for more.
-       * Global alpha: A single alpha values controlling all the pixels.
+       * Global alpha: A single alpha value that applies to the whole Surface.
        * Colorkey: A color flagged to be considered transparent in operations.
 
-    Every type of alpha can be mixed. An alpha of 255 is opaque while an
-    alpha of 0 is fully transparent.
+    Per-pixel alpha allows the greatest flexibility while being generally
+    slower than global alpha or colorkey. Pre-multiplied alpha is generally
+    faster than regular per-pixel alpha.
+
+    All types of transparency can be used togerher and correctly mix, except
+    pre-multipled alpha does not consider colorkey nor global alpha.
+    Also, An alpha of 255 is opaque while an alpha of 0 is fully transparent.
 
     Surfaces can be created that reference the pixel data of other Surfaces.
-    These are called suburfaces and are created with the :meth:`subsurface()`
+    These are called subsurfaces and are created with the :meth:`subsurface()`
     method. Changing the pixels referenced by either the original Surface or
     the subsurface will have an effect on both.
 
-    There is support for pixel access for Surfaces but it is slow on hardware
-    Surfaces. You can use the :meth:`get_at()` and :meth:`set_at()` functions
-    but while they are fine for simple access will be slow when doing pixel work
-    with them. It is advised to use a :class:`PixelArray` object to manipulate
-    pixels efficiently. Alternatively you can use the :mod:`pygame.surfarray`
-    module (which requires NumPy). Perform drawing operations and transformations
-    on the pixels efficiently with the :mod:`pygame.draw` and :mod:`pygame.transform`
-    modules.
+    You can use the :meth:`get_at()` and :meth:`set_at()` functions to access
+    pixels of Surfaces but while they are fine for simple access they will be
+    slow when doing pixel work with them.
+    It is advised to use a :class:`PixelArray` object to manipulate pixels efficiently.
+    Alternatively you can use the :mod:`pygame.surfarray` module (which requires NumPy).
+    Perform drawing operations and transformations on the pixels efficiently with the
+    :mod:`pygame.draw` and :mod:`pygame.transform` modules.
     Additionally, the :meth:`map_rgb()` and :meth:`unmap_rgb()` methods are
     available to convert between colors and their corresponding packed integers
     (that is how each pixel is stored internally).
@@ -297,7 +303,7 @@ class Surface:
              explained in the :class:`Surface` constructor. Flags can also be
              provided, for example ``SRCALPHA`` will request an alpha channel.
            * Passing the bitmasks of the pixels and flags. Note that the bit depth
-             could be calculated wrong, therefore it is not adviced to use this
+             could be calculated wrong, therefore it is not advised to use this
              path as it might be deprecated in the future.
 
         The returned surface will have the same class as this surface, making this
@@ -311,7 +317,7 @@ class Surface:
     def convert_alpha(self) -> Surface:
         """Change the pixel format of a Surface including per pixel alphas.
 
-        Creates a new copy of the Surface with a different format that contains
+        Creates a new copy of the Surface with the desired pixel format that contains
         an alpha channel. Unlike the :meth:`convert()` method, the pixel format
         for the new Surface will not be exactly the same as the display Surface,
         but it will be suited and optimized for fast alpha blitting to it.
@@ -731,7 +737,7 @@ class Surface:
            * ``HWACCEL``: Blit uses hardware acceleration
            * ``SRCCOLORKEY``: Blit uses a source color key
            * ``RLEACCELOK``: Private flag
-           * ``RLEACCEL``: Surface is RLE encoded
+           * ``RLEACCEL``: Surface has run-length encoding
            * ``PREALLOC``: Surface uses preallocated memory
 
         See :func:`pygame.display.set_mode()` for flags exclusive to the
