@@ -87,8 +87,8 @@ class Surface:
     slower than global alpha or colorkey. Pre-multiplied alpha is generally
     faster than regular per-pixel alpha.
 
-    All types of transparency can be used togerher and correctly mix, except
-    pre-multipled alpha does not consider colorkey nor global alpha.
+    All types of transparency can be used together and correctly mix, except
+    pre-multiplied alpha does not consider colorkey nor global alpha.
     Also, An alpha of 255 is opaque while an alpha of 0 is fully transparent.
 
     Surfaces can be created that reference the pixel data of other Surfaces.
