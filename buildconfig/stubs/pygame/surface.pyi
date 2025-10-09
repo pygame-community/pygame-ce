@@ -442,12 +442,6 @@ class Surface:
         blending will be disabled. This full alpha is compatible with other
         kinds of transparency.
 
-        This value is different than the per pixel Surface alpha. For a surface
-        with per pixel alpha, blanket alpha is ignored and ``None`` is returned.
-
-        .. versionchangedold:: 2.0 per-surface alpha can be combined with per-pixel
-            alpha.
-
         The optional flags argument can be set to ``pygame.RLEACCEL`` to provide
         better performance on non accelerated displays. An ``RLEACCEL`` Surface
         will be slower to modify, but quicker to blit as a source.
@@ -459,11 +453,77 @@ class Surface:
     def get_alpha(self) -> Optional[int]:
         """Get the current Surface transparency value.
 
-        Return the current alpha value for the Surface. If the blendmode of the
-        Surface is not ``pygame.BLENDMODE_NONE``, this method will always return
-        a valid value in the range 0 (fully transparent) - 255 (fully opaque).
-        Otherwise, this method will return None until an alpha is set with
-        :meth:`set_alpha()` (the set alpha value will be returned).
+        Return the current alpha value for the Surface which is an integer in the
+        range 0 (fully transparent) - 255 (fully opaque) set by :meth:`set_alpha()`.
+        Until an alpha is set this method will return None.
+        """
+
+    def lock(self) -> None:
+        """Lock the Surface memory for pixel access.
+
+        Lock the pixel data of a Surface for access. On accelerated Surfaces, the
+        pixel data may be stored in volatile video memory or nonlinear compressed
+        forms. When a Surface is locked the pixel memory becomes available to
+        access by regular software. Code that reads or writes pixel values will
+        need the Surface to be locked.
+
+        Surfaces should not remain locked for more than necessary. A locked
+        Surface can often not be displayed or managed by pygame.
+
+        Not all Surfaces require locking. The :meth:`mustlock()` method can
+        determine if it is actually required. There is no performance penalty for
+        locking and unlocking a Surface that does not need it.
+
+        All pygame functions will automatically lock and unlock the Surface data
+        as needed. If a section of code is going to make calls that will
+        repeatedly lock and unlock the Surface many times, it can be helpful to
+        wrap the block inside a lock and unlock pair.
+
+        It is safe to nest locking and unlocking calls. The surface will only be
+        unlocked after the final lock is released.
+        """
+
+    def unlock(self) -> None:
+        """Unlock the Surface memory from pixel access.
+
+        Unlock the Surface pixel data after it has been locked. The unlocked
+        Surface can once again be drawn and managed by pygame. See the
+        :meth:`lock()` documentation for more details.
+
+        All pygame functions will automatically lock and unlock the Surface data
+        as needed. If a section of code is going to make calls that will
+        repeatedly lock and unlock the Surface many times, it can be helpful to
+        wrap the block inside a lock and unlock pair.
+
+        It is safe to nest locking and unlocking calls. The surface will only be
+        unlocked after the final lock is released.
+        """
+
+    def mustlock(self) -> bool:
+        """Test if the Surface requires locking.
+
+        Returns ``True`` if the Surface is required to be locked to access pixel
+        data. Usually pure software Surfaces do not require locking. This method
+        is rarely needed, since it is safe and quickest to just lock all Surfaces
+        as needed.
+
+        All pygame functions will automatically lock and unlock the Surface data
+        as needed. If a section of code is going to make calls that will
+        repeatedly lock and unlock the Surface many times, it can be helpful to
+        wrap the block inside a lock and unlock pair.
+        """
+
+    def get_locked(self) -> bool:
+        """Test if the Surface is current locked.
+
+        Returns ``True`` when the Surface is locked. It doesn't matter how many
+        times the Surface is locked.
+        """
+
+    def get_locks(self) -> tuple[Any, ...]:
+        """Gets the locks for the Surface.
+
+        Returns the currently existing locks for the Surface.
         """
 
     def get_at(self, x_y: Point, /) -> Color:
@@ -956,74 +1016,6 @@ class Surface:
         Refer to the :meth:`premul_alpha` method for more information.
 
         .. versionadded:: 2.5.1
-        """
-
-    def lock(self) -> None:
-        """Lock the Surface memory for pixel access.
-
-        Lock the pixel data of a Surface for access. On accelerated Surfaces, the
-        pixel data may be stored in volatile video memory or nonlinear compressed
-        forms. When a Surface is locked the pixel memory becomes available to
-        access by regular software. Code that reads or writes pixel values will
-        need the Surface to be locked.
-
-        Surfaces should not remain locked for more than necessary. A locked
-        Surface can often not be displayed or managed by pygame.
-
-        Not all Surfaces require locking. The :meth:`mustlock()` method can
-        determine if it is actually required. There is no performance penalty for
-        locking and unlocking a Surface that does not need it.
-
-        All pygame functions will automatically lock and unlock the Surface data
-        as needed. If a section of code is going to make calls that will
-        repeatedly lock and unlock the Surface many times, it can be helpful to
-        wrap the block inside a lock and unlock pair.
-
-        It is safe to nest locking and unlocking calls. The surface will only be
-        unlocked after the final lock is released.
-        """
-
-    def unlock(self) -> None:
-        """Unlock the Surface memory from pixel access.
-
-        Unlock the Surface pixel data after it has been locked. The unlocked
-        Surface can once again be drawn and managed by pygame. See the
-        :meth:`lock()` documentation for more details.
-
-        All pygame functions will automatically lock and unlock the Surface data
-        as needed. If a section of code is going to make calls that will
-        repeatedly lock and unlock the Surface many times, it can be helpful to
-        wrap the block inside a lock and unlock pair.
-
-        It is safe to nest locking and unlocking calls. The surface will only be
-        unlocked after the final lock is released.
-        """
-
-    def mustlock(self) -> bool:
-        """Test if the Surface requires locking.
-
-        Returns ``True`` if the Surface is required to be locked to access pixel
-        data. Usually pure software Surfaces do not require locking. This method
-        is rarely needed, since it is safe and quickest to just lock all Surfaces
-        as needed.
-
-        All pygame functions will automatically lock and unlock the Surface data
-        as needed. If a section of code is going to make calls that will
-        repeatedly lock and unlock the Surface many times, it can be helpful to
-        wrap the block inside a lock and unlock pair.
-        """
-
-    def get_locked(self) -> bool:
-        """Test if the Surface is current locked.
-
-        Returns ``True`` when the Surface is locked. It doesn't matter how many
-        times the Surface is locked.
-        """
-
-    def get_locks(self) -> tuple[Any, ...]:
-        """Gets the locks for the Surface.
-
-        Returns the currently existing locks for the Surface.
         """
 
     @property
