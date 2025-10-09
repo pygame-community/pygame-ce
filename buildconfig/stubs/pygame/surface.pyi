@@ -132,7 +132,7 @@ class Surface:
         self,
         size: Point,
         flags: int = 0,
-        Surface: Surface = ...,
+        surface: Surface = ...,
     ) -> None: ...
     def __copy__(self) -> Surface: ...
     def __deepcopy__(self, memo) -> Surface: ...
@@ -283,7 +283,7 @@ class Surface:
         """
 
     @overload
-    def convert(self, Surface: Surface, /) -> Surface: ...
+    def convert(self, surface: Surface, /) -> Surface: ...
     @overload
     def convert(self, depth: int, flags: int = 0, /) -> Surface: ...
     @overload
@@ -913,22 +913,22 @@ class Surface:
         information is given. A ``ValueError`` is raised if the Surface's pixels
         are discontinuous.
 
-        '1' returns a (Surface-width * Surface-height) array of continuous
+        '1' returns a (Surface.width * Surface.height) array of continuous
         pixels. A ``ValueError`` is raised if the Surface pixels are
         discontinuous.
 
-        '2' returns a (Surface-width, Surface-height) array of raw pixels.
+        '2' returns a (Surface.width, Surface.height) array of raw pixels.
         The pixels are Surface-bytesize-d unsigned integers. The pixel format is
         Surface specific. The 3 byte unsigned integers of 24 bit Surfaces are
         unlikely accepted by anything other than other pygame functions.
 
-        '3' returns a (Surface-width, Surface-height, 3) array of ``RGB`` color
+        '3' returns a (Surface.width, Surface.height, 3) array of ``RGB`` color
         components. Each of the red, green, and blue components are unsigned
         bytes. Only 24-bit and 32-bit Surfaces are supported. The color
         components must be in either ``RGB`` or ``BGR`` order within the pixel.
 
         'r' for red, 'g' for green, 'b' for blue, and 'a' for alpha return a
-        (Surface-width, Surface-height) view of a single color component within a
+        (Surface.width, Surface.height) view of a single color component within a
         Surface: a color plane. Color components are unsigned bytes. Both 24-bit
         and 32-bit Surfaces support 'r', 'g', and 'b'. Only 32-bit Surfaces with
         ``SRCALPHA`` support 'a'.

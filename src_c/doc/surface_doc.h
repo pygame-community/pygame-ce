@@ -1,9 +1,9 @@
 /* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
-#define DOC_SURFACE "Surface(size, flags=0, depth=0, masks=None) -> Surface\nSurface(size, flags=0, Surface=...) -> Surface\nPygame object for representing images."
+#define DOC_SURFACE "Surface(size, flags=0, depth=0, masks=None) -> Surface\nSurface(size, flags=0, surface=...) -> Surface\nPygame object for representing images."
 #define DOC_SURFACE_BLIT "blit(source, dest=(0, 0), area=None, special_flags=0) -> Rect\nDraw another Surface onto this one."
 #define DOC_SURFACE_BLITS "blits(blit_sequence, doreturn=1) -> Union[list[Rect], None]\nDraw many Surfaces onto this Surface at their corresponding location."
 #define DOC_SURFACE_FBLITS "fblits(blit_sequence, special_flags=0, /) -> None\nDraw many Surfaces onto this Surface at their corresponding location and with the same special_flags."
-#define DOC_SURFACE_CONVERT "convert(Surface, /) -> Surface.convert.Surface\nconvert(depth, flags=0, /) -> Surface\nconvert(masks, flags=0, /) -> Surface\nconvert() -> Surface\nChange the pixel format of a Surface."
+#define DOC_SURFACE_CONVERT "convert(surface, /) -> Surface\nconvert(depth, flags=0, /) -> Surface\nconvert(masks, flags=0, /) -> Surface\nconvert() -> Surface\nChange the pixel format of a Surface."
 #define DOC_SURFACE_CONVERTALPHA "convert_alpha() -> Surface\nChange the pixel format of a Surface including per pixel alphas."
 #define DOC_SURFACE_COPY "copy() -> Surface\nCreate a new copy of a Surface."
 #define DOC_SURFACE_FILL "fill(color, rect=None, special_flags=0) -> Rect\nFill Surface with a solid color."
