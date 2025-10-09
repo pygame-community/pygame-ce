@@ -46,77 +46,72 @@ class Surface:
     resolution and pixel format. Surfaces with 8-bit pixels use a color palette
     to map to 24-bit color.
 
-    Call :meth:`pygame.Surface()` to create a new image object. The Surface will
-    be cleared to all black. The only required arguments are the sizes. With no
-    additional arguments, the Surface will be created in a format that best
-    matches the display Surface.
+    When creating a new Surface it will be cleared to all black or all transparent
+    depending on the format. The only required argument is the size, a sequence
+    containing the width and height of the Surface. With no additional arguments
+    the format will best match the display Surface if one was initialized, otherwise
+    the most suitable format is chosen for the current platform.
 
-    The pixel format can be controlled by passing the bit depth or an existing
-    Surface. The flags argument is a bitmask of additional features for the
-    surface. You can pass any combination of these flags:
+    One way to control the pixel format/characteristics is providing a bitmask of flags:
+       * ``SRCALPHA``: The Surface will include a per-pixel alpha channel (transparency).
+       * ``HWSURFACE``: (Obsolete in pygame 2) Creates the image in video memory.
 
-    ::
+    Other exclusive ways to control the pixel format are available:
+       * Providing another ``Surface`` after the flags argument. That Surface's
+         format will be used and other arguments will be ignored.
+       * Advanced users can provide a bit depth and masks to precisely control how a
+         pixel's channels are organized in memory. If no masks are provided they will
+         be selected optimally from the bit depth. Normal usage of Surfaces is to leave
+         bit depth and masks as default.
 
-        HWSURFACE    (obsolete in pygame 2) creates the image in video memory
-        SRCALPHA     the pixel format will include a per-pixel alpha
+    An indexed format stores an index up to 255 instead of a color for each pixel,
+    therefore requires an associated palette. While pygame provides a default palette,
+    it can be controlled with the appropriate methods.
 
-    Both flags are only a request, and may not be possible for all displays and
-    formats.
+    Surfaces additionally have alpha, colorkey and rectangle clipping. These characteristics
+    mainly affect how the Surface is blitted to other Surfaces. The blit routines will
+    attempt to use hardware acceleration when possible, otherwise they will use highly
+    optimized software blitting methods.
+    The clipping area is a rect defining the only area of the Surface that can be
+    modified. By default the whole Surface can be modified.
 
-    Advanced users can combine a set of bitmasks with a depth value. The masks
-    are a set of 4 integers representing which bits in a pixel will represent
-    each color. Normal Surfaces should not require the masks argument.
+    There are four types of transparency supported for a pygame Surface:
+       * Per-pixel alpha. Provided by a format with an alpha channel where
+         every pixel has its own alpha value.
+       * Pre-multiplied alpha: An advanced usage of per-pixel alpha. See
+         :meth:`Surface.premul_alpha` for more.
+       * Global alpha: A single alpha value that applies to the whole Surface.
+       * Colorkey: A color flagged to be considered transparent in operations.
 
-    Surfaces can have many extra attributes like alpha planes, colorkeys, source
-    rectangle clipping. These functions mainly effect how the Surface is blitted
-    to other Surfaces. The blit routines will attempt to use hardware
-    acceleration when possible, otherwise they will use highly optimized
-    software blitting methods.
+    Per-pixel alpha allows the greatest flexibility while being generally
+    slower than global alpha or colorkey. Pre-multiplied alpha is generally
+    faster than regular per-pixel alpha.
 
-    There are three types of transparency supported in pygame: colorkeys,
-    surface alphas, and pixel alphas. Surface alphas can be mixed with
-    colorkeys, but an image with per pixel alphas cannot use the other modes.
-    Colorkey transparency makes a single color value transparent. Any pixels
-    matching the colorkey will not be drawn. The surface alpha value is a single
-    value that changes the transparency for the entire image. A surface alpha of
-    255 is opaque, and a value of 0 is completely transparent.
+    All types of transparency can be used togerher and correctly mix, except
+    pre-multipled alpha does not consider colorkey nor global alpha.
+    Also, An alpha of 255 is opaque while an alpha of 0 is fully transparent.
 
-    Per pixel alphas are different because they store a transparency value for
-    every pixel. This allows for the most precise transparency effects, but it
-    also the slowest. Per pixel alphas cannot be mixed with surface alpha and
-    colorkeys.
+    Surfaces can be created that reference the pixel data of other Surfaces.
+    These are called subsurfaces and are created with the :meth:`subsurface()`
+    method. Changing the pixels referenced by either the original Surface or
+    the subsurface will have an effect on both.
 
-    There is support for pixel access for the Surfaces. Pixel access on hardware
-    surfaces is slow and not recommended. Pixels can be accessed using the
-    :meth:`get_at()` and :meth:`set_at()` functions. These methods are fine for
-    simple access, but will be considerably slow when doing of pixel work with
-    them. If you plan on doing a lot of pixel level work, it is recommended to
-    use a :class:`pygame.PixelArray`, which gives an array like view of the
-    surface. For involved mathematical manipulations try the
-    :mod:`pygame.surfarray` module (It's quite quick, but requires NumPy.)
+    You can use the :meth:`get_at()` and :meth:`set_at()` functions to access
+    pixels of Surfaces but while they are fine for simple access they will be
+    slow when doing pixel work with them.
+    It is advised to use a :class:`PixelArray` object to manipulate pixels efficiently.
+    Alternatively you can use the :mod:`pygame.surfarray` module (which requires NumPy).
+    Perform drawing operations and transformations on the pixels efficiently with the
+    :mod:`pygame.draw` and :mod:`pygame.transform` modules.
+    Additionally, the :meth:`map_rgb()` and :meth:`unmap_rgb()` methods are
+    available to convert between colors and their corresponding packed integers
+    (that is how each pixel is stored internally).
 
-    Any functions that directly access a surface's pixel data will need that
-    surface to be lock()'ed. These functions can :meth:`lock()` and
-    :meth:`unlock()` the surfaces themselves without assistance. But, if a
-    function will be called many times, there will be a lot of overhead for
-    multiple locking and unlocking of the surface. It is best to lock the
-    surface manually before making the function call many times, and then
-    unlocking when you are finished. All functions that need a locked surface
-    will say so in their docs. Remember to leave the Surface locked only while
-    necessary.
-
-    Surface pixels are stored internally as a single number that has all the
-    colors encoded into it. Use the :meth:`map_rgb()` and
-    :meth:`unmap_rgb()` to convert between individual red, green, and blue
-    values into a packed integer for that Surface.
-
-    Surfaces can also reference sections of other Surfaces. These are created
-    with the :meth:`subsurface()` method. Any change to either Surface will
-    effect the other.
-
-    Each Surface contains a clipping area. By default the clip area covers the
-    entire Surface. If it is changed, all drawing operations will only effect
-    the smaller area.
+    Any functions that directly access a Surface's pixel data will need that
+    Surface to be lock()'ed in some cases. Built in functions that manipulate
+    Surfaces will lock and unlock the Surface automatically. Only use manual
+    locking for a lot of sequential pixel modifications. This kind of locking
+    doesn't act like a mutex - it only prepares the Surface's pixels.
     """
 
     @overload
@@ -143,14 +138,14 @@ class Surface:
         area: Optional[RectLike] = None,
         special_flags: int = 0,
     ) -> Rect:
-        """Draw another surface onto this one.
+        """Draw another Surface onto this one.
 
         Draws another Surface onto this Surface.
 
         **Parameters**
             - ``source``
                 The ``Surface`` object to draw onto this ``Surface``.
-                If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
+                If it has transparency, transparent pixels will be ignored when blitting to an 8-bit ``Surface``.
             - ``dest`` *(optional)*
                 The ``source`` draw position onto this ``Surface``, defaults to (0, 0).
                 It can be a coordinate pair ``(x, y)`` or a ``Rect`` (using its top-left corner).
@@ -158,7 +153,7 @@ class Surface:
             - ``area`` *(optional)*
                 The rectangular portion of the ``source`` to draw.
                 It can be a ``Rect`` object representing that section. If ``None`` or not provided,
-                the entire source surface will be drawn.
+                the entire source Surface will be drawn.
                 If the ``Rect`` has negative position, the final blit position will be
                 ``dest`` - ``Rect.topleft``.
             - ``special_flags`` *(optional)*
@@ -176,11 +171,11 @@ class Surface:
         **Example Use**
             .. code-block:: python
 
-                    # create a surface of size 50x50 and fill it with red color
+                    # create a Surface of size 50x50 and fill it with red color
                     red_surf = pygame.Surface((50, 50))
                     red_surf.fill("red")
 
-                    # draw the surface on another surface at position (0, 0)
+                    # draw the Surface on another Surface at position (0, 0)
                     another_surface.blit(red_surf, (0, 0))
 
         **Notes**
@@ -204,14 +199,14 @@ class Surface:
         ],
         doreturn: Union[int, bool] = 1,
     ) -> Union[list[Rect], None]:
-        """Draw many surfaces onto this surface at their corresponding location.
+        """Draw many Surfaces onto this Surface at their corresponding location.
 
-        The ``blits`` method efficiently draws a sequence of surfaces onto this ``Surface``.
+        The ``blits`` method efficiently draws a sequence of Surfaces onto this ``Surface``.
 
         **Parameters**
 
             ``blit_sequence``
-                A sequence that contains each surface to be drawn along with its associated blit
+                A sequence that contains each Surface to be drawn along with its associated blit
                 arguments. See the **Sequence Item Formats** section below for the possible formats.
 
             ``doreturn`` (optional)
@@ -244,8 +239,8 @@ class Surface:
             - To draw a ``Surface`` with a special flag, you must specify an area as well, e.g.,
               ``(source, dest, None, special_flags)``.
 
-            - Prefer using :meth:`blits` over :meth:`blit` when drawing multiple surfaces
-              for better performance. Use :meth:`blit` if you need to draw a single surface.
+            - Prefer using :meth:`blits` over :meth:`blit` when drawing multiple Surfaces
+              for better performance. Use :meth:`blit` if you need to draw a single Surface.
 
             - For drawing a sequence of (source, dest) pairs with whole source Surface
               and a singular special_flag, use the :meth:`fblits()` method.
@@ -259,7 +254,7 @@ class Surface:
         special_flags: int = 0,
         /,
     ) -> None:
-        """Draw many surfaces onto this surface at their corresponding location and with the same special_flags.
+        """Draw many Surfaces onto this Surface at their corresponding location and with the same special_flags.
 
         This method takes a sequence of tuples (source, dest) as input, where source is a Surface
         object and dest is its destination position on this Surface. It draws each source Surface
@@ -268,13 +263,13 @@ class Surface:
         mode specified by special_flags.
 
         :param blit_sequence: a sequence of (source, dest)
-        :param special_flags: the flag(s) representing the blend mode used for each surface.
+        :param special_flags: the flag(s) representing the blend mode used for each Surface.
                             See :doc:`special_flags_list` for a list of possible values.
 
-        :returns: ``None``
+        :returns: ``None`` (unlike regular blitting)
 
         .. note:: This method only accepts a sequence of (source, dest) pairs and a single
-            special_flags value that's applied to all surfaces drawn. This allows faster
+            special_flags value that's applied to all Surfaces drawn. This allows faster
             iteration over the sequence and better performance over `blits()`. Further
             optimizations are applied if blit_sequence is a list or a tuple (using one
             of them is recommended).
@@ -291,43 +286,45 @@ class Surface:
     @overload
     def convert(self) -> Surface: ...
     def convert(self, *args):  # type: ignore
-        """Change the pixel format of a surface.
+        """Change the pixel format of a Surface.
 
-        Creates a new copy of the Surface with the pixel format changed. The new
-        pixel format can be determined from another existing Surface. Otherwise
-        depth, flags, and masks arguments can be used, similar to the
-        :meth:`pygame.Surface()` call.
+        Creates a new copy of the Surface with the pixel format changed. The
+        format can be controlled in different ways:
+           * If no arguments are passed the new Surface will have the same pixel
+             format as the display Surface which is always the fastest format
+             for blitting. It is a good idea to convert all Surfaces before
+             blitting them. In this case the converted Surface won't have any
+             alpha. See :meth:`convert_alpha()` for preserving or creating per-pixel alpha.
+             A :class:`pygame.error` exception is thrown if the display Surface
+             was not initialized.
+           * If another Surface is provided, the format of that Surface will
+             be used.
+           * Passing the bit depth of a pixel that will result in the same formats
+             explained in the :class:`Surface` constructor. Flags can also be
+             provided, for example ``SRCALPHA`` will request an alpha channel.
+           * Passing the bitmasks of the pixels and flags. Note that the bit depth
+             could be calculated wrong, therefore it is not advised to use this
+             path as it might be deprecated in the future.
 
-        If no arguments are passed the new Surface will have the same pixel
-        format as the display Surface. This is always the fastest format for
-        blitting. It is a good idea to convert all Surfaces before they are
-        blitted many times.
-
-        The converted Surface will have no pixel alphas. They will be stripped if
-        the original had them. See :meth:`convert_alpha()` for preserving or
-        creating per-pixel alphas.
-
-        The new copy will have the same class as the copied surface. This lets
-        a Surface subclass inherit this method without the need to override,
-        unless subclass specific instance attributes also need copying.
+        The returned surface will have the same class as this surface, making this
+        method safe for subclasses. The colorkey and the palette for indexed Surfaces
+        are also preserved if they were present.
 
         .. versionchanged:: 2.5.0 converting to a known format will succeed without
-            a window/display surface.
+            a window/display Surface.
         """
 
     def convert_alpha(self) -> Surface:
-        """Change the pixel format of a surface including per pixel alphas.
+        """Change the pixel format of a Surface including per pixel alphas.
 
-        Creates a new copy of the surface with the desired pixel format. The new
-        surface will be in a format suited for quick blitting to the display surface
-        with per pixel alpha.
+        Creates a new copy of the Surface with the desired pixel format that contains
+        an alpha channel. Unlike the :meth:`convert()` method, the pixel format
+        for the new Surface will not be exactly the same as the display Surface,
+        but it will be suited and optimized for fast alpha blitting to it.
 
-        Unlike the :meth:`convert()` method, the pixel format for the new
-        surface will not be exactly the same as the display surface, but it will
-        be optimized for fast alpha blitting to it.
-
-        As with :meth:`convert()` the returned surface has the same class as
-        the converted surface.
+        As with :meth:`convert()`, the returned Surface has the same class as this
+        Surface. A :class:`pygame.error` exception will be raised if the display
+        Surface has not been initialized yet.
 
         .. versionchanged:: 2.4.0 'Surface' argument deprecated.
         """
@@ -335,11 +332,14 @@ class Surface:
     def copy(self) -> Surface:
         """Create a new copy of a Surface.
 
-        Makes a duplicate copy of a Surface. The new surface will have the same
+        Makes a duplicate copy of a Surface. The new Surface will have the same
         pixel formats, color palettes, transparency settings, and class as the
         original. If a Surface subclass also needs to copy any instance specific
         attributes then it should override ``copy()``. Shallow copy and deepcopy
         are supported, Surface implements __copy__ and __deepcopy__ respectively.
+
+        If the Surface was a subsurface, the returned Surface will *not* retain
+        the parent and will be a regular Surface with its own pixel data.
 
         .. versionadded:: 2.3.1
             Added support for deepcopy by implementing __deepcopy__, calls copy() internally.
@@ -358,7 +358,7 @@ class Surface:
         specific area. The fill will also be contained by the Surface clip area.
 
         The color argument should be compatible with :data:`pygame.typing.ColorLike`.
-        If using ``RGBA``, the Alpha (A part of ``RGBA``) is ignored unless the surface
+        If using ``RGBA``, the Alpha (A part of ``RGBA``) is ignored unless the Surface
         uses per pixel alpha (Surface has the ``SRCALPHA`` flag).
 
         The special_flags argument controls how the colors are combined. See :doc:`special_flags_list`
@@ -379,7 +379,7 @@ class Surface:
         negative for left and up scrolls respectively.
 
         Scrolling is contained by the Surface clip area. It is safe to have dx
-        and dy values that exceed the surface size.
+        and dy values that exceed the Surface size.
 
         The scroll flag can be:
             * ``0`` (default): the pixels are shifted but previous pixels are
@@ -389,8 +389,8 @@ class Surface:
               is filled with black or transparency.
 
             * ``pygame.SCROLL_REPEAT``: the pixels that disappear out of the
-              surface or clip bounds are brought back on the opposite side
-              resulting in an infinitely scrolling and repeating surface.
+              Surface or clip bounds are brought back on the opposite side
+              resulting in an infinitely scrolling and repeating Surface.
 
         .. versionaddedold:: 1.9
 
@@ -436,91 +436,26 @@ class Surface:
         onto a destination, the pixels will be drawn slightly transparent. The
         alpha value is an integer from 0 to 255, 0 is fully transparent and 255
         is fully opaque. If ``None`` is passed for the alpha value, then alpha
-        blending will be disabled, including per-pixel alpha.
+        blending will be disabled. This full alpha is compatible with other
+        kinds of transparency.
 
-        This value is different than the per pixel Surface alpha. For a surface
-        with per pixel alpha, blanket alpha is ignored and ``None`` is returned.
-
-        .. versionchangedold:: 2.0 per-surface alpha can be combined with per-pixel
-            alpha.
 
         The optional flags argument can be set to ``pygame.RLEACCEL`` to provide
         better performance on non accelerated displays. An ``RLEACCEL`` Surface
         will be slower to modify, but quicker to blit as a source.
+
+        .. versionchangedold:: 2.0 per-Surface alpha can be combined with per-pixel
+            alpha.
         """
 
     def get_alpha(self) -> Optional[int]:
         """Get the current Surface transparency value.
 
-        Return the current alpha value for the Surface.
-        """
-
-    def lock(self) -> None:
-        """Lock the Surface memory for pixel access.
-
-        Lock the pixel data of a Surface for access. On accelerated Surfaces, the
-        pixel data may be stored in volatile video memory or nonlinear compressed
-        forms. When a Surface is locked the pixel memory becomes available to
-        access by regular software. Code that reads or writes pixel values will
-        need the Surface to be locked.
-
-        Surfaces should not remain locked for more than necessary. A locked
-        Surface can often not be displayed or managed by pygame.
-
-        Not all Surfaces require locking. The :meth:`mustlock()` method can
-        determine if it is actually required. There is no performance penalty for
-        locking and unlocking a Surface that does not need it.
-
-        All pygame functions will automatically lock and unlock the Surface data
-        as needed. If a section of code is going to make calls that will
-        repeatedly lock and unlock the Surface many times, it can be helpful to
-        wrap the block inside a lock and unlock pair.
-
-        It is safe to nest locking and unlocking calls. The surface will only be
-        unlocked after the final lock is released.
-        """
-
-    def unlock(self) -> None:
-        """Unlock the Surface memory from pixel access.
-
-        Unlock the Surface pixel data after it has been locked. The unlocked
-        Surface can once again be drawn and managed by pygame. See the
-        :meth:`lock()` documentation for more details.
-
-        All pygame functions will automatically lock and unlock the Surface data
-        as needed. If a section of code is going to make calls that will
-        repeatedly lock and unlock the Surface many times, it can be helpful to
-        wrap the block inside a lock and unlock pair.
-
-        It is safe to nest locking and unlocking calls. The surface will only be
-        unlocked after the final lock is released.
-        """
-
-    def mustlock(self) -> bool:
-        """Test if the Surface requires locking.
-
-        Returns ``True`` if the Surface is required to be locked to access pixel
-        data. Usually pure software Surfaces do not require locking. This method
-        is rarely needed, since it is safe and quickest to just lock all Surfaces
-        as needed.
-
-        All pygame functions will automatically lock and unlock the Surface data
-        as needed. If a section of code is going to make calls that will
-        repeatedly lock and unlock the Surface many times, it can be helpful to
-        wrap the block inside a lock and unlock pair.
-        """
-
-    def get_locked(self) -> bool:
-        """Test if the Surface is current locked.
-
-        Returns ``True`` when the Surface is locked. It doesn't matter how many
-        times the Surface is locked.
-        """
-
-    def get_locks(self) -> tuple[Any, ...]:
-        """Gets the locks for the Surface.
-
-        Returns the currently existing locks for the Surface.
+        Return the current alpha value for the Surface. If the blendmode of the
+        Surface is not ``pygame.BLENDMODE_NONE``, this method will always return
+        a valid value in the range 0 (fully transparent) - 255 (fully opaque).
+        Otherwise, this method will return None until an alpha is set with
+        :meth:`set_alpha()` (the set alpha value will be returned).
         """
 
     def get_at(self, x_y: Point, /) -> Color:
@@ -560,7 +495,7 @@ class Surface:
 
         This function will temporarily lock and unlock the Surface as needed.
 
-        .. note:: If the surface is palettized, the pixel color will be set to the
+        .. note:: If the Surface is palettized, the pixel color will be set to the
             most similar color in the palette.
 
         .. versionchanged:: 2.3.1 can now also accept both float coordinates and
@@ -667,7 +602,7 @@ class Surface:
 
         Return a rectangle of the current clipping area. The Surface will always
         return a valid rectangle that will never be outside the bounds of the
-        surface. If the Surface has had ``None`` set for the clipping area, the
+        Surface. If the Surface has had ``None`` set for the clipping area, the
         Surface will return a rectangle with the full area of the Surface.
         """
 
@@ -680,7 +615,7 @@ class Surface:
         self, left: float, top: float, width: float, height: float, /
     ) -> Surface: ...
     def subsurface(self, *args):  # type: ignore
-        """Create a new surface that references its parent.
+        """Create a new Surface that references its parent.
 
         Returns a new Surface that shares its pixels with its new parent. The new
         Surface is considered a child of the original. Modifications to either
@@ -697,7 +632,7 @@ class Surface:
         See :meth:`get_offset()` and :meth:`get_parent()` to learn more
         about the state of a subsurface.
 
-        A subsurface will have the same class as the parent surface.
+        A subsurface will have the same class as the parent Surface.
         """
 
     def get_parent(self) -> Surface:
@@ -710,8 +645,8 @@ class Surface:
     def get_abs_parent(self) -> Surface:
         """Find the top level parent of a subsurface.
 
-        Returns the parent Surface of a subsurface. If this is not a subsurface
-        then this surface will be returned.
+        Returns the top level parent Surface of a subsurface. If this is not
+        a subsurface then this Surface will be returned.
         """
 
     def get_offset(self) -> tuple[int, int]:
@@ -724,9 +659,8 @@ class Surface:
     def get_abs_offset(self) -> tuple[int, int]:
         """Find the absolute position of a child subsurface inside its top level parent.
 
-        Get the offset position of a child subsurface inside of its top level
-        parent Surface. If the Surface is not a subsurface this will return (0,
-        0).
+        Get the abolute offset position of a child subsurface inside of its top level
+        parent Surface. If the Surface is not a subsurface this will return (0, 0).
         """
 
     def get_size(self) -> tuple[int, int]:
@@ -751,8 +685,8 @@ class Surface:
     def get_rect(self, **kwargs: Any) -> Rect:
         """Get the rectangular area of the Surface.
 
-        Returns a new rectangle covering the entire surface. This rectangle will
-        always start at (0, 0) with a width and height the same size as the surface.
+        Returns a new rectangle covering the entire Surface. This rectangle will
+        always start at (0, 0) with a width and height the same size as the Surface.
 
         You can pass keyword argument values to this function. These named values
         will be applied to the attributes of the Rect before it is returned. An
@@ -797,28 +731,22 @@ class Surface:
         flags bitmask. Typical flags are ``RLEACCEL``, ``SRCALPHA``, and
         ``SRCCOLORKEY``.
 
-        Here is a more complete list of flags. A full list can be found in
-        ``SDL_video.h``
-
-        ::
-
-            SWSURFACE      0x00000000    # Surface is in system memory
-            HWSURFACE      0x00000001    # (obsolete in pygame 2) Surface is in video memory
-            ASYNCBLIT      0x00000004    # (obsolete in pygame 2) Use asynchronous blits if possible
+        Here is a more complete list of flags:
+           * ``SRCALPHA``: Blit uses source alpha blending
+           * ``SWSURFACE``: Surface is in system memory
+           * ``HWACCEL``: Blit uses hardware acceleration
+           * ``SRCCOLORKEY``: Blit uses a source color key
+           * ``RLEACCELOK``: Private flag
+           * ``RLEACCEL``: Surface has run-length encoding
+           * ``PREALLOC``: Surface uses preallocated memory
 
         See :func:`pygame.display.set_mode()` for flags exclusive to the
-        display surface.
+        display Surface.
 
-        Used internally (read-only)
+        Obsolete flags:
 
-        ::
-
-            HWACCEL        0x00000100    # Blit uses hardware acceleration
-            SRCCOLORKEY    0x00001000    # Blit uses a source color key
-            RLEACCELOK     0x00002000    # Private flag
-            RLEACCEL       0x00004000    # Surface is RLE encoded
-            SRCALPHA       0x00010000    # Blit uses source alpha blending
-            PREALLOC       0x01000000    # Surface uses preallocated memory
+           * ``HWSURFACE``: (obsolete in pygame 2) Surface is in video memory
+           * ``ASYNCBLIT``: (obsolete in pygame 2) Use asynchronous blits if possible
         """
 
     def get_pitch(self) -> int:
@@ -889,7 +817,7 @@ class Surface:
         """Find the smallest rect containing data.
 
         Returns the smallest rectangular region that contains all the pixels in
-        the surface that have an alpha value greater than or equal to the minimum
+        the Surface that have an alpha value greater than or equal to the minimum
         alpha value.
 
         This function will temporarily lock and unlock the Surface as needed.
@@ -900,7 +828,7 @@ class Surface:
     def get_view(self, kind: _ViewKind = "2", /) -> BufferProxy:
         """Return a buffer view of the Surface's pixels.
 
-        Return an object which exports a surface's internal pixel buffer as
+        Return an object which exports a Surface's internal pixel buffer as
         a C level array struct, Python level array interface or a C level
         buffer interface. The new buffer protocol is supported.
 
@@ -909,34 +837,34 @@ class Surface:
         'A' will work as well. The argument can be either a Unicode or byte (char)
         string. The default is '2'.
 
-        '0' returns a contiguous unstructured bytes view. No surface shape
-        information is given. A ``ValueError`` is raised if the surface's pixels
+        '0' returns a contiguous unstructured bytes view. No Surface shape
+        information is given. A ``ValueError`` is raised if the Surface's pixels
         are discontinuous.
 
-        '1' returns a (surface-width * surface-height) array of continuous
-        pixels. A ``ValueError`` is raised if the surface pixels are
+        '1' returns a (Surface-width * Surface-height) array of continuous
+        pixels. A ``ValueError`` is raised if the Surface pixels are
         discontinuous.
 
-        '2' returns a (surface-width, surface-height) array of raw pixels.
-        The pixels are surface-bytesize-d unsigned integers. The pixel format is
-        surface specific. The 3 byte unsigned integers of 24 bit surfaces are
+        '2' returns a (Surface-width, Surface-height) array of raw pixels.
+        The pixels are Surface-bytesize-d unsigned integers. The pixel format is
+        Surface specific. The 3 byte unsigned integers of 24 bit Surfaces are
         unlikely accepted by anything other than other pygame functions.
 
-        '3' returns a (surface-width, surface-height, 3) array of ``RGB`` color
+        '3' returns a (Surface-width, Surface-height, 3) array of ``RGB`` color
         components. Each of the red, green, and blue components are unsigned
-        bytes. Only 24-bit and 32-bit surfaces are supported. The color
+        bytes. Only 24-bit and 32-bit Surfaces are supported. The color
         components must be in either ``RGB`` or ``BGR`` order within the pixel.
 
         'r' for red, 'g' for green, 'b' for blue, and 'a' for alpha return a
-        (surface-width, surface-height) view of a single color component within a
-        surface: a color plane. Color components are unsigned bytes. Both 24-bit
-        and 32-bit surfaces support 'r', 'g', and 'b'. Only 32-bit surfaces with
+        (Surface-width, Surface-height) view of a single color component within a
+        Surface: a color plane. Color components are unsigned bytes. Both 24-bit
+        and 32-bit Surfaces support 'r', 'g', and 'b'. Only 32-bit Surfaces with
         ``SRCALPHA`` support 'a'.
 
-        The surface is locked only when an exposed interface is accessed.
-        For new buffer interface accesses, the surface is unlocked once the
+        The Surface is locked only when an exposed interface is accessed.
+        For new buffer interface accesses, the Surface is unlocked once the
         last buffer view is released. For array interface and old buffer
-        interface accesses, the surface remains locked until the BufferProxy
+        interface accesses, the Surface remains locked until the BufferProxy
         object is released.
 
         .. versionaddedold:: 1.9.2
@@ -958,19 +886,10 @@ class Surface:
         """
 
     def get_blendmode(self) -> int: ...
-    @property
-    def _pixels_address(self) -> int:
-        """Pixel buffer address.
-
-        The starting address of the surface's raw pixel bytes.
-
-        .. versionaddedold:: 1.9.2
-        """
-
     def premul_alpha(self) -> Surface:
-        """Returns a copy of the surface with the RGB channels pre-multiplied by the alpha channel.
+        """Returns a copy of the Surface with the RGB channels pre-multiplied by the alpha channel.
 
-        Returns a copy of the initial surface with the red, green and blue color
+        Returns a copy of the initial Surface with the red, green and blue color
         channels multiplied by the alpha channel. This is intended to make it
         easier to work with the BLEND_PREMULTIPLED blend mode flag of the blit()
         method. Surfaces which have called this method will only look correct
@@ -979,28 +898,28 @@ class Surface:
         It is worth noting that after calling this method, methods that return the
         color of a pixel such as get_at() will return the alpha multiplied color
         values. It is not possible to fully reverse an alpha multiplication of
-        the colors in a surface as integer color channel data is generally
+        the colors in a Surface as integer color channel data is generally
         reduced by the operation (e.g. 255 x 0 = 0, from there it is not
         possible to reconstruct the original 255 from just the two remaining
         zeros in the color and alpha channels).
 
         If you call this method, and then call it again, it will multiply the color
         channels by the alpha channel twice. There are many possible ways to obtain
-        a surface with the color channels pre-multiplied by the alpha channel in
+        a Surface with the color channels pre-multiplied by the alpha channel in
         pygame, and it is not possible to tell the difference just from the
         information in the pixels. It is completely possible to have two identical
-        surfaces - one intended for pre-multiplied alpha blending and one intended
-        for normal blending. For this reason we do not store state on surfaces
+        Surfaces - one intended for pre-multiplied alpha blending and one intended
+        for normal blending. For this reason we do not store state on Surfaces
         intended for pre-multiplied alpha blending.
 
         Surfaces without an alpha channel cannot use this method and will return
-        an error if you use it on them. It is best used on 32 bit surfaces (the
-        default on most platforms) as the blitting on these surfaces can be
+        an error if you use it on them. It is best used on 32 bit Surfaces (the
+        default on most platforms) as the blitting on these Surfaces can be
         accelerated by SIMD versions of the pre-multiplied blitter.
 
         In general pre-multiplied alpha blitting is faster then 'straight alpha'
-        blitting and produces superior results when blitting an alpha surface onto
-        another surface with alpha - assuming both surfaces contain pre-multiplied
+        blitting and produces superior results when blitting an alpha Surface onto
+        another Surface with alpha - assuming both Surfaces contain pre-multiplied
         alpha colors.
 
         There is a `tutorial on premultiplied alpha blending here. <../tutorials/en/premultiplied-alpha.html>`_
@@ -1009,19 +928,99 @@ class Surface:
         """
 
     def premul_alpha_ip(self) -> Surface:
-        """Multiplies the RGB channels by the surface alpha channel.
+        """Multiplies the RGB channels by the Surface alpha channel.
 
-        Multiplies the RGB channels of the surface by the alpha channel in place
-        and returns the surface.
+        Multiplies the RGB channels of the Surface by the alpha channel in place
+        and returns the Surface.
 
         Surfaces without an alpha channel cannot use this method and will return
-        an error if you use it on them. It is best used on 32 bit surfaces (the
-        default on most platforms) as the blitting on these surfaces can be
+        an error if you use it on them. It is best used on 32 bit Surfaces (the
+        default on most platforms) as the blitting on these Surfaces can be
         accelerated by SIMD versions of the pre-multiplied blitter.
 
         Refer to the :meth:`premul_alpha` method for more information.
 
         .. versionadded:: 2.5.1
+        """
+
+    def lock(self) -> None:
+        """Lock the Surface memory for pixel access.
+
+        Lock the pixel data of a Surface for access. On accelerated Surfaces, the
+        pixel data may be stored in volatile video memory or nonlinear compressed
+        forms. When a Surface is locked the pixel memory becomes available to
+        access by regular software. Code that reads or writes pixel values will
+        need the Surface to be locked.
+
+        Surfaces should not remain locked for more than necessary. A locked
+        Surface can often not be displayed or managed by pygame.
+
+        Not all Surfaces require locking. The :meth:`mustlock()` method can
+        determine if it is actually required. There is no performance penalty for
+        locking and unlocking a Surface that does not need it.
+
+        All pygame functions will automatically lock and unlock the Surface data
+        as needed. If a section of code is going to make calls that will
+        repeatedly lock and unlock the Surface many times, it can be helpful to
+        wrap the block inside a lock and unlock pair.
+
+        It is safe to nest locking and unlocking calls. The Surface will only be
+        unlocked after the final lock is released.
+
+        .. note:: This kind of locking doesn't act like a mutex, it only prepares
+                  the Surface pixels for access.
+        """
+
+    def unlock(self) -> None:
+        """Unlock the Surface memory from pixel access.
+
+        Unlock the Surface pixel data after it has been locked. The unlocked
+        Surface can once again be drawn and managed by pygame. See the
+        :meth:`lock()` documentation for more details.
+
+        All pygame functions will automatically lock and unlock the Surface data
+        as needed. If a section of code is going to make calls that will
+        repeatedly lock and unlock the Surface many times, it can be helpful to
+        wrap the block inside a lock and unlock pair.
+
+        It is safe to nest locking and unlocking calls. The Surface will only be
+        unlocked after the final lock is released.
+
+        .. note:: This kind of locking doesn't act like a mutex, it only prepares
+                  the Surface pixels for access.
+        """
+
+    def mustlock(self) -> bool:
+        """Test if the Surface requires locking.
+
+        Returns ``True`` if the Surface is required to be locked to access pixel
+        data. Usually pure software Surfaces do not require locking. This method
+        is rarely needed, since it is safe and quickest to just lock all Surfaces
+        as needed.
+
+        All pygame functions will automatically lock and unlock the Surface data
+        as needed. If a section of code is going to make calls that will
+        repeatedly lock and unlock the Surface many times, it can be helpful to
+        wrap the block inside a lock and unlock pair.
+
+        .. note:: This kind of locking doesn't act like a mutex, it only prepares
+                  the Surface pixels for access.
+        """
+
+    def get_locked(self) -> bool:
+        """Test if the Surface is current locked.
+
+        Returns ``True`` when the Surface is locked. It doesn't matter how many
+        times the Surface is locked.
+
+        .. note:: This kind of locking doesn't act like a mutex, it only prepares
+                  the Surface pixels for access.
+        """
+
+    def get_locks(self) -> tuple[Any, ...]:
+        """Gets the locks for the Surface.
+
+        Returns the currently existing locks for the Surface.
         """
 
     @property
@@ -1048,6 +1047,15 @@ class Surface:
         Read-only attribute. Same as :meth:`get_size()`
 
         .. versionadded:: 2.5.0
+        """
+
+    @property
+    def _pixels_address(self) -> int:
+        """Pixel buffer address.
+
+        The starting address of the Surface's raw pixel bytes.
+
+        .. versionaddedold:: 1.9.2
         """
 
 @deprecated("Use `Surface` instead (SurfaceType is an old alias)")
