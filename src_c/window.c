@@ -8,7 +8,10 @@
 #include "doc/sdl2_video_doc.h"
 #include "doc/window_doc.h"
 
-static int is_window_mod_init = 0;
+/* A set of weakrefs to active windows (windows that are in un-dealloc-ed
+ * state). Also doubles as a way to check if window is init (this has to be
+ * NULL when window is not init) */
+static PyObject *pg_window_weakrefs = NULL;
 
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
@@ -161,11 +164,19 @@ window_destroy(pgWindowObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
+#define WINDOW_INIT_CHECK(win, ret)                               \
+    if (!(((pgWindowObject *)(win))->_win)) {                     \
+        PyErr_SetString(pgExc_SDLError,                           \
+                        "window instance is in destroyed state"); \
+        return (ret);                                             \
+    }
+
 static PyObject *
 window_get_surface(pgWindowObject *self, PyObject *_null)
 {
     PyObject *surf = NULL;
     SDL_Surface *_surf;
+    WINDOW_INIT_CHECK(self, NULL);
 
     if (self->_is_borrowed) {
         surf = (PyObject *)pg_GetDefaultWindowSurface();
@@ -202,7 +213,7 @@ static PyObject *
 window_flip(pgWindowObject *self, PyObject *_null)
 {
     bool success;
-
+    WINDOW_INIT_CHECK(self, NULL);
     if (self->context == NULL) {
         if (!self->surf) {
             return RAISE(pgExc_SDLError,
@@ -301,6 +312,7 @@ _resize_event_watch(void *userdata, SDL_Event *event)
 static PyObject *
 window_set_windowed(pgWindowObject *self, PyObject *_null)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     if (SDL_SetWindowFullscreen(self->_win, 0)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -351,6 +363,7 @@ window_set_fullscreen(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 {
     int desktop = 0;
     char *kwids[] = {"desktop", NULL};
+    WINDOW_INIT_CHECK(self, NULL);
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &desktop)) {
         return NULL;
     }
@@ -373,6 +386,7 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 {
     SDL_bool input_only = SDL_FALSE;
     char *kwids[] = {"input_only", NULL};
+    WINDOW_INIT_CHECK(self, NULL);
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &input_only)) {
         return NULL;
     }
@@ -401,6 +415,7 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 window_get_focused(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     return PyBool_FromLong(
         (SDL_GetWindowFlags(self->_win) & SDL_WINDOW_INPUT_FOCUS) != 0);
 }
@@ -408,6 +423,7 @@ window_get_focused(pgWindowObject *self, void *v)
 static PyObject *
 window_hide(pgWindowObject *self, PyObject *_null)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     SDL_HideWindow(self->_win);
     Py_RETURN_NONE;
 }
@@ -415,6 +431,7 @@ window_hide(pgWindowObject *self, PyObject *_null)
 static PyObject *
 window_show(pgWindowObject *self, PyObject *_null)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     SDL_ShowWindow(self->_win);
     Py_RETURN_NONE;
 }
@@ -422,6 +439,7 @@ window_show(pgWindowObject *self, PyObject *_null)
 static PyObject *
 window_restore(pgWindowObject *self, PyObject *_null)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     SDL_RestoreWindow(self->_win);
     Py_RETURN_NONE;
 }
@@ -429,6 +447,7 @@ window_restore(pgWindowObject *self, PyObject *_null)
 static PyObject *
 window_maximize(pgWindowObject *self, PyObject *_null)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     SDL_MaximizeWindow(self->_win);
     Py_RETURN_NONE;
 }
@@ -436,6 +455,7 @@ window_maximize(pgWindowObject *self, PyObject *_null)
 static PyObject *
 window_minimize(pgWindowObject *self, PyObject *_null)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     SDL_MinimizeWindow(self->_win);
     Py_RETURN_NONE;
 }
@@ -469,10 +489,12 @@ PG_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
 static PyObject *
 window_set_modal_for(pgWindowObject *self, PyObject *arg)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     if (!pgWindow_Check(arg)) {
         return RAISE(PyExc_TypeError,
                      "Argument to set_modal_for must be a Window.");
     }
+    WINDOW_INIT_CHECK(arg, NULL);
     if (PG_SetWindowModalFor(self->_win, ((pgWindowObject *)arg)->_win) < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -482,6 +504,7 @@ window_set_modal_for(pgWindowObject *self, PyObject *arg)
 static PyObject *
 window_set_icon(pgWindowObject *self, PyObject *arg)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     if (!pgSurface_Check(arg)) {
         return RAISE(PyExc_TypeError,
                      "Argument to set_icon must be a Surface.");
@@ -493,6 +516,7 @@ window_set_icon(pgWindowObject *self, PyObject *arg)
 static int
 window_set_grab_mouse(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
     int enable = PyObject_IsTrue(arg);
     if (enable == -1) {
         return -1;
@@ -510,6 +534,7 @@ window_set_grab_mouse(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_grab_mouse(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
 #if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_MOUSE_GRABBED);
@@ -522,6 +547,7 @@ window_get_grab_mouse(pgWindowObject *self, void *v)
 static PyObject *
 window_get_mouse_grabbed(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
 #if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowMouseGrab(self->_win));
 #else
@@ -532,6 +558,7 @@ window_get_mouse_grabbed(pgWindowObject *self, void *v)
 static int
 window_set_grab_keyboard(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
 #if SDL_VERSION_ATLEAST(2, 0, 16)
     int enable = PyObject_IsTrue(arg);
     if (enable == -1) {
@@ -551,6 +578,7 @@ window_set_grab_keyboard(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_grab_keyboard(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
 #if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_KEYBOARD_GRABBED);
@@ -566,6 +594,7 @@ window_get_grab_keyboard(pgWindowObject *self, void *v)
 static PyObject *
 window_get_keyboard_grabbed(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
 #if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowKeyboardGrab(self->_win));
 #else
@@ -580,6 +609,7 @@ window_get_keyboard_grabbed(pgWindowObject *self, void *v)
 static int
 window_set_title(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
     const char *title;
     if (!PyUnicode_Check(arg)) {
         PyErr_SetString(PyExc_TypeError,
@@ -594,6 +624,7 @@ window_set_title(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_title(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     const char *title = SDL_GetWindowTitle(self->_win);
     return PyUnicode_FromString(title);
 }
@@ -601,6 +632,7 @@ window_get_title(pgWindowObject *self, void *v)
 static int
 window_set_resizable(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
     int enable = PyObject_IsTrue(arg);
     if (enable == -1) {
         return -1;
@@ -614,6 +646,7 @@ window_set_resizable(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_resizable(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_RESIZABLE);
 }
@@ -621,6 +654,7 @@ window_get_resizable(pgWindowObject *self, void *v)
 static int
 window_set_borderless(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
     int enable = PyObject_IsTrue(arg);
     if (enable == -1) {
         return -1;
@@ -634,6 +668,7 @@ window_set_borderless(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_borderless(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_BORDERLESS);
 }
@@ -641,6 +676,7 @@ window_get_borderless(pgWindowObject *self, void *v)
 static int
 window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
 #if SDL_VERSION_ATLEAST(2, 0, 16)
     int enable = PyObject_IsTrue(arg);
     if (enable == -1) {
@@ -661,6 +697,7 @@ window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_always_on_top(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_ALWAYS_ON_TOP);
 }
@@ -668,6 +705,7 @@ window_get_always_on_top(pgWindowObject *self, void *v)
 static PyObject *
 window_get_window_id(pgWindowObject *self, PyObject *_null)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     Uint32 window_id = SDL_GetWindowID(self->_win);
     if (!window_id) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -678,6 +716,7 @@ window_get_window_id(pgWindowObject *self, PyObject *_null)
 static int
 window_set_mouse_rect(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
 #if SDL_VERSION_ATLEAST(2, 0, 18)
     SDL_Rect tmp_rect;
     SDL_Rect *mouse_rect_p = pgRect_FromObject(arg, &tmp_rect);
@@ -706,6 +745,7 @@ window_set_mouse_rect(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_mouse_rect(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
 #if SDL_VERSION_ATLEAST(2, 0, 18)
     const SDL_Rect *mouse_rect_p = SDL_GetWindowMouseRect(self->_win);
     if (mouse_rect_p == NULL) {
@@ -724,6 +764,7 @@ window_get_mouse_rect(pgWindowObject *self, void *v)
 static int
 window_set_size(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
     int w, h;
 
     if (!pg_TwoIntsFromObj(arg, &w, &h)) {
@@ -758,6 +799,7 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_size(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     int w, h;
     SDL_GetWindowSize(self->_win, &w, &h);
 
@@ -767,6 +809,7 @@ window_get_size(pgWindowObject *self, void *v)
 static int
 window_set_minimum_size(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
     int w, h;
     int max_w, max_h;
 
@@ -798,6 +841,7 @@ window_set_minimum_size(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_minimum_size(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     int w, h;
     SDL_GetWindowMinimumSize(self->_win, &w, &h);
 
@@ -807,6 +851,7 @@ window_get_minimum_size(pgWindowObject *self, void *v)
 static int
 window_set_maximum_size(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
     int w, h;
     int min_w, min_h;
 
@@ -838,6 +883,7 @@ window_set_maximum_size(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_maximum_size(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     int w, h;
     SDL_GetWindowMaximumSize(self->_win, &w, &h);
 
@@ -847,6 +893,7 @@ window_get_maximum_size(pgWindowObject *self, void *v)
 static int
 window_set_position(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
     int x, y;
 
     if (PyLong_Check(arg)) {
@@ -869,6 +916,7 @@ window_set_position(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_position(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     int x, y;
     SDL_GetWindowPosition(self->_win, &x, &y);
 
@@ -878,6 +926,7 @@ window_get_position(pgWindowObject *self, void *v)
 static int
 window_set_opacity(pgWindowObject *self, PyObject *arg, void *v)
 {
+    WINDOW_INIT_CHECK(self, -1);
     float opacity;
     opacity = (float)PyFloat_AsDouble(arg);
     if (PyErr_Occurred()) {
@@ -898,6 +947,7 @@ window_set_opacity(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_opacity(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     float opacity = SDL_GetWindowOpacity(self->_win);
     if (opacity < 0) {
@@ -915,6 +965,7 @@ window_get_opacity(pgWindowObject *self, void *v)
 static PyObject *
 window_get_opengl(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     long hasGL;
     if (!self->_is_borrowed) {
         hasGL = self->context != NULL;
@@ -933,6 +984,7 @@ window_get_opengl(pgWindowObject *self, void *v)
 static PyObject *
 window_get_utility(pgWindowObject *self, void *v)
 {
+    WINDOW_INIT_CHECK(self, NULL);
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_UTILITY);
 }
@@ -940,24 +992,18 @@ window_get_utility(pgWindowObject *self, void *v)
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
-    if (self->_win) {
-        if (!self->_is_borrowed) {
-            if (self->context != NULL) {
-                SDL_GL_DeleteContext(self->context);
-            }
-            SDL_DestroyWindow(self->_win);
-        }
-        else if (pg_get_pg_window(self->_win) != NULL) {
-            pg_set_pg_window(self->_win, NULL);
-        }
-    }
-    if (self->surf) {
-        // Set the internal surface to NULL to make pygame surface invalid
-        // since this surface will be deallocated by SDL when the window is
-        // destroyed.
-        self->surf->surf = NULL;
+    Py_XDECREF(window_destroy(self, _null));
 
-        Py_DECREF(self->surf);
+    if (self->selfweakref) {
+        /* First attempt to remove it from our set (errors ignored). Then
+         * free the weakref */
+        if (pg_window_weakrefs) {
+            PySet_Discard(pg_window_weakrefs, self->selfweakref);
+        }
+        Py_DECREF(self->selfweakref);
+    }
+    if (self->weakreflist) {
+        PyObject_ClearWeakRefs((PyObject *)self);
     }
 
     Py_TYPE(self)->tp_free(self);
@@ -1012,12 +1058,6 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     PyObject *_key, *_value, *_kw;
     const char *_key_str;
     int _value_bool;
-
-    // ensure display is init at this point, display init automatically calls
-    // the window init in this module
-    if (!pg_mod_autoinit(IMPPREFIX "display")) {
-        return -1;
-    }
 
     _kw = PyDict_New();
     if (!_kw) {
@@ -1315,6 +1355,7 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
 static PyObject *
 window_flash(pgWindowObject *self, PyObject *arg)
 {
+    WINDOW_INIT_CHECK(self, NULL);
 #if SDL_VERSION_ATLEAST(2, 0, 16)
     long operation = PyLong_AsLong(arg);
     if (operation == -1 && PyErr_Occurred()) {
@@ -1367,9 +1408,12 @@ window_repr(pgWindowObject *self)
 static PyObject *
 _window_internal_mod_init(PyObject *self, PyObject *_null)
 {
-    if (!is_window_mod_init) {
+    if (!pg_window_weakrefs) {
+        pg_window_weakrefs = PySet_New(NULL);
+        if (!pg_window_weakrefs) {
+            return NULL;
+        }
         SDL_AddEventWatch(_resize_event_watch, NULL);
-        is_window_mod_init = 1;
     }
     Py_RETURN_NONE;
 }
@@ -1377,11 +1421,72 @@ _window_internal_mod_init(PyObject *self, PyObject *_null)
 static PyObject *
 _window_internal_mod_quit(PyObject *self, PyObject *_null)
 {
-    if (is_window_mod_init) {
+    if (pg_window_weakrefs) {
         SDL_DelEventWatch(_resize_event_watch, NULL);
-        is_window_mod_init = 0;
+
+        PyObject *iter = PyObject_GetIter(pg_window_weakrefs);
+        if (iter) {
+            PyObject *item;
+            while ((item = PyIter_Next(iter))) {
+                PyObject *window;
+                switch (PyWeakref_GetRef(item, &window)) {
+                    case 1:
+                        /* No error, call destroy */
+                        Py_XDECREF(
+                            window_destroy((pgWindowObject *)window, NULL));
+                        /* Clean the current strong reference */
+                        Py_DECREF(window);
+                        break;
+                    case -1:
+                        /* ignore error */
+                        PyErr_Clear();
+                        /* fall through */
+                    default:
+                        /* error or window already dealloc-ed, do nothing */
+                        break;
+                }
+                Py_DECREF(item);
+            }
+            Py_DECREF(iter);
+        }
+
+        /* Clears up all memory */
+        Py_DECREF(pg_window_weakrefs);
+        pg_window_weakrefs = NULL;
     }
     Py_RETURN_NONE;
+}
+
+static PyObject *
+window_new(PyTypeObject *subtype, PyObject *args, PyObject *kwds)
+{
+    // ensure display is init at this point, display init automatically calls
+    // the window init in this module
+    if (!pg_mod_autoinit(IMPPREFIX "display")) {
+        return NULL;
+    }
+
+    if (!pg_window_weakrefs) {
+        /* this shouldn't happen if above call was successful */
+        return RAISE(pgExc_SDLError, "window module failed to init");
+    }
+
+    pgWindowObject *obj = (pgWindowObject *)(subtype->tp_alloc(subtype, 0));
+
+    /* Create a self weakref */
+    if (obj) {
+        obj->selfweakref = PyWeakref_NewRef((PyObject *)obj, NULL);
+        if (!obj->selfweakref) {
+            Py_DECREF(obj);
+            return NULL;
+        }
+        if (PySet_Add(pg_window_weakrefs, obj->selfweakref) == -1) {
+            /* obj dealloc will take care of selfweakref dealloc */
+            Py_DECREF(obj);
+            return NULL;
+        }
+    }
+    return (PyObject *)obj;
 }
 
 static PyMethodDef window_methods[] = {
@@ -1452,9 +1557,10 @@ static PyTypeObject pgWindow_Type = {
     .tp_dealloc = (destructor)window_dealloc,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc = DOC_WINDOW,
+    .tp_weaklistoffset = offsetof(pgWindowObject, weakreflist),
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
-    .tp_new = PyType_GenericNew,
+    .tp_new = (newfunc)window_new,
     .tp_getset = _window_getset,
     .tp_repr = (reprfunc)window_repr};
 
