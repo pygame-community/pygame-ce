@@ -707,6 +707,10 @@ class DisplayModuleTest(unittest.TestCase):
             size = sizes[i]
             self.assertLessEqual(bound.w, size[0])
             self.assertLessEqual(bound.h, size[1])
+            for j, coord in enumerate(bound):
+                self.assertGreaterEqual(
+                    coord, 0, f"Bounds rect coordinate {j} is negative ({coord})"
+                )
 
 
 class DisplayUpdateTest(unittest.TestCase):

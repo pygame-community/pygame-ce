@@ -2304,7 +2304,7 @@ pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
 
     VIDEO_INIT_CHECK();
 
-#if PG_SDL3
+#if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_DisplayID *displays = SDL_GetDisplays(&display_count);
     if (displays == NULL) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -2328,7 +2328,7 @@ pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
         SDL_Rect bounds;
 #if PG_SDL3
         SDL_DisplayID display_id = displays[i];
-        if (SDL_GetDisplayUsableBounds(display_id, &bounds) == SDL_FALSE) {
+        if (!SDL_GetDisplayUsableBounds(display_id, &bounds)) {
             Py_DECREF(result);
             SDL_free(displays);
             return RAISE(pgExc_SDLError, SDL_GetError());
