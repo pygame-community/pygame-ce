@@ -271,7 +271,7 @@ class Surface:
         :param special_flags: the flag(s) representing the blend mode used for each Surface.
                             See :doc:`special_flags_list` for a list of possible values.
 
-        :returns: ``None`` (unlike regular blitting)
+        :returns: ``None`` (unlike `blit()` and `blits()`)
 
         .. note:: This method only accepts a sequence of (source, dest) pairs and a single
             special_flags value that's applied to all Surfaces drawn. This allows faster
@@ -341,7 +341,7 @@ class Surface:
         attributes then it should override ``copy()``. Shallow copy and deepcopy
         are supported, Surface implements __copy__ and __deepcopy__ respectively.
 
-        If the Surface was a subsurface, the returned Surface will *not* retain
+        If the Surface is a subsurface, the returned Surface will *not* retain
         the parent and will be a regular Surface with its own pixel data.
 
         .. versionadded:: 2.3.1
