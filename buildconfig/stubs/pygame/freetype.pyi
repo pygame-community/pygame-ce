@@ -193,3 +193,26 @@ class Font:
         size: float = 0,
         invert: bool = False,
     ) -> Rect: ...
+
+# keep in sync with freetype.py
+__all__ = [
+    "Font",
+    "STYLE_NORMAL",
+    "STYLE_OBLIQUE",
+    "STYLE_STRONG",
+    "STYLE_UNDERLINE",
+    "STYLE_WIDE",
+    "STYLE_DEFAULT",
+    "init",
+    "quit",
+    "get_init",
+    "was_init",
+    "get_cache_size",
+    "get_default_font",
+    "get_default_resolution",
+    "get_error",
+    "get_version",
+    "set_default_resolution",
+    "match_font",
+    "get_fonts",
+]

@@ -51,3 +51,24 @@ class Output:
     ) -> None: ...
     def write_short(self, status: int, data1: int = 0, data2: int = 0) -> None: ...
     def write_sys_ex(self, when: int, msg: Union[list[int], str]) -> None: ...
+
+# keep in sync with midi.py
+__all__ = [
+    "Input",
+    "MIDIIN",
+    "MIDIOUT",
+    "MidiException",
+    "Output",
+    "get_count",
+    "get_default_input_id",
+    "get_default_output_id",
+    "get_device_info",
+    "init",
+    "midis2events",
+    "quit",
+    "get_init",
+    "time",
+    "frequency_to_midi",
+    "midi_to_frequency",
+    "midi_to_ansi_note",
+]

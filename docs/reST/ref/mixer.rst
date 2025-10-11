@@ -369,6 +369,10 @@ The following file formats are supported
    an exception when different. Also, source samples are truncated to fit the
    audio sample size. This will not change.
 
+   .. note:: ``bytes(Sound)`` and ``bytearray(Sound)`` make use of the buffer
+             interface, which is implemented internally by ``pygame.mixer.Sound``.
+             Because of this, there is no need to directly implement ``__bytes__``.
+
    .. versionaddedold:: 1.8 ``pygame.mixer.Sound(buffer)``
    .. versionaddedold:: 1.9.2
       :class:`pygame.mixer.Sound` keyword arguments and array interface support
@@ -499,6 +503,26 @@ The following file formats are supported
       .. versionaddedold:: 1.9.2
 
       .. ## Sound.get_raw ##
+
+   .. method:: copy
+
+      | :sl:`return a new Sound object that is a deep copy of this Sound`
+      | :sg:`copy() -> Sound`
+      | :sg:`copy.copy(original_sound) -> Sound`
+
+      Return a new Sound object that is a deep copy of this Sound. The new Sound
+      will be just as if you loaded it from the same file on disk as you did the
+      original Sound. If the copy fails, a ``TypeError`` or :meth:`pygame.error`
+      exception will be raised.
+
+      If copying a subclass of ``mixer.Sound``, an instance of the same subclass
+      will be returned.
+
+      Also note that this functions as ``Sound.__copy__``.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Sound.copy ##
 
    .. ## pygame.mixer.Sound ##
 
