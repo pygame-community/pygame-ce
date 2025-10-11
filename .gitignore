@@ -35,6 +35,10 @@
 # Ruff
 .ruff_cache
 
+# Meson subprojects
+subprojects/*
+!subprojects/*.wrap
+
 # Other
 envdev*
 .virtualenv*

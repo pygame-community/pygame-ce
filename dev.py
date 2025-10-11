@@ -32,6 +32,8 @@ SDL3_ARGS = [
 ]
 COVERAGE_ARGS = ["-Csetup-args=-Dcoverage=true"]
 
+CTEST_ARGS = ["-Csetup-args=-Dctest=true"]
+
 # We assume this script works with any pip version above this.
 PIP_MIN_VERSION = "23.1"
 
@@ -214,6 +216,7 @@ class Dev:
         stripped = self.args.get("stripped", False)
         sanitize = self.args.get("sanitize")
         coverage = self.args.get("coverage", False)
+        ctest = self.args.get("ctest", False)
         if wheel_dir and coverage:
             pprint("Cannot pass --wheel and --coverage together", Colors.RED)
             sys.exit(1)
@@ -227,6 +230,8 @@ class Dev:
             build_suffix += "-sdl3"
         if coverage:
             build_suffix += "-cov"
+        if ctest:
+            build_suffix += "-ctest"
         install_args = [
             "--no-build-isolation",
             f"-Cbuild-dir=.mesonpy-build{build_suffix}",
@@ -256,12 +261,14 @@ class Dev:
         if coverage:
             install_args.extend(COVERAGE_ARGS)
 
+        if ctest:
+            install_args.extend(CTEST_ARGS)
+
         if sanitize:
             install_args.append(f"-Csetup-args=-Db_sanitize={sanitize}")
 
-        info_str = (
-            f"with {debug=}, {lax=}, {sdl3=}, {stripped=}, {coverage=} and {sanitize=}"
-        )
+        info_str = f"with {debug=}, {lax=}, {sdl3=}, {stripped=}, {coverage=}, {ctest=}, and {sanitize=}"
+
         if wheel_dir:
             pprint(f"Building wheel at '{wheel_dir}' ({info_str})")
             cmd_run(
@@ -420,6 +427,9 @@ class Dev:
                 "to compile pygame with this flag and run tests. This flag is only "
                 "supported if the underlying compiler supports the --coverage argument"
             ),
+        )
+        build_parser.add_argument(
+            "--ctest", action="store_true", help="Build the C-direct unit tests"
         )
 
         # Docs command
