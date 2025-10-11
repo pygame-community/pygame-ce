@@ -3,11 +3,8 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-# TODO: when freetype is updated, we can look into resolving the circular
-# dependency between freetype and harfbuzz by using the upcoming freetype
-# dynamic harfbuzz loading feature.
-FREETYPE="freetype-2.13.3"
-HARFBUZZ_VER=11.3.3
+FREETYPE="freetype-2.14.0"
+HARFBUZZ_VER=11.4.5
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
 curl -sL --retry 10 https://savannah.nongnu.org/download/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
@@ -19,20 +16,37 @@ tar xzf ${FREETYPE}.tar.gz
 unxz ${HARFBUZZ_NAME}.tar.xz
 tar xf ${HARFBUZZ_NAME}.tar
 
-# freetype and harfbuzz have an infamous circular dependency, which is why
-# this file is not like the rest of docker_base files
-
-# 1. First compile freetype without harfbuzz support
 cd $FREETYPE
 
-./configure $PG_BASE_CONFIGURE_FLAGS --with-harfbuzz=no
-make
-make install  # this freetype is not installed to mac cache dir
+# For now bzip2 is only used on macOS, on other platforms there are issues with
+# it.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    export PG_FT_BZ2="-Dbzip2=enabled"
+else
+    export PG_FT_BZ2="-Dbzip2=disabled"
+fi
+
+meson setup _build $PG_BASE_MESON_FLAGS -Dbrotli=enabled -Dharfbuzz=dynamic \
+    -Dpng=enabled -Dzlib=system $PG_FT_BZ2
+
+meson compile -C _build
+meson install -C _build
 
 cd ..
 
-# 2. Compile harfbuzz with freetype support
 cd ${HARFBUZZ_NAME}
+
+# Harfbuzz tries to include libgcc/libstc++ while building on windows. Because
+# we are compiling with MinGW, it would cause a dependency on libgcc_s_seh-1.dll
+# which we don't want. So, statically link and only use what's required.
+if [ -n "$WIN_ARCH" ]; then
+  PG_HARFBUZZ_EXTRA_ARGS=(
+    "-Dc_args=['-static-libgcc']"
+    "-Dc_link_args=['-static-libgcc']"
+    "-Dcpp_args=['-static-libgcc','-static-libstdc++']"
+    "-Dcpp_link_args=['-static-libgcc','-static-libstdc++']"
+  )
+fi
 
 # harfbuzz has a load of optional dependencies but only freetype is important
 # to us.
@@ -41,33 +55,9 @@ cd ${HARFBUZZ_NAME}
 # we also don't compile-in icu so that harfbuzz uses built-in unicode handling
 meson setup _build $PG_BASE_MESON_FLAGS -Dfreetype=enabled \
     -Dglib=disabled -Dgobject=disabled -Dcairo=disabled -Dchafa=disabled -Dicu=disabled \
-    -Dtests=disabled -Dintrospection=disabled -Ddocs=disabled
+    -Dtests=disabled -Dintrospection=disabled -Ddocs=disabled "${PG_HARFBUZZ_EXTRA_ARGS[@]}"
 
 meson compile -C _build
 meson install -C _build
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # We do a little hack...
-    # When freetype finds harfbuzz with pkg-config, we tell freetype a little
-    # lie that harfbuzz doesn't depend on freetype (even though it does).
-    # This ensures no direct circular dylib link happen.
-    # This is a bit of a brittle hack: This command removes the entire line that
-    # contains "freetype". This is fine for now when the harfbuzz we are
-    # building has no other dependencies
-    sed -i '' '/freetype/d' $PG_DEP_PREFIX/lib/pkgconfig/harfbuzz.pc
-fi
-
 cd ..
-
-# 3. Recompile freetype, and this time with harfbuzz support
-cd $FREETYPE
-
-# fully clean previous install
-make clean
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    make uninstall
-fi
-
-./configure $PG_BASE_CONFIGURE_FLAGS --with-harfbuzz=yes
-make
-make install
