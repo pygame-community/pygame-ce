@@ -1,13 +1,8 @@
 import pygame
 
-__tags__ = ["array", "sdl3_skip"]
+__tags__ = ["sdl3_skip"]
 
 exclude = pygame.get_sdl_version() >= (3, 0, 0)
-
-try:
-    import numpy
-except ImportError:
-    exclude = True
 
 if exclude:
     __tags__.extend(("ignore", "subprocess_ignore"))
