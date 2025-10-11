@@ -196,9 +196,9 @@ class Dev:
             "build": get_build_deps(),
             "docs": get_build_deps(),
             "test": {"numpy"},
-            "lint": {"pylint==3.3.7", "numpy"},
-            "stubs": {"mypy==1.13.0", "numpy"},
-            "format": {"pre-commit==4.2.0"},
+            "lint": {"pylint==3.3.9", "numpy"},
+            "stubs": {"mypy==1.18.2", "numpy"},
+            "format": {"pre-commit==4.3.0"},
         }
         self.deps["all"] = set()
         for k in self.deps.values():
