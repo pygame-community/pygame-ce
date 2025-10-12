@@ -688,10 +688,6 @@ class FontTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, f.set_point_size, -500)
         self.assertRaises(TypeError, f.set_point_size, "15")
 
-    @unittest.skipIf(
-        pygame.font.get_sdl_ttf_version() < (2, 0, 12),
-        "outlines were added in SDL_TTF 2.0.12",
-    )
     def test_outline_property(self):
         if pygame_font.__name__ == "pygame.ftfont":
             return  # not a pygame.ftfont feature
@@ -722,25 +718,6 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertRaises(ValueError, test_neg)
         self.assertRaises(TypeError, test_incorrect_type)
-
-    @unittest.skipIf(
-        pygame.font.get_sdl_ttf_version() >= (2, 0, 12),
-        "outlines were added in SDL_TTF 2.0.12",
-    )
-    def test_outline_property_stub(self):
-        if pygame_font.__name__ == "pygame.ftfont":
-            return  # not a pygame.ftfont feature
-
-        pygame_font.init()
-        font_path = os.path.join(
-            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
-        )
-        f = pygame_font.Font(pathlib.Path(font_path), 25)
-
-        with self.assertRaises(pygame.error):
-            f.outline = 0
-        with self.assertRaises(pygame.error):
-            _ = f.outline
 
     def test_font_name(self):
         f = pygame_font.Font(None, 20)
@@ -1078,6 +1055,7 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("underline", True),
                 ("strikethrough", True),
+                ("outline", 1),
             ]
             skip_properties = set()
             version = pygame.font.get_sdl_ttf_version()
@@ -1089,11 +1067,6 @@ class FontTypeTest(unittest.TestCase):
                 properties.append(("point_size", 1))
             else:
                 skip_properties.add("point_size")
-
-            if version >= (2, 0, 12):
-                properties.append(("outline", 1))
-            else:
-                skip_properties.add("outline")
 
         font = pygame_font.Font(None, 10)
         actual_names = []
@@ -1191,8 +1164,7 @@ class VisualTestsInteractive(unittest.TestCase):
         f.set_italic(italic)
         f.set_underline(underline)
         f.set_strikethrough(strikethrough)
-        if pygame.font.get_sdl_ttf_version() >= (2, 0, 12):
-            f.outline = outline
+        f.outline = outline
         s = f.render(text, antialiase, (0, 0, 0))
         screen.blit(s, (offset, y))
         y += s.get_size()[1] + spacing
@@ -1200,8 +1172,7 @@ class VisualTestsInteractive(unittest.TestCase):
         f.set_italic(False)
         f.set_underline(False)
         f.set_strikethrough(False)
-        if pygame.font.get_sdl_ttf_version() >= (2, 0, 12):
-            f.outline = 0
+        f.outline = 0
         s = f.render("(some comparison text)", False, (0, 0, 0))
         screen.blit(s, (offset, y))
         pygame.display.flip()
@@ -1243,10 +1214,6 @@ class VisualTestsInteractive(unittest.TestCase):
     def test_bold_strikethrough(self):
         self.assertTrue(self.query(bold=True, strikethrough=True))
 
-    @unittest.skipIf(
-        pygame.font.get_sdl_ttf_version() < (2, 0, 12),
-        "outlines were added in SDL_TTF 2.0.12",
-    )
     def test_outline(self):
         self.assertTrue(self.query(outline=1))
 
