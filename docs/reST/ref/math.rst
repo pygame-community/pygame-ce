@@ -385,13 +385,14 @@ Conversion can be combined with swizzling or slicing to create a new order
    .. method:: lerp
 
       | :sl:`returns a linear interpolation to the given vector.`
-      | :sg:`lerp(Vector2, float, /) -> Vector2`
-      | :sg:`lerp(Vector2, float, bool, /) -> Vector2`
+      | :sg:`lerp(Vector2, float, do_clamp=True, /) -> Vector2`
 
       Returns a Vector which is a linear interpolation between self and the
       given Vector. The second parameter determines how far between self and
       other the result is going to be. It must be a value between ``0`` and ``1``
-      where ``0`` means self and ``1`` means other will be returned.
+      when ``do_clamp`` is ``True`` where ``0`` means self and ``1`` means other
+      will be returned. When ``do_clamp`` is ``False``, the lerp will extend out
+      linearly when the second parameter is outside of the nominal range.
 
       .. versionchanged:: 2.5.7 The ``do_clamp`` parameter is added with a default
          value of ``True``. When it's ``True``, the second parameter is limited
@@ -880,13 +881,14 @@ Conversion can be combined with swizzling or slicing to create a new order
    .. method:: lerp
 
       | :sl:`returns a linear interpolation to the given vector.`
-      | :sg:`lerp(Vector3, float, /) -> Vector3`
-      | :sg:`lerp(Vector3, float, bool, /)`
+      | :sg:`lerp(Vector3, float, do_clamp=True, /) -> Vector3`
 
       Returns a Vector which is a linear interpolation between self and the
-      given Vector. The second parameter determines how far between self an
-      other the result is going to be. It must be a value between ``0`` and
-      ``1``, where ``0`` means self and ``1`` means other will be returned.
+      given Vector. The second parameter determines how far between self and
+      other the result is going to be. It must be a value between ``0`` and ``1``
+      when ``do_clamp`` is ``True`` where ``0`` means self and ``1`` means other
+      will be returned. When ``do_clamp`` is ``False``, the lerp will extend out
+      linearly when the second parameter is outside of the nominal range.
 
       .. versionchanged:: 2.5.7 The ``do_clamp`` parameter is added with a default
          value of ``True``. When it's ``True``, the second parameter is limited
