@@ -908,14 +908,8 @@ font_getter_outline(PyObject *self, void *closure)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_GetFontOutline(font));
-#else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.0.12 or above.");
-#endif
 }
 
 static int
@@ -924,15 +918,10 @@ font_setter_outline(PyObject *self, PyObject *value, void *closure)
     if (!PgFont_GenerationCheck(self)) {
         RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
     TTF_Font *font = PyFont_AsFont(self);
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("outline", value);
 
-    if (!PyLong_Check(value)) {
-        PyErr_SetString(PyExc_TypeError, "outline must be an integer");
-        return -1;
-    }
     long val = PyLong_AsLong(value);
     if (val == -1 && PyErr_Occurred()) {
         return -1;
@@ -941,15 +930,16 @@ font_setter_outline(PyObject *self, PyObject *value, void *closure)
         PyErr_SetString(PyExc_ValueError, "outline must be >= 0");
         return -1;
     }
-    TTF_SetFontOutline(font, (int)val);
-    return 0;
+
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    if (!TTF_SetFontOutline(font, (int)val)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
 #else
-    PyErr_SetString(
-        pgExc_SDLError,
-        "pygame.font not compiled with a new enough SDL_ttf version. Needs "
-        "SDL_ttf 2.0.12 or above.");
-    return -1;
+    TTF_SetFontOutline(font, (int)val);
 #endif
+    return 0;
 }
 
 static PyObject *
