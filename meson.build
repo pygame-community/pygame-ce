@@ -34,11 +34,7 @@ elif host_machine.system() == 'android'
         'However it may be added in the future',
     )
 elif host_machine.system() == 'emscripten'
-    plat = 'emscripten'
-    error(
-        'The meson buildconfig of pygame-ce does not support emscripten for now. ',
-        'However it may be added in the future',
-    )
+    plat = 'emscripten-@0@'.format(get_option('emscripten_type'))
 else
     # here it one of: cygwin, dragonfly, freebsd, gnu, haiku, netbsd, openbsd, sunos
     plat = 'unix'
@@ -90,6 +86,63 @@ endif
 
 pg_inc_dirs = []
 pg_lib_dirs = []
+
+if plat == 'emscripten-pygbag'
+    sdl_dep = declare_dependency(
+        link_args: ['-lSDL2'],
+    )
+    sdl_image_dep = declare_dependency(
+        link_args: ['-lSDL2_image'],
+    )
+    sdl_mixer_dep = declare_dependency(
+        link_args: ['-lSDL2_mixer_ogg', '-logg', '-lvorbis'],
+    )
+    freetype_dep = declare_dependency(
+        link_args: ['-lfreetype', '-lharfbuzz']
+    )
+    sdl_ttf_dep = declare_dependency(
+        link_args: ['-lSDL2_ttf'],
+        dependencies: [freetype_dep]
+    )
+elif plat == 'emscripten-pyodide'
+    # Check out before-build attribute in [tool.cibuildwheel.pyodide] section
+    # of pyproject.toml to see how these dependencies were installed.
+    wasm_exceptions = ['-fwasm-exceptions', '-sSUPPORT_LONGJMP=wasm', '-sRELOCATABLE=1']
+    add_global_arguments(wasm_exceptions, language: 'c')
+    add_global_link_arguments(wasm_exceptions, language: 'c')
+
+    sdl_flags = ['-sUSE_SDL=2']
+    freetype_flags = ['-sUSE_FREETYPE=1']
+    sdl_dep = declare_dependency(
+        compile_args: sdl_flags,
+        link_args: sdl_flags + ['-lSDL2', '-lhtml5'],
+    )
+    sdl_image_dep = declare_dependency(
+        link_args: [
+            '-lSDL2_image-bmp-gif-jpg-lbm-pcx-png-pnm-qoi-svg-tga-xcf-xpm-xv-wasm-sjlj',
+            '-ljpeg',
+            '-lpng-legacysjlj',
+        ],
+    )
+    sdl_mixer_dep = declare_dependency(
+        link_args: [
+            '-lSDL2_mixer-mid-mod-mp3-ogg',
+            '-lmodplug',
+            '-lmpg123',
+            '-logg',
+            '-lvorbis'
+        ],
+    )
+    freetype_dep = declare_dependency(
+        compile_args: freetype_flags,
+        link_args: freetype_flags + ['-lfreetype-legacysjlj', '-lharfbuzz']
+    )
+    sdl_ttf_dep = declare_dependency(
+        link_args: ['-lSDL2_ttf'],
+        dependencies: [freetype_dep]
+    )
+else
+
 if plat == 'win' and host_machine.cpu_family().startswith('x86')
     # yes, this is a bit ugly and hardcoded but it is what it is
     # TODO (middle-term goal) - Should migrate away from this
@@ -311,8 +364,10 @@ if not freetype_dep.found()
     )
 endif
 
+endif # emscripten
+
 portmidi_dep = dependency('portmidi', required: false)
-if not portmidi_dep.found()
+if not portmidi_dep.found() and not plat.startswith('emscripten')
     portmidi_dep = declare_dependency(
         include_directories: pg_inc_dirs,
         dependencies: cc.find_library(
@@ -436,7 +491,7 @@ endif
 subdir('src_c')
 subdir('src_py')
 
-if not get_option('stripped')
+if not get_option('stripped') and not plat.startswith('emscripten')
     # run make_docs and make docs
     if not fs.is_dir('docs/generated')
         make_docs = files('buildconfig/make_docs.py')
