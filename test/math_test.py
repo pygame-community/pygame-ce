@@ -1139,14 +1139,18 @@ class Vector2TypeTest(unittest.TestCase):
         v2 = Vector2(10, 10)
         self.assertEqual(v1.lerp(v2, 0.5), (5, 5))
         self.assertRaises(ValueError, lambda: v1.lerp(v2, 2.5))
+        self.assertEqual(v1.lerp(v2, 2.5, False), (25, 25))
+        self.assertEqual(v1.lerp(v2, -1, False), (-10, -10))
 
         v1 = Vector2(0, 0)
         v2 = Vector2(10, 10)
         self.assertEqual(v1.lerp(v2, 0.1), (1, 1))
+        self.assertEqual(v1.lerp(v2, 10, False), (100, 100))
 
         v1 = Vector2(-10, -5)
         v2 = Vector2(10, 10)
         self.assertEqual(v1.lerp(v2, 0.5), (0, 2.5))
+        self.assertEqual(v1.lerp(v2, -10, False), (-210, -155))
 
     def test_smoothstep(self):
         v1 = Vector2(0, 0)
@@ -2892,14 +2896,18 @@ class Vector3TypeTest(unittest.TestCase):
         v2 = Vector3(10, 10, 10)
         self.assertEqual(v1.lerp(v2, 0.5), (5, 5, 5))
         self.assertRaises(ValueError, lambda: v1.lerp(v2, 2.5))
+        self.assertEqual(v1.lerp(v2, 2.5, False), (25, 25, 25))
+        self.assertEqual(v1.lerp(v2, -1, False), (-10, -10, -10))
 
         v1 = Vector3(0, 0, 0)
         v2 = Vector3(10, 10, 10)
         self.assertEqual(v1.lerp(v2, 0.1), (1, 1, 1))
+        self.assertEqual(v1.lerp(v2, 10, False), (100, 100, 100))
 
         v1 = Vector3(-10, -5, -20)
         v2 = Vector3(10, 10, -20)
         self.assertEqual(v1.lerp(v2, 0.5), (0, 2.5, -20))
+        self.assertEqual(v1.lerp(v2, -10, False), (-210, -155, -20))
 
     def test_smoothstep(self):
         v1 = Vector3(0, 0, 0)

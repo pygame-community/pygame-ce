@@ -22,7 +22,7 @@
 #define DOC_MATH_VECTOR2_DISTANCESQUAREDTO "distance_squared_to(Vector2, /) -> float\ncalculates the squared Euclidean distance to a given vector."
 #define DOC_MATH_VECTOR2_MOVETOWARDS "move_towards(Vector2, float, /) -> Vector2\nreturns a vector moved toward the target by a given distance."
 #define DOC_MATH_VECTOR2_MOVETOWARDSIP "move_towards_ip(Vector2, float, /) -> None\nmoves the vector toward its target at a given distance."
-#define DOC_MATH_VECTOR2_LERP "lerp(Vector2, float, /) -> Vector2\nreturns a linear interpolation to the given vector."
+#define DOC_MATH_VECTOR2_LERP "lerp(Vector2, float, /) -> Vector2\nlerp(Vector2, float, bool, /) -> Vector2\nreturns a linear interpolation to the given vector."
 #define DOC_MATH_VECTOR2_SLERP "slerp(Vector2, float, /) -> Vector2\nreturns a spherical interpolation to the given vector."
 #define DOC_MATH_VECTOR2_SMOOTHSTEP "smoothstep(Vector2, float, /) -> Vector2\nreturns a smooth interpolation to the given vector."
 #define DOC_MATH_VECTOR2_ELEMENTWISE "elementwise() -> VectorElementwiseProxy\nThe next operation will be performed elementwise."
