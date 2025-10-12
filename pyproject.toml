@@ -1,6 +1,6 @@
 [project]
 name = "pygame-ce"
-version = "2.5.6.dev1"
+version = "2.5.6.dev2"
 description = "Python Game Development"
 readme = "README.rst" # for long description
 requires-python = ">=3.9"
