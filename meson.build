@@ -289,7 +289,10 @@ else
     if brew_cmd.found()
         result = run_command(brew_cmd, '--prefix', check: false)
         if result.returncode() == 0
-            homebrew_prefix = result.stdout().strip()
+            detected_prefix = result.stdout().strip()
+            if detected_prefix != '' and fs.is_dir(detected_prefix)
+                homebrew_prefix = detected_prefix
+            endif
         endif
     endif
 
