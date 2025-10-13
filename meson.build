@@ -282,7 +282,18 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
     install_data(dlls, install_dir: pg_dir, install_tag: 'pg-tag')
 
 else
-    bases = ['/usr/local', '/usr', '/opt/homebrew', '/opt/local']
+    homebrew_prefix = '/opt/homebrew'
+
+    brew_cmd = find_program('brew', required: false)
+
+    if brew_cmd.found()
+        result = run_command(brew_cmd, '--prefix', check: false)
+        if result.returncode() == 0
+            homebrew_prefix = result.stdout().strip()
+        endif
+    endif
+
+    bases = ['/usr/local', '/usr', homebrew_prefix, '/opt/local']
     foreach inc_dir : bases
         foreach sub_inc : [
             '',
