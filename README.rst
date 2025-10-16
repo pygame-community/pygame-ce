@@ -30,10 +30,49 @@ New contributors are welcome!
 Installation
 ------------
 
+To install pygame-ce, first make sure you have Python (and pip) installed and available on your PATH.
+Then, run the following command in your terminal or command prompt:
+
 ::
 
    pip install pygame-ce
 
+Note that on some platforms you may need to use ``pip3`` instead of ``pip``.
+
+Linux Note: "Breaking System Packages" Error
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On some Linux distributions (like Ubuntu or Debian), installing Python packages with ``pip`` can trigger a message like the following:
+
+::
+
+   error: externally-managed-environment
+   This environment is externally managed when system packages are installed.
+
+This means your system Python is managed by the OS, and using ``pip3`` globally might interfere with system packages.
+
+Recommended Solutions
+^^^^^^^^^^^^^^^^^^^^^
+
+1. Use ``venv`` (Virtual Environment):
+
+   You can create a virtual environment and install pygame-ce within it.
+   This way you still use system Python but create a separate environment for installed packages so that they do not conflict with or break system ones.
+
+   .. code-block:: bash
+
+      python3 -m venv venv      # create a venv named 'venv'
+      source venv/bin/activate  # activate venv
+      pip install pygame-ce     # install packages in venv
+
+2. Use ``pyenv`` (User-level Python management):
+
+   `pyenv <https://github.com/pyenv/pyenv>`_ lets you install and manage your own Python versions at the user level without touching the system one.
+   As a plus, you can install and use multiple Python versions side by side.
+
+3. Use ``uv`` (Fast Modern Package Installer):
+
+   `uv <https://docs.astral.sh/uv/>`_ is a modern, fast Python package and environment manager that can serve as a replacement for both ``venv`` and ``pyenv``.
 
 Help
 ----
