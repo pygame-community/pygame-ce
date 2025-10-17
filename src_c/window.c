@@ -970,22 +970,34 @@ window_get_handle(pgWindowObject *self, void *v)
     }
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
-    handle = (size_t)info.info.win.window;
+    if (info.subsystem == SDL_SYSWM_WINDOWS) {
+        handle = (size_t)info.info.win.window;
+    }
 #endif
 #if defined(SDL_VIDEO_DRIVER_X11)
-    handle = (size_t)info.info.x11.window;
+    if (info.subsystem == SDL_SYSWM_X11) {
+        handle = (size_t)info.info.x11.window;
+    }
 #endif
 #if defined(SDL_VIDEO_DRIVER_COCOA)
-    handle = (size_t)info.info.cocoa.window;
+    if (info.subsystem == SDL_SYSWM_COCOA) {
+        handle = (size_t)info.info.cocoa.window;
+    }
 #endif
 #if defined(SDL_VIDEO_DRIVER_UIKIT)
-    handle = (size_t)info.info.uikit.window;
+    if (info.subsystem == SDL_SYSWM_UIKIT) {
+        handle = (size_t)info.info.uikit.window;
+    }
 #endif
 #if defined(SDL_VIDEO_DRIVER_ANDROID)
-    handle = (size_t)info.info.android.window;
+    if (info.subsystem == SDL_SYSWM_ANDROID) {
+        handle = (size_t)info.info.android.window;
+    }
 #endif
 #if defined(SDL_VIDEO_DRIVER_VIVANTE)
-    handle = (size_t)info.info.vivante.window;
+    if (info.subsystem == SDL_SYSWM_VIVANTE) {
+        handle = (size_t)info.info.vivante.window;
+    }
 #endif
 #endif  // sdl 3
 
