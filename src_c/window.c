@@ -953,7 +953,7 @@ window_get_handle(pgWindowObject *self, void *v)
     }
     else if (!strcmp(driver, "android")) {
         handle = (size_t)SDL_GetPointerProperty(
-            props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
+            props, SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
     }
     else if (!strcmp(driver, "vivante")) {
         handle = (size_t)SDL_GetPointerProperty(
