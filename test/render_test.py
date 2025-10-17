@@ -482,3 +482,122 @@ class TextureTest(unittest.TestCase):
         result = self.renderer.to_surface()
         for x in range(25, 75):
             self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 50)))
+
+
+class ImageTest(unittest.TestCase):
+    def setUp(self):
+        self.window = pygame.Window(size=(100, 100))
+        self.renderer = _render.Renderer(self.window)
+        # Base surface and texture to build images from
+        self.surface = pygame.Surface((20, 20))
+        self.surface.fill(pygame.Color(80, 120, 160, 200))
+        self.texture = _render.Texture.from_surface(self.renderer, self.surface)
+        self.image = _render.Image(self.texture)
+
+    def test_init_from_texture_and_image(self):
+        # From Texture
+        img1 = _render.Image(self.texture)
+        self.assertEqual(img1.texture, self.texture)
+        self.assertEqual(
+            img1.srcrect, pygame.Rect(0, 0, self.texture.width, self.texture.height)
+        )
+        self.assertEqual(img1.blend_mode, self.texture.blend_mode)
+        # From Image (inherit srcrect and blend_mode)
+        sub = _render.Image(self.texture, pygame.Rect(2, 3, 5, 6))
+        img2 = _render.Image(sub)
+        self.assertEqual(img2.texture, self.texture)
+        self.assertEqual(img2.srcrect, sub.srcrect)
+        self.assertEqual(img2.blend_mode, sub.blend_mode)
+        # srcrect validation
+        with self.assertRaises(TypeError):
+            _render.Image(self.texture, 123)
+        with self.assertRaises(ValueError):
+            _render.Image(self.texture, pygame.Rect(-1, -1, 5, 5))
+        with self.assertRaises(ValueError):
+            _render.Image(self.texture, pygame.Rect(0, 0, 999, 999))
+
+    def test_color(self):
+        # default white
+        self.assertEqual(self.image.color, pygame.Color(255, 255, 255, 255))
+        # setting only affects RGB; alpha stays 255
+        self.image.color = pygame.Color(100, 110, 120, 130)
+        self.assertEqual(self.image.color, pygame.Color(100, 110, 120, 255))
+
+    def test_alpha(self):
+        self.assertEqual(255, self.image.alpha)
+        self.image.alpha = 128
+        self.assertEqual(128, self.image.alpha)
+        with self.assertRaises((TypeError, ValueError)):
+            self.image.alpha = -1
+
+    def test_origin(self):
+        # default is None
+        self.assertIsNone(self.image.origin)
+        # set to tuple
+        self.image.origin = (3, 4)
+        self.assertEqual(self.image.origin, (3.0, 4.0))
+        # set back to None
+        self.image.origin = None
+        self.assertIsNone(self.image.origin)
+
+    def test_flip_flags(self):
+        self.assertFalse(self.image.flip_x)
+        self.assertFalse(self.image.flip_y)
+        self.image.flip_x = True
+        self.image.flip_y = True
+        self.assertTrue(self.image.flip_x)
+        self.assertTrue(self.image.flip_y)
+
+    def test_blend_mode(self):
+        self.assertEqual(self.image.blend_mode, self.texture.blend_mode)
+        self.image.blend_mode = pygame.BLENDMODE_BLEND
+        self.assertEqual(self.image.blend_mode, pygame.BLENDMODE_BLEND)
+
+    def test_get_rect(self):
+        # get_rect returns current srcrect (no kwargs support)
+        r = self.image.get_rect()
+        self.assertEqual(r, self.image.srcrect)
+        sub = _render.Image(self.texture, pygame.Rect(1, 2, 3, 4))
+        self.assertEqual(sub.get_rect(), sub.srcrect)
+
+    def test_srcrect_setter(self):
+        # valid set
+        self.image.srcrect = pygame.Rect(1, 1, 10, 10)
+        self.assertEqual(self.image.srcrect, pygame.Rect(1, 1, 10, 10))
+        # invalid set
+        with self.assertRaises(TypeError):
+            setattr(self.image, 'srcrect', None)
+        with self.assertRaises(TypeError):
+            setattr(self.image, 'srcrect', 42)
+
+    def test_blit_via_renderer(self):
+        dest = pygame.Rect(10, 10, 20, 10)
+        area = pygame.Rect(0, 0, 20, 10)
+        self.renderer.clear()
+        self.renderer.blit(self.image, dest, area)
+        result = self.renderer.to_surface()
+        # Check a scanline where drawing occurred
+        self.assertEqual(pygame.Color(0, 0, 0, 255), result.get_at((9, 15)))
+        for x in range(10, 30):
+            self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 15)))
+        self.assertEqual(pygame.Color(0, 0, 0, 255), result.get_at((30, 15)))
+
+    def test_draw(self):
+        # Draw using the Image.draw() method and verify pixels match expectations
+        dest = pygame.Rect(10, 10, 20, 10)
+        area = pygame.Rect(0, 0, 20, 10)
+        self.renderer.clear()
+        self.image.draw(area, dest)
+        result = self.renderer.to_surface()
+        # Check a scanline where drawing occurred (same as blit_via_renderer)
+        self.assertEqual(pygame.Color(0, 0, 0, 255), result.get_at((9, 15)))
+        for x in range(10, 30):
+            self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 15)))
+        self.assertEqual(pygame.Color(0, 0, 0, 255), result.get_at((30, 15)))
+
+    def test_garbage_collection(self):
+        reference = weakref.ref(self.image)
+        self.assertIs(reference(), self.image)
+        del self.image
+        gc.collect()
+        self.assertIsNone(reference())
