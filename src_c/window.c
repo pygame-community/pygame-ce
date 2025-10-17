@@ -926,7 +926,7 @@ window_get_handle(pgWindowObject *self, void *v)
     SDL_Window *win = self->_win;
     size_t handle = 0;
 
-#if SDL_VERSION_ATLEAST(3, 2, 0)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
     const char *driver = SDL_GetCurrentVideoDriver();
     if (driver == NULL) {
         handle = 0;
@@ -963,10 +963,10 @@ window_get_handle(pgWindowObject *self, void *v)
 #else  // sdl 2
     SDL_SysWMinfo info;
 
-    SDL_VERSION(&(info.version))
+    SDL_VERSION(&(info.version));
 
     if (!SDL_GetWindowWMInfo(win, &info)) {
-        return PyLong_FromLong(0);
+        return PyLong_FromSize_t(0);
     }
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
