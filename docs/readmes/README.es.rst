@@ -117,7 +117,7 @@ El módulo surfarray necesita el paquete python numpy, para sus matrices numéri
 Versiones de dependencia:
 
 +----------+-----------------------------+
-| CPython  | >= 3.9 (Ou utiliser PyPy3)  |
+| CPython  | >= 3.10 (Ou utiliser PyPy3) |
 +----------+-----------------------------+
 | SDL      | >= 2.0.14                   |
 +----------+-----------------------------+
