@@ -160,7 +160,7 @@ class Image:
     origin: Optional[Iterable[float]]
     flip_x: bool
     flip_y: bool
-    alpha: float
+    alpha: int
     blend_mode: int
     texture: Texture
     srcrect: Rect

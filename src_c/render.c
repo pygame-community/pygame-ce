@@ -1309,9 +1309,9 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
                 return 0;
             }
             destrect.w =
-                (float)(areasrcptr ? areasrcptr->w : self->texture->width);
+                (float)(areasrcptr ? areasrcptr->w : self->srcrect->r.w);
             destrect.h =
-                (float)(areasrcptr ? areasrcptr->h : self->texture->height);
+                (float)(areasrcptr ? areasrcptr->h : self->srcrect->r.h);
         }
     }
 
