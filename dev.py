@@ -14,7 +14,7 @@ import sys
 import sysconfig
 from enum import Enum
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 from buildconfig.get_version import version
 
@@ -86,7 +86,7 @@ def pprint(arg: str, col: Colors = Colors.YELLOW):
 
 
 def cmd_run(
-    cmd: list[Union[str, Path]],
+    cmd: list[str | Path],
     capture_output: bool = False,
     error_on_output: bool = False,
 ) -> str:
