@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-FSYNTH_VER="2.4.7"
+FSYNTH_VER="2.5.0"
 FSYNTH="fluidsynth-$FSYNTH_VER"
 
 curl -sL --retry 10 https://github.com/FluidSynth/fluidsynth/archive/v${FSYNTH_VER}.tar.gz > ${FSYNTH}.tar.gz
@@ -22,6 +22,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 cmake .. $PG_BASE_CMAKE_FLAGS -Denable-readline=OFF $FLUIDSYNTH_EXTRA_PLAT_FLAGS \
+    -Denable-openmp=OFF -Dosal=cpp11 -Denable-libinstpatch=0 \
     -Denable-pulseaudio=NO \
     -Denable-pipewire=NO
 
