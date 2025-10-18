@@ -1,5 +1,5 @@
 from collections.abc import Callable, Iterable
-from typing import Any, Optional, Union
+from typing import Any
 
 from pygame.color import Color
 from pygame.rect import Rect
@@ -18,16 +18,16 @@ def get_cache_size() -> int: ...
 def get_default_resolution() -> int: ...
 def set_default_resolution(resolution: int = 0, /) -> None: ...
 def SysFont(
-    name: Union[str, bytes, Iterable[Union[str, bytes]], None],
+    name: str | bytes | Iterable[str | bytes] | None,
     size: int,
     bold: int = False,
     italic: int = False,
-    constructor: Optional[Callable[[Optional[str], int, bool, bool], Font]] = None,
+    constructor: Callable[[str | None, int, bool, bool], Font] | None = None,
 ) -> Font: ...
 def get_default_font() -> str: ...
 def get_fonts() -> list[str]: ...
 def match_font(
-    name: Union[str, bytes, Iterable[Union[str, bytes]]],
+    name: str | bytes | Iterable[str | bytes],
     bold: Any = False,
     italic: Any = False,
 ) -> str: ...
@@ -41,9 +41,9 @@ STYLE_DEFAULT: int
 
 class Font:
     @property
-    def size(self) -> Union[float, tuple[float, float]]: ...
+    def size(self) -> float | tuple[float, float]: ...
     @size.setter
-    def size(self, value: Union[float, tuple[float, float]]) -> None: ...
+    def size(self, value: float | tuple[float, float]) -> None: ...
     @property
     def style(self) -> int: ...
     @style.setter
@@ -134,7 +134,7 @@ class Font:
     def origin(self, value: bool) -> None: ...
     def __init__(
         self,
-        file: Optional[FileLike],
+        file: FileLike | None,
         size: float = 0,
         font_index: int = 0,
         resolution: int = 0,
@@ -142,7 +142,7 @@ class Font:
     ) -> None: ...
     def get_rect(
         self,
-        text: Optional[str],
+        text: str | None,
         style: int = STYLE_DEFAULT,
         rotation: int = 0,
         size: float = 0,
@@ -157,9 +157,9 @@ class Font:
     def get_sizes(self) -> list[tuple[int, int, int, float, float]]: ...
     def render(
         self,
-        text: Optional[str],
-        fgcolor: Optional[ColorLike] = None,
-        bgcolor: Optional[ColorLike] = None,
+        text: str | None,
+        fgcolor: ColorLike | None = None,
+        bgcolor: ColorLike | None = None,
         style: int = STYLE_DEFAULT,
         rotation: int = 0,
         size: float = 0,
@@ -168,16 +168,16 @@ class Font:
         self,
         surf: Surface,
         dest: RectLike,
-        text: Optional[str],
-        fgcolor: Optional[ColorLike] = None,
-        bgcolor: Optional[ColorLike] = None,
+        text: str | None,
+        fgcolor: ColorLike | None = None,
+        bgcolor: ColorLike | None = None,
         style: int = STYLE_DEFAULT,
         rotation: int = 0,
         size: float = 0,
     ) -> Rect: ...
     def render_raw(
         self,
-        text: Optional[str],
+        text: str | None,
         style: int = STYLE_DEFAULT,
         rotation: int = 0,
         size: float = 0,
@@ -186,8 +186,8 @@ class Font:
     def render_raw_to(
         self,
         array: Any,
-        text: Optional[str],
-        dest: Optional[RectLike] = None,
+        text: str | None,
+        dest: RectLike | None = None,
         style: int = STYLE_DEFAULT,
         rotation: int = 0,
         size: float = 0,

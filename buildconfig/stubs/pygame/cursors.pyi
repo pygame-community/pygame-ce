@@ -1,13 +1,13 @@
 from collections.abc import Iterator
-from typing import Any, Literal, Union, overload
+from typing import Any, Literal, TypeAlias, overload
 
 from pygame.surface import Surface
 from pygame.typing import FileLike, IntPoint, SequenceLike
 
-_Small_string = tuple[
+_SmallString: TypeAlias = tuple[
     str, str, str, str, str, str, str, str, str, str, str, str, str, str, str, str
 ]
-_Big_string = tuple[
+_BigString: TypeAlias = tuple[
     str,
     str,
     str,
@@ -40,11 +40,11 @@ broken_x: Cursor
 tri_left: Cursor
 tri_right: Cursor
 ball: Cursor
-thickarrow_strings: _Big_string
-sizer_x_strings: _Small_string
-sizer_y_strings: _Big_string
-sizer_xy_strings: _Small_string
-textmarker_strings: _Small_string
+thickarrow_strings: _BigString
+sizer_x_strings: _SmallString
+sizer_y_strings: _BigString
+sizer_xy_strings: _SmallString
+textmarker_strings: _SmallString
 
 def compile(
     strings: SequenceLike[str],
@@ -79,11 +79,11 @@ class Cursor:
     def __len__(self) -> int: ...
     def __copy__(self) -> Cursor: ...
     def __hash__(self) -> int: ...
-    def __getitem__(self, index: int) -> Union[int, IntPoint, Surface]: ...
+    def __getitem__(self, index: int) -> int | IntPoint | Surface: ...
     def copy(self) -> Cursor: ...
     type: Literal["system", "color", "bitmap"]
-    data: Union[
-        tuple[int],
-        tuple[tuple[int, int], tuple[int, int], tuple[int, ...], tuple[int, ...]],
-        tuple[IntPoint, Surface],
-    ]
+    data: (
+        tuple[int]
+        | tuple[tuple[int, int], tuple[int, int], tuple[int, ...], tuple[int, ...]]
+        | tuple[IntPoint, Surface]
+    )

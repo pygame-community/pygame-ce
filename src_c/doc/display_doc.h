@@ -4,7 +4,7 @@
 #define DOC_DISPLAY_QUIT "quit() -> None\nUninitialize the display module."
 #define DOC_DISPLAY_GETINIT "get_init() -> bool\nReturns True if the display module has been initialized."
 #define DOC_DISPLAY_SETMODE "set_mode(size=(0, 0), flags=0, depth=0, display=0, vsync=0) -> Surface\nInitialize a window or screen for display."
-#define DOC_DISPLAY_GETSURFACE "get_surface() -> Optional[Surface]\nGet a reference to the currently set display surface."
+#define DOC_DISPLAY_GETSURFACE "get_surface() -> Surface | None\nGet a reference to the currently set display surface."
 #define DOC_DISPLAY_FLIP "flip() -> None\nUpdate the full display Surface to the screen."
 #define DOC_DISPLAY_UPDATE "update() -> None\nupdate(rectangle, /) -> None\nupdate(rectangles, /) -> None\nupdate(x, y, w, h, /) -> None\nupdate(xy, wh, /) -> None\nUpdate all, or a portion, of the display. For non-OpenGL displays."
 #define DOC_DISPLAY_GETDRIVER "get_driver() -> str\nGet the name of the pygame display backend."

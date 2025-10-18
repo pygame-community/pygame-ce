@@ -3,7 +3,7 @@ name = "pygame-ce"
 version = "2.5.7.dev1"
 description = "Python Game Development"
 readme = "README.rst" # for long description
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "LGPL v2.1"}
 authors = [{name = "A community project"}]
 classifiers = [
@@ -14,7 +14,6 @@ classifiers = [
     "Programming Language :: Cython",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -77,7 +76,7 @@ install = ['--tags=runtime,python-runtime,pg-tag']
 # dependencies. Here is where uv comes into the picture. It is an "installer" like pip,
 # but faster. It has been observed to save a couple of minutes of CI time.
 build-frontend = "build[uv]"
-build = "cp3{9,10,11,12,13,14}-* pp3{10,11}-*"
+build = "cp3{10,11,12,13,14}-* pp311-*"
 skip = ["*-musllinux_*", "cp31?t-*"]
 # build[uv] is verbose by default, so below flag is not needed here
 # build-verbosity = 3
