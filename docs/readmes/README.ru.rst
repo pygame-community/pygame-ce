@@ -189,8 +189,8 @@ License
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.2.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.2...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.5.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.5...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
