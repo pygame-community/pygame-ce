@@ -17,10 +17,21 @@ cmake . $PG_BASE_CMAKE_FLAGS
 make
 make install
 
+# Workaround https://github.com/xiph/ogg/issues/14
+# When the issue is fixed this block can be removed.
+if [ -n "$WIN_ARCH" ]; then
+  cp $PG_DEP_PREFIX/bin/libogg.dll $PG_DEP_PREFIX/bin/ogg.dll
+fi
+
 cd ..
 
 tar xzf ${VORBIS}.tar.gz
 cd $VORBIS
+
+# some hackery needed to make libvorbis build under mingw
+if [ -n "$WIN_ARCH" ]; then
+  sed -i '/LIBRARY/d' win32/*.def
+fi
 
 # CMake 3.5 or higher policy is required for buiding under CMake 4
 cmake . $PG_BASE_CMAKE_FLAGS -DCMAKE_POLICY_VERSION_MINIMUM=3.5
