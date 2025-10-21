@@ -376,6 +376,11 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertTrue(s1.get_flags() & pygame.RLEACCELOK)
         self.assertTrue(not s2.get_flags() & pygame.RLEACCELOK)
 
+    @unittest.skipIf(
+        (2, 32, 50) <= pygame.version.SDL <= (2, 32, 56)
+        or (3, 0, 0) <= pygame.version.SDL <= (3, 2, 22),
+        "This test was briefly broken on SDL3 (and sdl2-compat) but got fixed.",
+    )
     def test_solarwolf_rle_usage(self):
         """Test for error/crash when calling set_colorkey() followed
         by convert twice in succession. Code originally taken
@@ -404,6 +409,11 @@ class SurfaceTypeTest(unittest.TestCase):
         finally:
             pygame.display.quit()
 
+    @unittest.skipIf(
+        (2, 32, 50) <= pygame.version.SDL <= (2, 32, 56)
+        or (3, 0, 0) <= pygame.version.SDL <= (3, 2, 22),
+        "This test was briefly broken on SDL3 (and sdl2-compat) but got fixed.",
+    )
     def test_solarwolf_rle_usage_2(self):
         """Test for RLE status after setting alpha"""
 
