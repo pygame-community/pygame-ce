@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Any, Literal, Optional, Union, overload
+from typing import Any, Literal, TypeAlias, overload
 
 from pygame.bufferproxy import BufferProxy
 from pygame.color import Color
@@ -12,7 +12,7 @@ from pygame.typing import (
 )
 from typing_extensions import deprecated  # added in 3.13
 
-_ViewKind = Literal[
+_ViewKind: TypeAlias = Literal[
     "0",
     "1",
     "2",
@@ -125,7 +125,7 @@ class Surface:
         size: Point,
         flags: int = 0,
         depth: int = 0,
-        masks: Optional[ColorLike] = None,
+        masks: ColorLike | None = None,
     ) -> None: ...
     @overload
     def __init__(
@@ -139,8 +139,8 @@ class Surface:
     def blit(
         self,
         source: Surface,
-        dest: Union[Point, RectLike] = (0, 0),
-        area: Optional[RectLike] = None,
+        dest: Point | RectLike = (0, 0),
+        area: RectLike | None = None,
         special_flags: int = 0,
     ) -> Rect:
         """Draw another Surface onto this one.
@@ -196,14 +196,14 @@ class Surface:
     def blits(
         self,
         blit_sequence: Iterable[
-            Union[
-                tuple[Surface, Union[Point, RectLike]],
-                tuple[Surface, Union[Point, RectLike], Union[RectLike, int]],
-                tuple[Surface, Union[Point, RectLike], RectLike, int],
-            ]
+            (
+                tuple[Surface, Point | RectLike]
+                | tuple[Surface, Point | RectLike, RectLike | int]
+                | tuple[Surface, Point | RectLike, RectLike, int]
+            )
         ],
-        doreturn: Union[int, bool] = 1,
-    ) -> Union[list[Rect], None]:
+        doreturn: int | bool = 1,
+    ) -> list[Rect] | None:
         """Draw many Surfaces onto this Surface at their corresponding location.
 
         The ``blits`` method efficiently draws a sequence of Surfaces onto this ``Surface``.
@@ -255,7 +255,7 @@ class Surface:
 
     def fblits(
         self,
-        blit_sequence: Iterable[tuple[Surface, Union[Point, RectLike]]],
+        blit_sequence: Iterable[tuple[Surface, Point | RectLike]],
         special_flags: int = 0,
         /,
     ) -> None:
@@ -348,7 +348,7 @@ class Surface:
     def fill(
         self,
         color: ColorLike,
-        rect: Optional[RectLike] = None,
+        rect: RectLike | None = None,
         special_flags: int = 0,
     ) -> Rect:
         """Fill Surface with a solid color.
@@ -418,7 +418,7 @@ class Surface:
         will be slower to modify, but quicker to blit as a source.
         """
 
-    def get_colorkey(self) -> Optional[tuple[int, int, int, int]]:
+    def get_colorkey(self) -> tuple[int, int, int, int] | None:
         """Get the current transparent colorkey.
 
         Return the current colorkey value for the Surface. If the colorkey is not
@@ -449,7 +449,7 @@ class Surface:
         will be slower to modify, but quicker to blit as a source.
         """
 
-    def get_alpha(self) -> Optional[int]:
+    def get_alpha(self) -> int | None:
         """Get the current Surface transparency value.
 
         Return the current alpha value for the Surface.
@@ -649,7 +649,7 @@ class Surface:
         and pixel formats.
         """
 
-    def set_clip(self, rect: Optional[RectLike], /) -> None:
+    def set_clip(self, rect: RectLike | None, /) -> None:
         """Set the current clipping area of the Surface.
 
         Each Surface has an active clipping area. This is a rectangle that

@@ -135,7 +135,7 @@ e gfxdraw contém uma versão embutida do SDL_gfx.
 Versões de dependências:
 
 +----------+------------------------+
-| CPython  | >= 3.9 (Ou use PyPy3)  |
+| CPython  | >= 3.10 (Ou use PyPy3) |
 +----------+------------------------+
 | SDL      | >= 2.0.14              |
 +----------+------------------------+
