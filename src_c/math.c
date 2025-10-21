@@ -1708,16 +1708,19 @@ vector_lerp(pgVector *self, PyObject *args)
     pgVector *ret;
     double t;
     double other_coords[VECTOR_MAX_SIZE];
+    int do_clamp = 1;
 
-    if (!PyArg_ParseTuple(args, "Od:Vector.lerp", &other, &t)) {
+    if (!PyArg_ParseTuple(args, "Od|p:Vector.lerp", &other, &t, &do_clamp)) {
         return NULL;
     }
     if (!pg_VectorCoordsFromObjOldDontUseInNewCode(other, other_coords,
                                                    self->dim)) {
         return RAISE(PyExc_TypeError, "Expected Vector as argument 1");
     }
-    if (t < 0 || t > 1) {
-        return RAISE(PyExc_ValueError, "Argument 2 must be in range [0, 1]");
+    if ((t < 0 || t > 1) && do_clamp > 0) {
+        return RAISE(PyExc_ValueError,
+                     "Argument 2 must be in range [0, 1] when do_clamp is set "
+                     "to True (the default value)");
     }
 
     ret = _vector_subtype_new(self);
