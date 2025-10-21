@@ -1,0 +1,47 @@
+From 2dc377b4e7b59d01b71d6389a12e787231a792c5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Pedro=20L=C3=B3pez-Cabanillas?= <plcl@users.sourceforge.net>
+Date: Sat, 18 Oct 2025 20:45:46 +0200
+Subject: [PATCH 1/2] alternate std::filesystem CMake check for mac
+
+---
+ CMakeLists.txt | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 350a1dcef..0344240fa 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -567,7 +567,9 @@ unset ( HAVE_CXX_FILESYSTEM CACHE )
+ if ( osal STREQUAL "cpp11" )
+     # Will silently fall back to a lower standard version if not available
+     set( CMAKE_CXX_STANDARD 17 )
+-    check_include_file_cxx ( filesystem HAVE_CXX_FILESYSTEM )
++    include( CheckCXXSourceCompiles )
++    check_cxx_source_compiles( "#include <filesystem>
++        int main() { std::filesystem::path path = std::filesystem::current_path(); }" HAVE_CXX_FILESYSTEM )
+     if ( NOT HAVE_CXX_FILESYSTEM )
+         message ( WARNING "C++ filesystem support not found, some file operations will be stubs" )
+     endif ( NOT HAVE_CXX_FILESYSTEM )
+
+From 5ae4455c409fb0eb01112880bed7cb1262e3668b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Pedro=20L=C3=B3pez-Cabanillas?= <plcl@users.sourceforge.net>
+Date: Sat, 18 Oct 2025 22:56:59 +0200
+Subject: [PATCH 2/2] additional check for feature-test macro
+
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0344240fa..400855416 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -569,7 +569,7 @@ if ( osal STREQUAL "cpp11" )
+     set( CMAKE_CXX_STANDARD 17 )
+     include( CheckCXXSourceCompiles )
+     check_cxx_source_compiles( "#include <filesystem>
+-        int main() { std::filesystem::path path = std::filesystem::current_path(); }" HAVE_CXX_FILESYSTEM )
++        int main() { static_assert(__cpp_lib_filesystem == 201703L); std::filesystem::path p = std::filesystem::current_path(); }" HAVE_CXX_FILESYSTEM )
+     if ( NOT HAVE_CXX_FILESYSTEM )
+         message ( WARNING "C++ filesystem support not found, some file operations will be stubs" )
+     endif ( NOT HAVE_CXX_FILESYSTEM )

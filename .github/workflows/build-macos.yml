@@ -24,8 +24,8 @@ jobs:
       matrix:
         # make arm64 deps and x86_64 deps
         include:
-          - { macarch: arm64, os: macos-14 }
-          - { macarch: x86_64, os: macos-13 }
+          - { macarch: arm64, os: macos-15 }
+          - { macarch: x86_64, os: macos-15 }
 
     steps:
       - uses: actions/checkout@v5.0.0
@@ -64,8 +64,8 @@ jobs:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
         include:
-          - { macarch: arm64, os: macos-14 }
-          - { macarch: x86_64, os: macos-13 }
+          - { macarch: arm64, os: macos-15 }
+          - { macarch: x86_64, os: macos-15 }
 
     env:
       MAC_ARCH: ${{ matrix.macarch }}
