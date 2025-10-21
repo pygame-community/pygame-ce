@@ -277,12 +277,12 @@ The following file formats are supported
    are missing. If ``path`` is an empty string or the default (``None``), any specified soundfont paths
    will be cleared from the mixer.
 
-   Note on Windows, the mixer always uses the built-in soundfont instead of the one specified.
-
    Function :func:`set_soundfont` calls underlying SDL_mixer function
    ``Mix_SetSoundFonts``.
 
    .. versionadded:: 2.3.1
+
+   .. versionchanged:: 2.5.7 This function is now supported on Windows OS.
 
    .. ## pygame.mixer.set_soundfont ##
 

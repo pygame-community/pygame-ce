@@ -8,6 +8,12 @@ import pygame
 from pygame.tests.test_utils import example_path
 
 
+def _ensure_soundfont_set():
+    pygame.mixer.set_soundfont(
+        example_path(os.path.join("data", "Ranma_1-2_Hard_Battle.sf2"))
+    )
+
+
 class MixerMusicModuleTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -56,8 +62,8 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_load_midi(self):
         "|tags:music|"
-        if pygame.mixer.get_soundfont() is not None:
-            self.music_load("MIDI_sample.mid")
+        _ensure_soundfont_set()
+        self.music_load("MIDI_sample.mid")
 
     def test_load_xm(self):
         "|tags:music|"
@@ -93,8 +99,8 @@ class MixerMusicModuleTest(unittest.TestCase):
         ):
             filenames.append("house_lo.wv")
 
-        if pygame.mixer.get_soundfont() is not None:
-            filenames.append("MIDI_sample.mid")
+        _ensure_soundfont_set()
+        filenames.append("MIDI_sample.mid")
 
         data_fname = example_path("data")
         for file in filenames:
@@ -124,8 +130,8 @@ class MixerMusicModuleTest(unittest.TestCase):
         ):
             filenames.append("house_lo.wv")
 
-        if pygame.mixer.get_soundfont() is not None:
-            filenames.append("MIDI_sample.mid")
+        _ensure_soundfont_set()
+        filenames.append("MIDI_sample.mid")
 
         data_fname = example_path("data")
         for file in filenames:
@@ -243,9 +249,9 @@ class MixerMusicModuleTest(unittest.TestCase):
 
         |tags:music|
         """
-        if pygame.mixer.get_soundfont() is not None:
-            filename = example_path(os.path.join("data", "MIDI_sample.mid"))
-            pygame.mixer.music.queue(filename)
+        _ensure_soundfont_set()
+        filename = example_path(os.path.join("data", "MIDI_sample.mid"))
+        pygame.mixer.music.queue(filename)
 
     def test_queue_xm(self):
         """Ensures queue() accepts xm files (tracker music files).
