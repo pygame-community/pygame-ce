@@ -33,6 +33,10 @@ if [ -n "$WIN_ARCH" ]; then
   sed -i '/LIBRARY/d' win32/*.def
 fi
 
+# Vendor in the fix from first commit of https://github.com/xiph/vorbis/pull/89
+# With this fix, the size of the vorbis DLL goes down on Windows significantly.
+patch -p1 < ../pr-89-part.patch
+
 # CMake 3.5 or higher policy is required for buiding under CMake 4
 cmake . $PG_BASE_CMAKE_FLAGS -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 make
