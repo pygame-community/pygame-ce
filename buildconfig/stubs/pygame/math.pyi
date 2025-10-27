@@ -82,7 +82,11 @@ class _GenericVector(Collection[float]):
         self: _TVec, other: Union[SequenceLike[float], _TVec], /
     ) -> float: ...
     def lerp(
-        self: _TVec, other: Union[SequenceLike[float], _TVec], value: float, /
+        self: _TVec,
+        other: Union[SequenceLike[float], _TVec],
+        value: float,
+        do_clamp: bool = True,
+        /,
     ) -> _TVec: ...
     def slerp(
         self: _TVec, other: Union[SequenceLike[float], _TVec], value: float, /
