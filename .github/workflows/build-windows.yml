@@ -130,10 +130,6 @@ jobs:
     name: ${{ matrix.sys }}
     needs: deps
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: msys2 {0}
-
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
@@ -169,10 +165,12 @@ jobs:
       # pip does not know that ninja is installed, and tries to install it again.
       # so pass --ignore-dep ninja explicitly
       - name: Build and install pygame wheel
+        shell: msys2 {0}
         run: python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax
 
       - name: Run tests
         env:
           SDL_VIDEODRIVER: "dummy"
           SDL_AUDIODRIVER: "disk"
+        shell: msys2 {0}
         run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300
