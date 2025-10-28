@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-24.04, windows-latest, macos-14]
+        os: [ubuntu-24.04, windows-latest, macos-15]
 
     env:
       # Pip now forces us to either make a venv or set this flag, so we will do
@@ -54,18 +54,15 @@ jobs:
     steps:
     - uses: actions/checkout@v5.0.0
 
-    - name: Install pygame deps (linux)
+    - name: Fix apt issues (linux)
       if: matrix.os == 'ubuntu-24.04'
-      run: |
-        sudo apt-get update --fix-missing
-        sudo apt-get install libfreetype6-dev libportmidi-dev python3-dev
+      run: sudo apt-get update --fix-missing
 
-    - name: Install pygame deps (mac)
-      if: matrix.os == 'macos-14'
-      run: brew install freetype portmidi
+    - name: Install pygame & SDL deps (mac)
+      if: matrix.os == 'macos-15'
+      run: brew install freetype harfbuzz portmidi libtiff webp
 
-    # taken from dependencies of the 'libsdl2-dev' package
-    - name: Install SDL deps (linux)
+    - name: Install pygame & SDL deps (linux)
       if: matrix.os == 'ubuntu-24.04'
       run: >
         sudo apt-get install libasound2-dev libdbus-1-dev libdecor-0-dev libdrm-dev
@@ -73,6 +70,8 @@ jobs:
         libsamplerate0-dev libsndio-dev libudev-dev libwayland-dev libx11-dev
         libxcursor-dev libxext-dev libxfixes-dev libxi-dev libxinerama-dev
         libxkbcommon-dev libxrandr-dev libxss-dev libxt-dev libxv-dev libxxf86vm-dev
+        libfreetype-dev libharfbuzz-dev libportmidi-dev libtiff-dev libwebp-dev
+        python3-dev
 
     # taken from https://wiki.libsdl.org/SDL3/Installation
     - name: Install SDL3
@@ -93,7 +92,9 @@ jobs:
         cd SDL_image
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DSDLIMAGE_VENDORED=0 \
+          -DSDLIMAGE_BACKEND_STB=1 -DSDLIMAGE_BACKEND_IMAGEIO=0 \
+          -DSDLIMAGE_AVIF=0 -DSDLIMAGE_JXL=0 -DSDLIMAGE_TIF=1 -DSDLIMAGE_WEBP=1 ..
         cmake --build . --config Release --parallel
         sudo cmake --install . --config Release
 
@@ -104,20 +105,15 @@ jobs:
         cd SDL_ttf
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DSDLTTF_VENDORED=0 -DSDLTTF_HARFBUZZ=1 ..
         cmake --build . --config Release --parallel
         sudo cmake --install . --config Release
 
     - name: Build with SDL3
       run: python3 dev.py build --sdl3
 
-    # eventually we need to run all tests, but for now test that importing pygame
-    # works
-    - name: Test import works
-      run: python3 -c 'import pygame'
-
-    # - name: Run tests
-    #   env:
-    #     SDL_VIDEODRIVER: "dummy"
-    #     SDL_AUDIODRIVER: "disk"
-    #   run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300
+    - name: Run tests
+      env:
+        SDL_VIDEODRIVER: "dummy"
+        SDL_AUDIODRIVER: "disk"
+      run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300
