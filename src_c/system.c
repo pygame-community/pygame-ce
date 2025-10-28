@@ -283,8 +283,7 @@ MODINIT_DEFINE(system)
         return NULL;
     }
 
-    PyObject *data_classes_module =
-        PyImport_ImportModule("pygame._data_classes");
+    PyObject *data_classes_module = PyImport_ImportModule("pygame.typing");
     if (!data_classes_module) {
         return NULL;
     }

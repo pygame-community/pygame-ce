@@ -561,3 +561,10 @@ def match_font(name, bold=False, italic=False):
             break
 
     return fontname
+
+
+__all__ = [
+    "get_fonts",
+    "match_font",
+    "SysFont",
+]

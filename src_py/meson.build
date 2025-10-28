@@ -2,7 +2,6 @@
 python_sources = files(
     '__init__.py',
     '_camera_opencv.py',
-    '_data_classes.py',
     '_debug.py',
     '_sprite.py',
     'camera.py',
