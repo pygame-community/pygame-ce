@@ -22,6 +22,9 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     # We don't need fluidsynth framework on mac builds
     export FLUIDSYNTH_EXTRA_PLAT_FLAGS="-Denable-framework=NO"
+elif [[ -n "$WIN_ARCH" ]]; then
+    # statically link against libstdc++
+    export FLUIDSYNTH_EXTRA_PLAT_FLAGS="-DCMAKE_CXX_FLAGS=-static-libstdc++"
 fi
 
 cmake .. $PG_BASE_CMAKE_FLAGS -Denable-readline=OFF $FLUIDSYNTH_EXTRA_PLAT_FLAGS \
