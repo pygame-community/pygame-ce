@@ -57,43 +57,30 @@ jobs:
       #     path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
 
   build:
-    name: ${{ matrix.macarch }}
+    name: universal2
     needs: deps
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false  # if a particular matrix build fails, don't skip the rest
-      matrix:
-        include:
-          - { macarch: arm64, os: macos-15 }
-          - { macarch: x86_64, os: macos-15 }
+    runs-on: macos-15
 
     env:
-      MAC_ARCH: ${{ matrix.macarch }}
+      # Our deployment target is 10.11, even on universal2. Technically this
+      # is a lie for the arm64 part of the wheel (where the deployment target is
+      # higher, at 11.0). However this is fine because with this hack our wheels
+      # are acceptable on old intel macs.
+      # cibuildwheel can internally raise this to a higher version if the python
+      # version its building for requires it.
+      MACOSX_DEPLOYMENT_TARGET: '10.11'
 
-      # Explicitly tell CIBW what the wheel arch deployment target should be
-      # There seems to be no better way to set this than this env
-      # We need this because our minimum is 10.11, different from default
-      # of 10.9 on x86s
-      # Related issue: https://github.com/pypa/cibuildwheel/issues/952
-      _PYTHON_HOST_PLATFORM: ${{ matrix.macarch == 'x86_64' && 'macosx-10.11-x86_64' || 'macosx-11.0-arm64'}}
-
-      # Similarly, we need to tell CIBW that the wheel's linking steps
-      # should be for 10.11 on x86
-      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macarch == 'x86_64' && '10.11' || '11.0' }}
-
-      CIBW_ARCHS: ${{ matrix.macarch }}
+      CIBW_ARCHS: universal2
 
       # Setup macOS dependencies
       CIBW_BEFORE_ALL: |
         cd buildconfig/macdependencies
-        cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
         bash ./install_mac_deps.sh
-
-      CIBW_BEFORE_BUILD: |
-        cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
+        mv ${{ github.workspace }}/pygame_mac_deps ${{ github.workspace }}/deps_moved
 
       # To remove any speculations about the wheel not being self-contained
-      CIBW_BEFORE_TEST: rm -rf ${{ github.workspace }}/pygame_mac_deps
+      CIBW_BEFORE_BUILD: mv ${{ github.workspace }}/deps_moved ${{ github.workspace }}/pygame_mac_deps
+      CIBW_BEFORE_TEST: mv ${{ github.workspace }}/pygame_mac_deps ${{ github.workspace }}/deps_moved
 
     steps:
       - uses: actions/checkout@v5.0.0
@@ -102,14 +89,20 @@ jobs:
         uses: actions/cache@v4.3.0
         with:
           path: ~/Library/Caches/pip  # This cache path is only right on mac
-          key: pip-cache-${{ matrix.macarch }}-${{ matrix.os }}
+          key: pip-cache-macos
 
-      - name: Fetch Mac deps
-        id: macdep-cache
+      - name: Fetch Mac deps (x86_64)
         uses: actions/cache@v4.3.0
         with:
-          path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
-          key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
+          path: ${{ github.workspace }}/pygame_mac_deps_x86_64
+          key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-x86_64
+          fail-on-cache-miss: true
+
+      - name: Fetch Mac deps (arm64)
+        uses: actions/cache@v4.3.0
+        with:
+          path: ${{ github.workspace }}/pygame_mac_deps_arm64
+          key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-arm64
           fail-on-cache-miss: true
 
       - name: Install uv for speed
@@ -122,6 +115,6 @@ jobs:
 
       - uses: actions/upload-artifact@v5
         with:
-          name: pygame-wheels-macos-${{ matrix.macarch }}
+          name: pygame-wheels-macos
           path: ./wheelhouse/*.whl
           compression-level: 0  # wheels are already zip files, no need for more compression
