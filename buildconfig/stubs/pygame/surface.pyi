@@ -425,6 +425,39 @@ class Surface:
         set then ``None`` is returned.
         """
 
+    def set_colorkey_mapped(self, color: int) -> None:
+        """Set the transparent colorkey.
+
+        Low-level method to set the color key for the Surface.
+        The color parameter must be a be an integer that represents a valid
+        mapped color value or palette index for the surface. This is mainly
+        useful for edge cases in indexed surfaces.
+
+        Most use cases should be covered by `get_colorkey()`
+
+        .. versionadded:: 2.5.6
+        """
+
+    def get_colorkey_mapped(self) -> int:
+        """Get the mapped value of the current transparent colorkey.
+
+        Return the current colorkey value for the Surface. If the colorkey is not
+        set, an exception is raised.
+
+        This function is mainly of interest for low-level manipulation of
+        indexed surfaces. Most use cases should be covered by `get_colorkey()`
+
+        .. versionadded:: 2.5.6
+        """
+
+    def has_colorkey(self) -> bool:
+        """Check whether the surface has a colorkey.
+
+        If the colorkey is set, return ``True``, otherwise ``False``.
+
+        .. versionadded:: 2.5.6
+        """
+
     @overload
     def set_alpha(self, value: int, flags: int = 0, /) -> None: ...
     @overload
