@@ -66,6 +66,10 @@ else
     export PG_BASE_MESON_FLAGS="$PG_BASE_MESON_FLAGS --cross-file $(pwd)/macos_x86_64.ini"
 fi
 
+export PG_STATIC_AUTOTOOLS="--enable-static --disable-shared"
+export PG_STATIC_CMAKE="-DBUILD_SHARED_LIBS=false"
+export PG_STATIC_MESON="-Ddefault_library=static"
+
 cd ../manylinux-build/docker_base
 
 # Now start installing dependencies

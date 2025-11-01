@@ -12,7 +12,8 @@ sha512sum -c libjpegturbo.sha512
 tar xzf ${JPEG}.tar.gz
 cd ${JPEG}
 
-cmake . $PG_BASE_CMAKE_FLAGS -DWITH_TURBOJPEG=0
+cmake . $PG_BASE_CMAKE_FLAGS $PG_STATIC_CMAKE -DWITH_TURBOJPEG=0 -DWITH_JAVA=0 \
+    -DWITH_TOOLS=0 -DWITH_TESTS=0 -DENABLE_STATIC=1 -DENABLE_SHARED=0
 
 make
 make install

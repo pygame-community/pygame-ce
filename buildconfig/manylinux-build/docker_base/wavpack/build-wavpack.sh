@@ -12,7 +12,7 @@ sha512sum -c wavpack.sha512
 tar xf ${WAVPACK}.tar.xz
 cd ${WAVPACK}
 
-cmake . $PG_BASE_CMAKE_FLAGS
+cmake . $PG_BASE_CMAKE_FLAGS $PG_STATIC_CMAKE
 
 make
 make install

@@ -17,7 +17,7 @@ mkdir build
 cd build
 
 # use cmake to try to catch the ogg dependency
-cmake .. $PG_BASE_CMAKE_FLAGS \
+cmake .. $PG_BASE_CMAKE_FLAGS $PG_STATIC_CMAKE -DENABLE_MULTITHREADING=0 \
     -DBUILD_CXXLIBS=0 \
     -DBUILD_PROGRAMS=0 \
     -DBUILD_EXAMPLES=0 \

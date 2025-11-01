@@ -13,7 +13,7 @@ sha512sum -c opus.sha512
 tar xzf ${OPUS}.tar.gz
 cd $OPUS
 
-./configure $PG_BASE_CONFIGURE_FLAGS
+./configure $PG_BASE_CONFIGURE_FLAGS $PG_STATIC_AUTOTOOLS
 make
 make install
 
@@ -22,6 +22,6 @@ cd ..
 tar xzf ${OPUS_FILE}.tar.gz
 cd $OPUS_FILE
 
-./configure $PG_BASE_CONFIGURE_FLAGS --disable-http
+./configure $PG_BASE_CONFIGURE_FLAGS $PG_STATIC_AUTOTOOLS --disable-http
 make
 make install

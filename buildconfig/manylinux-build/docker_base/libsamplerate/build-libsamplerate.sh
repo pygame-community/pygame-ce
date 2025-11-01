@@ -21,7 +21,7 @@ mkdir build
 cd build
 
 # CMake 3.5 or higher policy is required for buiding under CMake 4
-cmake .. $PG_BASE_CMAKE_FLAGS -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+cmake .. $PG_BASE_CMAKE_FLAGS $PG_STATIC_CMAKE -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 make
 make install
 

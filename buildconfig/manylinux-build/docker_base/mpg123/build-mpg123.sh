@@ -12,8 +12,8 @@ bzip2 -d ${MPG123}.tar.bz2
 tar xf ${MPG123}.tar
 cd $MPG123
 
-./configure $PG_BASE_CONFIGURE_FLAGS --enable-int-quality --disable-debug \
-    --disable-components --enable-libmpg123 --enable-libsyn123
+./configure $PG_BASE_CONFIGURE_FLAGS $PG_STATIC_AUTOTOOLS --enable-int-quality \
+    --disable-debug --disable-components --enable-libmpg123 --enable-libsyn123
 
 make
 make install

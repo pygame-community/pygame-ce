@@ -37,6 +37,10 @@ ENV PG_BASE_MESON_FLAGS="--prefix=$PG_DEP_PREFIX \
   -Dbuildtype=release \
   -Ddefault_library=shared"
 
+ENV PG_STATIC_AUTOTOOLS="--enable-static --disable-shared"
+ENV PG_STATIC_CMAKE="-DBUILD_SHARED_LIBS=false"
+ENV PG_STATIC_MESON="-Ddefault_library=static"
+
 # remember to keep this updated when we drop 3.11 support
 ENV PATH="/opt/python/cp311-cp311/bin:$PATH"
 

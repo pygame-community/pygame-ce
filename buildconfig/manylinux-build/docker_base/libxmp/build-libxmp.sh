@@ -13,7 +13,7 @@ sha512sum -c libxmp.sha512
 tar xzf ${XMP}.tar.gz
 cd ${XMP}
 
-cmake . $PG_BASE_CMAKE_FLAGS -DLIBXMP_PIC=1
+cmake . $PG_BASE_CMAKE_FLAGS $PG_STATIC_CMAKE -DLIBXMP_PIC=1
 
 make
 make install

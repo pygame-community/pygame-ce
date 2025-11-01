@@ -13,7 +13,7 @@ sha512sum -c ogg.sha512
 tar xzf ${OGG}.tar.gz
 cd $OGG
 
-cmake . $PG_BASE_CMAKE_FLAGS
+cmake . $PG_BASE_CMAKE_FLAGS $PG_STATIC_CMAKE
 make
 make install
 
@@ -23,6 +23,6 @@ tar xzf ${VORBIS}.tar.gz
 cd $VORBIS
 
 # CMake 3.5 or higher policy is required for buiding under CMake 4
-cmake . $PG_BASE_CMAKE_FLAGS -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+cmake . $PG_BASE_CMAKE_FLAGS $PG_STATIC_CMAKE -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 make
 make install

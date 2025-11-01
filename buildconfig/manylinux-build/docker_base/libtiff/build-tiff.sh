@@ -13,7 +13,7 @@ cd $TIFF
 
 # turn off lzma, webp and zstd so that cmake does not try to pick them up from
 # the system.
-cmake . $PG_BASE_CMAKE_FLAGS -Dlzma=OFF -Dwebp=OFF -Dzstd=OFF \
+cmake . $PG_BASE_CMAKE_FLAGS $PG_STATIC_CMAKE -Dlzma=OFF -Dwebp=OFF -Dzstd=OFF \
     -Dtiff-tools=OFF -Dtiff-tests=OFF -Dtiff-contrib=OFF -Dtiff-docs=OFF
 
 make
