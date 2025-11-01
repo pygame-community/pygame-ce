@@ -130,8 +130,8 @@ RUN ["bash", "/flac_build/build-flac.sh"]
 ADD opus /opus_build/
 RUN ["bash", "/opus_build/build-opus.sh"]
 
-ADD sndfile /sndfile_build/
-RUN ["bash", "/sndfile_build/build-sndfile.sh"]
+# ADD sndfile /sndfile_build/
+# RUN ["bash", "/sndfile_build/build-sndfile.sh"]
 
 ADD pulseaudio /pulseaudio_build/
 RUN ["bash", "/pulseaudio_build/build-pulseaudio.sh"]
