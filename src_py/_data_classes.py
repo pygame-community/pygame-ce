@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
 class PowerState:
-    battery_percent: Optional[int]
-    battery_seconds: Optional[int]
+    battery_percent: int | None
+    battery_seconds: int | None
     on_battery: bool
     no_battery: bool
     charging: bool

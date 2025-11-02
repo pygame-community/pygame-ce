@@ -1,18 +1,12 @@
 import sys
-from typing import Any, Union, overload
+from types import EllipsisType
+from typing import Any, TypeAlias, overload
 
 from pygame.color import Color
 from pygame.surface import Surface
 from pygame.typing import SequenceLike
 
-# 'ellipsis' existed in typeshed pre 3.10, now we use EllipsisType which is
-# the modern standard library equivalent.
-if sys.version_info >= (3, 10):
-    from types import EllipsisType
-else:
-    EllipsisType = ellipsis
-
-_PixelColor = Union[int, Color, tuple[int, int, int], tuple[int, int, int, int]]
+_PixelColor: TypeAlias = int | Color | tuple[int, int, int] | tuple[int, int, int, int]
 
 class PixelArray:
     @property
@@ -39,11 +33,11 @@ class PixelArray:
     # if indexing into a 2D PixelArray, a 1D PixelArray will be returned
     # if indexing into a 1D PixelArray, an int will be returned
     @overload
-    def __getitem__(self, index: int) -> Union[PixelArray, int]: ...
+    def __getitem__(self, index: int) -> PixelArray | int: ...
     # complicated, but I'm pretty sure this is guaranteed to return a PixelArray or None
     # will only return None if the slice start and end are the same
     @overload
-    def __getitem__(self, index_range: slice) -> Union[PixelArray, None]: ...
+    def __getitem__(self, index_range: slice) -> PixelArray | None: ...
     # only valid for a 2D PixelArray
     @overload
     def __getitem__(self, indices: tuple[int, int]) -> int: ...

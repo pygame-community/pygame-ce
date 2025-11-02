@@ -10,7 +10,7 @@
 #define DOC_WINDOW_BORDERLESS "borderless -> bool\nGets or sets whether the window is borderless."
 #define DOC_WINDOW_ALWAYSONTOP "always_on_top -> bool\nGet or set whether the window is always on top."
 #define DOC_WINDOW_ID "id -> int\nGet the unique window ID (**read-only**)."
-#define DOC_WINDOW_MOUSERECT "mouse_rect -> Optional[Rect]\nGet or set the mouse confinement rectangle of the window."
+#define DOC_WINDOW_MOUSERECT "mouse_rect -> Rect | None\nGet or set the mouse confinement rectangle of the window."
 #define DOC_WINDOW_SIZE "size -> tuple[int, int]\nGet or set the window size in pixels."
 #define DOC_WINDOW_MINIMUMSIZE "minimum_size -> tuple[int, int]\nGet or set the minimum size of the window's client area."
 #define DOC_WINDOW_MAXIMUMSIZE "maximum_size -> tuple[int, int]\nGet or set the maximum size of the window's client area."
