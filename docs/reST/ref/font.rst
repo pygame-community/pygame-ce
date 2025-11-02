@@ -340,7 +340,7 @@ solves no longer exists, it will likely be removed in the future.
               font.outline = old_outline
               return outlined_text_surf
 
-      .. versionadded:: 2.5.6
+      .. versionadded:: 2.5.7
 
       .. ## Font.outline ##
 
