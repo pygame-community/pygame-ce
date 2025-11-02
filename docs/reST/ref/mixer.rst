@@ -354,7 +354,7 @@ The following file formats are supported
    a new buffer interface (The object is checked for a buffer interface first.)
 
    The Sound object represents actual sound sample data. Methods that change
-   the state of the Sound object will the all instances of the Sound playback.
+   the state of the Sound object will impact all instances of the Sound playback.
    A Sound object also exports a new buffer interface.
 
    The Sound can be loaded from an ``OGG`` audio file or from an uncompressed
