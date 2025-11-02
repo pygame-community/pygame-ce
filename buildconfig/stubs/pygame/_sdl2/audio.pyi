@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from typing import Optional
 
 AUDIO_U8: int
 AUDIO_S8: int
@@ -25,7 +26,7 @@ def get_audio_device_names(iscapture: bool = False) -> list[str]: ...
 class AudioDevice:
     def __init__(
         self,
-        devicename: str,
+        devicename: Optional[str],
         iscapture: bool,
         frequency: int,
         audioformat: int,
@@ -39,7 +40,7 @@ class AudioDevice:
     @property
     def deviceid(self) -> int: ...
     @property
-    def devicename(self) -> str: ...
+    def devicename(self) -> Optional[str]: ...
     @property
     def callback(self) -> Callable[[AudioDevice, memoryview], None]: ...
     @property

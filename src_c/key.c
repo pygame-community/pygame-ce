@@ -389,7 +389,11 @@ static const struct {
     {1073742054, "right alt"},       /* K_RALT */
     {1073742055, "right meta"},      /* K_RGUI, K_RMETA, K_RSUPER */
     {1073742081, "alt gr"},          /* K_MODE */
-    {1073742094, "AC Back"},         /* K_AC_BACK */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    {1073742106, "AC Back"}, /* K_AC_BACK */
+#else
+    {1073742094, "AC Back"}, /* K_AC_BACK */
+#endif
 };
 
 /* Get name from keycode using pygame compat table */

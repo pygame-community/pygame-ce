@@ -11,3 +11,13 @@ def use_arraytype(arraytype: str) -> None: ...
 def get_arraytype() -> str: ...
 @deprecated("Only numpy is supported")
 def get_arraytypes() -> tuple[str]: ...
+
+# keep in sync with sndarray.py
+__all__ = [
+    "array",
+    "samples",
+    "make_sound",
+    "use_arraytype",
+    "get_arraytype",
+    "get_arraytypes",
+]

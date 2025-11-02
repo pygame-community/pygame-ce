@@ -109,7 +109,11 @@ pygame_scrap_put(char *type, Py_ssize_t srclen, char *src)
 
     if (strcmp(type, pygame_scrap_plaintext_type) == 0 ||
         strcmp(type, pygame_scrap_utf8text_type) == 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (SDL_SetClipboardText(src)) {
+#else
         if (SDL_SetClipboardText(src) == 0) {
+#endif
             return 1;
         }
     }

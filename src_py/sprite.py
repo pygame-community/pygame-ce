@@ -85,7 +85,6 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specialized cases.
 
 import types
-from typing import Union
 from warnings import warn
 
 import pygame
@@ -111,7 +110,7 @@ class Sprite:
     """
 
     image: Surface
-    rect: Union[Rect, FRect]
+    rect: Rect | FRect
 
     def __init__(self, *groups):
         self.__g = {}  # The groups the sprite is in

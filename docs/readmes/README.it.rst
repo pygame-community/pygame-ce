@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Italiano** `Русский`_ `Ελληνικά`_
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Italiano** `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
 ---------------------------------------------------------------------------------------------------
 
 Pygame_ è una libreria open source gratuita e multipiattaforma
@@ -140,7 +140,7 @@ Le versioni dei requisiti:
 
 
 +----------+------------------------+
-| CPython  | >= 3.9 (Or use PyPy3)  |
+| CPython  | >= 3.10 (Or use PyPy3) |
 +----------+------------------------+
 | SDL      | >= 2.0.14              |
 +----------+------------------------+
@@ -193,8 +193,8 @@ Controlla docs/licenses per le licenze dei requisiti.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.4.1.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.4.1...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -228,3 +228,4 @@ Controlla docs/licenses per le licenze dei requisiti.
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
+.. _Português (Brasil): README.pt-br.rst

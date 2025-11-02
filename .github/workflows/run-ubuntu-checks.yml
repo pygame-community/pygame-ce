@@ -53,9 +53,8 @@ jobs:
         os: [ ubuntu-24.04 ]
         # check our min python (minor) version and our max python (minor) version
         python: [
-          3.9.23,
-          3.13.5,
-          3.14.0rc1
+          3.10.17,
+          3.14.0,
         ]
 
     env:
@@ -88,7 +87,7 @@ jobs:
 
     - name: Cache debug python build
       id: cache-python
-      uses: actions/cache@v4.2.4
+      uses: actions/cache@v4.3.0
       with:
         key: ${{ matrix.python }}
         path: ~/.pyenv/versions/${{ matrix.python }}-debug/**
@@ -124,7 +123,7 @@ jobs:
     - name: Upload coverage html
       # want to continue only if the coverage generation was successful
       if: ${{ steps.gen-coverage.conclusion == 'success' && !cancelled() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: pygame-coverage-${{ matrix.os }}-${{ matrix.python }}
         path: ./out

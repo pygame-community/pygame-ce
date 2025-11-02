@@ -4,11 +4,10 @@ from collections.abc import Callable, Iterable, Iterator
 from typing import (
     Any,
     Generic,
-    Optional,
     Protocol,
     SupportsFloat,
+    TypeAlias,
     TypeVar,
-    Union,
 )
 
 # use typing_extensions for compatibility with older Python versions
@@ -30,7 +29,7 @@ from pygame.typing import Point, RectLike
 # Some sprite functions only need objects with certain attributes, not always a sprite
 class _HasRect(Protocol):
     @property
-    def rect(self) -> Union[FRect, Rect]: ...
+    def rect(self) -> FRect | Rect: ...
 
 # image in addition to rect
 class _HasImageAndRect(_HasRect, Protocol):
@@ -44,7 +43,7 @@ class _HasMaskAndRect(_HasRect, Protocol):
 
 class Sprite(_HasImageAndRect):
     image: Surface  # Uses attribute annotation instead of property to satisfy stubtest
-    rect: Union[FRect, Rect]  # Same as image, see above
+    rect: FRect | Rect  # Same as image, see above
     @property
     def layer(self) -> int: ...
     @layer.setter
@@ -62,7 +61,7 @@ class Sprite(_HasImageAndRect):
 class DirtySprite(Sprite):
     dirty: int
     blendmode: int
-    source_rect: Optional[Union[FRect, Rect]]
+    source_rect: FRect | Rect | None
     visible: int
     _layer: int
 
@@ -70,19 +69,19 @@ _SpriteT = TypeVar("_SpriteT", bound=Sprite)
 _SpriteT2 = TypeVar("_SpriteT2", bound=Sprite)
 _DirtySpriteT = TypeVar("_DirtySpriteT", bound=DirtySprite)
 
-_GroupOrGroups = Union[AbstractGroup[_SpriteT], Iterable[_GroupOrGroups[_SpriteT]]]
-_SpriteOrSprites = Union[_SpriteT, Iterable[_SpriteOrSprites[_SpriteT]]]
+_GroupOrGroups: TypeAlias = AbstractGroup[_SpriteT] | Iterable[_GroupOrGroups[_SpriteT]]
+_SpriteOrSprites: TypeAlias = _SpriteT | Iterable[_SpriteOrSprites[_SpriteT]]
 
 class AbstractGroup(Generic[_SpriteT]):
-    spritedict: dict[_SpriteT, Optional[Union[FRect, Rect]]]
-    lostsprites: list[Union[FRect, Rect]]
+    spritedict: dict[_SpriteT, FRect | Rect | None]
+    lostsprites: list[FRect | Rect]
     def __class_getitem__(cls, item: Any, /) -> types.GenericAlias: ...
     def __init__(self) -> None: ...
     def __len__(self) -> int: ...
     def __iter__(self) -> Iterator[_SpriteT]: ...
     def __bool__(self) -> bool: ...
     def __contains__(self, item: Any) -> bool: ...
-    def add_internal(self, sprite: _SpriteT, layer: Optional[int] = None) -> None: ...
+    def add_internal(self, sprite: _SpriteT, layer: int | None = None) -> None: ...
     def remove_internal(self, sprite: _SpriteT) -> None: ...
     def has_internal(self, sprite: _SpriteT) -> bool: ...
     def copy(self) -> Self: ...
@@ -92,12 +91,12 @@ class AbstractGroup(Generic[_SpriteT]):
     def has(self, *sprites: _SpriteOrSprites[_SpriteT]) -> bool: ...
     def update(self, *args: Any, **kwargs: Any) -> None: ...
     def draw(
-        self, surface: Surface, bgd: Optional[Surface] = None, special_flags: int = 0
-    ) -> list[Union[FRect, Rect]]: ...
+        self, surface: Surface, bgd: Surface | None = None, special_flags: int = 0
+    ) -> list[FRect | Rect]: ...
     def clear(
         self,
         surface: Surface,
-        bgd: Union[Surface, Callable[[Surface, Union[FRect, Rect]], Any]],
+        bgd: Surface | Callable[[Surface, FRect | Rect], Any],
     ) -> None: ...
     def empty(self) -> None: ...
 
@@ -137,14 +136,14 @@ class LayeredDirty(LayeredUpdates[_DirtySpriteT]):
     def draw(
         self,
         surface: Surface,
-        bgd: Optional[Surface] = None,
-        special_flags: Optional[int] = None,
-    ) -> list[Union[FRect, Rect]]: ...
+        bgd: Surface | None = None,
+        special_flags: int | None = None,
+    ) -> list[FRect | Rect]: ...
     # clear breaks Liskov substitution principle in code
     def clear(self, surface: Surface, bgd: Surface) -> None: ...  # type: ignore[override]
     def repaint_rect(self, screen_rect: RectLike) -> None: ...
-    def set_clip(self, screen_rect: Optional[RectLike] = None) -> None: ...
-    def get_clip(self) -> Optional[Union[FRect, Rect]]: ...
+    def set_clip(self, screen_rect: RectLike | None = None) -> None: ...
+    def get_clip(self) -> FRect | Rect | None: ...
     def set_timing_threshold(self, time_ms: SupportsFloat) -> None: ...
     @deprecated(
         "since 2.1.1. Use `pygame.sprite.LayeredDirty.set_timing_threshold` instead"
@@ -152,8 +151,8 @@ class LayeredDirty(LayeredUpdates[_DirtySpriteT]):
     def set_timing_treshold(self, time_ms: SupportsFloat) -> None: ...
 
 class GroupSingle(AbstractGroup[_SpriteT]):
-    sprite: Optional[_SpriteT]
-    def __init__(self, sprite: Optional[_SpriteT] = None) -> None: ...
+    sprite: _SpriteT | None
+    def __init__(self, sprite: _SpriteT | None = None) -> None: ...
 
 def collide_rect(left: _HasRect, right: _HasRect) -> bool: ...
 
@@ -163,7 +162,7 @@ class collide_rect_ratio:
     def __call__(self, left: _HasRect, right: _HasRect) -> bool: ...
 
 # Must have rect attribute, may optionally have radius attribute
-_SupportsCollideCircle = _HasRect
+_SupportsCollideCircle: TypeAlias = _HasRect
 
 def collide_circle(
     left: _SupportsCollideCircle, right: _SupportsCollideCircle
@@ -178,11 +177,11 @@ class collide_circle_ratio:
 
 # Arguments to collide_mask must either have mask or have image attribute, in
 # addition to mandatorily having a rect attribute
-_SupportsCollideMask = Union[_HasImageAndRect, _HasMaskAndRect]
+_SupportsCollideMask: TypeAlias = _HasImageAndRect | _HasMaskAndRect
 
 def collide_mask(
     left: _SupportsCollideMask, right: _SupportsCollideMask
-) -> Optional[tuple[int, int]]: ...
+) -> tuple[int, int] | None: ...
 
 _HasRectT = TypeVar("_HasRectT", bound=_HasRect)
 
@@ -190,17 +189,17 @@ def spritecollide(
     sprite: _HasRectT,
     group: AbstractGroup[_SpriteT],
     dokill: bool,
-    collided: Optional[Callable[[_HasRectT, _SpriteT], bool]] = None,
+    collided: Callable[[_HasRectT, _SpriteT], bool] | None = None,
 ) -> list[_SpriteT]: ...
 def groupcollide(
     groupa: AbstractGroup[_SpriteT],
     groupb: AbstractGroup[_SpriteT2],
     dokilla: bool,
     dokillb: bool,
-    collided: Optional[Callable[[_SpriteT, _SpriteT2], bool]] = None,
+    collided: Callable[[_SpriteT, _SpriteT2], bool] | None = None,
 ) -> dict[_SpriteT, list[_SpriteT2]]: ...
 def spritecollideany(
     sprite: _HasRectT,
     group: AbstractGroup[_SpriteT],
-    collided: Optional[Callable[[_HasRectT, _SpriteT], bool]] = None,
-) -> Optional[_SpriteT]: ...
+    collided: Callable[[_HasRectT, _SpriteT], bool] | None = None,
+) -> _SpriteT | None: ...
