@@ -150,7 +150,7 @@ class Surface:
         **Parameters**
             - ``source``
                 The ``Surface`` object to draw onto this ``Surface``.
-                If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
+                If it has transparency, transparent pixels will be ignored when blitting to an 8-bit ``Surface``.
             - ``dest`` *(optional)*
                 The ``source`` draw position onto this ``Surface``, defaults to (0, 0).
                 It can be a coordinate pair ``(x, y)`` or a ``Rect`` (using its top-left corner).
@@ -271,7 +271,7 @@ class Surface:
         :param special_flags: the flag(s) representing the blend mode used for each Surface.
                             See :doc:`special_flags_list` for a list of possible values.
 
-        :returns: ``None``
+        :returns: ``None`` (unlike `blit()` and `blits()`)
 
         .. note:: This method only accepts a sequence of (source, dest) pairs and a single
             special_flags value that's applied to all Surfaces drawn. This allows faster
@@ -340,6 +340,9 @@ class Surface:
         original. If a Surface subclass also needs to copy any instance specific
         attributes then it should override ``copy()``. Shallow copy and deepcopy
         are supported, Surface implements __copy__ and __deepcopy__ respectively.
+
+        If the Surface is a subsurface, the returned Surface will *not* retain
+        the parent and will be a regular Surface with its own pixel data.
 
         .. versionadded:: 2.3.1
             Added support for deepcopy by implementing __deepcopy__, calls copy() internally.
@@ -436,23 +439,23 @@ class Surface:
         onto a destination, the pixels will be drawn slightly transparent. The
         alpha value is an integer from 0 to 255, 0 is fully transparent and 255
         is fully opaque. If ``None`` is passed for the alpha value, then alpha
-        blending will be disabled, including per-pixel alpha.
-
-        This value is different than the per pixel Surface alpha. For a Surface
-        with per pixel alpha, blanket alpha is ignored and ``None`` is returned.
-
-        .. versionchangedold:: 2.0 per-Surface alpha can be combined with per-pixel
-            alpha.
+        blending will be disabled. This full alpha is compatible with other
+        kinds of transparency.
 
         The optional flags argument can be set to ``pygame.RLEACCEL`` to provide
         better performance on non accelerated displays. An ``RLEACCEL`` Surface
         will be slower to modify, but quicker to blit as a source.
+
+        .. versionchangedold:: 2.0 per-Surface alpha can be combined with per-pixel
+            alpha.
         """
 
     def get_alpha(self) -> int | None:
         """Get the current Surface transparency value.
 
-        Return the current alpha value for the Surface.
+        Return the current alpha value for the Surface, which is an integer in the
+        range 0 (fully transparent) - 255 (fully opaque) set by :meth:`set_alpha()`.
+        Until an alpha is set this method will return None.
         """
 
     def lock(self) -> None:
@@ -710,8 +713,8 @@ class Surface:
     def get_abs_parent(self) -> Surface:
         """Find the top level parent of a subsurface.
 
-        Returns the parent Surface of a subsurface. If this is not a subsurface
-        then this Surface will be returned.
+        Returns the top level parent Surface of a subsurface. If this is not
+        a subsurface then this Surface will be returned.
         """
 
     def get_offset(self) -> tuple[int, int]:
@@ -958,15 +961,6 @@ class Surface:
         """
 
     def get_blendmode(self) -> int: ...
-    @property
-    def _pixels_address(self) -> int:
-        """Pixel buffer address.
-
-        The starting address of the Surface's raw pixel bytes.
-
-        .. versionaddedold:: 1.9.2
-        """
-
     def premul_alpha(self) -> Surface:
         """Returns a copy of the Surface with the RGB channels pre-multiplied by the alpha channel.
 
@@ -1048,6 +1042,15 @@ class Surface:
         Read-only attribute. Same as :meth:`get_size()`
 
         .. versionadded:: 2.5.0
+        """
+
+    @property
+    def _pixels_address(self) -> int:
+        """Pixel buffer address.
+
+        The starting address of the surface's raw pixel bytes.
+
+        .. versionaddedold:: 1.9.2
         """
 
 @deprecated("Use `Surface` instead (SurfaceType is an old alias)")
