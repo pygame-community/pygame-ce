@@ -34,11 +34,12 @@ automatically switch to operate on the new display.
 When the display mode is set, several events are placed on the pygame event
 queue. ``pygame.QUIT`` is sent when the user has requested the program to
 shut down. The window will receive ``pygame.ACTIVEEVENT`` events as the display
-gains and loses input focus. If the display is set with the
-``pygame.RESIZABLE`` flag, ``pygame.VIDEORESIZE`` events will be sent when the
-user adjusts the window dimensions. Hardware displays that draw direct to the
-screen will get ``pygame.VIDEOEXPOSE`` events when portions of the window must
-be redrawn.
+gains and loses input focus. If the display is set to be resizable with the
+``pygame.RESIZABLE`` flag, ``pygame.VIDEORESIZE`` event(s) will be sent when the
+user adjusts the window dimensions. Depending on your platform, this may be
+multiple gradual events or one event at the end (Windows). Hardware displays
+that draw direct to the screen will get ``pygame.VIDEOEXPOSE`` events when
+portions of the window must be redrawn.
 
 A new windowevent API was introduced in pygame 2.0.1. Check event module docs
 for more information on that
