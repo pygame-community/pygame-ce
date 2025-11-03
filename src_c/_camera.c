@@ -1886,6 +1886,9 @@ camera_init(pgCameraObject *self, PyObject *arg, PyObject *kwargs)
 
     /* needs to be freed with PyMem_Free later */
     dev_name = PyUnicode_AsWideCharString(name_obj, NULL);
+    if (dev_name == NULL) {
+        return -1;
+    }
 
     p = windows_device_from_name(dev_name);
 
