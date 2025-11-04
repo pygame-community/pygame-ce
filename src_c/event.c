@@ -100,6 +100,9 @@ static char released_keys[SDL_NUM_SCANCODES] = {0};
 static char pressed_mouse_buttons[5] = {0};
 static char released_mouse_buttons[5] = {0};
 
+/*The filters for events added by the user*/
+static PyObject *userFilters;
+
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
 #define PG_LOCK_EVFILTER_MUTEX
@@ -517,6 +520,9 @@ _pg_remove_pending_VIDEOEXPOSE(void *userdata, SDL_Event *event)
     }
     return 1;
 }
+// Forward declare pg_eventNew_no_free_proxy to be used in pg_event_filter
+PyObject *
+pg_eventNew_no_free_proxy(SDL_Event *event);
 
 /* SDL 2 to SDL 1.2 event mapping and SDL 1.2 key repeat emulation,
  * this can alter events in-place.
@@ -709,7 +715,39 @@ pg_event_filter(void *_, SDL_Event *event)
             return RAISE(pgExc_SDLError, SDL_GetError()), 0;
         */
     }
-    return PG_EventEnabled(_pg_pgevent_proxify(event->type));
+    // If the event has been disabled, skip filtering it
+    if (!PG_EventEnabled(_pg_pgevent_proxify(event->type))) {
+        return false;
+    }
+
+    PG_LOCK_EVFILTER_MUTEX
+
+    PyGILState_STATE gstate = PyGILState_Ensure();
+
+    Py_ssize_t totalUserFilters = PyList_Size(userFilters);
+    for (Py_ssize_t i = 0; i < totalUserFilters; i++) {
+        PyObject *filter = PyList_GetItem(userFilters, i);
+        PyObject *returnValue =
+            PyObject_CallOneArg(filter, pg_eventNew_no_free_proxy(event));
+        if (!returnValue) {
+            PyGILState_Release(gstate);
+            PG_UNLOCK_EVFILTER_MUTEX
+
+            PyErr_Print();
+            PyErr_Clear();
+            return true;
+        }
+        int skip = PyObject_IsTrue(returnValue);
+        if (skip) {
+            PyGILState_Release(gstate);
+            PG_UNLOCK_EVFILTER_MUTEX
+            return false;
+        }
+    }
+    PyGILState_Release(gstate);
+    PG_UNLOCK_EVFILTER_MUTEX
+
+    return true;
 }
 
 /* The two keyrepeat functions below modify state accessed by the event filter,
@@ -773,6 +811,7 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
             }
         }
 #endif
+        userFilters = PyList_New(0);
         SDL_SetEventFilter(pg_event_filter, NULL);
     }
     _pg_event_is_init = 1;
@@ -2505,6 +2544,168 @@ pg_event_custom_type(PyObject *self, PyObject *_null)
     }
 }
 
+/*
+Constructs a Event object but if it is using a dict proxy it doesn't free the
+proxy Used when other pygame functions will also be using the event to avoid it
+being freed
+*/
+static PyObject *
+pg_eventNew_no_free_proxy(SDL_Event *event)
+{
+    if (event->type >= PGPOST_EVENTBEGIN) {
+        // Since the dict_proxy has a counter for how many are on the queue, we
+        // need to increase that counter
+        pgEventDictProxy *dict_proxy = (pgEventDictProxy *)event->user.data1;
+        // We only need to do anything if the dict_proxy exists since if it
+        // doesn't that implies an empty dict
+        if (dict_proxy) {
+            SDL_AtomicLock(&dict_proxy->lock);
+            // So when it gets decremented in pg_EventNew it goes back to where
+            // it was
+            dict_proxy->num_on_queue++;
+            // So that if it gets dropped to zero it wont get freed and risk a
+            // double free later on
+            bool proxy_frees_on_end = dict_proxy->do_free_at_end;
+            dict_proxy->do_free_at_end = false;
+            SDL_AtomicUnlock(&dict_proxy->lock);
+            // Contruct the event object
+            PyObject *eventObj = pgEvent_New(event);
+            if (proxy_frees_on_end) {
+                // Restore the state of do_free_at_end
+                dict_proxy->do_free_at_end = true;
+            }
+            return eventObj;
+        }
+    }
+    // If the event is not a posted event than there is no dict_proxy to risk
+    // issues so the event object constructer can be called as-is
+    return pgEvent_New(event);
+}
+
+/*
+A wrapper around a callable python object to be used by SDL
+ */
+static int
+pg_watcher_wrapper(void *userdata, SDL_Event *event)
+{
+    PyObject *callable = (PyObject *)userdata;
+/* WINDOWEVENT translation needed only on SDL2 */
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    /* We need to translate WINDOWEVENTS. But if we do that from the
+     * from event filter, internal SDL stuff that rely on WINDOWEVENT
+     * might break. So after every event pump, we translate events from
+     * here */
+    // We make a local copy of the event on the stack and use that so that the
+    // original event is not modified
+    SDL_Event localEvent = *event;
+    _pg_translate_windowevent(NULL, &localEvent);
+
+    PyObject *eventObj = pg_eventNew_no_free_proxy(&localEvent);
+#else
+    PyObject *eventObj = pg_eventNew_no_free_proxy(event);
+#endif
+    if (PyErr_Occurred()) {
+        PyErr_Print();
+        PyErr_Clear();
+        return 0;
+    }
+    if (!eventObj) {
+        return 0;
+    }
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    PyObject *returnValue = PyObject_CallOneArg(callable, eventObj);
+    if (PyErr_Occurred()) {
+        PyGILState_Release(gstate);
+        PyErr_Print();
+        PyErr_Clear();
+        return 0;
+    }
+    PyGILState_Release(gstate);
+    return 0;
+}
+
+/*
+Add a function as an event watcher
+
+*/
+static PyObject *
+pg_event_add_watcher(PyObject *self, PyObject *arg)
+{
+    VIDEO_INIT_CHECK();
+
+    if (PyCallable_Check(arg)) {
+        SDL_AddEventWatch(pg_watcher_wrapper, arg);
+    }
+    else {
+        PyErr_SetString(PyExc_ValueError,
+                        "event watchers must be callable objects");
+        return NULL;
+    }
+    // Increase reference count of param and return it so that this could be
+    // used as a decorator
+    Py_INCREF(arg);
+    return arg;
+}
+
+static PyObject *
+pg_event_remove_watcher(PyObject *self, PyObject *arg)
+{
+    VIDEO_INIT_CHECK();
+
+// This function does nothing if arg is not currently set as a watch
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    // SDL 3 renamed DelEventWatch to RemoveEventWatch
+    SDL_RemoveEventWatch(pg_watcher_wrapper, arg);
+#else
+    SDL_DelEventWatch(pg_watcher_wrapper, arg);
+#endif
+    return Py_None;
+}
+
+/*
+These two function access state used in the filter, so they use the mutex lock
+*/
+static PyObject *
+pg_event_add_filter(PyObject *self, PyObject *arg)
+{
+    VIDEO_INIT_CHECK();
+
+    if (PyCallable_Check(arg)) {
+        PyGILState_STATE gstate = PyGILState_Ensure();
+        PG_LOCK_EVFILTER_MUTEX
+        PyList_Append(userFilters, arg);
+        PG_UNLOCK_EVFILTER_MUTEX
+        PyGILState_Release(gstate);
+    }
+    else {
+        PyErr_SetString(PyExc_ValueError,
+                        "event filters must be callable objects");
+        return NULL;
+    }
+    Py_INCREF(arg);
+    return arg;
+}
+
+static PyObject *
+pg_event_remove_filter(PyObject *self, PyObject *arg)
+{
+    VIDEO_INIT_CHECK();
+
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    PG_LOCK_EVFILTER_MUTEX
+    Py_ssize_t index = PySequence_Index(userFilters, arg);
+    if (index == -1) {
+        PG_UNLOCK_EVFILTER_MUTEX
+        PyErr_SetString(PyExc_ValueError, "event filter not found");
+        PyGILState_Release(gstate);
+        return NULL;
+    }
+    PySequence_DelItem(userFilters, index);
+    PG_UNLOCK_EVFILTER_MUTEX
+    PyGILState_Release(gstate);
+    return Py_None;
+}
+
 static PyMethodDef _event_methods[] = {
     {"_internal_mod_init", (PyCFunction)pgEvent_AutoInit, METH_NOARGS,
      "auto initialize for event module"},
@@ -2534,6 +2735,14 @@ static PyMethodDef _event_methods[] = {
      DOC_EVENT_SETBLOCKED},
     {"get_blocked", (PyCFunction)pg_event_get_blocked, METH_O,
      DOC_EVENT_GETBLOCKED},
+    {"add_event_watcher", (PyCFunction)pg_event_add_watcher, METH_O,
+     DOC_EVENT_ADDEVENTWATCHER},
+    {"remove_event_watcher", (PyCFunction)pg_event_remove_watcher, METH_O,
+     DOC_EVENT_REMOVEEVENTWATCHER},
+    {"add_event_filter", (PyCFunction)pg_event_add_filter, METH_O,
+     DOC_EVENT_ADDEVENTFILTER},
+    {"remove_event_filter", (PyCFunction)pg_event_remove_filter, METH_O,
+     DOC_EVENT_REMOVEEVENTFILTER},
     {"custom_type", (PyCFunction)pg_event_custom_type, METH_NOARGS,
      DOC_EVENT_CUSTOMTYPE},
 

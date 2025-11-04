@@ -935,6 +935,109 @@ class EventModuleTest(unittest.TestCase):
         self.assertEqual(pygame.event.poll().type, e3.type)
         self.assertEqual(pygame.event.poll().type, pygame.NOEVENT)
 
+    def test_add_event_watcher(self):
+        """Check that the event watcher is called"""
+        counter = 0
+
+        def eventWatcher(event):
+            nonlocal counter
+            counter += 1
+
+        pygame.event.add_event_watcher(eventWatcher)
+
+        self.assertEqual(counter, 0)
+
+        pygame.event.clear()
+        pygame.event.post(pygame.event.Event(pygame.VIDEOEXPOSE))
+
+        pygame.event.poll()  # Make sure that SDL notices
+
+        self.assertEqual(counter, 1)
+        """Test multiple event watchers"""
+
+        def otherEventWatcher(event):
+            nonlocal counter
+            counter = 10
+
+        pygame.event.add_event_watcher(otherEventWatcher)
+
+        pygame.event.clear()
+        pygame.event.post(pygame.event.Event(pygame.VIDEOEXPOSE))
+
+        pygame.event.poll()  # Make sure that SDL notices
+
+        self.assertEqual(counter, 10)
+
+    def test_remove_event_watcher(self):
+        pygame.event.clear()
+        """Check that the event watcher is removed"""
+        counter = 0
+
+        def eventWatcher(event):
+            nonlocal counter
+            counter += 1
+
+        pygame.event.add_event_watcher(eventWatcher)
+        pygame.event.remove_event_watcher(eventWatcher)
+
+        self.assertEqual(counter, 0)
+
+        pygame.event.clear()
+        pygame.event.post(pygame.event.Event(pygame.VIDEOEXPOSE))
+
+        pygame.event.poll()  # Make sure that SDL notices
+
+        self.assertEqual(counter, 0)
+
+    def test_add_event_filter(self):
+        """Check that the event filter is used"""
+
+        def eventFilter(event):
+            if event.type == pygame.USEREVENT:
+                return True
+            return False
+
+        pygame.event.add_event_filter(eventFilter)
+
+        pygame.event.clear()
+        pygame.event.post(pygame.event.Event(pygame.VIDEOEXPOSE))
+
+        ev = pygame.event.poll()
+        self.assertEqual(ev.type, pygame.VIDEOEXPOSE)
+
+        pygame.event.post(pygame.event.Event(pygame.USEREVENT))
+
+        ev = pygame.event.poll()
+        self.assertEqual(ev.type, pygame.NOEVENT)
+
+    def test_remove_event_filter(self):
+        """Check that the event filter is used"""
+
+        def eventFilter(event):
+            if event.type == pygame.USEREVENT:
+                return True
+            return False
+
+        with self.assertRaises(ValueError):
+            pygame.event.remove_event_filter(eventFilter)
+
+        pygame.event.add_event_filter(eventFilter)
+        pygame.event.remove_event_filter(eventFilter)
+
+        with self.assertRaises(ValueError):
+            pygame.event.remove_event_filter(eventFilter)
+
+        pygame.event.clear()
+        pygame.event.post(pygame.event.Event(pygame.VIDEOEXPOSE))
+
+        ev = pygame.event.poll()
+        self.assertEqual(ev.type, pygame.VIDEOEXPOSE)
+
+        pygame.event.post(pygame.event.Event(pygame.USEREVENT))
+
+        ev = pygame.event.poll()
+        self.assertEqual(ev.type, pygame.USEREVENT)
+
 
 class EventModuleTestsWithTiming(unittest.TestCase):
     __tags__ = ["timing"]

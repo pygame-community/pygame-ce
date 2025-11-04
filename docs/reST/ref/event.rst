@@ -468,6 +468,72 @@ On Android, the following events can be generated
 
    .. ## pygame.event.custom_type ##
 
+.. function:: add_event_watcher
+
+   | :sl:`add an event watcher`
+   | :sg:`add_event_watcher[T: Callable[[Event], Any]](T) -> T`
+
+   Adds an event watcher
+   The provided function should take a ``Event`` and may return any value.
+
+   For convenience this function returns its parameter.
+
+   WARNING: The passed function may be called in a seperate thread.
+   The watcher is called when events are added to the queue.
+   The queue processing may occur immediately or when ``pygame.event.poll`` / ``pygame.event.get`` is called.
+   This function is not called if the event is blocked or filtered out.
+
+   If an error is generated in this function it is printed to stderr and otherwise ignored.
+
+   .. versionaddedold:: todo
+
+   .. ## pygame.event.add_event_watcher ##
+
+.. function:: remove_event_watcher
+
+   | :sl:`remove an event watcher`
+   | :sg:`remove_event_watcher[T: (Event) -> Any](T) -> None`
+
+   Removes a already existing event watcher.
+
+   The object passed to this function should be the same as was passed to ``add_event_watcher``.
+
+   .. versionaddedold:: todo
+
+   .. ## pygame.event.remove_event_watcher ##
+
+.. function:: add_event_filter
+
+   | :sl:`add an event filter`
+   | :sg:`add_event_filter[T: (Event) -> Any](T) -> T`
+
+   Adds an event filter
+   The provided function should take a ``Event`` and should return a truthy value to skip the event.
+
+   For convenience this function returns its parameter.
+
+   WARNING: The passed function may be called in a seperate thread.
+   The filter is called before events are added to the queue.
+   This function is not called if the event is blocked.
+
+   If an error is generated in this function it is printed to stderr and otherwise ignored.
+
+   .. versionaddedold:: todo
+
+   .. ## pygame.event.add_event_filter ##
+
+.. function:: remove_event_filter
+
+   | :sl:`remove an event filter`
+   | :sg:`remove_event_filter[T: (Event) -> Any](T) -> None`
+
+   Removes an already existing event filter.
+   The object passed to this function should be the same as was passed to ``add_event_filter``.
+
+   .. versionaddedold:: todo
+
+   .. ## pygame.event.remove_event_filter ##
+
 .. class:: Event
 
    | :sl:`pygame object for representing events`
