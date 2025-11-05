@@ -478,7 +478,7 @@ On Android, the following events can be generated
 
    For convenience this function returns its parameter.
 
-   WARNING: The passed function may be called in a seperate thread.
+   WARNING: The passed function may be called in a separate thread.
    The watcher is called when events are added to the queue.
    The queue processing may occur immediately or when ``pygame.event.poll`` / ``pygame.event.get`` is called.
    This function is not called if the event is blocked or filtered out.
@@ -512,7 +512,7 @@ On Android, the following events can be generated
 
    For convenience this function returns its parameter.
 
-   WARNING: The passed function may be called in a seperate thread.
+   WARNING: The passed function may be called in a separate thread.
    The filter is called before events are added to the queue.
    This function is not called if the event is blocked.
 
