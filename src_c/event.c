@@ -742,8 +742,8 @@ pg_event_filter(void *_, SDL_Event *event)
             break;
         }
         PyObject *returnValue = PyObject_CallOneArg(filter, eventObj);
-        Py_DECREF(eventObj) if (!returnValue)
-        {
+        Py_DECREF(eventObj);
+        if (!returnValue) {
             PyGILState_Release(gstate);
             PG_UNLOCK_EVFILTER_MUTEX
 
@@ -2679,12 +2679,12 @@ pg_event_remove_watcher(PyObject *self, PyObject *arg)
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     // SDL 3 renamed DelEventWatch to RemoveEventWatch
     SDL_RemoveEventWatch(pg_watcher_wrapper, arg);
-    Py_DECREF(arg)
+    Py_DECREF(arg);
 #else
     SDL_DelEventWatch(pg_watcher_wrapper, arg);
-    Py_DECREF(arg)
+    Py_DECREF(arg);
 #endif
-        Py_RETURN_NONE;
+    Py_RETURN_NONE;
 }
 
 /*
