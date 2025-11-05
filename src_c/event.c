@@ -521,7 +521,7 @@ _pg_remove_pending_VIDEOEXPOSE(void *userdata, SDL_Event *event)
     return 1;
 }
 // Forward declare pg_eventNew_no_free_proxy to be used in pg_event_filter
-PyObject *
+static PyObject *
 pg_eventNew_no_free_proxy(SDL_Event *event);
 
 /* SDL 2 to SDL 1.2 event mapping and SDL 1.2 key repeat emulation,
@@ -727,9 +727,15 @@ pg_event_filter(void *_, SDL_Event *event)
     Py_ssize_t totalUserFilters = PyList_Size(userFilters);
     for (Py_ssize_t i = 0; i < totalUserFilters; i++) {
         PyObject *filter = PyList_GetItem(userFilters, i);
-        PyObject *returnValue =
-            PyObject_CallOneArg(filter, pg_eventNew_no_free_proxy(event));
-        if (!returnValue) {
+        PyObject *eventObj = pg_eventNew_no_free_proxy(event);
+        if (!eventObj) {
+            PyErr_Print();
+            PyErr_Clear();
+            break;
+        }
+        PyObject *returnValue = PyObject_CallOneArg(filter, eventObj);
+        Py_DECREF(eventObj) if (!returnValue)
+        {
             PyGILState_Release(gstate);
             PG_UNLOCK_EVFILTER_MUTEX
 
@@ -2574,10 +2580,8 @@ pg_eventNew_no_free_proxy(SDL_Event *event)
             SDL_AtomicUnlock(&dict_proxy->lock);
             // Contruct the event object
             PyObject *eventObj = pgEvent_New(event);
-            if (proxy_frees_on_end) {
-                // Restore the state of do_free_at_end
-                dict_proxy->do_free_at_end = true;
-            }
+            // Restore the state of do_free_at_end
+            dict_proxy->do_free_at_end = proxy_frees_on_end;
             return eventObj;
         }
     }
@@ -2593,6 +2597,7 @@ static int
 pg_watcher_wrapper(void *userdata, SDL_Event *event)
 {
     PyObject *callable = (PyObject *)userdata;
+    PyGILState_STATE gstate = PyGILState_Ensure();
 /* WINDOWEVENT translation needed only on SDL2 */
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
     /* We need to translate WINDOWEVENTS. But if we do that from the
@@ -2608,7 +2613,6 @@ pg_watcher_wrapper(void *userdata, SDL_Event *event)
 #else
     PyObject *eventObj = pg_eventNew_no_free_proxy(event);
 #endif
-    PyGILState_STATE gstate = PyGILState_Ensure();
     if (PyErr_Occurred()) {
         Py_XDECREF(eventObj);
         PyGILState_Release(gstate);
@@ -2644,6 +2648,7 @@ pg_event_add_watcher(PyObject *self, PyObject *arg)
     VIDEO_INIT_CHECK();
 
     if (PyCallable_Check(arg)) {
+        Py_INCREF(arg);
         SDL_AddEventWatch(pg_watcher_wrapper, arg);
     }
     else {
@@ -2666,10 +2671,12 @@ pg_event_remove_watcher(PyObject *self, PyObject *arg)
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     // SDL 3 renamed DelEventWatch to RemoveEventWatch
     SDL_RemoveEventWatch(pg_watcher_wrapper, arg);
+    Py_DECREF(arg)
 #else
     SDL_DelEventWatch(pg_watcher_wrapper, arg);
+    Py_DECREF(arg)
 #endif
-    Py_RETURN_NONE;
+        Py_RETURN_NONE;
 }
 
 /*
@@ -2682,7 +2689,10 @@ pg_event_add_filter(PyObject *self, PyObject *arg)
 
     if (PyCallable_Check(arg)) {
         PG_LOCK_EVFILTER_MUTEX
-        PyList_Append(userFilters, arg);
+        if (PyList_Append(userFilters, arg) < 0) {
+            PG_UNLOCK_EVFILTER_MUTEX
+            return NULL;  // PyErr already set
+        }
         PG_UNLOCK_EVFILTER_MUTEX
     }
     else {
@@ -2703,10 +2713,16 @@ pg_event_remove_filter(PyObject *self, PyObject *arg)
     Py_ssize_t index = PySequence_Index(userFilters, arg);
     if (index == -1) {
         PG_UNLOCK_EVFILTER_MUTEX
-        PyErr_SetString(PyExc_ValueError, "event filter not found");
-        return NULL;
+        if (PyErr_Occurred()) {
+            // An error occurred during the search
+            return NULL;
+        }
+        return RAISE(PyExc_ValueError, "event filter not found");
     }
-    PySequence_DelItem(userFilters, index);
+    if (PySequence_DelItem(userFilters, index) < 0) {
+        PG_UNLOCK_EVFILTER_MUTEX
+        return NULL;  // PyErr already set
+    }
     PG_UNLOCK_EVFILTER_MUTEX
     Py_RETURN_NONE;
 }
