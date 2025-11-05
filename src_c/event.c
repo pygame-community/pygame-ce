@@ -2659,7 +2659,7 @@ pg_event_remove_watcher(PyObject *self, PyObject *arg)
 #else
     SDL_DelEventWatch(pg_watcher_wrapper, arg);
 #endif
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 /*
@@ -2703,7 +2703,7 @@ pg_event_remove_filter(PyObject *self, PyObject *arg)
     PySequence_DelItem(userFilters, index);
     PG_UNLOCK_EVFILTER_MUTEX
     PyGILState_Release(gstate);
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyMethodDef _event_methods[] = {
