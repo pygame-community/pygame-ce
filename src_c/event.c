@@ -738,6 +738,7 @@ pg_event_filter(void *_, SDL_Event *event)
             return true;
         }
         int skip = PyObject_IsTrue(returnValue);
+        Py_DECREF(returnValue);
         if (skip) {
             PyGILState_Release(gstate);
             PG_UNLOCK_EVFILTER_MUTEX
@@ -812,6 +813,9 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
         }
 #endif
         userFilters = PyList_New(0);
+        if (!userFilters) {
+            return RAISE(pgExc_SDLError, "Failed to initialize event filters");
+        }
         SDL_SetEventFilter(pg_event_filter, NULL);
     }
     _pg_event_is_init = 1;
@@ -2565,7 +2569,7 @@ pg_eventNew_no_free_proxy(SDL_Event *event)
             dict_proxy->num_on_queue++;
             // So that if it gets dropped to zero it wont get freed and risk a
             // double free later on
-            bool proxy_frees_on_end = dict_proxy->do_free_at_end;
+            int proxy_frees_on_end = dict_proxy->do_free_at_end;
             dict_proxy->do_free_at_end = false;
             SDL_AtomicUnlock(&dict_proxy->lock);
             // Contruct the event object
@@ -2604,22 +2608,28 @@ pg_watcher_wrapper(void *userdata, SDL_Event *event)
 #else
     PyObject *eventObj = pg_eventNew_no_free_proxy(event);
 #endif
-    if (PyErr_Occurred()) {
-        PyErr_Print();
-        PyErr_Clear();
-        return 0;
-    }
-    if (!eventObj) {
-        return 0;
-    }
     PyGILState_STATE gstate = PyGILState_Ensure();
-    PyObject *returnValue = PyObject_CallOneArg(callable, eventObj);
     if (PyErr_Occurred()) {
+        Py_XDECREF(eventObj);
         PyGILState_Release(gstate);
         PyErr_Print();
         PyErr_Clear();
         return 0;
     }
+    if (!eventObj) {
+        PyGILState_Release(gstate);
+        return 0;
+    }
+    PyObject *returnValue = PyObject_CallOneArg(callable, eventObj);
+    Py_DECREF(eventObj);
+    if (PyErr_Occurred()) {
+        Py_XDECREF(returnValue);
+        PyGILState_Release(gstate);
+        PyErr_Print();
+        PyErr_Clear();
+        return 0;
+    }
+    Py_DECREF(returnValue);
     PyGILState_Release(gstate);
     return 0;
 }
@@ -2671,11 +2681,9 @@ pg_event_add_filter(PyObject *self, PyObject *arg)
     VIDEO_INIT_CHECK();
 
     if (PyCallable_Check(arg)) {
-        PyGILState_STATE gstate = PyGILState_Ensure();
         PG_LOCK_EVFILTER_MUTEX
         PyList_Append(userFilters, arg);
         PG_UNLOCK_EVFILTER_MUTEX
-        PyGILState_Release(gstate);
     }
     else {
         PyErr_SetString(PyExc_ValueError,
@@ -2691,18 +2699,15 @@ pg_event_remove_filter(PyObject *self, PyObject *arg)
 {
     VIDEO_INIT_CHECK();
 
-    PyGILState_STATE gstate = PyGILState_Ensure();
     PG_LOCK_EVFILTER_MUTEX
     Py_ssize_t index = PySequence_Index(userFilters, arg);
     if (index == -1) {
         PG_UNLOCK_EVFILTER_MUTEX
         PyErr_SetString(PyExc_ValueError, "event filter not found");
-        PyGILState_Release(gstate);
         return NULL;
     }
     PySequence_DelItem(userFilters, index);
     PG_UNLOCK_EVFILTER_MUTEX
-    PyGILState_Release(gstate);
     Py_RETURN_NONE;
 }
 
