@@ -35,6 +35,8 @@ pixels from the surface and any changes performed to the array will make changes
 in the surface. As this last functions share memory with the surface, this one
 will be locked during the lifetime of the array.
 
+.. versionchanged:: 2.5.6 surfarray module is lazily loaded to avoid an expensive NumPy import when unnecessary
+
 .. function:: array2d
 
    | :sl:`Copy pixels into a 2d array`

@@ -1,4 +1,6 @@
+import gc
 import unittest
+import weakref
 
 import pygame
 import pygame._render as _render
@@ -171,6 +173,15 @@ class RendererTest(unittest.TestCase):
         self.assertEqual(self.renderer.logical_size, (0, 0))
         self.renderer.logical_size = (10, 10)
         self.assertEqual(self.renderer.logical_size, (10, 10))
+
+    def test_logical_window_mapping(self):
+        self.renderer.logical_size = (10, 10)
+        self.assertEqual(self.renderer.coordinates_to_window((10, 10)), (100, 100))
+        self.assertEqual(self.renderer.coordinates_from_window((100, 100)), (10, 10))
+        with self.assertRaises(TypeError):
+            self.renderer.coordinates_to_window(42, 42)
+        with self.assertRaises(TypeError):
+            self.renderer.coordinates_from_window(42, 42)
 
     def test_scale(self):
         self.assertEqual(self.renderer.scale, (1.0, 1.0))
@@ -455,6 +466,13 @@ class TextureTest(unittest.TestCase):
         result = self.renderer.to_surface()
         for x in range(64, 82):
             self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 50)))
+
+    def test_garbage_collection(self):
+        reference = weakref.ref(self.texture)
+        self.assertTrue(reference() is self.texture)
+        del self.texture
+        gc.collect()
+        self.assertIsNone(reference())
 
     def test_update(self):
         surface = pygame.Surface((100, 100))

@@ -65,7 +65,7 @@ jobs:
           - { arch: armv7, base_image: 'balenalib/raspberrypi3-debian:bookworm' }
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v5.0.0
 
     - name: Build sources and run tests
       uses: uraimo/run-on-arch-action@v3.0.1
@@ -108,7 +108,7 @@ jobs:
 
     # Upload the generated files under github actions assets section
     - name: Upload dist
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: pygame-multiarch-${{ matrix.arch }}-dist
         path: ~/artifacts/*.whl
@@ -121,7 +121,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Download all multiarch artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v6
       with:
         name: pygame-multiarch-armv7-dist
         path: ~/artifacts

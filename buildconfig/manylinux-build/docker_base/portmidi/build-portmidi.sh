@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-PORTMIDI_VER="2.0.4"
+PORTMIDI_VER="2.0.6"
 PORTMIDI="portmidi-${PORTMIDI_VER}"
 
 curl -sL --retry 10 https://github.com/PortMidi/portmidi/archive/refs/tags/v${PORTMIDI_VER}.tar.gz> ${PORTMIDI}.tar.gz

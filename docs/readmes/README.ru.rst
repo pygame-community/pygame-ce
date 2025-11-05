@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ **Русский**
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ **Русский** `Ελληνικά`_ `Português (Brasil)`_
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Pygame_  - бесплатная кроссплатформенная библиотека с открытым исходным кодом
@@ -139,7 +139,7 @@ SDL_rotozoom, а gfxdraw имеет встроенную версию SDL_gfx.
 
 
 +----------+------------------------+
-| CPython  | >= 3.9 (Or use PyPy3)  |
+| CPython  | >= 3.10 (Or use PyPy3) |
 +----------+------------------------+
 | SDL      | >= 2.0.14              |
 +----------+------------------------+
@@ -189,8 +189,8 @@ License
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.2.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.2...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -222,3 +222,5 @@ License
 .. _Español: README.es.rst
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
+.. _Ελληνικά: README.gr.rst
+.. _Português (Brasil): README.pt-br.rst

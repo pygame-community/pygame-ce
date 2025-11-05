@@ -3254,10 +3254,10 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
     //     \|/
     //------+------ +x
     //     /|\
-	//  3 / | \ 0
+    //  3 / | \ 0
     //   /  |  \
-	//  / 2 | 1 \
-	//      +y
+    //  / 2 | 1 \
+    //      +y
 
     // Initially reset bitmask to 0x00000000
     // the set whether or not to keep drawing a given octant.

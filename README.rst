@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_
+**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Pygame_ is a free and open-source cross-platform library
@@ -30,10 +30,49 @@ New contributors are welcome!
 Installation
 ------------
 
+To install pygame-ce, first make sure you have Python (and pip) installed and available on your PATH.
+Then, run the following command in your terminal or command prompt:
+
 ::
 
    pip install pygame-ce
 
+Note that on some platforms you may need to use ``pip3`` instead of ``pip``.
+
+Linux Note: "Breaking System Packages" Error
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On some Linux distributions (like Ubuntu or Debian), installing Python packages with ``pip`` can trigger a message like the following:
+
+::
+
+   error: externally-managed-environment
+   This environment is externally managed when system packages are installed.
+
+This means your system Python is managed by the OS, and using ``pip3`` globally might interfere with system packages.
+
+Recommended Solutions
+^^^^^^^^^^^^^^^^^^^^^
+
+1. Use ``venv`` (Virtual Environment):
+
+   You can create a virtual environment and install pygame-ce within it.
+   This way you still use system Python but create a separate environment for installed packages so that they do not conflict with or break system ones.
+
+   .. code-block:: bash
+
+      python3 -m venv venv      # create a venv named 'venv'
+      source venv/bin/activate  # activate venv
+      pip install pygame-ce     # install packages in venv
+
+2. Use ``pyenv`` (User-level Python management):
+
+   `pyenv <https://github.com/pyenv/pyenv>`_ lets you install and manage your own Python versions at the user level without touching the system one.
+   As a plus, you can install and use multiple Python versions side by side.
+
+3. Use ``uv`` (Fast Modern Package Installer):
+
+   `uv <https://docs.astral.sh/uv/>`_ is a modern, fast Python package and environment manager that can serve as a replacement for both ``venv`` and ``pyenv``.
 
 Help
 ----
@@ -139,7 +178,7 @@ Dependency versions:
 
 
 +----------+------------------------+
-| CPython  | >= 3.9 (Or use PyPy3)  |
+| CPython  | >= 3.10 (Or use PyPy3) |
 +----------+------------------------+
 | SDL      | >= 2.0.14              |
 +----------+------------------------+
@@ -155,7 +194,7 @@ How to Contribute
 First of all, thank you for considering contributing to pygame-ce! It's people like you that make pygame-ce a great library. Please follow these steps to get started:
 
 1. Read the `Contribution Guidelines`_ and the `Many Ways to Contribute`_ wiki pages.
-2. Read the documentataion on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
+2. Read the documentation on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
 3. Read how to `label and link reported issues`_.
 4. Check the `issue tracker`_ for open issues that interest you or open a new issue to start a discussion about your idea.
 
@@ -189,8 +228,8 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.2.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.3...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -222,3 +261,5 @@ See docs/licenses for licenses of dependencies.
 .. _日本語: ./docs/readmes/README.ja.rst
 .. _Italiano: ./docs/readmes/README.it.rst
 .. _Русский: ./docs/readmes/README.ru.rst
+.. _Ελληνικά: ./docs/readmes/README.gr.rst
+.. _Português (Brasil): ./docs/readmes/README.pt-br.rst

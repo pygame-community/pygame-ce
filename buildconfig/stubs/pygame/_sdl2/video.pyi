@@ -1,5 +1,5 @@
 from collections.abc import Generator, Iterable
-from typing import Any, Optional, Union
+from typing import Any
 
 from pygame.color import Color
 from pygame.rect import Rect
@@ -26,11 +26,11 @@ class RendererDriverInfo:
     max_texture_height: int
 
 def get_drivers() -> Generator[RendererDriverInfo, None, None]: ...
-def get_grabbed_window() -> Optional[Window]: ...
+def get_grabbed_window() -> Window | None: ...
 def messagebox(
     title: str,
     message: str,
-    window: Optional[Window] = None,
+    window: Window | None = None,
     info: bool = False,
     warn: bool = False,
     error: bool = False,
@@ -48,7 +48,7 @@ class Texture:
         static: bool = False,
         streaming: bool = False,
         target: bool = False,
-        scale_quality: Optional[int] = None,
+        scale_quality: int | None = None,
     ) -> None: ...
     @staticmethod
     def from_surface(renderer: Renderer, surface: Surface) -> Texture: ...
@@ -65,10 +65,10 @@ class Texture:
     def get_rect(self, **kwargs: Any) -> Rect: ...
     def draw(
         self,
-        srcrect: Optional[RectLike] = None,
-        dstrect: Optional[RectLike] = None,
+        srcrect: RectLike | None = None,
+        dstrect: RectLike | None = None,
         angle: float = 0.0,
-        origin: Optional[Iterable[int]] = None,
+        origin: Iterable[int] | None = None,
         flip_x: bool = False,
         flip_y: bool = False,
     ) -> None: ...
@@ -99,20 +99,20 @@ class Texture:
         p3_mod: Iterable[int] = (255, 255, 255, 255),
         p4_mod: Iterable[int] = (255, 255, 255, 255),
     ) -> None: ...
-    def update(self, surface: Surface, area: Optional[RectLike] = None) -> None: ...
+    def update(self, surface: Surface, area: RectLike | None = None) -> None: ...
 
 class Image:
     def __init__(
         self,
-        texture_or_image: Union[Texture, Image],
-        srcrect: Optional[RectLike] = None,
+        texture_or_image: Texture | Image,
+        srcrect: RectLike | None = None,
     ) -> None: ...
     def get_rect(self) -> Rect: ...
     def draw(
-        self, srcrect: Optional[RectLike] = None, dstrect: Optional[RectLike] = None
+        self, srcrect: RectLike | None = None, dstrect: RectLike | None = None
     ) -> None: ...
     angle: float
-    origin: Optional[Iterable[float]]
+    origin: Iterable[float] | None
     flip_x: bool
     flip_y: bool
     alpha: float
@@ -144,15 +144,17 @@ class Renderer:
     def clear(self) -> None: ...
     def present(self) -> None: ...
     def get_viewport(self) -> Rect: ...
-    def set_viewport(self, area: Optional[RectLike]) -> None: ...
+    def set_viewport(self, area: RectLike | None) -> None: ...
     logical_size: Iterable[int]
+    def coordinates_to_window(self, point: Point) -> tuple[float, float]: ...
+    def coordinates_from_window(self, point: Point) -> tuple[float, float]: ...
     scale: Iterable[float]
-    target: Optional[Texture]
+    target: Texture | None
     def blit(
         self,
-        source: Union[Texture, Image],
-        dest: Optional[RectLike] = None,
-        area: Optional[RectLike] = None,
+        source: Texture | Image,
+        dest: RectLike | None = None,
+        area: RectLike | None = None,
         special_flags: int = 0,
     ) -> Rect: ...
     def draw_line(self, p1: Point, p2: Point) -> None: ...
@@ -164,7 +166,7 @@ class Renderer:
     def draw_quad(self, p1: Point, p2: Point, p3: Point, p4: Point) -> None: ...
     def fill_quad(self, p1: Point, p2: Point, p3: Point, p4: Point) -> None: ...
     def to_surface(
-        self, surface: Optional[Surface] = None, area: Optional[RectLike] = None
+        self, surface: Surface | None = None, area: RectLike | None = None
     ) -> Surface: ...
     @staticmethod
     def compose_custom_blend_mode(
