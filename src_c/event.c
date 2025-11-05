@@ -716,6 +716,14 @@ pg_event_filter(void *_, SDL_Event *event)
         */
     }
     // If the event has been disabled, skip filtering it
+    /* TODO:
+     * Any event that gets blocked here will not be visible to the event
+     * watchers. So things like WINDOWEVENT should never be blocked here.
+     * This is taken care of in SDL2 codepaths already but needs to also
+     * be verified in SDL3 porting.
+     * If the user requests a block on WINDOWEVENTs we are going to handle
+     * it specially and call it a "pseudo-block", where the filtering will
+     * happen in a _pg_filter_blocked_events call. */
     if (!PG_EventEnabled(_pg_pgevent_proxify(event->type))) {
         return false;
     }
