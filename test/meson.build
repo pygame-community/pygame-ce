@@ -37,7 +37,6 @@ test_files = files(
     'rect_test.py',
     'render_test.py',
     'rwobject_test.py',
-    'scrap_tags.py',
     'scrap_test.py',
     'sndarray_tags.py',
     'sndarray_test.py',

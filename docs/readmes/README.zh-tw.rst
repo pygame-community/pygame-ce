@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ **繁體中文** `Français`_ `فارسی`_ `Español`_
+`English`_ `简体中文`_ **繁體中文** `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
 ----
 
 Pygame_ 是一款自由且開源的跨平台程式庫，用於開發電子遊戲等多媒體應用。Pygame基於 `Simple DirectMedia Layer library`_ 以及其他幾個廣受歡迎的程式庫，提取其中最常見的函數，讓編寫遊戲成為更符合直覺的事情。
@@ -109,7 +109,7 @@ pygame顯然依賴SDL和Python。此外pygame也嵌入了幾個較小的函式�
 
 
 +----------+------------------------+
-| CPython  | >= 3.9 （或 PyPy3）    |
+| CPython  | >= 3.10 （或 PyPy3）    |
 +----------+------------------------+
 | SDL      | >= 2.0.14              |
 +----------+------------------------+
@@ -158,8 +158,8 @@ pygame顯然依賴SDL和Python。此外pygame也嵌入了幾個較小的函式�
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.3.0.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.3.0...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -178,3 +178,8 @@ pygame顯然依賴SDL和Python。此外pygame也嵌入了幾個較小的函式�
 .. _Français: README.fr.rst
 .. _فارسی: README.fa.rst
 .. _Español: README.es.rst
+.. _日本語: README.ja.rst
+.. _Italiano: README.it.rst
+.. _Русский: README.ru.rst
+.. _Ελληνικά: README.gr.rst
+.. _Português (Brasil): README.pt-br.rst

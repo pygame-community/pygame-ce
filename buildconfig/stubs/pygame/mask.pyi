@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Optional, Union
+from typing import Any
 
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -11,7 +11,7 @@ def from_threshold(
     surface: Surface,
     color: ColorLike,
     threshold: ColorLike = (0, 0, 0, 255),
-    othersurface: Optional[Surface] = None,
+    othersurface: Surface | None = None,
     palette_colors: int = 1,
 ) -> Mask: ...
 
@@ -23,7 +23,7 @@ class Mask:
     def get_rect(self, **kwargs: Any) -> Rect: ...  # Dict type needs to be completed
     def get_at(self, pos: Point) -> int: ...
     def set_at(self, pos: Point, value: int = 1) -> None: ...
-    def overlap(self, other: Mask, offset: Point) -> Optional[tuple[int, int]]: ...
+    def overlap(self, other: Mask, offset: Point) -> tuple[int, int] | None: ...
     def overlap_area(self, other: Mask, offset: Point) -> int: ...
     def overlap_mask(self, other: Mask, offset: Point) -> Mask: ...
     def fill(self) -> None: ...
@@ -39,7 +39,7 @@ class Mask:
     def convolve(
         self,
         other: Mask,
-        output: Optional[Mask] = None,
+        output: Mask | None = None,
         offset: Point = (0, 0),
     ) -> Mask: ...
     def connected_component(self, pos: Point = ...) -> Mask: ...
@@ -47,13 +47,13 @@ class Mask:
     def get_bounding_rects(self) -> list[Rect]: ...
     def to_surface(
         self,
-        surface: Optional[Surface] = None,
-        setsurface: Optional[Surface] = None,
-        unsetsurface: Optional[Surface] = None,
-        setcolor: Optional[ColorLike] = (255, 255, 255, 255),
-        unsetcolor: Optional[ColorLike] = (0, 0, 0, 255),
-        dest: Union[RectLike, Point] = (0, 0),
-        area: Optional[RectLike] = None,
+        surface: Surface | None = None,
+        setsurface: Surface | None = None,
+        unsetsurface: Surface | None = None,
+        setcolor: ColorLike | None = (255, 255, 255, 255),
+        unsetcolor: ColorLike | None = (0, 0, 0, 255),
+        dest: RectLike | Point = (0, 0),
+        area: RectLike | None = None,
     ) -> Surface: ...
     if sys.version_info >= (3, 12):
         def __buffer__(self, flags: int, /) -> memoryview[int]: ...

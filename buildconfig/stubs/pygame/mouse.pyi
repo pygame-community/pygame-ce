@@ -292,4 +292,6 @@ def set_relative_mode(enable: bool, /) -> None:
     ``True`` will exit relative mouse mode.
 
     .. versionadded:: 2.4.0
+    .. versionchanged:: 2.5.6 calling this function before calling
+        :func:`pygame.display.set_mode` is deprecated and may error in the future.
     """

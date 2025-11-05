@@ -73,9 +73,13 @@ class MissingModule:
 
     def __init__(self, name, urgent=0):
         self.name = name
-        exc_type, exc_msg = sys.exc_info()[:2]
-        self.info = str(exc_msg)
-        self.reason = f"{exc_type.__name__}: {self.info}"
+        exc_type, exc_msg, _ = sys.exc_info()
+        if exc_type is not None:
+            self.info = str(exc_msg)
+            self.reason = f"{exc_type.__name__}: {self.info}"
+        else:
+            self.info = "<no info>"
+            self.reason = f"<no exception>: {self.info}"
         self.urgent = urgent
         if urgent:
             self.warn()
@@ -302,15 +306,57 @@ try:
 except (ImportError, OSError):
     scrap = MissingModule("scrap", urgent=0)
 
-try:
-    import pygame.surfarray
-except (ImportError, OSError):
-    surfarray = MissingModule("surfarray", urgent=0)
+# Two lazily imported modules to avoid loading numpy unnecessarily
+
+from importlib.util import LazyLoader, find_spec, module_from_spec
+
+
+def lazy_import(name):
+    """Lazily import a pygame module.
+
+    See https://docs.python.org/3/library/importlib.html#implementing-lazy-imports
+    Only load the module upon its first attribute access.
+
+    Lazily imported modules are directly referenced in packager_imports function.
+    """
+    fullname = "pygame." + name
+    spec = find_spec(fullname)
+    if spec is None or spec.loader is None:
+        return MissingModule(name, urgent=0)
+    loader = LazyLoader(spec.loader)
+    spec.loader = loader
+    module = module_from_spec(spec)
+    sys.modules[fullname] = module
+    loader.exec_module(module)
+    return module
+
+
+# Check if numpy is available for surfarray and sndarray modules
+numpy_missing = find_spec("numpy") is None
 
 try:
-    import pygame.sndarray
+    if numpy_missing:
+        # Always fails here. Need the error message for MissingModule.reason
+        import numpy  # pylint: disable=ungrouped-imports
+    # Check that module dependencies are not missing, or get error message
+    import pygame.pixelcopy  # pylint: disable=ungrouped-imports
+except (ImportError, OSError):
+    surfarray = MissingModule("surfarray", urgent=0)
+else:
+    surfarray = lazy_import("surfarray")
+
+try:
+    if numpy_missing:
+        # Always fails here. Need the error message for MissingModule.reason
+        import numpy  # pylint: disable=ungrouped-imports
+    # Check that module dependencies are not missing, or get error message
+    import pygame.mixer  # pylint: disable=ungrouped-imports
 except (ImportError, OSError):
     sndarray = MissingModule("sndarray", urgent=0)
+else:
+    sndarray = lazy_import("sndarray")
+
+del LazyLoader, find_spec, lazy_import, module_from_spec, numpy_missing
 
 try:
     import pygame._debug
@@ -361,12 +407,20 @@ except (ImportError, OSError):
 
 
 def packager_imports():
-    """some additional imports that py2app/py2exe will want to see"""
+    """Some additional imports that py2app/py2exe will want to see.
+
+    This function is never executed.
+    Some tools scan the source code for import statements.
+    """
     import atexit
     import numpy
     import OpenGL.GL
     import pygame.macosx
     import pygame.colordict
+
+    # lazy imports
+    import pygame.surfarray
+    import pygame.sndarray
 
 
 # make Rects pickleable
@@ -399,10 +453,22 @@ def __color_reduce(c):
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
+    import sysconfig
+
+    python_version = platform.python_version()
+
+    if (
+        sys.platform not in ("wasi", "emscripten")
+        and (sys.version_info >= (3, 13, 0))
+        and sysconfig.get_config_var("Py_GIL_DISABLED")
+    ):
+        python_version += f"t, {'' if sys._is_gil_enabled() else 'No '}GIL"
+
     print(
         f"pygame-ce {ver} (SDL {'.'.join(map(str, get_sdl_version()))}, "
-        f"Python {platform.python_version()})"
+        f"Python {python_version})"
     )
+    del python_version, sysconfig
 
 # cleanup namespace
 del pygame, os, sys, platform, MissingModule, copyreg, packager_imports

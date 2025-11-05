@@ -45,3 +45,4 @@
 #define DOC_LINE_SCALEIP "scale_ip(factor, origin) -> None\nscale_ip(factor_and_origin) -> None\nscales the line by the given factor from the given origin in place"
 #define DOC_LINE_FLIPAB "flip_ab() -> Line\nflips the line a and b points"
 #define DOC_LINE_FLIPABIP "flip_ab_ip() -> None\nflips the line a and b points, in place"
+#define DOC_LINE_PROJECT "project(point: tuple[float, float], clamp=False) -> tuple[float, float]\nprojects the line onto the given line"
