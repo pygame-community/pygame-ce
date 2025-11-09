@@ -5,6 +5,11 @@ import pygame
 
 
 class SystemModuleTest(unittest.TestCase):
+    def test_get_cpu_cores(self):
+        cpu = pygame.system.get_cpu_cores()
+
+        self.assertIsInstance(cpu, int)
+
     def test_get_cpu_instruction_sets(self):
         instruction_sets = pygame.system.get_cpu_instruction_sets()
 

@@ -5,6 +5,12 @@
 #include "doc/system_doc.h"
 
 static PyObject *
+pg_system_get_cpu_cores(PyObject *self, PyObject *_null)
+{
+    return PyLong_FromLong(SDL_GetCPUCount());
+}
+
+static PyObject *
 pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
 {
     PyObject *tmp_bool = NULL;
@@ -252,6 +258,8 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
 }
 
 static PyMethodDef _system_methods[] = {
+    {"get_cpu_cores", pg_system_get_cpu_cores, METH_NOARGS,
+     DOC_SYSTEM_GETCPUCORES},
     {"get_cpu_instruction_sets", pg_system_get_cpu_instruction_sets,
      METH_NOARGS, DOC_SYSTEM_GETCPUINSTRUCTIONSETS},
     {"get_total_ram", pg_system_get_total_ram, METH_NOARGS,

@@ -27,6 +27,17 @@ class _Locale(TypedDict):
     language: str
     country: str | None
 
+def get_cpu_cores() -> int:
+    """Get the number of CPU cores available in the system.
+
+    Returns the number of CPU cores available in the system.
+
+    .. note:: On CPUs that include technologies such as hyperthreading, the number
+        of logical cores may be more than the number of physical cores.
+
+    .. versionadded:: 2.5.7
+    """
+
 def get_cpu_instruction_sets() -> _InstructionSets:
     """Get the information of CPU instruction sets.
 

@@ -1,5 +1,6 @@
 /* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SYSTEM "Pygame module to provide additional context about the system."
+#define DOC_SYSTEM_GETCPUCORES "get_cpu_cores() -> int\nGet the number of CPU cores available in the system."
 #define DOC_SYSTEM_GETCPUINSTRUCTIONSETS "get_cpu_instruction_sets() -> _InstructionSets\nGet the information of CPU instruction sets."
 #define DOC_SYSTEM_GETTOTALRAM "get_total_ram() -> int\nGet the amount of RAM configured in the system."
 #define DOC_SYSTEM_GETPREFPATH "get_pref_path(org, app) -> str\nGet a writeable folder for your app."
