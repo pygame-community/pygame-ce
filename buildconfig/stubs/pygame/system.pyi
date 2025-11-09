@@ -86,6 +86,25 @@ def get_total_ram() -> int:
     .. versionadded:: 2.3.1
     """
 
+def get_platform() -> str:
+    """Get the name of the running system platform.
+
+    Returns a string with the name of the running system platform.
+
+    Examples of supported platforms include:
+    ``Windows``, ``Linux``, ``Mac OS X``, ``iOS``, ``Android``.
+
+    .. note::
+        If the correct platform name is not available,
+        returns a string beginning with the text "Unknown".
+
+    .. note::
+        The ``platform`` library has similar functionality for this use case,
+        but has more detailed platform information.
+
+    .. versionadded:: 2.5.7
+    """
+
 def get_pref_path(org: str, app: str) -> str:
     """Get a writeable folder for your app.
 

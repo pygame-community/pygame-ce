@@ -3,6 +3,7 @@
 #define DOC_SYSTEM_GETCPUCORES "get_cpu_cores() -> int\nGet the number of CPU cores available in the system."
 #define DOC_SYSTEM_GETCPUINSTRUCTIONSETS "get_cpu_instruction_sets() -> _InstructionSets\nGet the information of CPU instruction sets."
 #define DOC_SYSTEM_GETTOTALRAM "get_total_ram() -> int\nGet the amount of RAM configured in the system."
+#define DOC_SYSTEM_GETPLATFORM "get_platform() -> str\nGet the name of the running system platform."
 #define DOC_SYSTEM_GETPREFPATH "get_pref_path(org, app) -> str\nGet a writeable folder for your app."
 #define DOC_SYSTEM_GETPREFLOCALES "get_pref_locales() -> list[_Locale]\nGet preferred locales set on the system."
 #define DOC_SYSTEM_GETPOWERSTATE "get_power_state() -> PowerState | None\nGet the current power supply state."

@@ -22,6 +22,11 @@ class SystemModuleTest(unittest.TestCase):
 
         self.assertIsInstance(ram, int)
 
+    def test_get_platform(self):
+        platform = pygame.system.get_platform()
+
+        self.assertIsInstance(platform, str)
+
     def test_get_pref_path(self):
         get_pref_path = pygame.system.get_pref_path
 

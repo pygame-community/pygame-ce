@@ -70,6 +70,12 @@ pg_system_get_total_ram(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+pg_system_get_platform(PyObject *self, PyObject *_null)
+{
+    return PyUnicode_FromString(SDL_GetPlatform());
+}
+
+static PyObject *
 pg_system_get_pref_path(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     char *org, *project;
@@ -264,6 +270,8 @@ static PyMethodDef _system_methods[] = {
      METH_NOARGS, DOC_SYSTEM_GETCPUINSTRUCTIONSETS},
     {"get_total_ram", pg_system_get_total_ram, METH_NOARGS,
      DOC_SYSTEM_GETTOTALRAM},
+    {"get_platform", pg_system_get_platform, METH_NOARGS,
+     DOC_SYSTEM_GETPLATFORM},
     {"get_pref_path", (PyCFunction)pg_system_get_pref_path,
      METH_VARARGS | METH_KEYWORDS, DOC_SYSTEM_GETPREFPATH},
     {"get_pref_locales", pg_system_get_pref_locales, METH_NOARGS,
