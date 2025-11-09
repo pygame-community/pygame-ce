@@ -281,7 +281,7 @@ Conversion can be combined with swizzling or slicing to create a new order
       | :sg:`normalize() -> Vector2`
 
       Returns a new vector that has ``length`` equal to ``1`` and the same
-      direction as self.  If the vector is the zero vector (i.e. has length
+      direction as self. If the vector is the zero vector (i.e. has length
       ``0`` thus no direction) a ``ValueError`` is raised.
 
       .. ## Vector2.normalize ##
@@ -292,7 +292,7 @@ Conversion can be combined with swizzling or slicing to create a new order
       | :sg:`normalize_ip() -> None`
 
       Normalizes the vector so that it has ``length`` equal to ``1``.
-      The direction of the vector is not changed.  If the vector is the zero
+      The direction of the vector is not changed. If the vector is the zero
       vector (i.e. has length ``0`` thus no direction) a ``ValueError`` is
       raised.
 
