@@ -902,6 +902,47 @@ font_set_ptsize(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
+font_getter_outline(PyObject *self, void *closure)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
+    TTF_Font *font = PyFont_AsFont(self);
+    return PyLong_FromLong(TTF_GetFontOutline(font));
+}
+
+static int
+font_setter_outline(PyObject *self, PyObject *value, void *closure)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
+    }
+    TTF_Font *font = PyFont_AsFont(self);
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK("outline", value);
+
+    long val = PyLong_AsLong(value);
+    if (val == -1 && PyErr_Occurred()) {
+        return -1;
+    }
+    if (val < 0) {
+        PyErr_SetString(PyExc_ValueError, "outline must be >= 0");
+        return -1;
+    }
+
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    if (!TTF_SetFontOutline(font, (int)val)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+#else
+    TTF_SetFontOutline(font, (int)val);
+#endif
+    return 0;
+}
+
+static PyObject *
 font_getter_name(PyObject *self, void *closure)
 {
     if (!PgFont_GenerationCheck(self)) {
@@ -1168,6 +1209,8 @@ static PyGetSetDef font_getsets[] = {
      DOC_FONT_FONT_UNDERLINE, NULL},
     {"strikethrough", (getter)font_getter_strikethrough,
      (setter)font_setter_strikethrough, DOC_FONT_FONT_STRIKETHROUGH, NULL},
+    {"outline", (getter)font_getter_outline, (setter)font_setter_outline,
+     DOC_FONT_FONT_OUTLINE, NULL},
     {"align", (getter)font_getter_align, (setter)font_setter_align,
      DOC_FONT_FONT_ALIGN, NULL},
     {"point_size", (getter)font_getter_point_size,
