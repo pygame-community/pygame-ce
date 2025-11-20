@@ -7,7 +7,6 @@
 #define DOC_SDL2_CONTROLLER_GETEVENTSTATE "get_eventstate() -> bool\nGets the current state of events related to controllers"
 #define DOC_SDL2_CONTROLLER_GETCOUNT "get_count() -> int\nGet the number of joysticks connected"
 #define DOC_SDL2_CONTROLLER_ISCONTROLLER "is_controller(index) -> bool\nCheck if the given joystick is supported by the game controller interface"
-#define DOC_SDL2_CONTROLLER_NAMEFORINDEX "name_forindex(index) -> name or None\nGet the name of the controller"
 #define DOC_SDL2_CONTROLLER_CONTROLLER "Controller(index) -> Controller\nCreate a new Controller object."
 #define DOC_SDL2_CONTROLLER_CONTROLLER_INIT "init() -> None\nInitialize the Controller"
 #define DOC_SDL2_CONTROLLER_CONTROLLER_QUIT "quit() -> None\nuninitialize the Controller"
