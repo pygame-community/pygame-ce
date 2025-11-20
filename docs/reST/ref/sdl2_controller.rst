@@ -102,16 +102,6 @@ events related to controllers.
 
     .. ## pygame._sdl2.controller.is_controller ##
 
-.. function:: name_forindex
-
-    | :sl:`Get the name of the controller`
-    | :sg:`name_forindex(index) -> name or None`
-
-    Returns the name of controller, or None if there's no name or the
-    index is invalid.
-
-    .. ## pygame._sdl2.controller.name_forindex ##
-
 .. class:: Controller
 
     | :sl:`Create a new Controller object.`
