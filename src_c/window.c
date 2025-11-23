@@ -115,6 +115,7 @@ pg_set_pg_window(SDL_Window *win, PyObject *pg_win)
     SDL_SetWindowData(win, "pg_window", pg_win);
 #endif
 }
+
 #define WINDOW_FREE_HIT_TEST_DATA(pg_window) \
     free(pg_window->hit_test_data);          \
     pg_window->hit_test_data = NULL;         \
@@ -970,8 +971,8 @@ _window_hit_test_callback(SDL_Window *win, const SDL_Point *point, void *data)
 }
 
 static PyObject *
-_window_add_hit_test(pgWindowObject *self, PyObject *hit_pg_rect,
-                     SDL_HitTestResult hit_type)
+_window_add_special_region(pgWindowObject *self, PyObject *hit_pg_rect,
+                           SDL_HitTestResult hit_type)
 {
     SDL_Rect tmp_rect;
     SDL_Rect *hit_rect;
@@ -1051,7 +1052,7 @@ window_add_resize_region(pgWindowObject *self, PyObject *args,
                      "orientation should be 'topleft', 'left', 'bottomleft', "
                      "'bottom', 'bottomright', 'right', 'topright' or 'top'");
     }
-    return _window_add_hit_test(self, hit_rect, hit_type);
+    return _window_add_special_region(self, hit_rect, hit_type);
 }
 
 static PyObject *
@@ -1062,7 +1063,7 @@ window_add_drag_region(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &hit_rect)) {
         return NULL;
     }
-    return _window_add_hit_test(self, hit_rect, SDL_HITTEST_DRAGGABLE);
+    return _window_add_special_region(self, hit_rect, SDL_HITTEST_DRAGGABLE);
 }
 
 static PyObject *
