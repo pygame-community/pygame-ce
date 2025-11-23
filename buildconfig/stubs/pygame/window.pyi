@@ -517,7 +517,7 @@ class Window:
         Multiple regions can be added by calling this method multiple times.
         Use :func:`clear_special_regions` to remove all special regions.
 
-        A ``WINDOWREGION`` event will be pushed to the event queue when a region
+        A ``WINDOWREGIONTRIGGERED`` event will be pushed to the event queue when a region
         is triggered.
 
         Mouse input may not be delivered to your application if it is within a
