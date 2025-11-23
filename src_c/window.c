@@ -951,16 +951,19 @@ static SDL_HitTestResult
 _window_hit_test_callback(SDL_Window *win, const SDL_Point *point, void *data)
 {
     pgWindowObject *pg_win = SDL_GetWindowData(win, "pg_window");
-    if (pg_win == NULL)
+    if (pg_win == NULL) {
         return SDL_HITTEST_NORMAL;
+    }
 
     pgWindowHitTestData *hit_test_data = pg_win->hit_test_data;
-    if (hit_test_data == NULL)
+    if (hit_test_data == NULL) {
         return SDL_HITTEST_NORMAL;
+    }
 
     for (int i = 0; i < pg_win->num_hit_test_data; i++) {
-        if (SDL_PointInRect(point, &(hit_test_data[i].hit_area)))
+        if (SDL_PointInRect(point, &(hit_test_data[i].hit_area))) {
             return hit_test_data[i].hit_type;
+        }
     }
 
     return SDL_HITTEST_NORMAL;
@@ -974,18 +977,21 @@ _window_add_hit_test(pgWindowObject *self, PyObject *hit_pg_rect,
     SDL_Rect *hit_rect;
     SDL_bool need_set_hittest = SDL_FALSE;
 
-    if (self->num_hit_test_data == 0)
+    if (self->num_hit_test_data == 0) {
         need_set_hittest = SDL_TRUE;
+    }
 
     hit_rect = pgRect_FromObject(hit_pg_rect, &tmp_rect);
-    if (!hit_rect)
+    if (!hit_rect) {
         return RAISE(PyExc_TypeError, "area should be a rect-like object.");
+    }
 
     pgWindowHitTestData *tmp =
         realloc(self->hit_test_data,
                 (self->num_hit_test_data + 1) * sizeof(pgWindowHitTestData));
-    if (!tmp)
+    if (!tmp) {
         return PyErr_NoMemory();
+    }
 
     self->hit_test_data = tmp;
     self->num_hit_test_data++;
@@ -995,65 +1001,77 @@ _window_add_hit_test(pgWindowObject *self, PyObject *hit_pg_rect,
     if (need_set_hittest) {
         int result =
             SDL_SetWindowHitTest(self->_win, _window_hit_test_callback, NULL);
-        if (result != 0)
+        if (result != 0) {
             return RAISE(pgExc_SDLError, SDL_GetError());
+        }
     }
 
     Py_RETURN_NONE;
 }
 
 static PyObject *
-window_add_resize_hit_test(pgWindowObject *self, PyObject *args,
-                           PyObject *kwargs)
+window_add_resize_region(pgWindowObject *self, PyObject *args,
+                         PyObject *kwargs)
 {
     PyObject *hit_rect = NULL;
     SDL_HitTestResult hit_type;
     char *orientation_str;
     char *keywords[] = {"hit_rect", "orientation", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Os", keywords, &hit_rect,
-                                     &orientation_str))
+                                     &orientation_str)) {
         return NULL;
+    }
 
-    if (!strcmp(orientation_str, "topleft"))
+    if (!strcmp(orientation_str, "topleft")) {
         hit_type = SDL_HITTEST_RESIZE_TOPLEFT;
-    else if (!strcmp(orientation_str, "left"))
+    }
+    else if (!strcmp(orientation_str, "left")) {
         hit_type = SDL_HITTEST_RESIZE_LEFT;
-    else if (!strcmp(orientation_str, "bottomleft"))
+    }
+    else if (!strcmp(orientation_str, "bottomleft")) {
         hit_type = SDL_HITTEST_RESIZE_BOTTOMLEFT;
-    else if (!strcmp(orientation_str, "bottom"))
+    }
+    else if (!strcmp(orientation_str, "bottom")) {
         hit_type = SDL_HITTEST_RESIZE_BOTTOM;
-    else if (!strcmp(orientation_str, "bottomright"))
+    }
+    else if (!strcmp(orientation_str, "bottomright")) {
         hit_type = SDL_HITTEST_RESIZE_BOTTOMRIGHT;
-    else if (!strcmp(orientation_str, "right"))
+    }
+    else if (!strcmp(orientation_str, "right")) {
         hit_type = SDL_HITTEST_RESIZE_RIGHT;
-    else if (!strcmp(orientation_str, "topright"))
+    }
+    else if (!strcmp(orientation_str, "topright")) {
         hit_type = SDL_HITTEST_RESIZE_TOPRIGHT;
-    else if (!strcmp(orientation_str, "top"))
+    }
+    else if (!strcmp(orientation_str, "top")) {
         hit_type = SDL_HITTEST_RESIZE_TOP;
-    else
+    }
+    else {
         return RAISE(PyExc_TypeError,
                      "orientation should be 'topleft', 'left', 'bottomleft', "
                      "'bottom', 'bottomright', 'right', 'topright' or 'top'");
+    }
     return _window_add_hit_test(self, hit_rect, hit_type);
 }
 
 static PyObject *
-window_add_draggable_hit_test(pgWindowObject *self, PyObject *args,
-                              PyObject *kwargs)
+window_add_drag_region(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *hit_rect = NULL;
     char *keywords[] = {"hit_rect", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &hit_rect))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &hit_rect)) {
         return NULL;
+    }
     return _window_add_hit_test(self, hit_rect, SDL_HITTEST_DRAGGABLE);
 }
 
 static PyObject *
-window_clear_hit_test(pgWindowObject *self)
+window_clear_special_regions(pgWindowObject *self)
 {
     int result = SDL_SetWindowHitTest(self->_win, NULL, NULL);
-    if (result != 0)
+    if (result != 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     WINDOW_FREE_HIT_TEST_DATA(self);
     Py_RETURN_NONE;
 }
@@ -1530,12 +1548,12 @@ static PyMethodDef window_methods[] = {
     {"flip", (PyCFunction)window_flip, METH_NOARGS, DOC_WINDOW_FLIP},
     {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
      DOC_WINDOW_GETSURFACE},
-    {"add_draggable_hit_test", (PyCFunction)window_add_draggable_hit_test,
-     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_WINDOW_ADDDRAGGABLEHITTEST},
-    {"add_resize_hit_test", (PyCFunction)window_add_resize_hit_test,
-     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_WINDOW_ADDRESIZEHITTEST},
-    {"clear_hit_test", (PyCFunction)window_clear_hit_test, METH_NOARGS,
-     DOC_SDL2_VIDEO_WINDOW_CLEARHITTEST},
+    {"add_drag_region", (PyCFunction)window_add_drag_region,
+     METH_VARARGS | METH_KEYWORDS, DOC_WINDOW_ADDDRAGREGION},
+    {"add_resize_region", (PyCFunction)window_add_resize_region,
+     METH_VARARGS | METH_KEYWORDS, DOC_WINDOW_ADDRESIZEREGION},
+    {"clear_special_regions", (PyCFunction)window_clear_special_regions,
+     METH_NOARGS, DOC_WINDOW_CLEARSPECIALREGIONS},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_WINDOW_FROMDISPLAYMODULE},
     {"flash", (PyCFunction)window_flash, METH_O, DOC_WINDOW_FLASH},
