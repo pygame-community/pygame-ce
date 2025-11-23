@@ -1011,7 +1011,7 @@ window_add_resize_region(pgWindowObject *self, PyObject *args,
     PyObject *hit_rect = NULL;
     SDL_HitTestResult hit_type;
     char *orientation_str;
-    char *keywords[] = {"hit_rect", "orientation", NULL};
+    char *keywords[] = {"region", "orientation", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Os", keywords, &hit_rect,
                                      &orientation_str)) {
         return NULL;
@@ -1053,7 +1053,7 @@ static PyObject *
 window_add_drag_region(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *hit_rect = NULL;
-    char *keywords[] = {"hit_rect", NULL};
+    char *keywords[] = {"region", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &hit_rect)) {
         return NULL;
     }
