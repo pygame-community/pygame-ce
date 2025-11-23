@@ -951,7 +951,7 @@ window_get_utility(pgWindowObject *self, void *v)
 static SDL_HitTestResult
 _window_hit_test_callback(SDL_Window *win, const SDL_Point *point, void *data)
 {
-    pgWindowObject *pg_win = SDL_GetWindowData(win, "pg_window");
+    pgWindowObject *pg_win = (pgWindowObject *)pg_get_pg_window(win);
     if (pg_win == NULL) {
         return SDL_HITTEST_NORMAL;
     }
