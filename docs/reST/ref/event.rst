@@ -197,7 +197,7 @@ Here is a list of all window events, along with a short description
    WINDOWFOCUSLOST        Window lost focus
    WINDOWCLOSE            Window was closed
    WINDOWTAKEFOCUS        Window was offered focus
-   WINDOWHITTEST          Window has a special hit test
+   WINDOWREGIONTRIGGERED  Window has a special region triggered
    WINDOWICCPROFCHANGED   Window ICC profile changed (SDL backend >= 2.0.18)
    WINDOWDISPLAYCHANGED   Window moved on a new display (SDL backend >= 2.0.18)
 
