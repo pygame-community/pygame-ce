@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pygame.locals import WINDOWPOS_UNDEFINED
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -496,3 +498,83 @@ class Window:
         .. versionadded:: 2.5.2
         """
     relative_mouse: bool
+
+    def add_drag_region(self, region: RectLike) -> None:
+        """Add a special region for dragging the window.
+
+        :param rect region: The drag region rect.
+        :raises pygame.error: If platform doesn't support this functionality.
+
+        Normally windows are dragged and resized by decorations provided by the
+        system window manager (the title bar, borders, et.), but for some apps, it
+        makes sense to drag them from somewhere else inside the window itself; for
+        example, one might have a borderless window that needs to be draggable from
+        any region, or simulate its own title bar, etc.
+
+        This function allows you to create a drag region on the window.
+        That means when user drags the mouse in this region, the whole window is dragged and moved.
+
+        Multiple regions can be added by calling this method multiple times.
+        Use :func:`clear_special_regions` to remove all special regions.
+
+        A ``WINDOWREGION`` event will be pushed to the event queue when a region
+        is triggered.
+
+        Mouse input may not be delivered to your application if it is within a
+        special area; the OS will often apply that input to moving the window or
+        resizing the window and not deliver it to the application.
+
+        .. seealso:: :func:`add_resize_region`
+        .. seealso:: :func:`clear_special_regions`
+        .. versionadded:: 2.5.7
+        """
+
+    def add_resize_region(
+        self,
+        region: RectLike,
+        orientation: Literal[
+            'topleft',
+            'left',
+            'bottomleft',
+            'bottom',
+            'bottomright',
+            'right',
+            'topright',
+            'top',
+        ],
+    ) -> None:
+        """Add a special region for resizing the window.
+
+        :param rect region: The resize region rect.
+        :param str orientation: The orientation of the resize.
+        :raises pygame.error: If platform doesn't support this functionality.
+
+        This method lets you create a resize region for the window. By dragging
+        this region, user can resize the window (the window should be resizable).
+        Use ``orientation`` parameter to specify the orientation of the resize.
+
+        The ``orientation`` can be ``"topleft"``, ``"left"``, ``"bottomleft"``,
+        ``"bottom"``, ``"bottomright"``, ``"right"``, ``"topright"``, or ``"top"``.
+
+        Multiple regions can be added by calling this method multiple times.
+        Use :func:`clear_special_regions` to remove all special regions.
+
+        For more details about special regions, see :func:`add_drag_region`.
+
+        .. seealso:: :func:`add_drag_region`
+        .. seealso:: :func:`clear_special_regions`
+        .. versionadded:: 2.5.7
+        """
+
+    def clear_special_regions(self) -> None:
+        """Clear all special regions.
+
+        :raises pygame.error: If platform don't support this functionality.
+
+        Clears all special regions created by :func:`add_drag_region`
+        and :func:`add_resize_region` on this window.
+
+        .. seealso:: :func:`add_drag_region`
+        .. seealso:: :func:`add_resize_region`
+        .. versionadded:: 2.5.7
+        """
