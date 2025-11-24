@@ -65,7 +65,7 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v6.0.0
 
     - name: Install pygame-ce deps
       # https://github.com/actions/runner-images/issues/7192
@@ -134,7 +134,7 @@ jobs:
     needs: debug_coverage
 
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v6.0.0
       with:
         fetch-depth: 0  # fetch full history
 
