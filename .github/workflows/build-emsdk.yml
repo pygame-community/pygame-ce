@@ -42,7 +42,7 @@ jobs:
       PYBUILD: 3.13
 
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v6.0.0
 
     - name: Install python-wasm-sdk
       run: |
@@ -64,7 +64,7 @@ jobs:
     name: Pyodide build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v6.0.0
 
     - uses: pypa/cibuildwheel@v3.2.1
       env:
