@@ -321,6 +321,19 @@ class Window:
         """
 
     @property
+    def handle(self) -> int:
+        """Get the window handle provided by the window manager if supported otherwise 0
+
+        Returns the window handle provided by the window manager as an integer. If the operating
+        system is not supported or the window manager hides the handle the sentinel ``0`` is returned.
+
+        The handle is generally available with Windows, X11 (Linux), Cocoa (MacOS), UIKit (iOS),
+        Android and Vivante while unavailable under Wayland and everything else.
+
+        .. versionadded:: 2.5.7
+        """
+
+    @property
     def utility(self) -> bool:
         """Get if the window is an utility window (**read-only**).
 
