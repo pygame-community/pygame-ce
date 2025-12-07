@@ -1017,7 +1017,7 @@ _pg_name_from_eventtype(int type)
         case PGE_WINDOWTAKEFOCUS:
             return "WindowTakeFocus";
         case PGE_WINDOWHITTEST:
-            return "WindowHitTest";
+            return "WindowRegionTriggered";
         case PGE_WINDOWICCPROFCHANGED:
             return "WindowICCProfChanged";
         case PGE_WINDOWDISPLAYCHANGED:
