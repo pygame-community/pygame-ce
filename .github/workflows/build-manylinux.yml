@@ -74,7 +74,7 @@ jobs:
         CIBW_MANYLINUX_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v3.2.1
+      uses: pypa/cibuildwheel@henryiii/fix/simpleraction
 
     # We upload the generated files under github actions assets
     - name: Upload dist
