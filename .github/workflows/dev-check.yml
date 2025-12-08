@@ -31,7 +31,7 @@ jobs:
       SDL_AUDIODRIVER: "disk"
 
     steps:
-      - uses: actions/checkout@v6.0.0
+      - uses: actions/checkout@v6.0.1
 
       - name: Install deps
         run: |
