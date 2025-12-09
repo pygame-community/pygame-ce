@@ -530,6 +530,8 @@ typedef struct {
     SDL_bool _is_borrowed;
     pgSurfaceObject *surf;
     SDL_GLContext context;
+    PyObject *weakreflist;
+    PyObject *selfweakref;
 } pgWindowObject;
 
 #ifndef PYGAMEAPI_WINDOW_INTERNAL
