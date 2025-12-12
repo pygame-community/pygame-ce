@@ -25,6 +25,11 @@
  */
 #define PYGAMEAPI_EVENT_INTERNAL
 
+/* We include SDL_gesture.h in _pygame.h. That header defines the
+ * implementation when this macro is set. So this macro needs to be set in only
+ * one source file (and not any header) and we set it here because its API is
+ * used here */
+#define SDL_GESTURE_IMPLEMENTATION 1
 #include "pygame.h"
 
 #include "pgcompat.h"
@@ -401,10 +406,8 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY(CONTROLLERTOUCHPADMOTION);
         _PG_HANDLE_PROXIFY(CONTROLLERTOUCHPADUP);
         _PG_HANDLE_PROXIFY(CONTROLLERSENSORUPDATE);
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         _PG_HANDLE_PROXIFY(DOLLARGESTURE);
         _PG_HANDLE_PROXIFY(DOLLARRECORD);
-#endif
         _PG_HANDLE_PROXIFY(DROPFILE);
         _PG_HANDLE_PROXIFY(DROPTEXT);
         _PG_HANDLE_PROXIFY(DROPBEGIN);
@@ -427,9 +430,7 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY(MOUSEBUTTONDOWN);
         _PG_HANDLE_PROXIFY(MOUSEBUTTONUP);
         _PG_HANDLE_PROXIFY(MOUSEWHEEL);
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         _PG_HANDLE_PROXIFY(MULTIGESTURE);
-#endif
         _PG_HANDLE_PROXIFY(NOEVENT);
         _PG_HANDLE_PROXIFY(QUIT);
         _PG_HANDLE_PROXIFY(RENDER_TARGETS_RESET);
@@ -493,12 +494,8 @@ _pg_pgevent_type(SDL_Event *event)
  * Currently this only includes WINDOWEVENT, but can be expanded in the
  * future.
  */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-static bool SDLCALL
-#else
-static int SDLCALL
-#endif
-_pg_filter_blocked_events(void *_, SDL_Event *event)
+static bool
+_pg_event_psuedo_block(SDL_Event *event)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     if (event->type >= SDL_EVENT_WINDOW_FIRST &&
@@ -506,6 +503,19 @@ _pg_filter_blocked_events(void *_, SDL_Event *event)
 #else
     if (event->type == SDL_WINDOWEVENT) {
 #endif
+        return true;
+    }
+    return false;
+}
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static bool SDLCALL
+#else
+static int SDLCALL
+#endif
+_pg_filter_blocked_events(void *_, SDL_Event *event)
+{
+    if (_pg_event_psuedo_block(event)) {
         return PG_EventEnabled(_pg_pgevent_proxify(_pg_pgevent_type(event)));
     }
     return 1;
@@ -732,14 +742,15 @@ pg_event_filter(void *_, SDL_Event *event)
             return RAISE(pgExc_SDLError, SDL_GetError()), 0;
         */
     }
-    /* TODO:
+    /*
      * Any event that gets blocked here will not be visible to the event
      * watchers. So things like WINDOWEVENT should never be blocked here.
-     * This is taken care of in SDL2 codepaths already but needs to also
-     * be verified in SDL3 porting.
      * If the user requests a block on WINDOWEVENTs we are going to handle
      * it specially and call it a "pseudo-block", where the filtering will
      * happen in a _pg_filter_blocked_events call. */
+    if (_pg_event_psuedo_block(event)) {
+        return 1;
+    }
     return PG_EventEnabled(_pg_pgevent_proxify(event->type));
 }
 
@@ -773,6 +784,9 @@ static PyObject *
 pgEvent_AutoQuit(PyObject *self, PyObject *_null)
 {
     if (_pg_event_is_init) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        Gesture_Quit();
+#endif
         PG_LOCK_EVFILTER_MUTEX
         if (_pg_repeat_timer) {
             SDL_RemoveTimer(_pg_repeat_timer);
@@ -805,6 +819,11 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
         }
 #endif
         SDL_SetEventFilter(pg_event_filter, NULL);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (Gesture_Init() != 0) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+#endif
     }
     _pg_event_is_init = 1;
     Py_RETURN_NONE;
@@ -936,10 +955,8 @@ _pg_name_from_eventtype(int type)
             return "FingerDown";
         case SDL_FINGERUP:
             return "FingerUp";
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         case SDL_MULTIGESTURE:
             return "MultiGesture";
-#endif
         case SDL_MOUSEWHEEL:
             return "MouseWheel";
         case SDL_TEXTINPUT:
@@ -1142,7 +1159,6 @@ dict_from_event(SDL_Event *event)
                     state = SDL_APPACTIVE;
                     break;
                 default:
-                    assert(event->window.event == SDL_WINDOWEVENT_RESTORED);
                     gain = 1;
                     state = SDL_APPACTIVE;
             }
@@ -1294,9 +1310,27 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "pressure",
                        PyFloat_FromDouble(event->tfinger.dy));
             break;
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         case SDL_MULTIGESTURE:
-            /* https://wiki.libsdl.org/SDL_MultiGestureEvent */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            _pg_insobj(dict, "touch_id",
+                       PyLong_FromLongLong(
+                           ((Gesture_MultiGestureEvent *)event)->touchID));
+            _pg_insobj(
+                dict, "x",
+                PyFloat_FromDouble(((Gesture_MultiGestureEvent *)event)->x));
+            _pg_insobj(
+                dict, "y",
+                PyFloat_FromDouble(((Gesture_MultiGestureEvent *)event)->y));
+            _pg_insobj(dict, "rotated",
+                       PyFloat_FromDouble(
+                           ((Gesture_MultiGestureEvent *)event)->dTheta));
+            _pg_insobj(dict, "pinched",
+                       PyFloat_FromDouble(
+                           ((Gesture_MultiGestureEvent *)event)->dDist));
+            _pg_insobj(dict, "num_fingers",
+                       PyLong_FromLong(
+                           ((Gesture_MultiGestureEvent *)event)->numFingers));
+#else
             _pg_insobj(dict, "touch_id",
                        PyLong_FromLongLong(event->mgesture.touchId));
             _pg_insobj(dict, "x", PyFloat_FromDouble(event->mgesture.x));
@@ -1307,8 +1341,8 @@ dict_from_event(SDL_Event *event)
                        PyFloat_FromDouble(event->mgesture.dDist));
             _pg_insobj(dict, "num_fingers",
                        PyLong_FromLong(event->mgesture.numFingers));
-            break;
 #endif
+            break;
         case SDL_MOUSEWHEEL:
             /* https://wiki.libsdl.org/SDL_MouseWheelEvent */
 #ifndef NO_SDL_MOUSEWHEEL_FLIPPED
