@@ -121,7 +121,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Download all multiarch artifacts
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: pygame-multiarch-armv7-dist
         path: ~/artifacts
