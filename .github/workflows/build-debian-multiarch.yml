@@ -108,7 +108,7 @@ jobs:
 
     # Upload the generated files under github actions assets section
     - name: Upload dist
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: pygame-multiarch-${{ matrix.arch }}-dist
         path: ~/artifacts/*.whl

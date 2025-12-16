@@ -123,7 +123,7 @@ jobs:
     - name: Upload coverage html
       # want to continue only if the coverage generation was successful
       if: ${{ steps.gen-coverage.conclusion == 'success' && !cancelled() }}
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: pygame-coverage-${{ matrix.os }}-${{ matrix.python }}
         path: ./out

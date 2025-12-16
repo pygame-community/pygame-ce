@@ -55,7 +55,7 @@ jobs:
 
     # Upload the generated files under github actions assets section
     - name: Upload dist
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: pygame-wasm-dist
         path: ./dist/*
@@ -70,7 +70,7 @@ jobs:
       env:
         CIBW_PLATFORM: pyodide
 
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v6
       with:
         name: pyodide-wheels
         path: wheelhouse/*.whl

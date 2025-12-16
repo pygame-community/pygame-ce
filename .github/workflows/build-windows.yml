@@ -45,7 +45,7 @@ jobs:
       - name: Build and test wheels
         uses: pypa/cibuildwheel@v3.2.1
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: pygame-wheels-windows-${{ matrix.winarch }}
           path: ./wheelhouse/*.whl
