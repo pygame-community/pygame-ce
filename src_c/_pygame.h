@@ -192,6 +192,8 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 
 #define PG_GetSurfaceClipRect SDL_GetSurfaceClipRect
 
+#define PG_GL_SetSwapInterval SDL_GL_SetSwapInterval
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -399,6 +401,12 @@ PG_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
 {
     *rect = surface->clip_rect;
     return true;
+}
+
+static inline bool
+PG_GL_SetSwapInterval(int interval)
+{
+    return SDL_GL_SetSwapInterval(interval) == 0;
 }
 #endif
 
