@@ -271,13 +271,14 @@ Siehe docs/licenses für die Lizenzen der Abhängigkeiten.
 .. _Pygame Community Discord Server: https://discord.gg/pygame
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
 
-.. _简体中文: ./docs/readmes/README.zh-cn.rst
-.. _繁體中文: ./docs/readmes/README.zh-tw.rst
-.. _Français: ./docs/readmes/README.fr.rst
-.. _فارسی: ./docs/readmes/README.fa.rst
-.. _Español: ./docs/readmes/README.es.rst
-.. _日本語: ./docs/readmes/README.ja.rst
-.. _Italiano: ./docs/readmes/README.it.rst
-.. _Русский: ./docs/readmes/README.ru.rst
-.. _Ελληνικά: ./docs/readmes/README.gr.rst
-.. _Português (Brasil): ./docs/readmes/README.pt-br.rst
+.. _简体中文: README.zh-cn.rst
+.. _繁體中文: README.zh-tw.rst
+.. _Français: README.fr.rst
+.. _فارسی: README.fa.rst
+.. _Español: README.es.rst
+.. _日本語: README.ja.rst
+.. _Italiano: README.it.rst
+.. _Русский: README.ru.rst
+.. _Ελληνικά: README.gr.rst
+.. _Português (Brasil): README.pt-br.rst
+.. _English: ./../../README.rst
