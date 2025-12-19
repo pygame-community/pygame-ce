@@ -32,6 +32,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           path: pygame-wheels
+          pattern: pygame-wheels-*
           merge-multiple: true
 
       # Strips 'release/' from the ref_name, this helps us access the version
