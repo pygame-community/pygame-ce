@@ -539,38 +539,22 @@ class ImageModuleTest(unittest.TestCase):
     def test_load_unicode_path(self):
         import shutil
 
-        orig = example_path("data/asprite.bmp")
-        temp = os.path.join(example_path("data"), "你好.bmp")
-        shutil.copy(orig, temp)
-        try:
-            im = pygame.image.load(temp)
-        finally:
-            os.remove(temp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            orig = example_path("data/asprite.bmp")
+            temp = os.path.join(tmpdir, "你好.bmp")
+            shutil.copy(orig, temp)
+            pygame.image.load(temp)
 
     def _unicode_save(self, temp_file):
         im = pygame.Surface((10, 10), 0, 32)
-        try:
-            with open(temp_file, "w") as f:
-                pass
-            os.remove(temp_file)
-        except OSError:
-            raise unittest.SkipTest("the path cannot be opened")
-
         self.assertFalse(os.path.exists(temp_file))
-
-        try:
-            pygame.image.save(im, temp_file)
-
-            self.assertGreater(os.path.getsize(temp_file), 10)
-        finally:
-            try:
-                os.remove(temp_file)
-            except OSError:
-                pass
+        pygame.image.save(im, temp_file)
+        self.assertGreater(os.path.getsize(temp_file), 10)
 
     def test_save_unicode_path(self):
         """save unicode object with non-ASCII chars"""
-        self._unicode_save("你好.bmp")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._unicode_save(os.path.join(tmpdir, "你好.bmp"))
 
     def assertPremultipliedAreEqual(self, string1, string2, source_string):
         self.assertEqual(len(string1), len(string2))

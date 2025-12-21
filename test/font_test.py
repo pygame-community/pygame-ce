@@ -5,6 +5,7 @@ import pathlib
 import platform
 import sys
 import unittest
+from tempfile import TemporaryDirectory
 
 import pygame
 from pygame import font as pygame_font  # So font can be replaced with ftfont
@@ -815,19 +816,12 @@ class FontTypeTest(unittest.TestCase):
     def _load_unicode(self, path):
         import shutil
 
-        fdir = str(FONTDIR)
-        temp = os.path.join(fdir, path)
-        pgfont = os.path.join(fdir, "test_sans.ttf")
-        shutil.copy(pgfont, temp)
-        try:
-            with open(temp, "rb") as f:
-                pass
-        except FileNotFoundError:
-            raise unittest.SkipTest("the path cannot be opened")
-        try:
+        with TemporaryDirectory() as tmpdir:
+            fdir = str(FONTDIR)
+            temp = os.path.join(tmpdir, path)
+            pgfont = os.path.join(fdir, "test_sans.ttf")
+            shutil.copy(pgfont, temp)
             pygame_font.Font(temp, 20)
-        finally:
-            os.remove(temp)
 
     def test_load_from_file_unicode_0(self):
         """ASCII string as a unicode object"""
