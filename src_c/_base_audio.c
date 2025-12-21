@@ -91,12 +91,12 @@ pg_audio_is_audio_device_playback(PyObject *module, PyObject *arg)
 }
 
 static PyObject *
-pg_audio_get_audio_device_name(PyObject *module, PyObject *const *args,
-                               Py_ssize_t nargs)
+pg_audio_get_audio_device_name(PyObject *module, PyObject *arg)
 {
-    // assert nargs == 1
-    // assert type(args[0]) == AudioDeviceState
-    SDL_AudioDeviceID devid = ((PGAudioDeviceStateObject *)args[0])->devid;
+    // SDL_GetAudioDeviceName
+    // arg: PGAudioDeviceStateObject
+
+    SDL_AudioDeviceID devid = ((PGAudioDeviceStateObject *)arg)->devid;
     const char *name = SDL_GetAudioDeviceName(devid);
     if (name == NULL) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -932,13 +932,12 @@ pg_audio_get_default_recording_device_state(PyObject *module, PyObject *_null)
 }
 
 static PyObject *
-pg_audio_get_silence_value_for_format(PyObject *module, PyObject *const *args,
-                                      Py_ssize_t nargs)
+pg_audio_get_silence_value_for_format(PyObject *module, PyObject *arg)
 {
     // SDL_GetSilenceValueForFormat
     // format: int
 
-    int format_num = PyLong_AsInt(args[0]);
+    int format_num = PyLong_AsInt(arg);
     if (format_num == -1 && PyErr_Occurred()) {
         return NULL;
     }
@@ -970,13 +969,13 @@ static PyMethodDef audio_methods[] = {
 
     // format utility (the one)
     {"get_silence_value_for_format",
-     (PyCFunction)pg_audio_get_silence_value_for_format, METH_FASTCALL, NULL},
+     (PyCFunction)pg_audio_get_silence_value_for_format, METH_O, NULL},
 
     // AudioDevice utilities
     {"is_audio_device_playback",
      (PyCFunction)pg_audio_is_audio_device_playback, METH_O, NULL},
     {"get_audio_device_name", (PyCFunction)pg_audio_get_audio_device_name,
-     METH_FASTCALL, NULL},
+     METH_O, NULL},
     {"get_audio_device_channel_map",
      (PyCFunction)pg_audio_get_audio_device_channel_map, METH_O, NULL},
     {"open_audio_device", (PyCFunction)pg_audio_open_audio_device,
