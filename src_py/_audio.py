@@ -139,6 +139,7 @@ class AudioDevice:
         return _base_audio.is_audio_device_playback(self._state)
 
     # TODO: this doesn't work for the default device ids...
+    # https://github.com/libsdl-org/SDL/issues/14615
     @property
     def name(self) -> str:
         return _base_audio.get_audio_device_name(self._state)
@@ -165,6 +166,8 @@ class LogicalAudioDevice(AudioDevice):
 
     @gain.setter
     def gain(self, value: float) -> None:
+        if value < 0:
+            raise ValueError("Gain must be >= 0.")
         _base_audio.set_audio_device_gain(self._state, value)
 
 
