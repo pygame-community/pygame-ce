@@ -15,17 +15,17 @@ Pygame_ ist eine freie und quelloffene, plattformübergreifende Bibliothek
 zur Entwicklung von Multimedia-Anwendungen wie Videospielen mit Python.
 Sie verwendet die `Simple DirectMedia Layer library`_ sowie mehrere andere
 beliebte Bibliotheken, um die gängigsten Funktionen zu abstrahieren und
-das Schreiben solcher Programme intuitiver zu machen.
+das Schreiben solcher Programme einfacher und intuitiver zu machen.
 
 Diese Edition heißt **„pygame – Community Edition“** (kurz „pygame-ce“).
 
-Sie ist ein Fork des ursprünglichen pygame-Projekts durch dessen frühere Kernentwickler
+Sie ist ein Fork (Klon) des ursprünglichen pygame-Projekts durch dessen frühere Kernentwickler
 und wurde geschaffen, nachdem unüberwindbare Herausforderungen eine Weiterentwicklung
-im Upstream-Projekt verhinderten.
+im Upstream-Projekt bzw. Originalprojekt verhinderten.
 Diese Edition verfolgt das Ziel, häufigere Releases, kontinuierliche Fehlerbehebungen
 und Verbesserungen sowie ein demokratischeres Governance-Modell anzubieten.
 
-Neue Mitwirkende sind herzlich willkommen!
+Neue Mitwirkende sind herzlichst willkommen!
 
 
 Installation
@@ -39,20 +39,20 @@ Führen Sie anschließend folgenden Befehl in Ihrem Terminal oder in der Eingabe
 
    pip install pygame-ce
 
-Beachten Sie, dass Sie auf manchen Plattformen möglicherweise ``pip3`` anstelle von ``pip`` verwenden müssen.
+Beachten Sie, dass Sie auf manchen Plattformen wie Linux oder MacOS möglicherweise ``pip3`` anstelle von ``pip`` verwenden müssen.
 
 Linux-Hinweis: Fehler „Breaking System Packages“
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Auf einigen Linux-Distributionen (wie Ubuntu oder Debian) kann das Installieren
-von Python-Paketen mit ``pip`` eine Meldung wie die folgende auslösen:
+von Python-Paketen mit ``pip`` eine Fehlermeldung wie die folgende auslösen:
 
 ::
 
    error: externally-managed-environment
    This environment is externally managed when system packages are installed.
 
-Das bedeutet, dass das System-Python vom Betriebssystem verwaltet wird und eine
+Das bedeutet, dass das Aktuelle Python im PATH vom Betriebssystem verwaltet wird und eine
 globale Verwendung von ``pip3`` mit Systempaketen kollidieren könnte.
 
 Empfohlene Lösungen
@@ -73,7 +73,7 @@ Empfohlene Lösungen
 2. Verwendung von ``pyenv`` (Python-Verwaltung auf Benutzerebene):
 
    `pyenv <https://github.com/pyenv/pyenv>`_ ermöglicht es Ihnen, eigene Python-Versionen
-   auf Benutzerebene zu installieren und zu verwalten, ohne das System-Python anzutasten.
+   zu installieren und zu verwalten, ohne das System-Python anzutasten.
    Zusätzlich können mehrere Python-Versionen parallel genutzt werden.
 
 3. Verwendung von ``uv`` (schneller moderner Paketinstaller):
@@ -93,12 +93,12 @@ Sie können die Dokumentation auch lokal aufrufen, indem Sie im Terminal
 öffnet sich stattdessen die Online-Webseite.
 
 Die Online-Dokumentation wird stets mit der Entwicklungsversion von pygame auf GitHub
-aktualisiert und kann daher etwas neuer sein als die von Ihnen verwendete Version.
-Um auf die neueste stabile Version zu aktualisieren, führen Sie
+aktualisiert und kann daher etwas aktueller sein als die von Ihnen verwendete Pygame-Version.
+Um auf die neueste stabile Version zu upgraden, führen Sie
 ``pip install pygame-ce --upgrade`` im Terminal aus.
 
 Besonders hilfreich ist auch das ``examples``-Verzeichnis, das viele spielbare
-kleine Programme enthält, mit denen Sie sofort mit dem Code experimentieren können.
+kleine Beispiels-Programme enthält, mit denen Sie sofort mit dem Code experimentieren können.
 
 
 Kompilieren aus dem Quellcode
@@ -203,7 +203,7 @@ Mitwirken
 ---------
 
 Zunächst einmal vielen Dank für Ihr Interesse daran, pygame-ce mitzugestalten!
-Menschen wie Sie machen pygame-ce zu einer großartigen Bibliothek.
+Menschen wie Sie machen pygame-ce zu einem großartigen Projekt.
 Bitte folgen Sie diesen Schritten für den Einstieg:
 
 1. Lesen Sie die `Contribution Guidelines`_ und die Wiki-Seite `Many Ways to Contribute`_.
@@ -214,7 +214,7 @@ Bitte folgen Sie diesen Schritten für den Einstieg:
 Weitere hilfreiche Ressourcen finden Sie auf den verschiedenen `wiki pages`_.
 
 Bei Fragen können Sie sich gerne im `Pygame Community Discord Server`_ melden
-oder ein Issue eröffnen.
+oder ein Issue öffnen.
 
 
 Lizenz
