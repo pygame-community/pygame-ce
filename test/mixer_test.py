@@ -5,6 +5,7 @@ import platform
 import sys
 import time
 import unittest
+from tempfile import TemporaryDirectory
 
 import pygame
 from pygame import mixer
@@ -278,20 +279,12 @@ class MixerModuleTest(unittest.TestCase):
         import shutil
 
         ep = example_path("data")
-        temp_file = os.path.join(ep, "你好.wav")
-        org_file = os.path.join(ep, "house_lo.wav")
-        shutil.copy(org_file, temp_file)
-        try:
-            with open(temp_file, "rb") as f:
-                pass
-        except OSError:
-            raise unittest.SkipTest("the path cannot be opened")
-
-        try:
+        with TemporaryDirectory() as tmpdir:
+            temp_file = os.path.join(tmpdir, "你好.wav")
+            org_file = os.path.join(ep, "house_lo.wav")
+            shutil.copy(org_file, temp_file)
             sound = mixer.Sound(temp_file)
             del sound
-        finally:
-            os.remove(temp_file)
 
     @unittest.skipIf(
         os.environ.get("SDL_AUDIODRIVER") == "disk",
