@@ -118,7 +118,7 @@ jobs:
           version: "0.9.2"
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@v3.3.0
 
       - uses: actions/upload-artifact@v6
         with:
