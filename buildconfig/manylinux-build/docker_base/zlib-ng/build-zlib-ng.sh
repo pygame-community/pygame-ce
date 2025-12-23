@@ -14,3 +14,8 @@ cd ${ZLIB_NG_NAME}
 cmake . $PG_BASE_CMAKE_FLAGS -DZLIB_COMPAT=1
 make
 make install
+
+if [ -n "$WIN_ARCH" ]; then
+  # on windows, copy zlib to where its expected
+  cp $PG_DEP_PREFIX/lib/libzlib.dll.a $PG_DEP_PREFIX/lib/libz.dll.a
+fi

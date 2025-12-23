@@ -27,7 +27,7 @@ export MAKEFLAGS="-j 4"
 # 6) tell cmake to search in $PG_DEP_PREFIX for sub dependencies
 export PG_BASE_CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$PG_DEP_PREFIX \
     -DCMAKE_INSTALL_LIBDIR:PATH=lib \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=MinSizeRel \
     -DBUILD_SHARED_LIBS=true \
     -DCMAKE_INSTALL_NAME_DIR=$PG_DEP_PREFIX/lib \
     -DCMAKE_PREFIX_PATH=$PG_DEP_PREFIX"
@@ -36,7 +36,7 @@ export PG_BASE_CONFIGURE_FLAGS="--prefix=$PG_DEP_PREFIX"
 
 export PG_BASE_MESON_FLAGS="--prefix=$PG_DEP_PREFIX \
     -Dlibdir=lib \
-    -Dbuildtype=release \
+    -Doptimization=s -Ddebug=false \
     -Ddefault_library=shared"
 
 if [[ "$MAC_ARCH" == "arm64" ]]; then
