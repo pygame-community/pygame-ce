@@ -17,12 +17,12 @@ Sie verwendet die `Simple DirectMedia Layer library`_ sowie mehrere andere
 beliebte Bibliotheken, um die gängigsten Funktionen zu abstrahieren und
 das Schreiben solcher Programme intuitiver zu machen.
 
-Diese Distribution heißt **„pygame – Community Edition“** (kurz „pygame-ce“).
+Diese Edition heißt **„pygame – Community Edition“** (kurz „pygame-ce“).
 
 Sie ist ein Fork des ursprünglichen pygame-Projekts durch dessen frühere Kernentwickler
 und wurde geschaffen, nachdem unüberwindbare Herausforderungen eine Weiterentwicklung
 im Upstream-Projekt verhinderten.
-Die neue Distribution verfolgt das Ziel, häufigere Releases, kontinuierliche Fehlerbehebungen
+Diese Edition verfolgt das Ziel, häufigere Releases, kontinuierliche Fehlerbehebungen
 und Verbesserungen sowie ein demokratischeres Governance-Modell anzubieten.
 
 Neue Mitwirkende sind herzlich willkommen!
@@ -202,7 +202,7 @@ Abhängigkeitsversionen:
 Mitwirken
 ---------
 
-Zunächst einmal vielen Dank, dass Sie in Erwägung ziehen, zu pygame-ce beizutragen!
+Zunächst einmal vielen Dank für Ihr Interesse daran, pygame-ce mitzugestalten!
 Menschen wie Sie machen pygame-ce zu einer großartigen Bibliothek.
 Bitte folgen Sie diesen Schritten für den Einstieg:
 
