@@ -1620,7 +1620,7 @@ surf_copy(pgSurfaceObject *self, PyObject *_null)
     SURF_INIT_CHECK(surf)
 
     pgSurface_Prep(self);
-    newsurf = PG_ConvertSurface(surf, surf->format);
+    newsurf = PG_ConvertSurface(surf, surf);
     pgSurface_Unprep(self);
 
     final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
@@ -1680,7 +1680,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     if (argobject) {
         if (pgSurface_Check(argobject)) {
             src = pgSurface_AsSurface(argobject);
-            newsurf = PG_ConvertSurface(surf, src->format);
+            newsurf = PG_ConvertSurface(surf, src);
         }
         else {
             /* will be updated later, initialize to make static analyzer happy
@@ -1834,7 +1834,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     if (argobject) {
         if (pgSurface_Check(argobject)) {
             src = pgSurface_AsSurface(argobject);
-            newsurf = PG_ConvertSurface(surf, src->format);
+            newsurf = PG_ConvertSurface(surf, src);
         }
         else {
             /* will be updated later, initialize to make static analyzer happy
@@ -1951,7 +1951,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                     SDL_SetPixelFormatPalette(format, palette);
                 }
             }
-            newsurf = PG_ConvertSurface(surf, format);
+            newsurf = SDL_ConvertSurface(surf, format, 0);
             SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
             SDL_FreeFormat(format);
             SDL_FreePalette(palette);
@@ -3753,7 +3753,7 @@ surf_premul_alpha(pgSurfaceObject *self, PyObject *_null)
 
     pgSurface_Prep(self);
     // Make a copy of the surface first
-    newsurf = PG_ConvertSurface(surf, surf->format);
+    newsurf = PG_ConvertSurface(surf, surf);
 
     if ((surf->w > 0 && surf->h > 0)) {
         // If the surface has no pixels we don't need to premul

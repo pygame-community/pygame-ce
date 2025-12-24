@@ -99,6 +99,14 @@ _display_state_cleanup(_DisplayState *state)
 #endif
 }
 
+/* TODO: Check if doing SDL_PIXELFORMAT_XRGB8888 in SDL2 codepath is fine.
+ * For now do it only on SDL3 codepath to fix SCALED issues */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#define PG_TEXTURE_FMT SDL_PIXELFORMAT_XRGB8888
+#else
+#define PG_TEXTURE_FMT SDL_PIXELFORMAT_ARGB8888
+#endif
+
 // prevent this code block from being linked twice
 // (this code block is copied by window.c)
 #ifndef BUILD_STATIC
@@ -464,7 +472,12 @@ pg_GetVideoInfo(pg_VideoInfo *info)
     }
     else {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        if ((mode_ptr = SDL_GetCurrentDisplayMode(0))) {
+        SDL_DisplayID primary_display = SDL_GetPrimaryDisplay();
+        if (primary_display == 0) {
+            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            return (pg_VideoInfo *)NULL;
+        }
+        if ((mode_ptr = SDL_GetCurrentDisplayMode(primary_display))) {
             info->current_w = mode_ptr->w;
             info->current_h = mode_ptr->h;
             formatenum = mode_ptr->format;
@@ -942,9 +955,8 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
 
             SDL_DestroyTexture(pg_texture);
 
-            pg_texture =
-                SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
-                                  SDL_TEXTUREACCESS_STREAMING, w, h);
+            pg_texture = SDL_CreateTexture(pg_renderer, PG_TEXTURE_FMT,
+                                           SDL_TEXTUREACCESS_STREAMING, w, h);
         }
         return 0;
     }
@@ -1166,6 +1178,7 @@ PG_SetWindowFullscreen(SDL_Window *window, bool fullscreen,
         }
     }
 
+    SDL_SyncWindow(window);
     ret = true;
 end:
     SDL_free(modes);
@@ -1260,6 +1273,16 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
             return NULL;
         }
     }
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* In SDL2, display == 0 meant primary display, so compat code for it */
+    if (display == 0) {
+        display = SDL_GetPrimaryDisplay();
+        if (display == 0) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+#endif
 
     if ((vsync == -1) && ((flags & PGS_OPENGL) == 0)) {
         return RAISE(PyExc_ValueError,
@@ -1751,9 +1774,9 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     }
 #endif
 
-                    pg_texture = SDL_CreateTexture(
-                        pg_renderer, SDL_PIXELFORMAT_ARGB8888,
-                        SDL_TEXTUREACCESS_STREAMING, w, h);
+                    pg_texture =
+                        SDL_CreateTexture(pg_renderer, PG_TEXTURE_FMT,
+                                          SDL_TEXTUREACCESS_STREAMING, w, h);
                 }
                 surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
@@ -1875,6 +1898,9 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
             }
         }
     }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(win);
+#endif
 
     /*return the window's surface (screen)*/
     Py_INCREF(surface);
@@ -1973,6 +1999,9 @@ pg_set_window_position(PyObject *self, PyObject *arg)
     if (win) {
         /* Will raise errors with SDL 3, deal with it during the porting */
         SDL_SetWindowPosition(win, x, y);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_SyncWindow(win);
+#endif
     }
 
     Py_RETURN_NONE;
@@ -1999,7 +2028,16 @@ pg_mode_ok(PyObject *self, PyObject *args, PyObject *kwds)
                                      &display_index)) {
         return NULL;
     }
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* In SDL2, display == 0 meant primary display, so compat code for it */
+    if (display_index == 0) {
+        display_index = SDL_GetPrimaryDisplay();
+        if (display_index == 0) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+#else
     /* Display ID is not bounded by number of displays in SDL3 */
     if (display_index < 0 || display_index >= SDL_GetNumVideoDisplays()) {
         return RAISE(PyExc_ValueError,
@@ -2026,6 +2064,15 @@ pg_mode_ok(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* Compat with SDL2 behaviour */
+    const SDL_DisplayMode *curmode;
+    if (!(curmode = SDL_GetCurrentDisplayMode(display_index))) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    if (curmode->w == desired.w && curmode->h == desired.h) {
+        return PyLong_FromLong(SDL_BITSPERPIXEL(curmode->format));
+    }
+
     if (!SDL_GetClosestFullscreenDisplayMode(display_index, desired.w,
                                              desired.h, desired.refresh_rate,
                                              1, &closest)) {
@@ -2065,7 +2112,15 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* In SDL2, display == 0 meant primary display, so compat code for it */
+    if (display_index == 0) {
+        display_index = SDL_GetPrimaryDisplay();
+        if (display_index == 0) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+#else
     /* Display ID is not bounded by number of displays in SDL3 */
     if (display_index < 0 || display_index >= SDL_GetNumVideoDisplays()) {
         return RAISE(PyExc_ValueError,
@@ -2077,18 +2132,30 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
 #pragma PG_WARN(Ignoring flags)
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
+    const SDL_DisplayMode *curmode;
+    if (!(curmode = SDL_GetCurrentDisplayMode(display_index))) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     if (bpp == 0) {
-        const SDL_DisplayMode *curmode;
-        if (!(curmode = SDL_GetCurrentDisplayMode(display_index))) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
-        }
         bpp = SDL_BITSPERPIXEL(curmode->format);
     }
 
     SDL_DisplayMode **modes =
         SDL_GetFullscreenDisplayModes(display_index, &nummodes);
-    if (nummodes < 0) {
+    if (!modes || nummodes < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    /* SDL3 can return empty list here but SDL2 didn't. In that case, use
+     * curmode. */
+    if (nummodes == 0) {
+        SDL_free(modes);
+        modes = SDL_malloc(sizeof(SDL_DisplayMode **));
+        if (!modes) {
+            return PyErr_NoMemory();
+        }
+        modes[0] = (SDL_DisplayMode *)curmode;
+        nummodes = 1;
     }
 #else
     if (bpp == 0) {
@@ -2726,6 +2793,9 @@ pg_iconify(PyObject *self, PyObject *_null)
         return RAISE(pgExc_SDLError, "No open window");
     }
     SDL_MinimizeWindow(win);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(win);
+#endif
     return PyBool_FromLong(1);
 }
 
@@ -3219,7 +3289,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
                     SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE);
 #endif
                 pg_texture =
-                    SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
+                    SDL_CreateTexture(pg_renderer, PG_TEXTURE_FMT,
                                       SDL_TEXTUREACCESS_STREAMING, w, h);
             }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -3372,7 +3442,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
                     SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE);
 #endif
                 pg_texture =
-                    SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
+                    SDL_CreateTexture(pg_renderer, PG_TEXTURE_FMT,
                                       SDL_TEXTUREACCESS_STREAMING, w, h);
             }
 
@@ -3453,6 +3523,9 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             }
         }
     }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(win);
+#endif
     return PyLong_FromLong(1);
 }
 
@@ -3531,6 +3604,9 @@ pg_display_resize_event(PyObject *self, PyObject *event)
         /* do not do anything that would invalidate a display surface! */
         return PyLong_FromLong(-1);
     }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SyncWindow(win);
+#endif
     Py_RETURN_FALSE;
 }
 
