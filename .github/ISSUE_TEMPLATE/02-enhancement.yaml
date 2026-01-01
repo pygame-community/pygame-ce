@@ -1,0 +1,12 @@
+name: 💡 Enhancement Form
+labels: enhancement
+description: Suggest an idea to improve or add to Pygame!
+title: "[Enhancement] <title>"
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: Describe your enhancement, as clearly as possible.
+    validations:
+      required: true
