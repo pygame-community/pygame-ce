@@ -3,6 +3,7 @@ import platform
 import sys
 import time
 import unittest
+from tempfile import TemporaryDirectory
 
 import pygame
 from pygame.tests.test_utils import example_path
@@ -154,20 +155,13 @@ class MixerMusicModuleTest(unittest.TestCase):
         import shutil
 
         ep = example_path("data")
-        temp_file = os.path.join(ep, "你好.wav")
-        org_file = os.path.join(ep, "house_lo.wav")
-        try:
-            with open(temp_file, "w") as f:
-                pass
-            os.remove(temp_file)
-        except OSError:
-            raise unittest.SkipTest("the path cannot be opened")
-        shutil.copy(org_file, temp_file)
-        try:
+
+        with TemporaryDirectory() as tmpdir:
+            temp_file = os.path.join(tmpdir, "你好.wav")
+            org_file = os.path.join(ep, "house_lo.wav")
+            shutil.copy(org_file, temp_file)
             pygame.mixer.music.load(temp_file)
             pygame.mixer.music.load(org_file)  # unload
-        finally:
-            os.remove(temp_file)
 
     def test_unload(self):
         import shutil
