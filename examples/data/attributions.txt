@@ -5,3 +5,8 @@ https://modarchive.org/index.php?request=view_by_moduleid&query=169104
 MIDI_sample.mid
 Dogman15 at English Wikipedia
 https://en.wikipedia.org/wiki/File:MIDI_sample.mid
+
+Ranma_1-2_Hard_Battle.sf2:
+By ShiverThermal
+https://musical-artifacts.com/artifacts/6588
+Licensed under https://www.wtfpl.net/about/

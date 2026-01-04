@@ -27,14 +27,14 @@ RUN linux32 yum install -y zlib-devel dbus-devel fontconfig xz systemd-devel \
 # 4) build shared libraries
 ENV PG_BASE_CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$PG_DEP_PREFIX \
   -DCMAKE_INSTALL_LIBDIR:PATH=lib \
-  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_BUILD_TYPE=MinSizeRel \
   -DBUILD_SHARED_LIBS=true"
 
 ENV PG_BASE_CONFIGURE_FLAGS="--prefix=$PG_DEP_PREFIX"
 
 ENV PG_BASE_MESON_FLAGS="--prefix=$PG_DEP_PREFIX \
   -Dlibdir=lib \
-  -Dbuildtype=release \
+  -Doptimization=s -Ddebug=false \
   -Ddefault_library=shared"
 
 # remember to keep this updated when we drop 3.11 support
