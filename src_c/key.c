@@ -68,9 +68,7 @@ key_get_repeat(PyObject *self, PyObject *_null)
  *     https://github.com/pygame-community/pygame-ce/issues/519
  * so that they work with SDL_GetKeyboardState().
  */
-#define _PG_SCANCODEWRAPPER_TYPE_NAME "ScancodeWrapper"
-#define _PG_SCANCODEWRAPPER_TYPE_FULLNAME \
-    "pygame.key." _PG_SCANCODEWRAPPER_TYPE_NAME
+#define _PG_SCANCODEWRAPPER_TYPE_FULLNAME "pygame.key.ScancodeWrapper"
 
 typedef struct {
     PyTupleObject tuple;
@@ -144,6 +142,13 @@ static PyMappingMethods pg_scancodewrapper_mapping = {
     .mp_subscript = (binaryfunc)pg_scancodewrapper_subscript,
 };
 
+/**
+ * Create the string representation for a ScancodeWrapper instance.
+ *
+ * @param self ScancodeWrapper instance to represent.
+ * @returns New reference to a Python Unicode object containing the representation,
+ *          or NULL on error.
+ */
 static PyObject *
 pg_scancodewrapper_repr(pgScancodeWrapper *self)
 {
@@ -155,7 +160,7 @@ pg_scancodewrapper_repr(pgScancodeWrapper *self)
 }
 
 static PyTypeObject pgScancodeWrapper_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.key.ScancodeWrapper",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = _PG_SCANCODEWRAPPER_TYPE_FULLNAME,
     .tp_repr = (reprfunc)pg_scancodewrapper_repr,
     .tp_as_mapping = &pg_scancodewrapper_mapping,
     .tp_iter = (getiterfunc)pg_iter_raise,
@@ -626,6 +631,19 @@ static PyMethodDef _key_methods[] = {
 
     {NULL, NULL, 0, NULL}};
 
+/**
+ * Initialize and return the pygame.key module.
+ *
+ * Imports required pygame subsystems, creates the "key" module, registers
+ * the ScancodeWrapper type (ensuring it subclasses tuple), and returns the
+ * new module object.
+ *
+ * The function returns a new reference to the module on success and NULL on
+ * failure. Failure occurs if importing required subsystems, creating the
+ * module, or adding the ScancodeWrapper type fails.
+ *
+ * @returns New reference to the initialized module, or `NULL` on error.
+ */
 MODINIT_DEFINE(key)
 {
     PyObject *module;
@@ -655,11 +673,6 @@ MODINIT_DEFINE(key)
     if (PyErr_Occurred()) {
         return NULL;
     }
-    /* type preparation */
-    pgScancodeWrapper_Type.tp_base = &PyTuple_Type;
-    if (PyType_Ready(&pgScancodeWrapper_Type) < 0) {
-        return NULL;
-    }
 
     /* create the module */
     module = PyModule_Create(&_module);
@@ -667,8 +680,11 @@ MODINIT_DEFINE(key)
         return NULL;
     }
 
-    if (PyModule_AddObjectRef(module, _PG_SCANCODEWRAPPER_TYPE_NAME,
-                              (PyObject *)&pgScancodeWrapper_Type)) {
+    // has to be set in init function rather than statically per note on
+    // https://docs.python.org/3/c-api/typeobj.html#c.PyTypeObject.tp_base
+    pgScancodeWrapper_Type.tp_base = &PyTuple_Type;
+
+    if (PyModule_AddType(module, &pgScancodeWrapper_Type)) {
         Py_DECREF(module);
         return NULL;
     }

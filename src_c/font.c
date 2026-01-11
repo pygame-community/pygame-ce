@@ -1393,6 +1393,7 @@ static PyTypeObject PyFont_Type = {
     .tp_methods = font_methods,
     .tp_getset = font_getsets,
     .tp_init = (initproc)font_init,
+    .tp_new = PyType_GenericNew,
 };
 
 /*font module methods*/
@@ -1460,6 +1461,17 @@ PyFont_New(TTF_Font *font)
     return (PyObject *)fontobj;
 }
 
+/**
+ * Initialize and return the pygame.font module.
+ *
+ * Prepares and registers the Font type, imports required pygame submodules
+ * (base, color, surface, rwobject), creates the module object, exposes the
+ * Font and FontType names, conditionally defines UCS4 when supported, and
+ * exports the font C-API for other extension modules.
+ *
+ * @returns New reference to the initialized module on success, or NULL on
+ * failure with a Python exception set.
+ */
 MODINIT_DEFINE(font)
 {
     PyObject *module, *apiobj;
@@ -1499,7 +1511,6 @@ MODINIT_DEFINE(font)
     if (PyType_Ready(&PyFont_Type) < 0) {
         return NULL;
     }
-    PyFont_Type.tp_new = PyType_GenericNew;
 
     module = PyModule_Create(&_module);
     if (module == NULL) {

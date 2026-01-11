@@ -1953,6 +1953,15 @@ PyMethodDef camera_builtins[] = {
     {"list_cameras", list_cameras, METH_NOARGS, DOC_CAMERA_LISTCAMERAS},
     {NULL, NULL, 0, NULL}};
 
+/**
+ * Initialize the _camera extension module and register the Camera type.
+ *
+ * Creates the Python module named "_camera", imports required pygame base and surface
+ * APIs, and adds the pgCamera_Type to the module. If any import or registration step
+ * fails, the function cleans up and leaves a Python exception set.
+ *
+ * @returns New module object on success, `NULL` on failure (with a Python exception set).
+ */
 MODINIT_DEFINE(_camera)
 {
     PyObject *module;
@@ -1979,24 +1988,13 @@ MODINIT_DEFINE(_camera)
         return NULL;
     }
 
-    /* type preparation */
-    pgCamera_Type.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&pgCamera_Type) < 0) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
         return NULL;
     }
 
-    if (PyModule_AddObjectRef(module, "CameraType",
-                              (PyObject *)&pgCamera_Type)) {
-        Py_DECREF(module);
-        return NULL;
-    }
-    if (PyModule_AddObjectRef(module, "Camera", (PyObject *)&pgCamera_Type)) {
+    if (PyModule_AddType(module, &pgCamera_Type)) {
         Py_DECREF(module);
         return NULL;
     }
