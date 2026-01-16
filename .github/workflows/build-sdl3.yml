@@ -42,7 +42,12 @@ jobs:
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-24.04, windows-latest, macos-14]
+        os: [ubuntu-latest, windows-latest, macos-15]
+
+    # Use ubuntu 25.10 docker image instead of the ubuntu-latest which is older
+    # at the time of writing of this comment, and therefore doesn't have SDL3
+    # and friends.
+    container: ${{ matrix.os == 'ubuntu-latest' && 'ubuntu:25.10' || '' }}
 
     env:
       # Pip now forces us to either make a venv or set this flag, so we will do
@@ -53,76 +58,31 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6.0.1
-    - uses: actions/setup-python@v6
+
+    # windows runner has python 3.9 as default (at the time of writing of this)
+    # which we don't support, so we need to setup a newer version ourselves here
+    - name: Install pygame deps (windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/setup-python@v6
       with:
         python-version: '3.14'
 
-    - name: Install pygame deps (linux)
-      if: matrix.os == 'ubuntu-24.04'
-      run: |
-        sudo apt-get update --fix-missing
-        sudo apt-get install libfreetype6-dev libportmidi-dev python3-dev
-
     - name: Install pygame deps (mac)
-      if: matrix.os == 'macos-14'
-      run: brew install freetype portmidi
+      if: matrix.os == 'macos-15'
+      run: brew install sdl3 sdl3_image sdl3_ttf freetype portmidi
 
-    # taken from https://wiki.libsdl.org/SDL3/README-linux#build-dependencies
-    - name: Install SDL3 deps (linux)
-      if: matrix.os == 'ubuntu-24.04'
-      run: >
-        sudo apt-get install build-essential git make
-        pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev
-        libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev
-        libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev
-        libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev
-        libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev
-        libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
-
-    # taken from https://wiki.libsdl.org/SDL3/Installation
-    - name: Install SDL3
-      if: matrix.os != 'windows-latest'
+    - name: Install pygame deps (linux)
+      if: matrix.os == 'ubuntu-latest'
       run: |
-        git clone https://github.com/libsdl-org/SDL
-        cd SDL
-        mkdir build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
-        cmake --build . --config Release --parallel
-        sudo cmake --install . --config Release
+        apt-get update
+        apt-get install -y python3-dev python3-pip \
+          libsdl3-dev libsdl3-image-dev libsdl3-ttf-dev libfreetype6-dev libportmidi-dev
 
-    - name: Install SDL3_image
-      if: matrix.os != 'windows-latest'
-      run: |
-        git clone https://github.com/libsdl-org/SDL_image
-        cd SDL_image
-        mkdir build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
-        cmake --build . --config Release --parallel
-        sudo cmake --install . --config Release
-
-    - name: Install SDL3_ttf
-      if: matrix.os != 'windows-latest'
-      run: |
-        git clone https://github.com/libsdl-org/SDL_ttf
-        cd SDL_ttf
-        mkdir build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
-        cmake --build . --config Release --parallel
-        sudo cmake --install . --config Release
-
-    - name: Build with SDL3
+    - name: Build pygame-ce with SDL3
       run: python3 dev.py build --sdl3
 
-    # eventually we need to run all tests, but for now test that importing pygame
-    # works
-    - name: Test import works
-      run: python3 -c 'import pygame'
-
-    # - name: Run tests
-    #   env:
-    #     SDL_VIDEODRIVER: "dummy"
-    #     SDL_AUDIODRIVER: "disk"
-    #   run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300
+    - name: Run tests
+      env:
+        SDL_VIDEODRIVER: "dummy"
+        SDL_AUDIODRIVER: "disk"
+      run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300
