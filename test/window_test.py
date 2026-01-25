@@ -114,8 +114,9 @@ class WindowTypeTest(unittest.TestCase):
         self.assertFalse(self.win.always_on_top)
 
     @unittest.skipIf(
-        SDL < (2, 0, 18),
-        "requires SDL 2.0.18+",
+        SDL < (2, 0, 18)
+        or os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires SDL 2.0.18+ and SDL_VIDEODRIVER to be a non-null value",
     )
     def test_mouse_rect(self):
         self.win.mouse_rect = None
