@@ -62,6 +62,23 @@ Special Flags List
        - ``BLEND_MAX`` / ``BLEND_RGB_MAX``
            Takes the maximum value of each color channel
 
+       .. versionadded:: 2.5.6
+
+       - ``BLEND_OVERLAY`` / ``BLEND_RGB_OVERLAY``
+           Combines the Multiply and Screen blend modes. Where the base layer is light, the top
+           becomes lighter, and where the base layer is dark, the top becomes darker.
+
+           The formula for the Overlay blend mode is:
+
+           .. math::
+
+               \text{Overlay}(a, b) = \begin{cases}
+                   2ab & \text{if } a < 0.5 \\
+                   1 - 2(1 - a)(1 - b) & \text{if } a \geq 0.5
+               \end{cases}
+
+           Where \( a \) is the base layer value, and \( b \) is the top layer value, both normalized to the range [0, 1].
+
 **Blending with Alpha Channel (RGBA)**
 
 ----
