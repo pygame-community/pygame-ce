@@ -153,6 +153,9 @@ pg_touch_get_finger(PyObject *self, PyObject *args, PyObject *kwargs)
 
     fingerobj = PyDict_New();
     if (!fingerobj) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_free(fingers);
+#endif
         return NULL;
     }
 
@@ -162,6 +165,9 @@ pg_touch_get_finger(PyObject *self, PyObject *args, PyObject *kwargs)
     _pg_insobj(fingerobj, "pressure", PyFloat_FromDouble(finger->pressure));
 
     if (PyErr_Occurred()) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_free(fingers);
+#endif
         Py_DECREF(fingerobj);
         return NULL;
     }
