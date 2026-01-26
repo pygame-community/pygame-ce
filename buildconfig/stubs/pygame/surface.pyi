@@ -89,7 +89,7 @@ class Surface:
 
     All types of transparency can be used together and correctly mix, except
     pre-multiplied alpha does not consider colorkey nor global alpha.
-    Also, An alpha of 255 is opaque while an alpha of 0 is fully transparent.
+    Also, an alpha of 255 is opaque while an alpha of 0 is fully transparent.
 
     Surfaces can be created that reference the pixel data of other Surfaces.
     These are called subsurfaces and are created with the :meth:`subsurface()`
