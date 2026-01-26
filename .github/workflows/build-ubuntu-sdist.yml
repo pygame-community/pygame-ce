@@ -39,7 +39,7 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v6.0.1
+    - uses: actions/checkout@v6.0.2
 
     - name: Install deps
       # install numpy from pip and not apt because the one from pip is newer,
