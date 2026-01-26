@@ -295,7 +295,7 @@ class Surface:
              for blitting. It is a good idea to convert all Surfaces before
              blitting them. In this case the converted Surface won't have any
              alpha. See :meth:`convert_alpha()` for preserving or creating per-pixel alpha.
-             A :class:`pygame.error` exception is thrown if the display Surface
+             A :class:`pygame.error` exception is raised if the display Surface
              was not initialized.
            * If another Surface is provided, the format of that Surface will
              be used.
