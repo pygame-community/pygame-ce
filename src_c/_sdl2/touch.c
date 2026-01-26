@@ -145,7 +145,6 @@ pg_touch_get_finger(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_IndexError, "index is out of bounds");
     }
     finger = fingers[index];
-    SDL_free(fingers);
 #else
     if (!(finger = SDL_GetTouchFinger(touchid, index))) {
         Py_RETURN_NONE;
@@ -166,7 +165,9 @@ pg_touch_get_finger(PyObject *self, PyObject *args, PyObject *kwargs)
         Py_DECREF(fingerobj);
         return NULL;
     }
-
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_free(fingers);
+#endif
     return fingerobj;
 }
 
