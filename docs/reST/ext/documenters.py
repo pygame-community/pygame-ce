@@ -74,6 +74,18 @@ def get_doc(env, obj):
 
 
 class AutopgDocumenter(autoapi.documenters.AutoapiDocumenter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        stub_path = self.env.srcdir.parent.parent / "buildconfig" / "stubs" / "pygame"
+        stub_file = stub_path / f"{self.env.docname.removeprefix('ref/')}.pyi"
+        if stub_file.exists():
+            self.env.note_dependency(stub_file.as_posix())
+
+        src_path = self.env.srcdir.parent.parent / "src_py"
+        src_file = src_path / f"{self.env.docname.removeprefix('ref/')}.py"
+        if src_file.exists():
+            self.env.note_dependency(src_file.as_posix())
+
     def format_signature(self, **kwargs):
         return ""
 

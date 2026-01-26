@@ -227,6 +227,38 @@ font_get_linesize(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+font_set_linesize(PyObject *self, PyObject *arg)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
+#if SDL_TTF_VERSION_ATLEAST(2, 24, 0)
+    TTF_Font *font = PyFont_AsFont(self);
+
+    if (!PyLong_Check(arg)) {
+        return RAISE(PyExc_TypeError, "linesize must be an integer");
+    }
+    int linesize = PyLong_AsLong(arg);
+    if (linesize == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
+
+    if (linesize < 0) {
+        return RAISE(PyExc_ValueError, "linesize must be >= 0");
+    }
+
+    TTF_SetFontLineSkip(font, linesize);
+
+    Py_RETURN_NONE;
+#else
+    return RAISE(
+        PyExc_NotImplementedError,
+        "TTF_SetFontLineSkip is not available in this version of SDL_ttf");
+#endif
+}
+
+static PyObject *
 _font_get_style_flag_as_py_bool(PyObject *self, int flag)
 {
     TTF_Font *font = PyFont_AsFont(self);
@@ -1148,6 +1180,7 @@ static PyMethodDef font_methods[] = {
     {"get_ascent", font_get_ascent, METH_NOARGS, DOC_FONT_FONT_GETASCENT},
     {"get_linesize", font_get_linesize, METH_NOARGS,
      DOC_FONT_FONT_GETLINESIZE},
+    {"set_linesize", font_set_linesize, METH_O, DOC_FONT_FONT_SETLINESIZE},
     {"get_bold", font_get_bold, METH_NOARGS, DOC_FONT_FONT_GETBOLD},
     {"set_bold", font_set_bold, METH_O, DOC_FONT_FONT_SETBOLD},
     {"get_italic", font_get_italic, METH_NOARGS, DOC_FONT_FONT_GETITALIC},
@@ -1177,6 +1210,17 @@ font_dealloc(PyFontObject *self)
 {
     TTF_Font *font = PyFont_AsFont(self);
     if (font && font_initialized) {
+        // In SDL3_ttf, it seems that closing a font after its library was
+        // destroyed segfaults. So only close if same generation.
+        // TODO SDL3:
+        // TTF docs say "A well-written program should call TTF_CloseFont()
+        // on any open fonts before calling this function!"
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (self->ttf_init_generation == current_ttf_generation) {
+            TTF_CloseFont(font);
+        }
+        self->font = NULL;
+#else
         if (self->ttf_init_generation != current_ttf_generation) {
             // Since TTF_Font is a private structure
             // it's impossible to access face field in a common way.
@@ -1185,6 +1229,7 @@ font_dealloc(PyFontObject *self)
         }
         TTF_CloseFont(font);
         self->font = NULL;
+#endif
     }
 
     if (self->weakreflist) {
@@ -1422,16 +1467,12 @@ MODINIT_DEFINE(font)
         return NULL;
     }
 
-    Py_INCREF(&PyFont_Type);
-    if (PyModule_AddObject(module, "FontType", (PyObject *)&PyFont_Type)) {
-        Py_DECREF(&PyFont_Type);
+    if (PyModule_AddObjectRef(module, "FontType", (PyObject *)&PyFont_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&PyFont_Type);
-    if (PyModule_AddObject(module, "Font", (PyObject *)&PyFont_Type)) {
-        Py_DECREF(&PyFont_Type);
+    if (PyModule_AddObjectRef(module, "Font", (PyObject *)&PyFont_Type)) {
         Py_DECREF(module);
         return NULL;
     }

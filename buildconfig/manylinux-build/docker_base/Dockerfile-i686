@@ -1,5 +1,5 @@
 # pin version on image for CI stability
-FROM quay.io/pypa/manylinux2014_i686:2025.03.09-1
+FROM quay.io/pypa/manylinux2014_i686:2025.07.25-1
 ENV MAKEFLAGS="-j 4"
 ENV PG_DEP_PREFIX="/usr/local"
 

@@ -83,7 +83,7 @@ pg_touch_num_fingers(PyObject *self, PyObject *device_id_obj)
                      "device_id must be an integer "
                      "specifying a touch device");
     }
-    int device_id = PyLong_AsLongLong(device_id_obj);
+    SDL_TouchID device_id = PyLong_AsLongLong(device_id_obj);
     if (PyErr_Occurred()) {
         return NULL;  // exception already set
     }
