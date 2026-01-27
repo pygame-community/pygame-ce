@@ -90,8 +90,8 @@ def get_urls(x86=True, x64=True):
         '8cd149cbaae2d362f2eaa69483d992e79f4836f5'
         ],
         [
-        'https://github.com/libsdl-org/SDL_image/releases/download/release-3.2.6/SDL3_image-devel-3.2.6-VC.zip',
-        'f0c02f8c18954554f6e901a32d551e941d43d0e7'
+        'https://github.com/libsdl-org/SDL_image/releases/download/release-3.4.0/SDL3_image-devel-3.4.0-VC.zip',
+        'f4e077729ee5d1277bf961d78d49d4ae3b9308b6'
         ],
         [
         'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.24.0/SDL2_ttf-devel-2.24.0-VC.zip',
@@ -105,6 +105,10 @@ def get_urls(x86=True, x64=True):
         'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.1/SDL2_mixer-devel-2.8.1-VC.zip',
         'ea302368159ca64056b2519b3a624525f625220e',
         ],
+        [
+        'https://github.com/libsdl-org/SDL_mixer/releases/download/prerelease-3.1.2/SDL3_mixer-devel-3.1.2-VC.zip',
+        '055992eb135197e74644bea65fdc8f8f0838b4ed'
+        ]
     ])
     if x86:
         url_sha1.append([
@@ -224,15 +228,14 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3_image-devel-3.2.6-VC/SDL3_image-3.2.6'
+                'SDL3_image-devel-3.4.0-VC/SDL3_image-3.4.0'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3_image-3.2.6'
+                'SDL3_image-3.4.0'
             )
         )
-
         copy(
             os.path.join(
                 temp_dir,
@@ -242,6 +245,17 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
                 move_to_dir,
                 prebuilt_dir,
                 'SDL2_mixer-2.8.1'
+            )
+        )
+        copy(
+            os.path.join(
+                temp_dir,
+                'SDL3_mixer-devel-3.1.2-VC/SDL3_mixer-3.1.2'
+            ),
+            os.path.join(
+                move_to_dir,
+                prebuilt_dir,
+                'SDL3_mixer-3.1.2'
             )
         )
         copy(
