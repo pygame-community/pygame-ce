@@ -15,7 +15,7 @@
 #define DOC_EVENT_POST "post(event, /) -> bool\nplace a new event on the queue"
 #define DOC_EVENT_CUSTOMTYPE "custom_type() -> int\nmake custom user event type"
 #define DOC_EVENT_ADDEVENTWATCHER "add_event_watcher[T: Callable[[Event], Any]](T) -> T\nadd an event watcher"
-#define DOC_EVENT_REMOVEEVENTWATCHER "remove_event_watcher[T: (Event) -> Any](T) -> None\nremove an event watcher"
+#define DOC_EVENT_REMOVEEVENTWATCHER "remove_event_watcher[T: (Event) -> Any](T) -> bool\nremove an event watcher"
 #define DOC_EVENT_EVENT "Event(type, dict) -> Event\nEvent(type, **attributes) -> Event\npygame object for representing events"
 #define DOC_EVENT_EVENT_TYPE "type -> int\nevent type identifier."
 #define DOC_EVENT_EVENT_DICT "__dict__ -> dict\nevent attribute dictionary"
