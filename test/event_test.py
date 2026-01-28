@@ -941,6 +941,60 @@ class EventModuleTest(unittest.TestCase):
         self.assertEqual(pygame.event.poll().type, e3.type)
         self.assertEqual(pygame.event.poll().type, pygame.NOEVENT)
 
+    def test_add_event_watcher(self):
+        """Check that the event watcher is called"""
+        counter = 0
+
+        def eventWatcher(event):
+            nonlocal counter
+            counter += 1
+
+        pygame.event.add_event_watcher(eventWatcher)
+
+        self.assertEqual(counter, 0)
+
+        pygame.event.clear()
+        pygame.event.post(pygame.event.Event(pygame.VIDEOEXPOSE))
+
+        pygame.event.poll()  # Make sure that SDL notices
+
+        self.assertEqual(counter, 1)
+        """Test multiple event watchers"""
+
+        def otherEventWatcher(event):
+            nonlocal counter
+            counter = 10
+
+        pygame.event.add_event_watcher(otherEventWatcher)
+
+        pygame.event.clear()
+        pygame.event.post(pygame.event.Event(pygame.VIDEOEXPOSE))
+
+        pygame.event.poll()  # Make sure that SDL notices
+
+        self.assertEqual(counter, 10)
+
+    def test_remove_event_watcher(self):
+        pygame.event.clear()
+        """Check that the event watcher is removed"""
+        counter = 0
+
+        def eventWatcher(event):
+            nonlocal counter
+            counter += 1
+
+        pygame.event.add_event_watcher(eventWatcher)
+        pygame.event.remove_event_watcher(eventWatcher)
+
+        self.assertEqual(counter, 0)
+
+        pygame.event.clear()
+        pygame.event.post(pygame.event.Event(pygame.VIDEOEXPOSE))
+
+        pygame.event.poll()  # Make sure that SDL notices
+
+        self.assertEqual(counter, 0)
+
 
 class EventModuleTestsWithTiming(unittest.TestCase):
     __tags__ = ["timing"]
