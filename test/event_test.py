@@ -995,55 +995,6 @@ class EventModuleTest(unittest.TestCase):
 
         self.assertEqual(counter, 0)
 
-    def test_add_event_filter(self):
-        """Check that the event filter is used"""
-
-        def eventFilter(event):
-            if event.type == pygame.USEREVENT:
-                return True
-            return False
-
-        pygame.event.add_event_filter(eventFilter)
-
-        pygame.event.clear()
-        pygame.event.post(pygame.event.Event(pygame.VIDEOEXPOSE))
-
-        ev = pygame.event.poll()
-        self.assertEqual(ev.type, pygame.VIDEOEXPOSE)
-
-        pygame.event.post(pygame.event.Event(pygame.USEREVENT))
-
-        ev = pygame.event.poll()
-        self.assertEqual(ev.type, pygame.NOEVENT)
-
-    def test_remove_event_filter(self):
-        """Check that the event filter is used"""
-
-        def eventFilter(event):
-            if event.type == pygame.USEREVENT:
-                return True
-            return False
-
-        with self.assertRaises(ValueError):
-            pygame.event.remove_event_filter(eventFilter)
-
-        pygame.event.add_event_filter(eventFilter)
-        pygame.event.remove_event_filter(eventFilter)
-
-        with self.assertRaises(ValueError):
-            pygame.event.remove_event_filter(eventFilter)
-
-        pygame.event.clear()
-        pygame.event.post(pygame.event.Event(pygame.VIDEOEXPOSE))
-
-        ev = pygame.event.poll()
-        self.assertEqual(ev.type, pygame.VIDEOEXPOSE)
-
-        pygame.event.post(pygame.event.Event(pygame.USEREVENT))
-
-        ev = pygame.event.poll()
-        self.assertEqual(ev.type, pygame.USEREVENT)
-
 
 class EventModuleTestsWithTiming(unittest.TestCase):
     __tags__ = ["timing"]

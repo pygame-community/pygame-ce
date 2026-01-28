@@ -502,38 +502,6 @@ On Android, the following events can be generated
 
    .. ## pygame.event.remove_event_watcher ##
 
-.. function:: add_event_filter
-
-   | :sl:`add an event filter`
-   | :sg:`add_event_filter[T: (Event) -> Any](T) -> T`
-
-   Adds an event filter
-   The provided function should take a ``Event`` and should return a truthy value to skip the event.
-
-   For convenience this function returns its parameter.
-
-   WARNING: The passed function may be called in a separate thread.
-   The filter is called before events are added to the queue.
-   This function is not called if the event is blocked.
-
-   If an error is generated in this function it is printed to stderr and otherwise ignored.
-
-   .. versionaddedold:: todo
-
-   .. ## pygame.event.add_event_filter ##
-
-.. function:: remove_event_filter
-
-   | :sl:`remove an event filter`
-   | :sg:`remove_event_filter[T: (Event) -> Any](T) -> None`
-
-   Removes an already existing event filter.
-   The object passed to this function should be the same as was passed to ``add_event_filter``.
-
-   .. versionaddedold:: todo
-
-   .. ## pygame.event.remove_event_filter ##
-
 .. class:: Event
 
    | :sl:`pygame object for representing events`
