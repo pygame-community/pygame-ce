@@ -15,23 +15,23 @@ If possible, please include the output of `pygame.print_debug_info()` from your 
 like this:
 
 ```
-pygame-ce 6.6.6 (SDL 2.30.3, Python 3.11.1)
-Platform:		Windows-10-10.0.22631-SP0
-System:			Windows
-System Version:	10.0.22631
-Processor:		AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD
-Architecture:	Bits: 64bit	Linkage: WindowsPE
+Platform:               Linux-6.12.57+deb13-amd64-x86_64-with-glibc2.41
+System:                 Linux
+System Version:         #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 (2025-11-05)
+Processor:                      SSE2: Yes       AVX2: Yes       NEON: No
+Architecture:           Bits: 64bit     Linkage: ELF
 
-Python:			    CPython 3.11.1 (tags/v3.11.1:a7a450f, Dec  6 2022, 19:58:39) [MSC v.1934 64 bit (AMD64)]
-pygame version:		2.5.0.dev3
-SDL versions:		Linked: 2.30.3	Compiled: 2.30.3
-SDL Mixer versions:	Linked: 2.8.0	Compiled: 2.8.0
-SDL Font versions:	Linked: 2.22.0	Compiled: 2.22.0
-SDL Image versions:	Linked: 2.8.2	Compiled: 2.8.2
-Freetype versions:	Linked: 2.11.1	Compiled: 2.11.1
+Python:                 CPython 3.13.7 (main, Sep 24 2025, 05:12:25) [GCC 14.2.0]
+GIL Enabled:            True
+pygame version:         2.5.6
+SDL versions:           Linked: 2.32.10 Compiled: 2.32.10
+SDL Mixer versions:     Linked: 2.8.1   Compiled: 2.8.1
+SDL Font versions:      Linked: 2.24.0  Compiled: 2.24.0
+SDL Image versions:     Linked: 2.8.8   Compiled: 2.8.8
+Freetype versions:      Linked: 2.13.3  Compiled: 2.13.3
 
-Display Driver:		windows
-Mixer Driver:		wasapi
+Display Driver:         Display Not Initialized
+Mixer Driver:           Mixer Not Initialized
 ```
 If you can't get the debug output, any of the environment details included in it that you do know would be useful
 in diagnosing the issue & helping you.
@@ -54,7 +54,7 @@ If applicable, copy and paste screenshots to help explain your problem.
 **Steps to reproduce:**
 
 Please explain the steps required to duplicate the issue, especially if you are able to provide a sample application.
-if the bug is caused by a specific file (image, font, sound, level, please upload it as an attachment
+If the bug is caused by a specific file (image, font, sound, level ...etc) please upload it as an attachment.
 
 1.
 2.
@@ -72,5 +72,5 @@ print("Hello, world")
 **Stack trace/error output/other error logs**
 
 ```
-paste other relevant logs or stack traces here, if applicable
+Paste other relevant logs or stack traces here, if applicable
 ```

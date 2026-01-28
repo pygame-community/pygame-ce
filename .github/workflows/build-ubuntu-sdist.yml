@@ -39,7 +39,7 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v6.0.2
 
     - name: Install deps
       # install numpy from pip and not apt because the one from pip is newer,
@@ -69,7 +69,7 @@ jobs:
 
     # We upload the generated files under github actions assets
     - name: Upload sdist
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: pygame-wheels-sdist
         path: dist/*.tar.gz
