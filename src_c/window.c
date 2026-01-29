@@ -1077,7 +1077,7 @@ window_clear_special_regions(pgWindowObject *self)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     // SDL_SetWindowHitTest returns bool in SDL3
-    if (!SDL_SetWindowHitTest(self->_win, _window_hit_test_callback, NULL)) {
+    if (!SDL_SetWindowHitTest(self->_win, NULL, NULL)) {
 #else
     int result = SDL_SetWindowHitTest(self->_win, NULL, NULL);
     if (result != 0) {
