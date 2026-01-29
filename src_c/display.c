@@ -2318,7 +2318,7 @@ pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
 
     result = PyList_New(display_count);
     if (!result) {
-#if PG_SDL3
+#if SDL_VERSION_ATLEAST(3, 0, 0)
         SDL_free(displays);
 #endif
         return NULL;
@@ -2326,7 +2326,7 @@ pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
 
     for (i = 0; i < display_count; i++) {
         SDL_Rect bounds;
-#if PG_SDL3
+#if SDL_VERSION_ATLEAST(3, 0, 0)
         SDL_DisplayID display_id = displays[i];
         if (!SDL_GetDisplayUsableBounds(display_id, &bounds)) {
             Py_DECREF(result);
@@ -2341,7 +2341,7 @@ pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
 #endif
         PyObject *pg_rect = pgRect_New(&bounds);
         if (pg_rect == NULL) {
-#if PG_SDL3
+#if SDL_VERSION_ATLEAST(3, 0, 0)
             SDL_free(displays);
 #endif
             Py_DECREF(result);
@@ -2350,7 +2350,7 @@ pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
         PyList_SET_ITEM(result, i, pg_rect);
     }
 
-#if PG_SDL3
+#if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_free(displays);
 #endif
     return result;
