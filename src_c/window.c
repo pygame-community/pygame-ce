@@ -1000,9 +1000,15 @@ _window_add_special_region(pgWindowObject *self, PyObject *hit_pg_rect,
     self->hit_test_data[self->num_hit_test_data - 1].hit_type = hit_type;
 
     if (need_set_hittest) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        // SDL_SetWindowHitTest returns bool in SDL3
+        if (!SDL_SetWindowHitTest(self->_win, _window_hit_test_callback,
+                                  NULL)) {
+#else
         int result =
             SDL_SetWindowHitTest(self->_win, _window_hit_test_callback, NULL);
         if (result != 0) {
+#endif
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
@@ -1069,10 +1075,16 @@ window_add_drag_region(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 window_clear_special_regions(pgWindowObject *self)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    // SDL_SetWindowHitTest returns bool in SDL3
+    if (!SDL_SetWindowHitTest(self->_win, _window_hit_test_callback, NULL)) {
+#else
     int result = SDL_SetWindowHitTest(self->_win, NULL, NULL);
     if (result != 0) {
+#endif
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
+
     WINDOW_FREE_HIT_TEST_DATA(self);
     Py_RETURN_NONE;
 }
