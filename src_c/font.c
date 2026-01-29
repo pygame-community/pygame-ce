@@ -717,11 +717,7 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
             resolve to Render_Solid, that needs to be explicitly handled. */
             if (surf != NULL && bg_rgba_obj != Py_None) {
                 SDL_SetColorKey(surf, 0, 0);
-#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
-                SDL_Palette *palette = SDL_GetSurfacePalette(surf);
-#else
-                SDL_Palette *palette = surf->format->palette;
-#endif
+                SDL_Palette *palette = PG_GetSurfacePalette(surf);
                 if (palette) {
                     palette->colors[0].r = backg.r;
                     palette->colors[0].g = backg.g;
@@ -899,6 +895,47 @@ font_set_ptsize(PyObject *self, PyObject *arg)
     return RAISE(pgExc_SDLError,
                  "Incorrect SDL_TTF version (requires 2.0.18)");
 #endif
+}
+
+static PyObject *
+font_getter_outline(PyObject *self, void *closure)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
+    TTF_Font *font = PyFont_AsFont(self);
+    return PyLong_FromLong(TTF_GetFontOutline(font));
+}
+
+static int
+font_setter_outline(PyObject *self, PyObject *value, void *closure)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
+    }
+    TTF_Font *font = PyFont_AsFont(self);
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK("outline", value);
+
+    long val = PyLong_AsLong(value);
+    if (val == -1 && PyErr_Occurred()) {
+        return -1;
+    }
+    if (val < 0) {
+        PyErr_SetString(PyExc_ValueError, "outline must be >= 0");
+        return -1;
+    }
+
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    if (!TTF_SetFontOutline(font, (int)val)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+#else
+    TTF_SetFontOutline(font, (int)val);
+#endif
+    return 0;
 }
 
 static PyObject *
@@ -1168,6 +1205,8 @@ static PyGetSetDef font_getsets[] = {
      DOC_FONT_FONT_UNDERLINE, NULL},
     {"strikethrough", (getter)font_getter_strikethrough,
      (setter)font_setter_strikethrough, DOC_FONT_FONT_STRIKETHROUGH, NULL},
+    {"outline", (getter)font_getter_outline, (setter)font_setter_outline,
+     DOC_FONT_FONT_OUTLINE, NULL},
     {"align", (getter)font_getter_align, (setter)font_setter_align,
      DOC_FONT_FONT_ALIGN, NULL},
     {"point_size", (getter)font_getter_point_size,
@@ -1210,6 +1249,17 @@ font_dealloc(PyFontObject *self)
 {
     TTF_Font *font = PyFont_AsFont(self);
     if (font && font_initialized) {
+        // In SDL3_ttf, it seems that closing a font after its library was
+        // destroyed segfaults. So only close if same generation.
+        // TODO SDL3:
+        // TTF docs say "A well-written program should call TTF_CloseFont()
+        // on any open fonts before calling this function!"
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (self->ttf_init_generation == current_ttf_generation) {
+            TTF_CloseFont(font);
+        }
+        self->font = NULL;
+#else
         if (self->ttf_init_generation != current_ttf_generation) {
             // Since TTF_Font is a private structure
             // it's impossible to access face field in a common way.
@@ -1218,6 +1268,7 @@ font_dealloc(PyFontObject *self)
         }
         TTF_CloseFont(font);
         self->font = NULL;
+#endif
     }
 
     if (self->weakreflist) {
@@ -1342,6 +1393,7 @@ static PyTypeObject PyFont_Type = {
     .tp_methods = font_methods,
     .tp_getset = font_getsets,
     .tp_init = (initproc)font_init,
+    .tp_new = PyType_GenericNew,
 };
 
 /*font module methods*/
@@ -1448,7 +1500,6 @@ MODINIT_DEFINE(font)
     if (PyType_Ready(&PyFont_Type) < 0) {
         return NULL;
     }
-    PyFont_Type.tp_new = PyType_GenericNew;
 
     module = PyModule_Create(&_module);
     if (module == NULL) {

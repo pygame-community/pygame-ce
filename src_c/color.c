@@ -181,6 +181,9 @@ _color_int(pgColorObject *);
 static PyObject *
 _color_float(pgColorObject *);
 
+static PyObject *
+_color_bytes(pgColorObject *);
+
 /* Sequence protocol methods */
 static Py_ssize_t
 _color_length(pgColorObject *);
@@ -256,6 +259,17 @@ static PyMethodDef _color_methods[] = {
     {"premul_alpha", (PyCFunction)_premul_alpha, METH_NOARGS,
      DOC_COLOR_PREMULALPHA},
     {"update", (PyCFunction)_color_update, METH_FASTCALL, DOC_COLOR_UPDATE},
+
+    /**
+     * While object.__bytes__(self) is listed in the Data Model reference (see:
+     * https://docs.python.org/3/reference/datamodel.html#object.__bytes__) it
+     * does not appear to have a PyTypeObject struct analog (see:
+     * https://docs.python.org/3/c-api/typeobj.html), so we declare it for the
+     * type as any other custom method.
+     */
+    {"__bytes__", (PyCFunction)_color_bytes, METH_NOARGS,
+     "Get a byte representation of the color"},
+
     {NULL, NULL, 0, NULL}};
 
 /**
@@ -1751,6 +1765,15 @@ _color_float(pgColorObject *color)
     Uint32 tmp = (((Uint32)color->data[0] << 24) + (color->data[1] << 16) +
                   (color->data[2] << 8) + color->data[3]);
     return PyFloat_FromDouble((double)tmp);
+}
+
+/**
+ * bytes(color)
+ */
+static PyObject *
+_color_bytes(pgColorObject *color)
+{
+    return PyBytes_FromStringAndSize((char *)color->data, 4);
 }
 
 /* Sequence protocol methods */

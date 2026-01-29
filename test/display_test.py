@@ -8,6 +8,10 @@ import pygame.transform
 from pygame import display
 from pygame.tests.test_utils import question
 
+pygame.display.init()
+is_wayland = pygame.display.get_driver() == "wayland"
+pygame.display.quit()
+
 
 class DisplayModuleTest(unittest.TestCase):
     default_caption = "pygame window"
@@ -71,6 +75,7 @@ class DisplayModuleTest(unittest.TestCase):
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
         "requires the SDL_VIDEODRIVER to be a non-null value",
     )
+    @unittest.skipIf(is_wayland, "broken on wayland")
     def test_get_active_iconify(self):
         """Test the get_active function after an iconify"""
 
@@ -411,6 +416,7 @@ class DisplayModuleTest(unittest.TestCase):
         os.environ.get("SDL_VIDEODRIVER") in [pygame.NULL_VIDEODRIVER, "android"],
         "iconify is only supported on some video drivers/platforms",
     )
+    @unittest.skipIf(is_wayland, "broken on wayland")
     def test_iconify(self):
         pygame.display.set_mode((640, 480))
 
@@ -519,6 +525,7 @@ class DisplayModuleTest(unittest.TestCase):
         pygame.version.SDL >= (2, 32, 50),
         "set_gamma is removed in SDL3, does not work in sdl2-compat either",
     )
+    @unittest.skipIf(is_wayland, "not supported on wayland")
     def test_set_gamma(self):
         pygame.display.set_mode((1, 1))
 
@@ -537,6 +544,7 @@ class DisplayModuleTest(unittest.TestCase):
         pygame.version.SDL >= (2, 32, 50),
         "set_gamma is removed in SDL3, does not work in sdl2-compat either",
     )
+    @unittest.skipIf(is_wayland, "not supported on wayland")
     def test_set_gamma__tuple(self):
         pygame.display.set_mode((1, 1))
 
@@ -690,6 +698,7 @@ class DisplayModuleTest(unittest.TestCase):
                     (test_surf.get_width(), test_surf.get_height()), width_height
                 )
 
+    @unittest.skipIf(is_wayland, "not supported on wayland")
     def test_get_set_window_position(self):
         pygame.display.set_mode((500, 500))
         pygame.display.set_window_position((420, 360))

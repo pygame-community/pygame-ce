@@ -17,7 +17,9 @@ class BufferProxy:
     if sys.version_info >= (3, 12):
         def __buffer__(self, flags: int, /) -> memoryview[int]: ...
         def __release_buffer__(self, view: memoryview[int], /) -> None: ...
-    def __init__(self, parent: Any) -> None: ...  # TODO: parent: TypedDict | Protocol
+    def __new__(
+        cls, parent: Any
+    ) -> BufferProxy: ...  # TODO: parent: TypedDict | Protocol
     def write(
         self,
         buffer: str | bytes,  # Any "read-only bytes-like-object" is valid
