@@ -25,6 +25,11 @@
  */
 #define PYGAMEAPI_EVENT_INTERNAL
 
+/* We include SDL_gesture.h in _pygame.h. That header defines the
+ * implementation when this macro is set. So this macro needs to be set in only
+ * one source file (and not any header) and we set it here because its API is
+ * used here */
+#define SDL_GESTURE_IMPLEMENTATION 1
 #include "pygame.h"
 
 #include "pgcompat.h"
@@ -152,7 +157,7 @@ _pg_repeat_callback(Uint32 interval, void *param)
     int repeat_interval_copy = pg_key_repeat_interval;
     PG_UNLOCK_EVFILTER_MUTEX
 
-    repeat_event_copy.type = PGE_KEYREPEAT;
+    repeat_event_copy.type = SDL_KEYDOWN;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     repeat_event_copy.key.down = true;
     repeat_event_copy.key.repeat = true;
@@ -160,7 +165,13 @@ _pg_repeat_callback(Uint32 interval, void *param)
     repeat_event_copy.key.state = SDL_PRESSED;
     repeat_event_copy.key.repeat = 1;
 #endif
-    SDL_PushEvent(&repeat_event_copy);
+    /* Use SDL_PeepEvents and not SDL_PushEvent because we don't want
+     * this to go through our event filter.
+     * Because this doesn't go through our filter we have to check event
+     * blocking beforehand. */
+    if (PG_EventEnabled(_pg_pgevent_proxify(repeat_event_copy.type))) {
+        SDL_PeepEvents(&repeat_event_copy, 1, SDL_ADDEVENT, 0, 0);
+    }
     return repeat_interval_copy;
 }
 
@@ -395,10 +406,8 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY(CONTROLLERTOUCHPADMOTION);
         _PG_HANDLE_PROXIFY(CONTROLLERTOUCHPADUP);
         _PG_HANDLE_PROXIFY(CONTROLLERSENSORUPDATE);
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         _PG_HANDLE_PROXIFY(DOLLARGESTURE);
         _PG_HANDLE_PROXIFY(DOLLARRECORD);
-#endif
         _PG_HANDLE_PROXIFY(DROPFILE);
         _PG_HANDLE_PROXIFY(DROPTEXT);
         _PG_HANDLE_PROXIFY(DROPBEGIN);
@@ -421,9 +430,7 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY(MOUSEBUTTONDOWN);
         _PG_HANDLE_PROXIFY(MOUSEBUTTONUP);
         _PG_HANDLE_PROXIFY(MOUSEWHEEL);
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         _PG_HANDLE_PROXIFY(MULTIGESTURE);
-#endif
         _PG_HANDLE_PROXIFY(NOEVENT);
         _PG_HANDLE_PROXIFY(QUIT);
         _PG_HANDLE_PROXIFY(RENDER_TARGETS_RESET);
@@ -470,19 +477,49 @@ _pg_pgevent_deproxify(Uint32 type)
     return _pg_pgevent_proxify_helper(type, 0);
 }
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
-/* We don't need to do window event translation because in SDL3 each window
- * event is its own thing anyways */
-static int
-_pg_translate_windowevent(void *_, SDL_Event *event)
+/* Get type of an event, handling WINDOWEVENT translation on SDL2.
+ * On SDL3 this function is trivial */
+static Uint32
+_pg_pgevent_type(SDL_Event *event)
 {
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (event->type == SDL_WINDOWEVENT) {
-        event->type = PGE_WINDOWSHOWN + event->window.event - 1;
-        return PG_EventEnabled(_pg_pgevent_proxify(event->type));
+        return PGE_WINDOWSHOWN + event->window.event - 1;
+    }
+#endif
+    return event->type;
+}
+
+/* Handle blocking of pseudo-blocked events.
+ * Currently this only includes WINDOWEVENT, but can be expanded in the
+ * future.
+ */
+static bool
+_pg_event_psuedo_block(SDL_Event *event)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (event->type >= SDL_EVENT_WINDOW_FIRST &&
+        event->type <= SDL_EVENT_WINDOW_LAST) {
+#else
+    if (event->type == SDL_WINDOWEVENT) {
+#endif
+        return true;
+    }
+    return false;
+}
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static bool SDLCALL
+#else
+static int SDLCALL
+#endif
+_pg_filter_blocked_events(void *_, SDL_Event *event)
+{
+    if (_pg_event_psuedo_block(event)) {
+        return PG_EventEnabled(_pg_pgevent_proxify(_pg_pgevent_type(event)));
     }
     return 1;
 }
-#endif
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 static bool SDLCALL
@@ -613,10 +650,6 @@ pg_event_filter(void *_, SDL_Event *event)
         PG_UNLOCK_EVFILTER_MUTEX
     }
 
-    else if (event->type == PGE_KEYREPEAT) {
-        event->type = SDL_KEYDOWN;
-    }
-
     else if (event->type == SDL_KEYUP) {
         PG_LOCK_EVFILTER_MUTEX
         /* Actual keyup is blocked, so clear unneeded cache if it exists */
@@ -709,6 +742,15 @@ pg_event_filter(void *_, SDL_Event *event)
             return RAISE(pgExc_SDLError, SDL_GetError()), 0;
         */
     }
+    /*
+     * Any event that gets blocked here will not be visible to the event
+     * watchers. So things like WINDOWEVENT should never be blocked here.
+     * If the user requests a block on WINDOWEVENTs we are going to handle
+     * it specially and call it a "pseudo-block", where the filtering will
+     * happen in a _pg_filter_blocked_events call. */
+    if (_pg_event_psuedo_block(event)) {
+        return 1;
+    }
     return PG_EventEnabled(_pg_pgevent_proxify(event->type));
 }
 
@@ -742,6 +784,9 @@ static PyObject *
 pgEvent_AutoQuit(PyObject *self, PyObject *_null)
 {
     if (_pg_event_is_init) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        Gesture_Quit();
+#endif
         PG_LOCK_EVFILTER_MUTEX
         if (_pg_repeat_timer) {
             SDL_RemoveTimer(_pg_repeat_timer);
@@ -774,6 +819,11 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
         }
 #endif
         SDL_SetEventFilter(pg_event_filter, NULL);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (Gesture_Init() != 0) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+#endif
     }
     _pg_event_is_init = 1;
     Py_RETURN_NONE;
@@ -905,10 +955,8 @@ _pg_name_from_eventtype(int type)
             return "FingerDown";
         case SDL_FINGERUP:
             return "FingerUp";
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         case SDL_MULTIGESTURE:
             return "MultiGesture";
-#endif
         case SDL_MOUSEWHEEL:
             return "MouseWheel";
         case SDL_TEXTINPUT:
@@ -1111,7 +1159,6 @@ dict_from_event(SDL_Event *event)
                     state = SDL_APPACTIVE;
                     break;
                 default:
-                    assert(event->window.event == SDL_WINDOWEVENT_RESTORED);
                     gain = 1;
                     state = SDL_APPACTIVE;
             }
@@ -1263,9 +1310,27 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "pressure",
                        PyFloat_FromDouble(event->tfinger.dy));
             break;
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         case SDL_MULTIGESTURE:
-            /* https://wiki.libsdl.org/SDL_MultiGestureEvent */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            _pg_insobj(dict, "touch_id",
+                       PyLong_FromLongLong(
+                           ((Gesture_MultiGestureEvent *)event)->touchID));
+            _pg_insobj(
+                dict, "x",
+                PyFloat_FromDouble(((Gesture_MultiGestureEvent *)event)->x));
+            _pg_insobj(
+                dict, "y",
+                PyFloat_FromDouble(((Gesture_MultiGestureEvent *)event)->y));
+            _pg_insobj(dict, "rotated",
+                       PyFloat_FromDouble(
+                           ((Gesture_MultiGestureEvent *)event)->dTheta));
+            _pg_insobj(dict, "pinched",
+                       PyFloat_FromDouble(
+                           ((Gesture_MultiGestureEvent *)event)->dDist));
+            _pg_insobj(dict, "num_fingers",
+                       PyLong_FromLong(
+                           ((Gesture_MultiGestureEvent *)event)->numFingers));
+#else
             _pg_insobj(dict, "touch_id",
                        PyLong_FromLongLong(event->mgesture.touchId));
             _pg_insobj(dict, "x", PyFloat_FromDouble(event->mgesture.x));
@@ -1276,8 +1341,8 @@ dict_from_event(SDL_Event *event)
                        PyFloat_FromDouble(event->mgesture.dDist));
             _pg_insobj(dict, "num_fingers",
                        PyLong_FromLong(event->mgesture.numFingers));
-            break;
 #endif
+            break;
         case SDL_MOUSEWHEEL:
             /* https://wiki.libsdl.org/SDL_MouseWheelEvent */
 #ifndef NO_SDL_MOUSEWHEEL_FLIPPED
@@ -1747,6 +1812,7 @@ pgEvent_New(SDL_Event *event)
     }
 
     if (event) {
+        event->type = _pg_pgevent_type(event);
         e->type = _pg_pgevent_deproxify(event->type);
         e->dict = dict_from_event(event);
     }
@@ -1846,14 +1912,7 @@ _pg_event_pump(int dopump)
         SDL_PumpEvents();
     }
 
-    /* WINDOWEVENT translation needed only on SDL2 */
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
-    /* We need to translate WINDOWEVENTS. But if we do that from the
-     * from event filter, internal SDL stuff that rely on WINDOWEVENT
-     * might break. So after every event pump, we translate events from
-     * here */
-    SDL_FilterEvents(_pg_translate_windowevent, NULL);
-#endif
+    SDL_FilterEvents(_pg_filter_blocked_events, NULL);
 }
 
 static int
@@ -2458,8 +2517,6 @@ pg_event_set_blocked(PyObject *self, PyObject *obj)
     /* Never block SDL_WINDOWEVENT on SDL2, we need them for translation */
     PG_SetEventEnabled(SDL_WINDOWEVENT, SDL_TRUE);
 #endif
-    /* Never block PGE_KEYREPEAT too, its needed for pygame internal use */
-    PG_SetEventEnabled(PGE_KEYREPEAT, SDL_TRUE);
     Py_RETURN_NONE;
 }
 

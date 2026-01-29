@@ -89,6 +89,8 @@ pgChannel_New(int);
 #define pgChannel_Check(x) \
     (PyObject_IsInstance(x, (PyObject *)&pgChannel_Type))
 
+static PyObject *
+snd_get_arraystruct(PyObject *self, void *closure);
 static int
 snd_getbuffer(PyObject *, Py_buffer *, int);
 static void
@@ -514,6 +516,7 @@ mixer_quit(PyObject *self, PyObject *_null)
         Py_BEGIN_ALLOW_THREADS;
         Mix_HaltMusic();
         Py_END_ALLOW_THREADS;
+        Mix_ChannelFinished(NULL);
 
         if (channeldata) {
             for (i = 0; i < numchanneldata; ++i) {
@@ -802,6 +805,65 @@ snd_get_raw(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+snd_copy(PyObject *self, PyObject *_null)
+{
+    MIXER_INIT_CHECK();
+
+    pgSoundObject *newSound =
+        (pgSoundObject *)Py_TYPE(self)->tp_new(Py_TYPE(self), NULL, NULL);
+
+    if (!newSound) {
+        if (!PyErr_Occurred()) {
+            PyErr_SetString(PyExc_MemoryError,
+                            "Failed to create new Sound object for copy");
+        }
+        return NULL;
+    }
+
+    PyObject *dict = PyDict_New();
+    if (!dict) {
+        Py_DECREF(newSound);
+        return NULL;
+    }
+
+    PyObject *bytes = snd_get_raw(self, NULL);
+    if (bytes == NULL) {
+        // exception set already by PyBytes_FromStringAndSize
+        Py_DECREF(dict);
+        Py_DECREF(newSound);
+        return NULL;
+    }
+
+    if (PyDict_SetItemString(dict, "buffer", bytes) < 0) {
+        // exception set already
+        Py_DECREF(bytes);
+        Py_DECREF(dict);
+        Py_DECREF(newSound);
+        return NULL;
+    }
+    Py_DECREF(bytes);
+
+    if (sound_init((PyObject *)newSound, NULL, dict) != 0) {
+        Py_DECREF(dict);
+        Py_DECREF(newSound);
+        // Exception set by sound_init
+        return NULL;
+    }
+
+    // Preserve original volume on the new chunk
+    Mix_Chunk *orig = pgSound_AsChunk(self);
+    Mix_Chunk *dst = pgSound_AsChunk((PyObject *)newSound);
+
+    if (orig && dst) {
+        int vol = Mix_VolumeChunk(orig, -1);
+        Mix_VolumeChunk(dst, vol);
+    }
+
+    Py_DECREF(dict);
+    return (PyObject *)newSound;
+}
+
+static PyObject *
 snd_get_arraystruct(PyObject *self, void *closure)
 {
     Py_buffer view;
@@ -858,6 +920,8 @@ PyMethodDef sound_methods[] = {
     {"get_volume", snd_get_volume, METH_NOARGS, DOC_MIXER_SOUND_GETVOLUME},
     {"get_length", snd_get_length, METH_NOARGS, DOC_MIXER_SOUND_GETLENGTH},
     {"get_raw", snd_get_raw, METH_NOARGS, DOC_MIXER_SOUND_GETRAW},
+    {"copy", snd_copy, METH_NOARGS, DOC_MIXER_SOUND_COPY},
+    {"__copy__", snd_copy, METH_NOARGS, DOC_MIXER_SOUND_COPY},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef sound_getset[] = {
@@ -2049,8 +2113,8 @@ pgChannel_New(int channelnum)
     return (PyObject *)chanobj;
 }
 
-#if BUILD_STATIC
-// avoid conflict with PyInit_mixer in _sdl2/mixer.c
+#if defined(BUILD_STATIC)
+// prevent name collision with _sdl2.mixer
 MODINIT_DEFINE(pg_mixer)
 #else
 MODINIT_DEFINE(mixer)

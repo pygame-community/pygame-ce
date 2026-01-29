@@ -197,10 +197,14 @@ image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
             SDL_RWops *rw = pgRWops_FromFileObject(obj);
             if (rw != NULL) {
                 if (!strcasecmp(ext, "bmp")) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                    result = (SDL_SaveBMP_IO(surf, rw, 0) ? 0 : -1);
+#else
                     /* The SDL documentation didn't specify which negative
                      * number is returned upon error. We want to be sure that
                      * result is either 0 or -1: */
                     result = (SDL_SaveBMP_RW(surf, rw, 0) == 0 ? 0 : -1);
+#endif
                 }
                 else {
                     result = SaveTGA_RW(surf, rw, 1);
@@ -213,10 +217,14 @@ image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
         else {
             if (!strcasecmp(ext, "bmp")) {
                 Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = (SDL_SaveBMP(surf, name) ? 0 : -1);
+#else
                 /* The SDL documentation didn't specify which negative number
                  * is returned upon error. We want to be sure that result is
                  * either 0 or -1: */
                 result = (SDL_SaveBMP(surf, name) == 0 ? 0 : -1);
+#endif
                 Py_END_ALLOW_THREADS;
             }
             else {
@@ -446,17 +454,10 @@ tobytes_surf_32bpp(SDL_Surface *surf, SDL_PixelFormat *format_details,
 {
     int w, h;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    Uint32 Rloss = format_details->Rbits;
-    Uint32 Gloss = format_details->Gbits;
-    Uint32 Bloss = format_details->Bbits;
-    Uint32 Aloss = format_details->Abits;
-#else
-    Uint32 Rloss = format_details->Rloss;
-    Uint32 Gloss = format_details->Gloss;
-    Uint32 Bloss = format_details->Bloss;
-    Uint32 Aloss = format_details->Aloss;
-#endif
+    Uint32 Rloss = PG_FORMAT_R_LOSS(format_details);
+    Uint32 Gloss = PG_FORMAT_G_LOSS(format_details);
+    Uint32 Bloss = PG_FORMAT_B_LOSS(format_details);
+    Uint32 Aloss = PG_FORMAT_A_LOSS(format_details);
     Uint32 Rmask = format_details->Rmask;
     Uint32 Gmask = format_details->Gmask;
     Uint32 Bmask = format_details->Bmask;
@@ -557,19 +558,15 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     if (!format_details) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    SDL_Palette *surf_palette = SDL_GetSurfacePalette(surf);
-    Rloss = format_details->Rbits;
-    Gloss = format_details->Gbits;
-    Bloss = format_details->Bbits;
-    Aloss = format_details->Abits;
+    SDL_Palette *surf_palette = PG_GetSurfacePalette(surf);
 #else
     SDL_PixelFormat *format_details = surf->format;
     SDL_Palette *surf_palette = surf->format->palette;
-    Rloss = format_details->Rloss;
-    Gloss = format_details->Gloss;
-    Bloss = format_details->Bloss;
-    Aloss = format_details->Aloss;
 #endif
+    Rloss = PG_FORMAT_R_LOSS(format_details);
+    Gloss = PG_FORMAT_G_LOSS(format_details);
+    Bloss = PG_FORMAT_B_LOSS(format_details);
+    Aloss = PG_FORMAT_A_LOSS(format_details);
     Rmask = format_details->Rmask;
     Gmask = format_details->Gmask;
     Bmask = format_details->Bmask;
@@ -701,8 +698,8 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
                         data[0] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[1] = (char)(((color & Gmask) >> Gshift) << Rloss);
-                        data[2] = (char)(((color & Bmask) >> Bshift) << Rloss);
+                        data[1] = (char)(((color & Gmask) >> Gshift) << Gloss);
+                        data[2] = (char)(((color & Bmask) >> Bshift) << Bloss);
                         data += 3;
                     }
                     pad(&data, padding);
@@ -1690,7 +1687,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     int alpha = 0;
     struct TGAheader h;
     int srcbpp;
-    Uint8 surf_alpha;
+    SDL_BlendMode surf_blendmode;
     int have_surf_colorkey = 0;
     Uint32 surf_colorkey;
     SDL_Rect r;
@@ -1714,14 +1711,17 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     }
     SDL_PixelFormat output_format;
 
-    SDL_Palette *surf_palette = SDL_GetSurfacePalette(surface);
+    SDL_Palette *surf_palette = PG_GetSurfacePalette(surface);
 #else
     SDL_PixelFormat *surf_format = surface->format;
     SDL_Palette *surf_palette = surface->format->palette;
     SDL_PixelFormatEnum output_format;
 #endif
 
-    SDL_GetSurfaceAlphaMod(surface, &surf_alpha);
+    if (!PG_GetSurfaceBlendMode(surface, &surf_blendmode)) {
+        return -1;
+    }
+
     if ((have_surf_colorkey = SDL_HasColorKey(surface))) {
         SDL_GetColorKey(surface, &surf_colorkey);
     }
@@ -1808,11 +1808,9 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
         }
     }
 
-    /* Temporarily remove colorkey and alpha from surface so copies are
-       opaque */
-    SDL_SetSurfaceAlphaMod(surface, SDL_ALPHA_OPAQUE);
-    if (have_surf_colorkey) {
-        SDL_SetColorKey(surface, SDL_FALSE, surf_colorkey);
+    /* Temporarily set SDL_BLENDMODE_NONE so that copies are opaque */
+    if (!PG_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE)) {
+        goto error;
     }
 
     r.x = 0;
@@ -1844,9 +1842,8 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     }
 
     /* restore flags */
-    SDL_SetSurfaceAlphaMod(surface, surf_alpha);
-    if (have_surf_colorkey) {
-        SDL_SetColorKey(surface, SDL_TRUE, surf_colorkey);
+    if (!PG_SetSurfaceBlendMode(surface, surf_blendmode)) {
+        goto error;
     }
 
     free(rlebuf);

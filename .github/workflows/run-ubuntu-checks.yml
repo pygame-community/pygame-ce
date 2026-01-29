@@ -53,8 +53,8 @@ jobs:
         os: [ ubuntu-24.04 ]
         # check our min python (minor) version and our max python (minor) version
         python: [
-          3.9.21,
-          3.13.1
+          3.10.17,
+          3.14.0,
         ]
 
     env:
@@ -65,7 +65,7 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v6.0.2
 
     - name: Install pygame-ce deps
       # https://github.com/actions/runner-images/issues/7192
@@ -87,7 +87,7 @@ jobs:
 
     - name: Cache debug python build
       id: cache-python
-      uses: actions/cache@v4.2.3
+      uses: actions/cache@v5.0.2
       with:
         key: ${{ matrix.python }}
         path: ~/.pyenv/versions/${{ matrix.python }}-debug/**
@@ -123,7 +123,7 @@ jobs:
     - name: Upload coverage html
       # want to continue only if the coverage generation was successful
       if: ${{ steps.gen-coverage.conclusion == 'success' && !cancelled() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: pygame-coverage-${{ matrix.os }}-${{ matrix.python }}
         path: ./out
@@ -134,7 +134,7 @@ jobs:
     needs: debug_coverage
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v6.0.2
       with:
         fetch-depth: 0  # fetch full history
 

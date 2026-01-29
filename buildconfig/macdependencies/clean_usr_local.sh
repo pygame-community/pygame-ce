@@ -13,7 +13,7 @@ ln -s /usr/bin/git /usr/local/bin/git
 ln -s /usr/bin/git /opt/homebrew/bin/git
 
 rm -rf /usr/local/lib/libtiff*
-rm -rf /usr/local/lib/libzstd*
+rm -rf /usr/local/lib/libzstd* /opt/homebrew/lib/libzstd*
 rm -rf /usr/local/lib/libwebp*
 rm -rf /usr/local/lib/libdeflate*
 rm -rf /usr/local/lib/libsndfile*
@@ -25,6 +25,7 @@ rm -rf /usr/local/lib/libbrotlidec*
 rm -rf /usr/local/lib/libopus*
 rm -rf /usr/local/lib/freetype*
 rm -rf /usr/local/opt/freetype*
+rm -rf /opt/homebrew/lib/libgif*
 
 rm -rf /usr/local/Cellar/libtiff /opt/homebrew/Cellar/libtiff
 rm -rf /usr/local/Cellar/libsndfile /opt/homebrew/Cellar/libsndfile

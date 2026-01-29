@@ -1886,6 +1886,9 @@ camera_init(pgCameraObject *self, PyObject *arg, PyObject *kwargs)
 
     /* needs to be freed with PyMem_Free later */
     dev_name = PyUnicode_AsWideCharString(name_obj, NULL);
+    if (dev_name == NULL) {
+        return -1;
+    }
 
     p = windows_device_from_name(dev_name);
 
@@ -1976,24 +1979,13 @@ MODINIT_DEFINE(_camera)
         return NULL;
     }
 
-    /* type preparation */
-    pgCamera_Type.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&pgCamera_Type) < 0) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
         return NULL;
     }
 
-    if (PyModule_AddObjectRef(module, "CameraType",
-                              (PyObject *)&pgCamera_Type)) {
-        Py_DECREF(module);
-        return NULL;
-    }
-    if (PyModule_AddObjectRef(module, "Camera", (PyObject *)&pgCamera_Type)) {
+    if (PyModule_AddType(module, &pgCamera_Type)) {
         Py_DECREF(module);
         return NULL;
     }

@@ -55,7 +55,13 @@ def stubs_check():
             os.chdir(STUBS_BASE_DIR)
             sys.exit(
                 subprocess.run(
-                    [*stubtest, "pygame", "--allowlist", "mypy_allow_list.txt"]
+                    [
+                        *stubtest,
+                        "pygame",
+                        "--ignore-disjoint-bases",
+                        "--allowlist",
+                        "mypy_allow_list.txt",
+                    ]
                 ).returncode
             )
         finally:

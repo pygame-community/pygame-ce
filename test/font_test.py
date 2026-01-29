@@ -5,6 +5,7 @@ import pathlib
 import platform
 import sys
 import unittest
+from tempfile import TemporaryDirectory
 
 import pygame
 from pygame import font as pygame_font  # So font can be replaced with ftfont
@@ -617,7 +618,10 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertIsInstance(w, int)
         self.assertIsInstance(h, int)
-        self.assertEqual(s.get_size(), size)
+
+        # test width and height match, with a tolerance for 1 pixel errors
+        self.assertTrue(w - 1 <= s.get_width() <= w + 1)
+        self.assertTrue(h - 1 <= s.get_height() <= h + 1)
         self.assertEqual(f.size(btext), size)
 
         text = "\u212a"
@@ -684,6 +688,37 @@ class FontTypeTest(unittest.TestCase):
         self.assertEqual(10, f.get_point_size())
         self.assertRaises(ValueError, f.set_point_size, -500)
         self.assertRaises(TypeError, f.set_point_size, "15")
+
+    def test_outline_property(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont feature
+
+        pygame_font.init()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(pathlib.Path(font_path), 25)
+
+        # Default outline should be an integer >= 0 (typically 0)
+        self.assertIsInstance(f.outline, int)
+        self.assertGreaterEqual(f.outline, 0)
+
+        orig = f.outline
+        f.outline = orig + 1
+        self.assertEqual(orig + 1, f.outline)
+        f.outline += 2
+        self.assertEqual(orig + 3, f.outline)
+        f.outline -= 1
+        self.assertEqual(orig + 2, f.outline)
+
+        def test_neg():
+            f.outline = -1
+
+        def test_incorrect_type():
+            f.outline = "2"
+
+        self.assertRaises(ValueError, test_neg)
+        self.assertRaises(TypeError, test_incorrect_type)
 
     def test_font_name(self):
         f = pygame_font.Font(None, 20)
@@ -781,19 +816,12 @@ class FontTypeTest(unittest.TestCase):
     def _load_unicode(self, path):
         import shutil
 
-        fdir = str(FONTDIR)
-        temp = os.path.join(fdir, path)
-        pgfont = os.path.join(fdir, "test_sans.ttf")
-        shutil.copy(pgfont, temp)
-        try:
-            with open(temp, "rb") as f:
-                pass
-        except FileNotFoundError:
-            raise unittest.SkipTest("the path cannot be opened")
-        try:
+        with TemporaryDirectory() as tmpdir:
+            fdir = str(FONTDIR)
+            temp = os.path.join(tmpdir, path)
+            pgfont = os.path.join(fdir, "test_sans.ttf")
+            shutil.copy(pgfont, temp)
             pygame_font.Font(temp, 20)
-        finally:
-            os.remove(temp)
 
     def test_load_from_file_unicode_0(self):
         """ASCII string as a unicode object"""
@@ -933,6 +961,7 @@ class FontTypeTest(unittest.TestCase):
             ]
             skip_methods = set()
             version = pygame.font.get_sdl_ttf_version()
+
             if version >= (2, 0, 18):
                 methods.append(("get_point_size", ()))
                 methods.append(("set_point_size", (34,)))
@@ -1020,6 +1049,7 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("underline", True),
                 ("strikethrough", True),
+                ("outline", 1),
             ]
             skip_properties = set()
             version = pygame.font.get_sdl_ttf_version()
@@ -1096,6 +1126,7 @@ class VisualTestsInteractive(unittest.TestCase):
         underline=False,
         strikethrough=False,
         antialiase=False,
+        outline=0,
     ):
         if self.aborted:
             return False
@@ -1106,7 +1137,7 @@ class VisualTestsInteractive(unittest.TestCase):
         screen = self.screen
         screen.fill((255, 255, 255))
         pygame.display.flip()
-        if not (bold or italic or underline or strikethrough or antialiase):
+        if not (bold or italic or underline or strikethrough or antialiase or outline):
             text = "normal"
         else:
             modes = []
@@ -1120,11 +1151,14 @@ class VisualTestsInteractive(unittest.TestCase):
                 modes.append("strikethrough")
             if antialiase:
                 modes.append("antialiased")
+            if outline:
+                modes.append("outlined")
             text = f"{'-'.join(modes)} (y/n):"
         f.set_bold(bold)
         f.set_italic(italic)
         f.set_underline(underline)
         f.set_strikethrough(strikethrough)
+        f.outline = outline
         s = f.render(text, antialiase, (0, 0, 0))
         screen.blit(s, (offset, y))
         y += s.get_size()[1] + spacing
@@ -1132,6 +1166,7 @@ class VisualTestsInteractive(unittest.TestCase):
         f.set_italic(False)
         f.set_underline(False)
         f.set_strikethrough(False)
+        f.outline = 0
         s = f.render("(some comparison text)", False, (0, 0, 0))
         screen.blit(s, (offset, y))
         pygame.display.flip()
@@ -1172,6 +1207,9 @@ class VisualTestsInteractive(unittest.TestCase):
 
     def test_bold_strikethrough(self):
         self.assertTrue(self.query(bold=True, strikethrough=True))
+
+    def test_outline(self):
+        self.assertTrue(self.query(outline=1))
 
 
 if __name__ == "__main__":

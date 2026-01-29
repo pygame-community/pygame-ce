@@ -1,17 +1,15 @@
-from typing import Optional, Protocol, Union, final
+from collections.abc import Iterable
+from typing import Any, Protocol, final
 
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
 from pygame.typing import ColorLike, IntPoint, Point, RectLike, SequenceLike
 from pygame.window import Window
-from typing_extensions import deprecated  # added in 3.13
 
 class _DrawableClass(Protocol):
     # Object that has the draw method that accepts area and dest arguments
-    def draw(
-        self, area: Optional[RectLike] = None, dest: Optional[RectLike] = None
-    ): ...
+    def draw(self, area: RectLike | None = None, dest: RectLike | None = None): ...
 
 @final
 class Renderer:
@@ -25,9 +23,9 @@ class Renderer:
     ) -> None: ...
     def blit(
         self,
-        source: Union["Texture", "Image", _DrawableClass],
-        dest: Optional[RectLike] = None,
-        area: Optional[RectLike] = None,
+        source: "Texture" | "Image" | _DrawableClass,
+        dest: RectLike | None = None,
+        area: RectLike | None = None,
         special_flags: int = 0,
     ) -> Rect: ...
     def clear(self) -> None: ...
@@ -40,10 +38,12 @@ class Renderer:
     def fill_rect(self, rect: RectLike) -> None: ...
     def fill_triangle(self, p1: Point, p2: Point, p3: Point) -> None: ...
     def get_viewport(self) -> Rect: ...
+    def coordinates_to_window(self, point: Point) -> tuple[float, float]: ...
+    def coordinates_from_window(self, point: Point) -> tuple[float, float]: ...
     def present(self) -> None: ...
-    def set_viewport(self, area: Optional[RectLike]) -> None: ...
+    def set_viewport(self, area: RectLike | None) -> None: ...
     def to_surface(
-        self, surface: Optional[Surface] = None, area: Optional[RectLike] = None
+        self, surface: Surface | None = None, area: RectLike | None = None
     ) -> Surface: ...
     @property
     def draw_blend_mode(self) -> int: ...
@@ -74,7 +74,74 @@ class Renderer:
 
 @final
 class Texture:
-    pass
+    def __init__(
+        self,
+        renderer: Renderer,
+        size: Iterable[int],
+        depth: int = 0,
+        static: bool = False,
+        streaming: bool = False,
+        target: bool = False,
+        scale_quality: int | None = None,
+    ) -> None: ...
+    @property
+    def alpha(self) -> int: ...
+    @alpha.setter
+    def alpha(self, value: int) -> None: ...
+    @property
+    def blend_mode(self) -> int: ...
+    @blend_mode.setter
+    def blend_mode(self, value: int) -> None: ...
+    @property
+    def color(self) -> Color: ...
+    @color.setter
+    def color(self, value: ColorLike) -> None: ...
+    @property
+    def width(self) -> int: ...
+    @property
+    def height(self) -> int: ...
+    @property
+    def renderer(self) -> Renderer: ...
+    @classmethod
+    def from_surface(cls, renderer: Renderer, surface: Surface) -> Texture: ...
+    def draw(
+        self,
+        srcrect: RectLike | None = None,
+        dstrect: RectLike | None = None,
+        angle: float = 0.0,
+        origin: Iterable[int] | None = None,
+        flip_x: bool = False,
+        flip_y: bool = False,
+    ) -> None: ...
+    def draw_triangle(
+        self,
+        p1_xy: Point,
+        p2_xy: Point,
+        p3_xy: Point,
+        p1_uv: Point = (0.0, 0.0),
+        p2_uv: Point = (1.0, 1.0),
+        p3_uv: Point = (0.0, 1.0),
+        p1_mod: ColorLike = (255, 255, 255, 255),
+        p2_mod: ColorLike = (255, 255, 255, 255),
+        p3_mod: ColorLike = (255, 255, 255, 255),
+    ) -> None: ...
+    def draw_quad(
+        self,
+        p1_xy: Point,
+        p2_xy: Point,
+        p3_xy: Point,
+        p4_xy: Point,
+        p1_uv: Point = (0.0, 0.0),
+        p2_uv: Point = (1.0, 0.0),
+        p3_uv: Point = (1.0, 1.0),
+        p4_uv: Point = (0.0, 1.0),
+        p1_mod: ColorLike = (255, 255, 255, 255),
+        p2_mod: ColorLike = (255, 255, 255, 255),
+        p3_mod: ColorLike = (255, 255, 255, 255),
+        p4_mod: ColorLike = (255, 255, 255, 255),
+    ) -> None: ...
+    def get_rect(self, **kwargs: Any) -> Rect: ...
+    def update(self, surface: Surface, area: RectLike | None = None) -> None: ...
 
 @final
 class Image:

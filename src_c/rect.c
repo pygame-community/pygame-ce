@@ -133,9 +133,12 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_setmidright pg_rect_setmidright
 #define RectExport_getcenter pg_rect_getcenter
 #define RectExport_setcenter pg_rect_setcenter
+#define RectExport_getrelcenter pg_rect_getrelcenter
+#define RectExport_setrelcenter pg_rect_setrelcenter
 #define RectExport_getsize pg_rect_getsize
 #define RectExport_setsize pg_rect_setsize
 #define RectImport_primitiveType int
+#define RectImport_PrimitiveTypeName "int"
 #define RectImport_RectCheck pgRect_Check
 #define RectImport_OtherRectCheck pgFRect_Check
 #define RectImport_OtherRectCheckExact pgFRect_CheckExact
@@ -250,9 +253,12 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_setmidright pg_frect_setmidright
 #define RectExport_getcenter pg_frect_getcenter
 #define RectExport_setcenter pg_frect_setcenter
+#define RectExport_getrelcenter pg_frect_getrelcenter
+#define RectExport_setrelcenter pg_frect_setrelcenter
 #define RectExport_getsize pg_frect_getsize
 #define RectExport_setsize pg_frect_setsize
 #define RectImport_primitiveType float
+#define RectImport_PrimitiveTypeName "float"
 #define RectImport_RectCheck pgFRect_Check
 #define RectImport_OtherRectCheck pgRect_Check
 #define RectImport_OtherRectCheckExact pgRect_CheckExact
@@ -471,13 +477,13 @@ static struct PyMethodDef pg_rect_methods[] = {
     {"fit", (PyCFunction)pg_rect_fit, METH_FASTCALL, DOC_RECT_FIT},
     {"move", (PyCFunction)pg_rect_move, METH_FASTCALL, DOC_RECT_MOVE},
     {"update", (PyCFunction)pg_rect_update, METH_FASTCALL, DOC_RECT_UPDATE},
-    {"inflate", (PyCFunction)pg_rect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
+    {"inflate", (PyCFunction)pg_rect_inflate, METH_FASTCALL, DOC_RECT_INFLATE},
     {"union", (PyCFunction)pg_rect_union, METH_FASTCALL, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_rect_unionall, METH_O, DOC_RECT_UNIONALL},
     {"move_ip", (PyCFunction)pg_rect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
     {"move_to", (PyCFunction)pg_rect_move_to, METH_FASTCALL | METH_KEYWORDS,
      DOC_RECT_MOVETO},
-    {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_VARARGS,
+    {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_FASTCALL,
      DOC_RECT_INFLATEIP},
     {"scale_by", (PyCFunction)pg_rect_scale_by, METH_VARARGS | METH_KEYWORDS,
      DOC_RECT_SCALEBY},
@@ -522,13 +528,14 @@ static struct PyMethodDef pg_frect_methods[] = {
     {"fit", (PyCFunction)pg_frect_fit, METH_FASTCALL, DOC_RECT_FIT},
     {"move", (PyCFunction)pg_frect_move, METH_FASTCALL, DOC_RECT_MOVE},
     {"update", (PyCFunction)pg_frect_update, METH_FASTCALL, DOC_RECT_UPDATE},
-    {"inflate", (PyCFunction)pg_frect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
+    {"inflate", (PyCFunction)pg_frect_inflate, METH_FASTCALL,
+     DOC_RECT_INFLATE},
     {"union", (PyCFunction)pg_frect_union, METH_FASTCALL, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_frect_unionall, METH_O, DOC_RECT_UNIONALL},
     {"move_ip", (PyCFunction)pg_frect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
     {"move_to", (PyCFunction)pg_frect_move_to, METH_FASTCALL | METH_KEYWORDS,
      DOC_RECT_MOVETO},
-    {"inflate_ip", (PyCFunction)pg_frect_inflate_ip, METH_VARARGS,
+    {"inflate_ip", (PyCFunction)pg_frect_inflate_ip, METH_FASTCALL,
      DOC_RECT_INFLATEIP},
     {"scale_by", (PyCFunction)pg_frect_scale_by, METH_VARARGS | METH_KEYWORDS,
      DOC_RECT_SCALEBY},
@@ -684,6 +691,8 @@ static PyGetSetDef pg_frect_getsets[] = {
     {"size", (getter)pg_frect_getsize, (setter)pg_frect_setsize, NULL, NULL},
     {"center", (getter)pg_frect_getcenter, (setter)pg_frect_setcenter, NULL,
      NULL},
+    {"relcenter", (getter)pg_frect_getrelcenter, (setter)pg_frect_setrelcenter,
+     NULL, NULL},
 
     {"__safe_for_unpickling__", (getter)pg_rect_getsafepickle, NULL, NULL,
      NULL},
@@ -726,6 +735,8 @@ static PyGetSetDef pg_rect_getsets[] = {
     {"size", (getter)pg_rect_getsize, (setter)pg_rect_setsize, NULL, NULL},
     {"center", (getter)pg_rect_getcenter, (setter)pg_rect_setcenter, NULL,
      NULL},
+    {"relcenter", (getter)pg_rect_getrelcenter, (setter)pg_rect_setrelcenter,
+     NULL, NULL},
 
     {"__safe_for_unpickling__", (getter)pg_rect_getsafepickle, NULL, NULL,
      NULL},

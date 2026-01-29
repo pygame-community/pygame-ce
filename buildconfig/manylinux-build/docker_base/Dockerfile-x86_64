@@ -1,5 +1,5 @@
 # pin version on image for CI stability
-FROM quay.io/pypa/manylinux2014_x86_64:2025.03.09-1
+FROM quay.io/pypa/manylinux2014_x86_64:2025.10.10-1
 ENV MAKEFLAGS="-j 4"
 ENV PG_DEP_PREFIX="/usr/local"
 
@@ -94,11 +94,11 @@ RUN ["bash", "/libjpegturbo_build/build-jpeg-turbo.sh"]
 ADD libpng /libpng_build/
 RUN ["bash", "/libpng_build/build-png.sh"]
 
-ADD libwebp /webp_build/
-RUN ["bash", "/webp_build/build-webp.sh"]
-
 ADD libtiff /libtiff_build/
 RUN ["bash", "/libtiff_build/build-tiff.sh"]
+
+ADD libwebp /webp_build/
+RUN ["bash", "/webp_build/build-webp.sh"]
 
 ADD brotli /brotli_build/
 RUN ["bash", "/brotli_build/build-brotli.sh"]
@@ -142,8 +142,8 @@ RUN ["bash", "/libxmp_build/build-libxmp.sh"]
 # ADD gettext /gettext_build/
 # RUN ["bash", "/gettext_build/build-gettext.sh"]
 
-ADD glib /glib_build/
-RUN ["bash", "/glib_build/build-glib.sh"]
+# ADD glib /glib_build/
+# RUN ["bash", "/glib_build/build-glib.sh"]
 
 ADD fluidsynth /fluidsynth_build/
 RUN ["bash", "/fluidsynth_build/build-fluidsynth.sh"]

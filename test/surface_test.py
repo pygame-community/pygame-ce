@@ -376,6 +376,11 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertTrue(s1.get_flags() & pygame.RLEACCELOK)
         self.assertTrue(not s2.get_flags() & pygame.RLEACCELOK)
 
+    @unittest.skipIf(
+        (2, 32, 50) <= pygame.version.SDL <= (2, 32, 56)
+        or (3, 0, 0) <= pygame.version.SDL <= (3, 2, 22),
+        "This test was briefly broken on SDL3 (and sdl2-compat) but got fixed.",
+    )
     def test_solarwolf_rle_usage(self):
         """Test for error/crash when calling set_colorkey() followed
         by convert twice in succession. Code originally taken
@@ -404,6 +409,11 @@ class SurfaceTypeTest(unittest.TestCase):
         finally:
             pygame.display.quit()
 
+    @unittest.skipIf(
+        (2, 32, 50) <= pygame.version.SDL <= (2, 32, 56)
+        or (3, 0, 0) <= pygame.version.SDL <= (3, 2, 22),
+        "This test was briefly broken on SDL3 (and sdl2-compat) but got fixed.",
+    )
     def test_solarwolf_rle_usage_2(self):
         """Test for RLE status after setting alpha"""
 
@@ -1228,8 +1238,12 @@ class GeneralSurfaceTests(unittest.TestCase):
             im = pygame.image.load(example_path(os.path.join("data", "city.png")))
             im2 = pygame.image.load(example_path(os.path.join("data", "brick.png")))
 
-            self.assertEqual(im.get_palette(), ((0, 0, 0, 255), (255, 255, 255, 255)))
-            self.assertEqual(im2.get_palette(), ((0, 0, 0, 255), (0, 0, 0, 255)))
+            # Only validate the first two entries; stbimage backend gives a 256
+            # length palette while libpng doesn't.
+            self.assertEqual(
+                im.get_palette()[:2], ((0, 0, 0, 255), (255, 255, 255, 255))
+            )
+            self.assertEqual(im2.get_palette()[:2], ((0, 0, 0, 255), (0, 0, 0, 255)))
 
             self.assertEqual(
                 repr(im.convert(32)), "<Surface(24x24x32, colorkey=(0, 0, 0, 255))>"
@@ -3999,6 +4013,26 @@ class SurfaceBlendTest(unittest.TestCase):
                             a,
                         ),
                     )
+
+        def create_surface_from_byte_width(byte_width):
+            surf_height = 5
+            byte_data = bytes(byte_width * surf_height)  # 50 bytes
+            surf_width = byte_width // 4  # width = 2
+
+            dest = pygame.image.frombuffer(
+                byte_data, (surf_width, surf_height), "RGBA", pitch=byte_width
+            )
+            dest.fill((120, 50, 70, 200))
+            return dest
+
+        test_surf = create_surface_from_byte_width(10)
+        test_surf = test_surf.premul_alpha()
+
+        for y in range(0, test_surf.get_height()):
+            for x in range(0, test_surf.get_width()):
+                self.assertEqual(
+                    test_surf.get_at((x, y)), pygame.Color(94, 39, 55, 200)
+                )
 
     def test_surface_premul_alpha_ip(self):
         """Ensure that .premul_alpha_ip() works correctly"""
