@@ -869,8 +869,7 @@ def message_box(
     :param str message: A message string. If this parameter is set to ``None``, the message will be the title.
     :param str message_type: Set the type of message_box, could be ``"info"``, ``"warn"`` or ``"error"``.
     :param pygame.Window parent_window: The parent window of the message box.
-    :param tuple buttons: An 
-    sequence of button name strings to show to the user.
+    :param tuple buttons: An optional sequence of button name strings to show to the user.
     :param int return_button: Button index to use if the return key is hit, ``0`` by default.
     :param int escape_button: Button index to use if the escape key is hit, ``None`` for no button linked by default.
 
