@@ -31,7 +31,7 @@ jobs:
       CIBW_ARCHS: ${{ matrix.winarch }}
 
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v6.0.2
 
       - uses: TheMrMilchmann/setup-msvc-dev@v4  # this lets us use the developer command prompt on windows
         with:
@@ -45,7 +45,7 @@ jobs:
       - name: Build and test wheels
         uses: pypa/cibuildwheel@v3.2.1
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: pygame-wheels-windows-${{ matrix.winarch }}
           path: ./wheelhouse/*.whl

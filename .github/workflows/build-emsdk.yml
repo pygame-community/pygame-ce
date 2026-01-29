@@ -42,7 +42,7 @@ jobs:
       PYBUILD: 3.13
 
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v6.0.2
 
     - name: Install python-wasm-sdk
       run: |
@@ -55,7 +55,7 @@ jobs:
 
     # Upload the generated files under github actions assets section
     - name: Upload dist
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: pygame-wasm-dist
         path: ./dist/*
@@ -64,13 +64,13 @@ jobs:
     name: Pyodide build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@v6.0.2
 
     - uses: pypa/cibuildwheel@v3.2.1
       env:
         CIBW_PLATFORM: pyodide
 
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v6
       with:
         name: pyodide-wheels
         path: wheelhouse/*.whl

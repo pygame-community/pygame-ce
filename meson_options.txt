@@ -24,15 +24,15 @@ option('midi', type: 'feature', value: 'enabled')
 # Controls whether to make a "stripped" pygame install. Enabling this disables
 # the bundling of docs/examples/tests/stubs in the wheels.
 # The default behaviour is to bundle all of these.
-option('stripped', type: 'boolean', value: 'false')
+option('stripped', type: 'boolean', value: false)
 
 # Controls whether to compile with -Werror (or its msvc equivalent). The default
 # behaviour is to not do this by default
-option('error_on_warns', type: 'boolean', value: 'false')
+option('error_on_warns', type: 'boolean', value: false)
 
 # Controls whether to error on build if generated docs are missing. Defaults to
 # false.
-option('error_docs_missing', type: 'boolean', value: 'false')
+option('error_docs_missing', type: 'boolean', value: false)
 
 # Controls whether to do a coverage build.
 # This argument must be used together with the editable install.

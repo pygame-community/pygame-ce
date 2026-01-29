@@ -217,6 +217,15 @@ pg_init(PyObject *self, PyObject *_null)
         /* IMPPREFIX "_sdl2.controller", Is this required? Comment for now*/
         NULL};
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    // In SDL3, specify that signal handlers should not be enabled.
+    // By default, unlike SDL2, these signal handlers convert into QUIT
+    // events. However, if QUIT events / events aren't being handled,
+    // this leaves people unable to quit their script. Plus it's different
+    // than SDL2 behavior.
+    SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+#endif
+
     /*nice to initialize timer, so startup time will reflec pg_init() time*/
 #if defined(WITH_THREAD) && !defined(MS_WIN32) && defined(SDL_INIT_EVENTTHREAD)
     pg_sdl_was_init = PG_InitSubSystem(SDL_INIT_EVENTTHREAD | PG_INIT_TIMER |

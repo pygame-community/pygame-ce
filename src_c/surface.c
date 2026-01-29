@@ -1544,16 +1544,14 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
     bool success =
         PG_SetSurfaceRLE(surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
     /* HACK HACK HACK */
-    // TODO SDL3: figure out how to port this or if it's relevant to SDL3.
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
-    if ((surf->flags & SDL_RLEACCEL) && (!(flags & PGS_RLEACCEL))) {
+    if (SDL_MUSTLOCK(surf) && (!(flags & PGS_RLEACCEL))) {
         /* hack to strip SDL_RLEACCEL flag off surface immediately when
            it is not requested */
         SDL_Rect sdlrect;
         sdlrect.x = 0;
         sdlrect.y = 0;
-        sdlrect.h = 0;
-        sdlrect.w = 0;
+        sdlrect.h = 1;
+        sdlrect.w = 1;
 
         SDL_Surface *surface =
             PG_CreateSurface(1, 1, PG_SURF_FORMATENUM(surf));
@@ -1561,7 +1559,6 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
         SDL_LowerBlit(surf, &sdlrect, surface, &sdlrect);
         SDL_FreeSurface(surface);
     }
-#endif
     /* HACK HACK HACK */
     if (success) {
         success = PG_SetSurfaceAlphaMod(surf, alpha);
@@ -3010,20 +3007,15 @@ surf_get_flags(PyObject *self, PyObject *_null)
     if (sdl_flags & SDL_PREALLOC) {
         flags |= PGS_PREALLOC;
     }
+    /* This checks if RLE was requested on the surface */
     if (PG_SurfaceHasRLE(surf)) {
         flags |= PGS_RLEACCELOK;
     }
-    // TODO SDL3: figure out how to properly emulate SDL2 check/relevance
-    // Current implementation is just a placeholder.
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (SDL_SurfaceHasRLE(surf)) {
+    /* this checks if the surface actually has RLE.
+     * On SDL2: SDL_MUSTLOCK is (flags & SDL_RLEACCEL) */
+    if (SDL_MUSTLOCK(surf)) {
         flags |= PGS_RLEACCEL;
     }
-#else
-    if ((sdl_flags & SDL_RLEACCEL)) {
-        flags |= PGS_RLEACCEL;
-    }
-#endif
     if (is_window_surf) {
         if (window_flags & PG_WINDOW_FULLSCREEN_INCLUSIVE) {
             flags |= PGS_FULLSCREEN;
@@ -4455,6 +4447,76 @@ surface_do_overlap(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
     return dstoffset < span || dstoffset > src->pitch - span;
 }
 
+int
+PG_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst,
+               SDL_Rect *dstrect)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* SDL3 doesn't modify dstrect, so compat for that.
+     * Below logic taken from SDL2 source with slight modifications */
+    SDL_Rect r_src, r_dst;
+
+    r_src.x = 0;
+    r_src.y = 0;
+    r_src.w = src->w;
+    r_src.h = src->h;
+
+    if (dstrect) {
+        r_dst.x = dstrect->x;
+        r_dst.y = dstrect->y;
+    }
+    else {
+        r_dst.x = 0;
+        r_dst.y = 0;
+    }
+
+    /* clip the source rectangle to the source surface */
+    if (srcrect) {
+        SDL_Rect tmp;
+        if (SDL_IntersectRect(srcrect, &r_src, &tmp) == SDL_FALSE) {
+            goto end;
+        }
+
+        /* Shift dstrect, if srcrect origin has changed */
+        r_dst.x += tmp.x - srcrect->x;
+        r_dst.y += tmp.y - srcrect->y;
+
+        /* Update srcrect */
+        r_src = tmp;
+    }
+
+    /* There're no dstrect.w/h parameters. It's the same as srcrect */
+    r_dst.w = r_src.w;
+    r_dst.h = r_src.h;
+
+    /* clip the destination rectangle against the clip rectangle */
+    {
+        SDL_Rect tmp, clip_rect;
+        SDL_GetSurfaceClipRect(dst, &clip_rect);
+        if (SDL_IntersectRect(&r_dst, &clip_rect, &tmp) == SDL_FALSE) {
+            goto end;
+        }
+
+        /* Update dstrect */
+        r_dst = tmp;
+    }
+
+    if (r_dst.w > 0 && r_dst.h > 0) {
+        if (dstrect) { /* update output parameter */
+            *dstrect = r_dst;
+        }
+        return SDL_BlitSurface(src, srcrect, dst, dstrect) ? 0 : -1;
+    }
+end:
+    if (dstrect) {
+        dstrect->w = dstrect->h = 0;
+    }
+    return 0;
+#else
+    return SDL_BlitSurface(src, srcrect, dst, dstrect);
+#endif
+}
+
 /*this internal blit function is accessible through the C api*/
 int
 pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
@@ -4465,13 +4527,11 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     SDL_Surface *subsurface = NULL;
     int result, suboffsetx = 0, suboffsety = 0;
     SDL_Rect orig_clip, sub_clip, dstclip;
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
     Uint8 alpha;
-#endif
 
     if (!PG_GetSurfaceClipRect(dst, &dstclip)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return 0;
+        return 1;
     }
 
     /* passthrough blits to the real surface */
@@ -4522,8 +4582,6 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
         /* Py_END_ALLOW_THREADS */
     }
-// TODO SDL3: port the below bit of code. Skipping for initial surface port.
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
     /* can't blit alpha to 8bit, crashes SDL */
     else if (PG_SURF_BytesPerPixel(dst) == 1 &&
              (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(src)) ||
@@ -4533,34 +4591,37 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             result = pygame_Blit(src, srcrect, dst, dstrect, 0);
         }
         else {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            const SDL_PixelFormatDetails *fmt =
+                SDL_GetPixelFormatDetails(src->format);
+            src = fmt ? SDL_ConvertSurface(src,
+                                           SDL_GetPixelFormatForMasks(
+                                               fmt->bits_per_pixel, fmt->Rmask,
+                                               fmt->Gmask, fmt->Bmask, 0))
+                      : NULL;
+#else
             SDL_PixelFormat *fmt = src->format;
             SDL_PixelFormat *newfmt =
                 SDL_AllocFormat(SDL_MasksToPixelFormatEnum(
                     fmt->BitsPerPixel, fmt->Rmask, fmt->Gmask, fmt->Bmask, 0));
             if (!newfmt) {
-                result = -1;
+                src = NULL;
             }
             else {
-                src = PG_ConvertSurface(src, newfmt);
-
+                src = SDL_ConvertSurface(src, newfmt, 0);
                 SDL_FreeFormat(newfmt);
-                if (src) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-                    result =
-                        SDL_BlitSurface(src, srcrect, dst, dstrect) ? 0 : -1;
-#else
-                    result = SDL_BlitSurface(src, srcrect, dst, dstrect);
+            }
 #endif
-                    SDL_FreeSurface(src);
-                }
-                else {
-                    result = -1;
-                }
+            if (src) {
+                result = PG_BlitSurface(src, srcrect, dst, dstrect);
+                SDL_FreeSurface(src);
+            }
+            else {
+                result = -1;
             }
         }
         /* Py_END_ALLOW_THREADS */
     }
-#endif
     else if (blend_flags != PYGAME_BLEND_ALPHA_SDL2 &&
              !(pg_EnvShouldBlendAlphaSDL2()) && !SDL_HasColorKey(src) &&
              (PG_SURF_BytesPerPixel(dst) == 4 ||
@@ -4568,12 +4629,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
              _PgSurface_SrcAlpha(src) &&
              (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(src))) &&
              !PG_SurfaceHasRLE(src) && !PG_SurfaceHasRLE(dst) &&
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-             1
-#else
-             !(src->flags & SDL_RLEACCEL) && !(dst->flags & SDL_RLEACCEL)
-#endif
-    ) {
+             !SDL_MUSTLOCK(src) && !SDL_MUSTLOCK(dst)) {
         /* If we have a 32bit source surface with per pixel alpha
            and no RLE we'll use pygame_Blit so we can mimic how SDL1
             behaved */
@@ -4581,11 +4637,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     }
     else {
         /* Py_BEGIN_ALLOW_THREADS */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-        result = SDL_BlitSurface(src, srcrect, dst, dstrect) ? 0 : -1;
-#else
-        result = SDL_BlitSurface(src, srcrect, dst, dstrect);
-#endif
+        result = PG_BlitSurface(src, srcrect, dst, dstrect);
         /* Py_END_ALLOW_THREADS */
     }
 

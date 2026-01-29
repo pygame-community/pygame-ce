@@ -717,11 +717,7 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
             resolve to Render_Solid, that needs to be explicitly handled. */
             if (surf != NULL && bg_rgba_obj != Py_None) {
                 SDL_SetColorKey(surf, 0, 0);
-#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
-                SDL_Palette *palette = SDL_GetSurfacePalette(surf);
-#else
-                SDL_Palette *palette = surf->format->palette;
-#endif
+                SDL_Palette *palette = PG_GetSurfacePalette(surf);
                 if (palette) {
                     palette->colors[0].r = backg.r;
                     palette->colors[0].g = backg.g;
@@ -1397,6 +1393,7 @@ static PyTypeObject PyFont_Type = {
     .tp_methods = font_methods,
     .tp_getset = font_getsets,
     .tp_init = (initproc)font_init,
+    .tp_new = PyType_GenericNew,
 };
 
 /*font module methods*/
@@ -1503,7 +1500,6 @@ MODINIT_DEFINE(font)
     if (PyType_Ready(&PyFont_Type) < 0) {
         return NULL;
     }
-    PyFont_Type.tp_new = PyType_GenericNew;
 
     module = PyModule_Create(&_module);
     if (module == NULL) {

@@ -26,10 +26,10 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v6.0.2
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           path: pygame-wheels
           merge-multiple: true
@@ -41,7 +41,7 @@ jobs:
         run: echo "VER=${GITHUB_REF_NAME#'release/'}" >> $GITHUB_OUTPUT
 
       - name: Generate release attestation
-        uses: actions/attest-build-provenance@v3.0.0
+        uses: actions/attest-build-provenance@v3.1.0
         with:
           subject-path: "pygame-wheels/*"
 
