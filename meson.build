@@ -148,7 +148,7 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
     # TODO (middle-term goal) - Should migrate away from this
     # consider meson wraps? Hopefully can also get the same build path as below
     sdl_ver = (sdl_api == 3) ? '3.4.0' : '2.32.10'
-    sdl_image_ver = (sdl_api == 3) ? '3.2.6' : '2.8.8'
+    sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.8'
     sdl_mixer_ver = '2.8.1'
     sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
 
