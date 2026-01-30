@@ -368,7 +368,7 @@ loaded. This module must be imported explicitly to be used. ::
       | :sl:`The scaled descent of the font in pixels`
       | :sg:`get_sized_descender(size=0, /) -> int`
 
-      Return the number of pixels from the font's baseline to the top of the
+      Return the number of pixels from the font's baseline to the bottom of the
       bounding box. It is not adjusted for strong or rotation.
 
    .. method:: get_sized_height
