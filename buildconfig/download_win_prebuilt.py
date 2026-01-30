@@ -193,7 +193,7 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         'prebuilt-x86'
     )
 
-    ignore = None
+    ignore = lambda directory, files: ["stdint.h"]
     def copy(src, dst):
         copytree(src, dst, ignore=ignore)
 
