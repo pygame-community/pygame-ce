@@ -1,5 +1,6 @@
 #include "pygame.h"
 #include "pgcompat.h"
+#include "structmember.h"
 
 // Useful heap type example @
 // https://github.com/python/cpython/blob/main/Modules/xxlimited.c
