@@ -1178,9 +1178,371 @@ texture_dealloc(pgTextureObject *self, PyObject *_null)
 
 /* Image implementation */
 static int
+image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *tex_or_img;
+    PyObject *srcrectobj = Py_None;
+    SDL_Rect temp, *rectptr;
+
+    static char *keywords[] = {"texture_or_image", "srcrect", NULL};
+    self->texture = NULL;
+    self->srcrect = NULL;
+    self->color = NULL;
+    self->angle = 0.0f;
+    self->alpha = 255.0f;
+    self->has_origin = SDL_FALSE;
+    self->origin.x = 0.0f;
+    self->origin.y = 0.0f;
+    self->flip_x = SDL_FALSE;
+    self->flip_y = SDL_FALSE;
+    self->blend_mode = SDL_BLENDMODE_NONE;
+    self->weakreflist = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", keywords,
+                                     &tex_or_img, &srcrectobj)) {
+        return -1;
+    }
+
+    if (pgImage_Check(tex_or_img)) {
+        pgImageObject *other = (pgImageObject *)tex_or_img;
+        if (!other->texture || !other->srcrect) {
+            PyErr_SetString(pgExc_SDLError, "Invalid source Image");
+            return -1;
+        }
+        self->texture = other->texture;
+        Py_INCREF(self->texture);
+        self->srcrect = (pgRectObject *)pgRect_New(&other->srcrect->r);
+        self->blend_mode = other->blend_mode;
+    }
+    else if (pgTexture_Check(tex_or_img)) {
+        pgTextureObject *tex = (pgTextureObject *)tex_or_img;
+        self->texture = tex;
+        Py_INCREF(self->texture);
+        self->srcrect =
+            (pgRectObject *)pgRect_New4(0, 0, tex->width, tex->height);
+        SDL_GetTextureBlendMode(tex->texture, &self->blend_mode);
+    }
+    else {
+        PyErr_SetString(PyExc_TypeError,
+                        "texture_or_image must be a Texture or Image");
+        return -1;
+    }
+
+    /* default color white */
+    {
+        Uint8 defaultColor[4] = {255, 255, 255, 255};
+        self->color = (pgColorObject *)pgColor_NewLength(defaultColor, 4);
+        if (!self->color) {
+            return -1;
+        }
+    }
+
+    if (!Py_IsNone(srcrectobj)) {
+        rectptr = pgRect_FromObject(srcrectobj, &temp);
+        if (!rectptr) {
+            PyErr_SetString(PyExc_TypeError,
+                            "srcrect must be None or a rectangle");
+            return -1;
+        }
+        /* Ensure we use the actual values from the returned rect pointer. */
+        temp.x = rectptr->x;
+        temp.y = rectptr->y;
+        temp.w = rectptr->w;
+        temp.h = rectptr->h;
+        if (temp.x < 0 || temp.y < 0 || temp.w < 0 || temp.h < 0 ||
+            temp.x + temp.w > self->srcrect->r.w ||
+            temp.y + temp.h > self->srcrect->r.h) {
+            PyErr_SetString(PyExc_ValueError, "rect values are out of range");
+            return -1;
+        }
+        temp.x += self->srcrect->r.x;
+        temp.y += self->srcrect->r.y;
+        Py_XDECREF(self->srcrect);
+        self->srcrect = (pgRectObject *)pgRect_New(&temp);
+    }
+
+    return 0;
+}
+
+static void
+image_dealloc(pgImageObject *self)
+{
+    if (self->weakreflist) {
+        PyObject_ClearWeakRefs((PyObject *)self);
+    }
+    Py_XDECREF(self->texture);
+    Py_XDECREF(self->srcrect);
+    Py_XDECREF(self->color);
+    Py_TYPE(self)->tp_free(self);
+}
+
+static int
 image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
 {
+    SDL_Rect areasrc, *areasrcptr = NULL;
+    SDL_FRect destrect, *destrectptr = NULL;
+    SDL_FPoint origin, *originptr = NULL;
+    Uint8 rgba[4];
+    SDL_RendererFlip flip = SDL_FLIP_NONE;
+
+    if (!self->texture || !self->srcrect) {
+        PyErr_SetString(PyExc_ValueError, "Image has no texture or srcrect");
+        return 0;
+    }
+
+    if (!Py_IsNone(area)) {
+        if (!(areasrcptr = pgRect_FromObject(area, &areasrc))) {
+            PyErr_SetString(PyExc_ValueError,
+                            "srcrect must be a Rect or None");
+            return 0;
+        }
+    }
+    else {
+        areasrcptr = &self->srcrect->r;
+    }
+
+    if (!Py_IsNone(dest)) {
+        if (!(destrectptr = pgFRect_FromObject(dest, &destrect))) {
+            if (!pg_TwoFloatsFromObj(dest, &destrect.x, &destrect.y)) {
+                PyErr_SetString(PyExc_ValueError,
+                                "dest must be a point, Rect, or None");
+                return 0;
+            }
+            destrect.w =
+                (float)(areasrcptr ? areasrcptr->w : self->srcrect->r.w);
+            destrect.h =
+                (float)(areasrcptr ? areasrcptr->h : self->srcrect->r.h);
+        }
+    }
+
+    if (self->has_origin) {
+        origin = self->origin;
+        originptr = &origin;
+    }
+
+    if (self->flip_x) {
+        flip |= SDL_FLIP_HORIZONTAL;
+    }
+    if (self->flip_y) {
+        flip |= SDL_FLIP_VERTICAL;
+    }
+
+    if (!pg_RGBAFromObjEx((PyObject *)self->color, rgba,
+                          PG_COLOR_HANDLE_ALL)) {
+        return 0;
+    }
+
+    RENDERER_PROPERTY_ERROR_CHECK(SDL_SetTextureColorMod(
+        self->texture->texture, rgba[0], rgba[1], rgba[2]))
+    RENDERER_PROPERTY_ERROR_CHECK(
+        SDL_SetTextureAlphaMod(self->texture->texture, (Uint8)self->alpha))
+    RENDERER_PROPERTY_ERROR_CHECK(
+        SDL_SetTextureBlendMode(self->texture->texture, self->blend_mode))
+
+    if (SDL_RenderCopyExF(self->texture->renderer->renderer,
+                          self->texture->texture, areasrcptr, destrectptr,
+                          (double)self->angle, originptr, flip) < 0) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return 0;
+    }
+
     return 1;
+}
+
+static PyObject *
+image_get_texture(pgImageObject *self, void *closure)
+{
+    if (!self->texture) {
+        Py_RETURN_NONE;
+    }
+    Py_INCREF(self->texture);
+    return (PyObject *)self->texture;
+}
+
+static int
+image_set_texture(pgImageObject *self, PyObject *arg, void *closure)
+{
+    if (!pgTexture_Check(arg)) {
+        RAISERETURN(PyExc_TypeError, "texture must be a Texture", -1);
+    }
+    Py_XINCREF(arg);
+    Py_XDECREF(self->texture);
+    self->texture = (pgTextureObject *)arg;
+    return 0;
+}
+
+static PyObject *
+image_get_srcrect(pgImageObject *self, void *closure)
+{
+    if (!self->srcrect) {
+        Py_RETURN_NONE;
+    }
+    Py_INCREF(self->srcrect);
+    return (PyObject *)self->srcrect;
+}
+
+static int
+image_set_srcrect(pgImageObject *self, PyObject *arg, void *closure)
+{
+    SDL_Rect temp;
+    SDL_Rect *rectptr;
+    if (!arg || Py_IsNone(arg)) {
+        RAISERETURN(PyExc_TypeError, "srcrect must be a Rect", -1);
+    }
+    rectptr = pgRect_FromObject(arg, &temp);
+    if (!rectptr) {
+        RAISERETURN(PyExc_TypeError, "srcrect must be a Rect", -1);
+    }
+    Py_XDECREF(self->srcrect);
+    /* Create a new Rect from the exact values returned by pgRect_FromObject */
+    self->srcrect = (pgRectObject *)pgRect_New(rectptr);
+    return 0;
+}
+
+static PyObject *
+image_get_color(pgImageObject *self, void *closure)
+{
+    Py_INCREF(self->color);
+    return (PyObject *)self->color;
+}
+
+static int
+image_set_color(pgImageObject *self, PyObject *arg, void *closure)
+{
+    Uint8 rgba[4];
+    if (!pg_RGBAFromObjEx(arg, rgba, PG_COLOR_HANDLE_ALL)) {
+        return -1;
+    }
+    /* only set RGB like Cython version */
+    ((pgColorObject *)self->color)->data[0] = rgba[0];
+    ((pgColorObject *)self->color)->data[1] = rgba[1];
+    ((pgColorObject *)self->color)->data[2] = rgba[2];
+    return 0;
+}
+
+static PyObject *
+image_get_angle(pgImageObject *self, void *closure)
+{
+    return PyFloat_FromDouble((double)self->angle);
+}
+
+static int
+image_set_angle(pgImageObject *self, PyObject *arg, void *closure)
+{
+    double a;
+    if (!PyFloat_Check(arg) && !PyLong_Check(arg)) {
+        RAISERETURN(PyExc_TypeError, "angle must be a number", -1);
+    }
+    a = PyFloat_AsDouble(arg);
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+    self->angle = (float)a;
+    return 0;
+}
+
+static PyObject *
+image_get_alpha(pgImageObject *self, void *closure)
+{
+    return PyLong_FromLong((long)(Uint8)self->alpha);
+}
+
+static int
+image_set_alpha(pgImageObject *self, PyObject *arg, void *closure)
+{
+    long v;
+    if (!PyLong_Check(arg)) {
+        RAISERETURN(PyExc_TypeError, "alpha must be int", -1);
+    }
+    v = PyLong_AsLong(arg);
+    if (v < 0 || v > 255) {
+        RAISERETURN(PyExc_ValueError, "alpha must be in 0..255", -1);
+    }
+    self->alpha = (float)v;
+    return 0;
+}
+
+static PyObject *
+image_get_origin(pgImageObject *self, void *closure)
+{
+    if (!self->has_origin) {
+        Py_RETURN_NONE;
+    }
+    return Py_BuildValue("(ff)", self->origin.x, self->origin.y);
+}
+
+static int
+image_set_origin(pgImageObject *self, PyObject *arg, void *closure)
+{
+    if (!arg || Py_IsNone(arg)) {
+        self->has_origin = SDL_FALSE;
+        return 0;
+    }
+    if (!pg_TwoFloatsFromObj(arg, &self->origin.x, &self->origin.y)) {
+        RAISERETURN(PyExc_TypeError, "origin must be a point or None", -1);
+    }
+    self->has_origin = SDL_TRUE;
+    return 0;
+}
+
+static PyObject *
+image_get_flip_x(pgImageObject *self, void *closure)
+{
+    if (self->flip_x) {
+        Py_RETURN_TRUE;
+    }
+    else {
+        Py_RETURN_FALSE;
+    }
+}
+
+static int
+image_set_flip_x(pgImageObject *self, PyObject *arg, void *closure)
+{
+    int b = PyObject_IsTrue(arg);
+    if (b < 0) {
+        return -1;
+    }
+    self->flip_x = b ? SDL_TRUE : SDL_FALSE;
+    return 0;
+}
+
+static PyObject *
+image_get_flip_y(pgImageObject *self, void *closure)
+{
+    if (self->flip_y) {
+        Py_RETURN_TRUE;
+    }
+    else {
+        Py_RETURN_FALSE;
+    }
+}
+
+static int
+image_set_flip_y(pgImageObject *self, PyObject *arg, void *closure)
+{
+    int b = PyObject_IsTrue(arg);
+    if (b < 0) {
+        return -1;
+    }
+    self->flip_y = b ? SDL_TRUE : SDL_FALSE;
+    return 0;
+}
+
+static PyObject *
+image_get_blend_mode(pgImageObject *self, void *closure)
+{
+    return PyLong_FromLong((long)self->blend_mode);
+}
+
+static int
+image_set_blend_mode(pgImageObject *self, PyObject *arg, void *closure)
+{
+    if (!PyLong_Check(arg)) {
+        RAISERETURN(PyExc_TypeError, "blend_mode must be int", -1);
+    }
+    self->blend_mode = (SDL_BlendMode)PyLong_AsLong(arg);
+    return 0;
 }
 
 /* Module definition */
@@ -1274,9 +1636,57 @@ static PyGetSetDef texture_getset[] = {
      DOC_SDL2_VIDEO_TEXTURE_COLOR, NULL},
     {NULL, 0, NULL, NULL, NULL}};
 
-static PyMethodDef image_methods[] = {{NULL, NULL, 0, NULL}};
+/* Image methods and properties */
+static PyObject *
+image_get_rect_method(pgImageObject *self, PyObject *const *args,
+                      Py_ssize_t nargs, PyObject *kwargs)
+{
+    PyObject *rect = pgRect_New(&self->srcrect->r);
+    return rect;
+}
 
-static PyGetSetDef image_getset[] = {{NULL, 0, NULL, NULL, NULL}};
+static PyObject *
+image_draw(pgImageObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *srcrectobj = Py_None, *dstrectobj = Py_None;
+    static char *keywords[] = {"srcrect", "dstrect", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", keywords,
+                                     &srcrectobj, &dstrectobj)) {
+        return NULL; /* Exception already set. */
+    }
+    if (!image_renderer_draw(self, srcrectobj, dstrectobj)) {
+        return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
+static PyMethodDef image_methods[] = {
+    {"get_rect", (PyCFunction)image_get_rect_method,
+     METH_FASTCALL | METH_KEYWORDS, DOC_SDL2_VIDEO_TEXTURE_GETRECT},
+    {"draw", (PyCFunction)image_draw, METH_VARARGS | METH_KEYWORDS,
+     DOC_SDL2_VIDEO_TEXTURE_DRAW},
+    {NULL, NULL, 0, NULL}};
+
+static PyGetSetDef image_getset[] = {
+    {"texture", (getter)image_get_texture, (setter)image_set_texture,
+     DOC_SDL2_VIDEO_TEXTURE, NULL},
+    {"srcrect", (getter)image_get_srcrect, (setter)image_set_srcrect,
+     DOC_SDL2_VIDEO_TEXTURE_GETRECT, NULL},
+    {"color", (getter)image_get_color, (setter)image_set_color,
+     DOC_SDL2_VIDEO_TEXTURE_COLOR, NULL},
+    {"angle", (getter)image_get_angle, (setter)image_set_angle,
+     DOC_SDL2_VIDEO_TEXTURE_DRAW, NULL},
+    {"alpha", (getter)image_get_alpha, (setter)image_set_alpha,
+     DOC_SDL2_VIDEO_TEXTURE_ALPHA, NULL},
+    {"origin", (getter)image_get_origin, (setter)image_set_origin,
+     DOC_SDL2_VIDEO_TEXTURE_DRAW, NULL},
+    {"flip_x", (getter)image_get_flip_x, (setter)image_set_flip_x,
+     DOC_SDL2_VIDEO_TEXTURE_DRAW, NULL},
+    {"flip_y", (getter)image_get_flip_y, (setter)image_set_flip_y,
+     DOC_SDL2_VIDEO_TEXTURE_DRAW, NULL},
+    {"blend_mode", (getter)image_get_blend_mode, (setter)image_set_blend_mode,
+     DOC_SDL2_VIDEO_TEXTURE_BLENDMODE, NULL},
+    {NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgRenderer_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._render.Renderer",
@@ -1302,10 +1712,13 @@ static PyTypeObject pgTexture_Type = {
 static PyTypeObject pgImage_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._render.Image",
     .tp_basicsize = sizeof(pgImageObject),
-    //.tp_dealloc = (destructor)image_dealloc,
-    .tp_doc = DOC_SDL2_VIDEO_IMAGE, .tp_methods = image_methods,
-    //.tp_init = (initproc)image_init,
-    .tp_new = PyType_GenericNew, .tp_getset = image_getset};
+    .tp_dealloc = (destructor)image_dealloc,
+    .tp_doc = DOC_SDL2_VIDEO_IMAGE,
+    .tp_weaklistoffset = offsetof(pgImageObject, weakreflist),
+    .tp_methods = image_methods,
+    .tp_init = (initproc)image_init,
+    .tp_new = PyType_GenericNew,
+    .tp_getset = image_getset};
 
 static PyMethodDef _render_methods[] = {{NULL, NULL, 0, NULL}};
 
