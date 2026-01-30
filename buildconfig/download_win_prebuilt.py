@@ -112,13 +112,13 @@ def get_urls(x86=True, x64=True):
     ])
     if x86:
         url_sha1.append([
-         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x86-pygame-2.1.4-20220319.zip',
-         'bff2e50d65ec35274d33203e9fcaf5d53b31a696'
+         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x86-pygame-2.1.4-20220319_2.zip',
+         '6970a35c62fa517e9782dc92299201bf2a0ec917'
         ])
     if x64:
         url_sha1.append([
-         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x64-pygame-2.1.4-20220319.zip',
-         '16b46596744ce9ef80e7e40fa72ddbafef1cf586'
+         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x64-pygame-2.1.4-20220319_2.zip',
+         '3aaacd02f0c2ed497e2615d3a1f89c250a32f1fa'
         ])
     return url_sha1
 
@@ -184,12 +184,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
     """
     prebuilt_x64 = os.path.join(
         temp_dir,
-        'prebuilt-x64-pygame-2.1.4-20220319',
+        'prebuilt-x64-pygame-2.1.4-20220319_2',
         'prebuilt-x64'
     )
     prebuilt_x86 = os.path.join(
         temp_dir,
-        'prebuilt-x86-pygame-2.1.4-20220319',
+        'prebuilt-x86-pygame-2.1.4-20220319_2',
         'prebuilt-x86'
     )
 
