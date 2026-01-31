@@ -284,6 +284,11 @@ Conversion can be combined with swizzling or slicing to create a new order
       direction as self. If the vector is the zero vector (i.e. has length
       ``0`` thus no direction) a ``ValueError`` is raised.
 
+      .. versionchanged:: 2.5.2 It is now possible to use ``normalize`` on a zero-vector.
+
+      .. note::
+         Before pygame-ce 2.5.2, attempting to normalize a zero vector would always raise a ``ValueError``
+
       .. ## Vector2.normalize ##
 
    .. method:: normalize_ip
@@ -295,6 +300,11 @@ Conversion can be combined with swizzling or slicing to create a new order
       The direction of the vector is not changed. If the vector is the zero
       vector (i.e. has length ``0`` thus no direction) a ``ValueError`` is
       raised.
+
+      .. versionchanged:: 2.5.2 It is now possible to use ``normalize_ip`` on a zero-vector.
+
+      .. note::
+         Before pygame-ce 2.5.2, attempting to normalize a zero vector would always raise a ``ValueError``
 
       .. ## Vector2.normalize_ip ##
 
