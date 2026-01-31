@@ -460,6 +460,10 @@ pg_audio_get_audio_stream_data(PyObject *module, PyObject *const *args,
         return RAISE(PyExc_ValueError, "size must be >= 0");
     }
 
+    if (size == 0) {
+        return PyBytes_FromStringAndSize("", 0);
+    }
+
     void *buf = malloc(size);
     if (buf == NULL) {
         return PyErr_NoMemory();
@@ -474,10 +478,6 @@ pg_audio_get_audio_stream_data(PyObject *module, PyObject *const *args,
 
     PyObject *bytes = PyBytes_FromStringAndSize(buf, bytes_read);
     free(buf);
-    if (bytes == NULL) {
-        return NULL;
-    }
-
     return bytes;
 }
 
