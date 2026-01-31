@@ -456,6 +456,10 @@ pg_audio_get_audio_stream_data(PyObject *module, PyObject *const *args,
         return NULL;
     }
 
+    if (size < 0) {
+        return RAISE(PyExc_ValueError, "size must be >= 0");
+    }
+
     void *buf = malloc(size);
     if (buf == NULL) {
         return PyErr_NoMemory();
@@ -1041,7 +1045,7 @@ static PyMethodDef audio_methods[] = {
 // MODULE SETUP
 // ***************************************************************************
 
-int
+static int
 pg_audio_exec(PyObject *module)
 {
     /*imported needed apis*/
