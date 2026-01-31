@@ -14,21 +14,6 @@
 
 | :sl:`Experimental pygame module for porting new SDL video systems`
 
-.. function:: messagebox
-
-   | :sl:`Create a native GUI message box`
-   | :sg:`messagebox(title, message, window=None, info=False, warn=False, buttons=('OK',), return_button=0, escape_button=0)`
-
-   :param str title: A title string, or ``None`` to omit a title.
-   :param str message: A message string.
-   :param bool info: If ``True``, display an info message.
-   :param bool warn: If ``True``, display a warning message.
-   :param bool error: If ``True``, display an error message.
-   :param tuple buttons: An optional sequence of button name strings to show to the user.
-   :param int return_button: Button index to use if the return key is hit (``-1`` for none).
-   :param int escape_button: Button index to use if the escape key is hit (``-1`` for none).
-   :return: The index of the button that was pushed.
-
 .. class:: RendererDriverInfo
 
    | :sl:`pygame object encapsulating Renderer driver information`
