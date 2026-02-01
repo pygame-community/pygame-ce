@@ -215,7 +215,7 @@ if plat == 'win'
 
         sdl_ver = (sdl_api == 3) ? '3.4.0' : '2.32.10'
         sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.8'
-        sdl_mixer_ver = '2.8.1'
+        sdl_mixer_ver = (sdl_api == 3) ? '3.2.0' : '2.8.1'
         sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
 
         arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
