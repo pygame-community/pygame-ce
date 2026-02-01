@@ -695,7 +695,7 @@ class DisplayModuleTest(unittest.TestCase):
             # if not original width/height should be preserved
             else:
                 self.assertEqual(
-                    (test_surf.get_width(), test_surf.get_height()), width_height
+                    (test_surf.width, test_surf.height), width_height
                 )
 
     @unittest.skipIf(is_wayland, "not supported on wayland")
