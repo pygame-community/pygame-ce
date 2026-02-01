@@ -113,6 +113,17 @@ jobs:
         cmake --build . --config Release --parallel
         sudo cmake --install . --config Release
 
+    - name: Install SDL3_mixer
+      if: matrix.os != 'windows-latest'
+      run: |
+        git clone https://github.com/libsdl-org/SDL_mixer
+        cd SDL_mixer
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release --parallel
+        sudo cmake --install . --config Release
+
     - name: Build with SDL3
       run: python3 dev.py build --sdl3
 
