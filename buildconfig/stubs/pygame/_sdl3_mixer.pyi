@@ -2,7 +2,7 @@ import dataclasses
 from collections.abc import Callable
 from typing import Any, Type, TypedDict, TypeVar
 
-import _audio as audio
+from pygame import _audio as audio
 from pygame.typing import FileLike
 from typing_extensions import Buffer
 

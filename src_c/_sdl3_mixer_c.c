@@ -97,8 +97,10 @@ pg_mixer_obj_play_audio(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", keywords, audio_type,
                                      &audio)) {
+        Py_DECREF(audio_type);
         return NULL;
     }
+    Py_DECREF(audio_type);
 
     if (!MIX_PlayAudio(self->mixer, audio->audio)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -124,7 +126,7 @@ pg_mixer_obj_play_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
                         NULL};
 
     if (!PyArg_ParseTupleAndKeywords(
-            args, kwargs, "s|LLLLLLLLLLL", keywords, &tag, &loops, &max_ms,
+            args, kwargs, "s|LLLLLL", keywords, &tag, &loops, &max_ms,
             &start_ms, &loop_start_ms, &fadein_ms, &append_silence_ms)) {
         return NULL;
     }
@@ -209,7 +211,7 @@ pg_mixer_obj_set_tag_gain(PGMixerObject *self, PyObject *args,
     float gain;
     char *keywords[] = {"tag", "gain", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|L", keywords, &tag,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sf", keywords, &tag,
                                      &gain)) {
         return NULL;
     }
@@ -228,7 +230,7 @@ pg_mixer_obj_stop_all_tracks(PGMixerObject *self, PyObject *args,
     int64_t fade_out_ms = 0;
     char *keywords[] = {"fade_out_ms", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", keywords,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|L", keywords,
                                      &fade_out_ms)) {
         return NULL;
     }
@@ -316,6 +318,11 @@ pg_mixer_obj_dealloc(PGMixerObject *self)
 {
     MIX_DestroyMixer(self->mixer);
     self->mixer = NULL;
+    PyObject_GC_UnTrack(self);
+    PyTypeObject *tp = Py_TYPE(self);
+    freefunc free = PyType_GetSlot(tp, Py_tp_free);
+    free(self);
+    Py_DECREF(tp);
 }
 
 static PyObject *
@@ -405,6 +412,7 @@ pg_audio_obj_init(PGAudioObject *self, PyObject *args, PyObject *kwargs)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|pO", keywords, &file,
                                      &predecode, &mixer_or_none)) {
+        Py_DECREF(mixer_type);
         return -1;
     }
 
@@ -413,9 +421,11 @@ pg_audio_obj_init(PGAudioObject *self, PyObject *args, PyObject *kwargs)
         mixer = ((PGMixerObject *)mixer_or_none)->mixer;
     }
     else if (!Py_IsNone(mixer_or_none)) {  // not mixer, not none
+        Py_DECREF(mixer_type);
         PyErr_SetString(PyExc_TypeError, "argument 3 must be Mixer or None");
         return -1;
     }
+    Py_DECREF(mixer_type);
 
     SDL_IOStream *io = pgRWops_FromObject(file, NULL);
     if (io == NULL) {
@@ -436,6 +446,11 @@ pg_audio_obj_dealloc(PGAudioObject *self)
 {
     MIX_DestroyAudio(self->audio);
     self->audio = NULL;
+    PyObject_GC_UnTrack(self);
+    PyTypeObject *tp = Py_TYPE(self);
+    freefunc free = PyType_GetSlot(tp, Py_tp_free);
+    free(self);
+    Py_DECREF(tp);
 }
 
 static PyObject *
@@ -481,6 +496,7 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", keywords, &buffer,
                                      &mixer_or_none)) {
+        Py_DECREF(mixer_type);
         return NULL;
     }
 
@@ -489,8 +505,10 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
         mixer = ((PGMixerObject *)mixer_or_none)->mixer;
     }
     else if (!Py_IsNone(mixer_or_none)) {  // not mixer, not none
+        Py_DECREF(mixer_type);
         return RAISE(PyExc_TypeError, "argument 2 must be Mixer or None");
     }
+    Py_DECREF(mixer_type);
 
     PyObject *bytes = PyBytes_FromObject(buffer);
     if (bytes == NULL) {
@@ -524,6 +542,7 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "if|Oi", keywords, &hz,
                                      &amplitude, &mixer_or_none, &ms)) {
+        Py_DECREF(mixer_type);
         return NULL;
     }
 
@@ -532,8 +551,10 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
         mixer = ((PGMixerObject *)mixer_or_none)->mixer;
     }
     else if (!Py_IsNone(mixer_or_none)) {  // not mixer, not none
+        Py_DECREF(mixer_type);
         return RAISE(PyExc_TypeError, "argument 3 must be Mixer or None");
     }
+    Py_DECREF(mixer_type);
 
     PGAudioObject *self = (PGAudioObject *)cls->tp_alloc(cls, 0);
     if (self == NULL) {
@@ -736,8 +757,12 @@ pg_track_obj_dealloc(PGTrackObject *self)
 {
     MIX_DestroyTrack(self->track);
     self->track = NULL;
-    Py_XDECREF(self->mixer_obj);
-    self->mixer_obj = NULL;
+    Py_CLEAR(self->mixer_obj);
+    PyObject_GC_UnTrack(self);
+    PyTypeObject *tp = Py_TYPE(self);
+    freefunc free = PyType_GetSlot(tp, Py_tp_free);
+    free(self);
+    Py_DECREF(tp);
 }
 
 static PyObject *
@@ -816,6 +841,7 @@ pg_track_obj_set_audio(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords,
                                      &audio_or_none)) {
+        Py_DECREF(audio_type);
         return NULL;
     }
 
@@ -824,8 +850,10 @@ pg_track_obj_set_audio(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         audio = ((PGAudioObject *)audio_or_none)->audio;
     }
     else if (!Py_IsNone(audio_or_none)) {  // not audio, not none
+        Py_DECREF(audio_type);
         return RAISE(PyExc_TypeError, "argument 1 must be Audio or None");
     }
+    Py_DECREF(audio_type);
 
     if (!MIX_SetTrackAudio(self->track, audio)) {
         return RAISE(pgExc_SDLError, SDL_GetError());

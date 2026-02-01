@@ -14,7 +14,7 @@ def ms_to_frames(sample_rate: int, ms: int) -> int:
     if ms < 0:
         raise ValueError("MS must be positive.")
 
-    return ms / 1000 * sample_rate
+    return int(ms / 1000 * sample_rate)
 
 
 # Pure Python version of MIX_FramesToMS, since it's so straightforward.
@@ -24,7 +24,7 @@ def frames_to_ms(sample_rate: int, frames: int) -> int:
     if frames < 0:
         raise ValueError("Frames must be positive.")
 
-    return frames / sample_rate * 1000
+    return int(frames / sample_rate * 1000)
 
 
 get_decoders = _sdl3_mixer_c.get_decoders
