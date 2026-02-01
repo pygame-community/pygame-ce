@@ -140,6 +140,7 @@ only-binary = ["numpy"]
 # 2. skip all pypy+arm combinations
 # 3. skip pypy 3.11 manylinux and cpython 3.14 manylinux (numpy has newer manylinux
 # wheels for this which is incompatible with our manylinux version)
+# 4. skip 3.10 on ARM Windows
 [[tool.cibuildwheel.overrides]]
-select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp314-manylinux_*}"
+select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp314-manylinux_*,cp310-win_arm64}"
 test-requires = []

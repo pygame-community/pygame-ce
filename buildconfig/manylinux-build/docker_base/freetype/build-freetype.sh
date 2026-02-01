@@ -7,7 +7,7 @@ FREETYPE="freetype-2.14.1"
 HARFBUZZ_VER=12.1.0
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
-curl -sL --retry 10 https://savannah.nongnu.org/download/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
+curl -sL --retry 10 https://download.savannah.gnu.org/releases/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
 curl -sL --retry 10 https://github.com/harfbuzz/harfbuzz/releases/download/${HARFBUZZ_VER}/${HARFBUZZ_NAME}.tar.xz > ${HARFBUZZ_NAME}.tar.xz
 sha512sum -c freetype.sha512
 
