@@ -484,20 +484,34 @@ pg_audio_obj_get_duration_infinite(PGAudioObject *self, void *_null)
     Py_RETURN_FALSE;  // not infinite / unknown
 }
 
-// NOT FINISHED, NEEDS AUDIOSPEC SUPPORT FIRST.
 static PyObject *
 pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
 {
-    PyObject *buffer;
+    PyObject *buffer, *spec_obj;
     PyObject *mixer_or_none = Py_None;
-    char *keywords[] = {"buffer", "preferred_mixer", NULL};
+    char *keywords[] = {"buffer", "spec", "preferred_mixer", NULL};
     PyObject *mixer_type =
         PyObject_GetAttrString((PyObject *)cls, "_mixer_type");
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", keywords, &buffer,
-                                     &mixer_or_none)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O", keywords, &buffer,
+                                     &spec_obj, &mixer_or_none)) {
         Py_DECREF(mixer_type);
         return NULL;
+    }
+
+    // We assume the passed spec obj is a 3-tuple of AudioSpec values
+    // this is validated by the Python layer.
+    SDL_AudioSpec spec;
+    spec.format = PyLong_AsInt(PyTuple_GetItem(spec_obj, 0));
+    spec.channels = PyLong_AsInt(PyTuple_GetItem(spec_obj, 1));
+    spec.freq = PyLong_AsInt(PyTuple_GetItem(spec_obj, 2));
+
+    // Check that they all succeeded
+    if (spec.format == -1 || spec.channels == -1 || spec.freq == -1) {
+        if (PyErr_Occurred()) {
+            Py_DECREF(mixer_type);
+            return NULL;
+        }
     }
 
     MIX_Mixer *mixer = NULL;
@@ -506,7 +520,7 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
     }
     else if (!Py_IsNone(mixer_or_none)) {  // not mixer, not none
         Py_DECREF(mixer_type);
-        return RAISE(PyExc_TypeError, "argument 2 must be Mixer or None");
+        return RAISE(PyExc_TypeError, "argument 3 must be Mixer or None");
     }
     Py_DECREF(mixer_type);
 
@@ -515,18 +529,27 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
+    void *buf;
+    Py_ssize_t len;
+    if (PyBytes_AsStringAndSize(bytes, (char **)&buf, &len) != 0) {
+        Py_DECREF(bytes);
+        return NULL;
+    }
+
     PGAudioObject *self = (PGAudioObject *)cls->tp_alloc(cls, 0);
     if (self == NULL) {
         Py_DECREF(bytes);
         return NULL;
     }
+
+    MIX_Audio *raw_audio = MIX_LoadRawAudio(mixer, buf, (size_t)len, &spec);
+    if (raw_audio == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    self->audio = raw_audio;
+
     Py_INCREF(self);
-
-    // MIX_LoadRawAudio(mixer, );
-    // Py_DECREF(bytes);
-    // printf("buffer=%p, bytes=%p\n", buffer, bytes);
-
-    Py_RETURN_NONE;
+    return (PyObject *)self;
 }
 
 static PyObject *
@@ -560,7 +583,6 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
     if (self == NULL) {
         return NULL;
     }
-    Py_INCREF(self);
 
     // MIX_CreateSineWaveAudio is bugged right now (2025-10-04),
     // complains about invalid context parameter.
@@ -571,6 +593,7 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
     }
 
     self->audio = sine_wave_audio;
+    Py_INCREF(self);
     return (PyObject *)self;
 }
 
@@ -697,8 +720,8 @@ static PyGetSetDef audio_obj_getsets[] = {
 static PyMethodDef audio_obj_methods[] = {
     {"from_sine_wave", (PyCFunction)pg_audio_obj_from_sine_wave,
      METH_CLASS | METH_VARARGS | METH_KEYWORDS, "TODO"},
-    //{"from_raw", (PyCFunction)pg_audio_obj_from_raw,
-    // METH_CLASS | METH_VARARGS | METH_KEYWORDS, "TODO"},
+    {"from_raw", (PyCFunction)pg_audio_obj_from_raw,
+     METH_CLASS | METH_VARARGS | METH_KEYWORDS, "TODO"},
     {"ms_to_frames", (PyCFunction)pg_audio_obj_ms_to_frames,
      METH_VARARGS | METH_KEYWORDS, "TODO"},
     {"frames_to_ms", (PyCFunction)pg_audio_obj_frames_to_ms,

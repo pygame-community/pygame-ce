@@ -71,10 +71,10 @@ class Audio:
         predecode: bool = False,
         preferred_mixer: Mixer | None = None,
     ) -> None: ...
-    # @classmethod
-    # def from_raw(
-    #    cls, buffer: Buffer, spec: audio.AudioSpec, preferred_mixer: Mixer | None = None
-    # ) -> Audio: ...
+    @classmethod
+    def from_raw(
+        cls, buffer: Buffer, spec: audio.AudioSpec, preferred_mixer: Mixer | None = None
+    ) -> Audio: ...
     @classmethod
     def from_sine_wave(
         cls,

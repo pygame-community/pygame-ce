@@ -1,6 +1,6 @@
 import dataclasses
 
-from pygame import _audio as audio, _sdl3_mixer_c
+from pygame import _audio as audio, _sdl3_mixer_c  # pylint: disable=no-name-in-module
 
 init = _sdl3_mixer_c.init
 # quit = _sdl3_mixer_c.quit
@@ -66,6 +66,19 @@ class AudioMetadata:
 
 
 class Audio(_sdl3_mixer_c.Audio):
+    @classmethod
+    def from_raw(
+        cls, buffer, spec: audio.AudioSpec, preferred_mixer: Mixer | None = None
+    ):
+        if not isinstance(spec, audio.AudioSpec):
+            raise TypeError(
+                f"Track 'spec' argument must be an AudioSpec, received {type(spec)}"
+            )
+
+        return _sdl3_mixer_c.Audio.from_raw(
+            buffer, (spec.format, spec.channels, spec.frequency), preferred_mixer
+        )
+
     @property
     def spec(self) -> audio.AudioSpec:
         return audio._internals.audio_spec_from_ints(
