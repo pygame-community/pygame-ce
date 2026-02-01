@@ -158,3 +158,53 @@ jobs:
           name: pygame-wheels-windows-${{ matrix.winarch }}
           path: ./wheelhouse/*.whl
           compression-level: 0  # wheels are already zip files, no need for more compression
+
+  # it is important that this job doesn't upload any wheels, because they would
+  # then land up in github releases during a release.
+  msys2:
+    name: msys2 ${{ matrix.sys }}
+    needs: deps
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        include:
+          - { winarch: x86_64, sys: mingw64, env: x86_64, os: windows-latest }
+          - { winarch: x86_64, sys: ucrt64,  env: ucrt-x86_64, os: windows-latest }
+          - { winarch: x86_64, sys: clang64, env: clang-x86_64, os: windows-latest }
+          - { winarch: aarch64, sys: clangarm64, env: clang-aarch64, os: windows-11-arm }
+
+    steps:
+      - run: git config --global core.autocrlf input  # do not introduce carriage returns
+      - uses: actions/checkout@v6.0.2
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.sys }}
+          update: true
+          install: >-
+            mingw-w64-${{ matrix.env }}-gcc
+            mingw-w64-${{ matrix.env }}-pkg-config
+            mingw-w64-${{ matrix.env }}-python
+            mingw-w64-${{ matrix.env }}-python-pip
+            mingw-w64-${{ matrix.env }}-python-sphinx
+            mingw-w64-${{ matrix.env }}-meson-python
+            mingw-w64-${{ matrix.env }}-cython
+
+      - name: Download Windows deps artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: pygame_win_deps_${{ matrix.winarch }}
+          path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
+
+      # pip does not know that ninja is installed, and tries to install it again.
+      # so pass --ignore-dep ninja explicitly
+      - name: Build and install pygame wheel
+        shell: msys2 {0}
+        run: python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax
+
+      - name: Run tests
+        env:
+          SDL_VIDEODRIVER: "dummy"
+          SDL_AUDIODRIVER: "disk"
+        shell: msys2 {0}
+        run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300
