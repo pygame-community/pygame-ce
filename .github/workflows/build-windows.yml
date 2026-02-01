@@ -17,6 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # windows build with legacy prebuilts
+  # this job is to be removed when we generalize the Windows ARM job
   build:
     name: ${{ matrix.winarch }}
     runs-on: windows-latest
@@ -41,6 +43,112 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           version: "0.9.2"
+
+      - name: Build and test wheels
+        uses: pypa/cibuildwheel@v3.2.1
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: pygame-wheels-windows-${{ matrix.winarch }}
+          path: ./wheelhouse/*.whl
+          compression-level: 0  # wheels are already zip files, no need for more compression
+
+  deps:
+    name: ${{ matrix.winarch }} deps
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        include:
+          # for now, the x86 and x86_64 deps produced here are not used in our
+          # release wheels that the above build step produces.
+          - { winarch: x86_64, march: x86_64, msystem: MINGW64, os: windows-2022 }
+          - { winarch: x86, march: i686, msystem: MINGW32, os: windows-2022 }
+          - { winarch: aarch64, march: clang-aarch64, msystem: CLANGARM64, os: windows-11-arm }
+
+    steps:
+      - run: git config --global core.autocrlf input  # do not introduce carriage returns
+      - uses: actions/checkout@v6.0.2
+
+      - name: Test for Win Deps cache hit
+        id: windep-cache
+        uses: actions/cache@v5.0.2
+        with:
+          path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
+          # The hash of all files in buildconfig manylinux-build and windependencies is
+          # the key to the cache. If anything changes here, the deps are built again
+          key: windep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/windependencies/*') }}-${{ matrix.winarch }}
+
+      # Setup msys environment
+      - uses: msys2/setup-msys2@v2
+        if: steps.windep-cache.outputs.cache-hit != 'true'
+        with:
+          update: true
+          msystem: ${{ matrix.msystem }}
+          install: >
+            git
+            patch
+            mingw-w64-${{ matrix.march }}-gcc
+            mingw-w64-${{ matrix.march }}-binutils
+            mingw-w64-${{ matrix.march }}-tools
+            mingw-w64-${{ matrix.march }}-autotools
+            mingw-w64-${{ matrix.march }}-cmake
+            mingw-w64-${{ matrix.march }}-meson
+            mingw-w64-${{ matrix.march }}-python-pip
+            mingw-w64-${{ matrix.march }}-ca-certificates
+            mingw-w64-${{ matrix.march }}-nasm
+
+      # build win deps on cache miss
+      - name: Build Win Deps
+        if: steps.windep-cache.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: |
+          export WIN_ARCH="${{ matrix.winarch }}"
+          cd buildconfig/windependencies
+          bash ./build_win_deps.sh
+
+      - name: Upload win deps
+        uses: actions/upload-artifact@v6
+        with:
+          name: pygame_win_deps_${{ matrix.winarch }}
+          path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
+
+  build-arm:
+    name: ${{ matrix.winarch }}
+    needs: deps
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        include:
+          # TODO: uncomment below lines when we unify under the same system
+          # - { winarch: x86_64, cibw_arch: AMD64, os: windows-2022 }
+          # - { winarch: x86, cibw_arch: x86, os: windows-2022 }
+          - { winarch: aarch64, cibw_arch: ARM64, os: windows-11-arm }
+
+    env:
+      CIBW_ARCHS: ${{ matrix.cibw_arch }}
+
+    steps:
+      - run: git config --global core.autocrlf input  # do not introduce carriage returns
+      - uses: actions/checkout@v6.0.2
+
+      - name: Force 32-bit MSVC
+        if: matrix.winarch == 'x86'
+        uses: egor-tensin/vs-shell@v2
+        with:
+          arch: x86
+
+      - name: Install uv for speed
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.9.2"
+
+      - name: Download Windows deps artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: pygame_win_deps_${{ matrix.winarch }}
+          path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
 
       - name: Build and test wheels
         uses: pypa/cibuildwheel@v3.2.1

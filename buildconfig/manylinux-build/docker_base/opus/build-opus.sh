@@ -13,7 +13,12 @@ sha512sum -c opus.sha512
 tar xzf ${OPUS}.tar.gz
 cd $OPUS
 
-./configure $PG_BASE_CONFIGURE_FLAGS
+# Opus doesn't support rtcd on ARM Windows yet.
+if [ "$WIN_ARCH" == "aarch64" ]; then
+  PG_EXTRA_OPUS_ARGS="--disable-rtcd"
+fi
+
+./configure $PG_BASE_CONFIGURE_FLAGS $PG_EXTRA_OPUS_ARGS
 make
 make install
 

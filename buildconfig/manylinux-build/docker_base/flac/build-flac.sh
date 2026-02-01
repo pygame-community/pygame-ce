@@ -16,8 +16,14 @@ cd $FLAC
 mkdir build
 cd build
 
+if [ -n "$WIN_ARCH" ]; then
+  # When SDL_image is linking against FLAC on windows, it doesn't find
+  # Threads::Threads
+  export PG_FLAC_EXTRA_ARGS="-DENABLE_MULTITHREADING=0"
+fi
+
 # use cmake to try to catch the ogg dependency
-cmake .. $PG_BASE_CMAKE_FLAGS \
+cmake .. $PG_BASE_CMAKE_FLAGS $PG_FLAC_EXTRA_ARGS \
     -DBUILD_CXXLIBS=0 \
     -DBUILD_PROGRAMS=0 \
     -DBUILD_EXAMPLES=0 \
