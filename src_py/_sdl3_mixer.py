@@ -72,7 +72,7 @@ class Audio(_sdl3_mixer_c.Audio):
     ):
         if not isinstance(spec, audio.AudioSpec):
             raise TypeError(
-                f"Track 'spec' argument must be an AudioSpec, received {type(spec)}"
+                f"Audio 'spec' argument must be an AudioSpec, received {type(spec)}"
             )
 
         return _sdl3_mixer_c.Audio.from_raw(

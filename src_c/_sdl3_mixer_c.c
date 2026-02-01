@@ -144,9 +144,11 @@ pg_mixer_obj_play_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
                                           fadein_ms, 0, append_silence_ms);
 
     if (!success || !MIX_PlayTag(self->mixer, tag, options)) {
+        SDL_DestroyProperties(options);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
+    SDL_DestroyProperties(options);
     Py_RETURN_NONE;
 }
 
@@ -544,11 +546,13 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
 
     MIX_Audio *raw_audio = MIX_LoadRawAudio(mixer, buf, (size_t)len, &spec);
     if (raw_audio == NULL) {
+        Py_DECREF(bytes);
+        Py_DECREF(self);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     self->audio = raw_audio;
 
-    Py_INCREF(self);
+    Py_DECREF(bytes);
     return (PyObject *)self;
 }
 
@@ -589,11 +593,11 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
     MIX_Audio *sine_wave_audio =
         MIX_CreateSineWaveAudio(mixer, hz, amplitude, ms);
     if (sine_wave_audio == NULL) {
+        Py_DECREF(self);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     self->audio = sine_wave_audio;
-    Py_INCREF(self);
     return (PyObject *)self;
 }
 
@@ -780,8 +784,9 @@ pg_track_obj_dealloc(PGTrackObject *self)
 {
     MIX_DestroyTrack(self->track);
     self->track = NULL;
-    Py_CLEAR(self->mixer_obj);
     PyObject_GC_UnTrack(self);
+    Py_CLEAR(self->mixer_obj);
+    Py_CLEAR(self->source_obj);
     PyTypeObject *tp = Py_TYPE(self);
     freefunc free = PyType_GetSlot(tp, Py_tp_free);
     free(self);
@@ -847,6 +852,9 @@ static int
 pg_track_obj_set_freq_ratio(PGTrackObject *self, PyObject *value, void *_null)
 {
     double ratio = PyFloat_AsDouble(value);
+    if (ratio == -1.0 && PyErr_Occurred()) {
+        return -1;
+    }
     if (!MIX_SetTrackFrequencyRatio(self->track, (float)ratio)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
@@ -1001,12 +1009,6 @@ pg_track_obj_set_filestream(PGTrackObject *self, PyObject *args,
     Py_RETURN_NONE;
 }
 
-#define SET_NUM_PROPERTY_IFNOTDEFAULT_ANDFLAG(props, property, value, \
-                                              default, success)       \
-    if (value != default) {                                           \
-        success &= SDL_SetNumberProperty(props, property, value);     \
-    }
-
 static PyObject *
 pg_track_obj_play(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -1048,9 +1050,11 @@ pg_track_obj_play(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         append_silence_frames, append_silence_ms);
 
     if (!success || !MIX_PlayTrack(self->track, options)) {
+        SDL_DestroyProperties(options);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
+    SDL_DestroyProperties(options);
     Py_RETURN_NONE;
 }
 
