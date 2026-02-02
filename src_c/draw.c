@@ -1011,7 +1011,7 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
         }
         else {
             draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
-                                  posy, radius, width, color, 1, 1, 1, 1,
+                                  posy, radius, width - 1, color, 1, 1, 1, 1,
                                   drawn_area);
         }
     }
@@ -1029,7 +1029,7 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
         }
         else {
             draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
-                                  posy, radius, width, color, top_right,
+                                  posy, radius, width - 1, color, top_right,
                                   top_left, bottom_left, bottom_right,
                                   drawn_area);
         }
