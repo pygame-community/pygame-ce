@@ -1419,12 +1419,11 @@ aarect(PyObject *self, PyObject *args, PyObject *kwargs)
             width = MAX(rect->w / 2, rect->h / 2);
         }
 
-        draw_round_rect_xiaolinwu(surf, surf_clip_rect, surf_format, rect->x,
-                                  rect->y, rect->x + rect->w - 1,
-                                  rect->y + rect->h - 1, radius, width, color,
-                                  top_left_radius, top_right_radius,
-                                  bottom_left_radius, bottom_right_radius,
-                                  drawn_area);
+        draw_round_rect_xiaolinwu(
+            surf, surf_clip_rect, surf_format, rect->x, rect->y,
+            rect->x + rect->w - 1, rect->y + rect->h - 1, radius, width, color,
+            top_left_radius, top_right_radius, bottom_left_radius,
+            bottom_right_radius, drawn_area);
         if (!pgSurface_Unlock(surfobj)) {
             return RAISE(PyExc_RuntimeError, "error unlocking surface");
         }
@@ -4311,16 +4310,15 @@ draw_round_rect_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect,
         pts[15] = y2 - bottom_left;
         draw_fillpoly(surf, surf_clip_rect, pts, pts + 8, 8, color,
                       drawn_area);
-        draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, x2 - top_right,
-                              y1 + top_right, top_right, top_right, color, 1, 0,
-                              0, 0, drawn_area);
-        draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, x1 + top_left,
-                              y1 + top_left, top_left, top_left, color, 0, 1, 0,
-                              0, drawn_area);
         draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
-                              x1 + bottom_left, y2 - bottom_left,
-                              bottom_left, bottom_left, color, 0, 0, 1, 0,
-                              drawn_area);
+                              x2 - top_right, y1 + top_right, top_right,
+                              top_right, color, 1, 0, 0, 0, drawn_area);
+        draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, x1 + top_left,
+                              y1 + top_left, top_left, top_left, color, 0, 1,
+                              0, 0, drawn_area);
+        draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
+                              x1 + bottom_left, y2 - bottom_left, bottom_left,
+                              bottom_left, color, 0, 0, 1, 0, drawn_area);
         draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
                               x2 - bottom_right, y2 - bottom_right,
                               bottom_right, bottom_right, color, 0, 0, 0, 1,
@@ -4382,17 +4380,15 @@ draw_round_rect_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect,
                             drawn_area); /* Right line */
         }
         if (width == 1) {
-            draw_circle_xiaolinwu_thin(surf, surf_clip_rect, surf_format,
-                                       x2 - top_right, y1 + top_right,
-                                       top_right, color, 1, 0, 0, 0,
-                                       drawn_area);
+            draw_circle_xiaolinwu_thin(
+                surf, surf_clip_rect, surf_format, x2 - top_right,
+                y1 + top_right, top_right, color, 1, 0, 0, 0, drawn_area);
             draw_circle_xiaolinwu_thin(surf, surf_clip_rect, surf_format,
                                        x1 + top_left, y1 + top_left, top_left,
                                        color, 0, 1, 0, 0, drawn_area);
-            draw_circle_xiaolinwu_thin(surf, surf_clip_rect, surf_format,
-                                       x1 + bottom_left, y2 - bottom_left,
-                                       bottom_left, color, 0, 0, 1, 0,
-                                       drawn_area);
+            draw_circle_xiaolinwu_thin(
+                surf, surf_clip_rect, surf_format, x1 + bottom_left,
+                y2 - bottom_left, bottom_left, color, 0, 0, 1, 0, drawn_area);
             draw_circle_xiaolinwu_thin(surf, surf_clip_rect, surf_format,
                                        x2 - bottom_right, y2 - bottom_right,
                                        bottom_right, color, 0, 0, 0, 1,
@@ -4408,8 +4404,8 @@ draw_round_rect_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect,
                                   x2 - top_right, y1 + top_right, top_right,
                                   width, color, 1, 0, 0, 0, drawn_area);
             draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
-                                  x1 + top_left, y1 + top_left, top_left, width,
-                                  color, 0, 1, 0, 0, drawn_area);
+                                  x1 + top_left, y1 + top_left, top_left,
+                                  width, color, 0, 1, 0, 0, drawn_area);
             draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
                                   x1 + bottom_left, y2 - bottom_left,
                                   bottom_left, width, color, 0, 0, 1, 0,
