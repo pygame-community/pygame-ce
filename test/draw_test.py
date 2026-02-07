@@ -165,6 +165,7 @@ class DrawTestCase(unittest.TestCase):
     """Base class to test draw module functions."""
 
     draw_rect = staticmethod(draw.rect)
+    draw_aarect = staticmethod(draw.aarect)
     draw_polygon = staticmethod(draw.polygon)
     draw_circle = staticmethod(draw.circle)
     draw_aacircle = staticmethod(draw.aacircle)
@@ -5087,6 +5088,644 @@ class DrawRectTest(DrawRectMixin, DrawTestCase):
     """
 
 
+### AARect Testing ##############################################################
+
+
+class DrawAARectMixin:
+    """Mixin tests for drawing anti-aliased rects.
+
+    This class contains all the general anti-aliased rect drawing tests,
+    inherited from the base rect test logic.
+    """
+
+    def test_aarect__args(self):
+        """Ensures draw aarect accepts the correct args."""
+        bounds_rect = self.draw_aarect(
+            pygame.Surface((2, 2)),
+            (20, 10, 20, 150),
+            pygame.Rect((0, 0), (1, 1)),
+            2,
+            1,
+            2,
+            3,
+            4,
+            5,
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aarect__args_without_width(self):
+        """Ensures draw aarect accepts the args without a width and borders."""
+        bounds_rect = self.draw_aarect(
+            pygame.Surface((3, 5)), (0, 0, 0, 255), pygame.Rect((0, 0), (1, 1))
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aarect__kwargs(self):
+        """Ensures draw aarect accepts the correct kwargs
+        with and without a width and border_radius arg.
+        """
+        kwargs_list = [
+            {
+                "surface": pygame.Surface((5, 5)),
+                "color": pygame.Color("red"),
+                "rect": pygame.Rect((0, 0), (1, 2)),
+                "width": 1,
+                "border_radius": 10,
+                "border_top_left_radius": 5,
+                "border_top_right_radius": 20,
+                "border_bottom_left_radius": 15,
+                "border_bottom_right_radius": 0,
+            },
+            {
+                "surface": pygame.Surface((1, 2)),
+                "color": (0, 100, 200),
+                "rect": (0, 0, 1, 1),
+            },
+        ]
+
+        for kwargs in kwargs_list:
+            bounds_rect = self.draw_aarect(**kwargs)
+
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aarect__kwargs_order_independent(self):
+        """Ensures draw aarect's kwargs are not order dependent."""
+        bounds_rect = self.draw_aarect(
+            color=(0, 1, 2),
+            border_radius=10,
+            surface=pygame.Surface((2, 3)),
+            border_top_left_radius=5,
+            width=-2,
+            border_top_right_radius=20,
+            border_bottom_right_radius=0,
+            rect=pygame.Rect((0, 0), (0, 0)),
+            border_bottom_left_radius=15,
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aarect__args_missing(self):
+        """Ensures draw aarect detects any missing required args."""
+        surface = pygame.Surface((1, 1))
+
+        with self.assertRaises(TypeError):
+            bounds_rect = self.draw_aarect(surface, pygame.Color("white"))
+
+        with self.assertRaises(TypeError):
+            bounds_rect = self.draw_aarect(surface)
+
+        with self.assertRaises(TypeError):
+            bounds_rect = self.draw_aarect()
+
+    def test_aarect__kwargs_missing(self):
+        """Ensures draw aarect detects any missing required kwargs."""
+        kwargs = {
+            "surface": pygame.Surface((1, 3)),
+            "color": pygame.Color("red"),
+            "rect": pygame.Rect((0, 0), (2, 2)),
+            "width": 5,
+            "border_radius": 10,
+            "border_top_left_radius": 5,
+            "border_top_right_radius": 20,
+            "border_bottom_left_radius": 15,
+            "border_bottom_right_radius": 0,
+        }
+
+        for name in ("rect", "color", "surface"):
+            invalid_kwargs = dict(kwargs)
+            invalid_kwargs.pop(name)  # Pop from a copy.
+
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aarect(**invalid_kwargs)
+
+    def test_aarect__arg_invalid_types(self):
+        """Ensures draw aarect detects invalid arg types."""
+        surface = pygame.Surface((3, 3))
+        color = pygame.Color("white")
+        rect = pygame.Rect((1, 1), (1, 1))
+
+        with self.assertRaises(TypeError):
+            # Invalid border_bottom_right_radius.
+            bounds_rect = self.draw_aarect(
+                surface, color, rect, 2, border_bottom_right_radius="rad"
+            )
+
+        with self.assertRaises(TypeError):
+            # Invalid border_bottom_left_radius.
+            bounds_rect = self.draw_aarect(
+                surface, color, rect, 2, border_bottom_left_radius="rad"
+            )
+
+        with self.assertRaises(TypeError):
+            # Invalid border_top_right_radius.
+            bounds_rect = self.draw_aarect(
+                surface, color, rect, 2, border_top_right_radius="rad"
+            )
+
+        with self.assertRaises(TypeError):
+            # Invalid border_top_left_radius.
+            bounds_rect = self.draw_aarect(
+                surface, color, rect, 2, border_top_left_radius="draw"
+            )
+
+        with self.assertRaises(TypeError):
+            # Invalid border_radius.
+            bounds_rect = self.draw_aarect(surface, color, rect, 2, "rad")
+
+        with self.assertRaises(TypeError):
+            # Invalid width.
+            bounds_rect = self.draw_aarect(surface, color, rect, "2", 4)
+        with self.assertRaises(TypeError):
+            # Invalid rect.
+            bounds_rect = self.draw_aarect(surface, color, (1, 2, 3), 2, 6)
+
+        with self.assertRaises(TypeError):
+            # Invalid color.
+            bounds_rect = self.draw_aarect(surface, 2.3, rect, 3, 8)
+        with self.assertRaises(TypeError):
+            # Invalid surface.
+            bounds_rect = self.draw_aarect(rect, color, rect, 4, 10)
+
+    def test_aarect__kwarg_invalid_types(self):
+        """Ensures draw aarect detects invalid kwarg types."""
+        surface = pygame.Surface((2, 3))
+        color = pygame.Color("red")
+        rect = pygame.Rect((0, 0), (1, 1))
+        kwargs_list = [
+            {
+                "surface": pygame.Surface,  # Invalid surface.
+                "color": color,
+                "rect": rect,
+                "width": 1,
+                "border_radius": 10,
+                "border_top_left_radius": 5,
+                "border_top_right_radius": 20,
+                "border_bottom_left_radius": 15,
+                "border_bottom_right_radius": 0,
+            },
+            {
+                "surface": surface,
+                "color": 2.3,  # Invalid color.
+                "rect": rect,
+                "width": 1,
+                "border_radius": 10,
+                "border_top_left_radius": 5,
+                "border_top_right_radius": 20,
+                "border_bottom_left_radius": 15,
+                "border_bottom_right_radius": 0,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "rect": (1, 1, 2),  # Invalid rect.
+                "width": 1,
+                "border_radius": 10,
+                "border_top_left_radius": 5,
+                "border_top_right_radius": 20,
+                "border_bottom_left_radius": 15,
+                "border_bottom_right_radius": 0,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "rect": rect,
+                "width": 1.1,  # Invalid width.
+                "border_radius": 10,
+                "border_top_left_radius": 5,
+                "border_top_right_radius": 20,
+                "border_bottom_left_radius": 15,
+                "border_bottom_right_radius": 0,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "rect": rect,
+                "width": 1,
+                "border_radius": 10.5,  # Invalid border_radius.
+                "border_top_left_radius": 5,
+                "border_top_right_radius": 20,
+                "border_bottom_left_radius": 15,
+                "border_bottom_right_radius": 0,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "rect": rect,
+                "width": 1,
+                "border_radius": 10,
+                "border_top_left_radius": 5.5,  # Invalid top_left_radius.
+                "border_top_right_radius": 20,
+                "border_bottom_left_radius": 15,
+                "border_bottom_right_radius": 0,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "rect": rect,
+                "width": 1,
+                "border_radius": 10,
+                "border_top_left_radius": 5,
+                "border_top_right_radius": "a",  # Invalid top_right_radius.
+                "border_bottom_left_radius": 15,
+                "border_bottom_right_radius": 0,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "rect": rect,
+                "width": 1,
+                "border_radius": 10,
+                "border_top_left_radius": 5,
+                "border_top_right_radius": 20,
+                "border_bottom_left_radius": "c",  # Invalid bottom_left_radius
+                "border_bottom_right_radius": 0,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "rect": rect,
+                "width": 1,
+                "border_radius": 10,
+                "border_top_left_radius": 5,
+                "border_top_right_radius": 20,
+                "border_bottom_left_radius": 15,
+                "border_bottom_right_radius": "d",  # Invalid bottom_right.
+            },
+        ]
+
+        for kwargs in kwargs_list:
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aarect(**kwargs)
+
+    def test_aarect__kwarg_invalid_name(self):
+        """Ensures draw aarect detects invalid kwarg names."""
+        surface = pygame.Surface((2, 1))
+        color = pygame.Color("green")
+        rect = pygame.Rect((0, 0), (3, 3))
+        kwargs_list = [
+            {
+                "surface": surface,
+                "color": color,
+                "rect": rect,
+                "width": 1,
+                "border_radius": 10,
+                "border_top_left_radius": 5,
+                "border_top_right_radius": 20,
+                "border_bottom_left_radius": 15,
+                "border_bottom_right_radius": 0,
+                "invalid": 1,
+            },
+            {"surface": surface, "color": color, "rect": rect, "invalid": 1},
+        ]
+
+        for kwargs in kwargs_list:
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aarect(**kwargs)
+
+    def test_aarect__args_and_kwargs(self):
+        """Ensures draw aarect accepts a combination of args/kwargs"""
+        surface = pygame.Surface((3, 1))
+        color = (255, 255, 255, 0)
+        rect = pygame.Rect((1, 0), (2, 5))
+        width = 0
+        kwargs = {"surface": surface, "color": color, "rect": rect, "width": width}
+
+        for name in ("surface", "color", "rect", "width"):
+            kwargs.pop(name)
+
+            if "surface" == name:
+                bounds_rect = self.draw_aarect(surface, **kwargs)
+            elif "color" == name:
+                bounds_rect = self.draw_aarect(surface, color, **kwargs)
+            elif "rect" == name:
+                bounds_rect = self.draw_aarect(surface, color, rect, **kwargs)
+            else:
+                bounds_rect = self.draw_aarect(surface, color, rect, width, **kwargs)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aarect__valid_width_values(self):
+        """Ensures draw aarect accepts different width values."""
+        pos = (1, 1)
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((3, 4))
+        color = (1, 2, 3, 255)
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "rect": pygame.Rect(pos, (2, 2)),
+            "width": None,
+        }
+
+        for width in (-1000, -10, -1, 0, 1, 10, 1000):
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["width"] = width
+            expected_color = color if width >= 0 else surface_color
+
+            bounds_rect = self.draw_aarect(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aarect__valid_rect_formats(self):
+        """Ensures draw aarect accepts different rect formats."""
+        pos = (1, 1)
+        expected_color = pygame.Color("yellow")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((3, 4))
+        kwargs = {"surface": surface, "color": expected_color, "rect": None, "width": 0}
+        rects = (
+            pygame.Rect(pos, (1, 1)),
+            (pos, (2, 2)),
+            (pos[0], pos[1], 3, 3),
+            [pos, (2.1, 2.2)],
+        )
+
+        for rect in rects:
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["rect"] = rect
+
+            bounds_rect = self.draw_aarect(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aarect__invalid_rect_formats(self):
+        """Ensures draw aarect handles invalid rect formats correctly."""
+        kwargs = {
+            "surface": pygame.Surface((4, 4)),
+            "color": pygame.Color("red"),
+            "rect": None,
+            "width": 0,
+        }
+
+        invalid_fmts = (
+            [],
+            [1],
+            [1, 2],
+            [1, 2, 3],
+            [1, 2, 3, 4, 5],
+            {1, 2, 3, 4},
+            [1, 2, 3, "4"],
+        )
+
+        for rect in invalid_fmts:
+            kwargs["rect"] = rect
+
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aarect(**kwargs)
+
+    def test_aarect__valid_color_formats(self):
+        """Ensures draw aarect accepts different color formats."""
+        pos = (1, 1)
+        red_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((3, 4))
+        kwargs = {
+            "surface": surface,
+            "color": None,
+            "rect": pygame.Rect(pos, (1, 1)),
+            "width": 3,
+        }
+        reds = ((255, 0, 0), (255, 0, 0, 255), surface.map_rgb(red_color), red_color)
+
+        for color in reds:
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["color"] = color
+
+            if isinstance(color, int):
+                expected_color = surface.unmap_rgb(color)
+            else:
+                expected_color = red_color
+
+            bounds_rect = self.draw_aarect(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aarect__invalid_color_formats(self):
+        """Ensures draw aarect handles invalid color formats correctly."""
+        pos = (1, 1)
+        surface = pygame.Surface((3, 4))
+        kwargs = {
+            "surface": surface,
+            "color": None,
+            "rect": pygame.Rect(pos, (1, 1)),
+            "width": 1,
+        }
+
+        for expected_color in (2.3, self):
+            kwargs["color"] = expected_color
+
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aarect(**kwargs)
+
+    def test_aarect__fill(self):
+        self.surf_w, self.surf_h = self.surf_size = (320, 200)
+        self.surf = pygame.Surface(self.surf_size, pygame.SRCALPHA)
+        self.color = (1, 13, 24, 205)
+        rect = pygame.Rect(10, 10, 25, 20)
+        drawn = self.draw_aarect(self.surf, self.color, rect, 0)
+
+        self.assertEqual(drawn, rect)
+
+        # Should be colored where it's supposed to be
+        for pt in test_utils.rect_area_pts(rect):
+            color_at_pt = self.surf.get_at(pt)
+
+            self.assertEqual(color_at_pt, self.color)
+
+        # And not where it shouldn't
+        for pt in test_utils.rect_outer_bounds(rect):
+            color_at_pt = self.surf.get_at(pt)
+
+            self.assertNotEqual(color_at_pt, self.color)
+
+        # pygame-ce issue #325: Cannot draw rectangles that are 1 pixel high
+        bgcolor = pygame.Color("black")
+        self.surf.fill(bgcolor)
+        hrect = pygame.Rect(1, 1, self.surf_w - 2, 1)
+        vrect = pygame.Rect(1, 3, 1, self.surf_h - 4)
+
+        drawn = self.draw_aarect(self.surf, self.color, hrect, 0)
+
+        self.assertEqual(drawn, hrect)
+
+        x, y = hrect.topleft
+        w, h = hrect.size
+
+        self.assertEqual(self.surf.get_at((x - 1, y)), bgcolor)
+        self.assertEqual(self.surf.get_at((x + w, y)), bgcolor)
+        for i in range(x, x + w):
+            self.assertEqual(self.surf.get_at((i, y)), self.color)
+
+        drawn = self.draw_aarect(self.surf, self.color, vrect, 0)
+
+        self.assertEqual(drawn, vrect)
+
+        x, y = vrect.topleft
+        w, h = vrect.size
+
+        self.assertEqual(self.surf.get_at((x, y - 1)), bgcolor)
+        self.assertEqual(self.surf.get_at((x, y + h)), bgcolor)
+        for i in range(y, y + h):
+            self.assertEqual(self.surf.get_at((x, i)), self.color)
+
+    def test_aarect__one_pixel_lines(self):
+        self.surf = pygame.Surface((320, 200), pygame.SRCALPHA)
+        self.color = (1, 13, 24, 205)
+
+        rect = pygame.Rect(10, 10, 56, 20)
+
+        drawn = self.draw_aarect(self.surf, self.color, rect, 1)
+
+        self.assertEqual(drawn, rect)
+
+        # Should be colored where it's supposed to be
+        for pt in test_utils.rect_perimeter_pts(drawn):
+            color_at_pt = self.surf.get_at(pt)
+
+            self.assertEqual(color_at_pt, self.color)
+
+        # And not where it shouldn't
+        for pt in test_utils.rect_outer_bounds(drawn):
+            color_at_pt = self.surf.get_at(pt)
+
+            self.assertNotEqual(color_at_pt, self.color)
+
+    def test_aarect__draw_line_width(self):
+        surface = pygame.Surface((100, 100))
+        surface.fill("black")
+        color = pygame.Color(255, 255, 255)
+        rect_width = 80
+        rect_height = 50
+        line_width = 10
+        pygame.draw.aarect(
+            surface, color, pygame.Rect(0, 0, rect_width, rect_height), line_width
+        )
+        for i in range(line_width):
+            self.assertEqual(surface.get_at((i, i)), color)
+            self.assertEqual(surface.get_at((rect_width - i - 1, i)), color)
+            self.assertEqual(surface.get_at((i, rect_height - i - 1)), color)
+            self.assertEqual(
+                surface.get_at((rect_width - i - 1, rect_height - i - 1)), color
+            )
+        self.assertEqual(surface.get_at((line_width, line_width)), (0, 0, 0))
+        self.assertEqual(
+            surface.get_at((rect_width - line_width - 1, line_width)), (0, 0, 0)
+        )
+        self.assertEqual(
+            surface.get_at((line_width, rect_height - line_width - 1)), (0, 0, 0)
+        )
+        self.assertEqual(
+            surface.get_at((rect_width - line_width - 1, rect_height - line_width - 1)),
+            (0, 0, 0),
+        )
+
+    def test_aarect__bounding_rect(self):
+        """Ensures draw aarect returns the correct bounding rect.
+
+        Tests rects on and off the surface and a range of width/thickness
+        values.
+        """
+        rect_color = pygame.Color("red")
+        surf_color = pygame.Color("black")
+        min_width = min_height = 5
+        max_width = max_height = 7
+        sizes = ((min_width, min_height), (max_width, max_height))
+        surface = pygame.Surface((20, 20), 0, 32)
+        surf_rect = surface.get_rect()
+        # Make a rect that is bigger than the surface to help test drawing
+        # rects off and partially off the surface.
+        big_rect = surf_rect.inflate(min_width * 2 + 1, min_height * 2 + 1)
+
+        for pos in rect_corners_mids_and_center(
+            surf_rect
+        ) + rect_corners_mids_and_center(big_rect):
+            # Each of the rect's position attributes will be set to the pos
+            # value.
+            for attr in RECT_POSITION_ATTRIBUTES:
+                # Test using different rect sizes and thickness values.
+                for width, height in sizes:
+                    rect = pygame.Rect((0, 0), (width, height))
+                    setattr(rect, attr, pos)
+
+                    for thickness in range(4):
+                        surface.fill(surf_color)  # Clear for each test.
+
+                        bounding_rect = self.draw_aarect(
+                            surface, rect_color, rect, thickness
+                        )
+
+                        # Calculating the expected_rect after the rect is
+                        # drawn (it uses what is actually drawn).
+                        expected_rect = create_bounding_rect(
+                            surface, surf_color, rect.topleft
+                        )
+
+                        self.assertEqual(
+                            bounding_rect,
+                            expected_rect,
+                            f"thickness={thickness}",
+                        )
+
+    def test_aarect__surface_clip(self):
+        """Ensures draw aarect respects a surface's clip area.
+
+        Tests drawing the rect filled and unfilled.
+        """
+        surfw = surfh = 30
+        rect_color = pygame.Color("red")
+        surface_color = pygame.Color("green")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        clip_rect = pygame.Rect((0, 0), (8, 10))
+        clip_rect.center = surface.get_rect().center
+        test_rect = clip_rect.copy()  # Manages the rect's pos.
+
+        for width in (0, 1):  # Filled and unfilled.
+            # Test centering the rect along the clip rect's edge.
+            for center in rect_corners_mids_and_center(clip_rect):
+                # Get the expected points by drawing the rect without the
+                # clip area set.
+                test_rect.center = center
+                surface.set_clip(None)
+                surface.fill(surface_color)
+                self.draw_aarect(surface, rect_color, test_rect, width)
+                expected_pts = get_color_points(surface, rect_color, clip_rect)
+
+                # Clear the surface and set the clip area. Redraw the rect
+                # and check that only the clip area is modified.
+                surface.fill(surface_color)
+                surface.set_clip(clip_rect)
+
+                self.draw_aarect(surface, rect_color, test_rect, width)
+
+                surface.lock()  # For possible speed up.
+
+                # Check all the surface points to ensure only the expected_pts
+                # are the rect_color.
+                for pt in ((x, y) for x in range(surfw) for y in range(surfh)):
+                    if pt in expected_pts:
+                        expected_color = rect_color
+                    else:
+                        expected_color = surface_color
+
+                    self.assertEqual(surface.get_at(pt), expected_color, pt)
+
+                surface.unlock()
+
+
+class DrawAARectTest(DrawAARectMixin, DrawTestCase):
+    """Test draw module function aarect.
+
+    This class inherits the general tests from DrawAARectMixin. It is also the
+    class to add any draw.aarect specific tests to.
+    """
+
+
 ### Circle Testing ############################################################
 
 
@@ -7466,6 +8105,8 @@ class DrawModuleTest(unittest.TestCase):
             draw.circle(surf, col, (7, 3), 2)
             draw.aacircle(surf, col, (7, 3), 2)
             draw.polygon(surf, col, points, 0)
+            draw.rect(surf, col, pygame.Rect(0, 0, 5, 5))
+            draw.aarect(surf, col, pygame.Rect(0, 0, 5, 5))
 
         # 2. invalid colors
         for col in (1.256, object(), None):
@@ -7495,6 +8136,12 @@ class DrawModuleTest(unittest.TestCase):
 
             with self.assertRaises(TypeError):
                 draw.polygon(surf, col, points, 0)
+
+            with self.assertRaises(TypeError):
+                draw.rect(surf, col, pygame.Rect(0, 0, 5, 5))
+
+            with self.assertRaises(TypeError):
+                draw.aarect(surf, col, pygame.Rect(0, 0, 5, 5))
 
     def test_aafunctions_depth_segfault(self):
         """Ensure future commits don't break the segfault fixed by pull request
@@ -7528,6 +8175,9 @@ class DrawModuleTest(unittest.TestCase):
             surf = pygame.Surface(size=(512, 512), flags=0, depth=depth)
 
             draw.aacircle(surf, pygame.Color("red"), (256, 256), 64)
+            draw.aarect(
+                surf, pygame.Color("yellow"), pygame.Rect(50, 50, 100, 80), 10, 8
+            )
             draw.aaline(surf, pygame.Color("blue"), (256, 256), (500, 300))
             draw.aalines(
                 surf, pygame.Color("green"), False, [(100, 100), (100, 500), (160, 100)]

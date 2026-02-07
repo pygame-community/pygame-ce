@@ -1,6 +1,7 @@
 /* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_DRAW "Pygame module for drawing shapes."
 #define DOC_DRAW_RECT "rect(surface, color, rect, width=0, border_radius=-1, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1) -> Rect\nDraw a rectangle."
+#define DOC_DRAW_AARECT "aarect(surface, color, rect, width=0, border_radius=-1, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1) -> Rect\nDraw an antialiased rectangle."
 #define DOC_DRAW_POLYGON "polygon(surface, color, points, width=0) -> Rect\nDraw a polygon."
 #define DOC_DRAW_CIRCLE "circle(surface, color, center, radius, width=0, draw_top_right=False, draw_top_left=False, draw_bottom_left=False, draw_bottom_right=False) -> Rect\nDraw a circle."
 #define DOC_DRAW_AACIRCLE "aacircle(surface, color, center, radius, width=0) -> Rect\naacircle(surface, color, center, radius, width=0, draw_top_right=False, draw_top_left=False, draw_bottom_left=False, draw_bottom_right=False) -> Rect\nDraw an antialiased circle."
