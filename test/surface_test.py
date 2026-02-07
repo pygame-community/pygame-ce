@@ -300,7 +300,10 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(
             blit_surf.mustlock(), (blit_surf.get_flags() & pygame.RLEACCEL) != 0
         )
-        self.assertTrue(blit_surf.get_flags() & pygame.RLEACCEL)
+        if pygame.version.SDL < (2, 32, 50):
+            # This bit fails on SDL2-compat and SDL3
+            # https://github.com/libsdl-org/sdl2-compat/issues/575
+            self.assertTrue(blit_surf.get_flags() & pygame.RLEACCEL)
 
     def test_fill_raise_exceptions(self):
         surf = pygame.Surface((5, 5))
