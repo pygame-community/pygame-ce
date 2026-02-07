@@ -28,11 +28,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           for fname in dist/*; do
+            if [[ "$fname" != *.whl && "$fname" != *.tar.gz ]]; then
+              rm "$fname"
+              echo "[DELETED non-python-artifact] $fname"
+              continue
+            fi
             if gh attestation verify $fname -R ${{ github.repository }}; then
               echo "[ALLOWED] $fname"
             else
-              rm $fname
-              echo "[DELETED] $fname"
+              rm "$fname"
+              echo "[DELETED failed-attestation] $fname"
             fi
           done
 

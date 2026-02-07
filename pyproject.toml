@@ -76,8 +76,11 @@ install = ['--tags=runtime,python-runtime,pg-tag']
 # dependencies. Here is where uv comes into the picture. It is an "installer" like pip,
 # but faster. It has been observed to save a couple of minutes of CI time.
 build-frontend = "build[uv]"
+# here we build wheels for all supported python versions. We do not support musllinux
+# and free threaded builds as of now. We also skip Python 3.10 build on ARM Windows
+# because it is very very unlikely to be used (numpy does it too).
 build = "cp3{10,11,12,13,14}-* pp311-*"
-skip = ["*-musllinux_*", "cp31?t-*"]
+skip = ["*-musllinux_*", "cp31?t-*", "cp310-win_arm64"]
 # build[uv] is verbose by default, so below flag is not needed here
 # build-verbosity = 3
 
