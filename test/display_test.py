@@ -706,6 +706,21 @@ class DisplayModuleTest(unittest.TestCase):
         self.assertEqual(position[0], 420)
         self.assertEqual(position[1], 360)
 
+    def test_get_desktop_usable_bounds(self):
+        bounds = pygame.display.get_desktop_usable_bounds()
+        sizes = pygame.display.get_desktop_sizes()
+        self.assertIsInstance(bounds, list)
+        self.assertEqual(len(bounds), len(sizes))
+        for i, bound in enumerate(bounds):
+            self.assertIsInstance(bound, pygame.Rect)
+            size = sizes[i]
+            self.assertLessEqual(bound.w, size[0])
+            self.assertLessEqual(bound.h, size[1])
+            for j, coord in enumerate(bound):
+                self.assertGreaterEqual(
+                    coord, 0, f"Bounds rect coordinate {j} is negative ({coord})"
+                )
+
 
 class DisplayUpdateTest(unittest.TestCase):
     def question(self, qstr):
