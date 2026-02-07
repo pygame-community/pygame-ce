@@ -33,3 +33,6 @@
 #define DOC_WINDOW_SETICON "set_icon(icon, /) -> None\nSet the window icon."
 #define DOC_WINDOW_SETMODALFOR "set_modal_for(parent, /) -> None\nSet the window as a modal for a parent window."
 #define DOC_WINDOW_FLASH "flash(operation, /) -> None\nFlash a window to demand attention from the user."
+#define DOC_WINDOW_ADDDRAGREGION "add_drag_region(region) -> None\nAdd a special region for dragging the window."
+#define DOC_WINDOW_ADDRESIZEREGION "add_resize_region(region, orientation) -> None\nAdd a special region for resizing the window."
+#define DOC_WINDOW_CLEARSPECIALREGIONS "clear_special_regions() -> None\nClear all special regions."
