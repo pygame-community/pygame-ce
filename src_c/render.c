@@ -1184,14 +1184,14 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
 }
 
 static PyObject *
-get_line_render_method(PyObject* self, PyObject *Py_UNUSED(ignored))
+get_line_render_method(PyObject *self, PyObject *Py_UNUSED(ignored))
 {
     const char *hint = SDL_GetHint(SDL_HINT_RENDER_LINE_METHOD);
     return PyLong_FromLong(hint[0] - 48); // hint is a char between 0-3
 }
 
 static PyObject *
-set_line_render_method(PyObject* self, PyObject *args)
+set_line_render_method(PyObject *self, PyObject *args)
 {
     int method;
     if (!PyArg_ParseTuple(args, "i", &method)) {
