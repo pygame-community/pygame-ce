@@ -1183,11 +1183,12 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
     return 1;
 }
 
+#if SDL_VERSION_ATLEAST(2, 0, 20)
 static PyObject *
 get_line_render_method(PyObject *self, PyObject *Py_UNUSED(ignored))
 {
     const char *hint = SDL_GetHint(SDL_HINT_RENDER_LINE_METHOD);
-    return PyLong_FromLong(hint[0] - 48); // hint is a char between 0-3
+    return PyLong_FromLong(hint == NULL ? 0 : hint[0] - '0'); // hint is a char between 0-3
 }
 
 static PyObject *
@@ -1205,13 +1206,14 @@ set_line_render_method(PyObject *self, PyObject *args)
 
     // SDL_SetHint expects the method as a string
     char hint[2];
-    hint[0] = method + 48; // ascii char manipulation
+    hint[0] = method + '0'; // ascii char manipulation
     hint[1] = '\0';
     
     if (SDL_SetHint(SDL_HINT_RENDER_LINE_METHOD, hint))
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
 }
+#endif
 
 /* Module definition */
 static PyMethodDef renderer_methods[] = {
@@ -1338,10 +1340,12 @@ static PyTypeObject pgImage_Type = {
     .tp_new = PyType_GenericNew, .tp_getset = image_getset};
 
 static PyMethodDef _render_methods[] = {
+#if SDL_VERSION_ATLEAST(2, 0, 20)
     {"get_line_render_method", (PyCFunction)get_line_render_method,
      METH_NOARGS, NULL},
     {"set_line_render_method", (PyCFunction)set_line_render_method,
      METH_VARARGS, NULL},
+#endif
 
     {NULL, NULL, 0, NULL}};
 
