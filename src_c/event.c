@@ -1211,6 +1211,7 @@ dict_from_event(SDL_Event *event)
                                                   (int)event->button.y);
             _pg_insobj(dict, "pos", obj);
             _pg_insobj(dict, "button", PyLong_FromLong(event->button.button));
+            _pg_insobj(dict, "clicks", PyLong_FromLong(event->button.clicks));
             _pg_insobj(
                 dict, "touch",
                 PyBool_FromLong((event->button.which == SDL_TOUCH_MOUSEID)));
