@@ -787,11 +787,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_from_cmy(self):
         cmy = pygame.Color.from_cmy(0.5, 0.5, 0.5)
         cmy_tuple = pygame.Color.from_cmy((0.5, 0.5, 0.5))
+        cmy_instance = pygame.Color(0, 0, 0, 0).from_cmy(0.5, 0.5, 0.5)
 
         expected_cmy = (127, 127, 127)
 
         self.assertEqual(expected_cmy, cmy)
         self.assertEqual(expected_cmy, cmy_tuple)
+        self.assertEqual(expected_cmy, cmy_instance)
 
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_cmy(0.5, 0.5, 0.5, "lel", "foo")
@@ -803,11 +805,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_from_hsva(self):
         hsva = pygame.Color.from_hsva(0, 100, 100, 100)
         hsva_tuple = pygame.Color.from_hsva((0, 100, 100, 100))
+        hsva_instance = pygame.Color(0, 0, 0, 0).from_hsva(0, 100, 100, 100)
 
         expected_hsva = (255, 0, 0)
 
         self.assertEqual(expected_hsva, hsva)
         self.assertEqual(expected_hsva, hsva_tuple)
+        self.assertEqual(expected_hsva, hsva_instance)
 
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_hsva(0, 100, 100, 100, "lel", "foo")
@@ -819,11 +823,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_from_hsla(self):
         hsla = pygame.Color.from_hsla(0, 100, 100, 100)
         hsla_tuple = pygame.Color.from_hsla((0, 100, 100, 100))
+        hsla_instance = pygame.Color(0, 0, 0, 0).from_hsla(0, 100, 100, 100)
 
         expected_hsla = (255, 255, 255)
 
         self.assertEqual(expected_hsla, hsla)
         self.assertEqual(expected_hsla, hsla_tuple)
+        self.assertEqual(expected_hsla, hsla_instance)
 
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_hsla(0, 100, 100, 100, "lel")
@@ -835,11 +841,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_from_i1i2i3(self):
         i1i2i3 = pygame.Color.from_i1i2i3(0, 0, 0)
         i1i2i3_tuple = pygame.Color.from_i1i2i3((0, 0, 0))
+        i1i2i3_instance = pygame.Color(0, 0, 0, 0).from_i1i2i3(0, 0, 0)
 
         expected_i1i2i3 = (0, 0, 0)
 
         self.assertEqual(expected_i1i2i3, i1i2i3)
         self.assertEqual(expected_i1i2i3, i1i2i3_tuple)
+        self.assertEqual(expected_i1i2i3, i1i2i3_instance)
 
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_i1i2i3(0, 0, 0, "lel", "foo")
@@ -849,11 +857,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_from_normalized(self):
         normal = pygame.Color.from_normalized(1, 1, 1, 1)
         normal_tuple = pygame.Color.from_normalized((1, 1, 1, 1))
+        normal_instance = pygame.Color(0, 0, 0, 0).from_normalized(1, 1, 1, 1)
 
         expected_normal = (255, 255, 255, 255)
 
         self.assertEqual(expected_normal, normal)
         self.assertEqual(expected_normal, normal_tuple)
+        self.assertEqual(expected_normal, normal_instance)
 
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_normalized(1, 1, 1, 1, "lel")
@@ -865,6 +875,11 @@ class ColorTypeTest(unittest.TestCase):
         color3 = pygame.Color.from_hex("#AAFF00")  # Random
         color4 = pygame.Color.from_hex("#FF000080")  # Red (50% opacity)
 
+        color_instance1 = pygame.Color(0, 0, 0, 0).from_hex("#FFFFFF")
+        color_instance2 = pygame.Color(63, 12, 83).from_hex("#000000")
+        color_instance3 = pygame.Color(52, 31, 8, 255).from_hex("#AAFF00")
+        color_instance4 = pygame.Color("#E4A010").from_hex("#FF000080")
+
         expected_color1 = (255, 255, 255, 255)
         expected_color2 = (0, 0, 0, 255)
         expected_color3 = (170, 255, 0, 255)
@@ -874,6 +889,11 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(color2, expected_color2)
         self.assertEqual(color3, expected_color3)
         self.assertEqual(color4, expected_color4)
+
+        self.assertEqual(color_instance1, expected_color1)
+        self.assertEqual(color_instance2, expected_color2)
+        self.assertEqual(color_instance3, expected_color3)
+        self.assertEqual(color_instance4, expected_color4)
 
         self.assertRaises(ValueError, lambda: pygame.Color.from_hex("#FFFFFG"))
         self.assertRaises(ValueError, lambda: pygame.Color.from_hex("#FFFFFFF"))

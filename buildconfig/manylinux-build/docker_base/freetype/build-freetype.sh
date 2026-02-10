@@ -3,11 +3,8 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-# TODO: when freetype is updated, we can look into resolving the circular
-# dependency between freetype and harfbuzz by using the upcoming freetype
-# dynamic harfbuzz loading feature.
-FREETYPE="freetype-2.13.3"
-HARFBUZZ_VER=11.3.3
+FREETYPE="freetype-2.14.1"
+HARFBUZZ_VER=12.1.0
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
 curl -sL --retry 10 https://savannah.nongnu.org/download/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
@@ -19,19 +16,24 @@ tar xzf ${FREETYPE}.tar.gz
 unxz ${HARFBUZZ_NAME}.tar.xz
 tar xf ${HARFBUZZ_NAME}.tar
 
-# freetype and harfbuzz have an infamous circular dependency, which is why
-# this file is not like the rest of docker_base files
-
-# 1. First compile freetype without harfbuzz support
 cd $FREETYPE
 
-./configure $PG_BASE_CONFIGURE_FLAGS --with-harfbuzz=no
-make
-make install  # this freetype is not installed to mac cache dir
+# For now bzip2 is only used on macOS, on other platforms there are issues with
+# it.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    export PG_FT_BZ2="-Dbzip2=enabled"
+else
+    export PG_FT_BZ2="-Dbzip2=disabled"
+fi
+
+meson setup _build $PG_BASE_MESON_FLAGS -Dbrotli=enabled -Dharfbuzz=dynamic \
+    -Dpng=enabled -Dzlib=system $PG_FT_BZ2
+
+meson compile -C _build
+meson install -C _build
 
 cd ..
 
-# 2. Compile harfbuzz with freetype support
 cd ${HARFBUZZ_NAME}
 
 # harfbuzz has a load of optional dependencies but only freetype is important
@@ -46,28 +48,4 @@ meson setup _build $PG_BASE_MESON_FLAGS -Dfreetype=enabled \
 meson compile -C _build
 meson install -C _build
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # We do a little hack...
-    # When freetype finds harfbuzz with pkg-config, we tell freetype a little
-    # lie that harfbuzz doesn't depend on freetype (even though it does).
-    # This ensures no direct circular dylib link happen.
-    # This is a bit of a brittle hack: This command removes the entire line that
-    # contains "freetype". This is fine for now when the harfbuzz we are
-    # building has no other dependencies
-    sed -i '' '/freetype/d' $PG_DEP_PREFIX/lib/pkgconfig/harfbuzz.pc
-fi
-
 cd ..
-
-# 3. Recompile freetype, and this time with harfbuzz support
-cd $FREETYPE
-
-# fully clean previous install
-make clean
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    make uninstall
-fi
-
-./configure $PG_BASE_CONFIGURE_FLAGS --with-harfbuzz=yes
-make
-make install

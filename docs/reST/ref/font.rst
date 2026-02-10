@@ -306,6 +306,44 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.point_size ##
 
+
+   .. attribute:: outline
+
+      | :sl:`Gets or sets the font's outline thickness (pixels)`
+      | :sg:`outline -> int`
+
+      The outline value of the font.
+
+      When set to 0, the font will be drawn normally. When positive,
+      the text will be drawn as a hollow outline. The outline grows in all
+      directions a number of pixels equal to the value set. Negative values
+      are not allowed.
+
+      This can be drawn underneath unoutlined text to create a text outline
+      effect. For example: ::
+
+          def render_outlined(
+              font: pygame.Font,
+              text: str,
+              text_color: pygame.typing.ColorLike,
+              outline_color: pygame.typing.ColorLike,
+              outline_width: int,
+          ) -> pygame.Surface:
+              old_outline = font.outline
+              if old_outline != 0:
+                  font.outline = 0
+              base_text_surf = font.render(text, True, text_color)
+              font.outline = outline_width
+              outlined_text_surf = font.render(text, True, outline_color)
+
+              outlined_text_surf.blit(base_text_surf, (outline_width, outline_width))
+              font.outline = old_outline
+              return outlined_text_surf
+
+      .. versionadded:: 2.5.7
+
+      .. ## Font.outline ##
+
    .. method:: render
 
       | :sl:`draw text on a new Surface`

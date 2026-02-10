@@ -29,6 +29,7 @@
 
 #include "doc/draw_doc.h"
 
+#include <limits.h>  // for CHAR_BIT
 #include <math.h>
 
 #include <float.h>
@@ -106,6 +107,13 @@ draw_round_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1,
                 int x2, int y2, int radius, int width, Uint32 color,
                 int top_left, int top_right, int bottom_left, int bottom_right,
                 int *drawn_area);
+
+static int
+flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
+                 SDL_Surface *pattern, int *drawn_area);
+
+static void
+unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color);
 
 // validation of a draw color
 #define CHECK_LOAD_COLOR(colorobj)                       \
@@ -1290,6 +1298,111 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 }
 
+static PyObject *
+flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *pat_surfobj = NULL;
+    PyObject *colorobj, *start;
+    SDL_Surface *surf = NULL;
+    int startx, starty;
+    Uint32 color;
+    SDL_Surface *pattern = NULL;
+    SDL_bool did_lock_surf = SDL_FALSE;
+    SDL_bool did_lock_pat = SDL_FALSE;
+    int flood_fill_result;
+
+    int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
+                         INT_MIN}; /* Used to store bounding box values */
+    static char *keywords[] = {"surface", "color", "start_pos", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OO", keywords,
+                                     &pgSurface_Type, &surfobj, &colorobj,
+                                     &start)) {
+        return NULL; /* Exception already set. */
+    }
+
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
+        return PyErr_Format(PyExc_ValueError,
+                            "unsupported surface bit depth (%d) for drawing",
+                            PG_SURF_BytesPerPixel(surf));
+    }
+
+    if (pgSurface_Check(colorobj)) {
+        pat_surfobj = ((pgSurfaceObject *)colorobj);
+
+        pattern = PG_ConvertSurface(pat_surfobj->surf, surf->format);
+
+        if (pattern == NULL) {
+            return RAISE(PyExc_RuntimeError, "error converting pattern surf");
+        }
+
+        SDL_SetSurfaceRLE(pattern, SDL_FALSE);
+
+        color = 0;
+    }
+    else {
+        CHECK_LOAD_COLOR(colorobj);
+    }
+
+    if (!pg_TwoIntsFromObj(start, &startx, &starty)) {
+        return RAISE(PyExc_TypeError, "invalid start_pos argument");
+    }
+
+    if (SDL_MUSTLOCK(surf)) {
+        did_lock_surf = SDL_TRUE;
+        if (!pgSurface_Lock(surfobj)) {
+            return RAISE(PyExc_RuntimeError, "error locking surface");
+        }
+    }
+    if (pattern && SDL_MUSTLOCK(pattern)) {
+        did_lock_pat = SDL_TRUE;
+        if (!pgSurface_Lock(pat_surfobj)) {
+            if (did_lock_surf) {
+                pgSurface_Unlock(surfobj);
+            }
+            return RAISE(PyExc_RuntimeError, "error locking pattern surface");
+        }
+    }
+
+    flood_fill_result =
+        flood_fill_inner(surf, startx, starty, color, pattern, drawn_area);
+
+    /* no allocated pattern surface to free */
+
+    if (did_lock_pat) {
+        if (!pgSurface_Unlock(pat_surfobj)) {
+            if (did_lock_surf) {
+                pgSurface_Unlock(surfobj);
+            }
+            return RAISE(PyExc_RuntimeError,
+                         "error unlocking pattern surface");
+        }
+    }
+    if (did_lock_surf) {
+        if (!pgSurface_Unlock(surfobj)) {
+            return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        }
+    }
+
+    if (flood_fill_result == -1) {
+        return NULL; /* error already set by flood_fill_inner */
+    }
+
+    /* Compute return rect. */
+    if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
+        return pgRect_New4(drawn_area[0], drawn_area[1],
+                           drawn_area[2] - drawn_area[0] + 1,
+                           drawn_area[3] - drawn_area[1] + 1);
+    }
+    else {
+        return pgRect_New4(startx, starty, 0, 0);
+    }
+}
 /* Functions used in drawing algorithms */
 
 static void
@@ -1298,6 +1411,36 @@ swap(float *a, float *b)
     float temp = *a;
     *a = *b;
     *b = temp;
+}
+
+#define WORD_BITS (CHAR_BIT * sizeof(unsigned int))
+
+struct point2d {
+    Uint32 x;
+    Uint32 y;
+};
+
+static inline void
+_bitarray_set(unsigned int *bitarray, size_t idx, SDL_bool value)
+{
+    const unsigned int mask = (1u << (idx % WORD_BITS));
+    if (value) {
+        bitarray[idx / WORD_BITS] |= mask;
+    }
+    else {
+        bitarray[idx / WORD_BITS] &= ~mask;
+    }
+}
+
+static inline SDL_bool
+_bitarray_get(unsigned int *bitarray, size_t idx)
+{
+    if (bitarray[idx / WORD_BITS] & (1u << (idx % WORD_BITS))) {
+        return SDL_TRUE;
+    }
+    else {
+        return SDL_FALSE;
+    }
 }
 
 static int
@@ -2350,6 +2493,192 @@ draw_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
     set_and_check_rect(surf, surf_clip_rect, x2, y2, color, drawn_area);
 }
 
+#define SURF_GET_AT_FORMAT(p_color, p_surf, p_x, p_y, p_pixels, p_pix)       \
+    switch (PG_SURF_BytesPerPixel(p_surf)) {                                 \
+        case 1:                                                              \
+            p_color = (Uint32) *                                             \
+                      ((Uint8 *)(p_pixels) + (p_y) * p_surf->pitch + (p_x)); \
+            break;                                                           \
+        case 2:                                                              \
+            p_color =                                                        \
+                (Uint32) *                                                   \
+                ((Uint16 *)((p_pixels) + (p_y) * p_surf->pitch) + (p_x));    \
+            break;                                                           \
+        case 3:                                                              \
+            p_pix =                                                          \
+                ((Uint8 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x) * 3);   \
+            p_color = (SDL_BYTEORDER == SDL_LIL_ENDIAN)                      \
+                          ? (p_pix[0]) + (p_pix[1] << 8) + (p_pix[2] << 16)  \
+                          : (p_pix[2]) + (p_pix[1] << 8) + (p_pix[0] << 16); \
+            break;                                                           \
+        default: /* case 4: */                                               \
+            p_color =                                                        \
+                *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x));     \
+            break;                                                           \
+    }
+
+static int
+flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
+                 SDL_Surface *pattern, int *drawn_area)
+{
+    // breadth first flood fill, like graph search
+    SDL_Rect cliprect;
+    size_t mask_idx;
+    if (!PG_GetSurfaceClipRect(surf, &cliprect)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+    size_t frontier_bufsize = 8, frontier_size = 1, next_frontier_size = 0;
+
+    // Instead of a queue, we use two arrays and swap them between steps.
+    // This makes implementation easier, especially memory management.
+    struct point2d *frontier =
+        malloc(frontier_bufsize * sizeof(struct point2d));
+    if (frontier == NULL) {
+        PyErr_NoMemory();
+        return -1;
+    }
+
+    struct point2d *frontier_next =
+        malloc(frontier_bufsize * sizeof(struct point2d));
+
+    if (frontier_next == NULL) {
+        free(frontier);
+        PyErr_NoMemory();
+        return -1;
+    }
+
+    // 2D bitmask for queued nodes
+    // we could check drawn color, but that doesnt work for patterns
+    size_t mask_size = (size_t)cliprect.w * (size_t)cliprect.h;
+    size_t mask_words = (mask_size + WORD_BITS - 1) / WORD_BITS;
+    unsigned int *mask = calloc(mask_words, sizeof(unsigned int));
+
+    if (mask == NULL) {
+        free(frontier);
+        free(frontier_next);
+        PyErr_NoMemory();
+        return -1;
+    }
+    Uint32 old_color = 0;
+    Uint8 *pix;
+
+    // Von Neumann neighbourhood
+    int VN_X[] = {0, 0, 1, -1};
+    int VN_Y[] = {1, -1, 0, 0};
+
+    if (!(x1 >= cliprect.x && x1 < (cliprect.x + cliprect.w) &&
+          y1 >= cliprect.y && y1 < (cliprect.y + cliprect.h))) {
+        // not an error, but nothing to do here
+        goto flood_fill_finished;
+    }
+
+    SURF_GET_AT_FORMAT(old_color, surf, x1, y1, (Uint8 *)surf->pixels, pix);
+
+    if (pattern == NULL && old_color == new_color) {
+        // not an error, but nothing to do here
+        goto flood_fill_finished;
+    }
+
+    frontier[0].x = x1;
+    frontier[0].y = y1;
+
+    // mark starting point already queued
+    mask_idx = (y1 - cliprect.y) * cliprect.w + (x1 - cliprect.x);
+    _bitarray_set(mask, mask_idx, SDL_TRUE);
+
+    while (frontier_size != 0) {
+        next_frontier_size = 0;
+
+        for (size_t i = 0; i < frontier_size; i++) {
+            unsigned int x = frontier[i].x;
+            unsigned int y = frontier[i].y;
+
+            Uint32 current_color = 0;
+
+            SURF_GET_AT_FORMAT(current_color, surf, x, y,
+                               (Uint8 *)surf->pixels, pix);
+
+            if (current_color != old_color) {
+                continue;
+            }
+
+            if (pattern != NULL) {
+                SURF_GET_AT_FORMAT(new_color, pattern, x % pattern->w,
+                                   y % pattern->h, (Uint8 *)pattern->pixels,
+                                   pix);
+            }
+
+            // clipping and color mapping have already happened here
+            unsafe_set_at(surf, x, y, new_color);
+            add_pixel_to_drawn_list(x, y, drawn_area);
+
+            for (int n = 0; n < 4; n++) {
+                long nx = x + VN_X[n];
+                long ny = y + VN_Y[n];
+
+                if (!(nx >= cliprect.x && nx < cliprect.x + cliprect.w &&
+                      ny >= cliprect.y && ny < cliprect.y + cliprect.h)) {
+                    continue;
+                }
+
+                mask_idx = (ny - cliprect.y) * cliprect.w + (nx - cliprect.x);
+                if (_bitarray_get(mask, mask_idx)) {
+                    continue;
+                }
+
+                // only queue node once
+                _bitarray_set(mask, mask_idx, SDL_TRUE);
+
+                if (next_frontier_size == frontier_bufsize) {
+                    // grow frontier arrays
+                    struct point2d *old_buf = frontier_next;
+
+                    frontier_bufsize *= 4;
+
+                    frontier_next =
+                        realloc(frontier_next,
+                                frontier_bufsize * sizeof(struct point2d));
+                    if (frontier_next == NULL) {
+                        free(mask);
+                        free(frontier);
+                        free(old_buf);
+                        PyErr_NoMemory();
+                        return -1;
+                    }
+
+                    old_buf = frontier;
+                    frontier = realloc(
+                        frontier, frontier_bufsize * sizeof(struct point2d));
+                    if (frontier == NULL) {
+                        free(old_buf);
+                        free(mask);
+                        free(frontier_next);
+                        PyErr_NoMemory();
+                        return -1;
+                    }
+                }
+
+                frontier_next[next_frontier_size].x = nx;
+                frontier_next[next_frontier_size].y = ny;
+                next_frontier_size++;
+            }
+        }
+        // swap buffers
+        struct point2d *temp_buf;
+        temp_buf = frontier;
+        frontier = frontier_next;
+        frontier_next = temp_buf;
+
+        frontier_size = next_frontier_size;
+    }
+
+flood_fill_finished:
+    free(frontier);
+    free(mask);
+    free(frontier_next);
+    return 0;
+}
 static int
 check_pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
                    double invsqr_radius2, double invsqr_inner_radius1,
@@ -3795,6 +4124,8 @@ static PyMethodDef _draw_methods[] = {
      DOC_DRAW_LINES},
     {"ellipse", (PyCFunction)ellipse, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_ELLIPSE},
+    {"flood_fill", (PyCFunction)flood_fill, METH_VARARGS | METH_KEYWORDS,
+     DOC_DRAW_FLOODFILL},
     {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_ARC},
     {"circle", (PyCFunction)circle, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_CIRCLE},

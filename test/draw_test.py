@@ -1,3 +1,4 @@
+import itertools
 import math
 import sys
 import unittest
@@ -7312,6 +7313,88 @@ class DrawArcTest(DrawArcMixin, DrawTestCase):
     """
 
 
+class DrawFloodFillTest(unittest.TestCase):
+    """Tests for flood fill."""
+
+    def test_flood_fill(self):
+        """Ensures flood fill fills with solid color"""
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+
+        pygame.draw.line(surf, (255, 0, 0), (10, 10), (90, 90), 5)
+
+        self.assertEqual(
+            surf.get_at((10, 10)), (255, 0, 0), "line drawing precondition"
+        )
+        self.assertEqual(
+            surf.get_at((90, 90)), (255, 0, 0), "line drawing precondition"
+        )
+
+        pygame.draw.flood_fill(surf, (255, 255, 255), (90, 90))
+
+        self.assertEqual(
+            surf.get_at((90, 90)), (255, 255, 255), "flood fill start point"
+        )
+        self.assertEqual(
+            surf.get_at((10, 10)), (255, 255, 255), "flood fill reaching the end"
+        )
+
+    def test_flood_pattern(self):
+        """Ensures flood fill fills in a pattern"""
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+
+        pattern = pygame.Surface((2, 2))
+        pattern.fill((255, 255, 255))
+        pattern.set_at((0, 0), (255, 0, 0))
+        pattern.set_at((1, 1), (0, 0, 255))
+
+        pygame.draw.line(surf, (0, 0, 0), (5, 95), (95, 5))
+        pygame.draw.line(surf, (0, 0, 0), (50, 0), (50, 95))
+
+        pygame.draw.flood_fill(surf, pattern, (95, 95))
+
+        for pt in [(0, 0), (0, 1), (1, 0), (1, 1)]:
+            self.assertEqual(surf.get_at(pt), pattern.get_at(pt), pt)
+
+    def test_flood_circle(self):
+        """Ensures flood fill doesn't overdraw"""
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+        pygame.draw.circle(surf, (255, 0, 255), (50, 50), 40, 2)
+        pygame.draw.flood_fill(surf, (255, 255, 255), (10, 50))
+
+        surf2 = pygame.Surface((100, 100))
+        surf2.fill((0, 0, 0))
+        pygame.draw.circle(surf2, (255, 255, 255), (50, 50), 40, 2)
+
+        for pt in itertools.product(range(100), range(100)):
+            self.assertEqual(surf.get_at(pt), surf2.get_at(pt))
+
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+        pygame.draw.circle(surf, (255, 0, 255), (50, 50), 40, 1)
+        # fill outside of circle white
+        pygame.draw.flood_fill(surf, (255, 255, 255), (1, 1))
+        # fill inside red
+        pygame.draw.flood_fill(surf, (255, 0, 0), (50, 50))
+
+        surf2 = pygame.Surface((100, 100))
+        surf2.fill((255, 255, 255))
+        # draw filled circle red
+        pygame.draw.circle(surf2, (255, 0, 0), (50, 50), 40)
+        # draw outer edge circle hot pink
+        pygame.draw.circle(surf2, (255, 0, 255), (50, 50), 40, 1)
+
+        # both should be identical: white outside, thin pink line, red inside
+        # no black pixels missed, no spillover between inside and outside
+        # This assumes circle drawing works correctly:
+        # if circle is broken, this may or may not fail
+
+        for pt in itertools.product(range(100), range(100)):
+            self.assertEqual(surf.get_at(pt), surf2.get_at(pt))
+
+
 ### Draw Module Testing #######################################################
 
 
@@ -7454,7 +7537,9 @@ class DrawModuleTest(unittest.TestCase):
                 if depth == 8:
                     self.assertEqual(surf.get_at(pixel), pixel_colors_8[i])
                 elif depth == 16:
-                    self.assertEqual(surf.get_at(pixel), pixel_colors_16[i])
+                    # allow small delta difference to account for SDL3 changes.
+                    for x, y in zip(surf.get_at(pixel), pixel_colors_16[i]):
+                        self.assertAlmostEqual(x, y, delta=2)
                 else:
                     self.assertEqual(surf.get_at(pixel), pixel_colors_24_32[i])
 

@@ -28,7 +28,7 @@ rendering through the Renderer, Texture and Image objects.
 """
 
 from collections.abc import Iterable
-from typing import Any, Optional, Protocol, Union, final
+from typing import Any, Protocol, final
 
 from pygame.color import Color
 from pygame.rect import Rect
@@ -38,9 +38,7 @@ from pygame.window import Window
 
 class _DrawableClass(Protocol):
     # Object that has the draw method that accepts area and dest arguments
-    def draw(
-        self, area: Optional[RectLike] = None, dest: Optional[RectLike] = None
-    ): ...
+    def draw(self, area: RectLike | None = None, dest: RectLike | None = None): ...
 
 @final
 class Renderer:
@@ -83,9 +81,9 @@ class Renderer:
     ) -> None: ...
     def blit(
         self,
-        source: Union["Texture", "Image", _DrawableClass],
-        dest: Optional[RectLike] = None,
-        area: Optional[RectLike] = None,
+        source: "Texture" | "Image" | _DrawableClass,
+        dest: RectLike | None = None,
+        area: RectLike | None = None,
         special_flags: int = 0,
     ) -> Rect:
         """Draw textures using a Surface-like API
@@ -311,7 +309,7 @@ class Texture:
         static: bool = False,
         streaming: bool = False,
         target: bool = False,
-        scale_quality: Optional[int] = None,
+        scale_quality: int | None = None,
     ) -> None: ...
     @property
     def alpha(self) -> int: ...
@@ -335,10 +333,10 @@ class Texture:
     def from_surface(cls, renderer: Renderer, surface: Surface) -> Texture: ...
     def draw(
         self,
-        srcrect: Optional[RectLike] = None,
-        dstrect: Optional[RectLike] = None,
+        srcrect: RectLike | None = None,
+        dstrect: RectLike | None = None,
         angle: float = 0.0,
-        origin: Optional[Iterable[int]] = None,
+        origin: Iterable[int] | None = None,
         flip_x: bool = False,
         flip_y: bool = False,
     ) -> None: ...
@@ -370,7 +368,7 @@ class Texture:
         p4_mod: ColorLike = (255, 255, 255, 255),
     ) -> None: ...
     def get_rect(self, **kwargs: Any) -> Rect: ...
-    def update(self, surface: Surface, area: Optional[RectLike] = None) -> None: ...
+    def update(self, surface: Surface, area: RectLike | None = None) -> None: ...
 
 @final
 class Image:
