@@ -479,7 +479,11 @@ RWops_read(FT_Stream stream, unsigned long offset, unsigned char *buffer,
         return 0;
     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    return (unsigned long)SDL_ReadIO(src, buffer, count);
+#else
     return (unsigned long)SDL_RWread(src, buffer, 1, (int)count);
+#endif
 }
 
 int

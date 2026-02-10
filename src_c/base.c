@@ -217,6 +217,15 @@ pg_init(PyObject *self, PyObject *_null)
         /* IMPPREFIX "_sdl2.controller", Is this required? Comment for now*/
         NULL};
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    // In SDL3, specify that signal handlers should not be enabled.
+    // By default, unlike SDL2, these signal handlers convert into QUIT
+    // events. However, if QUIT events / events aren't being handled,
+    // this leaves people unable to quit their script. Plus it's different
+    // than SDL2 behavior.
+    SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+#endif
+
     /*nice to initialize timer, so startup time will reflec pg_init() time*/
 #if defined(WITH_THREAD) && !defined(MS_WIN32) && defined(SDL_INIT_EVENTTHREAD)
     pg_sdl_was_init = PG_InitSubSystem(SDL_INIT_EVENTTHREAD | PG_INIT_TIMER |
@@ -2422,7 +2431,7 @@ PyMODINIT_FUNC
 PyInit_mixer_music(void);
 
 PyMODINIT_FUNC
-PyInit_mixer(void);
+PyInit_pg_mixer(void);
 
 PyMODINIT_FUNC
 PyInit_pg_math(void);
@@ -2464,16 +2473,13 @@ PyMODINIT_FUNC
 PyInit_sdl2(void);
 
 PyMODINIT_FUNC
-PyInit_sdl2_controller(void);
+PyInit_mixer(void);
 
 PyMODINIT_FUNC
-PyInit_sdl2_mixer(void);
+PyInit_audio(void);
 
 PyMODINIT_FUNC
-PyInit_sdl2_audio(void);
-
-PyMODINIT_FUNC
-PyInit_sdl2_video(void);
+PyInit_video(void);
 
 #endif
 
@@ -2552,10 +2558,9 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
 #pragma message "WARNING: pygame._sdl2.* are disabled"
 #else
     load_submodule_mphase("pygame._sdl2", PyInit_sdl2(), spec, "sdl2");
-    load_submodule_mphase("pygame._sdl2", PyInit_sdl2_mixer(), spec, "mixer");
-    load_submodule("pygame._sdl2", PyInit_sdl2_controller(), "controller");
-    load_submodule_mphase("pygame._sdl2", PyInit_sdl2_audio(), spec, "audio");
-    load_submodule_mphase("pygame._sdl2", PyInit_sdl2_video(), spec, "video");
+    load_submodule_mphase("pygame._sdl2", PyInit_mixer(), spec, "mixer");
+    load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
+    load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
 #endif
 
     Py_RETURN_NONE;
@@ -2621,7 +2626,7 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_mask(), "mask");
     load_submodule("pygame", PyInit_mouse(), "mouse");
 
-    load_submodule("pygame", PyInit_mixer(), "mixer");
+    load_submodule("pygame", PyInit_pg_mixer(), "mixer");
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
 
     // base, color, rect, bufferproxy, surflock, surface

@@ -1143,7 +1143,8 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         }
 
         default: {
-            result = SDL_SetError("invalid blend flag for this operation");
+            SDL_SetError("invalid blend flag for this operation");
+            result = -1;
             break;
         }
     }

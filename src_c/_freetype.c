@@ -21,7 +21,7 @@
 #define PYGAME_FREETYPE_INTERNAL
 #define PYGAME_FREETYPE_FONT_INTERNAL
 
-#include "freetype.h"
+#include "freetype/ft_freetype.h"
 
 #include "freetype/ft_wrap.h"
 
@@ -632,6 +632,7 @@ PyTypeObject pgFont_Type = {
     .tp_repr = (reprfunc)_ftfont_repr,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc = DOC_FREETYPE_FONT,
+    .tp_weaklistoffset = offsetof(pgFontObject, weakreflist),
     .tp_methods = _ftfont_methods,
     .tp_getset = _ftfont_getsets,
     .tp_init = (initproc)_ftfont_init,
@@ -674,6 +675,7 @@ _ftfont_new(PyTypeObject *subtype, PyObject *args, PyObject *kwds)
         obj->bgcolor[2] = 0;
         obj->bgcolor[3] = 0;
         obj->init_generation = current_freetype_generation;
+        obj->weakreflist = NULL;
     }
     return (PyObject *)obj;
 }
@@ -689,6 +691,9 @@ _ftfont_dealloc(pgFontObject *self)
     _PGFT_Quit(self->freetype);
 
     Py_XDECREF(self->path);
+    if (self->weakreflist) {
+        PyObject_ClearWeakRefs((PyObject *)self);
+    }
     ((PyObject *)self)->ob_type->tp_free((PyObject *)self);
 }
 
