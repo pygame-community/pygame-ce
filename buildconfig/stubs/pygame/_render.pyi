@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Any, Protocol, final
+from typing import Any, Optional, Protocol, Union, final
 
 from pygame.color import Color
 from pygame.rect import Rect

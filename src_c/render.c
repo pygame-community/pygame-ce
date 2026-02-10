@@ -1213,8 +1213,9 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
     if (!Py_IsNone(dest)) {
         if (!(dstrectptr = pgFRect_FromObject(dest, &dstrect))) {
             if (!pg_TwoFloatsFromObj(dest, &dstrect.x, &dstrect.y)) {
-                return RAISE(PyExc_ValueError,
-                             "dstrect must be a point, Rect, or None");
+                PyErr_SetString(PyExc_ValueError,
+                                "dstrect must be a point, Rect, or None");
+                return 0;
             }
             dstrect.w = (float)self->texture->width;
             dstrect.h = (float)self->texture->height;
