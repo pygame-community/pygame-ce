@@ -82,19 +82,6 @@ set_texture_alpha_helper(SDL_Texture *texture, Uint8 alpha)
     return 0;
 }
 
-static inline SDL_FRect *
-parse_dest_rect(pgTextureObject *texture, PyObject *dstrectobj, SDL_FRect *tmp)
-{
-    SDL_FRect *dstrectptr = NULL;
-    if (!(dstrectptr = pgFRect_FromObject(dstrectobj, tmp))) {
-        if (pg_TwoFloatsFromObj(dstrectobj, &dstrectptr->x, &dstrectptr->y)) {
-            dstrectptr->w = (float)texture->width;
-            dstrectptr->h = (float)texture->height;
-        }
-    }
-    return dstrectptr;
-}
-
 /* Renderer implementation */
 static PyObject *
 renderer_from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
@@ -1053,9 +1040,7 @@ texture_set_alpha(pgTextureObject *self, PyObject *arg, void *closure)
 {
     if (PyLong_Check(arg)) {
         unsigned long longval = PyLong_AsUnsignedLong(arg);
-        RENDERER_PROPERTY_ERROR_CHECK(
-            SDL_SetTextureAlphaMod(self->texture, (Uint8)longval))
-        return 0;
+        return set_texture_alpha_helper(self->texture, (Uint8)longval);
     }
     return -1;
 }
@@ -1075,9 +1060,7 @@ texture_set_blend_mode(pgTextureObject *self, PyObject *arg, void *closure)
     if (longval == -1 && PyErr_Occurred()) {
         return -1;
     }
-    RENDERER_PROPERTY_ERROR_CHECK(
-        SDL_SetTextureBlendMode(self->texture, (int)longval))
-    return 0;
+    return set_texture_blend_mode_helper(self->texture, (SDL_BlendMode)longval);
 }
 
 static PyObject *
@@ -1097,9 +1080,7 @@ texture_set_color(pgTextureObject *self, PyObject *arg, void *closure)
     if (!pg_RGBAFromObjEx(arg, color, PG_COLOR_HANDLE_ALL)) {
         return -1;
     }
-    RENDERER_PROPERTY_ERROR_CHECK(
-        SDL_SetTextureColorMod(self->texture, color[0], color[1], color[2]))
-    return 0;
+    return set_texture_color_helper(self->texture, color[0], color[1], color[2]);
 }
 
 static int
@@ -1215,25 +1196,26 @@ texture_dealloc(pgTextureObject *self, PyObject *_null)
 static int
 image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
 {
-    SDL_Rect tmp, *srcrectptr = NULL;
-    SDL_FRect ftmp, *dstrectptr = NULL;
+    SDL_Rect srcrect, *srcrectptr = NULL;
+    SDL_FRect dstrect, *dstrectptr = NULL;
     SDL_FPoint *originptr = (self->has_origin) ? &self->origin : NULL;
     SDL_RendererFlip flip = SDL_FLIP_NONE;
     if (!Py_IsNone(area)) {
-        if (!(srcrectptr = pgRect_FromObject(area, &tmp))) {
-            PyErr_SetString(PyExc_ValueError,
-                            "srcrect must be a Rect or None");
-            return 0;
+        if (!(srcrectptr = pgRect_FromObject(area, &srcrect))) {
+            RAISERETURN(PyExc_ValueError, "srcrect must be a Rect or None", 0);
         }
     }
     else {
         srcrectptr = &self->srcrect->r;
     }
     if (!Py_IsNone(dest)) {
-        if (!(dstrectptr = parse_dest_rect(self->texture, dest, &ftmp))) {
-            PyErr_SetString(PyExc_ValueError,
-                            "dstrect must be a point, Rect, or None");
-            return 0;
+        if (!(dstrectptr = pgFRect_FromObject(dest, &dstrect))) {
+            if (!pg_TwoFloatsFromObj(dest, &dstrect.x, &dstrect.y)) {
+                return RAISE(PyExc_ValueError,
+                             "dstrect must be a point, Rect, or None");
+            }
+            dstrect.w = (float)self->texture->width;
+            dstrect.h = (float)self->texture->height;
         }
     }
     if (self->flip_x) {
@@ -1242,10 +1224,11 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
     if (self->flip_y) {
         flip |= SDL_FLIP_VERTICAL;
     }
-    set_texture_color_helper(self->texture->texture, self->color->data[0],
-                             self->color->data[1], self->color->data[2]);
-    set_texture_alpha_helper(self->texture->texture, (Uint8)self->alpha);
-    set_texture_blend_mode_helper(self->texture->texture, self->blend_mode);
+    if (set_texture_color_helper(self->texture->texture, self->color->data[0], self->color->data[1], self->color->data[2]) ||
+        set_texture_alpha_helper(self->texture->texture, (Uint8)self->alpha) ||
+        set_texture_blend_mode_helper(self->texture->texture, self->blend_mode)) {
+        return 0;
+    }
     if (SDL_RenderCopyExF(self->texture->renderer->renderer,
                           self->texture->texture, srcrectptr, dstrectptr,
                           self->angle, originptr, flip) < 0) {
@@ -1256,18 +1239,19 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
 }
 
 static PyObject *
-image_get_rect(pgImageObject *self, PyObject *const *args, Py_ssize_t nargs,
-               PyObject *kwargs)
+image_get_rect(pgImageObject *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwargs)
 {
-    return pgRect_New(&(self->srcrect->r));
+    SDL_Rect *r = &self->srcrect->r;
+    PyObject *rect = pgRect_New4(r->x, r->y, r->w, r->h);
+    return pgObject_getRectHelper(rect, args, nargs, kwargs, "rect");
 }
 
 static PyObject *
 image_draw(pgImageObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *srcrectobj = Py_None, *dstrectobj = Py_None;
-    SDL_Rect tmp, *srcrectptr = NULL;
-    SDL_FRect ftmp, *dstrectptr = NULL;
+    SDL_Rect srcrect, *srcrectptr = NULL;
+    SDL_FRect dstrect, *dstrectptr = NULL;
     SDL_FPoint *originptr = (self->has_origin) ? &self->origin : NULL;
     SDL_RendererFlip flip = SDL_FLIP_NONE;
     static char *keywords[] = {"srcrect", "dstrect", NULL};
@@ -1276,7 +1260,7 @@ image_draw(pgImageObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     if (!Py_IsNone(srcrectobj)) {
-        if (!(srcrectptr = pgRect_FromObject(srcrectobj, &tmp))) {
+        if (!(srcrectptr = pgRect_FromObject(srcrectobj, &srcrect))) {
             return RAISE(PyExc_ValueError, "srcrect must be a Rect or None");
         }
     }
@@ -1284,10 +1268,13 @@ image_draw(pgImageObject *self, PyObject *args, PyObject *kwargs)
         srcrectptr = &self->srcrect->r;
     }
     if (!Py_IsNone(dstrectobj)) {
-        if (!(dstrectptr =
-                  parse_dest_rect(self->texture, dstrectobj, &ftmp))) {
-            return RAISE(PyExc_ValueError,
-                         "dstrect must be a point, Rect, or None");
+        if (!(dstrectptr = pgFRect_FromObject(dstrectobj, &dstrect))) {
+            if (!pg_TwoFloatsFromObj(dstrectobj, &dstrect.x, &dstrect.y)) {
+                return RAISE(PyExc_ValueError,
+                             "dstrect must be a point, Rect, or None");
+            }
+            dstrect.w = (float)self->texture->width;
+            dstrect.h = (float)self->texture->height;
         }
     }
     if (self->flip_x) {
@@ -1296,10 +1283,11 @@ image_draw(pgImageObject *self, PyObject *args, PyObject *kwargs)
     if (self->flip_y) {
         flip |= SDL_FLIP_VERTICAL;
     }
-    set_texture_color_helper(self->texture->texture, self->color->data[0],
-                             self->color->data[1], self->color->data[2]);
-    set_texture_alpha_helper(self->texture->texture, (Uint8)self->alpha);
-    set_texture_blend_mode_helper(self->texture->texture, self->blend_mode);
+    if (set_texture_color_helper(self->texture->texture, self->color->data[0], self->color->data[1], self->color->data[2]) ||
+        set_texture_alpha_helper(self->texture->texture, (Uint8)self->alpha) ||
+        set_texture_blend_mode_helper(self->texture->texture, self->blend_mode)) {
+        return NULL;
+    }
     RENDERER_ERROR_CHECK(SDL_RenderCopyExF(
         self->texture->renderer->renderer, self->texture->texture, srcrectptr,
         dstrectptr, self->angle, originptr, flip));
@@ -1637,7 +1625,7 @@ static PyGetSetDef texture_getset[] = {
     {NULL, 0, NULL, NULL, NULL}};
 
 static PyMethodDef image_methods[] = {
-    {"get_rect", (PyCFunction)image_get_rect, METH_NOARGS,
+    {"get_rect", (PyCFunction)image_get_rect, METH_FASTCALL | METH_KEYWORDS,
      DOC_SDL2_VIDEO_IMAGE_GETRECT},
     {"draw", (PyCFunction)image_draw, METH_VARARGS | METH_KEYWORDS,
      DOC_SDL2_VIDEO_IMAGE_DRAW},
