@@ -1060,7 +1060,8 @@ texture_set_blend_mode(pgTextureObject *self, PyObject *arg, void *closure)
     if (longval == -1 && PyErr_Occurred()) {
         return -1;
     }
-    return set_texture_blend_mode_helper(self->texture, (SDL_BlendMode)longval);
+    return set_texture_blend_mode_helper(self->texture,
+                                         (SDL_BlendMode)longval);
 }
 
 static PyObject *
@@ -1080,7 +1081,8 @@ texture_set_color(pgTextureObject *self, PyObject *arg, void *closure)
     if (!pg_RGBAFromObjEx(arg, color, PG_COLOR_HANDLE_ALL)) {
         return -1;
     }
-    return set_texture_color_helper(self->texture, color[0], color[1], color[2]);
+    return set_texture_color_helper(self->texture, color[0], color[1],
+                                    color[2]);
 }
 
 static int
@@ -1224,9 +1226,11 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
     if (self->flip_y) {
         flip |= SDL_FLIP_VERTICAL;
     }
-    if (set_texture_color_helper(self->texture->texture, self->color->data[0], self->color->data[1], self->color->data[2]) ||
+    if (set_texture_color_helper(self->texture->texture, self->color->data[0],
+                                 self->color->data[1], self->color->data[2]) ||
         set_texture_alpha_helper(self->texture->texture, (Uint8)self->alpha) ||
-        set_texture_blend_mode_helper(self->texture->texture, self->blend_mode)) {
+        set_texture_blend_mode_helper(self->texture->texture,
+                                      self->blend_mode)) {
         return 0;
     }
     if (SDL_RenderCopyExF(self->texture->renderer->renderer,
@@ -1239,7 +1243,8 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
 }
 
 static PyObject *
-image_get_rect(pgImageObject *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwargs)
+image_get_rect(pgImageObject *self, PyObject *const *args, Py_ssize_t nargs,
+               PyObject *kwargs)
 {
     SDL_Rect *r = &self->srcrect->r;
     PyObject *rect = pgRect_New4(r->x, r->y, r->w, r->h);
@@ -1283,9 +1288,11 @@ image_draw(pgImageObject *self, PyObject *args, PyObject *kwargs)
     if (self->flip_y) {
         flip |= SDL_FLIP_VERTICAL;
     }
-    if (set_texture_color_helper(self->texture->texture, self->color->data[0], self->color->data[1], self->color->data[2]) ||
+    if (set_texture_color_helper(self->texture->texture, self->color->data[0],
+                                 self->color->data[1], self->color->data[2]) ||
         set_texture_alpha_helper(self->texture->texture, (Uint8)self->alpha) ||
-        set_texture_blend_mode_helper(self->texture->texture, self->blend_mode)) {
+        set_texture_blend_mode_helper(self->texture->texture,
+                                      self->blend_mode)) {
         return NULL;
     }
     RENDERER_ERROR_CHECK(SDL_RenderCopyExF(
