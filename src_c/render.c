@@ -1484,7 +1484,7 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
                                      &texture_or_imageobj, &srcrectobj)) {
         return -1;
     }
-    if (pgTexture_Check(texture_or_imageobj)) {
+    /*if (pgTexture_Check(texture_or_imageobj)) {
         textureprt = (pgTextureObject *)texture_or_imageobj;
         temp = (SDL_Rect){0, 0, textureprt->width, textureprt->height};
     }
@@ -1529,7 +1529,7 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
     self->flip_x = SDL_FALSE;
     self->flip_y = SDL_FALSE;
     self->alpha = 255;
-    self->color = (pgColorObject *)pgColor_NewLength(rgba, 4);
+    self->color = (pgColorObject *)pgColor_NewLength(rgba, 4);*/
     return 0;
 }
 
