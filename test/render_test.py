@@ -483,15 +483,14 @@ class TextureTest(unittest.TestCase):
         for x in range(25, 75):
             self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 50)))
 
-@unittest.skip("Skip")
 class ImageTest(unittest.TestCase):
     def setUp(self):
-        self.window = pygame.Window(size=(100, 100))
+        '''self.window = pygame.Window(size=(100, 100))
         self.renderer = _render.Renderer(self.window)
         self.surface = pygame.Surface((50, 50))
         self.surface.fill(pygame.Color(80, 120, 160, 255))
         self.texture = _render.Texture.from_surface(self.renderer, self.surface)
-        self.image = _render.Image(self.texture)
+        self.image = _render.Image(self.texture)'''
 
     def test_init_with_texture(self):
         """Test Image initialization with a Texture"""
