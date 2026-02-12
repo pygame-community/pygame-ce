@@ -32,6 +32,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           path: pygame-wheels
+          pattern: pygame-wheels-*
           merge-multiple: true
 
       # Strips 'release/' from the ref_name, this helps us access the version
@@ -41,7 +42,7 @@ jobs:
         run: echo "VER=${GITHUB_REF_NAME#'release/'}" >> $GITHUB_OUTPUT
 
       - name: Generate release attestation
-        uses: actions/attest-build-provenance@v3.1.0
+        uses: actions/attest-build-provenance@v3.2.0
         with:
           subject-path: "pygame-wheels/*"
 
