@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
+`English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_ `Deutsch`_
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -146,7 +146,7 @@ multidimensionnels.
 Versions des dépendances:
 
 +----------+-----------------------------+
-| CPython  | >= 3.9 (Ou utiliser PyPy3)  |
+| CPython  | >= 3.10 (Ou utiliser PyPy3) |
 +----------+-----------------------------+
 | SDL      | >= 2.0.14                   |
 +----------+-----------------------------+
@@ -188,8 +188,8 @@ Voir les docs/licences pour les licences des dépendances.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.3.0.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.3.0...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -215,3 +215,4 @@ Voir les docs/licences pour les licences des dépendances.
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
 .. _Português (Brasil): README.pt-br.rst
+.. _Deutsch: README.de.rst

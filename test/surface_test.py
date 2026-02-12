@@ -300,7 +300,10 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(
             blit_surf.mustlock(), (blit_surf.get_flags() & pygame.RLEACCEL) != 0
         )
-        self.assertTrue(blit_surf.get_flags() & pygame.RLEACCEL)
+        if pygame.version.SDL < (2, 32, 50):
+            # This bit fails on SDL2-compat and SDL3
+            # https://github.com/libsdl-org/sdl2-compat/issues/575
+            self.assertTrue(blit_surf.get_flags() & pygame.RLEACCEL)
 
     def test_fill_raise_exceptions(self):
         surf = pygame.Surface((5, 5))
@@ -376,6 +379,11 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertTrue(s1.get_flags() & pygame.RLEACCELOK)
         self.assertTrue(not s2.get_flags() & pygame.RLEACCELOK)
 
+    @unittest.skipIf(
+        (2, 32, 50) <= pygame.version.SDL <= (2, 32, 56)
+        or (3, 0, 0) <= pygame.version.SDL <= (3, 2, 22),
+        "This test was briefly broken on SDL3 (and sdl2-compat) but got fixed.",
+    )
     def test_solarwolf_rle_usage(self):
         """Test for error/crash when calling set_colorkey() followed
         by convert twice in succession. Code originally taken
@@ -404,6 +412,11 @@ class SurfaceTypeTest(unittest.TestCase):
         finally:
             pygame.display.quit()
 
+    @unittest.skipIf(
+        (2, 32, 50) <= pygame.version.SDL <= (2, 32, 56)
+        or (3, 0, 0) <= pygame.version.SDL <= (3, 2, 22),
+        "This test was briefly broken on SDL3 (and sdl2-compat) but got fixed.",
+    )
     def test_solarwolf_rle_usage_2(self):
         """Test for RLE status after setting alpha"""
 

@@ -4,18 +4,22 @@
 ======================
 
 .. module:: pygame.freetype
-   :synopsis: Enhanced pygame module for loading and rendering computer fonts
+   :synopsis: pygame module for loading and rendering computer fonts
 
-| :sl:`Enhanced pygame module for loading and rendering computer fonts`
+| :sl:`pygame module for loading and rendering computer fonts`
 
-The ``pygame.freetype`` module is a replacement for :mod:`pygame.font`.
-It has all of the functionality of the original, plus many new features.
-Yet is has absolutely no dependencies on the SDL_ttf library.
-It is implemented directly on the FreeType 2 library.
-The ``pygame.freetype`` module is not itself backward compatible with
-:mod:`pygame.font`.
-Instead, use the ``pygame.ftfont`` module as a drop-in replacement
-for :mod:`pygame.font`.
+The ``pygame.freetype`` module is an alternative to :mod:`pygame.font`.
+It is implemented directly on the FreeType 2 library, and is not
+backward compatible with :mod:`pygame.font`. :mod:`pygame.font`
+relies on the SDL_ttf library, and due to the SDL_ttf team's efforts,
+``pygame.font`` is now the better supported of our font modules.
+In new code, the use of :mod:`pygame.font` is encouraged.
+``pygame.font``, unlike ``pygame.freetype``, has support for multiline text,
+text shaping for global writing systems, and rendering emoji with color.
+
+The ``pygame.ftfont`` module exists as a limited version of
+the :mod:`pygame.font` API, running on top of ``pygame.freetype``.
+Many of the recently added font features do not work on it.
 
 All font file formats supported by FreeType can be rendered by
 ``pygame.freetype``, namely ``TTF``, Type1, ``CFF``, OpenType,
@@ -364,7 +368,7 @@ loaded. This module must be imported explicitly to be used. ::
       | :sl:`The scaled descent of the font in pixels`
       | :sg:`get_sized_descender(size=0, /) -> int`
 
-      Return the number of pixels from the font's baseline to the top of the
+      Return the number of pixels from the font's baseline to the bottom of the
       bounding box. It is not adjusted for strong or rotation.
 
    .. method:: get_sized_height

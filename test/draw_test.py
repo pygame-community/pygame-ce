@@ -7537,7 +7537,9 @@ class DrawModuleTest(unittest.TestCase):
                 if depth == 8:
                     self.assertEqual(surf.get_at(pixel), pixel_colors_8[i])
                 elif depth == 16:
-                    self.assertEqual(surf.get_at(pixel), pixel_colors_16[i])
+                    # allow small delta difference to account for SDL3 changes.
+                    for x, y in zip(surf.get_at(pixel), pixel_colors_16[i]):
+                        self.assertAlmostEqual(x, y, delta=2)
                 else:
                     self.assertEqual(surf.get_at(pixel), pixel_colors_24_32[i])
 

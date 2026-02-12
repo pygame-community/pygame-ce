@@ -28,7 +28,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
     See the :mod:`pygame.gfxdraw` module for alternative draw methods.
 """
 
-from typing import Union, overload
+from typing import overload
 
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -569,9 +569,7 @@ def aalines(
         always raise a deprecation exception when used
     """
 
-def flood_fill(
-    surface: Surface, color: Union[ColorLike, Surface], start_pos: Point
-) -> Rect:
+def flood_fill(surface: Surface, color: ColorLike | Surface, start_pos: Point) -> Rect:
     """Fill an enclosed, same color area, on a surface.
 
     Replace the color of a cluster of connected same-color pixels, beginning

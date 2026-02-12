@@ -5,7 +5,7 @@ constant frame rate.
 Times in pygame-ce are represented in milliseconds (1/1000 of a second).
 """
 
-from typing import Union, final
+from typing import final
 
 from pygame.event import Event
 
@@ -37,7 +37,7 @@ def delay(milliseconds: int, /) -> int:
     This returns the actual number of milliseconds used.
     """
 
-def set_timer(event: Union[int, Event], millis: int, loops: int = 0) -> None:
+def set_timer(event: int | Event, millis: int, loops: int = 0) -> None:
     """Repeatedly create an event on the event queue.
 
     Set an event to appear on the event queue every given number of milliseconds.
