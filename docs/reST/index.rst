@@ -57,7 +57,7 @@ them, this is how you can do it:
 Don't forget to report us any problem with the experimental features on `github`_ so we can easily
 turn them to stable API in the future ^^.
 
-**Below is currently the list of experimental modules :**
+**Below is currently the list of experimental modules:**
 
 :doc:`ref/geometry`
   Pygame module for the Circle, Line, and Polygon objects.
