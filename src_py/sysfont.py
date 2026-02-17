@@ -42,11 +42,12 @@ def _simplename(name):
     return "".join(c.lower() for c in name if c.isalnum())
 
 
-def _addfont(name, bold, italic, font, fontdict):
+def _addfont(name, bold, italic, font, fontdict, replace=False):
     """insert a font and style into the font dictionary"""
     if name not in fontdict:
         fontdict[name] = {}
-    fontdict[name][bold, italic] = font
+    if replace or (bold, italic) not in fontdict[name]:
+        fontdict[name][bold, italic] = font
 
 
 def initsysfonts_win32():
@@ -82,44 +83,65 @@ def initsysfonts_win32():
                 if not dirname(font):
                     font = join(fontdir, font)
 
-                # Some are named A & B, both names should be processed separately
-                # Ex: the main Cambria file is marked as "Cambria & Cambria Math"
-                for name in name.split("&"):
-                    if os.path.exists(font):  # check if the file actually exists
-                        _parse_font_entry_win(name, font, fonts)
+                if os.path.exists(font):  # check if the file actually exists
+                    _parse_font_entry_win(name, font, fonts)
 
     return fonts
 
 
 def _parse_font_entry_win(name, font, fonts):
     """
-    Parse out a simpler name and the font style from the initial file name.
+    Parse out simpler name(s) and the font style from the initial file name.
+
+    This only does minimal processing of the font name, however it also creates
+    aliases with certain keywords stripped for backwards compatibility, if they
+    don't collide with another full font name.
 
     :param name: The font name
     :param font: The font file path
     :param fonts: The pygame font dictionary
-
-    :return: Tuple of (bold, italic, name)
     """
+    # Strip off TrueType suffix and possible semicolon
     true_type_suffix = "(TrueType)"
-    mods = ("demibold", "narrow", "light", "unicode", "bt", "mt")
+    name = name.rstrip(";")
     if name.endswith(true_type_suffix):
-        name = name.rstrip(true_type_suffix).rstrip()
-    name = name.lower().split()
-    bold = italic = False
-    for mod in mods:
-        if mod in name:
-            name.remove(mod)
-    if "bold" in name:
-        name.remove("bold")
-        bold = True
-    if "italic" in name:
-        name.remove("italic")
-        italic = True
-    name = "".join(name)
-    name = _simplename(name)
+        name = name[: -len(true_type_suffix)].rstrip()
 
-    _addfont(name, bold, italic, font, fonts)
+    # Some fonts are named A & B, both names should be processed separately
+    # Ex: the main Cambria file is marked as "Cambria & Cambria Math"
+    for subname in name.split(" & "):
+        parts = subname.lower().split()
+        # Common handling for legacy and non-legacy
+        bold = italic = oblique = False
+        # Ignore "Demi Bold"
+        if "bold" in parts and "demi" not in parts:
+            parts.remove("bold")
+            bold = True
+        if "italic" in parts:
+            parts.remove("italic")
+            italic = True
+        # Copy for legacy name
+        legacy_parts = parts.copy()
+
+        # New name handling
+        if "regular" in parts:
+            parts.remove("regular")
+        if "oblique" in parts:
+            parts.remove("oblique")
+            oblique = True
+        # The full name takes presedence over legacy stripped names
+        full_name = _simplename("".join(parts))
+        _addfont(full_name, bold, italic or oblique, font, fonts, replace=True)
+
+        # Legacy name handling
+        # Strip common style variants/suffixes for backwards compatibility
+        legacy_mods = {"demibold", "narrow", "light", "unicode", "bt", "mt"}
+        legacy_parts = [p for p in legacy_parts if p not in legacy_mods]
+        legacy_name = _simplename("".join(legacy_parts))
+        if legacy_name != full_name:
+            # Keep only the first matching legacy name, if it doesn't collide
+            # Note that this may have an arbitrary style
+            _addfont(legacy_name, bold, italic, font, fonts, replace=False)
 
 
 def _parse_font_entry_darwin(name, filepath, fonts):
