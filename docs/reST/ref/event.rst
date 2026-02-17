@@ -474,6 +474,46 @@ On Android, the following events can be generated
 
    .. ## pygame.event.custom_type ##
 
+.. function:: add_event_watcher
+
+   | :sl:`add an event watcher`
+   | :sg:`add_event_watcher[T: Callable[[Event], Any]](T) -> T`
+
+   Adds an event watcher
+   The provided function should take a ``Event`` and may return any value.
+
+   For convenience this function returns its parameter.
+
+   WARNING: The passed function may be called in a separate thread.
+   The watcher is called when events are added to the queue.
+   The queue processing may occur immediately or when ``pygame.event.poll`` / ``pygame.event.get`` is called.
+   This function is not called if the event is blocked or filtered out.
+
+   If an error is generated in this function it is caught
+   and re-raised in the main loop of the program
+   when ``pygame.event.poll``, ``pygame.event.get``,
+   ``pygame.event.pump``, etc. are called.
+
+
+   .. versionadded:: 2.5.7
+
+   .. ## pygame.event.add_event_watcher ##
+
+.. function:: remove_event_watcher
+
+   | :sl:`remove an event watcher`
+   | :sg:`remove_event_watcher[T: (Event) -> Any](T) -> bool`
+
+   Removes a already existing event watcher.
+
+   The object passed to this function should be the same as was passed to ``add_event_watcher``.
+
+   This returns a boolean on whether the watcher could be removed or not.
+
+   .. versionadded:: 2.5.7
+
+   .. ## pygame.event.remove_event_watcher ##
+
 .. class:: Event
 
    | :sl:`pygame object for representing events`
