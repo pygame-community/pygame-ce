@@ -1197,9 +1197,7 @@ set_line_render_method(PyObject *self, PyObject *args)
 {
     int method;
     if (!PyArg_ParseTuple(args, "i", &method)) {
-        return RAISE(PyExc_ValueError,
-                     "Invalid line render method: must be an int"
-                     " (use LINE_RENDER_* constants)");
+        Py_RETURN_NONE;
     }
     if (method < 0 || 3 < method) {
         return RAISE(PyExc_ValueError,
