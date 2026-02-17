@@ -1183,7 +1183,7 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
     return 1;
 }
 
-#if SDL_VERSION_ATLEAST(2, 0, 20)
+#if (SDL_VERSION_ATLEAST(2, 0, 20) && !SDL_VERSION_ATLEAST(3, 0, 0)) || SDL_VERSION_ATLEAST(3, 2, 0)
 static PyObject *
 get_line_render_method(PyObject *self, PyObject *Py_UNUSED(ignored))
 {
@@ -1197,7 +1197,7 @@ set_line_render_method(PyObject *self, PyObject *args)
 {
     int method;
     if (!PyArg_ParseTuple(args, "i", &method)) {
-        Py_RETURN_NONE;
+        return NULL;
     }
     if (method < 0 || 3 < method) {
         return RAISE(PyExc_ValueError,
