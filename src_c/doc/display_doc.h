@@ -11,6 +11,7 @@
 #define DOC_DISPLAY_INFO "Info() -> _VidInfo\nCreate a video display information object."
 #define DOC_DISPLAY_GETWMINFO "get_wm_info() -> dict[str, int]\nGet information about the current windowing system."
 #define DOC_DISPLAY_GETDESKTOPSIZES "get_desktop_sizes() -> list[tuple[int, int]]\nGet sizes of active desktops."
+#define DOC_DISPLAY_GETDESKTOPUSABLEBOUNDS "get_desktop_usable_bounds() -> list[Rect]\nGet the bounding rects of the usable area of active desktops."
 #define DOC_DISPLAY_LISTMODES "list_modes(depth=0, flags=FULLSCREEN, display=0) -> list[tuple[int, int]]\nGet list of available fullscreen modes."
 #define DOC_DISPLAY_MODEOK "mode_ok(size, flags=0, depth=0, display=0) -> int\nPick the best color depth for a display mode."
 #define DOC_DISPLAY_GLGETATTRIBUTE "gl_get_attribute(flag, /) -> int\nGet the value for an OpenGL flag for the current display."
