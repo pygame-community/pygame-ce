@@ -4,6 +4,13 @@
 # stripping unneeded symbols and elf sections (including debug symbols and the
 # like).
 
+# Use llvm-strip on if on ARM Windows, regular strip otherwise.
+if [ "$WIN_ARCH" == "aarch64" ]; then
+    STRIP_PATH="llvm-strip"
+else
+    STRIP_PATH="strip"
+fi
+
 # This is a pretty scary looking command, let's break it down part-wise to
 # understand it
 
@@ -25,8 +32,13 @@
 # option tells it that entries are null terminated, and -t prints information
 # to stderr for debugging purposes
 
-# > strip --strip-unneeded
+# > $STRIP_PATH --strip-unneeded
 # This is the actual command being run on all so files: this strips unneeded
 # info
 find $PG_DEP_PREFIX/lib \( -name "*.so*" -o -name "*.a" \) -type f -xtype f -print0 | \
-    xargs -0 -t strip --strip-unneeded
+    xargs -0 -t $STRIP_PATH --strip-unneeded
+
+if [ -n "$WIN_ARCH" ]; then
+  find $PG_DEP_PREFIX/bin -name '*.dll' -type f -xtype f -print0 | \
+    xargs -0 -t $STRIP_PATH --strip-unneeded
+fi

@@ -1,0 +1,44 @@
+From 7403d6272538de8a2af598caa0da2e2a5d1d4186 Mon Sep 17 00:00:00 2001
+From: Cameron Cawley <ccawley2011@gmail.com>
+Date: Sat, 7 May 2022 20:16:32 +0100
+Subject: [PATCH] Don't export vorbisenc functions from vorbis.dll on Windows
+
+This matches the behaviour on other platforms, as well as the behaviour with MinGW autotools builds, and reduces the size of the resulting DLL significantly.
+
+Co-authored-by: evpobr <evpobr@users.noreply.github.com>
+---
+ lib/CMakeLists.txt | 4 ----
+ win32/vorbis.def   | 7 -------
+ 2 files changed, 11 deletions(-)
+
+diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
+index daa7d7153..b9cabd8de 100644
+--- a/lib/CMakeLists.txt
++++ b/lib/CMakeLists.txt
+@@ -57,10 +57,6 @@ set(VORBISENC_SOURCES
+     vorbisenc.c
+ )
+
+-if(WIN32)
+-    list(APPEND VORBIS_SOURCES vorbisenc.c)
+-endif()
+-
+ if(WIN32)
+     list(APPEND VORBIS_SOURCES ../win32/vorbis.def)
+     list(APPEND VORBISENC_SOURCES ../win32/vorbisenc.def)
+diff --git a/win32/vorbis.def b/win32/vorbis.def
+index 884f8f023..1310b6c24 100644
+--- a/win32/vorbis.def
++++ b/win32/vorbis.def
+@@ -48,11 +48,4 @@ vorbis_synthesis_idheader
+ ;
+ vorbis_window
+ ;_analysis_output_always
+-vorbis_encode_init
+-vorbis_encode_setup_managed
+-vorbis_encode_setup_vbr
+-vorbis_encode_init_vbr
+-vorbis_encode_setup_init
+-vorbis_encode_ctl
+-;
+ vorbis_version_string
