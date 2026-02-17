@@ -1215,6 +1215,22 @@ set_line_render_method(PyObject *self, PyObject *args)
     }
     Py_RETURN_FALSE;
 }
+#else
+static PyObject *
+get_line_render_method(PyObject *self, PyObject *Py_UNUSED(ignored))
+{
+    return RAISE(PyExc_NotImplementedError, "Setting/getting the "
+        "line render method is only available when built with SDL2 2.0.20"
+        " or SDL3 3.2.0")
+}
+
+static PyObject *
+set_line_render_method(PyObject *self, PyObject *args)
+{
+    return RAISE(PyExc_NotImplementedError, "Setting/getting the "
+        "line render method is only available when built with SDL2 2.0.20"
+        " or SDL3 3.2.0")
+}
 #endif
 
 /* Module definition */
@@ -1342,12 +1358,10 @@ static PyTypeObject pgImage_Type = {
     .tp_new = PyType_GenericNew, .tp_getset = image_getset};
 
 static PyMethodDef _render_methods[] = {
-#if SDL_VERSION_ATLEAST(2, 0, 20)
     {"get_line_render_method", (PyCFunction)get_line_render_method,
      METH_NOARGS, NULL},
     {"set_line_render_method", (PyCFunction)set_line_render_method,
      METH_VARARGS, NULL},
-#endif
 
     {NULL, NULL, 0, NULL}};
 
