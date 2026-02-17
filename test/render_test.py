@@ -494,13 +494,17 @@ class LineRenderMethodTest(unittest.TestCase):
             _render.set_line_render_method("foo")
         with self.assertRaises(ValueError):
             _render.set_line_render_method(None)
-    
+
     def test_get_set_line_render_method(self):
         if _render.set_line_render_method(pygame.LINE_RENDER_DEFAULT):
-            self.assertEqual(pygame.LINE_RENDER_DEFAULT, _render.get_line_render_method())
+            self.assertEqual(
+                pygame.LINE_RENDER_DEFAULT, _render.get_line_render_method()
+            )
         if _render.set_line_render_method(pygame.LINE_RENDER_POINT):
             self.assertEqual(pygame.LINE_RENDER_POINT, _render.get_line_render_method())
         if _render.set_line_render_method(pygame.LINE_RENDER_LINE):
             self.assertEqual(pygame.LINE_RENDER_LINE, _render.get_line_render_method())
         if _render.set_line_render_method(pygame.LINE_RENDER_GEOMETRY):
-            self.assertEqual(pygame.LINE_RENDER_GEOMETRY, _render.get_line_render_method())
+            self.assertEqual(
+                pygame.LINE_RENDER_GEOMETRY, _render.get_line_render_method()
+            )

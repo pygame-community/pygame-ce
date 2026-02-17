@@ -1188,7 +1188,8 @@ static PyObject *
 get_line_render_method(PyObject *self, PyObject *Py_UNUSED(ignored))
 {
     const char *hint = SDL_GetHint(SDL_HINT_RENDER_LINE_METHOD);
-    return PyLong_FromLong(hint == NULL ? 0 : hint[0] - '0'); // hint is a char between 0-3
+    return PyLong_FromLong(
+        hint == NULL ? 0 : hint[0] - '0');  // hint is a char between 0-3
 }
 
 static PyObject *
@@ -1196,21 +1197,24 @@ set_line_render_method(PyObject *self, PyObject *args)
 {
     int method;
     if (!PyArg_ParseTuple(args, "i", &method)) {
-        return RAISE(PyExc_ValueError, "Invalid line render method: must be an int"
-            " (use LINE_RENDER_* constants)");
+        return RAISE(PyExc_ValueError,
+                     "Invalid line render method: must be an int"
+                     " (use LINE_RENDER_* constants)");
     }
     if (method < 0 || 3 < method) {
-        return RAISE(PyExc_ValueError, "Invalid line render method: must be between"
-            " 0 and 3 (use LINE_RENDER_* constants)");
+        return RAISE(PyExc_ValueError,
+                     "Invalid line render method: must be between"
+                     " 0 and 3 (use LINE_RENDER_* constants)");
     }
 
     // SDL_SetHint expects the method as a string
     char hint[2];
-    hint[0] = method + '0'; // ascii char manipulation
+    hint[0] = method + '0';  // ascii char manipulation
     hint[1] = '\0';
-    
-    if (SDL_SetHint(SDL_HINT_RENDER_LINE_METHOD, hint))
+
+    if (SDL_SetHint(SDL_HINT_RENDER_LINE_METHOD, hint)) {
         Py_RETURN_TRUE;
+    }
     Py_RETURN_FALSE;
 }
 #endif
