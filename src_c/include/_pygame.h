@@ -327,8 +327,34 @@ typedef struct {
     PyObject *weakreflist;
     PyObject *locklist;
     PyObject *dependency;
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+    PyMutex mutex;
+    int is_locked;
+#endif
 } pgSurfaceObject;
 #define pgSurface_AsSurface(x) (((pgSurfaceObject *)x)->surf)
+
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+#define LOCK_pgSurfaceObject(pgSurfacePtr)                     \
+    PyMutex_Lock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex)); \
+    ((pgSurfaceObject *)pgSurfacePtr)->is_locked = 1;
+#else
+#define LOCK_pgSurfaceObject(pgSurfacePtr)
+#endif
+
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+#define UNLOCK_pgSurfaceObject(pgSurfacePtr)                     \
+    PyMutex_Unlock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex)); \
+    ((pgSurfaceObject *)pgSurfacePtr)->is_locked = 0;
+#else
+#define UNLOCK_pgSurfaceObject(pgSurfacePtr)
+#endif
+
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+#define IS_LOCKED(pgSurfacePtr) ((pgSurfaceObject *)pgSurfacePtr)->is_locked
+#else
+#define IS_LOCKED(pgSurfacePtr) 0
+#endif
 
 #ifndef PYGAMEAPI_SURFACE_INTERNAL
 #define pgSurface_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(surface, 0))
@@ -638,6 +664,23 @@ PYGAMEAPI_EXTERN_SLOTS(geometry);
             return RAISE(pgExc_SDLError, "Surface is not initialized"); \
         }                                                               \
     }
+
+#if Py_GIL_DISABLED
+#define DISABLE_GIL_SINGLE_INITIALIZATION(module, name)              \
+    if (PyUnstable_Module_SetGIL(module, Py_MOD_GIL_NOT_USED) < 0) { \
+        Py_DECREF(module);                                           \
+        return NULL;                                                 \
+    }                                                                \
+    printf("%s was compiled with GIL disabled (single)\n", name);
+#define DISABLE_GIL_MULTIPHASE_INITIALIZATION(name) \
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+
+#else  // PY_GIL_DISABLED is not defined
+#define DISABLE_GIL_SINGLE_INITIALIZATION(module, name) \
+    printf("%s was compiled with GIL disabled (single)\n", name);
+#define DISABLE_GIL_MULTIPHASE_INITIALIZATION(name) \
+    {Py_mod_gil, Py_MOD_GIL_USED},
+#endif
 
 static PG_INLINE PyObject *
 pg_tuple_couple_from_values_int(int val1, int val2)
