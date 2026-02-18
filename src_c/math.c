@@ -1474,8 +1474,7 @@ vector_normalize_ip(pgVector *self, PyObject *_null)
     length = sqrt(_scalar_product(self->coords, self->coords, self->dim));
 
     if (length == 0) {
-        return RAISE(PyExc_ValueError,
-                     "Can't normalize Vector of length zero");
+        Py_RETURN_NONE;
     }
 
     for (i = 0; i < self->dim; ++i) {
