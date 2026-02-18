@@ -1568,14 +1568,49 @@ clip_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int *x1, int *y1,
 }
 
 static int
-set_at(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x, int y, Uint32 color)
+set_at(SDL_Surface *surf, SDL_Rect surf_clip_rect, intptr_t x, intptr_t y,
+       Uint32 color)
 {
+    // x and y should be intptr_t so that (y * surf->pitch) + x doesn't
+    // overflow the int bounds in the case of very large surfaces and
+    // drawing on the edge of them
     Uint8 *pixels = (Uint8 *)surf->pixels;
 
     if (x < surf_clip_rect.x || x >= surf_clip_rect.x + surf_clip_rect.w ||
         y < surf_clip_rect.y || y >= surf_clip_rect.y + surf_clip_rect.h) {
         return 0;
     }
+
+#if INTPTR_MAX == INT32_MAX
+    // Need to bounds check operation on 32-bit systems
+    // first check y * surf->pitch doesn't overflow INT32_MAX
+    // or underflow INT32_MIN
+    // a * b > c if and only if a > c / b || a * b < c if and only if a < c / b
+    if ((y > (INT32_MAX / surf->pitch)) || (y < (INT32_MIN / surf->pitch))) {
+        return 0;
+    }
+
+    intptr_t product = y * surf->pitch;
+
+    // now that the multiplication is fine, check that the
+    // addition is fine
+    // this is complicated, based on the sign of x
+    if (x >= 0) {
+        // product + x > INT32_MAX if and only if product > INT32_MAX - x
+        // product + x < INT32_MIN cannot happen since we have something that
+        // is no smaller than INT32_MIN added to something no smaller than 0
+        if (product > (INT32_MAX - x)) {
+            return 0;
+        }
+    }
+    else {
+        // product + x > INT32_MAX cannot happen for a similar reason
+        // product + x < INT32_MIN if and only if product < INT32_MIN - x
+        if (product < (INT32_MIN - x)) {
+            return 0;
+        }
+    }
+#endif
 
     switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
@@ -1602,7 +1637,7 @@ static void
 set_and_check_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x, int y,
                    Uint32 color, int *drawn_area)
 {
-    if (set_at(surf, surf_clip_rect, x, y, color)) {
+    if (set_at(surf, surf_clip_rect, (intptr_t)x, (intptr_t)y, color)) {
         add_pixel_to_drawn_list(x, y, drawn_area);
     }
 }
@@ -1931,7 +1966,7 @@ drawhorzlineclip(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
     }
 
     if (x1 == x2) {
-        set_at(surf, surf_clip_rect, x1, y1, color);
+        set_at(surf, surf_clip_rect, (intptr_t)x1, (intptr_t)y1, color);
         return;
     }
     drawhorzline(surf, color, x1, y1, x2);
