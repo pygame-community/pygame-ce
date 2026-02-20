@@ -1474,6 +1474,7 @@ image_set_texture(pgImageObject *self, PyObject *arg, void *closure)
 static int
 image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
 {
+    printf("HELLO 1\n");
     PyObject *texture_or_imageobj, *srcrectobj = Py_None;
     pgTextureObject *textureprt;
     SDL_Rect *rect, temp, old_srcrect;
@@ -1484,6 +1485,7 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
                                      &texture_or_imageobj, &srcrectobj)) {
         return -1;
     }
+    printf("HELLO 2\n");
     if (pgTexture_Check(texture_or_imageobj)) {
         textureprt = (pgTextureObject *)texture_or_imageobj;
         temp = (SDL_Rect){0, 0, textureprt->width, textureprt->height};
@@ -1497,6 +1499,7 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
                     "First argument must be either Texture or Image object",
                     -1);
     }
+    printf("HELLO 3\n");
     self->texture = textureprt;
     Py_INCREF(self->texture);
     if (Py_IsNone(srcrectobj)) {
@@ -1519,6 +1522,7 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
         rect->y += old_srcrect.y;
         self->srcrect = (pgRectObject *)pgRect_New(rect);
     }
+    printf("HELLO 4\n");
     RENDERER_PROPERTY_ERROR_CHECK(
         SDL_GetTextureBlendMode(self->texture->texture, &blend_mode));
     self->angle = 0;
@@ -1530,6 +1534,7 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
     self->flip_y = SDL_FALSE;
     self->alpha = 255;
     self->color = (pgColorObject *)pgColor_NewLength(rgba, 4);
+    printf("HELLO 5\n");
     return 0;
 }
 

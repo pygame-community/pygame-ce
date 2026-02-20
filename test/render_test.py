@@ -483,6 +483,7 @@ class TextureTest(unittest.TestCase):
         for x in range(25, 75):
             self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 50)))
 
+
 class ImageTest(unittest.TestCase):
     def setUp(self):
         self.window = pygame.Window(size=(100, 100))
