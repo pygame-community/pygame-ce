@@ -486,6 +486,7 @@ class TextureTest(unittest.TestCase):
 
 class ImageTest(unittest.TestCase):
     def setUp(self):
+        print("Setup test")
         self.window = pygame.Window(size=(100, 100))
         self.renderer = _render.Renderer(self.window)
         self.surface = pygame.Surface((50, 50))
