@@ -193,7 +193,7 @@ See docs/licenses for licenses of dependencies.
 .. _Opening a Great Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
 .. _issue tracker: https://github.com/pygame-community/pygame-ce/issues
 .. _label and link reported issues: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
-.. _Pygame Community Discord Server: https://discord.gg/pygame
+.. _Pygame Community Discord Server: https://discord.gg/j64saXuQZf
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
