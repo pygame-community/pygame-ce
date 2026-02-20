@@ -7,6 +7,7 @@
 |DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
+|DiscordBadge|
 
 `English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Italiano** `Русский`_ `Ελληνικά`_ `Português (Brasil)`_ `Deutsch`_
 ---------------------------------------------------------------------------------------------------
@@ -146,6 +147,9 @@ Controlla docs/licenses per le licenze dei requisiti.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
+.. |DiscordBadge| image:: https://discordapp.com/api/guilds/772505616680878080/embed.png
+   :target: https://pyga.me/discord
+
 .. _Pygame: https://pyga.me
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
@@ -157,7 +161,7 @@ Controlla docs/licenses per le licenze dei requisiti.
 .. _Opening a Great Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
 .. _issue tracker: https://github.com/pygame-community/pygame-ce/issues
 .. _label and link reported issues: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
-.. _Pygame Community Discord Server: https://discord.gg/pygame
+.. _Pygame Community Discord Server: https://pyga.me/discord
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _English: ./../../README.rst
