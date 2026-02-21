@@ -12,6 +12,9 @@
 
 typedef struct {
     bool mixer_initialized;
+    PyObject *mixer_obj_type;
+    PyObject *audio_obj_type;
+    PyObject *track_obj_type;
 } _mixer_state;
 
 #define GET_STATE(x) (_mixer_state *)PyModule_GetState(x)
@@ -1449,7 +1452,7 @@ static PyMethodDef _mixer_methods[] = {
 // ***************************************************************************
 
 int
-exec_mixer(PyObject *module)
+pg_audio_exec(PyObject *module)
 {
     /*imported needed apis*/
     import_pygame_base();
@@ -1461,41 +1464,74 @@ exec_mixer(PyObject *module)
         return -1;
     }
 
-    PyObject *mixer_type = PyType_FromModuleAndSpec(module, &mixer_spec, NULL);
-    if (PyModule_AddObjectRef(module, "Mixer", mixer_type) < 0) {
-        return -1;
-    }
-
-    PyObject *audio_type = PyType_FromModuleAndSpec(module, &audio_spec, NULL);
-    if (PyModule_AddObjectRef(module, "Audio", audio_type) < 0) {
-        return -1;
-    }
-
-    PyObject *track_type = PyType_FromModuleAndSpec(module, &track_spec, NULL);
-    if (PyModule_AddObjectRef(module, "Track", track_type) < 0) {
-        return -1;
-    }
-
-    if (PyObject_SetAttrString(mixer_type, "_audio_type", audio_type) < 0) {
-        return -1;
-    }
-    if (PyObject_SetAttrString(track_type, "_audio_type", audio_type) < 0) {
-        return -1;
-    }
-    if (PyObject_SetAttrString(audio_type, "_mixer_type", mixer_type) < 0) {
-        return -1;
-    }
-
     _mixer_state *state = GET_STATE(module);
     state->mixer_initialized = false;
 
+    // Create types
+    state->mixer_obj_type =
+        PyType_FromModuleAndSpec(module, &mixer_spec, NULL);
+    state->audio_obj_type =
+        PyType_FromModuleAndSpec(module, &audio_spec, NULL);
+    state->track_obj_type =
+        PyType_FromModuleAndSpec(module, &track_spec, NULL);
+
+    // If any NULLs, error
+    if (state->mixer_obj_type == NULL || state->audio_obj_type == NULL ||
+        state->track_obj_type == NULL) {
+        return -1;
+    }
+
+    // Add types to module
+    if (PyModule_AddType(module, (PyTypeObject *)state->mixer_obj_type) < 0 ||
+        PyModule_AddType(module, (PyTypeObject *)state->audio_obj_type) < 0 ||
+        PyModule_AddType(module, (PyTypeObject *)state->track_obj_type) < 0) {
+        return -1;
+    }
+
+    // Add references between types where necessary.
+    if (PyObject_SetAttrString(state->mixer_obj_type, "_audio_type",
+                               state->audio_obj_type) < 0 ||
+        PyObject_SetAttrString(state->track_obj_type, "_audio_type",
+                               state->audio_obj_type) < 0 ||
+        PyObject_SetAttrString(state->audio_obj_type, "_mixer_type",
+                               state->mixer_obj_type) < 0) {
+        return -1;
+    }
+
     return 0;
+}
+
+static int
+pg_mixer_traverse(PyObject *module, visitproc visit, void *arg)
+{
+    _mixer_state *state = GET_STATE(module);
+    Py_VISIT(state->mixer_obj_type);
+    Py_VISIT(state->audio_obj_type);
+    Py_VISIT(state->track_obj_type);
+    return 0;
+}
+
+static int
+pg_mixer_clear(PyObject *module)
+{
+    _mixer_state *state = GET_STATE(module);
+    Py_CLEAR(state->mixer_obj_type);
+    Py_CLEAR(state->audio_obj_type);
+    Py_CLEAR(state->track_obj_type);
+    return 0;
+}
+
+static void
+pg_mixer_free(void *module)
+{
+    // allow pg_audio_exec to omit calling pg_audio_clear on error
+    (void)pg_mixer_clear((PyObject *)module);
 }
 
 MODINIT_DEFINE(_sdl3_mixer_c)
 {
     static PyModuleDef_Slot mixer_slots[] = {
-        {Py_mod_exec, &exec_mixer},
+        {Py_mod_exec, &pg_audio_exec},
 #if PY_VERSION_HEX >= 0x030c0000
         {Py_mod_multiple_interpreters,
          Py_MOD_MULTIPLE_INTERPRETERS_NOT_SUPPORTED},  // TODO: see if this can
@@ -1506,14 +1542,14 @@ MODINIT_DEFINE(_sdl3_mixer_c)
 #endif
         {0, NULL}};
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
-                                         "_sdl3_mixer_c",
-                                         "DOC TODO",
-                                         sizeof(_mixer_state),
-                                         _mixer_methods,
-                                         mixer_slots,
-                                         NULL,
-                                         NULL,
-                                         NULL};
+                                         .m_name = "_sdl3_mixer_c",
+                                         .m_doc = NULL,
+                                         .m_size = sizeof(_mixer_state),
+                                         .m_methods = _mixer_methods,
+                                         .m_slots = mixer_slots,
+                                         .m_traverse = pg_mixer_traverse,
+                                         .m_clear = pg_mixer_clear,
+                                         .m_free = pg_mixer_free};
 
     return PyModuleDef_Init(&_module);
 }
