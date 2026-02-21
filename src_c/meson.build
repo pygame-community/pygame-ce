@@ -420,10 +420,21 @@ if sdl_ttf_dep.found()
     )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
+# C-backing for new in SDL3, audio module.
+if sdl_api == 3
+    base_audio = py.extension_module(
+        '_base_audio',
+        '_base_audio.c',
+        c_args: warnings_error,
+        dependencies: pg_base_deps,
+        install: true,
+        subdir: pg,
+    )
+endif
 
+# TODO: support SDL3
 if sdl_mixer_dep.found()
+if sdl_api != 3
     mixer = py.extension_module(
         'mixer',
         'mixer.c',
@@ -441,8 +452,16 @@ if sdl_mixer_dep.found()
         install: true,
         subdir: pg,
     )
+else
+    _mixer = py.extension_module(
+        '_sdl3_mixer_c',
+        '_sdl3_mixer_c.c',
+        c_args: warnings_error,
+        dependencies: pg_base_deps + sdl_mixer_dep,
+        install: true,
+        subdir: pg,
+    )
 endif
-
 endif
 
 if freetype_dep.found()
