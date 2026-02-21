@@ -291,8 +291,8 @@ pg_mixer_obj_init(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 
     SDL_AudioSpec *spec_p = NULL;
     SDL_AudioSpec spec;
-    // if the passed in spec obj is not None, we assume it is a tuple
-    // of elements created by the Python layer for us.
+    // if the passed in spec obj is not None, we assume it is a correctly laid
+    // out tuple of elements created by the Python layer for us.
     if (spec_obj != Py_None) {
         spec.format = PyLong_AsInt(PyTuple_GetItem(spec_obj, 0));
         spec.channels = PyLong_AsInt(PyTuple_GetItem(spec_obj, 1));
