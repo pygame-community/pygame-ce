@@ -1,12 +1,10 @@
-from typing import Optional, Union
-
 from pygame.locals import WINDOWPOS_UNDEFINED
 from pygame.rect import Rect
 from pygame.surface import Surface
 from pygame.typing import Point, RectLike
 from typing_extensions import deprecated  # added in 3.13
 
-def get_grabbed_window() -> Optional[Window]: ...
+def get_grabbed_window() -> Window | None: ...
 
 class Window:
     """Pygame object that represents a window.
@@ -93,7 +91,7 @@ class Window:
         self,
         title: str = "pygame window",
         size: Point = (640, 480),
-        position: Union[int, Point] = WINDOWPOS_UNDEFINED,
+        position: int | Point = WINDOWPOS_UNDEFINED,
         *,
         fullscreen: bool = ...,
         fullscreen_desktop: bool = ...,
@@ -222,6 +220,9 @@ class Window:
 
     Setting the always-on-top mode requires SDL 2.0.16+.
 
+    .. note:: Setting this property is not supported on some video drivers (like wayland)
+        and a :exc:`pygame.error` exception may be raised in such cases.
+
     .. versionadded:: 2.3.1
     """
 
@@ -230,7 +231,7 @@ class Window:
         """Get the unique window ID (**read-only**)."""
 
     @property
-    def mouse_rect(self) -> Optional[Rect]:
+    def mouse_rect(self) -> Rect | None:
         """Get or set the mouse confinement rectangle of the window.
 
         Setting this attribute to a rect-like object confines the
@@ -245,7 +246,7 @@ class Window:
         """
 
     @mouse_rect.setter
-    def mouse_rect(self, value: Optional[RectLike]) -> None: ...
+    def mouse_rect(self, value: RectLike | None) -> None: ...
     @property
     def size(self) -> tuple[int, int]:
         """Get or set the window size in pixels."""
@@ -296,12 +297,19 @@ class Window:
 
         The position may be a tuple of (x, y) coordinates or ``WINDOWPOS_CENTERED`` or
         ``WINDOWPOS_UNDEFINED``. The origin is the topleft of the main display.
+
+        .. note:: Setting this property is not supported on some video drivers (like wayland)
+            and a :exc:`pygame.error` exception may be raised in such cases.
         """
 
     @position.setter
-    def position(self, value: Union[int, Point]) -> None: ...
+    def position(self, value: int | Point) -> None: ...
     opacity: float
-    """Get or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque)."""
+    """Get or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque).
+
+    .. note:: Setting this property is not supported on some video drivers (like wayland)
+        and a :exc:`pygame.error` exception may be raised in such cases.
+    """
 
     @property
     def opengl(self) -> bool:

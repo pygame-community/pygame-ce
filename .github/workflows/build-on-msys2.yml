@@ -47,7 +47,7 @@ jobs:
           # - { sys: clangarm64, env: clang-aarch64 }
 
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v6.0.2
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.sys }}

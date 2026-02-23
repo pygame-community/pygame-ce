@@ -1,14 +1,14 @@
-from typing import Literal
+from typing import Literal, TypeAlias
 
 import numpy
 from pygame.surface import Surface
 
-_kind = Literal["P", "p", "R", "r", "G", "g", "B", "b", "A", "a", "C", "c"]
+_Kind: TypeAlias = Literal["P", "p", "R", "r", "G", "g", "B", "b", "A", "a", "C", "c"]
 
 def surface_to_array(
     array: numpy.ndarray,
     surface: Surface,
-    kind: _kind = "P",
+    kind: _Kind = "P",
     opaque: int = 255,
     clear: int = 0,
 ) -> None: ...

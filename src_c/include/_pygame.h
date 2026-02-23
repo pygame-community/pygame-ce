@@ -556,6 +556,7 @@ struct pgTextureObject {
     pgRendererObject *renderer;
     int width;
     int height;
+    PyObject *weakreflist;
 };
 
 typedef struct {

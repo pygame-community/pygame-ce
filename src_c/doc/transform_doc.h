@@ -21,3 +21,4 @@
 #define DOC_TRANSFORM_SOLIDOVERLAY "solid_overlay(surface, color, dest_surface=None, keep_alpha=False) -> Surface\nReplaces non transparent pixels with the provided color."
 #define DOC_TRANSFORM_THRESHOLD "threshold(dest_surface, surface, search_color, threshold=(0, 0, 0, 0), set_color=(0, 0, 0, 0), set_behavior=1, search_surf=None, inverse_set=False) -> int\nFinds which, and how many pixels in a surface are within a threshold of a 'search_color' or a 'search_surf'."
 #define DOC_TRANSFORM_HSL "hsl(surface, hue=0, saturation=0, lightness=0, dest_surface=None) -> Surface\nChange the hue, saturation, and lightness of a surface."
+#define DOC_TRANSFORM_PIXELATE "pixelate(surface, pixel_size, dest_surface=None) -> Surface\nReturns a pixelated version of the original surface."

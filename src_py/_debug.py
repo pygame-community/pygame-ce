@@ -4,14 +4,10 @@ import importlib
 import platform
 import sys
 import traceback
-from collections.abc import Callable
 from os import environ
-from typing import Optional
 
 from pygame.system import get_cpu_instruction_sets
 from pygame.version import ver
-
-ImportResult = tuple[str, bool, Optional[Callable]]
 
 
 def str_from_tuple(version_tuple):
@@ -63,9 +59,9 @@ def _get_platform_info():
     Internal helper to get platform information
     """
     cpu_inst_dict = get_cpu_instruction_sets()
-    sse2 = 'Yes' if cpu_inst_dict['SSE2'] else 'No'
-    avx2 = 'Yes' if cpu_inst_dict['AVX2'] else 'No'
-    neon = 'Yes' if cpu_inst_dict['NEON'] else 'No'
+    sse2 = "Yes" if cpu_inst_dict["SSE2"] else "No"
+    avx2 = "Yes" if cpu_inst_dict["AVX2"] else "No"
+    neon = "Yes" if cpu_inst_dict["NEON"] else "No"
     ret = f"Platform:\t\t{platform.platform()}\n"
     ret += f"System:\t\t\t{platform.system()}\n"
     ret += f"System Version:\t\t{platform.version()}\n"
@@ -106,18 +102,17 @@ def print_debug_info(filename=None):
         get_driver as get_display_driver,
         get_init as display_init,
     )
-    from pygame.mixer import (
-        get_driver as get_mixer_driver,
-        get_init as mixer_init,
-    )
+
+    debug_str, *mixer = attempt_import("pygame.mixer", "get_driver", debug_str)
+    get_mixer_driver = mixer[1] if mixer[0] else lambda: None
+
+    debug_str, *mixer = attempt_import("pygame.mixer", "get_init", debug_str)
+    mixer_init = mixer[1] if mixer[0] else lambda: False
 
     debug_str, *mixer = attempt_import(
         "pygame.mixer", "get_sdl_mixer_version", debug_str
     )
-    if not mixer[0]:
-        get_sdl_mixer_version = default_return
-    else:
-        get_sdl_mixer_version = mixer[1]
+    get_sdl_mixer_version = mixer[1] if mixer[0] else default_return
 
     debug_str, *font = attempt_import("pygame.font", "get_sdl_ttf_version", debug_str)
     if not font[0]:

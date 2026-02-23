@@ -1,5 +1,5 @@
 /* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
-#define DOC_FREETYPE "Enhanced pygame module for loading and rendering computer fonts"
+#define DOC_FREETYPE "pygame module for loading and rendering computer fonts"
 #define DOC_FREETYPE_GETERROR "get_error() -> str\nget_error() -> None\nReturn the latest FreeType error"
 #define DOC_FREETYPE_GETVERSION "get_version(linked=True) -> (int, int, int)\nReturn the FreeType version"
 #define DOC_FREETYPE_INIT "init(cache_size=64, resolution=72) -> None\nInitialize the underlying FreeType library."

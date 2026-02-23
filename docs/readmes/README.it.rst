@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Italiano** `Русский`_
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Italiano** `Русский`_ `Ελληνικά`_ `Português (Brasil)`_ `Deutsch`_
 ---------------------------------------------------------------------------------------------------
 
 Pygame_ è una libreria open source gratuita e multipiattaforma
@@ -69,62 +69,6 @@ configurare automaticamente, compilare e installare pygame-ce.
 Più informazioni riguardo all'installazione e alla compilazione sono
 disponibili sulla `Compilation wiki page`_.
 
-Crediti
--------
-
-Grazie a tutti coloro che hanno aiutato a contribuire per questa libraria.
-In ordine sono riportati i ringraziamenti speciali.
-
-* Marcus Von Appen: many changes, and fixes, 1.7.1+ freebsd maintainer
-* Lenard Lindstrom: the 1.8+ windows maintainer, many changes, and fixes
-* Brian Fisher for svn auto builder, bug tracker and many contributions
-* Rene Dudfield: many changes, and fixes, 1.7+ release manager/maintainer
-* Phil Hassey for his work on the pygame.org website
-* DR0ID for his work on the sprite module
-* Richard Goedeken for his smoothscale function
-* Ulf Ekström for his pixel perfect collision detection code
-* Pete Shinners: original author
-* David Clark for filling the right-hand-man position
-* Ed Boraas and Francis Irving: Debian packages
-* Maxim Sobolev: FreeBSD packaging
-* Bob Ippolito: macOS and OS X porting (much work!)
-* Jan Ekhol, Ray Kelm, and Peter Nicolai: putting up with early design ideas
-* Nat Pryce for starting our unit tests
-* Dan Richter for documentation work
-* TheCorruptor for his incredible logos and graphics
-* Nicholas Dudfield: many test improvements
-* Alex Folkner for pygame-ctypes
-
-Grazie a coloro che inviano patches e correzioni: Niki Spahiev, Gordon
-Tyler, Nathaniel Pryce, Dave Wallace, John Popplewell, Michael Urman,
-Andrew Straw, Michael Hudson, Ole Martin Bjoerndalen, Herve Cauwelier,
-James Mazer, Lalo Martins, Timothy Stranex, Chad Lester, Matthias
-Spiller, Bo Jangeborg, Dmitry Borisov, Campbell Barton, Diego Essaya,
-Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber,
-Matthew L Daniel, Nirav Patel, Forrest Voight, Charlie Nolan,
-Frankie Robertson, John Krukoff, Lorenz Quack, Nick Irvine,
-Michael George, Saul Spatz, Thomas Ibbotson, Tom Rothamel, Evan Kroske,
-Cambell Barton.
-
-E ai nostri incredibili cacciatori di bug: Angus, Guillaume Proux, Frank
-Raiser, Austin Henry, Kaweh Kazemi, Arturo Aldama, Mike Mulcheck,
-Michael Benfield, David Lau.
-
-Ci sono molte altre persone là fuori che hanno condiviso utili idee, che
-hanno mantenuto il progetto in vita e che ci hanno essenzialmente reso la
-vita più facile. Grazie!
-
-Molte grazie alle persone che pubblicano commenti sulla documentazione e che
-contribuiscono alla `pygame documentation`_ e alla `pygame-ce documentation`_.
-
-Altrettanti ringraziamenti alle persone che creano giochi e che li pubblicano
-sul sito pygame.org per rendere possibile agli altri di imparare da essi e di divertirsi.
-
-Molte grazie a James Paige per aver ospitato il bugzilla di pygame.
-
-Un altro grande ringraziamento a Roger Dingledine e al team di SEUL.ORG
-per un hosting eccellente.
-
 Requisiti
 ---------
 
@@ -140,7 +84,7 @@ Le versioni dei requisiti:
 
 
 +----------+------------------------+
-| CPython  | >= 3.9 (Or use PyPy3)  |
+| CPython  | >= 3.10 (Or use PyPy3) |
 +----------+------------------------+
 | SDL      | >= 2.0.14              |
 +----------+------------------------+
@@ -193,8 +137,8 @@ Controlla docs/licenses per le licenze dei requisiti.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.4.1.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.4.1...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -203,8 +147,6 @@ Controlla docs/licenses per le licenze dei requisiti.
     :target: https://github.com/psf/black
 
 .. _Pygame: https://pyga.me
-.. _pygame-ce documentation: https://pyga.me/docs/
-.. _pygame documentation: https://www.pygame.org/docs/
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
@@ -227,3 +169,6 @@ Controlla docs/licenses per le licenze dei requisiti.
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
+.. _Ελληνικά: README.gr.rst
+.. _Português (Brasil): README.pt-br.rst
+.. _Deutsch: README.de.rst

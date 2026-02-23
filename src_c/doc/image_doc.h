@@ -4,7 +4,7 @@
 #define DOC_IMAGE_LOADSIZEDSVG "load_sized_svg(file, size) -> Surface\nLoad an SVG image from a file (or file-like object) with the given size."
 #define DOC_IMAGE_LOADANIMATION "load_animation(file, namehint='') -> list[tuple[Surface, float]]\nLoad an animation (GIF/WEBP) from a file (or file-like object) as a list of frames."
 #define DOC_IMAGE_SAVE "save(surface, file, namehint='') -> None\nSave an image to file (or file-like object)."
-#define DOC_IMAGE_GETSDLIMAGEVERSION "get_sdl_image_version(linked=True) -> Optional[tuple[int, int, int]]\nGet version number of the SDL_Image library being used."
+#define DOC_IMAGE_GETSDLIMAGEVERSION "get_sdl_image_version(linked=True) -> tuple[int, int, int] | None\nGet version number of the SDL_Image library being used."
 #define DOC_IMAGE_GETEXTENDED "get_extended() -> bool\nTest if extended image formats can be loaded."
 #define DOC_IMAGE_TOSTRING "tostring(surface, format, flipped=False, pitch=-1) -> bytes\nTransfer image to byte buffer."
 #define DOC_IMAGE_TOBYTES "tobytes(surface, format, flipped=False, pitch=-1) -> bytes\nTransfer image to byte buffer."
