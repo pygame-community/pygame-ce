@@ -200,7 +200,7 @@ Veja em docs/licenses as licenças das dependências.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. |DiscordBadge| image:: https://discordapp.com/api/guilds/772505616680878080/embed.png
+.. |DiscordBadge| image:: https://discord.com/api/guilds/772505616680878080/widget.png
    :target: https://pyga.me/discord
 
 .. _Pygame: https://pyga.me
