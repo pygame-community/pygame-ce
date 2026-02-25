@@ -867,3 +867,73 @@ def message_box(
 
     .. versionadded:: 2.4.0
     """
+
+# Display
+
+import fractions
+from enum import IntEnum
+
+from pygame import Rect
+from pygame.typing import RectLike
+from pygame.version import SDL
+
+class DisplayOrientation(IntEnum):
+    UNKNOWN = 0
+    LANDSCAPE = 1
+    LANDSCAPE_FLIPPED = 2
+    PORTRAIT = 3
+    PORTRAIT_FLIPPED = 4
+
+class DisplayMode:
+    @property
+    def display(self) -> Display: ...
+    @property
+    def width(self) -> int: ...
+    @property
+    def height(self) -> int: ...
+    if SDL >= (3, 0, 0):
+        @property
+        def pixel_density(self) -> float: ...
+    @property
+    def refresh_rate(self) -> fractions.Fraction: ...
+
+class Display:
+    def __eq__(self, display: Display) -> bool: ...
+    def __hash__(self) -> int: ...
+    @property
+    def name(self) -> str: ...
+    @property
+    def bounds(self) -> Rect: ...
+    @property
+    def usable_bounds(self) -> Rect: ...
+    if SDL >= (3, 0, 0):
+        @property
+        def content_scale(self) -> float: ...
+    @property
+    def current_mode(self) -> DisplayMode: ...
+    @property
+    def desktop_mode(self) -> DisplayMode: ...
+    if SDL >= (3, 0, 0):
+        @property
+        def fullscreen_modes(self) -> list[DisplayMode]: ...
+    @property
+    def orientation(self) -> DisplayOrientation: ...
+    if SDL >= (3, 0, 0):
+        @property
+        def natural_orientation(self) -> DisplayOrientation: ...
+        def get_closest_fullscreen_mode(
+            self,
+            width: int,
+            height: int,
+            refresh_rate: float,
+            include_high_density_modes: bool = True,
+        ) -> DisplayMode | None: ...
+    @classmethod
+    def from_window(cls, window: Window) -> Display: ...
+    @classmethod
+    def from_point(cls, point: IntPoint) -> Display: ...
+    @classmethod
+    def from_rect(cls, rect: RectLike) -> Display: ...
+
+def get_primary_display() -> Display: ...
+def get_displays() -> list[Display]: ...

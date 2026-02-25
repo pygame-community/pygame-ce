@@ -364,6 +364,11 @@ _pg_get_event_unicode(SDL_Event *event)
     case PGPOST_##name:          \
         return proxify ? PGPOST_##name : SDL_##name
 
+#define _PG_HANDLE_PROXIFY_SDL3(name) \
+    case SDL_EVENT_##name:            \
+    case PGPOST_##name:               \
+        return proxify ? PGPOST_##name : SDL_EVENT_##name
+
 #define _PG_HANDLE_PROXIFY_PGE(name) \
     case PGE_##name:                 \
     case PGPOST_##name:              \
@@ -460,6 +465,16 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY_PGE(WINDOWHITTEST);
         _PG_HANDLE_PROXIFY_PGE(WINDOWICCPROFCHANGED);
         _PG_HANDLE_PROXIFY_PGE(WINDOWDISPLAYCHANGED);
+        _PG_HANDLE_PROXIFY_PGE(DISPLAYORIENTATION);
+        _PG_HANDLE_PROXIFY_PGE(DISPLAYCONNECTED);
+        _PG_HANDLE_PROXIFY_PGE(DISPLAYDISCONNECTED);
+        _PG_HANDLE_PROXIFY_PGE(DISPLAYMOVED);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_DESKTOP_MODE_CHANGED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_CURRENT_MODE_CHANGED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_CONTENT_SCALE_CHANGED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_USABLE_BOUNDS_CHANGED);
+#endif
         default:
             return type;
     }
@@ -486,6 +501,9 @@ _pg_pgevent_type(SDL_Event *event)
     if (event->type == SDL_WINDOWEVENT) {
         return PGE_WINDOWSHOWN + event->window.event - 1;
     }
+    if (event->type == SDL_DISPLAYEVENT) {
+        return PGE_DISPLAYORIENTATION + event->display.event - 1;
+    }
 #endif
     return event->type;
 }
@@ -498,10 +516,12 @@ static bool
 _pg_event_psuedo_block(SDL_Event *event)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (event->type >= SDL_EVENT_WINDOW_FIRST &&
-        event->type <= SDL_EVENT_WINDOW_LAST) {
+    if ((event->type >= SDL_EVENT_WINDOW_FIRST &&
+         event->type <= SDL_EVENT_WINDOW_LAST) ||
+        (event->type >= SDL_EVENT_DISPLAY_FIRST &&
+         event->type <= SDL_EVENT_DISPLAY_LAST)) {
 #else
-    if (event->type == SDL_WINDOWEVENT) {
+    if (event->type == SDL_WINDOWEVENT || event->type == SDL_DISPLAYEVENT) {
 #endif
         return true;
     }
@@ -1039,6 +1059,24 @@ _pg_name_from_eventtype(int type)
             return "WindowICCProfChanged";
         case PGE_WINDOWDISPLAYCHANGED:
             return "WindowDisplayChanged";
+        case PGE_DISPLAYORIENTATION:
+            return "DisplayOrientationChanged";
+        case PGE_DISPLAYCONNECTED:
+            return "DisplayAdded";
+        case PGE_DISPLAYDISCONNECTED:
+            return "DisplayRemoved";
+        case PGE_DISPLAYMOVED:
+            return "DisplayMoved";
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
+            return "DisplayDesktopModeChanged";
+        case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
+            return "DisplayCurrentModeChanged";
+        case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
+            return "DisplayContentScaleChanged";
+        case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED:
+            return "DisplayUsableBoundsChanged";
+#endif
     }
     if (type >= PGE_USEREVENT && type < PG_NUMEVENTS) {
         return "UserEvent";
@@ -1084,6 +1122,40 @@ get_joy_device_index(int instance_id)
 {
     int device_index = pgJoystick_GetDeviceIndexByInstanceID(instance_id);
     return PyLong_FromLong(device_index);
+}
+
+static PyObject *display_get_display_func = NULL;
+
+static PyObject *
+get_display_from_id(
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_DisplayID display,
+#else
+    uint32_t display,
+#endif
+    int unplugged)
+{
+    if (display_get_display_func == NULL) {
+        // cache pygame.display._get_display
+        PyObject *display_module = PyImport_ImportModule("pygame.display");
+        if (display_module == NULL) {
+            return NULL;
+        }
+
+        display_get_display_func =
+            PyObject_GetAttrString(display_module, "_get_display");
+        Py_DECREF(display_module);
+
+        if (display_get_display_func == NULL ||
+            !PyCallable_Check(display_get_display_func)) {
+            Py_XDECREF(display_get_display_func);
+            display_get_display_func = NULL;
+            return NULL;
+        }
+    }
+
+    return PyObject_CallFunction(display_get_display_func, "(Ip)", display,
+                                 unplugged);
 }
 
 static PyObject *
@@ -1271,6 +1343,10 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "x", PyLong_FromLong(event->window.data1));
             _pg_insobj(dict, "y", PyLong_FromLong(event->window.data2));
             break;
+        case PGE_DISPLAYORIENTATION:
+            /* other PGE_DISPLAY* events do not have attributes */
+            _pg_insobj(dict, "orientation",
+                       PyLong_FromLong(event->display.data1));
         case SDL_AUDIODEVICEADDED:
         case SDL_AUDIODEVICEREMOVED:
             _pg_insobj(
@@ -1531,6 +1607,33 @@ dict_from_event(SDL_Event *event)
     } /* switch (event->type) */
     /* Events that don't have any attributes are not handled in switch
      * statement */
+    switch (event->type) {
+        case PGE_DISPLAYORIENTATION:
+        case PGE_DISPLAYCONNECTED:
+        case PGE_DISPLAYDISCONNECTED:
+        case PGE_DISPLAYMOVED:
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
+        case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
+        case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
+        case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED:
+#endif
+        {
+            int unplugged = event->type == PGE_DISPLAYDISCONNECTED ? 1 : 0;
+            PyObject *display_obj = get_display_from_id(
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                event->display.displayID,
+#else
+                event->display.display,
+#endif
+                unplugged);
+            if (display_obj == NULL) {
+                return NULL;
+            }
+            _pg_insobj(dict, "display", display_obj);
+            // Decref-ing display_obj raises a segmentation fault.
+        }
+    }
     SDL_Window *window;
     switch (event->type) {
         case PGE_WINDOWSHOWN:
