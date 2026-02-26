@@ -884,6 +884,8 @@ class DisplayOrientation(IntEnum):
     PORTRAIT = 3
     PORTRAIT_FLIPPED = 4
 
+DisplayOrientation.__doc__ = None # temporary to suppress dev.py docs error
+
 class DisplayMode:
     @property
     def display(self) -> Display: ...

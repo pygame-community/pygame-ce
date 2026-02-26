@@ -823,7 +823,6 @@ pgEvent_AutoQuit(PyObject *self, PyObject *_null)
         Py_CLEAR(display_get_display_func);
     }
     _pg_event_is_init = 0;
-    display_get_display_func = NULL;
     Py_RETURN_NONE;
 }
 

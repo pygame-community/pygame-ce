@@ -28,7 +28,6 @@ from pygame._base_display import (
     list_modes,
     message_box,  #
     mode_ok,
-    quit,  #
     set_allow_screensaver,  #
     set_caption,
     set_gamma,  # already deprecated
@@ -212,6 +211,12 @@ def get_primary_display():
 
 def get_displays():
     return [_get_display(_id) for _id in _base_display.get_displays()]
+
+
+def quit():
+    # override quit behavior to clean Python-only side
+    _displays.clear()
+    _base_display.quit()
 
 
 del IntEnum, SDL
