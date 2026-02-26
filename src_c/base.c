@@ -2688,7 +2688,7 @@ PyInit_pygame_static()
 #undef pgVidInfo_Type
 #undef pgVidInfo_New
 
-#include "display.c"
+#include "_base_display.c"
 
 #include "draw.c"
 

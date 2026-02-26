@@ -52,6 +52,28 @@ class DisplayOrientation(IntEnum):
     PORTRAIT_FLIPPED = 4
 
 
+_displays = {}
+
+
+def _get_display(ID, unplugged=False):
+    if unplugged:
+        display = None
+        if ID in _displays:
+            display = _displays[ID]
+            del _displays[ID]
+        return display
+    if ID in _displays:
+        return _displays[ID]
+    if not isinstance(ID, int):
+        raise TypeError("Display ID must be an integer.")
+    if not _base_display.is_valid_id(ID):
+        raise ValueError("Invalid Display ID.")
+    display = Display.__new__(Display)
+    display._id = ID
+    _displays[ID] = display
+    return display
+
+
 class DisplayMode:
     # (display ID, width, height, pixel density, refresh rate numerator, refresh rate denominator)
     _mode_data: tuple
@@ -63,7 +85,7 @@ class DisplayMode:
 
     @property
     def display(self):
-        return Display(self._mode_data[0])
+        return _get_display(self._mode_data[0])
 
     # pixel_format ?
 
@@ -86,28 +108,6 @@ class DisplayMode:
         return fractions.Fraction(self._mode_data[4], self._mode_data[5])
 
 
-_displays = {}
-
-
-def _get_display(ID, unplugged=False):
-    if unplugged:
-        display = None
-        if ID in _displays:
-            display = _displays[ID]
-            del _displays[ID]
-        return display
-    if ID in _displays:
-        return _displays[ID]
-    if not isinstance(ID, int):
-        raise TypeError(f"Display ID must be an integer.")
-    if not _base_display.is_valid_id(ID):
-        raise ValueError(f"Invalid Display ID.")
-    display = Display.__new__(Display)
-    display._id = ID
-    _displays[ID] = display
-    return display
-
-
 class Display:
     _id: int
 
@@ -120,7 +120,7 @@ class Display:
     def __eq__(self, display):
         if isinstance(display, Display):
             return self._id == display._id
-        raise NotImplementedError
+        return NotImplemented
 
     def __hash__(self):
         return hash(self._id)

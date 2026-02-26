@@ -818,8 +818,10 @@ pgEvent_AutoQuit(PyObject *self, PyObject *_null)
          * stops returning new types when they are finished, without that
          * test preventing further tests from getting a custom event type.*/
         _custom_event = _PGE_CUSTOM_EVENT_INIT;
+        Py_CLEAR(display_get_display_func);
     }
     _pg_event_is_init = 0;
+    display_get_display_func = NULL;
     Py_RETURN_NONE;
 }
 
@@ -1347,6 +1349,7 @@ dict_from_event(SDL_Event *event)
             /* other PGE_DISPLAY* events do not have attributes */
             _pg_insobj(dict, "orientation",
                        PyLong_FromLong(event->display.data1));
+            break;
         case SDL_AUDIODEVICEADDED:
         case SDL_AUDIODEVICEREMOVED:
             _pg_insobj(

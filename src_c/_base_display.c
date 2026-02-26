@@ -3935,6 +3935,9 @@ _pg_display_get_content_scale(PyObject *self, PyObject *arg)
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
     float content_scale = SDL_GetDisplayContentScale(display);
+    if (content_scale == 0.0f) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     return PyFloat_FromDouble((double)content_scale);
 #else
     // property not exposed to python
@@ -3989,7 +3992,6 @@ _build_display_mode_data(PG_DisplayID_t id, const SDL_DisplayMode *mode)
 #endif
     );
 }
-
 
 static PyObject *
 _pg_display_get_current_mode_data(PyObject *self, PyObject *arg)
@@ -4127,7 +4129,8 @@ _pg_display_from_point(PyObject *self, PyObject *arg)
 {
     SDL_Point point;
     if (!pg_TwoIntsFromObj(arg, &point.x, &point.y)) {
-        return NULL;
+        return RAISE(PyExc_TypeError,
+                     "'point' must be a sequence of two numbers.");
     }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 
@@ -4151,7 +4154,7 @@ _pg_display_from_rect(PyObject *self, PyObject *arg)
     SDL_Rect temprect;
     SDL_Rect *rect = pgRect_FromObject(arg, &temprect);
     if (rect == NULL) {
-        return NULL;
+        return RAISE(PyExc_TypeError, "'rect' must be a rect-like object.");
     }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_DisplayID display = SDL_GetDisplayForRect(rect);
