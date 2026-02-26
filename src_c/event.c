@@ -105,6 +105,8 @@ static char released_keys[SDL_NUM_SCANCODES] = {0};
 static char pressed_mouse_buttons[5] = {0};
 static char released_mouse_buttons[5] = {0};
 
+static PyObject *display_get_display_func = NULL;
+
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
 #define PG_LOCK_EVFILTER_MUTEX
@@ -1125,8 +1127,6 @@ get_joy_device_index(int instance_id)
     int device_index = pgJoystick_GetDeviceIndexByInstanceID(instance_id);
     return PyLong_FromLong(device_index);
 }
-
-static PyObject *display_get_display_func = NULL;
 
 static PyObject *
 get_display_from_id(

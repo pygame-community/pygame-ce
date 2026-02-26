@@ -3892,6 +3892,9 @@ static PyObject *
 _pg_display_get_name(PyObject *self, PyObject *arg)
 {
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
+    if (display == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
     const char *name = SDL_GetDisplayName(display);
     if (name == NULL) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -3903,6 +3906,9 @@ static PyObject *
 _pg_display_get_bounds(PyObject *self, PyObject *arg)
 {
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
+    if (display == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
     SDL_Rect bounds;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_GetDisplayBounds(display, &bounds)) {
@@ -3918,6 +3924,9 @@ static PyObject *
 _pg_display_get_usable_bounds(PyObject *self, PyObject *arg)
 {
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
+    if (display == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
     SDL_Rect bounds;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     if (!SDL_GetDisplayUsableBounds(display, &bounds)) {
@@ -3934,6 +3943,9 @@ _pg_display_get_content_scale(PyObject *self, PyObject *arg)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
+    if (display == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
     float content_scale = SDL_GetDisplayContentScale(display);
     if (content_scale == 0.0f) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -3950,6 +3962,9 @@ static PyObject *
 _pg_display_get_orientation(PyObject *self, PyObject *arg)
 {
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
+    if (display == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
     SDL_DisplayOrientation orientation;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     orientation = SDL_GetCurrentDisplayOrientation(display);
@@ -3964,6 +3979,9 @@ _pg_display_get_natural_orientation(PyObject *self, PyObject *arg)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
+    if (display == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
     SDL_DisplayOrientation orientation =
         SDL_GetNaturalDisplayOrientation(display);
     return PyLong_FromLong((long)orientation);
@@ -3997,6 +4015,9 @@ static PyObject *
 _pg_display_get_current_mode_data(PyObject *self, PyObject *arg)
 {
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
+    if (display == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     const SDL_DisplayMode *display_mode = SDL_GetCurrentDisplayMode(display);
     if (display_mode == NULL) {
@@ -4016,6 +4037,9 @@ static PyObject *
 _pg_display_get_desktop_mode_data(PyObject *self, PyObject *arg)
 {
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
+    if (display == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     const SDL_DisplayMode *display_mode = SDL_GetDesktopDisplayMode(display);
     if (display_mode == NULL) {
@@ -4036,6 +4060,9 @@ _pg_display_get_fullscreen_modes_data(PyObject *self, PyObject *arg)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_DisplayID display = GET_DISPLAY_ID(arg);
+    if (display == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
     int modes_count;
     SDL_DisplayMode **modes =
         SDL_GetFullscreenDisplayModes(display, &modes_count);
