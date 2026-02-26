@@ -1631,11 +1631,14 @@ dict_from_event(SDL_Event *event)
 #endif
                 unplugged);
             if (display_obj == NULL) {
+                Py_DECREF(dict);
                 return NULL;
             }
             _pg_insobj(dict, "display", display_obj);
-            // Decref-ing display_obj raises a segmentation fault.
+            break;
         }
+        default:
+            break;
     }
     SDL_Window *window;
     switch (event->type) {

@@ -2400,7 +2400,7 @@ PyInit_bufferproxy(void);
 PyMODINIT_FUNC
 PyInit_surface(void);
 PyMODINIT_FUNC
-PyInit_display(void);
+PyInit__base_display(void);
 PyMODINIT_FUNC
 PyInit__freetype(void);
 PyMODINIT_FUNC
@@ -2633,7 +2633,7 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_window(), "window");
 
     // base, color, rect, surflock, surface, window
-    load_submodule("pygame", PyInit_display(), "display");
+    load_submodule("pygame", PyInit__base_display(), "display");
     load_submodule("pygame", PyInit__render(), "_render");
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");

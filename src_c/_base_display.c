@@ -3796,6 +3796,7 @@ _pg_display_is_valid_id(PyObject *self, PyObject *arg)
     /* SDL_GetDisplayBounds can only fail with an invalid display ID.
        pygame.display._get_display will raise an exception if this returns
        False. */
+    VIDEO_INIT_CHECK();
     SDL_Rect dummy_rect;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     unsigned long id = PyLong_AsUnsignedLong(arg);
@@ -3825,6 +3826,7 @@ _pg_display_is_valid_id(PyObject *self, PyObject *arg)
 static PyObject *
 _pg_display_get_displays(PyObject *self, PyObject *_null)
 {
+    VIDEO_INIT_CHECK();
     int display_count;
     PyObject *result = NULL;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -3873,6 +3875,7 @@ _pg_display_get_displays(PyObject *self, PyObject *_null)
 static PyObject *
 _pg_display_get_primary_display(PyObject *self, PyObject *_null)
 {
+    VIDEO_INIT_CHECK();
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_DisplayID primary_id = SDL_GetPrimaryDisplay();
     if (primary_id == 0) {
@@ -3891,6 +3894,7 @@ _pg_display_get_primary_display(PyObject *self, PyObject *_null)
 static PyObject *
 _pg_display_get_name(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
     if (display == -1 && PyErr_Occurred()) {
         return NULL;
@@ -3905,6 +3909,7 @@ _pg_display_get_name(PyObject *self, PyObject *arg)
 static PyObject *
 _pg_display_get_bounds(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
     if (display == -1 && PyErr_Occurred()) {
         return NULL;
@@ -3923,6 +3928,7 @@ _pg_display_get_bounds(PyObject *self, PyObject *arg)
 static PyObject *
 _pg_display_get_usable_bounds(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
     if (display == -1 && PyErr_Occurred()) {
         return NULL;
@@ -3941,6 +3947,7 @@ _pg_display_get_usable_bounds(PyObject *self, PyObject *arg)
 static PyObject *
 _pg_display_get_content_scale(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
     if (display == -1 && PyErr_Occurred()) {
@@ -3961,6 +3968,7 @@ _pg_display_get_content_scale(PyObject *self, PyObject *arg)
 static PyObject *
 _pg_display_get_orientation(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
     if (display == -1 && PyErr_Occurred()) {
         return NULL;
@@ -3977,6 +3985,7 @@ _pg_display_get_orientation(PyObject *self, PyObject *arg)
 static PyObject *
 _pg_display_get_natural_orientation(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
     if (display == -1 && PyErr_Occurred()) {
@@ -4014,6 +4023,7 @@ _build_display_mode_data(PG_DisplayID_t id, const SDL_DisplayMode *mode)
 static PyObject *
 _pg_display_get_current_mode_data(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
     if (display == -1 && PyErr_Occurred()) {
         return NULL;
@@ -4036,6 +4046,7 @@ _pg_display_get_current_mode_data(PyObject *self, PyObject *arg)
 static PyObject *
 _pg_display_get_desktop_mode_data(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
     PG_DisplayID_t display = GET_DISPLAY_ID(arg);
     if (display == -1 && PyErr_Occurred()) {
         return NULL;
@@ -4058,6 +4069,7 @@ _pg_display_get_desktop_mode_data(PyObject *self, PyObject *arg)
 static PyObject *
 _pg_display_get_fullscreen_modes_data(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_DisplayID display = GET_DISPLAY_ID(arg);
     if (display == -1 && PyErr_Occurred()) {
@@ -4096,6 +4108,7 @@ _pg_display_get_fullscreen_modes_data(PyObject *self, PyObject *arg)
 static PyObject *
 _pg_display_get_closest_fullscreen_mode(PyObject *self, PyObject *args)
 {
+    VIDEO_INIT_CHECK();
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_DisplayID display;
     int w, h, include_high_density;
@@ -4132,6 +4145,7 @@ _pg_display_get_closest_fullscreen_mode(PyObject *self, PyObject *args)
 static PyObject *
 _pg_display_from_window(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
     if (!pgWindow_Check(arg)) {
         return RAISE(PyExc_TypeError, "'window' must be a Window");
     }
@@ -4143,17 +4157,22 @@ _pg_display_from_window(PyObject *self, PyObject *arg)
     }
     return PyLong_FromUInt32(display);
 #else
+#if SDL_VERSION_ATLEAST(2, 24, 0)
     int display = SDL_GetWindowDisplayIndex(win);
     if (display < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     return PyLong_FromLong(display);
+#else
+    return RAISE(pgExc_SDLError, "'Display.from_point' requires SDL 2.24.0+");
+#endif
 #endif
 }
 
 static PyObject *
 _pg_display_from_point(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
     SDL_Point point;
     if (!pg_TwoIntsFromObj(arg, &point.x, &point.y)) {
         return RAISE(PyExc_TypeError,
@@ -4167,21 +4186,30 @@ _pg_display_from_point(PyObject *self, PyObject *arg)
     }
     return PyLong_FromUInt32(display);
 #else
+#if SDL_VERSION_ATLEAST(2, 24, 0)
     int display = SDL_GetPointDisplayIndex(&point);
     if (display < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     return PyLong_FromLong(display);
+#else
+    return RAISE(pgExc_SDLError, "'Display.from_point' requires SDL 2.24.0+");
+#endif
 #endif
 }
 
 static PyObject *
 _pg_display_from_rect(PyObject *self, PyObject *arg)
 {
+    VIDEO_INIT_CHECK();
     SDL_Rect temprect;
     SDL_Rect *rect = pgRect_FromObject(arg, &temprect);
     if (rect == NULL) {
-        return RAISE(PyExc_TypeError, "'rect' must be a rect-like object.");
+        if (!PyErr_Occurred()) {
+            return RAISE(PyExc_TypeError,
+                         "'rect' must be a rect-like object.");
+        }
+        return NULL;
     }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_DisplayID display = SDL_GetDisplayForRect(rect);
@@ -4190,11 +4218,15 @@ _pg_display_from_rect(PyObject *self, PyObject *arg)
     }
     return PyLong_FromUInt32(display);
 #else
+#if SDL_VERSION_ATLEAST(2, 24, 0)
     int display = SDL_GetRectDisplayIndex(rect);
     if (display < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     return PyLong_FromLong(display);
+#else
+    return RAISE(pgExc_SDLError, "'Display.from_point' requires SDL 2.24.0+");
+#endif
 #endif
 }
 
