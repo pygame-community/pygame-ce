@@ -4164,7 +4164,7 @@ _pg_display_from_window(PyObject *self, PyObject *arg)
     }
     return PyLong_FromLong(display);
 #else
-    return RAISE(pgExc_SDLError, "'Display.from_point' requires SDL 2.24.0+");
+    return RAISE(pgExc_SDLError, "'Display.from_window' requires SDL 2.24.0+");
 #endif
 #endif
 }
@@ -4225,7 +4225,7 @@ _pg_display_from_rect(PyObject *self, PyObject *arg)
     }
     return PyLong_FromLong(display);
 #else
-    return RAISE(pgExc_SDLError, "'Display.from_point' requires SDL 2.24.0+");
+    return RAISE(pgExc_SDLError, "'Display.from_rect' requires SDL 2.24.0+");
 #endif
 #endif
 }

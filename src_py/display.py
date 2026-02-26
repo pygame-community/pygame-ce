@@ -51,10 +51,10 @@ class DisplayOrientation(IntEnum):
     PORTRAIT_FLIPPED = 4
 
 
-_displays = {}
+_displays: dict[int, "Display"] = {}
 
 
-def _get_display(ID, unplugged=False):
+def _get_display(ID, unplugged=False) -> "Display | None":
     if unplugged:
         display = None
         if ID in _displays:

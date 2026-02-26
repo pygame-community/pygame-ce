@@ -55,7 +55,6 @@ required).
 from collections.abc import Iterable
 from typing import Literal, overload
 
-from pygame._sdl2 import Window
 from pygame.constants import FULLSCREEN
 from pygame.surface import Surface
 from pygame.typing import (
@@ -65,6 +64,7 @@ from pygame.typing import (
     RectLike,
     SequenceLike,
 )
+from pygame.window import Window
 from typing_extensions import deprecated  # added in 3.13
 
 class _VidInfo:
@@ -874,7 +874,6 @@ import fractions
 from enum import IntEnum
 
 from pygame import Rect
-from pygame.typing import RectLike
 from pygame.version import SDL
 
 class DisplayOrientation(IntEnum):
@@ -883,8 +882,6 @@ class DisplayOrientation(IntEnum):
     LANDSCAPE_FLIPPED = 2
     PORTRAIT = 3
     PORTRAIT_FLIPPED = 4
-
-DisplayOrientation.__doc__ = None  # temporary to suppress dev.py docs error
 
 class DisplayMode:
     @property
