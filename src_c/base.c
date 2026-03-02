@@ -2232,6 +2232,25 @@ MODINIT_DEFINE(base)
         goto error;
     }
 
+    PyObject *hash = PyUnicode_FromFormat("%s", GIT_COMMIT_HASH_SHORT);
+    if (PyModule_AddObject(module, "__commit_hash__", hash)) {
+        Py_DECREF(hash);
+        goto error;
+    }
+
+    PyObject *branch = PyUnicode_FromFormat("%s", GIT_BRANCH);
+    if (PyModule_AddObject(module, "__branch_name__", branch)) {
+        Py_DECREF(branch);
+        goto error;
+    }
+
+    int isCI = strcmp("False", CI_BUILD) ? 1 : 0;
+    PyObject *ciBuild = PyBool_FromLong(isCI);
+    if (PyModule_AddObject(module, "__built_on_ci__", ciBuild)) {
+        Py_DECREF(ciBuild);
+        goto error;
+    }
+
 #if !defined(BUILD_STATIC)
     /*some initialization*/
     PyObject *quit = PyObject_GetAttrString(module, "quit");

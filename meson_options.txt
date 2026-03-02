@@ -38,6 +38,12 @@ option('error_docs_missing', type: 'boolean', value: false)
 # This argument must be used together with the editable install.
 option('coverage', type: 'boolean', value: false)
 
+# Set to true on CI runs for debugging purposes
+option('ci', type: 'boolean', value: false)
+
+# Set to false to not add branch name and commit hash to build
+option('source_bld', type: 'boolean', value: true)
+
 # Controls whether to use SDL3 instead of SDL2. The default is to use SDL2
 option('sdl_api', type: 'integer', min: 2, max: 3, value: 2)
 

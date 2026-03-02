@@ -71,6 +71,8 @@
 #error PG_VERSION_TAG must be defined
 #endif
 
+#include "git_info.h"
+
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \
     (1000 * (MAJOR) + 100 * (MINOR) + (PATCH))
 #define PG_VERSION_ATLEAST(MAJOR, MINOR, PATCH)                             \

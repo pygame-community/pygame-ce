@@ -72,6 +72,39 @@ if get_option('coverage')
     endif
 endif
 
+if get_option('source_bld')
+    # Get short commit hash
+    git_cmd = run_command(['git', 'rev-parse', '--short', 'HEAD'], check: false)
+    commit_hash = git_cmd.stdout().strip()
+
+    # Get branch name
+    branch_cmd = run_command(['git', 'branch', '--show-current'], check: false)
+    branch_name = branch_cmd.stdout().strip()
+
+    # add_global_arguments('-DCOMMIT_HASH=@0@'.format(commit_hash), language:'c')
+    # add_global_arguments('-DBRANCH_NAME=@0@'.format(branch_name), language:'c')
+else
+    commit_hash = ''
+    branch_name = ''
+endif
+
+if get_option('ci')
+    ci_build = true
+else
+    ci_build = false
+endif
+
+commit_header = configure_file(
+    input: 'src_c/include/git_info.h.in',
+    output: 'git_info.h',
+    configuration: {
+        'GIT_HASH_SHORT': commit_hash,
+        'GIT_BRANCH': branch_name,
+        'CI_BUILD': ci_build
+    }
+)
+configuration_inc = include_directories('.')
+
 pg_dir = py.get_install_dir() / pg
 
 sdl_api = get_option('sdl_api')
@@ -85,6 +118,8 @@ if sdl_api == 3
 endif
 
 pg_inc_dirs = []
+pg_inc_dirs += configuration_inc
+
 pg_lib_dirs = []
 
 if plat == 'emscripten-pygbag'
