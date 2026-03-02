@@ -145,7 +145,7 @@ jobs:
           version: "0.9.2"
 
       - name: Download Windows deps artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: pygame_win_deps_${{ matrix.winarch }}
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
@@ -191,7 +191,7 @@ jobs:
             mingw-w64-${{ matrix.env }}-cython
 
       - name: Download Windows deps artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: pygame_win_deps_${{ matrix.winarch }}
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
