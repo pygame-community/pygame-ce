@@ -100,7 +100,7 @@ jobs:
         # so pass --ignore-dep ninja explicitly
         run: |
           echo "\nBuilding and installing pygame wheel\n"
-          PIP_BREAK_SYSTEM_PACKAGES=1 python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax
+          PIP_BREAK_SYSTEM_PACKAGES=1 python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax --ci --commit_hash ${{ github.sha }} --branch "${{ github.head_ref || github.ref_name }}"
           echo "\nRunning tests\n"
           export SDL_VIDEODRIVER=dummy
           export SDL_AUDIODRIVER=disk

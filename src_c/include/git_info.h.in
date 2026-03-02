@@ -3,6 +3,6 @@
 
 #define GIT_COMMIT_HASH_SHORT "@GIT_HASH_SHORT@"
 #define GIT_BRANCH "@GIT_BRANCH@"
-#define CI_BUILD "@CI_BUILD@"
+#define CI_BUILD @CI_BUILD@
 
 #endif

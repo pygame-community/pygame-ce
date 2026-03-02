@@ -276,6 +276,8 @@ class Dev:
         sanitize = self.args.get("sanitize")
         coverage = self.args.get("coverage", False)
         ci = self.args.get("ci", False)
+        input_commit_hash = self.args.get("commit_hash", "")
+        input_branch = self.args.get("branch", "")
         source = self.args.get("nosrc", False)
         if wheel_dir and coverage:
             pprint("Cannot pass --wheel and --coverage together", Colors.RED)
@@ -339,7 +341,13 @@ class Dev:
             install_args.append(f"-Csetup-args=-Db_sanitize={sanitize}")
 
         if ci:
-            install_args.append(f"-Csetup-args=-Dci=true")
+            install_args.append("-Csetup-args=-Dci=true")
+
+        if input_branch:
+            install_args.append(f"-Csetup-args=-Dbranch={input_branch}")
+
+        if input_commit_hash:
+            install_args.append(f"-Csetup-args=-Dcommit_hash={input_commit_hash}")
 
         install_args.append(f"-Csetup-args=-Dsource_bld={source}")
 
@@ -526,6 +534,10 @@ class Dev:
             action="store_false",
             help=("Log that this is a prerelease or release build"),
         )
+
+        build_parser.add_argument("--commit_hash", help="Internal use for CI")
+
+        build_parser.add_argument("--branch", help="Internal use for CI")
 
         # Docs command
         docs_parser = subparsers.add_parser("docs", help="Generate docs")

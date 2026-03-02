@@ -49,3 +49,7 @@ option('sdl_api', type: 'integer', min: 2, max: 3, value: 2)
 
 # Specify the type of emscripten build being done.
 option('emscripten_type', type: 'combo', choices: ['pyodide', 'pygbag'])
+
+#===============INTERNAL USE ONLY FOR CI===============
+option('commit_hash', type: 'string', value: '')
+option('branch', type: 'string', value: '')
