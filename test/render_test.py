@@ -591,3 +591,41 @@ class ImageTest(unittest.TestCase):
         new_rect = pygame.Rect(10, 10, 30, 30)
         self.image.srcrect = new_rect
         self.assertEqual(self.image.srcrect, new_rect)
+
+    def test_texture_property(self):
+        """Test texture property getter and setter"""
+        self.assertEqual(self.image.texture, self.texture)
+
+        # Create another texture
+        new_surface = pygame.Surface((30, 30))
+        new_texture = _render.Texture.from_surface(self.renderer, new_surface)
+
+        self.image.texture = new_texture
+        self.assertEqual(self.image.texture, new_texture)
+
+    def test_get_rect(self):
+        """Test get_rect method"""
+        rect = self.image.get_rect()
+        self.assertEqual(rect, pygame.Rect(0, 0, 50, 50))
+
+        # Test with custom srcrect
+        self.image.srcrect = pygame.Rect(10, 10, 30, 30)
+        rect = self.image.get_rect()
+        self.assertEqual(rect, pygame.Rect(10, 10, 30, 30))
+
+    def test_draw_method(self):
+        """Test draw method"""
+        # Basic draw should not raise an error
+        self.image.draw()
+
+        # Draw with parameters
+        self.image.draw(
+            srcrect=pygame.Rect(0, 0, 25, 25), dstrect=pygame.Rect(10, 10, 25, 25)
+        )
+
+        # Test the actual rendering result
+        self.renderer.clear()
+        self.image.draw(dstrect=pygame.Rect(20, 20, 50, 50))
+        result = self.renderer.to_surface()
+        # The center of the drawn image should have the expected color
+        self.assertEqual(result.get_at((45, 45)), pygame.Color(80, 120, 160, 255))
