@@ -518,3 +518,17 @@ class ImageTest(unittest.TestCase):
         srcrect = pygame.Rect(10, 10, 30, 30)
         image = _render.Image(self.texture, srcrect)
         self.assertEqual(image.srcrect, pygame.Rect(10, 10, 30, 30))
+
+    def test_alpha_property(self):
+        """Test alpha property getter and setter"""
+        self.assertEqual(self.image.alpha, 255.0)
+
+        self.image.alpha = 128.5
+        self.assertEqual(self.image.alpha, 128.5)
+
+        self.image.alpha = 0
+        self.assertEqual(self.image.alpha, 0.0)
+
+        # Test invalid alpha values (should not raise error but may clamp)
+        self.image.alpha = -10
+        self.image.alpha = 300
