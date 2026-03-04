@@ -550,3 +550,12 @@ class ImageTest(unittest.TestCase):
         self.image.blend_mode = 1
         self.assertEqual(self.image.blend_mode, 1)
 
+    def test_color_property(self):
+        """Test color property getter and setter"""
+        self.assertEqual(self.image.color, pygame.Color(255, 255, 255, 255))
+
+        self.image.color = (255, 0, 0)
+        self.assertEqual(self.image.color, pygame.Color(255, 0, 0, 255))
+
+        self.image.color = pygame.Color(0, 255, 0, 128)
+        self.assertEqual(self.image.color, pygame.Color(0, 255, 0, 255))
