@@ -630,11 +630,11 @@ class ImageTest(unittest.TestCase):
         # The center of the drawn image should have the expected color
         self.assertEqual(result.get_at((45, 45)), pygame.Color(80, 120, 160, 255))
 
-    #def test_draw_with_transformations(self):
-        #"""Test draw with various transformations"""
+    def test_draw_with_transformations(self):
+        """Test draw with various transformations"""
         # Test with alpha
-        #self.image.alpha = 128
-        #self.image.draw()
+        self.image.alpha = 128
+        self.image.draw()
 
         # Test with rotation
         #self.image.angle = 45
