@@ -493,5 +493,16 @@ class ImageTest(unittest.TestCase):
         self.texture = _render.Texture.from_surface(self.renderer, self.surface)
         self.image = _render.Image(self.texture)
     
-    def test_trivial(self):
-        self.assertEqual(1, 1)
+    def test_init_with_texture(self):
+        """Test Image initialization with a Texture"""
+        image = _render.Image(self.texture)
+        self.assertEqual(image.texture, self.texture)
+        self.assertEqual(image.srcrect, pygame.Rect(0, 0, 50, 50))
+        self.assertEqual(image.alpha, 255.0)
+        self.assertEqual(image.angle, 0.0)
+        self.assertEqual(image.color, pygame.Color(255, 255, 255, 255))
+        self.assertEqual(image.blend_mode, 0)
+        self.assertEqual(image.flip_x, False)
+        self.assertEqual(image.flip_y, False)
+        self.assertEqual(image.origin, None)
+
