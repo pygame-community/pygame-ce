@@ -660,3 +660,31 @@ class ImageTest(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             _render.Image(self.texture, "invalid_rect")
+
+    def test_property_type_errors(self):
+        """Test property setters with invalid types"""
+        with self.assertRaises(TypeError):
+            self.image.alpha = "invalid"
+
+        with self.assertRaises(TypeError):
+            self.image.angle = "invalid"
+
+        with self.assertRaises(TypeError):
+            self.image.blend_mode = "invalid"
+
+        # Boolean properties accept any value and use truthiness
+        # This is expected Python behavior, not an error
+        self.image.flip_x = "invalid"  # Should be truthy
+        self.assertTrue(self.image.flip_x)
+
+        self.image.flip_y = 0  # Should be falsy
+        self.assertFalse(self.image.flip_y)
+
+        with self.assertRaises(TypeError):
+            self.image.origin = "invalid"
+
+        with self.assertRaises(TypeError):
+            self.image.srcrect = "invalid"
+
+        with self.assertRaises(TypeError):
+            self.image.texture = "invalid"
