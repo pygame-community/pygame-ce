@@ -1518,8 +1518,8 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
         rect->y += old_srcrect.y;
         self->srcrect = (pgRectObject *)pgRect_New(rect);
     }
-    //RENDERER_PROPERTY_ERROR_CHECK(
-    //    SDL_GetTextureBlendMode(self->texture->texture, &blend_mode));
+    RENDERER_PROPERTY_ERROR_CHECK(
+        SDL_GetTextureBlendMode(self->texture->texture, &blend_mode));
     self->angle = 0;
     self->blend_mode = blend_mode;
     self->origin.x = 0;
