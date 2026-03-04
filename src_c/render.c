@@ -1504,32 +1504,22 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
     Py_INCREF(self->texture);
     if (Py_IsNone(srcrectobj)) {
         self->srcrect = (pgRectObject *)pgRect_New(&temp);
-        if (!self->srcrect) {
-            Py_DECREF(self->texture);
-            return -1;
-        }
     }
     else {
         old_srcrect = temp;
         if (!(rect = pgRect_FromObject(srcrectobj, &temp))) {
-            Py_DECREF(self->texture);
             RAISERETURN(PyExc_TypeError, "srcrect must be a rectangle or None",
                         -1);
         }
         if (rect->x < 0 || rect->y < 0 || rect->w < 0 || rect->h < 0 ||
             rect->x + rect->w > old_srcrect.w ||
             rect->y + rect->h > old_srcrect.h) {
-            Py_DECREF(self->texture);
             RAISERETURN(PyExc_ValueError, "srcrect values are out of range",
                         -1);
         }
         rect->x += old_srcrect.x;
         rect->y += old_srcrect.y;
         self->srcrect = (pgRectObject *)pgRect_New(rect);
-        if (!self->srcrect) {
-            Py_DECREF(self->texture);
-            return -1;
-        }
     }
     printf("HELLO 4\n");
     RENDERER_PROPERTY_ERROR_CHECK(
@@ -1543,11 +1533,6 @@ image_init(pgImageObject *self, PyObject *args, PyObject *kwargs)
     self->flip_y = SDL_FALSE;
     self->alpha = 255;
     self->color = (pgColorObject *)pgColor_NewLength(rgba, 4);
-    if (!self->color) {
-        Py_DECREF(self->texture);
-        Py_DECREF(self->srcrect);
-        return -1;
-    }
     printf("HELLO 5\n");
     return 0;
 }
