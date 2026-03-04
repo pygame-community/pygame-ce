@@ -559,3 +559,35 @@ class ImageTest(unittest.TestCase):
 
         self.image.color = pygame.Color(0, 255, 0, 128)
         self.assertEqual(self.image.color, pygame.Color(0, 255, 0, 255))
+
+    def test_flip_properties(self):
+        """Test flip_x and flip_y properties"""
+        self.assertEqual(self.image.flip_x, False)
+        self.assertEqual(self.image.flip_y, False)
+
+        self.image.flip_x = True
+        self.assertEqual(self.image.flip_x, True)
+
+        self.image.flip_y = True
+        self.assertEqual(self.image.flip_y, True)
+
+        self.image.flip_x = False
+        self.assertEqual(self.image.flip_x, False)
+
+    def test_origin_property(self):
+        """Test origin property getter and setter"""
+        self.assertEqual(self.image.origin, None)
+
+        self.image.origin = (25.0, 25.0)
+        self.assertEqual(self.image.origin, (25.0, 25.0))
+
+        self.image.origin = None
+        self.assertEqual(self.image.origin, None)
+
+    def test_srcrect_property(self):
+        """Test srcrect property getter and setter"""
+        self.assertEqual(self.image.srcrect, pygame.Rect(0, 0, 50, 50))
+
+        new_rect = pygame.Rect(10, 10, 30, 30)
+        self.image.srcrect = new_rect
+        self.assertEqual(self.image.srcrect, new_rect)
