@@ -485,10 +485,13 @@ class TextureTest(unittest.TestCase):
 
 
 class ImageTest(unittest.TestCase):
-    def test_init_with_texture(self):
+    def setUp(self):
         self.window = pygame.Window(size=(100, 100))
         self.renderer = _render.Renderer(self.window)
         self.surface = pygame.Surface((50, 50))
         self.surface.fill(pygame.Color(80, 120, 160, 255))
         self.texture = _render.Texture.from_surface(self.renderer, self.surface)
         self.image = _render.Image(self.texture)
+    
+    def test_trivial(self):
+        self.assertEqual(1, 1)
