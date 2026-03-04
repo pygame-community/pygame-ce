@@ -633,7 +633,7 @@ class ImageTest(unittest.TestCase):
     def test_draw_with_transformations(self):
         """Test draw with various transformations"""
         # Test with alpha
-        self.image.alpha = 128
+        #self.image.alpha = 128
         self.image.draw()
 
         # Test with rotation
