@@ -506,3 +506,9 @@ class ImageTest(unittest.TestCase):
         self.assertEqual(image.flip_y, False)
         self.assertEqual(image.origin, None)
 
+    def test_init_with_image(self):
+        """Test Image initialization with another Image"""
+        image1 = _render.Image(self.texture, pygame.Rect(10, 10, 30, 30))
+        image2 = _render.Image(image1)
+        self.assertEqual(image2.texture, self.texture)
+        self.assertEqual(image2.srcrect, pygame.Rect(10, 10, 30, 30))
