@@ -532,3 +532,13 @@ class ImageTest(unittest.TestCase):
         # Test invalid alpha values (should not raise error but may clamp)
         self.image.alpha = -10
         self.image.alpha = 300
+
+    def test_angle_property(self):
+        """Test angle property getter and setter"""
+        self.assertEqual(self.image.angle, 0.0)
+
+        self.image.angle = 45.5
+        self.assertEqual(self.image.angle, 45.5)
+
+        self.image.angle = -90
+        self.assertEqual(self.image.angle, -90.0)
