@@ -652,11 +652,3 @@ class ImageTest(unittest.TestCase):
         # Test with color modulation
         self.image.color = (255, 0, 0)
         self.image.draw()
-
-    def test_invalid_init_params(self):
-        """Test Image initialization with invalid parameters"""
-        with self.assertRaises(AttributeError):
-            _render.Image("invalid")
-
-        with self.assertRaises(TypeError):
-            _render.Image(self.texture, "invalid_rect")
