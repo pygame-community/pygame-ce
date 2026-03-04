@@ -542,3 +542,11 @@ class ImageTest(unittest.TestCase):
 
         self.image.angle = -90
         self.assertEqual(self.image.angle, -90.0)
+
+    def test_blend_mode_property(self):
+        """Test blend_mode property getter and setter"""
+        self.assertEqual(self.image.blend_mode, 0)
+
+        self.image.blend_mode = 1
+        self.assertEqual(self.image.blend_mode, 1)
+
