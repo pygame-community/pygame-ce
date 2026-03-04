@@ -512,3 +512,9 @@ class ImageTest(unittest.TestCase):
         image2 = _render.Image(image1)
         self.assertEqual(image2.texture, self.texture)
         self.assertEqual(image2.srcrect, pygame.Rect(10, 10, 30, 30))
+
+    def test_init_with_srcrect(self):
+        """Test Image initialization with a custom srcrect"""
+        srcrect = pygame.Rect(10, 10, 30, 30)
+        image = _render.Image(self.texture, srcrect)
+        self.assertEqual(image.srcrect, pygame.Rect(10, 10, 30, 30))
