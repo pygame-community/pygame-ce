@@ -629,3 +629,34 @@ class ImageTest(unittest.TestCase):
         result = self.renderer.to_surface()
         # The center of the drawn image should have the expected color
         self.assertEqual(result.get_at((45, 45)), pygame.Color(80, 120, 160, 255))
+
+    def test_draw_with_transformations(self):
+        """Test draw with various transformations"""
+        # Test with alpha
+        self.image.alpha = 128
+        self.image.draw()
+
+        # Test with rotation
+        self.image.angle = 45
+        self.image.draw()
+
+        # Test with flipping
+        self.image.flip_x = True
+        self.image.flip_y = True
+        self.image.draw()
+
+        # Test with origin
+        self.image.origin = (25, 25)
+        self.image.draw()
+
+        # Test with color modulation
+        self.image.color = (255, 0, 0)
+        self.image.draw()
+
+    def test_invalid_init_params(self):
+        """Test Image initialization with invalid parameters"""
+        with self.assertRaises(AttributeError):
+            _render.Image("invalid")
+
+        with self.assertRaises(TypeError):
+            _render.Image(self.texture, "invalid_rect")
