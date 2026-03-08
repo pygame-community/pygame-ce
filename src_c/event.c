@@ -2643,22 +2643,14 @@ static bool
 pg_watcher_wrapper(void *userdata, SDL_Event *event)
 {
     PyObject *callable = (PyObject *)userdata;
+    // If an error was set earlier, skip handling this event as the program may
+    // be in an unstable state
+    if (_pg_deferred_error) {
+        return 0;
+    }
     PyGILState_STATE gstate = PyGILState_Ensure();
-/* WINDOWEVENT translation needed only on SDL2 */
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
-    /* We need to translate WINDOWEVENTS. But if we do that from the
-     * from event filter, internal SDL stuff that rely on WINDOWEVENT
-     * might break. So after every event pump, we translate events from
-     * here */
-    // We make a local copy of the event on the stack and use that so that the
-    // original event is not modified
     SDL_Event localEvent = *event;
-    //    _pg_pgevent_type(NULL, &localEvent);
-
     PyObject *eventObj = pg_eventNew_no_free_proxy(&localEvent);
-#else
-    PyObject *eventObj = pg_eventNew_no_free_proxy(event);
-#endif
     if (PyErr_Occurred()) {
         Py_XDECREF(eventObj);
         PyGILState_Release(gstate);
