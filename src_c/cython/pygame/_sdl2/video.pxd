@@ -110,31 +110,6 @@ cdef extern from "SDL.h" nogil:
         SDL_BLENDMODE_MUL = 0x00000008,
         SDL_BLENDMODE_INVALID = 0x7FFFFFFF
 
-    # https://wiki.libsdl.org/SDL_MessageBoxData
-    # https://wiki.libsdl.org/SDL_ShowMessageBox
-    cdef Uint32 _SDL_MESSAGEBOX_ERROR "SDL_MESSAGEBOX_ERROR"
-    cdef Uint32 _SDL_MESSAGEBOX_WARNING "SDL_MESSAGEBOX_WARNING"
-    cdef Uint32 _SDL_MESSAGEBOX_INFORMATION "SDL_MESSAGEBOX_INFORMATION"
-
-    cdef Uint32 _SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT "SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT"
-    cdef Uint32 _SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT "SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT"
-
-    ctypedef struct SDL_MessageBoxData:
-        Uint32 flags
-        SDL_Window* window
-        const char* title
-        const char* message
-        int numbuttons
-        const SDL_MessageBoxButtonData* buttons
-        const SDL_MessageBoxColorScheme* colorScheme
-    ctypedef struct SDL_MessageBoxButtonData:
-        Uint32 flags
-        int buttonid
-        const char *text
-    ctypedef struct SDL_MessageBoxColorScheme
-    int SDL_ShowMessageBox(const SDL_MessageBoxData* messageboxdata,
-                           int*                      buttonid)
-
     # RENDERER
     cdef Uint32 _SDL_RENDERER_SOFTWARE "SDL_RENDERER_SOFTWARE"
     cdef Uint32 _SDL_RENDERER_ACCELERATED "SDL_RENDERER_ACCELERATED"
@@ -369,6 +344,8 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderSetLogicalSize
     # https://wiki.libsdl.org/SDL_RenderGetLogicalSize
     # https://wiki.libsdl.org/SDL_RenderGetIntegerScale
+    # https://wiki.libsdl.org/SDL2/SDL_RenderLogicalToWindow
+    # https://wiki.libsdl.org/SDL2/SDL_RenderWindowToLogical
     int SDL_RenderSetScale(SDL_Renderer* renderer,
                            float         scaleX,
                            float         scaleY)
@@ -382,6 +359,20 @@ cdef extern from "SDL.h" nogil:
                                   int*          w,
                                   int*          h)
     int SDL_RenderGetIntegerScale(SDL_Renderer* renderer)
+    # Note: Must be changed to SDL_RenderCoordinatesToWindow for SDL3
+    # https://wiki.libsdl.org/SDL3/SDL_RenderCoordinatesToWindow
+    void SDL_RenderLogicalToWindow(SDL_Renderer* renderer,
+                                   float lx,
+                                   float ly,
+                                   int *wx,
+                                   int *wy);
+    # Note: Must be changed to SDL_RenderCoordinatesFromWindow for SDL3
+    # https://wiki.libsdl.org/SDL3/SDL_RenderCoordinatesFromWindow
+    void SDL_RenderWindowToLogical(SDL_Renderer* renderer,
+                                   int wx,
+                                   int wy,
+                                   float *lx,
+                                   float *ly);
 
     int SDL_VERSION_ATLEAST(int major, int minor, int patch)
 

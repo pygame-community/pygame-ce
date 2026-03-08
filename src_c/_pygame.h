@@ -50,6 +50,13 @@
 #include "stdbool.h"
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
+
+#include "include/SDL_gesture.h"
+
+#define SDL_DOLLARGESTURE GESTURE_DOLLARGESTURE
+#define SDL_DOLLARRECORD GESTURE_DOLLARRECORD
+#define SDL_MULTIGESTURE GESTURE_MULTIGESTURE
+
 #define PG_ShowCursor SDL_ShowCursor
 #define PG_HideCursor SDL_HideCursor
 #define PG_CursorVisible SDL_CursorVisible
@@ -68,12 +75,6 @@
 #define PG_AUDIO_ALLOW_CHANNELS_CHANGE 0
 #define PG_AUDIO_ALLOW_ANY_CHANGE 0
 
-// Todo: deal with multigesture.. See
-// https://github.com/pygame-community/pygame-ce/issues/2420
-#define PG_MULTIGESTURE 0
-
-#define PG_JOYBALLMOTION 0
-
 #define PG_CreateSurface SDL_CreateSurface
 #define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
 #define PG_ConvertSurface SDL_ConvertSurface
@@ -82,9 +83,12 @@
 #define PG_PixelFormatEnum SDL_PixelFormat
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
+#define PG_SetSurfaceRLE SDL_SetSurfaceRLE
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
+
+#define PG_UpdateWindowSurface SDL_UpdateWindowSurface
 
 /* Emulating SDL2 SDL_LockMutex API. In SDL3, it returns void. */
 static inline int
@@ -102,7 +106,32 @@ PG_UnlockMutex(SDL_mutex *mutex)
     return 0;
 }
 
-#define PG_SURF_BitsPerPixel(surf) SDL_BITSPERPIXEL(surf->format)
+// Implementation from SDL_GetMasksForPixelFormat, which is used by
+// SDL_InitPixelFormatDetails in SDL_pixels.c
+// Created to match surf->format->BitsPerPixel in SDL2,
+// details->bits_per_pixel in SDL3.
+static inline int
+PG_SURF_BitsPerPixel(SDL_Surface *surf)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(surf->format)) {
+        // however, some of these are packed formats, and can legit declare
+        // bits-per-pixel!
+        switch (surf->format) {
+            case SDL_PIXELFORMAT_YUY2:
+            case SDL_PIXELFORMAT_UYVY:
+            case SDL_PIXELFORMAT_YVYU:
+                return 32;
+            default:
+                return 0;  // oh well.
+        }
+    }
+
+    if (SDL_BYTESPERPIXEL(surf->format) <= 2) {
+        return SDL_BITSPERPIXEL(surf->format);
+    }
+    return SDL_BYTESPERPIXEL(surf->format) * 8;
+}
+
 #define PG_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
@@ -131,6 +160,15 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 }
 
 #define PG_GetSurfacePalette SDL_GetSurfacePalette
+#define PG_SetPaletteColors SDL_SetPaletteColors
+#define PG_SetSurfacePalette SDL_SetSurfacePalette
+#define PG_SetSurfaceColorKey SDL_SetSurfaceColorKey
+#define PG_SetSurfaceBlendMode SDL_SetSurfaceBlendMode
+#define PG_GetSurfaceBlendMode SDL_GetSurfaceBlendMode
+#define PG_GetSurfaceAlphaMod SDL_GetSurfaceAlphaMod
+#define PG_SetSurfaceAlphaMod SDL_SetSurfaceAlphaMod
+#define PG_FillSurfaceRect SDL_FillSurfaceRect
+#define PG_LockSurface SDL_LockSurface
 
 #define PG_GetRGBA SDL_GetRGBA
 #define PG_GetRGB SDL_GetRGB
@@ -144,6 +182,7 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 #define PG_EventEnabled(type) SDL_EventEnabled(type)
 #define PG_SetJoystickEventsEnabled(enabled) \
     SDL_SetJoystickEventsEnabled(enabled)
+#define PG_InitSubSystem(flags) SDL_InitSubSystem(flags)
 
 #define PG_FIND_VNUM_MAJOR(ver) SDL_VERSIONNUM_MAJOR(ver)
 #define PG_FIND_VNUM_MINOR(ver) SDL_VERSIONNUM_MINOR(ver)
@@ -152,6 +191,8 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 #define PG_INIT_TIMER 0
 
 #define PG_GetSurfaceClipRect SDL_GetSurfaceClipRect
+
+#define PG_GL_SetSwapInterval SDL_GL_SetSwapInterval
 
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
@@ -170,10 +211,6 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 #define PG_AUDIO_ALLOW_CHANNELS_CHANGE SDL_AUDIO_ALLOW_CHANNELS_CHANGE
 #define PG_AUDIO_ALLOW_ANY_CHANGE SDL_AUDIO_ALLOW_ANY_CHANGE
 
-#define PG_MULTIGESTURE SDL_MULTIGESTURE
-
-#define PG_JOYBALLMOTION SDL_JOYBALLMOTION
-
 #define PG_CreateSurface(width, height, format) \
     SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, format)
 #define PG_CreateSurfaceFrom(width, height, format, pixels, pitch) \
@@ -186,6 +223,12 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect)
+
+static inline bool
+PG_UpdateWindowSurface(SDL_Window *window)
+{
+    return SDL_UpdateWindowSurface(window) == 0;
+}
 
 static inline int
 PG_LockMutex(SDL_mutex *mutex)
@@ -233,6 +276,61 @@ PG_GetSurfacePalette(SDL_Surface *surf)
     return surf->format->palette;
 }
 
+static inline bool
+PG_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors,
+                    int firstcolor, int ncolors)
+{
+    return SDL_SetPaletteColors(palette, colors, firstcolor, ncolors) == 0;
+}
+
+static inline bool
+PG_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
+{
+    return SDL_SetSurfacePalette(surface, palette) == 0;
+}
+
+static inline bool
+PG_SetSurfaceColorKey(SDL_Surface *surface, bool enabled, Uint32 key)
+{
+    return SDL_SetColorKey(surface, enabled, key) == 0;
+}
+
+static inline bool
+PG_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
+{
+    return SDL_SetSurfaceBlendMode(surface, blendMode) == 0;
+}
+
+static inline bool
+PG_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
+{
+    return SDL_GetSurfaceBlendMode(surface, blendMode) == 0;
+}
+
+static inline bool
+PG_GetSurfaceAlphaMod(SDL_Surface *surface, Uint8 *alpha)
+{
+    return SDL_GetSurfaceAlphaMod(surface, alpha) == 0;
+}
+
+static inline bool
+PG_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
+{
+    return SDL_SetSurfaceAlphaMod(surface, alpha) == 0;
+}
+
+static inline bool
+PG_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
+{
+    return SDL_FillRect(dst, rect, color) == 0;
+}
+
+static inline bool
+PG_LockSurface(SDL_Surface *surface)
+{
+    return SDL_LockSurface(surface) == 0;
+}
+
 // NOTE:
 // palette is part of the format in SDL2, so these functions below have it
 // as a separate parameter to be consistent with the SDL3 signature.
@@ -266,6 +364,12 @@ PG_MapRGB(PG_PixelFormat *format, const SDL_Palette *palette, Uint8 r, Uint8 g,
     return SDL_MapRGB(format, r, g, b);
 }
 
+static inline bool
+PG_InitSubSystem(Uint32 flags)
+{
+    return SDL_InitSubSystem(flags) == 0;
+}
+
 /* Mask to test if surface flags are in a fullscreen window.
  * SDL_WINDOW_FULLSCREEN_DESKTOP works here because it also contains
  * SDL_WINDOW_FULLSCREEN. */
@@ -287,10 +391,22 @@ PG_MapRGB(PG_PixelFormat *format, const SDL_Palette *palette, Uint8 r, Uint8 g,
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
 
 static inline bool
+PG_SetSurfaceRLE(SDL_Surface *surface, bool enabled)
+{
+    return SDL_SetSurfaceRLE(surface, enabled) == 0;
+}
+
+static inline bool
 PG_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
 {
     *rect = surface->clip_rect;
     return true;
+}
+
+static inline bool
+PG_GL_SetSwapInterval(int interval)
+{
+    return SDL_GL_SetSwapInterval(interval) == 0;
 }
 #endif
 
@@ -339,6 +455,40 @@ typedef enum {
     PGM_BUTTON_KEEP = 0x80
 } PygameMouseFlags;
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+typedef enum {
+    PGE_WINDOWSHOWN = SDL_EVENT_WINDOW_SHOWN,
+    PGE_WINDOWHIDDEN = SDL_EVENT_WINDOW_HIDDEN,
+    PGE_WINDOWEXPOSED = SDL_EVENT_WINDOW_EXPOSED,
+    PGE_WINDOWMOVED = SDL_EVENT_WINDOW_MOVED,
+    PGE_WINDOWRESIZED = SDL_EVENT_WINDOW_RESIZED,
+    PGE_WINDOWSIZECHANGED = SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED,
+    PGE_WINDOWMINIMIZED = SDL_EVENT_WINDOW_MINIMIZED,
+    PGE_WINDOWMAXIMIZED = SDL_EVENT_WINDOW_MAXIMIZED,
+    PGE_WINDOWRESTORED = SDL_EVENT_WINDOW_RESTORED,
+    PGE_WINDOWENTER = SDL_EVENT_WINDOW_MOUSE_ENTER,
+    PGE_WINDOWLEAVE = SDL_EVENT_WINDOW_MOUSE_LEAVE,
+    PGE_WINDOWFOCUSGAINED = SDL_EVENT_WINDOW_FOCUS_GAINED,
+    PGE_WINDOWFOCUSLOST = SDL_EVENT_WINDOW_FOCUS_LOST,
+    PGE_WINDOWCLOSE = SDL_EVENT_WINDOW_CLOSE_REQUESTED,
+    PGE_WINDOWTAKEFOCUS = -1, /* No SDL3 equivalent */
+    PGE_WINDOWHITTEST = SDL_EVENT_WINDOW_HIT_TEST,
+    PGE_WINDOWICCPROFCHANGED = SDL_EVENT_WINDOW_ICCPROF_CHANGED,
+    PGE_WINDOWDISPLAYCHANGED = SDL_EVENT_WINDOW_DISPLAY_CHANGED,
+} PygameWindowEventCode;
+/*
+TODO: expose these window events in pygame API
+    SDL_EVENT_WINDOW_METAL_VIEW_RESIZED,
+    SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED,
+    SDL_EVENT_WINDOW_SAFE_AREA_CHANGED,
+    SDL_EVENT_WINDOW_OCCLUDED,
+    SDL_EVENT_WINDOW_ENTER_FULLSCREEN,
+    SDL_EVENT_WINDOW_LEAVE_FULLSCREEN,
+    SDL_EVENT_WINDOW_DESTROYED,
+    SDL_EVENT_WINDOW_HDR_STATE_CHANGED,
+*/
+#endif
+
 typedef enum {
     /* Any SDL_* events here are for backward compatibility. */
     SDL_NOEVENT = 0,
@@ -353,9 +503,10 @@ typedef enum {
 
     PGE_MIDIIN,
     PGE_MIDIOUT,
-    PGE_KEYREPEAT, /* Special internal pygame event, for managing key-presses
-                    */
 
+/* These PGE events are only needed on SDL2: SDL3 has dedicated events for
+ * these */
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     /* DO NOT CHANGE THE ORDER OF EVENTS HERE */
     PGE_WINDOWSHOWN,
     PGE_WINDOWHIDDEN,
@@ -375,6 +526,7 @@ typedef enum {
     PGE_WINDOWHITTEST,
     PGE_WINDOWICCPROFCHANGED,
     PGE_WINDOWDISPLAYCHANGED,
+#endif
 
     /* Here we define PGPOST_* events, events that act as a one-to-one
      * proxy for SDL events (and some extra events too!), the proxy is used
@@ -410,10 +562,8 @@ typedef enum {
     PGPOST_CONTROLLERTOUCHPADMOTION,
     PGPOST_CONTROLLERTOUCHPADUP,
     PGPOST_CONTROLLERSENSORUPDATE,
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
     PGPOST_DOLLARGESTURE,
     PGPOST_DOLLARRECORD,
-#endif
     PGPOST_DROPFILE,
     PGPOST_DROPTEXT,
     PGPOST_DROPBEGIN,
@@ -438,9 +588,7 @@ typedef enum {
     PGPOST_MOUSEBUTTONDOWN,
     PGPOST_MOUSEBUTTONUP,
     PGPOST_MOUSEWHEEL,
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
     PGPOST_MULTIGESTURE,
-#endif
     PGPOST_NOEVENT,
     PGPOST_QUIT,
     PGPOST_RENDER_TARGETS_RESET,
@@ -620,7 +768,6 @@ typedef enum {
 #define PYGAMEAPI_RWOBJECT_NUMSLOTS 5
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
-#define PYGAMEAPI_MATH_NUMSLOTS 2
 #define PYGAMEAPI_BASE_NUMSLOTS 30
 #define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1

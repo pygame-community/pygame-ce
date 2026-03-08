@@ -116,6 +116,7 @@ COLOR_FROM_SPACE(hsla);
 COLOR_FROM_SPACE(cmy);
 COLOR_FROM_SPACE(i1i2i3);
 COLOR_FROM_SPACE(normalized);
+COLOR_FROM_SPACE(hex);
 #undef COLOR_FROM_SPACE
 
 /* Getters/setters */
@@ -180,6 +181,9 @@ _color_int(pgColorObject *);
 static PyObject *
 _color_float(pgColorObject *);
 
+static PyObject *
+_color_bytes(pgColorObject *);
+
 /* Sequence protocol methods */
 static Py_ssize_t
 _color_length(pgColorObject *);
@@ -240,6 +244,8 @@ static PyMethodDef _color_methods[] = {
      DOC_COLOR_FROMI1I2I3},
     {"from_normalized", (PyCFunction)_color_from_normalized,
      METH_CLASS | METH_VARARGS, DOC_COLOR_FROMNORMALIZED},
+    {"from_hex", (PyCFunction)_color_from_hex, METH_CLASS | METH_VARARGS,
+     DOC_COLOR_FROMHEX},
     {"normalize", (PyCFunction)_color_normalize, METH_NOARGS,
      DOC_COLOR_NORMALIZE},
     {"correct_gamma", (PyCFunction)_color_correct_gamma, METH_VARARGS,
@@ -253,6 +259,17 @@ static PyMethodDef _color_methods[] = {
     {"premul_alpha", (PyCFunction)_premul_alpha, METH_NOARGS,
      DOC_COLOR_PREMULALPHA},
     {"update", (PyCFunction)_color_update, METH_FASTCALL, DOC_COLOR_UPDATE},
+
+    /**
+     * While object.__bytes__(self) is listed in the Data Model reference (see:
+     * https://docs.python.org/3/reference/datamodel.html#object.__bytes__) it
+     * does not appear to have a PyTypeObject struct analog (see:
+     * https://docs.python.org/3/c-api/typeobj.html), so we declare it for the
+     * type as any other custom method.
+     */
+    {"__bytes__", (PyCFunction)_color_bytes, METH_NOARGS,
+     "Get a byte representation of the color"},
+
     {NULL, NULL, 0, NULL}};
 
 /**
@@ -722,6 +739,9 @@ _color_from_space(char *space, PyObject *args)
     }
     else if (strcmp(space, "normalized") == 0) {
         set_success = _color_set_normalized(color, args, NULL);
+    }
+    else if (strcmp(space, "hex") == 0) {
+        set_success = _color_set_hex(color, args, NULL);
     }
 
     if (set_success != 0) {
@@ -1731,7 +1751,7 @@ _color_inv(pgColorObject *color)
 static PyObject *
 _color_int(pgColorObject *color)
 {
-    Uint32 tmp = (color->data[0] << 24) + (color->data[1] << 16) +
+    Uint32 tmp = ((Uint32)color->data[0] << 24) + (color->data[1] << 16) +
                  (color->data[2] << 8) + color->data[3];
     return PyLong_FromUnsignedLong(tmp);
 }
@@ -1742,9 +1762,18 @@ _color_int(pgColorObject *color)
 static PyObject *
 _color_float(pgColorObject *color)
 {
-    Uint32 tmp = ((color->data[0] << 24) + (color->data[1] << 16) +
+    Uint32 tmp = (((Uint32)color->data[0] << 24) + (color->data[1] << 16) +
                   (color->data[2] << 8) + color->data[3]);
     return PyFloat_FromDouble((double)tmp);
+}
+
+/**
+ * bytes(color)
+ */
+static PyObject *
+_color_bytes(pgColorObject *color)
+{
+    return PyBytes_FromStringAndSize((char *)color->data, 4);
 }
 
 /* Sequence protocol methods */
@@ -2510,26 +2539,16 @@ MODINIT_DEFINE(color)
         return NULL;
     }
 
-    /* type preparation */
-    if (PyType_Ready(&pgColor_Type) < 0) {
-        goto error;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
         goto error;
     }
 
-    Py_INCREF(&pgColor_Type);
-    if (PyModule_AddObject(module, "Color", (PyObject *)&pgColor_Type)) {
-        Py_DECREF(&pgColor_Type);
+    if (PyModule_AddType(module, &pgColor_Type)) {
         goto error;
     }
-    Py_INCREF(_COLORDICT);
-    if (PyModule_AddObject(module, "THECOLORS", _COLORDICT)) {
-        /* Yes, _COLORDICT is decref'd twice here and we want that */
-        Py_DECREF(_COLORDICT);
+    if (PyModule_AddObjectRef(module, "THECOLORS", _COLORDICT)) {
         goto error;
     }
 

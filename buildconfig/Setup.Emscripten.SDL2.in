@@ -25,24 +25,22 @@ _sdl2.video = src_c/void.c
 
 _sdl2.mixer src_c/_sdl2/mixer.c $(SDL) $(MIXER) $(DEBUG) -Isrc_c
 
-constants src_c/constants.c $(SDL) $(DEBUG)
 mask src_c/bitmask.c
-math src_c/math.c $(SDL) $(DEBUG)
 
 #GFX = src_c/SDL_gfx/SDL_gfxBlitFunc.c src_c/SDL_gfx/SDL_gfxPrimitives.c
 GFX = src_c/SDL_gfx/SDL_gfxPrimitives.c
 
 
-static src_c/static.c $(SDL) $(FREETYPE) $(FONT) $(MIXER) $(IMAGE) $(PNG) $(JPEG) $(DEBUG)
+static src_c/base.c $(SDL) $(FREETYPE) $(FONT) $(MIXER) $(IMAGE) $(PNG) $(JPEG) $(DEBUG)
 
-# these should not be altered they already are in static.c merging file above
+# these should not be altered they already are in base.c merging file above
 time src_c/void.c
 _freetype src_c/void.c
 imageext src_c/void.c
 image src_c/void.c
-base src_c/void.c
 bufferproxy src_c/void.c
 color src_c/void.c
+constants src_c/void.c
 controller src_c/void.c
 controller_old src_c/void.c
 display src_c/void.c
@@ -53,6 +51,7 @@ gfxdraw  src_c/void.c
 joystick src_c/void.c
 key src_c/void.c
 newbuffer  src_c/void.c
+math src_c/void.c
 mixer_music src_c/void.c
 mixer src_c/void.c
 mouse src_c/void.c

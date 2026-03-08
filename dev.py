@@ -11,9 +11,12 @@ import os
 import re
 import subprocess
 import sys
+import sysconfig
 from enum import Enum
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
+
+from buildconfig.get_version import version
 
 MOD_NAME = "pygame-ce"
 DIST_DIR = "dist"
@@ -32,6 +35,13 @@ COVERAGE_ARGS = ["-Csetup-args=-Dcoverage=true"]
 
 # We assume this script works with any pip version above this.
 PIP_MIN_VERSION = "23.1"
+
+# we will assume dev.py wasm builds are made for pygbag.
+host_gnu_type = sysconfig.get_config_var("HOST_GNU_TYPE")
+if isinstance(host_gnu_type, str) and "wasm" in host_gnu_type:
+    wasm = "wasi" if "wasi" in host_gnu_type else "emscripten"
+else:
+    wasm = ""
 
 
 class Colors(Enum):
@@ -76,7 +86,7 @@ def pprint(arg: str, col: Colors = Colors.YELLOW):
 
 
 def cmd_run(
-    cmd: list[Union[str, Path]],
+    cmd: list[str | Path],
     capture_output: bool = False,
     error_on_output: bool = False,
 ) -> str:
@@ -185,28 +195,85 @@ def check_module_in_constraint(mod: str, constraint: str):
     return mod.lower().strip() == constraint_mod[0]
 
 
+def get_wasm_cross_file(sdkroot: Path):
+    """
+    This returns a meson cross file for pygbag wasm sdk (pygame-web/python-wasm-sdk)
+    as a string.
+    Here we set paths to the compiler tooling and include/library paths to ensure that
+    meson can pick up the compiler and build dependencies from the sdk.
+    """
+    emsdk_dir = sdkroot / "emsdk"
+    bin_dir = emsdk_dir / "upstream" / "emscripten"
+
+    node_matches = sorted(emsdk_dir.glob("node/*/bin/node"))
+    node_path = node_matches[-1] if node_matches else Path("node")
+
+    sysroot_dir = bin_dir / "cache" / "sysroot"
+    inc_dir = sysroot_dir / "include"
+    lib_dir = sysroot_dir / "lib" / "wasm32-emscripten" / "pic"
+
+    c_args = [
+        f"-I{x}"
+        for x in [
+            inc_dir / "SDL2",
+            inc_dir / "freetype2",
+            sdkroot / "devices" / "emsdk" / "usr" / "include" / "SDL2",
+        ]
+    ]
+    c_link_args = [f"-L{lib_dir}"]
+    return f"""
+[host_machine]
+system = 'emscripten'
+cpu_family = 'wasm32'
+cpu = 'wasm'
+endian = 'little'
+
+[binaries]
+c = {str(bin_dir / 'emcc')!r}
+cpp = {str(bin_dir / 'em++')!r}
+ar = {str(bin_dir / 'emar')!r}
+strip = {str(bin_dir / 'emstrip')!r}
+exe_wrapper = {str(node_path)!r}
+
+[project options]
+emscripten_type = 'pygbag'
+
+[built-in options]
+c_args = {c_args!r}
+c_link_args = {c_link_args!r}
+"""
+
+
 class Dev:
     def __init__(self) -> None:
-        self.py: Path = Path(sys.executable)
+        self.py: Path = (
+            Path(os.environ["SDKROOT"]) / "python3-wasm"
+            if wasm
+            else Path(sys.executable)
+        )
         self.args: dict[str, Any] = {}
 
         self.deps: dict[str, set[str]] = {
             "build": get_build_deps(),
             "docs": get_build_deps(),
             "test": {"numpy"},
-            "lint": {"pylint==3.3.1", "numpy"},
-            "stubs": {"mypy==1.13.0", "numpy"},
-            "format": {"pre-commit==4.0.1"},
+            "lint": {"pylint==3.3.9", "numpy"},
+            "stubs": {"mypy==1.18.2", "numpy"},
+            "format": {"pre-commit==4.3.0"},
         }
         self.deps["all"] = set()
         for k in self.deps.values():
             self.deps["all"] |= k
+        self.deps["install"] = self.deps["build"]
 
     def cmd_build(self):
         wheel_dir = self.args.get("wheel", DIST_DIR)
+        quiet = self.args.get("quiet", False)
         debug = self.args.get("debug", False)
         lax = self.args.get("lax", False)
         sdl3 = self.args.get("sdl3", False)
+        stripped = self.args.get("stripped", False)
+        sanitize = self.args.get("sanitize")
         coverage = self.args.get("coverage", False)
         if wheel_dir and coverage:
             pprint("Cannot pass --wheel and --coverage together", Colors.RED)
@@ -221,13 +288,27 @@ class Dev:
             build_suffix += "-sdl3"
         if coverage:
             build_suffix += "-cov"
+        if wasm:
+            build_suffix += "-wasm"
+
+        build_dir = Path(f".mesonpy-build{build_suffix}")
         install_args = [
             "--no-build-isolation",
-            f"-Cbuild-dir=.mesonpy-build{build_suffix}",
+            f"-Cbuild-dir={build_dir}",
         ]
 
         if not wheel_dir:
+            if wasm:
+                pprint(
+                    "Editable builds are not supported on WASM as of now. "
+                    "Pass --wheel to do a regular build",
+                    Colors.RED,
+                )
+                sys.exit(1)
+
             # editable install
+            if not quiet:
+                install_args.append("-Ceditable-verbose=true")
             install_args.append("--editable")
 
         install_args.append(".")
@@ -242,22 +323,46 @@ class Dev:
         if sdl3:
             install_args.extend(SDL3_ARGS)
 
+        if stripped:
+            install_args.append("-Csetup-args=-Dstripped=true")
+
         if coverage:
             install_args.extend(COVERAGE_ARGS)
 
-        info_str = f"with {debug=}, {lax=}, {sdl3=}, and {coverage=}"
+        if sanitize:
+            install_args.append(f"-Csetup-args=-Db_sanitize={sanitize}")
+
+        if wasm:
+            wasm_cross_file = build_dir / "meson-cross-wasm.ini"
+            build_dir.mkdir(exist_ok=True)
+            wasm_cross_file.write_text(get_wasm_cross_file(self.py.parent))
+            install_args.append(
+                f"-Csetup-args=--cross-file={wasm_cross_file.resolve()}"
+            )
+            if not debug:
+                # sdk uses this environment variable for extra compiler arguments.
+                # So here we pass optimization flags. If this isn't set, sdk will
+                # build for debug by default and we don't want that for release builds.
+                os.environ["COPTS"] = "-Os -g0"
+
+        info_str = (
+            f"with {debug=}, {lax=}, {sdl3=}, {stripped=}, {coverage=} and {sanitize=}"
+        )
         if wheel_dir:
             pprint(f"Building wheel at '{wheel_dir}' ({info_str})")
             cmd_run(
                 [self.py, "-m", "pip", "wheel", "-v", "-w", wheel_dir, *install_args]
             )
             pprint("Installing wheel")
+            mod_name = f"{MOD_NAME}=={version}"
             pip_install(
-                self.py, ["--no-index", "--force", "--find-links", wheel_dir, MOD_NAME]
+                self.py, ["--no-index", "--force", "--find-links", wheel_dir, mod_name]
             )
         else:
             pprint(f"Installing in editable mode ({info_str})")
             pip_install(self.py, install_args)
+
+    cmd_install = cmd_build
 
     def cmd_docs(self):
         full = self.args.get("full", False)
@@ -339,7 +444,9 @@ class Dev:
         )
 
         # Build command
-        build_parser = subparsers.add_parser("build", help="Build the project")
+        build_parser = subparsers.add_parser(
+            "build", help="Build and install the project", aliases=["install"]
+        )
         build_parser.add_argument(
             "--wheel",
             nargs="?",
@@ -351,6 +458,11 @@ class Dev:
                 "A value can passed optionally, to indicate the directory to place the "
                 f"wheel (if not passed, '{DIST_DIR}' is used)"
             ),
+        )
+        build_parser.add_argument(
+            "--quiet",
+            action="store_true",
+            help="Silence build log in editable install (doing editable-verbose=false)",
         )
         build_parser.add_argument(
             "--debug",
@@ -366,6 +478,25 @@ class Dev:
             "--sdl3",
             action="store_true",
             help="Build against SDL3 instead of the default SDL2",
+        )
+        build_parser.add_argument(
+            "--stripped",
+            action="store_true",
+            help="Generate a stripped pygame-ce build (no docs/examples/tests/stubs)",
+        )
+        build_parser.add_argument(
+            "--sanitize",
+            choices=[
+                "address",
+                "undefined",
+                "address,undefined",
+                "leak",
+                "thread",
+                "memory",
+                "none",
+            ],
+            default="none",
+            help="Enable compiler sanitizers. Defaults to 'none'.",
         )
         build_parser.add_argument(
             "--coverage",
@@ -405,11 +536,18 @@ class Dev:
         subparsers.add_parser("format", help="Format code")
 
         # All command
-        subparsers.add_parser(
+        all_parser = subparsers.add_parser(
             "all",
             help=(
                 "Run all the subcommands. This is handy for checking that your work is "
                 "ready to be submitted"
+            ),
+        )
+        all_parser.add_argument(
+            "mod",
+            nargs="*",
+            help=(
+                "Name(s) of sub-module(s) to test. If no args are given all are tested"
             ),
         )
 
@@ -444,6 +582,10 @@ class Dev:
         if not check_version_atleast(pip_version, PIP_MIN_VERSION):
             pprint("pip version is too old or unknown, attempting pip upgrade")
             pip_install(self.py, ["-U", "pip"])
+
+        if wasm:
+            # dont try to install any deps on WASM, exit early
+            return
 
         deps = self.deps.get(self.args["command"], set())
         ignored_deps = self.args["ignore_dep"]

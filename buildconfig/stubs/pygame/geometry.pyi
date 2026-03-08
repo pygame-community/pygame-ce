@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Protocol, Union, overload
+from typing import Protocol, TypeAlias, overload
 
 from pygame import FRect, Rect
 from pygame.typing import Point, RectLike, SequenceLike
@@ -8,22 +8,24 @@ class _HasCircleAttribute(Protocol):
     # An object that has a circle attribute that is either a circle, or a function
     # that returns a circle
     @property
-    def circle(self) -> Union[_CircleLike, Callable[[], _CircleLike]]: ...
+    def circle(self) -> _CircleLike | Callable[[], _CircleLike]: ...
 
-_CircleLike = Union[
-    Circle, tuple[Point, float], SequenceLike[float], _HasCircleAttribute
-]
+_CircleLike: TypeAlias = (
+    Circle | tuple[Point, float] | SequenceLike[float] | _HasCircleAttribute
+)
 
 class _HasLineAttribute(Protocol):
     # An object that has a line attribute that is either a line, or a function
     # that returns a line
     @property
-    def line(self) -> Union[_LineLike, Callable[[], _LineLike]]: ...
+    def line(self) -> _LineLike | Callable[[], _LineLike]: ...
 
-_LineLike = Union[Line, SequenceLike[float], SequenceLike[Point], _HasLineAttribute]
+_LineLike: TypeAlias = (
+    Line | SequenceLike[float] | SequenceLike[Point] | _HasLineAttribute
+)
 
-_CanBeCollided = Union[Circle, Rect, FRect, Point]
-_CanBeIntersected = Union[Circle]
+_CanBeCollided: TypeAlias = Circle | Rect | FRect | Point
+_CanBeIntersected: TypeAlias = Circle
 
 class Circle:
     @property
@@ -197,3 +199,4 @@ class Line:
     def scale_ip(self, factor_and_origin: Point, /) -> None: ...
     def flip_ab(self) -> Line: ...
     def flip_ab_ip(self) -> None: ...
+    def project(self, point: Point, clamp: bool = False) -> tuple[float, float]: ...

@@ -500,6 +500,7 @@ pgRWops_FromFileObject(PyObject *obj)
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_IOStreamInterface iface;
+    SDL_INIT_INTERFACE(&iface);
     iface.size = _pg_rw_size;
     iface.seek = _pg_rw_seek;
     iface.read = _pg_rw_read;
@@ -513,24 +514,26 @@ pgRWops_FromFileObject(PyObject *obj)
     rw = SDL_OpenIO(&iface, helper);
     if (rw == NULL) {
         iface.close(helper);
-        PyMem_Free(helper);
         return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
     }
 
     SDL_PropertiesID props = SDL_GetIOProperties(rw);
     if (!props) {
-        PyMem_Free(helper);
+        iface.close(helper);
         return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
     }
 
     if (!SDL_SetBooleanProperty(props, "_pygame_is_file_object", 1)) {
-        PyMem_Free(helper);
+        iface.close(helper);
         return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
     }
 
 #else
     rw = SDL_AllocRW();
     if (rw == NULL) {
+        /* TODO: here member attributes of helper are getting leaked and close
+         * isn't being called. Refactor to use _pg_rw_close logic on helper
+         * here */
         PyMem_Free(helper);
         return (SDL_RWops *)PyErr_NoMemory();
     }

@@ -1,3 +1,4 @@
+import itertools
 import math
 import sys
 import unittest
@@ -2447,18 +2448,26 @@ class AALineMixin(BaseLineMixin):
 
     def test_aaline__blend_warning(self):
         """Using the blend argument should raise a DeprecationWarning"""
-        faulty_blend_values = [0, 1, True, False, None, "", [], type]
+        faulty_blend_values = [0, 1, True, False]
         with warnings.catch_warnings(record=True) as w:
             for count, blend in enumerate(faulty_blend_values):
                 # Cause all warnings to always be triggered.
                 warnings.simplefilter("always")
                 # Trigger DeprecationWarning.
-                self.draw_aaline(
-                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), 1, blend
+                bounding1 = self.draw_aaline(
+                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), blend=blend
+                )
+                # Doesn't trigger DeprecationWarning, interepreted as width
+                bounding2 = self.draw_aaline(
+                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), blend
                 )
                 # Check if there is only one warning and is a DeprecationWarning.
                 self.assertEqual(len(w), count + 1)
                 self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
+
+                # check that the line gets drawn
+                self.assertEqual(bounding1, bounding2)
+                self.assertEqual(bounding1, (0, 0, 2, 2))
 
     def test_aaline__kwargs(self):
         """Ensures draw aaline accepts the correct kwargs"""
@@ -2681,11 +2690,10 @@ class AALineMixin(BaseLineMixin):
         for width in (-100, -10, -1, 0, 1, 10, 100):
             surface.fill(surface_color)  # Clear for each test.
             kwargs["width"] = width
-            expected_color = line_color if width > 0 else surface_color
 
             bounds_rect = self.draw_aaline(**kwargs)
 
-            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertEqual(surface.get_at(pos), line_color)
             self.assertIsInstance(bounds_rect, pygame.Rect)
 
     def test_aaline__valid_start_pos_formats(self):
@@ -2878,20 +2886,22 @@ class AALineMixin(BaseLineMixin):
                 pos = (x, 0)
                 self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
 
-    def test_line__gaps_with_thickness(self):
+    def test_aaline__gaps_with_thickness(self):
         """Ensures a thick aaline is drawn without any gaps."""
-        expected_color = (255, 255, 255)
+        background_color = (0, 0, 0)
         thickness = 5
         for surface in self._create_surfaces():
             width = surface.get_width() - 1
             h = width // 5
             w = h * 5
-            self.draw_aaline(surface, expected_color, (0, 5), (w, 5 + h), thickness)
+            self.draw_aaline(surface, (255, 255, 255), (0, 5), (w, 5 + h), thickness)
 
             for x in range(w + 1):
                 for y in range(3, 8):
                     pos = (x, y + ((x + 2) // 5))
-                    self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
+                    self.assertNotEqual(
+                        surface.get_at(pos), background_color, f"pos={pos}"
+                    )
 
     def test_aaline__bounding_rect(self):
         """Ensures draw aaline returns the correct bounding rect.
@@ -2926,22 +2936,14 @@ class AALineMixin(BaseLineMixin):
                             surface, line_color, start, end, thickness
                         )
 
-                        if 0 < thickness:
-                            # Calculating the expected_rect after the line is
-                            # drawn (it uses what is actually drawn).
-                            expected_rect = create_bounding_rect(
-                                surface, surf_color, start
-                            )
-                        else:
-                            # Nothing drawn.
-                            expected_rect = pygame.Rect(start, (0, 0))
+                        # Calculating the expected_rect after the line is
+                        # drawn (it uses what is actually drawn).
+                        expected_rect = create_bounding_rect(surface, surf_color, start)
 
                         self.assertEqual(
                             bounding_rect,
                             expected_rect,
-                            "start={}, end={}, size={}, thickness={}".format(
-                                start, end, size, thickness
-                            ),
+                            f"start={start}, end={end}, size={size}, thickness={thickness}",
                         )
 
     def test_aaline__surface_clip(self):
@@ -2961,6 +2963,8 @@ class AALineMixin(BaseLineMixin):
             # drawing the aaline over the clip_rect's bounds.
             for center in rect_corners_mids_and_center(clip_rect):
                 pos_rect.center = center
+                start = pos_rect.midtop
+                end = pos_rect.midbottom
 
                 # Get the expected points by drawing the aaline without the
                 # clip area set.
@@ -2969,8 +2973,8 @@ class AALineMixin(BaseLineMixin):
                 self.draw_aaline(
                     surface,
                     aaline_color,
-                    pos_rect.midtop,
-                    pos_rect.midbottom,
+                    start,
+                    end,
                     thickness,
                 )
 
@@ -2986,8 +2990,8 @@ class AALineMixin(BaseLineMixin):
                 self.draw_aaline(
                     surface,
                     aaline_color,
-                    pos_rect.midtop,
-                    pos_rect.midbottom,
+                    start,
+                    end,
                     thickness,
                 )
 
@@ -2997,9 +3001,17 @@ class AALineMixin(BaseLineMixin):
                 # are not surface_color.
                 for pt in ((x, y) for x in range(surfw) for y in range(surfh)):
                     if pt in expected_pts:
-                        self.assertNotEqual(surface.get_at(pt), surface_color, pt)
+                        self.assertNotEqual(
+                            surface.get_at(pt),
+                            surface_color,
+                            f"start={start}, end={end}, thickness={thickness}, point={pt}",
+                        )
                     else:
-                        self.assertEqual(surface.get_at(pt), surface_color, pt)
+                        self.assertEqual(
+                            surface.get_at(pt),
+                            surface_color,
+                            f"start={start}, end={end}, thickness={thickness}, point={pt}",
+                        )
 
                 surface.unlock()
 
@@ -7301,6 +7313,88 @@ class DrawArcTest(DrawArcMixin, DrawTestCase):
     """
 
 
+class DrawFloodFillTest(unittest.TestCase):
+    """Tests for flood fill."""
+
+    def test_flood_fill(self):
+        """Ensures flood fill fills with solid color"""
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+
+        pygame.draw.line(surf, (255, 0, 0), (10, 10), (90, 90), 5)
+
+        self.assertEqual(
+            surf.get_at((10, 10)), (255, 0, 0), "line drawing precondition"
+        )
+        self.assertEqual(
+            surf.get_at((90, 90)), (255, 0, 0), "line drawing precondition"
+        )
+
+        pygame.draw.flood_fill(surf, (255, 255, 255), (90, 90))
+
+        self.assertEqual(
+            surf.get_at((90, 90)), (255, 255, 255), "flood fill start point"
+        )
+        self.assertEqual(
+            surf.get_at((10, 10)), (255, 255, 255), "flood fill reaching the end"
+        )
+
+    def test_flood_pattern(self):
+        """Ensures flood fill fills in a pattern"""
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+
+        pattern = pygame.Surface((2, 2))
+        pattern.fill((255, 255, 255))
+        pattern.set_at((0, 0), (255, 0, 0))
+        pattern.set_at((1, 1), (0, 0, 255))
+
+        pygame.draw.line(surf, (0, 0, 0), (5, 95), (95, 5))
+        pygame.draw.line(surf, (0, 0, 0), (50, 0), (50, 95))
+
+        pygame.draw.flood_fill(surf, pattern, (95, 95))
+
+        for pt in [(0, 0), (0, 1), (1, 0), (1, 1)]:
+            self.assertEqual(surf.get_at(pt), pattern.get_at(pt), pt)
+
+    def test_flood_circle(self):
+        """Ensures flood fill doesn't overdraw"""
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+        pygame.draw.circle(surf, (255, 0, 255), (50, 50), 40, 2)
+        pygame.draw.flood_fill(surf, (255, 255, 255), (10, 50))
+
+        surf2 = pygame.Surface((100, 100))
+        surf2.fill((0, 0, 0))
+        pygame.draw.circle(surf2, (255, 255, 255), (50, 50), 40, 2)
+
+        for pt in itertools.product(range(100), range(100)):
+            self.assertEqual(surf.get_at(pt), surf2.get_at(pt))
+
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+        pygame.draw.circle(surf, (255, 0, 255), (50, 50), 40, 1)
+        # fill outside of circle white
+        pygame.draw.flood_fill(surf, (255, 255, 255), (1, 1))
+        # fill inside red
+        pygame.draw.flood_fill(surf, (255, 0, 0), (50, 50))
+
+        surf2 = pygame.Surface((100, 100))
+        surf2.fill((255, 255, 255))
+        # draw filled circle red
+        pygame.draw.circle(surf2, (255, 0, 0), (50, 50), 40)
+        # draw outer edge circle hot pink
+        pygame.draw.circle(surf2, (255, 0, 255), (50, 50), 40, 1)
+
+        # both should be identical: white outside, thin pink line, red inside
+        # no black pixels missed, no spillover between inside and outside
+        # This assumes circle drawing works correctly:
+        # if circle is broken, this may or may not fail
+
+        for pt in itertools.product(range(100), range(100)):
+            self.assertEqual(surf.get_at(pt), surf2.get_at(pt))
+
+
 ### Draw Module Testing #######################################################
 
 
@@ -7443,7 +7537,9 @@ class DrawModuleTest(unittest.TestCase):
                 if depth == 8:
                     self.assertEqual(surf.get_at(pixel), pixel_colors_8[i])
                 elif depth == 16:
-                    self.assertEqual(surf.get_at(pixel), pixel_colors_16[i])
+                    # allow small delta difference to account for SDL3 changes.
+                    for x, y in zip(surf.get_at(pixel), pixel_colors_16[i]):
+                        self.assertAlmostEqual(x, y, delta=2)
                 else:
                     self.assertEqual(surf.get_at(pixel), pixel_colors_24_32[i])
 

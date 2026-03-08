@@ -158,7 +158,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     }
 
     /* Acquire a temporary lock. */
-    if (SDL_MUSTLOCK(new_surf) == 0) {
+    if (SDL_MUSTLOCK(new_surf)) {
         SDL_LockSurface(new_surf);
     }
 
@@ -237,7 +237,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     }
     Py_END_ALLOW_THREADS;
 
-    if (SDL_MUSTLOCK(new_surf) == 0) {
+    if (SDL_MUSTLOCK(new_surf)) {
         SDL_UnlockSurface(new_surf);
     }
     return (PyObject *)new_surface;

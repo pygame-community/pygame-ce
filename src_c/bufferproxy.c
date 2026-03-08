@@ -591,11 +591,6 @@ MODINIT_DEFINE(bufferproxy)
         return NULL;
     }
 
-    /* prepare exported types */
-    if (PyType_Ready(&pgBufferProxy_Type) < 0) {
-        return NULL;
-    }
-
 #define bufferproxy_docs ""
 
     /* create the module */
@@ -604,10 +599,7 @@ MODINIT_DEFINE(bufferproxy)
         return NULL;
     }
 
-    Py_INCREF(&pgBufferProxy_Type);
-    if (PyModule_AddObject(module, "BufferProxy",
-                           (PyObject *)&pgBufferProxy_Type)) {
-        Py_DECREF(&pgBufferProxy_Type);
+    if (PyModule_AddType(module, &pgBufferProxy_Type)) {
         Py_DECREF(module);
         return NULL;
     }

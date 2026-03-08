@@ -288,4 +288,20 @@ events related to controllers.
 
       .. ## Controller.stop_rumble ##
 
+   .. method:: set_led
+
+      | :sl:`Set the LED color of the controller`
+      | :sg:`set_led(color_arg) -> bool`
+
+      Set the color of the LED on the controller. The argument is a
+      ``pygame.Color``-compatible value (alpha being ignored). The
+      controller's LED, if it has one, will be set to the input color.
+      If the controller does not have an addressable LED, then this
+      method will do nothing and return False. Returns True if the
+      LED was set successfully.
+
+      .. versionadded:: 2.5.6
+
+      .. ## Controller.set_led ##
+
 .. ## pygame._sdl2.controller ##

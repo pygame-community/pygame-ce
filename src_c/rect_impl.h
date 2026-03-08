@@ -284,6 +284,12 @@
 #ifndef RectExport_setcenter
 #error RectExport_setcenter needs to be defined
 #endif
+#ifndef RectExport_getrelcenter
+#error RectExport_getrelcenter needs to be defined
+#endif
+#ifndef RectExport_setrelcenter
+#error RectExport_setrelcenter needs to be defined
+#endif
 #ifndef RectExport_getsize
 #error RectExport_getsize needs to be defined
 #endif
@@ -318,13 +324,16 @@
 #error RectImport_OtherRectCheck needs to be defined
 #endif
 #ifndef RectImport_RectCheckExact
-#error RectImport_RectCheckExact needs to be Defined
+#error RectImport_RectCheckExact needs to be defined
 #endif
 #ifndef RectImport_OtherRectCheckExact
 #error RectImport_OtherRectCheckExact needs to be Defined
 #endif
 #ifndef RectImport_primitiveType
 #error RectImport_primitiveType needs to be defined
+#endif
+#ifndef RectImport_PrimitiveTypeName
+#error RectImport_PrimitiveTypeName needs to be defined
 #endif
 #ifndef RectImport_innerRectStruct
 #error RectImport_innerRectStruct needs to be defined
@@ -465,9 +474,10 @@ static PyObject *
 RectExport_moveTo(RectObject *self, PyObject *const *args, Py_ssize_t nargs,
                   PyObject *kwnames);
 static PyObject *
-RectExport_inflate(RectObject *self, PyObject *args);
+RectExport_inflate(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
-RectExport_inflateIp(RectObject *self, PyObject *args);
+RectExport_inflateIp(RectObject *self, PyObject *const *args,
+                     Py_ssize_t nargs);
 static PyObject *
 RectExport_scalebyIp(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
@@ -603,6 +613,10 @@ static PyObject *
 RectExport_getcenter(RectObject *self, void *closure);
 static int
 RectExport_setcenter(RectObject *self, PyObject *value, void *closure);
+static PyObject *
+RectExport_getrelcenter(RectObject *self, void *closure);
+static int
+RectExport_setrelcenter(RectObject *self, PyObject *value, void *closure);
 static PyObject *
 RectExport_getsize(RectObject *self, void *closure);
 static int
@@ -1052,12 +1066,12 @@ RectExport_moveTo(RectObject *self, PyObject *const *args, Py_ssize_t nargs,
 }
 
 static PyObject *
-RectExport_inflate(RectObject *self, PyObject *args)
+RectExport_inflate(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PrimitiveType x, y;
 
-    if (!twoPrimitivesFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+    if (!pgTwoValuesFromFastcallArgs(args, nargs, &x, &y)) {
+        return NULL;
     }
 
     return RectExport_subtypeNew4(Py_TYPE(self), self->r.x - x / 2,
@@ -1066,12 +1080,12 @@ RectExport_inflate(RectObject *self, PyObject *args)
 }
 
 static PyObject *
-RectExport_inflateIp(RectObject *self, PyObject *args)
+RectExport_inflateIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PrimitiveType x, y;
 
-    if (!twoPrimitivesFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+    if (!pgTwoValuesFromFastcallArgs(args, nargs, &x, &y)) {
+        return NULL;
     }
     self->r.x -= x / 2;
     self->r.y -= y / 2;
@@ -1868,6 +1882,7 @@ RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 static PyObject *
 RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
+    PyObject *outer_rect = NULL;
     InnerRect *rect = &self->r, *rect_copy = NULL;
     PrimitiveType x1, y1, x2, y2;
 
@@ -1917,7 +1932,8 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     if ((self->r.w < 0) || (self->r.h < 0)) {
         /* Make a copy of the rect so it can be normalized. */
-        rect_copy = &pgRectAsRect(RectExport_RectNew(&self->r));
+        outer_rect = RectExport_RectNew(&self->r);
+        rect_copy = &pgRectAsRect(outer_rect);
 
         if (rect_copy == NULL) {
             return RAISE(PyExc_MemoryError, "cannot allocate memory for rect");
@@ -1928,11 +1944,11 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (!RectImport_IntersectRectAndLine(rect, &x1, &y1, &x2, &y2)) {
-        Py_XDECREF(rect_copy);
+        Py_XDECREF(outer_rect);
         return PyTuple_New(0);
     }
 
-    Py_XDECREF(rect_copy);
+    Py_XDECREF(outer_rect);
 
     PyObject *subtup1, *subtup2;
     subtup1 = TupleFromTwoPrimitives(x1, y1);
@@ -1997,7 +2013,8 @@ RectExport_containsSeq(RectObject *self, PyObject *arg)
     if (ret < 0) {
         PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
                                          ">' requires rect style object"
-                                         " or int as left operand");
+                                         " or " RectImport_PrimitiveTypeName
+                                         " as left operand");
     }
     return ret;
 }
@@ -2823,6 +2840,33 @@ RectExport_getcenter(RectObject *self, void *closure)
                                   self->r.y + (self->r.h / 2));
 }
 
+/*relcenter*/
+static PyObject *
+RectExport_getrelcenter(RectObject *self, void *closure)
+{
+    return TupleFromTwoPrimitives(self->r.w / 2, self->r.h / 2);
+}
+
+static int
+RectExport_setrelcenter(RectObject *self, PyObject *value, void *closure)
+{
+    PrimitiveType val1, val2;
+
+    if (NULL == value) {
+        /* Attribute deletion not supported. */
+        PyErr_SetString(PyExc_AttributeError, "can't delete attribute");
+        return -1;
+    }
+
+    if (!twoPrimitivesFromObj(value, &val1, &val2)) {
+        PyErr_SetString(PyExc_TypeError, "invalid rect assignment");
+        return -1;
+    }
+    self->r.w = val1 * 2;
+    self->r.h = val2 * 2;
+    return 0;
+}
+
 static int
 RectExport_setcenter(RectObject *self, PyObject *value, void *closure)
 {
@@ -2977,6 +3021,8 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_setmidright
 #undef RectExport_getcenter
 #undef RectExport_setcenter
+#undef RectExport_getrelcenter
+#undef RectExport_setrelcenter
 #undef RectExport_getsize
 #undef RectExport_setsize
 #undef RectExport_iterator
@@ -2985,6 +3031,7 @@ RectExport_iterator(RectObject *self)
 #undef RectImport_PythonNumberAsPrimitiveType
 #undef RectImport_PrimitiveTypeAsPythonNumber
 #undef RectImport_primitiveType
+#undef RectImport_PrimitiveTypeName
 #undef RectImport_RectCheck
 #undef RectImport_OtherRectCheck
 #undef RectImport_RectCheckExact

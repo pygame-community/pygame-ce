@@ -27,29 +27,17 @@ MODINIT_DEFINE(geometry)
         return NULL;
     }
 
-    if (PyType_Ready(&pgCircle_Type) < 0) {
-        return NULL;
-    }
-
-    if (PyType_Ready(&pgLine_Type) < 0) {
-        return NULL;
-    }
-
     module = PyModule_Create(&_module);
     if (!module) {
         return NULL;
     }
 
-    Py_INCREF(&pgCircle_Type);
-    if (PyModule_AddObject(module, "Circle", (PyObject *)&pgCircle_Type)) {
-        Py_DECREF(&pgCircle_Type);
+    if (PyModule_AddType(module, &pgCircle_Type)) {
         Py_DECREF(module);
         return NULL;
     }
 
-    Py_INCREF(&pgLine_Type);
-    if (PyModule_AddObject(module, "Line", (PyObject *)&pgLine_Type)) {
-        Py_DECREF(&pgLine_Type);
+    if (PyModule_AddType(module, &pgLine_Type)) {
         Py_DECREF(module);
         return NULL;
     }

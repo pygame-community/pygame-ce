@@ -62,19 +62,24 @@ following formats.
 .. versionaddedold:: 1.8 Saving PNG and JPEG files.
 """
 
-from typing import Literal, Optional, Union
+from typing import Literal, TypeAlias
 
-from pygame.bufferproxy import BufferProxy
 from pygame.surface import Surface
 from pygame.typing import FileLike, IntPoint, Point
-from typing_extensions import deprecated  # added in 3.13
+from typing_extensions import (
+    Buffer,  # collections.abc 3.12
+    deprecated,  # added in 3.13
+)
 
-_BufferLike = Union[BufferProxy, bytes, bytearray, memoryview]
-_from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]
-_to_bytes_format = Literal[
+_FromBufferFormat: TypeAlias = Literal[
+    "P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"
+]
+_ToBytesFormat: TypeAlias = Literal[
     "P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR", "RGBA_PREMULT", "ARGB_PREMULT"
 ]
-_from_bytes_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR"]
+_FromBytesFormat: TypeAlias = Literal[
+    "P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR"
+]
 
 def load(file: FileLike, namehint: str = "") -> Surface:
     """Load new image from a file (or file-like object).
@@ -134,8 +139,8 @@ def load_sized_svg(file: FileLike, size: Point) -> Surface:
     .. versionadded:: 2.4.0
     """
 
-def load_animation(file: FileLike, namehint: str = "") -> list[tuple[Surface, int]]:
-    """Load an animation (GIF/WEBP) from a file (or file-like object).
+def load_animation(file: FileLike, namehint: str = "") -> list[tuple[Surface, float]]:
+    """Load an animation (GIF/WEBP) from a file (or file-like object) as a list of frames.
 
     Load an animation (GIF/WEBP) from a file source. You can pass either a
     filename, a Python file-like object, or a pathlib.Path. If you pass a raw
@@ -144,7 +149,7 @@ def load_animation(file: FileLike, namehint: str = "") -> list[tuple[Surface, in
     format.
 
     This returns a list of tuples (corresponding to every frame of the animation),
-    where each tuple is a (surface, delay) pair for that frame.
+    where each tuple is a (surface, delay in milliseconds) pair for that frame.
 
     This function requires SDL_image 2.6.0 or above. If pygame was compiled with
     an older version, ``pygame.error`` will be raised when this function is
@@ -175,7 +180,7 @@ def save(surface: Surface, file: FileLike, namehint: str = "") -> None:
     .. versionchanged:: 2.2.0 Now supports keyword arguments.
     """
 
-def get_sdl_image_version(linked: bool = True) -> Optional[tuple[int, int, int]]:
+def get_sdl_image_version(linked: bool = True) -> tuple[int, int, int] | None:
     """Get version number of the SDL_Image library being used.
 
     If pygame is built with extended image formats, then this function will
@@ -204,7 +209,7 @@ def get_extended() -> bool:
 @deprecated("since 2.3.0. Use `pygame.image.tobytes` instead")
 def tostring(
     surface: Surface,
-    format: _to_bytes_format,
+    format: _ToBytesFormat,
     flipped: bool = False,
     pitch: int = -1,
 ) -> bytes:
@@ -218,7 +223,7 @@ def tostring(
 
 def tobytes(
     surface: Surface,
-    format: _to_bytes_format,
+    format: _ToBytesFormat,
     flipped: bool = False,
     pitch: int = -1,
 ) -> bytes:
@@ -273,7 +278,7 @@ def tobytes(
 def fromstring(
     bytes: bytes,
     size: IntPoint,
-    format: _from_bytes_format,
+    format: _FromBytesFormat,
     flipped: bool = False,
     pitch: int = -1,
 ) -> Surface:
@@ -288,7 +293,7 @@ def fromstring(
 def frombytes(
     bytes: bytes,
     size: IntPoint,
-    format: _from_bytes_format,
+    format: _FromBytesFormat,
     flipped: bool = False,
     pitch: int = -1,
 ) -> Surface:
@@ -320,9 +325,9 @@ def frombytes(
     """
 
 def frombuffer(
-    buffer: _BufferLike,
+    buffer: Buffer,
     size: IntPoint,
-    format: _from_buffer_format,
+    format: _FromBufferFormat,
     pitch: int = -1,
 ) -> Surface:
     """Create a new Surface that shares data inside a bytes buffer.

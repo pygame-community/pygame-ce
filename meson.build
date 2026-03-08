@@ -34,11 +34,7 @@ elif host_machine.system() == 'android'
         'However it may be added in the future',
     )
 elif host_machine.system() == 'emscripten'
-    plat = 'emscripten'
-    error(
-        'The meson buildconfig of pygame-ce does not support emscripten for now. ',
-        'However it may be added in the future',
-    )
+    plat = 'emscripten-@0@'.format(get_option('emscripten_type'))
 else
     # here it one of: cygwin, dragonfly, freebsd, gnu, haiku, netbsd, openbsd, sunos
     plat = 'unix'
@@ -90,104 +86,246 @@ endif
 
 pg_inc_dirs = []
 pg_lib_dirs = []
-if plat == 'win' and host_machine.cpu_family().startswith('x86')
+
+if plat == 'emscripten-pygbag'
+    sdl_dep = declare_dependency(
+        link_args: ['-lSDL2'],
+    )
+    sdl_image_dep = declare_dependency(
+        link_args: ['-lSDL2_image'],
+    )
+    sdl_mixer_dep = declare_dependency(
+        link_args: ['-lSDL2_mixer_ogg', '-logg', '-lvorbis'],
+    )
+    freetype_dep = declare_dependency(
+        link_args: ['-lfreetype', '-lharfbuzz']
+    )
+    sdl_ttf_dep = declare_dependency(
+        link_args: ['-lSDL2_ttf'],
+        dependencies: [freetype_dep]
+    )
+elif plat == 'emscripten-pyodide'
+    # Check out before-build attribute in [tool.cibuildwheel.pyodide] section
+    # of pyproject.toml to see how these dependencies were installed.
+    wasm_exceptions = ['-fwasm-exceptions', '-sSUPPORT_LONGJMP=wasm', '-sRELOCATABLE=1']
+    add_global_arguments(wasm_exceptions, language: 'c')
+    add_global_link_arguments(wasm_exceptions, language: 'c')
+
+    sdl_flags = ['-sUSE_SDL=2']
+    freetype_flags = ['-sUSE_FREETYPE=1']
+    sdl_dep = declare_dependency(
+        compile_args: sdl_flags,
+        link_args: sdl_flags + ['-lSDL2', '-lhtml5'],
+    )
+    sdl_image_dep = declare_dependency(
+        link_args: [
+            '-lSDL2_image-bmp-gif-jpg-lbm-pcx-png-pnm-qoi-svg-tga-xcf-xpm-xv-wasm-sjlj',
+            '-ljpeg',
+            '-lpng-legacysjlj',
+        ],
+    )
+    sdl_mixer_dep = declare_dependency(
+        link_args: [
+            '-lSDL2_mixer-mid-mod-mp3-ogg',
+            '-lmodplug',
+            '-lmpg123',
+            '-logg',
+            '-lvorbis'
+        ],
+    )
+    freetype_dep = declare_dependency(
+        compile_args: freetype_flags,
+        link_args: freetype_flags + ['-lfreetype-legacysjlj', '-lharfbuzz']
+    )
+    sdl_ttf_dep = declare_dependency(
+        link_args: ['-lSDL2_ttf'],
+        dependencies: [freetype_dep]
+    )
+else
+
+if plat == 'win'
     # yes, this is a bit ugly and hardcoded but it is what it is
     # TODO (middle-term goal) - Should migrate away from this
     # consider meson wraps? Hopefully can also get the same build path as below
-    arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
+
     base_dir = meson.current_source_dir()
-    prebuilt_dir = base_dir / 'prebuilt-' + arch_suffix
-
-    # download prebuilts (uses legacy builconfig code)
-    if not fs.is_dir(prebuilt_dir)
-        run_command(
-            [
-                find_program('python3', 'python'),
-                'buildconfig/download_win_prebuilt.py',
-            ],
-            check: true,
-        )
-    endif
-
-    sdl_ver = (sdl_api == 3) ? '3.2.10' : '2.32.6'
-    sdl_image_ver = (sdl_api == 3) ? '3.2.4' : '2.8.8'
-    sdl_mixer_ver = '2.8.1'
-    sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
+    prebuilt_dir = base_dir / 'pygame_win_deps_' + host_machine.cpu_family()
 
     dlls = []
 
-    # SDL
-    sdl_dir = prebuilt_dir / '@0@-@1@'.format(sdl, sdl_ver)
-    sdl_lib_dir = sdl_dir / 'lib' / arch_suffix
-    pg_inc_dirs += fs.relative_to(sdl_dir / 'include', base_dir)
-    pg_lib_dirs += sdl_lib_dir
-    dlls += sdl_lib_dir / '@0@.dll'.format(sdl)
+    # Here we first try the new prebuilts that CI makes available. If its not available
+    # we fallback to legacy prebuilts if we are on intel/AMD, or do a system search for
+    # the deps on other platforms.
+    if fs.is_dir(prebuilt_dir)
+        lib_dir = prebuilt_dir / 'lib'
 
-    # SDL_image
-    if get_option('image').enabled()
-        sdl_image_dir = prebuilt_dir / '@0@-@1@'.format(sdl_image, sdl_image_ver)
-        sdl_image_lib_dir = sdl_image_dir / 'lib' / arch_suffix
-        pg_inc_dirs += fs.relative_to(sdl_image_dir / 'include', base_dir)
-        pg_lib_dirs += sdl_image_lib_dir
+        # These are all the dlls that we need. There are no extra DLLs here.
         dlls += [
-            sdl_image_lib_dir / '@0@.dll'.format(sdl_image),
-            sdl_image_lib_dir / 'optional' / (sdl_api == 3 ? 'libtiff-6.dll' : 'libtiff-5.dll'),
-            sdl_image_lib_dir / 'optional' / 'libwebp-7.dll',
-            sdl_image_lib_dir / 'optional' / 'libwebpdemux-2.dll',
+            lib_dir / 'SDL2.dll',
+            lib_dir / 'SDL2_image.dll',
+            lib_dir / 'SDL2_mixer.dll',
+            lib_dir / 'SDL2_ttf.dll',
+            lib_dir / 'libFLAC.dll',
+            lib_dir / 'libbrotlicommon.dll',
+            lib_dir / 'libbrotlidec.dll',
+            lib_dir / 'libfluidsynth-3.dll',
+            lib_dir / 'libfreetype-6.dll',
+            lib_dir / 'libharfbuzz-0.dll',
+            lib_dir / 'libjpeg-62.dll',
+            lib_dir / 'libopus-0.dll',
+            lib_dir / 'libopusfile-0.dll',
+            lib_dir / 'libpng16.dll',
+            lib_dir / 'libportmidi.dll',
+            lib_dir / 'libsharpyuv.dll',
+            lib_dir / 'libsndfile.dll',
+            lib_dir / 'libtiff.dll',
+            lib_dir / 'libvorbis.dll',
+            lib_dir / 'libvorbisenc.dll',
+            lib_dir / 'libvorbisfile.dll',
+            lib_dir / 'libwavpack-1.dll',
+            lib_dir / 'libwebp.dll',
+            lib_dir / 'libwebpdemux.dll',
+            lib_dir / 'libwinpthread-1.dll',
+            lib_dir / 'libxmp.dll',
+            lib_dir / 'libzlib.dll',
+            lib_dir / 'ogg.dll',
         ]
-        # temporary solution to get things compiling under SDL3_image. In the future
-        # we would want to have libpng and libjpeg on SDL3_image as well.
-        if sdl_api != 3
+        # Because of some build time issues, libmpg123 DLL is only available on
+        # x86/AMD64 and not available on ARM64.
+        # However, it still works out at runtime because SDL_mixer statically
+        # links against libmpg123 on ARM64.
+        if host_machine.cpu_family().startswith('x86')
+            dlls += lib_dir / 'libmpg123-0.dll'
+        endif
+        # On x86 and x64 we need to include the correct mingw libgcc dll.
+        # On arm64 mingw uses clang and things are statically linked against
+        # compiler-rt (so, no dll needed there)
+        if host_machine.cpu_family() == 'x86'
+            dlls += lib_dir / 'libgcc_s_dw2-1.dll'
+        elif host_machine.cpu_family() == 'x86_64'
+            dlls += lib_dir / 'libgcc_s_seh-1.dll'
+        endif
+
+        pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
+        pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include' / 'SDL2', base_dir)
+        pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include' / 'freetype2', base_dir)
+        pg_lib_dirs += lib_dir
+    elif host_machine.cpu_family().startswith('x86')
+        warning('Missing windows prebuilts. Falling back to legacy prebuilts')
+
+        sdl_ver = (sdl_api == 3) ? '3.4.0' : '2.32.10'
+        sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.8'
+        sdl_mixer_ver = '2.8.1'
+        sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
+
+        arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
+        prebuilt_dir = base_dir / 'prebuilt-' + arch_suffix
+
+        sdl_dir = prebuilt_dir / '@0@-@1@'.format(sdl, sdl_ver)
+        sdl_image_dir = prebuilt_dir / '@0@-@1@'.format(sdl_image, sdl_image_ver)
+        sdl_mixer_dir = prebuilt_dir / '@0@-@1@'.format(sdl_mixer, sdl_mixer_ver)
+        sdl_ttf_dir = prebuilt_dir / '@0@-@1@'.format(sdl_ttf, sdl_ttf_ver)
+        common_lib_dir = prebuilt_dir / 'lib'
+
+        # download prebuilts (uses legacy buildconfig code)
+        required_dirs = [
+            prebuilt_dir,
+            sdl_dir,
+            sdl_image_dir,
+            sdl_mixer_dir,
+            sdl_ttf_dir,
+            common_lib_dir,
+        ]
+        any_missing = false
+        foreach d : required_dirs
+            if not fs.is_dir(d)
+                any_missing = true
+                break
+            endif
+        endforeach
+        if any_missing
+            run_command(
+                [
+                    find_program('python3', 'python'),
+                    'buildconfig/download_win_prebuilt.py',
+                ],
+                check: true,
+            )
+        endif
+
+        # SDL
+        sdl_lib_dir = sdl_dir / 'lib' / arch_suffix
+        pg_inc_dirs += fs.relative_to(sdl_dir / 'include', base_dir)
+        pg_lib_dirs += sdl_lib_dir
+        dlls += sdl_lib_dir / '@0@.dll'.format(sdl)
+
+        # SDL_image
+        if get_option('image').enabled()
+            sdl_image_lib_dir = sdl_image_dir / 'lib' / arch_suffix
+            pg_inc_dirs += fs.relative_to(sdl_image_dir / 'include', base_dir)
+            pg_lib_dirs += sdl_image_lib_dir
             dlls += [
-                sdl_image_lib_dir / 'optional' / 'libjpeg-62.dll',
-                sdl_image_lib_dir / 'optional' / 'libpng16-16.dll',
+                sdl_image_lib_dir / '@0@.dll'.format(sdl_image),
+                sdl_image_lib_dir / 'optional' / (sdl_api == 3 ? 'libtiff-6.dll' : 'libtiff-5.dll'),
+                sdl_image_lib_dir / 'optional' / 'libwebp-7.dll',
+                sdl_image_lib_dir / 'optional' / 'libwebpdemux-2.dll',
+            ]
+            # temporary solution to get things compiling under SDL3_image. In the future
+            # we would want to have libpng and libjpeg on SDL3_image as well.
+            if sdl_api != 3
+                dlls += [
+                    sdl_image_lib_dir / 'optional' / 'libjpeg-62.dll',
+                    sdl_image_lib_dir / 'optional' / 'libpng16-16.dll',
+                ]
+            endif
+        endif
+
+        # SDL_mixer
+        if get_option('mixer').enabled()
+            sdl_mixer_lib_dir = sdl_mixer_dir / 'lib' / arch_suffix
+            pg_inc_dirs += fs.relative_to(sdl_mixer_dir / 'include', base_dir)
+            pg_lib_dirs += sdl_mixer_lib_dir
+            dlls += [
+                sdl_mixer_lib_dir / '@0@.dll'.format(sdl_mixer),
+                sdl_mixer_lib_dir / 'optional' / 'libogg-0.dll',
+                sdl_mixer_lib_dir / 'optional' / 'libopus-0.dll',
+                sdl_mixer_lib_dir / 'optional' / 'libopusfile-0.dll',
+                sdl_mixer_lib_dir / 'optional' / 'libwavpack-1.dll',
+                sdl_mixer_lib_dir / 'optional' / 'libxmp.dll',
             ]
         endif
-    endif
 
-    # SDL_mixer
-    if get_option('mixer').enabled()
-        sdl_mixer_dir = prebuilt_dir / '@0@-@1@'.format(sdl_mixer, sdl_mixer_ver)
-        sdl_mixer_lib_dir = sdl_mixer_dir / 'lib' / arch_suffix
-        pg_inc_dirs += fs.relative_to(sdl_mixer_dir / 'include', base_dir)
-        pg_lib_dirs += sdl_mixer_lib_dir
-        dlls += [
-            sdl_mixer_lib_dir / '@0@.dll'.format(sdl_mixer),
-            sdl_mixer_lib_dir / 'optional' / 'libogg-0.dll',
-            sdl_mixer_lib_dir / 'optional' / 'libopus-0.dll',
-            sdl_mixer_lib_dir / 'optional' / 'libopusfile-0.dll',
-            sdl_mixer_lib_dir / 'optional' / 'libwavpack-1.dll',
-            sdl_mixer_lib_dir / 'optional' / 'libxmp.dll',
-        ]
-    endif
+        # SDL_ttf
+        if get_option('font').enabled()
+            sdl_ttf_lib_dir = sdl_ttf_dir / 'lib' / arch_suffix
+            pg_inc_dirs += fs.relative_to(sdl_ttf_dir / 'include', base_dir)
+            pg_lib_dirs += sdl_ttf_lib_dir
+            dlls += sdl_ttf_lib_dir / '@0@.dll'.format(sdl_ttf)
+        endif
 
-    # SDL_ttf
-    if get_option('font').enabled()
-        sdl_ttf_dir = prebuilt_dir / '@0@-@1@'.format(sdl_ttf, sdl_ttf_ver)
-        sdl_ttf_lib_dir = sdl_ttf_dir / 'lib' / arch_suffix
-        pg_inc_dirs += fs.relative_to(sdl_ttf_dir / 'include', base_dir)
-        pg_lib_dirs += sdl_ttf_lib_dir
-        dlls += sdl_ttf_lib_dir / '@0@.dll'.format(sdl_ttf)
-    endif
+        # freetype, portmidi and porttime
+        if get_option('freetype').enabled() and get_option('midi').enabled()
+            pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
+            pg_lib_dirs += common_lib_dir
+            dlls += [common_lib_dir / 'freetype.dll', common_lib_dir / 'portmidi.dll']
+        endif
 
-    # freetype, portmidi and porttime
-    if get_option('freetype').enabled() and get_option('midi').enabled()
-        common_lib_dir = prebuilt_dir / 'lib'
-        pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
-        pg_lib_dirs += common_lib_dir
-        dlls += [common_lib_dir / 'freetype.dll', common_lib_dir / 'portmidi.dll']
-    endif
-
-    # clean unneeded file that causes build issues
-    unneeded_file = common_lib_dir / 'libportmidi.dll.a'
-    if fs.exists(unneeded_file)
-        run_command(
-            [
-                find_program('python3', 'python'),
-                '-c',
-                'import os; os.remove("@0@")'.format(unneeded_file),
-            ],
-            check: true,
+        # clean unneeded file that causes build issues
+        unneeded_file = common_lib_dir / 'libportmidi.dll.a'
+        if fs.exists(unneeded_file)
+            run_command(
+                [
+                    find_program('python3', 'python'),
+                    '-c',
+                    'import os; os.remove("@0@")'.format(unneeded_file),
+                ],
+                check: true,
+            )
+        endif
+    else
+        warning(
+            'Prebuilt deps weren\'t found for this system (@0@).'.format(host_machine.cpu_family()) +
+            'Meson-based dependency detection will be used to resolve them from your system.'
         )
     endif
 
@@ -204,7 +342,7 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         if not fs.exists(lib)
             error(f'''
             File "@lib@" does not exist.
-            Please try to delete "prebuilt_downloads/", "prebuilt-x64/" and "prebuilt-x86/" directories, and retry the installation.
+            Please try to delete windows prebuilts and retry the installation.
             ''')
         endif
     endforeach
@@ -213,7 +351,21 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
     install_data(dlls, install_dir: pg_dir, install_tag: 'pg-tag')
 
 else
-    bases = ['/usr/local', '/usr', '/opt/homebrew', '/opt/local']
+    homebrew_prefix = '/opt/homebrew'
+
+    brew_cmd = find_program('brew', required: false)
+
+    if brew_cmd.found()
+        result = run_command(brew_cmd, '--prefix', check: false)
+        if result.returncode() == 0
+            detected_prefix = result.stdout().strip()
+            if detected_prefix != '' and fs.is_dir(detected_prefix)
+                homebrew_prefix = detected_prefix
+            endif
+        endif
+    endif
+
+    bases = ['/usr/local', '/usr', homebrew_prefix, '/opt/local']
     foreach inc_dir : bases
         foreach sub_inc : [
             '',
@@ -295,8 +447,10 @@ if not freetype_dep.found()
     )
 endif
 
+endif # emscripten
+
 portmidi_dep = dependency('portmidi', required: false)
-if not portmidi_dep.found()
+if not portmidi_dep.found() and not plat.startswith('emscripten')
     portmidi_dep = declare_dependency(
         include_directories: pg_inc_dirs,
         dependencies: cc.find_library(
@@ -362,8 +516,8 @@ if host_machine.cpu_family() == 'arm'
         simd_sse2_neon = true
     endif
 elif host_machine.cpu_family() == 'aarch64'
-    # no explicit flag needed in this case
-    simd_sse2_neon = true
+    # sse2neon doesn't support compiling under msvc
+    simd_sse2_neon = cc.get_id() != 'msvc'
 endif
 
 if simd_sse2_neon
@@ -420,7 +574,7 @@ endif
 subdir('src_c')
 subdir('src_py')
 
-if not get_option('stripped')
+if not get_option('stripped') and not plat.startswith('emscripten')
     # run make_docs and make docs
     if not fs.is_dir('docs/generated')
         make_docs = files('buildconfig/make_docs.py')

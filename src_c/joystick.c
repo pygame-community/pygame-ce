@@ -39,7 +39,7 @@ static PyObject *
 init(PyObject *self, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
-        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
+        if (!PG_InitSubSystem(SDL_INIT_JOYSTICK)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
         PG_SetJoystickEventsEnabled(SDL_TRUE);
@@ -531,6 +531,40 @@ joy_get_hat(PyObject *self, PyObject *args)
     return pg_tuple_couple_from_values_int(px, py);
 }
 
+static PyObject *
+joy_set_led(PyObject *self, PyObject *arg)
+{
+    SDL_Joystick *joy = pgJoystick_AsSDL(self);
+
+    JOYSTICK_INIT_CHECK();
+    if (!joy) {
+        return RAISE(pgExc_SDLError, "Joystick not initialized");
+    }
+
+    Uint8 colors[4] = {0, 0, 0, 0};
+
+    if (!pg_RGBAFromObjEx(arg, colors, PG_COLOR_HANDLE_ALL)) {
+        // Exception already set
+        return NULL;
+    }
+
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    if (SDL_JoystickSetLED(joy, colors[0], colors[1], colors[2]) < 0) {
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_TRUE;
+#else
+    // SDL3 renames the function and sets an error message on failure
+    bool result = SDL_SetJoystickLED(joy, colors[0], colors[1], colors[2]);
+    if (!result) {
+        // Clear the SDL error message that SDL set, for example if it didn't
+        // have an addressable LED
+        (void)SDL_GetError();
+    }
+    return PyBool_FromLong(result);
+#endif
+}
+
 static PyMethodDef joy_methods[] = {
     {"init", joy_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_INIT},
     {"quit", joy_quit, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_QUIT},
@@ -560,6 +594,7 @@ static PyMethodDef joy_methods[] = {
     {"get_numhats", joy_get_numhats, METH_NOARGS,
      DOC_JOYSTICK_JOYSTICK_GETNUMHATS},
     {"get_hat", joy_get_hat, METH_VARARGS, DOC_JOYSTICK_JOYSTICK_GETHAT},
+    {"set_led", joy_set_led, METH_O, DOC_JOYSTICK_JOYSTICK_SETLED},
 
     {NULL, NULL, 0, NULL}};
 
@@ -665,6 +700,11 @@ MODINIT_DEFINE(joystick)
         return NULL;
     }
 
+    import_pygame_color();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
     /* type preparation */
     if (PyType_Ready(&pgJoystick_Type) == -1) {
         return NULL;
@@ -676,10 +716,8 @@ MODINIT_DEFINE(joystick)
         return NULL;
     }
 
-    Py_INCREF(&pgJoystick_Type);
-    if (PyModule_AddObject(module, "JoystickType",
-                           (PyObject *)&pgJoystick_Type)) {
-        Py_DECREF(&pgJoystick_Type);
+    if (PyModule_AddObjectRef(module, "JoystickType",
+                              (PyObject *)&pgJoystick_Type)) {
         Py_DECREF(module);
         return NULL;
     }

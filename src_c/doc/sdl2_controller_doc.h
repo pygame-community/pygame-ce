@@ -21,3 +21,4 @@
 #define DOC_SDL2_CONTROLLER_CONTROLLER_SETMAPPING "set_mapping(mapping) -> int\nAssign a mapping to the controller"
 #define DOC_SDL2_CONTROLLER_CONTROLLER_RUMBLE "rumble(low_frequency, high_frequency, duration) -> bool\nStart a rumbling effect"
 #define DOC_SDL2_CONTROLLER_CONTROLLER_STOPRUMBLE "stop_rumble() -> None\nStop any rumble effect playing"
+#define DOC_SDL2_CONTROLLER_CONTROLLER_SETLED "set_led(color_arg) -> bool\nSet the LED color of the controller"

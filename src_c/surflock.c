@@ -99,12 +99,7 @@ pgSurface_LockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
     if (surf->subsurface != NULL) {
         pgSurface_Prep(surfobj);
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (!SDL_LockSurface(surf->surf))
-#else
-    if (SDL_LockSurface(surf->surf) == -1)
-#endif
-    {
+    if (!PG_LockSurface(surf->surf)) {
         PyErr_SetString(PyExc_RuntimeError, "error locking surface");
         return 0;
     }

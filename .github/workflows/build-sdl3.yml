@@ -52,7 +52,10 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v4.2.2
+    - uses: actions/checkout@v6.0.2
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.14'
 
     - name: Install pygame deps (linux)
       if: matrix.os == 'ubuntu-24.04'
@@ -64,15 +67,17 @@ jobs:
       if: matrix.os == 'macos-14'
       run: brew install freetype portmidi
 
-    # taken from dependencies of the 'libsdl2-dev' package
-    - name: Install SDL deps (linux)
+    # taken from https://wiki.libsdl.org/SDL3/README-linux#build-dependencies
+    - name: Install SDL3 deps (linux)
       if: matrix.os == 'ubuntu-24.04'
       run: >
-        sudo apt-get install libasound2-dev libdbus-1-dev libdecor-0-dev libdrm-dev
-        libegl-dev libgbm-dev libgl-dev libgles-dev libibus-1.0-dev libpulse-dev
-        libsamplerate0-dev libsndio-dev libudev-dev libwayland-dev libx11-dev
-        libxcursor-dev libxext-dev libxfixes-dev libxi-dev libxinerama-dev
-        libxkbcommon-dev libxrandr-dev libxss-dev libxt-dev libxv-dev libxxf86vm-dev
+        sudo apt-get install build-essential git make
+        pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev
+        libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev
+        libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev
+        libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev
+        libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev
+        libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
 
     # taken from https://wiki.libsdl.org/SDL3/Installation
     - name: Install SDL3

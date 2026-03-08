@@ -1,6 +1,5 @@
 /* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SDL2VIDEO "Experimental pygame module for porting new SDL video systems"
-#define DOC_SDL2_VIDEO_MESSAGEBOX "messagebox(title, message, window=None, info=False, warn=False, buttons=('OK',), return_button=0, escape_button=0)\nCreate a native GUI message box"
 #define DOC_SDL2_VIDEO_RENDERERDRIVERINFO "pygame object encapsulating Renderer driver information"
 #define DOC_SDL2_VIDEO_GETDRIVERS "get_drivers() -> Iterator[RendererDriverInfo]\nYield info about the rendering drivers available for Renderer objects"
 #define DOC_SDL2_VIDEO_GETGRABBEDWINDOW "get_grabbed_window() -> Window or None\nGet the window with input grab enabled"
@@ -41,6 +40,8 @@
 #define DOC_SDL2_VIDEO_RENDERER_PRESENT "present() -> None\nUpdate the screen with any rendering performed since the previous call"
 #define DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT "get_viewport() -> Rect\nGet the drawing area on the rendering target"
 #define DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT "set_viewport(area) -> None\nSet the drawing area on the rendering target"
+#define DOC_SDL2_VIDEO_RENDERER_COORDINATESTOWINDOW "coordinates_to_window(point) -> (float, float)\nTranslates renderer coordinates to window coordinates"
+#define DOC_SDL2_VIDEO_RENDERER_COORDINATESFROMWINDOW "coordinates_from_window(point) -> (float, float)\nTranslates window coordinates to renderer coordinates"
 #define DOC_SDL2_VIDEO_RENDERER_BLIT "blit(source, dest, area=None, special_flags=0)-> Rect\nDraw textures using a Surface-like API"
 #define DOC_SDL2_VIDEO_RENDERER_DRAWLINE "draw_line(p1, p2) -> None\nDraw a line"
 #define DOC_SDL2_VIDEO_RENDERER_DRAWPOINT "draw_point(point) -> None\nDraw a point"

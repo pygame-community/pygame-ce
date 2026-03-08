@@ -68,9 +68,7 @@ key_get_repeat(PyObject *self, PyObject *_null)
  *     https://github.com/pygame-community/pygame-ce/issues/519
  * so that they work with SDL_GetKeyboardState().
  */
-#define _PG_SCANCODEWRAPPER_TYPE_NAME "ScancodeWrapper"
-#define _PG_SCANCODEWRAPPER_TYPE_FULLNAME \
-    "pygame.key." _PG_SCANCODEWRAPPER_TYPE_NAME
+#define _PG_SCANCODEWRAPPER_TYPE_FULLNAME "pygame.key.ScancodeWrapper"
 
 typedef struct {
     PyTupleObject tuple;
@@ -155,7 +153,7 @@ pg_scancodewrapper_repr(pgScancodeWrapper *self)
 }
 
 static PyTypeObject pgScancodeWrapper_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.key.ScancodeWrapper",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = _PG_SCANCODEWRAPPER_TYPE_FULLNAME,
     .tp_repr = (reprfunc)pg_scancodewrapper_repr,
     .tp_as_mapping = &pg_scancodewrapper_mapping,
     .tp_iter = (getiterfunc)pg_iter_raise,
@@ -178,7 +176,6 @@ key_get_pressed(PyObject *self, PyObject *_null)
 #endif
     PyObject *ret_obj = NULL;
     PyObject *key_tuple;
-    int i;
 
     VIDEO_INIT_CHECK();
 
@@ -192,14 +189,8 @@ key_get_pressed(PyObject *self, PyObject *_null)
         return NULL;
     }
 
-    for (i = 0; i < num_keys; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(key_state[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    for (int i = 0; i < num_keys; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(key_state[i]));
     }
 
     ret_obj =
@@ -221,15 +212,8 @@ get_just_pressed(PyObject *self, PyObject *_null)
         return NULL;
     }
 
-    int i;
-    for (i = 0; i < SDL_NUM_SCANCODES; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(pressed_keys[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(pressed_keys[i]));
     }
     ret_obj =
         PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
@@ -250,15 +234,8 @@ get_just_released(PyObject *self, PyObject *_null)
         return NULL;
     }
 
-    int i;
-    for (i = 0; i < SDL_NUM_SCANCODES; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(released_keys[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+        PyTuple_SET_ITEM(key_tuple, i, PyBool_FromLong(released_keys[i]));
     }
     ret_obj =
         PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
@@ -410,7 +387,11 @@ static const struct {
     {1073742054, "right alt"},       /* K_RALT */
     {1073742055, "right meta"},      /* K_RGUI, K_RMETA, K_RSUPER */
     {1073742081, "alt gr"},          /* K_MODE */
-    {1073742094, "AC Back"},         /* K_AC_BACK */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    {1073742106, "AC Back"}, /* K_AC_BACK */
+#else
+    {1073742094, "AC Back"}, /* K_AC_BACK */
+#endif
 };
 
 /* Get name from keycode using pygame compat table */
@@ -672,11 +653,6 @@ MODINIT_DEFINE(key)
     if (PyErr_Occurred()) {
         return NULL;
     }
-    /* type preparation */
-    pgScancodeWrapper_Type.tp_base = &PyTuple_Type;
-    if (PyType_Ready(&pgScancodeWrapper_Type) < 0) {
-        return NULL;
-    }
 
     /* create the module */
     module = PyModule_Create(&_module);
@@ -684,10 +660,11 @@ MODINIT_DEFINE(key)
         return NULL;
     }
 
-    Py_INCREF(&pgScancodeWrapper_Type);
-    if (PyModule_AddObject(module, _PG_SCANCODEWRAPPER_TYPE_NAME,
-                           (PyObject *)&pgScancodeWrapper_Type)) {
-        Py_DECREF(&pgScancodeWrapper_Type);
+    // has to be set in init function rather than statically per note on
+    // https://docs.python.org/3/c-api/typeobj.html#c.PyTypeObject.tp_base
+    pgScancodeWrapper_Type.tp_base = &PyTuple_Type;
+
+    if (PyModule_AddType(module, &pgScancodeWrapper_Type)) {
         Py_DECREF(module);
         return NULL;
     }

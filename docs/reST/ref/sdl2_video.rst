@@ -14,21 +14,6 @@
 
 | :sl:`Experimental pygame module for porting new SDL video systems`
 
-.. function:: messagebox
-
-   | :sl:`Create a native GUI message box`
-   | :sg:`messagebox(title, message, window=None, info=False, warn=False, buttons=('OK',), return_button=0, escape_button=0)`
-
-   :param str title: A title string, or ``None`` to omit a title.
-   :param str message: A message string.
-   :param bool info: If ``True``, display an info message.
-   :param bool warn: If ``True``, display a warning message.
-   :param bool error: If ``True``, display an error message.
-   :param tuple buttons: An optional sequence of button name strings to show to the user.
-   :param int return_button: Button index to use if the return key is hit (``-1`` for none).
-   :param int escape_button: Button index to use if the escape key is hit (``-1`` for none).
-   :return: The index of the button that was pushed.
-
 .. class:: RendererDriverInfo
 
    | :sl:`pygame object encapsulating Renderer driver information`
@@ -378,6 +363,10 @@
       | :sl:`Get or set the logical Renderer size (a device independent resolution for rendering)`
       | :sg:`logical_size -> (int width, int height)`
 
+      Note: When the rendering target is the main window, and ``logical_size``
+      has not been set before, it will contain ``(0, 0)`` and not the size of
+      the window.
+
    .. attribute:: scale
 
       | :sl:`Get the drawing scale for the current rendering target`
@@ -423,6 +412,25 @@
       :param area: A :class:`pygame.Rect` or tuple representing the
                    drawing area on the target, or ``None`` to use the
                    entire area of the current rendering target.
+
+   .. method:: coordinates_to_window
+
+      | :sl:`Translates renderer coordinates to window coordinates`
+      | :sg:`coordinates_to_window(point) -> (float, float)`
+
+      :param point: The coordinates in render space.
+
+      .. versionadded:: 2.5.6
+
+
+   .. method:: coordinates_from_window
+
+      | :sl:`Translates window coordinates to renderer coordinates`
+      | :sg:`coordinates_from_window(point) -> (float, float)`
+
+      :param point: The coordinates in window space.
+
+      .. versionadded:: 2.5.6
 
    .. method:: blit
 

@@ -1561,7 +1561,8 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
 void
-premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
+premul_surf_color_by_alpha_avx2(SDL_Surface *src, PG_PixelFormat *src_format,
+                                SDL_Surface *dst)
 {
     int i, height = src->h;
     const int width = src->w;
@@ -1578,7 +1579,7 @@ premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
     __m256i mm_src, mm_dst, alphaA, alphaB, mm_alpha_in;
     __m256i mm_srcA, mm_srcB;
 
-    const __m256i mm256_amask = _mm256_set1_epi32(src->format->Amask);
+    const __m256i mm256_amask = _mm256_set1_epi32(src_format->Amask);
     const __m256i mm_zero = _mm256_setzero_si256();
     const __m256i partial_mask =
         _mm256_set_epi32(0, pxl_excess > 6 ? -1 : 0, pxl_excess > 5 ? -1 : 0,
@@ -1587,10 +1588,10 @@ premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
                          pxl_excess > 0 ? -1 : 0);
     const __m256i mm256_ones = _mm256_set1_epi16(0x0001);
 
-    char _a_off = ((src->format->Amask >> 8) == 0)    ? 0
-                  : ((src->format->Amask >> 16) == 0) ? 1
-                  : ((src->format->Amask >> 24) == 0) ? 2
-                                                      : 3;
+    char _a_off = ((src_format->Amask >> 8) == 0)    ? 0
+                  : ((src_format->Amask >> 16) == 0) ? 1
+                  : ((src_format->Amask >> 24) == 0) ? 2
+                                                     : 3;
 
     /* masks for shuffling the alpha to the RGB channels for multiplication */
     const __m256i shuffle_maskA = _mm256_set_epi8(
@@ -1637,7 +1638,8 @@ premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
 }
 #else
 void
-premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
+premul_surf_color_by_alpha_avx2(SDL_Surface *src, PG_PixelFormat *src_format,
+                                SDL_Surface *dst)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
