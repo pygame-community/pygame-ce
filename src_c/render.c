@@ -1183,6 +1183,56 @@ image_renderer_draw(pgImageObject *self, PyObject *area, PyObject *dest)
     return 1;
 }
 
+#if (SDL_VERSION_ATLEAST(2, 0, 20) && !SDL_VERSION_ATLEAST(3, 0, 0)) || SDL_VERSION_ATLEAST(3, 2, 0)
+static PyObject *
+get_line_render_method(PyObject *self, PyObject *Py_UNUSED(ignored))
+{
+    const char *hint = SDL_GetHint(SDL_HINT_RENDER_LINE_METHOD);
+    return PyLong_FromLong(
+        hint == NULL ? 0 : hint[0] - '0');  // hint is a char between 0-3
+}
+
+static PyObject *
+set_line_render_method(PyObject *self, PyObject *args)
+{
+    int method;
+    if (!PyArg_ParseTuple(args, "i", &method)) {
+        return NULL;
+    }
+    if (method < 0 || 3 < method) {
+        return RAISE(PyExc_ValueError,
+                     "Invalid line render method: must be between"
+                     " 0 and 3 (use LINE_RENDER_* constants)");
+    }
+
+    // SDL_SetHint expects the method as a string
+    char hint[2];
+    hint[0] = method + '0';  // ascii char manipulation
+    hint[1] = '\0';
+
+    if (SDL_SetHint(SDL_HINT_RENDER_LINE_METHOD, hint)) {
+        Py_RETURN_TRUE;
+    }
+    Py_RETURN_FALSE;
+}
+#else
+static PyObject *
+get_line_render_method(PyObject *self, PyObject *Py_UNUSED(ignored))
+{
+    return RAISE(PyExc_NotImplementedError, "Setting/getting the "
+        "line render method is only available when built with SDL2 2.0.20"
+        " or SDL3 3.2.0")
+}
+
+static PyObject *
+set_line_render_method(PyObject *self, PyObject *args)
+{
+    return RAISE(PyExc_NotImplementedError, "Setting/getting the "
+        "line render method is only available when built with SDL2 2.0.20"
+        " or SDL3 3.2.0")
+}
+#endif
+
 /* Module definition */
 static PyMethodDef renderer_methods[] = {
     {"draw_point", (PyCFunction)renderer_draw_point,
@@ -1307,7 +1357,13 @@ static PyTypeObject pgImage_Type = {
     //.tp_init = (initproc)image_init,
     .tp_new = PyType_GenericNew, .tp_getset = image_getset};
 
-static PyMethodDef _render_methods[] = {{NULL, NULL, 0, NULL}};
+static PyMethodDef _render_methods[] = {
+    {"get_line_render_method", (PyCFunction)get_line_render_method,
+     METH_NOARGS, NULL},
+    {"set_line_render_method", (PyCFunction)set_line_render_method,
+     METH_VARARGS, NULL},
+
+    {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(_render)
 {
