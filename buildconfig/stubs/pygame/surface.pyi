@@ -52,28 +52,28 @@ class Surface:
     the format will best match the display Surface if one was initialized, otherwise
     the most suitable format is chosen for the current platform.
 
-    One way to control the pixel format/characteristics is providing a bitmask of flags:
-       * ``SRCALPHA``: The Surface will include a per-pixel alpha channel (transparency).
-       * ``HWSURFACE``: (Obsolete in pygame 2) Creates the image in video memory.
-
-    Other exclusive ways to control the pixel format are available:
+    Different ways to control the pixel format are available:
+       * Providing a bitmask of flags. The flag ``SRCALPHA`` will incide a per-pixel
+         alpha channel (transparency).
        * Providing another ``Surface`` after the flags argument. That Surface's
          format will be used and other arguments will be ignored.
        * Advanced users can provide a bit depth and masks to precisely control how a
          pixel's channels are organized in memory. If no masks are provided they will
          be selected optimally from the bit depth. Normal usage of Surfaces is to leave
          bit depth and masks as default.
+    Use :meth:`convert` and :meth:`convert_alpha` to convert the Surface to a different
+    format.
 
     An indexed format stores an index up to 255 instead of a color for each pixel,
     therefore requires an associated palette. While pygame provides a default palette,
-    it can be controlled with the appropriate methods.
+    it can be controlled with the appropriate get/set palette methods.
 
-    Surfaces additionally have alpha, colorkey and rectangle clipping. These characteristics
-    mainly affect how the Surface is blitted to other Surfaces. The blit routines will
-    attempt to use hardware acceleration when possible, otherwise they will use highly
-    optimized software blitting methods.
+    Surfaces additionally have alpha (0-255), colorkey and rectangle clipping. These
+    characteristics mainly affect how the Surface is blitted to other Surfaces. The
+    blit routines will use highly optimized software blitting methods.
     The clipping area is a rect defining the only area of the Surface that can be
-    modified. By default the whole Surface can be modified.
+    modified. By default the whole Surface can be modified (see :meth:`get_clip` and
+    :meth:`set_clip`).
 
     There are four types of transparency supported for a pygame Surface:
        * Per-pixel alpha. Provided by a format with an alpha channel where
@@ -81,15 +81,15 @@ class Surface:
        * Pre-multiplied alpha: An advanced usage of per-pixel alpha. See
          :meth:`Surface.premul_alpha` for more.
        * Global alpha: A single alpha value that applies to the whole Surface.
+         Managed with :meth:`get_alpha` and :meth:`set_alpha`.
        * Colorkey: A color flagged to be considered transparent in operations.
+         See :meth:`get_colorkey` and :meth:`set_colorkey` for more.
 
     Per-pixel alpha allows the greatest flexibility while being generally
     slower than global alpha or colorkey. Pre-multiplied alpha is generally
     faster than regular per-pixel alpha.
-
     All types of transparency can be used togerher and correctly mix, except
     pre-multipled alpha does not consider colorkey nor global alpha.
-    Also, An alpha of 255 is opaque while an alpha of 0 is fully transparent.
 
     Surfaces can be created that reference the pixel data of other Surfaces.
     These are called subsurfaces and are created with the :meth:`subsurface()`
@@ -299,9 +299,9 @@ class Surface:
              was not initialized.
            * If another Surface is provided, the format of that Surface will
              be used.
-           * Passing the bit depth of a pixel that will result in the same formats
-             explained in the :class:`Surface` constructor. Flags can also be
-             provided, for example ``SRCALPHA`` will request an alpha channel.
+           * Passing the bit depth of a pixel will result in the most reasonable
+             format compatible with it. Flags can also be provided, for example
+             ``SRCALPHA`` will request an alpha channel.
            * Passing the bitmasks of the pixels and flags. Note that the bit depth
              could be calculated wrong, therefore it is not advised to use this
              path as it might be deprecated in the future.
@@ -805,11 +805,6 @@ class Surface:
 
         See :func:`pygame.display.set_mode()` for flags exclusive to the
         display Surface.
-
-        Obsolete flags:
-
-           * ``HWSURFACE``: (obsolete in pygame 2) Surface is in video memory
-           * ``ASYNCBLIT``: (obsolete in pygame 2) Use asynchronous blits if possible
         """
 
     def get_pitch(self) -> int:
