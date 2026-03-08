@@ -622,13 +622,13 @@ _mesh_get_vertex(PyObject *vertex_obj, float *x, float *y, Uint8 *r, Uint8 *g,
 
     if (!PySequence_Check(vertex_obj)) {
         RAISERETURN(PyExc_TypeError,
-                    "each vertex should be a sequence of (poistion, "
+                    "each vertex should be a sequence of (position, "
                     "color, tex_coordinate)",
                     -1);
     }
     if (PySequence_Length(vertex_obj) != 3) {
         RAISERETURN(PyExc_TypeError,
-                    "each vertex should be a sequence of (poistion, "
+                    "each vertex should be a sequence of (position, "
                     "color, tex_coordinate)",
                     -1);
     }
@@ -846,7 +846,7 @@ static PyMethodDef renderer_methods[] = {
     {"fill_quad", (PyCFunction)renderer_fill_quad,
      METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_FILLQUAD},
     {"render_geometry", (PyCFunction)renderer_render_geometry,
-     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_RENDERER_FILLQUAD},
+     METH_VARARGS | METH_KEYWORDS, "Render a static 2D mesh"},
     {"present", (PyCFunction)renderer_present, METH_NOARGS,
      DOC_SDL2_VIDEO_RENDERER_PRESENT},
     {"clear", (PyCFunction)renderer_clear, METH_NOARGS,
