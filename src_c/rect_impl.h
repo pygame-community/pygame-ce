@@ -324,13 +324,16 @@
 #error RectImport_OtherRectCheck needs to be defined
 #endif
 #ifndef RectImport_RectCheckExact
-#error RectImport_RectCheckExact needs to be Defined
+#error RectImport_RectCheckExact needs to be defined
 #endif
 #ifndef RectImport_OtherRectCheckExact
 #error RectImport_OtherRectCheckExact needs to be Defined
 #endif
 #ifndef RectImport_primitiveType
 #error RectImport_primitiveType needs to be defined
+#endif
+#ifndef RectImport_PrimitiveTypeName
+#error RectImport_PrimitiveTypeName needs to be defined
 #endif
 #ifndef RectImport_innerRectStruct
 #error RectImport_innerRectStruct needs to be defined
@@ -2010,7 +2013,8 @@ RectExport_containsSeq(RectObject *self, PyObject *arg)
     if (ret < 0) {
         PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
                                          ">' requires rect style object"
-                                         " or int as left operand");
+                                         " or " RectImport_PrimitiveTypeName
+                                         " as left operand");
     }
     return ret;
 }
@@ -3027,6 +3031,7 @@ RectExport_iterator(RectObject *self)
 #undef RectImport_PythonNumberAsPrimitiveType
 #undef RectImport_PrimitiveTypeAsPythonNumber
 #undef RectImport_primitiveType
+#undef RectImport_PrimitiveTypeName
 #undef RectImport_RectCheck
 #undef RectImport_OtherRectCheck
 #undef RectImport_RectCheckExact

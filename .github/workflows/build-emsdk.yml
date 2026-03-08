@@ -32,43 +32,45 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-pygbag:
     runs-on: ubuntu-22.04
     env:
       # pin SDK version to the latest, update manually
-      SDK_VERSION: 3.1.32.0
-      SDK_ARCHIVE: python3.11-wasm-sdk-Ubuntu-22.04.tar.lz4
+      SDK_VERSION: 3.1.61.12bi
+      SDK_ARCHIVE: python3.13-wasm-sdk-Ubuntu-22.04.tar.lz4
       SDKROOT: /opt/python-wasm-sdk
+      PYBUILD: 3.13
 
     steps:
-    - uses: actions/checkout@v5.0.0
-
-    - name: Regen with latest cython (using system python3)
-      run: |
-        pip3 install cython==3.0.10
-        python3 setup.py cython_only
+    - uses: actions/checkout@v6.0.2
 
     - name: Install python-wasm-sdk
       run: |
         sudo apt-get install lz4
-        echo https://github.com/pygame-web/python-wasm-sdk/releases/download/$SDK_VERSION/$SDK_ARCHIVE
         curl -sL --retry 5 https://github.com/pygame-web/python-wasm-sdk/releases/download/$SDK_VERSION/$SDK_ARCHIVE | tar xvP --use-compress-program=lz4
-        # do not let SDL1 interfere
-        rm -rf /opt/python-wasm-sdk/emsdk/upstream/emscripten/cache/sysroot/include/SDL
       working-directory: /opt
 
     - name: Build WASM with emsdk
-      run: |
-        ${SDKROOT}/python3-wasm setup.py build -j$(nproc)
-
-    - name: Generate libpygame.a static binaries archive
-      run: |
-        mkdir -p dist
-        SYS_PYTHON=python3 /opt/python-wasm-sdk/emsdk/upstream/emscripten/emar rcs dist/libpygame.a $(find build/temp.wasm32-*/ | grep o$)
+      run: ${SDKROOT}/python3-wasm dev.py build --wheel
 
     # Upload the generated files under github actions assets section
     - name: Upload dist
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: pygame-wasm-dist
         path: ./dist/*
+
+  build-pyodide:
+    name: Pyodide build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6.0.2
+
+    - uses: pypa/cibuildwheel@v3.2.1
+      env:
+        CIBW_PLATFORM: pyodide
+
+    - uses: actions/upload-artifact@v6
+      with:
+        name: pyodide-wheels
+        path: wheelhouse/*.whl

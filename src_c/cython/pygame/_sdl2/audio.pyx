@@ -131,8 +131,8 @@ cdef class AudioDevice:
         memset(&self.desired, 0, sizeof(SDL_AudioSpec))
         self._iscapture = iscapture
         self._callback = callback
-        if not isinstance(devicename, str):
-            raise TypeError("devicename must be a string")
+        if devicename is not None and not isinstance(devicename, str):
+            raise TypeError("devicename must be a string or None")
         self._devicename = devicename
 
         self.desired.freq = frequency;
@@ -142,8 +142,17 @@ cdef class AudioDevice:
         self.desired.callback = <SDL_AudioCallback>recording_cb;
         self.desired.userdata = <void*>self
 
+        cdef bytes devicename_bytes
+        cdef const char* devicename_ptr
+
+        if self._devicename is None:
+            devicename_ptr = NULL
+        else:
+            devicename_bytes = self._devicename.encode("utf-8")
+            devicename_ptr = devicename_bytes
+
         self._deviceid = SDL_OpenAudioDevice(
-            self._devicename.encode("utf-8"),
+            devicename_ptr,
             self._iscapture,
             &self.desired,
             &self.obtained,

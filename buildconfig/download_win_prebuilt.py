@@ -82,16 +82,16 @@ def get_urls(x86=True, x64=True):
         '27f5179346a0b0db80c4dd1769c7c9d62b9a91f3'
         ],
         [
-        'https://github.com/libsdl-org/SDL/releases/download/release-3.2.22/SDL3-devel-3.2.22-VC.zip',
-        '502313757118a068a6ef8f767d082b95334ca456'
+        'https://github.com/libsdl-org/SDL/releases/download/release-3.4.0/SDL3-devel-3.4.0-VC.zip',
+        'e3c79c1bde7a4b2064d1cd660d357e82a7f7e856'
         ],
         [
         'https://github.com/pygame-community/SDL_image/releases/download/2.8.8-pgce/SDL2_image-devel-2.8.8-VCpgce.zip',
         '8cd149cbaae2d362f2eaa69483d992e79f4836f5'
         ],
         [
-        'https://github.com/libsdl-org/SDL_image/releases/download/release-3.2.4/SDL3_image-devel-3.2.4-VC.zip',
-        'd0db06c5dd2c7c6399e55332ff1dccd984914cb7'
+        'https://github.com/libsdl-org/SDL_image/releases/download/release-3.4.0/SDL3_image-devel-3.4.0-VC.zip',
+        'f4e077729ee5d1277bf961d78d49d4ae3b9308b6'
         ],
         [
         'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.24.0/SDL2_ttf-devel-2.24.0-VC.zip',
@@ -105,16 +105,20 @@ def get_urls(x86=True, x64=True):
         'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.1/SDL2_mixer-devel-2.8.1-VC.zip',
         'ea302368159ca64056b2519b3a624525f625220e',
         ],
+        [
+        'https://github.com/libsdl-org/SDL_mixer/releases/download/prerelease-3.1.2/SDL3_mixer-devel-3.1.2-VC.zip',
+        '055992eb135197e74644bea65fdc8f8f0838b4ed'
+        ]
     ])
     if x86:
         url_sha1.append([
-         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x86-pygame-2.1.4-20220319.zip',
-         'bff2e50d65ec35274d33203e9fcaf5d53b31a696'
+         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x86-pygame-2.1.4-20220319_2.zip',
+         '6970a35c62fa517e9782dc92299201bf2a0ec917'
         ])
     if x64:
         url_sha1.append([
-         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x64-pygame-2.1.4-20220319.zip',
-         '16b46596744ce9ef80e7e40fa72ddbafef1cf586'
+         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x64-pygame-2.1.4-20220319_2.zip',
+         '3aaacd02f0c2ed497e2615d3a1f89c250a32f1fa'
         ])
     return url_sha1
 
@@ -180,12 +184,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
     """
     prebuilt_x64 = os.path.join(
         temp_dir,
-        'prebuilt-x64-pygame-2.1.4-20220319',
+        'prebuilt-x64-pygame-2.1.4-20220319_2',
         'prebuilt-x64'
     )
     prebuilt_x86 = os.path.join(
         temp_dir,
-        'prebuilt-x86-pygame-2.1.4-20220319',
+        'prebuilt-x86-pygame-2.1.4-20220319_2',
         'prebuilt-x86'
     )
 
@@ -224,15 +228,14 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3_image-devel-3.2.4-VC/SDL3_image-3.2.4'
+                'SDL3_image-devel-3.4.0-VC/SDL3_image-3.4.0'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3_image-3.2.4'
+                'SDL3_image-3.4.0'
             )
         )
-
         copy(
             os.path.join(
                 temp_dir,
@@ -242,6 +245,17 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
                 move_to_dir,
                 prebuilt_dir,
                 'SDL2_mixer-2.8.1'
+            )
+        )
+        copy(
+            os.path.join(
+                temp_dir,
+                'SDL3_mixer-devel-3.1.2-VC/SDL3_mixer-3.1.2'
+            ),
+            os.path.join(
+                move_to_dir,
+                prebuilt_dir,
+                'SDL3_mixer-3.1.2'
             )
         )
         copy(
@@ -280,12 +294,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3-devel-3.2.22-VC/SDL3-3.2.22'
+                'SDL3-devel-3.4.0-VC/SDL3-3.4.0'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3-3.2.22'
+                'SDL3-3.4.0'
             )
         )
 

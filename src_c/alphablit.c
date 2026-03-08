@@ -1714,7 +1714,9 @@ premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst)
     // since we know dst is a copy of src we can simplify the normal checks
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-    if ((PG_SURF_BytesPerPixel(src) == 4) && pg_has_avx2()) {
+    if ((PG_SURF_BytesPerPixel(src) == 4) &&
+        (src->pitch == (src->w * PG_SURF_BytesPerPixel(src))) &&
+        pg_has_avx2()) {
         premul_surf_color_by_alpha_avx2(src, src_format, dst);
         return 0;
     }
@@ -1749,6 +1751,8 @@ premul_surf_color_by_alpha_non_simd(SDL_Surface *src,
     int srcbpp = PG_FORMAT_BytesPerPixel(src_format);
     int dstbpp = PG_FORMAT_BytesPerPixel(dst_format);
     Uint8 *src_pixels = (Uint8 *)src->pixels;
+    int srcskip = src->pitch - (width * srcbpp);
+    int dstskip = dst->pitch - (width * dstbpp);
     Uint8 *dst_pixels = (Uint8 *)dst->pixels;
 
     int srcpxskip = srcbpp;
@@ -1775,6 +1779,8 @@ premul_surf_color_by_alpha_non_simd(SDL_Surface *src,
                 dst_pixels += dstpxskip;
             },
             n, width);
+        src_pixels += srcskip;
+        dst_pixels += dstskip;
     }
 }
 

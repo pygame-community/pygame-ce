@@ -293,17 +293,13 @@ _putPixelAlpha(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color, Uint8 alpha)
                     *((Uint8 *)dst->pixels + y * dst->pitch + x) = color;
                 }
                 else {
+                    /* Patched on pygame-ce end to fix segfault when no palette
+                     */
                     Uint8 *pixel = (Uint8 *)dst->pixels + y * dst->pitch + x;
-                    SDL_Palette *palette = format->palette;
-                    SDL_Color *colors = palette->colors;
-                    SDL_Color dColor = colors[*pixel];
-                    SDL_Color sColor = colors[color];
-                    Uint8 dR = dColor.r;
-                    Uint8 dG = dColor.g;
-                    Uint8 dB = dColor.b;
-                    Uint8 sR = sColor.r;
-                    Uint8 sG = sColor.g;
-                    Uint8 sB = sColor.b;
+                    Uint8 dR, dG, dB;
+                    Uint8 sR, sG, sB;
+                    SDL_GetRGB(*pixel, format, &dR, &dG, &dB);
+                    SDL_GetRGB(color, format, &sR, &sG, &sB);
 
                     dR = dR + ((sR - dR) * alpha >> 8);
                     dG = dG + ((sG - dG) * alpha >> 8);
@@ -604,22 +600,17 @@ _filledRectAlpha(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
     format = dst->format;
     switch (GFX_FORMAT_BytesPerPixel(format)) {
         case 1: { /* Assuming 8-bpp */
+            /* Patched on pygame-ce end to fix segfault when no palette */
             Uint8 *row, *pixel;
             Uint8 dR, dG, dB;
-            SDL_Palette *palette = format->palette;
-            SDL_Color *colors = palette->colors;
-            sR = colors[color].r;
-            sG = colors[color].g;
-            sB = colors[color].b;
+            SDL_GetRGB(color, format, &sR, &sG, &sB);
 
             for (y = y1; y <= y2; y++) {
                 row = (Uint8 *)dst->pixels + y * dst->pitch;
                 for (x = x1; x <= x2; x++) {
                     pixel = row + x;
 
-                    dR = colors[*pixel].r;
-                    dG = colors[*pixel].g;
-                    dB = colors[*pixel].b;
+                    SDL_GetRGB(*pixel, format, &dR, &dG, &dB);
 
                     dR = dR + ((sR - dR) * alpha >> 8);
                     dG = dG + ((sG - dG) * alpha >> 8);
@@ -3254,10 +3245,10 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
     //     \|/
     //------+------ +x
     //     /|\
-	//  3 / | \ 0
+    //  3 / | \ 0
     //   /  |  \
-	//  / 2 | 1 \
-	//      +y
+    //  / 2 | 1 \
+    //      +y
 
     // Initially reset bitmask to 0x00000000
     // the set whether or not to keep drawing a given octant.

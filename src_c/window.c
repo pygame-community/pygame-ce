@@ -301,9 +301,15 @@ _resize_event_watch(void *userdata, SDL_Event *event)
 static PyObject *
 window_set_windowed(pgWindowObject *self, PyObject *_null)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_SetWindowFullscreen(self->_win, 0)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+#else
     if (SDL_SetWindowFullscreen(self->_win, 0)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
+#endif
     Py_RETURN_NONE;
 }
 
@@ -371,7 +377,7 @@ window_set_fullscreen(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 {
-    SDL_bool input_only = SDL_FALSE;
+    int input_only = SDL_FALSE;
     char *kwids[] = {"input_only", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &input_only)) {
         return NULL;

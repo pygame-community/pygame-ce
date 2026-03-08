@@ -15,7 +15,7 @@ Instead, always begin with the original image and scale to the desired size.)
 .. versionchangedold:: 2.0.2 transform functions now support keyword arguments.
 """
 
-from typing import Literal, Optional, Union
+from typing import Literal
 
 from pygame.surface import Surface
 from pygame.typing import ColorLike, Point, RectLike, SequenceLike
@@ -32,7 +32,7 @@ def flip(surface: Surface, flip_x: bool, flip_y: bool) -> Surface:
 def scale(
     surface: Surface,
     size: Point,
-    dest_surface: Optional[Surface] = None,
+    dest_surface: Surface | None = None,
 ) -> Surface:
     """Resize to new resolution.
 
@@ -50,8 +50,8 @@ def scale(
 
 def scale_by(
     surface: Surface,
-    factor: Union[float, SequenceLike[float]],
-    dest_surface: Optional[Surface] = None,
+    factor: float | SequenceLike[float],
+    dest_surface: Surface | None = None,
 ) -> Surface:
     """Resize to new resolution, using scalar(s).
 
@@ -92,7 +92,7 @@ def rotozoom(surface: Surface, angle: float, scale: float) -> Surface:
     A negative rotation angle will rotate clockwise.
     """
 
-def scale2x(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface:
+def scale2x(surface: Surface, dest_surface: Surface | None = None) -> Surface:
     """Specialized image doubler.
 
     This will return a new image that is double the size of the original. It
@@ -111,7 +111,7 @@ def scale2x(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface
 def smoothscale(
     surface: Surface,
     size: Point,
-    dest_surface: Optional[Surface] = None,
+    dest_surface: Surface | None = None,
 ) -> Surface:
     """Scale a surface to an arbitrary size smoothly.
 
@@ -134,8 +134,8 @@ def smoothscale(
 
 def smoothscale_by(
     surface: Surface,
-    factor: Union[float, SequenceLike[float]],
-    dest_surface: Optional[Surface] = None,
+    factor: float | SequenceLike[float],
+    dest_surface: Surface | None = None,
 ) -> Surface:
     """Resize to new resolution, using scalar(s).
 
@@ -192,7 +192,7 @@ def chop(surface: Surface, rect: RectLike) -> Surface:
     rect, you can blit with a rect to a new surface or copy a subsurface.
     """
 
-def laplacian(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface:
+def laplacian(surface: Surface, dest_surface: Surface | None = None) -> Surface:
     """Find edges in a surface.
 
     Finds the edges in a surface using the laplacian algorithm.
@@ -208,7 +208,7 @@ def box_blur(
     surface: Surface,
     radius: int,
     repeat_edge_pixels: bool = True,
-    dest_surface: Optional[Surface] = None,
+    dest_surface: Surface | None = None,
 ) -> Surface:
     """Blur a surface using box blur.
 
@@ -234,7 +234,7 @@ def gaussian_blur(
     surface: Surface,
     radius: int,
     repeat_edge_pixels: bool = True,
-    dest_surface: Optional[Surface] = None,
+    dest_surface: Surface | None = None,
 ) -> Surface:
     """Blur a surface using gaussian blur.
 
@@ -263,8 +263,8 @@ def gaussian_blur(
 
 def average_surfaces(
     surfaces: SequenceLike[Surface],
-    dest_surface: Optional[Surface] = None,
-    palette_colors: Union[bool, int] = 1,
+    dest_surface: Surface | None = None,
+    palette_colors: bool | int = 1,
 ) -> Surface:
     """Find the average surface from many surfaces.
 
@@ -287,7 +287,7 @@ def average_surfaces(
     """
 
 def average_color(
-    surface: Surface, rect: Optional[RectLike] = None, consider_alpha: bool = False
+    surface: Surface, rect: RectLike | None = None, consider_alpha: bool = False
 ) -> tuple[int, int, int, int]:
     """Finds the average color of a surface.
 
@@ -299,7 +299,7 @@ def average_color(
     .. versionaddedold:: 2.1.2 ``consider_alpha`` argument
     """
 
-def invert(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface:
+def invert(surface: Surface, dest_surface: Surface | None = None) -> Surface:
     """Inverts the RGB elements of a surface.
 
     Inverts each RGB pixel contained within the Surface, does not affect alpha channel.
@@ -311,7 +311,7 @@ def invert(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface:
     .. versionadded:: 2.2.0
     """
 
-def grayscale(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface:
+def grayscale(surface: Surface, dest_surface: Surface | None = None) -> Surface:
     """Grayscale a surface.
 
     Returns a grayscaled version of the original surface using the luminosity formula which weights red, green and blue according to their wavelengths.
@@ -330,7 +330,7 @@ def grayscale(surface: Surface, dest_surface: Optional[Surface] = None) -> Surfa
 def solid_overlay(
     surface: Surface,
     color: ColorLike,
-    dest_surface: Optional[Surface] = None,
+    dest_surface: Surface | None = None,
     keep_alpha: bool = False,
 ) -> Surface:
     """Replaces non transparent pixels with the provided color.
@@ -356,13 +356,13 @@ def solid_overlay(
     """
 
 def threshold(
-    dest_surface: Optional[Surface],
+    dest_surface: Surface | None,
     surface: Surface,
-    search_color: Optional[ColorLike],
+    search_color: ColorLike | None,
     threshold: ColorLike = (0, 0, 0, 0),
-    set_color: Optional[ColorLike] = (0, 0, 0, 0),
+    set_color: ColorLike | None = (0, 0, 0, 0),
     set_behavior: int = 1,
-    search_surf: Optional[Surface] = None,
+    search_surf: Surface | None = None,
     inverse_set: bool = False,
 ) -> int:
     """Finds which, and how many pixels in a surface are within a threshold of a 'search_color' or a 'search_surf'.
@@ -427,7 +427,7 @@ def hsl(
     hue: float = 0,
     saturation: float = 0,
     lightness: float = 0,
-    dest_surface: Optional[Surface] = None,
+    dest_surface: Surface | None = None,
 ) -> Surface:
     """Change the hue, saturation, and lightness of a surface.
 
@@ -463,7 +463,7 @@ def hsl(
 def pixelate(
     surface: Surface,
     pixel_size: int,
-    dest_surface: Optional[Surface] = None,
+    dest_surface: Surface | None = None,
 ) -> Surface:
     """Returns a pixelated version of the original surface.
 
