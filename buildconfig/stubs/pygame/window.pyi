@@ -322,7 +322,7 @@ class Window:
         The handle is generally available with Windows, X11 (Linux), Cocoa (MacOS), UIKit (iOS),
         Android and Vivante while unavailable under Wayland and everything else.
 
-        .. versionadded:: 2.5.7
+        .. versionadded:: 2.5.8
         """
 
     @property
