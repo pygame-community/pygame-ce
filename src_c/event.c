@@ -175,6 +175,25 @@ _pg_repeat_callback(Uint32 interval, void *param)
     return repeat_interval_copy;
 }
 
+/* This variable and macro allow for errors raised outside
+ * of the normal execution of python to be caught and re-raised
+ * in the main loop of the program.
+ */
+
+static PyObject *_pg_deferred_error = NULL;
+
+#define CHECK_AND_RAISE_DEFERRED_ERROR                \
+    if (_pg_deferred_error) {                         \
+        PyErr_SetRaisedException(_pg_deferred_error); \
+        _pg_deferred_error = NULL;                    \
+        return NULL;                                  \
+    }
+
+/* A set containing all active event_watchers
+ * Used to ensure that the reference counting of the watchers stays stable
+ */
+static PyObject *_pg_event_watcher_list = NULL;
+
 /* This function attempts to determine the unicode attribute from
  * the keydown/keyup event. This is used as a last-resort, in case we
  * could not determine the unicode from TEXTINPUT field. Why?
@@ -554,6 +573,9 @@ _pg_remove_pending_VIDEOEXPOSE(void *userdata, SDL_Event *event)
     }
     return 1;
 }
+// Forward declare pg_eventNew_no_free_proxy to be used in pg_event_filter
+static PyObject *
+pg_eventNew_no_free_proxy(SDL_Event *event);
 
 /* SDL 2 to SDL 1.2 event mapping and SDL 1.2 key repeat emulation,
  * this can alter events in-place.
@@ -798,6 +820,7 @@ pgEvent_AutoQuit(PyObject *self, PyObject *_null)
          * stops returning new types when they are finished, without that
          * test preventing further tests from getting a custom event type.*/
         _custom_event = _PGE_CUSTOM_EVENT_INIT;
+        Py_DECREF(_pg_event_watcher_list);
     }
     _pg_event_is_init = 0;
     Py_RETURN_NONE;
@@ -819,6 +842,11 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
         }
 #endif
         SDL_SetEventFilter(pg_event_filter, NULL);
+
+        _pg_event_watcher_list = PyList_New(0);
+        if (!_pg_event_watcher_list) {
+            return NULL;
+        }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
         if (Gesture_Init() != 0) {
             return RAISE(pgExc_SDLError, SDL_GetError());
@@ -1949,6 +1977,7 @@ _pg_event_wait(SDL_Event *event, int timeout)
 static PyObject *
 pg_event_pump(PyObject *self, PyObject *_null)
 {
+    CHECK_AND_RAISE_DEFERRED_ERROR;
     VIDEO_INIT_CHECK();
     _pg_event_pump(1);
     Py_RETURN_NONE;
@@ -1957,6 +1986,7 @@ pg_event_pump(PyObject *self, PyObject *_null)
 static PyObject *
 pg_event_poll(PyObject *self, PyObject *_null)
 {
+    CHECK_AND_RAISE_DEFERRED_ERROR;
     SDL_Event event;
     VIDEO_INIT_CHECK();
 
@@ -1970,6 +2000,7 @@ pg_event_poll(PyObject *self, PyObject *_null)
 static PyObject *
 pg_event_wait(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_AND_RAISE_DEFERRED_ERROR;
     SDL_Event event;
     int status, timeout = 0;
     static char *kwids[] = {"timeout", NULL};
@@ -2331,6 +2362,7 @@ error:
 static PyObject *
 pg_event_get(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_AND_RAISE_DEFERRED_ERROR;
     PyObject *obj_evtype = NULL;
     PyObject *obj_exclude = NULL;
     int dopump = 1;
@@ -2365,6 +2397,7 @@ pg_event_get(PyObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_AND_RAISE_DEFERRED_ERROR;
     SDL_Event event;
     Py_ssize_t len;
     int type, loop, res;
@@ -2434,6 +2467,7 @@ pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_event_post(PyObject *self, PyObject *obj)
 {
+    CHECK_AND_RAISE_DEFERRED_ERROR;
     VIDEO_INIT_CHECK();
     if (!pgEvent_Check(obj)) {
         return RAISE(PyExc_TypeError, "argument must be an Event object");
@@ -2563,6 +2597,154 @@ pg_event_custom_type(PyObject *self, PyObject *_null)
     }
 }
 
+/*
+Constructs a Event object but if it is using a dict proxy it doesn't free the
+proxy Used when other pygame functions will also be using the event to avoid it
+being freed
+*/
+static PyObject *
+pg_eventNew_no_free_proxy(SDL_Event *event)
+{
+    if (event->type >= PGPOST_EVENTBEGIN) {
+        // Since the dict_proxy has a counter for how many are on the queue, we
+        // need to increase that counter
+        pgEventDictProxy *dict_proxy = (pgEventDictProxy *)event->user.data1;
+        // We only need to do anything if the dict_proxy exists since if it
+        // doesn't that implies an empty dict
+        if (dict_proxy) {
+            SDL_AtomicLock(&dict_proxy->lock);
+            // So when it gets decremented in pg_EventNew it goes back to where
+            // it was
+            dict_proxy->num_on_queue++;
+            // So that if it gets dropped to zero it wont get freed and risk a
+            // double free later on
+            int proxy_frees_on_end = dict_proxy->do_free_at_end;
+            dict_proxy->do_free_at_end = false;
+            SDL_AtomicUnlock(&dict_proxy->lock);
+            // Contruct the event object
+            PyObject *eventObj = pgEvent_New(event);
+            // Restore the state of do_free_at_end
+            dict_proxy->do_free_at_end = proxy_frees_on_end;
+            return eventObj;
+        }
+    }
+    // If the event is not a posted event than there is no dict_proxy to risk
+    // issues so the event object constructer can be called as-is
+    return pgEvent_New(event);
+}
+
+/*
+A wrapper around a callable python object to be used by SDL
+ */
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+static int
+#else
+static bool
+#endif
+pg_watcher_wrapper(void *userdata, SDL_Event *event)
+{
+    PyObject *callable = (PyObject *)userdata;
+    PyGILState_STATE gstate = PyGILState_Ensure();
+/* WINDOWEVENT translation needed only on SDL2 */
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    /* We need to translate WINDOWEVENTS. But if we do that from the
+     * from event filter, internal SDL stuff that rely on WINDOWEVENT
+     * might break. So after every event pump, we translate events from
+     * here */
+    // We make a local copy of the event on the stack and use that so that the
+    // original event is not modified
+    SDL_Event localEvent = *event;
+    //    _pg_pgevent_type(NULL, &localEvent);
+
+    PyObject *eventObj = pg_eventNew_no_free_proxy(&localEvent);
+#else
+    PyObject *eventObj = pg_eventNew_no_free_proxy(event);
+#endif
+    if (PyErr_Occurred()) {
+        Py_XDECREF(eventObj);
+        PyGILState_Release(gstate);
+        PyErr_Print();
+        PyErr_Clear();
+        return 0;
+    }
+    if (!eventObj) {
+        PyGILState_Release(gstate);
+        return 0;
+    }
+    PyObject *returnValue = PyObject_CallOneArg(callable, eventObj);
+    Py_DECREF(eventObj);
+    if (PyErr_Occurred()) {
+        Py_XDECREF(returnValue);
+        PyGILState_Release(gstate);
+        _pg_deferred_error = PyErr_GetRaisedException();
+        Py_INCREF(_pg_deferred_error);
+        PyErr_Clear();
+        return 0;
+    }
+    Py_DECREF(returnValue);
+    PyGILState_Release(gstate);
+    return 0;
+}
+
+/*
+Add a function as an event watcher
+
+*/
+static PyObject *
+pg_event_add_watcher(PyObject *self, PyObject *arg)
+{
+    VIDEO_INIT_CHECK();
+
+    if (PyCallable_Check(arg)) {
+        int result = PyList_Append(_pg_event_watcher_list, arg);
+        if (result == -1) {
+            return NULL;
+        }
+        SDL_AddEventWatch(pg_watcher_wrapper, arg);
+    }
+    else {
+        PyErr_SetString(PyExc_ValueError,
+                        "event watchers must be callable objects");
+        return NULL;
+    }
+    // Increase reference count of param and return it so that this could be
+    // used as a decorator
+    Py_INCREF(arg);
+    return arg;
+}
+
+static PyObject *
+pg_event_remove_watcher(PyObject *self, PyObject *arg)
+{
+    VIDEO_INIT_CHECK();
+    int registered = PySequence_Contains(_pg_event_watcher_list, arg);
+    if (registered == 0) {
+        Py_RETURN_FALSE;
+    }
+    if (registered == -1) {
+        return NULL;
+    }
+
+// This function does nothing if arg is not currently set as a watch
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    // SDL 3 renamed DelEventWatch to RemoveEventWatch
+    SDL_RemoveEventWatch(pg_watcher_wrapper, arg);
+#else
+    SDL_DelEventWatch(pg_watcher_wrapper, arg);
+#endif
+
+    Py_ssize_t index = PySequence_Index(_pg_event_watcher_list, arg);
+    if (index == -1) {
+        return NULL;
+    }
+    int removalResult = PySequence_DelItem(_pg_event_watcher_list, index);
+    if (removalResult == -1) {
+        return NULL;
+    }
+
+    Py_RETURN_TRUE;
+}
+
 static PyMethodDef _event_methods[] = {
     {"_internal_mod_init", (PyCFunction)pgEvent_AutoInit, METH_NOARGS,
      "auto initialize for event module"},
@@ -2592,6 +2774,10 @@ static PyMethodDef _event_methods[] = {
      DOC_EVENT_SETBLOCKED},
     {"get_blocked", (PyCFunction)pg_event_get_blocked, METH_O,
      DOC_EVENT_GETBLOCKED},
+    {"add_event_watcher", (PyCFunction)pg_event_add_watcher, METH_O,
+     DOC_EVENT_ADDEVENTWATCHER},
+    {"remove_event_watcher", (PyCFunction)pg_event_remove_watcher, METH_O,
+     DOC_EVENT_REMOVEEVENTWATCHER},
     {"custom_type", (PyCFunction)pg_event_custom_type, METH_NOARGS,
      DOC_EVENT_CUSTOMTYPE},
 
