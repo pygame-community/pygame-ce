@@ -6,6 +6,7 @@
 |DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
+|DiscordBadge|
 
 `English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_ `Deutsch`_
 
@@ -196,6 +197,9 @@ Voir les docs/licences pour les licences des dépendances.
 
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
+
+.. |DiscordBadge| image:: https://discord.com/api/guilds/772505616680878080/widget.png
+   :target: https://pyga.me/discord
 
 .. _Pygame: https://www.pyga.me/
 .. _documentation de pygame: https://www.pygame.org/docs/

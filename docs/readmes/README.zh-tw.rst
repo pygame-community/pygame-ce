@@ -6,6 +6,7 @@
 |DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
+|DiscordBadge|
 
 `English`_ `简体中文`_ **繁體中文** `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_ `Deutsch`_
 ----
@@ -167,11 +168,15 @@ pygame顯然依賴SDL和Python。此外pygame也嵌入了幾個較小的函式�
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
+.. |DiscordBadge| image:: https://discord.com/api/guilds/772505616680878080/widget.png
+   :target: https://pyga.me/discord
+
 .. _pygame: https://www.pyga.me
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
+.. _Pygame Community Discord Server: https://pyga.me/discord
 
 .. _English: ./../../README.rst
 .. _简体中文: README.zh-cn.rst

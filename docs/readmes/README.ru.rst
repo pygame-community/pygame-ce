@@ -7,6 +7,7 @@
 |DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
+|DiscordBadge|
 
 `English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ **Русский** `Ελληνικά`_ `Português (Brasil)`_ `Deutsch`_
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -198,6 +199,9 @@ License
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
+.. |DiscordBadge| image:: https://discord.com/api/guilds/772505616680878080/widget.png
+   :target: https://pyga.me/discord
+
 .. _Pygame: https://pyga.me
 .. _pygame-ce documentation: https://pyga.me/docs/
 .. _pygame documentation: https://www.pygame.org/docs/
@@ -211,7 +215,7 @@ License
 .. _Отправка отличного запроса на вытягивание: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
 .. _issue tracker: https://github.com/pygame-community/pygame-ce/issues
 .. _маркировать и связывать сообщённые проблемы: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
-.. _сервере Discord Pygame Community: https://discord.gg/pygame
+.. _сервере Discord Pygame Community: https://pyga.me/discord
 .. _вики-проекта: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _English: ./../../README.rst

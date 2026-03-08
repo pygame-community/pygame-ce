@@ -72,8 +72,8 @@ specific attributes.
     KEYDOWN           key, mod, unicode, scancode
     KEYUP             key, mod, unicode, scancode
     MOUSEMOTION       pos, rel, buttons, touch
-    MOUSEBUTTONUP     pos, button, touch
-    MOUSEBUTTONDOWN   pos, button, touch
+    MOUSEBUTTONUP     pos, button, touch, clicks
+    MOUSEBUTTONDOWN   pos, button, touch, clicks
     JOYAXISMOTION     joy (deprecated), instance_id, axis, value
     JOYBALLMOTION     joy (deprecated), instance_id, ball, rel
     JOYHATMOTION      joy (deprecated), instance_id, hat, value
@@ -86,6 +86,12 @@ specific attributes.
 .. versionchangedold:: 2.0.0 The ``joy`` attribute was deprecated, ``instance_id`` was added.
 
 .. versionchangedold:: 2.0.1 The ``unicode`` attribute was added to ``KEYUP`` event.
+
+.. versionchangedold:: 2.5.7 The ``clicks`` attribute was added to ``MOUSEBUTTONDOWN`` and ``MOUSEBUTTONUP`` events.
+
+The ``clicks`` attribute of the ``MOUSEBUTTONDOWN`` and ``MOUSEBUTTONUP`` events indicate the number of clicks occurring
+in rapid succession, e.g. ``1`` for single-click, ``2`` for double-click, etc. Note that double, triple, or more clicks
+will still fire mouse events for each individual click, with a progressively increasing ``clicks`` attribute.
 
 Note that ``ACTIVEEVENT``, ``VIDEORESIZE`` and ``VIDEOEXPOSE`` are considered
 as "legacy" events, the use of pygame2 ``WINDOWEVENT`` API is recommended over

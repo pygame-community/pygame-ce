@@ -7,6 +7,7 @@
 |DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
+|DiscordBadge|
 
 `English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ **日本語** `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_ `Deutsch`_
 
@@ -217,6 +218,9 @@ gfxdraw には SDL_gfx の埋め込みバージョンが含まれています。
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
+.. |DiscordBadge| image:: https://discord.com/api/guilds/772505616680878080/widget.png
+   :target: https://pyga.me/discord
+
 .. _Pygame: https://pyga.me
 .. _pygame-ce documentation: https://pyga.me/docs/
 .. _pygame documentation: https://www.pygame.org/docs/
@@ -230,7 +234,7 @@ gfxdraw には SDL_gfx の埋め込みバージョンが含まれています。
 .. _Opening a Great Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
 .. _issue tracker: https://github.com/pygame-community/pygame-ce/issues
 .. _label and link reported issues: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
-.. _Pygame Community Discord Server: https://discord.gg/pygame
+.. _Pygame Community Discord Server: https://pyga.me/discord
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _English: ./../../README.rst
