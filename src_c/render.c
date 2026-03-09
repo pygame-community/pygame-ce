@@ -262,10 +262,9 @@ renderer_render_geometry(pgRendererObject *self, PyObject *args,
     PyObject *mesh_obj;
     PyObject *texture_obj = Py_None;
     SDL_Texture *texture = NULL;
-
     static char *keywords[] = {"mesh", "texture", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", keywords,
-                                     &mesh_obj)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", keywords, &mesh_obj,
+                                     &texture_obj)) {
         return NULL;
     }
 
@@ -280,7 +279,6 @@ renderer_render_geometry(pgRendererObject *self, PyObject *args,
         }
         texture = ((pgTextureObject *)texture_obj)->texture;
     }
-
     pgGeometryMeshObject *mesh = (pgGeometryMeshObject *)mesh_obj;
     RENDERER_ERROR_CHECK(SDL_RenderGeometry(self->renderer, texture,
                                             mesh->vertices, mesh->vertex_count,
