@@ -45,7 +45,7 @@ jobs:
           version: "0.9.2"
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@v3.4.0
 
       - uses: actions/upload-artifact@v7
         with:
@@ -151,7 +151,7 @@ jobs:
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@v3.4.0
 
       - uses: actions/upload-artifact@v7
         with:
