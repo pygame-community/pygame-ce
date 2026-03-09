@@ -6669,6 +6669,30 @@ class DrawAACircleMixin:
                 msg="pixel at center should be black, not white",
             )
 
+    def test_aacircle__width(self):
+        """Ensures draw aacircle renders the correct width.
+        see https://github.com/pygame-community/pygame-ce/issues/3682
+        """
+        bg_color = pygame.Color("white")
+        fg_color = pygame.Color("black")
+        size = 10
+        surf = pygame.Surface((size, size))
+
+        for width in range(1, size - 1):
+            surf.fill(bg_color)
+            pygame.draw.aacircle(
+                surf, fg_color, (0, 0), size - 1, width, draw_bottom_right=True
+            )
+            rendered_width = 0
+            for x in range(size - 1, -1, -1):
+                if surf.get_at((x, 0)) == fg_color:
+                    rendered_width += 1
+                else:
+                    break
+            self.assertEqual(
+                rendered_width, width, msg="draw.aacircle rendered wrong width"
+            )
+
 
 class DrawAACircleTest(DrawAACircleMixin, DrawTestCase):
     """Test draw module function aacircle.
