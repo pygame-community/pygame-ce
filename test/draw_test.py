@@ -6676,12 +6676,13 @@ class DrawAACircleMixin:
         bg_color = pygame.Color("white")
         fg_color = pygame.Color("black")
         size = 10
+        radius = size - 1  # radius excludes the center pixel
         surf = pygame.Surface((size, size))
 
-        for width in range(1, size - 1):
+        for width in range(1, radius):  # test when width < radius
             surf.fill(bg_color)
-            pygame.draw.aacircle(
-                surf, fg_color, (0, 0), size - 1, width, draw_bottom_right=True
+            self.draw_aacircle(
+                surf, fg_color, (0, 0), radius, width, draw_bottom_right=True
             )
             rendered_width = 0
             for x in range(size - 1, -1, -1):
