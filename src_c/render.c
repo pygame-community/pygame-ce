@@ -378,6 +378,9 @@ _get_transform_matrix(PyObject *transform_obj, float *a, float *c, float *tx,
     else if (PySequence_Check(transform_obj)) {
         PyObject *sequence =
             PySequence_Fast(transform_obj, "Invalid transform matrix");
+        if (sequence == NULL) {
+            return -1;  // exception set
+        }
         if (PySequence_Fast_GET_SIZE(sequence) < 6) {
             Py_DECREF(sequence);
             RAISERETURN(PyExc_ValueError,
@@ -1481,6 +1484,22 @@ _mesh_get_vertex(PyObject *vertex_obj, float *x, float *y, Uint8 *r, Uint8 *g,
     return 0;
 }
 
+static void
+_mesh_free(pgGeometryMeshObject *mesh, SDL_Vertex *vertices, int *indices,
+           int use_indices)
+{
+    if (mesh->transformed_vertices) {
+        PyMem_Free(mesh->transformed_vertices);
+    }
+    mesh->vertices = mesh->transformed_vertices = NULL;
+    mesh->indices = NULL;
+    mesh->vertex_count = mesh->index_count = -1;
+    PyMem_Free(vertices);
+    if (use_indices) {
+        PyMem_Free(indices);
+    }
+}
+
 static int
 _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
               PyObject *indices_seq)
@@ -1560,10 +1579,7 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
                                   &cur_a, &cur_tex_x, &cur_tex_y);
         Py_DECREF(item);
         if (result < 0) {
-            PyMem_Free(vertices);
-            if (use_indices) {
-                PyMem_Free(indices);
-            }
+            _mesh_free(mesh, vertices, indices, use_indices);
             return -1;  // exception set
         }
 
@@ -1582,20 +1598,17 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
             item = PySequence_GetItem(indices_seq, (Py_ssize_t)ii);
             if (!PyLong_Check(item)) {
                 Py_DECREF(item);
-                PyMem_Free(vertices);
-                PyMem_Free(indices);
+                _mesh_free(mesh, vertices, indices, 1);
                 RAISERETURN(PyExc_TypeError, "indices must be integers", -1);
             }
             int index = PyLong_AsInt(item);
             Py_DECREF(item);
             if (PyErr_Occurred()) {
-                PyMem_Free(vertices);
-                PyMem_Free(indices);
+                _mesh_free(mesh, vertices, indices, 1);
                 return -1;
             }
             if (index < 0 || index > vertex_count - 1) {
-                PyMem_Free(vertices);
-                PyMem_Free(indices);
+                _mesh_free(mesh, vertices, indices, 1);
                 RAISERETURN(PyExc_IndexError,
                             "indices must be in bounds [0, len(vertices)-1]",
                             -1);
