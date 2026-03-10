@@ -2,7 +2,10 @@ import gc
 import unittest
 import weakref
 
-import numpy
+try:
+    import numpy
+except (ImportError, ModuleNotFoundError):
+    numpy = None
 import pygame
 import pygame._render as _render
 
@@ -226,19 +229,21 @@ class RendererTest(unittest.TestCase):
                 1.5,
                 10,
             ],
-            numpy.array(
-                [
-                    [1.5, 0, 10],
-                    [0, 1.5, 10],
-                ]
-            ),
         ]
+        if numpy is not None:
+            transform_matrices.append(
+                numpy.array(
+                    [
+                        [1.5, 0, 10],
+                        [0, 1.5, 10],
+                    ]
+                ),
+            )
         for use_indices in [False, True]:
             mesh = None
             for scale, offset, matrix in [
                 (1, 0, None),
-                (1.5, 10, transform_matrices[0]),
-                (1.5, 10, transform_matrices[1]),
+                *[(1.5, 10, mat) for mat in transform_matrices],
             ]:
                 # no texture
                 mesh = self.make_geometry_mesh(["green", "red"], use_indices, mesh)
