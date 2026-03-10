@@ -6,6 +6,7 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 from pygame.typing import ColorLike, IntPoint, Point, RectLike, SequenceLike
 from pygame.window import Window
+from typing_extensions import Buffer  # collections.abc 3.12
 
 class _DrawableClass(Protocol):
     # Object that has the draw method that accepts area and dest arguments
@@ -99,7 +100,7 @@ class Renderer:
         self,
         mesh: GeometryMesh,
         texture: "Texture | None" = None,
-        transform_matrix: SequenceLike[float] | None = None,
+        transform_matrix: SequenceLike[float] | Buffer | None = None,
     ) -> None:
         """Render a static 2D mesh
 

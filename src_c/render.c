@@ -1782,7 +1782,9 @@ static PyTypeObject pgGeometryMesh_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._render.GeometryMesh",
     .tp_basicsize = sizeof(pgGeometryMeshObject),
     .tp_dealloc = (destructor)mesh_dealloc,
-    .tp_doc = "",
+    .tp_doc =
+        "Pygame object storing vertices and indices of a 2D mesh for fast "
+        "rendering",
     .tp_methods = mesh_methods,
     .tp_init = (initproc)mesh_init,
     .tp_new = mesh_new,
