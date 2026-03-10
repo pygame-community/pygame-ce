@@ -1480,8 +1480,8 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
               PyObject *indices_seq)
 {
     PyObject *item;
-    int vertex_count, index_count;
-    SDL_Vertex *vertices;
+    int vertex_count, index_count = 0;
+    SDL_Vertex *vertices = NULL;
     int *indices = NULL;
     int use_indices = 1;
     float cur_x, cur_y, cur_tex_x, cur_tex_y;
@@ -1521,7 +1521,8 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
         vertices = mesh->vertices;
     }
 
-    if (mesh->index_count != index_count && mesh->indices != NULL) {
+    if ((mesh->index_count != index_count && mesh->indices != NULL) ||
+        (!use_indices && mesh->indices != NULL)) {
         PyMem_Free(mesh->indices);
         mesh->indices = NULL;
     }
