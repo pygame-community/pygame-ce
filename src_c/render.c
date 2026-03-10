@@ -331,7 +331,7 @@ _get_transform_matrix(PyObject *transform_obj, float *a, float *c, float *tx,
     if (PyObject_CheckBuffer(transform_obj)) {
         Py_buffer view;
         if (PyObject_GetBuffer(transform_obj, &view,
-                               PyBUF_ANY_CONTIGUOUS | PyBUF_FORMAT) < 0) {
+                               PyBUF_C_CONTIGUOUS | PyBUF_FORMAT) < 0) {
             return -1;
         }
         if ((view.len / view.itemsize) < 6) {
@@ -1453,6 +1453,9 @@ _mesh_get_vertex(PyObject *vertex_obj, float *x, float *y, Uint8 *r, Uint8 *g,
     }
 
     PyObject *position_obj = PySequence_GetItem(vertex_obj, 0);
+    if (position_obj == NULL) {
+        return -1;  // exception set
+    }
     result = pg_TwoFloatsFromObj(position_obj, x, y);
     Py_DECREF(position_obj);
     if (!result) {
@@ -1462,6 +1465,9 @@ _mesh_get_vertex(PyObject *vertex_obj, float *x, float *y, Uint8 *r, Uint8 *g,
     }
 
     PyObject *color_obj = PySequence_GetItem(vertex_obj, 1);
+    if (color_obj == NULL) {
+        return -1;  // exception set
+    }
     result = pg_RGBAFromObjEx(color_obj, rgba, PG_COLOR_HANDLE_ALL);
     Py_DECREF(color_obj);
     if (!result) {
@@ -1473,6 +1479,9 @@ _mesh_get_vertex(PyObject *vertex_obj, float *x, float *y, Uint8 *r, Uint8 *g,
     *a = rgba[3];
 
     PyObject *tex_coord_obj = PySequence_GetItem(vertex_obj, 2);
+    if (tex_coord_obj == NULL) {
+        return -1;  // exception set
+    }
     result = pg_TwoFloatsFromObj(tex_coord_obj, tex_coord_x, tex_coord_y);
     Py_DECREF(tex_coord_obj);
     if (!result) {
@@ -1528,11 +1537,17 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
                 "indices argument must be a sequence of integers or None", -1);
         }
         index_count = (int)PySequence_Length(indices_seq);
+        if (index_count < 0) {
+            return -1;  // exception set
+        }
     }
     else {
         use_indices = 0;
     }
     vertex_count = (int)PySequence_Length(vertices_seq);
+    if (vertex_count < 0) {
+        return -1;  // exception set
+    }
 
     if (mesh->vertex_count != vertex_count && mesh->vertices != NULL) {
         PyMem_Free(mesh->vertices);
@@ -1559,6 +1574,10 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
         vertices = PyMem_New(SDL_Vertex, vertex_count);
     }
     if (!vertices) {
+        if (mesh->transformed_vertices) {
+            PyMem_Free(mesh->transformed_vertices);
+            mesh->transformed_vertices = NULL;
+        }
         PyErr_NoMemory();
         return -1;
     }
@@ -1567,7 +1586,12 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
             indices = PyMem_New(int, index_count);
         }
         if (!indices) {
+            mesh->vertices = NULL;
             PyMem_Free(vertices);
+            if (mesh->transformed_vertices) {
+                PyMem_Free(mesh->transformed_vertices);
+                mesh->transformed_vertices = NULL;
+            }
             PyErr_NoMemory();
             return -1;
         }
@@ -1575,6 +1599,10 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
 
     for (int vi = 0; vi < vertex_count; vi++) {
         item = PySequence_GetItem(vertices_seq, (Py_ssize_t)vi);
+        if (item == NULL) {
+            _mesh_free(mesh, vertices, indices, use_indices);
+            return -1;  // exception set
+        }
         result = _mesh_get_vertex(item, &cur_x, &cur_y, &cur_r, &cur_g, &cur_b,
                                   &cur_a, &cur_tex_x, &cur_tex_y);
         Py_DECREF(item);
@@ -1596,6 +1624,10 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
     if (use_indices) {
         for (int ii = 0; ii < index_count; ii++) {
             item = PySequence_GetItem(indices_seq, (Py_ssize_t)ii);
+            if (item == NULL) {
+                _mesh_free(mesh, vertices, indices, 1);
+                return -1;  // exception set
+            }
             if (!PyLong_Check(item)) {
                 Py_DECREF(item);
                 _mesh_free(mesh, vertices, indices, 1);
