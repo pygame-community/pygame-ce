@@ -1017,17 +1017,26 @@ static int
 texture_set_alpha(pgTextureObject *self, PyObject *arg, void *closure)
 {
     PyObject *intobj = NULL;
+    Uint8 alpha;
     if (PyNumber_Check(arg) && (intobj = PyNumber_Long(arg))) {
         unsigned long longval = PyLong_AsUnsignedLong(intobj);
         Py_DECREF(intobj);
         if (longval == (unsigned long)-1 && PyErr_Occurred()) {
-            return -1;  // exception set
+            RAISERETURN(PyExc_ValueError, "Texture alpha must be positive",
+                        -1);
+        }
+        if (longval > 255) {
+            alpha = 255;
+        }
+        else {
+            alpha = (Uint8)longval;
         }
         RENDERER_PROPERTY_ERROR_CHECK(
-            SDL_SetTextureAlphaMod(self->texture, (Uint8)longval))
+            SDL_SetTextureAlphaMod(self->texture, alpha))
         return 0;
     }
-    RAISERETURN(PyExc_TypeError, "Texture alpha must be a number", -1);
+    RAISERETURN(PyExc_TypeError, "Texture alpha must be a positive number",
+                -1);
 }
 
 static PyObject *
