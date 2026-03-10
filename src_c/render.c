@@ -254,6 +254,162 @@ renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 #endif
 }
 
+static int
+_transform_vertices(pgGeometryMeshObject *mesh, float a, float c, float tx,
+                    float b, float d, float ty)
+{
+    if (mesh->transformed_vertices == NULL) {
+        mesh->transformed_vertices = PyMem_New(SDL_Vertex, mesh->vertex_count);
+        if (mesh->transformed_vertices == NULL) {
+            return -1;  // memory error set
+        }
+        mesh->t_rebuild = 1;
+    }
+    if (!mesh->t_rebuild && mesh->t_a == a && mesh->t_c == c &&
+        mesh->t_tx == tx && mesh->t_b == b && mesh->t_d == d &&
+        mesh->t_ty == ty) {
+        // transformed vertices are up to date
+        return 0;
+    }
+    else {
+        mesh->t_a = a;
+        mesh->t_c = c;
+        mesh->t_tx = tx;
+        mesh->t_b = b;
+        mesh->t_d = d;
+        mesh->t_ty = ty;
+        mesh->t_rebuild = 0;
+    }
+    for (int i = 0; i < mesh->vertex_count; i++) {
+        float source_x = mesh->vertices[i].position.x;
+        float source_y = mesh->vertices[i].position.y;
+        // apply transformation matrix
+        mesh->transformed_vertices[i].position.x =
+            (source_x * a) + (source_y * c) + tx;
+        mesh->transformed_vertices[i].position.y =
+            (source_x * b) + (source_y * d) + ty;
+        mesh->transformed_vertices[i].color = mesh->vertices[i].color;
+        mesh->transformed_vertices[i].tex_coord = mesh->vertices[i].tex_coord;
+    }
+    return 0;
+}
+
+static int
+_get_float_from_fast_sequence(PyObject *item, float *value)
+{
+    PyObject *floatitem = PyNumber_Float(item);
+    if (floatitem == NULL) {
+        RAISERETURN(PyExc_TypeError,
+                    "Transform matrix item value must be a number", -1);
+    }
+    double doublevalue = PyFloat_AsDouble(floatitem);
+    Py_DECREF(floatitem);
+    if (doublevalue == -1.0 && PyErr_Occurred()) {
+        RAISERETURN(PyExc_TypeError,
+                    "Transform matrix item value must be a number", -1);
+    }
+    *value = (float)doublevalue;
+    return 0;
+}
+
+#define EXTRACT_MATRIX(ctype)           \
+    do {                                \
+        ctype *buf = (ctype *)view.buf; \
+        *a = (float)buf[0];             \
+        *c = (float)buf[1];             \
+        *tx = (float)buf[2];            \
+        *b = (float)buf[3];             \
+        *d = (float)buf[4];             \
+        *ty = (float)buf[5];            \
+    } while (0)
+
+static int
+_get_transform_matrix(PyObject *transform_obj, float *a, float *c, float *tx,
+                      float *b, float *d, float *ty)
+{
+    if (PyObject_CheckBuffer(transform_obj)) {
+        Py_buffer view;
+        if (PyObject_GetBuffer(transform_obj, &view,
+                               PyBUF_ANY_CONTIGUOUS | PyBUF_FORMAT) < 0) {
+            return -1;
+        }
+        if ((view.len / view.itemsize) < 6) {
+            PyBuffer_Release(&view);
+            RAISERETURN(
+                PyExc_ValueError,
+                "Transform matrix buffer must contain at least 6 items", -1);
+        }
+
+        if (strcmp(view.format, "d") == 0) {
+            EXTRACT_MATRIX(double);
+        }
+        else if (strcmp(view.format, "f") == 0) {
+            EXTRACT_MATRIX(float);
+        }
+        else if (strcmp(view.format, "q") == 0) {
+            EXTRACT_MATRIX(long long);
+        }
+        else if (strcmp(view.format, "Q") == 0) {
+            EXTRACT_MATRIX(unsigned long long);
+        }
+        else if (strcmp(view.format, "l") == 0) {
+            EXTRACT_MATRIX(long);
+        }
+        else if (strcmp(view.format, "L") == 0) {
+            EXTRACT_MATRIX(unsigned long);
+        }
+        else if (strcmp(view.format, "i") == 0) {
+            EXTRACT_MATRIX(int);
+        }
+        else if (strcmp(view.format, "I") == 0) {
+            EXTRACT_MATRIX(unsigned int);
+        }
+        else {
+            PyErr_Format(PyExc_TypeError,
+                         "Unsupported buffer format '%s' for transform matrix",
+                         view.format);
+            PyBuffer_Release(&view);
+            return -1;
+        }
+        PyBuffer_Release(&view);
+        return 0;
+    }
+    else if (PySequence_Check(transform_obj)) {
+        PyObject *sequence =
+            PySequence_Fast(transform_obj, "Invalid transform matrix");
+        PyObject **items = PySequence_Fast_ITEMS(sequence);
+        if (_get_float_from_fast_sequence(items[0], a) < 0) {
+            Py_DECREF(sequence);
+            return -1;
+        }
+        if (_get_float_from_fast_sequence(items[1], c) < 0) {
+            Py_DECREF(sequence);
+            return -1;
+        }
+        if (_get_float_from_fast_sequence(items[2], tx) < 0) {
+            Py_DECREF(sequence);
+            return -1;
+        }
+        if (_get_float_from_fast_sequence(items[3], b) < 0) {
+            Py_DECREF(sequence);
+            return -1;
+        }
+        if (_get_float_from_fast_sequence(items[4], d) < 0) {
+            Py_DECREF(sequence);
+            return -1;
+        }
+        if (_get_float_from_fast_sequence(items[5], ty) < 0) {
+            Py_DECREF(sequence);
+            return -1;
+        }
+        Py_DECREF(sequence);
+        return 0;
+    }
+    RAISERETURN(PyExc_TypeError, "Invalid transform matrix", -1);
+}
+
+#undef EXTRACT_MATRIX
+
 static PyObject *
 renderer_render_geometry(pgRendererObject *self, PyObject *args,
                          PyObject *kwargs)
@@ -261,10 +417,13 @@ renderer_render_geometry(pgRendererObject *self, PyObject *args,
 #if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *mesh_obj;
     PyObject *texture_obj = Py_None;
+    PyObject *transform_obj = Py_None;
     SDL_Texture *texture = NULL;
-    static char *keywords[] = {"mesh", "texture", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", keywords, &mesh_obj,
-                                     &texture_obj)) {
+    SDL_Vertex *vertices = NULL;
+    float a, c, tx, b, d, ty;
+    static char *keywords[] = {"mesh", "texture", "transform_matrix", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OO", keywords, &mesh_obj,
+                                     &texture_obj, &transform_obj)) {
         return NULL;
     }
 
@@ -280,9 +439,31 @@ renderer_render_geometry(pgRendererObject *self, PyObject *args,
         texture = ((pgTextureObject *)texture_obj)->texture;
     }
     pgGeometryMeshObject *mesh = (pgGeometryMeshObject *)mesh_obj;
-    RENDERER_ERROR_CHECK(SDL_RenderGeometry(self->renderer, texture,
-                                            mesh->vertices, mesh->vertex_count,
-                                            mesh->indices, mesh->index_count))
+    vertices = mesh->vertices;
+
+    if (!Py_IsNone(transform_obj)) {
+        if (_get_transform_matrix(transform_obj, &a, &c, &tx, &b, &d, &ty) <
+            0) {
+            return NULL;  // exception set
+        }
+        if (_transform_vertices(mesh, a, c, tx, b, d, ty) < 0) {
+            return NULL;  // exception set
+        }
+        if (mesh->transformed_vertices != NULL) {
+            vertices = mesh->transformed_vertices;
+        }
+    }
+    else {
+        // free array if transformations are not needed
+        if (mesh->transformed_vertices != NULL) {
+            PyMem_Free(mesh->transformed_vertices);
+            mesh->transformed_vertices = NULL;
+        }
+    }
+
+    RENDERER_ERROR_CHECK(SDL_RenderGeometry(self->renderer, texture, vertices,
+                                            mesh->vertex_count, mesh->indices,
+                                            mesh->index_count))
 #else
     return RAISE(PyExc_TypeError,
                  "render_geometry() requires SDL 2.0.18 or newer");
@@ -1231,9 +1412,13 @@ mesh_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     self = (pgGeometryMeshObject *)type->tp_alloc(type, 0);
     if (self) {
         self->vertices = NULL;
+        self->transformed_vertices = NULL;
         self->indices = NULL;
         self->vertex_count = -1;
         self->index_count = -1;
+        self->t_rebuild = 1;
+        self->t_a = self->t_d = self->t_b = self->t_c = self->t_tx =
+            self->t_ty = 0.0f;
     }
     return (PyObject *)self;
 }
@@ -1303,6 +1488,10 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
     Uint8 cur_r, cur_g, cur_b, cur_a;
     int result;
 
+    mesh->t_rebuild = 1;
+    mesh->t_a = mesh->t_d = mesh->t_b = mesh->t_c = mesh->t_tx = mesh->t_ty =
+        0.0f;
+
     if (!PySequence_Check(vertices_seq)) {
         RAISERETURN(PyExc_TypeError,
                     "vertices argument must be a sequence of vertices", -1);
@@ -1322,7 +1511,11 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
 
     if (mesh->vertex_count != vertex_count && mesh->vertices != NULL) {
         PyMem_Free(mesh->vertices);
+        if (mesh->transformed_vertices) {
+            PyMem_Free(mesh->transformed_vertices);
+        }
         mesh->vertices = NULL;
+        mesh->transformed_vertices = NULL;
     }
     else {
         vertices = mesh->vertices;
@@ -1430,6 +1623,9 @@ mesh_dealloc(pgGeometryMeshObject *self, PyObject *_null)
     }
     if (self->indices) {
         PyMem_Free(self->indices);
+    }
+    if (self->transformed_vertices) {
+        PyMem_Free(self->transformed_vertices);
     }
     Py_TYPE(self)->tp_free(self);
 }

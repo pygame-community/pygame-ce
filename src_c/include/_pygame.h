@@ -572,11 +572,20 @@ typedef struct {
     SDL_BlendMode blend_mode;
 } pgImageObject;
 
+/*
+Transformation Matrix:
+| a c tx |
+| b d ty |
+| 0 0 1  |
+*/
 typedef struct {
     PyObject_HEAD SDL_Vertex *vertices;
+    SDL_Vertex *transformed_vertices;
     int *indices;
     int vertex_count;
     int index_count;
+    int t_rebuild;
+    float t_a, t_c, t_tx, t_b, t_d, t_ty;
 } pgGeometryMeshObject;
 
 #ifndef PYGAMEAPI_RENDER_INTERNAL

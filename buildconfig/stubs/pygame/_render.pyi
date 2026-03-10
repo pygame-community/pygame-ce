@@ -36,9 +36,11 @@ class GeometryMesh:
                     triplets of vertices, otherwise SDL will raise errors when rendering.
 
     .. note:: Creating an instance every frame defies the purpose of this object. Store it
-              and update it only when necessary.
+              and update it only when necessary. If frequently changing transformations
+              that offset/scale/rotate the whole mesh are required, consider the
+              ``transform_matrix`` parameter of :meth:`Renderer.render_geometry`
 
-    .. versionadded:: 2.5.4
+    .. versionadded:: 2.5.8
     """
 
     def __init__(
@@ -94,7 +96,10 @@ class Renderer:
     def present(self) -> None: ...
     def set_viewport(self, area: RectLike | None) -> None: ...
     def render_geometry(
-        self, mesh: GeometryMesh, texture: "Texture|None" = None
+        self,
+        mesh: GeometryMesh,
+        texture: "Texture | None" = None,
+        transform_matrix: SequenceLike[float] | None = None,
     ) -> None:
         """Render a static 2D mesh
 
@@ -102,6 +107,8 @@ class Renderer:
         to allow the rendering of any 2D mesh, not limited to primitive shapes.
         Only use this functionality if you are familiar with GPU rendering, as it
         is not intuitive compared to standard pygame rendering.
+        The transform matrix, if one is provided, will modify a cached copy of the
+        vertices before they are rendered.
 
         :param mesh: The mesh to render. It must be a :class:`GeometryMesh` instance
                      to avoid re-parsing the input every frame, guaranteeing maximum
@@ -110,9 +117,32 @@ class Renderer:
         :param texture: An optional :class:`Texture` instance that the mesh will be
                         rendered with. The texture coordinates of the vertices should
                         be normalized to represent portions of the texture.
-        :type texture: :class:`Texture`|None
+        :type texture: :class:`Texture`| None
+        :param transform_matrix: An optional matrix-like sequence/buffer representing
+                                 the 2D affine transformation applied to each vertex.
+                                 The expected layout for the matrix is:
 
-        .. versionadded:: 2.5.4
+                                  [ a, c, tx ]
+                                  [ b, d, ty ]
+                                  [ 0, 0, 1  ]
+
+                                 Only the first two rows are required, other elements
+                                 will be ignored. The provided object must either support
+                                 the buffer protocol or be a 1D sequence (contiguous rows).
+
+                                 While this transformation can include rotation and
+                                 shearing, it is possible to construct a simple offset and
+                                 scale transformation matrix:
+
+                                  [scale_x, 0,       offset_x]
+                                  [0,       scale_y, offset_y]
+                                  [0,       0,       1       ]
+
+                                 Where setting scale_x = scale_y = 1 and offset_x =
+                                 offset_y = 0 produces no changes to the mesh. Consult
+                                 online resources to combine more transformations.
+
+        .. versionadded:: 2.5.8
         """
 
     def to_surface(
