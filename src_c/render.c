@@ -261,6 +261,7 @@ _transform_vertices(pgGeometryMeshObject *mesh, float a, float c, float tx,
     if (mesh->transformed_vertices == NULL) {
         mesh->transformed_vertices = PyMem_New(SDL_Vertex, mesh->vertex_count);
         if (mesh->transformed_vertices == NULL) {
+            PyErr_NoMemory();
             return -1;  // memory error set
         }
         mesh->t_rebuild = 1;
@@ -377,6 +378,11 @@ _get_transform_matrix(PyObject *transform_obj, float *a, float *c, float *tx,
     else if (PySequence_Check(transform_obj)) {
         PyObject *sequence =
             PySequence_Fast(transform_obj, "Invalid transform matrix");
+        if (PySequence_Fast_GET_SIZE(sequence) < 6) {
+            Py_DECREF(sequence);
+            RAISERETURN(PyExc_ValueError,
+                        "Transform matrix must containt at least 6 items", -1);
+        }
         PyObject **items = PySequence_Fast_ITEMS(sequence);
         if (_get_float_from_fast_sequence(items[0], a) < 0) {
             Py_DECREF(sequence);
@@ -1446,7 +1452,7 @@ _mesh_get_vertex(PyObject *vertex_obj, float *x, float *y, Uint8 *r, Uint8 *g,
     PyObject *position_obj = PySequence_GetItem(vertex_obj, 0);
     result = pg_TwoFloatsFromObj(position_obj, x, y);
     Py_DECREF(position_obj);
-    if (result < 0) {
+    if (!result) {
         RAISERETURN(PyExc_TypeError,
                     "each vertex's position should be a coordinate (x, y)",
                     -1);
@@ -1455,7 +1461,7 @@ _mesh_get_vertex(PyObject *vertex_obj, float *x, float *y, Uint8 *r, Uint8 *g,
     PyObject *color_obj = PySequence_GetItem(vertex_obj, 1);
     result = pg_RGBAFromObjEx(color_obj, rgba, PG_COLOR_HANDLE_ALL);
     Py_DECREF(color_obj);
-    if (result < 0) {
+    if (!result) {
         RAISERETURN(PyExc_TypeError, "invalid vertex color", -1);
     }
     *r = rgba[0];
@@ -1466,7 +1472,7 @@ _mesh_get_vertex(PyObject *vertex_obj, float *x, float *y, Uint8 *r, Uint8 *g,
     PyObject *tex_coord_obj = PySequence_GetItem(vertex_obj, 2);
     result = pg_TwoFloatsFromObj(tex_coord_obj, tex_coord_x, tex_coord_y);
     Py_DECREF(tex_coord_obj);
-    if (result < 0) {
+    if (!result) {
         RAISERETURN(PyExc_TypeError,
                     "each vertex's tex coord should be a coordinate (x, y)",
                     -1);
@@ -1497,7 +1503,7 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
                     "vertices argument must be a sequence of vertices", -1);
     }
     if (!Py_IsNone(indices_seq)) {
-        if (!PySequence_Check(vertices_seq)) {
+        if (!PySequence_Check(indices_seq)) {
             RAISERETURN(
                 PyExc_TypeError,
                 "indices argument must be a sequence of integers or None", -1);
@@ -1521,8 +1527,8 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
         vertices = mesh->vertices;
     }
 
-    if ((mesh->index_count != index_count && mesh->indices != NULL) ||
-        (!use_indices && mesh->indices != NULL)) {
+    if ((!use_indices && mesh->indices != NULL) ||
+        (mesh->index_count != index_count && mesh->indices != NULL)) {
         PyMem_Free(mesh->indices);
         mesh->indices = NULL;
     }
@@ -1586,6 +1592,13 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
                 PyMem_Free(vertices);
                 PyMem_Free(indices);
                 return -1;
+            }
+            if (index < 0 || index > vertex_count - 1) {
+                PyMem_Free(vertices);
+                PyMem_Free(indices);
+                RAISERETURN(PyExc_IndexError,
+                            "indices must be in bounds [0, len(vertices)-1]",
+                            -1);
             }
             indices[ii] = index;
         }
@@ -1875,10 +1888,8 @@ MODINIT_DEFINE(_render)
         return NULL;
     }
 
-    Py_INCREF(&pgGeometryMesh_Type);
-    if (PyModule_AddObject(module, "GeometryMesh",
-                           (PyObject *)&pgGeometryMesh_Type)) {
-        Py_DECREF(&pgGeometryMesh_Type);
+    if (PyModule_AddObjectRef(module, "GeometryMesh",
+                              (PyObject *)&pgGeometryMesh_Type)) {
         Py_DECREF(module);
         return NULL;
     }

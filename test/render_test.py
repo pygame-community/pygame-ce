@@ -239,6 +239,7 @@ class RendererTest(unittest.TestCase):
                     ]
                 ),
             )
+        self.renderer.draw_color = "black"
         for use_indices in [False, True]:
             mesh = None
             for scale, offset, matrix in [
@@ -247,10 +248,12 @@ class RendererTest(unittest.TestCase):
             ]:
                 # no texture
                 mesh = self.make_geometry_mesh(["green", "red"], use_indices, mesh)
+                self.renderer.clear()
                 self.renderer.render_geometry(mesh, None, matrix)
                 self.check_geometry_result(scale, offset, ["green", "red"])
                 # with texture
                 mesh = self.make_geometry_mesh(["white", "white"], use_indices, mesh)
+                self.renderer.clear()
                 self.renderer.render_geometry(mesh, texture, matrix)
                 self.check_geometry_result(scale, offset, ["pink", "blue"])
 

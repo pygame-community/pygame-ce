@@ -61,8 +61,6 @@ class GeometryMesh:
 
         Check the constructor paramters of :class:`GeometryMesh` to see what data
         to provide.
-
-        .. versionadded:: 2.5.4
         """
 
 @final
