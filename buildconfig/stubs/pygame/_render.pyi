@@ -146,3 +146,6 @@ class Texture:
 @final
 class Image:
     pass
+
+def get_line_render_method() -> int: ...
+def set_line_render_method(method: int) -> bool: ...
