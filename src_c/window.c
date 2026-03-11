@@ -8,6 +8,10 @@
 #include "doc/sdl2_video_doc.h"
 #include "doc/window_doc.h"
 
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#include <SDL_syswm.h>
+#endif
+
 static int is_window_mod_init = 0;
 
 #if !defined(__APPLE__)
@@ -937,6 +941,90 @@ window_get_opengl(pgWindowObject *self, void *v)
 }
 
 static PyObject *
+window_get_handle(pgWindowObject *self, void *v)
+{
+    SDL_Window *win = self->_win;
+    size_t handle = 0;
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    const char *driver = SDL_GetCurrentVideoDriver();
+    if (driver == NULL) {
+        handle = 0;
+        return PyLong_FromSize_t(handle);
+    }
+
+    SDL_PropertiesID props = SDL_GetWindowProperties(win);
+
+    if (!strcmp(driver, "windows")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "x11")) {
+        handle = (size_t)SDL_GetNumberProperty(
+            props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+    }
+    else if (!strcmp(driver, "cocoa")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "uikit")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "android")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "vivante")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER, NULL);
+    }
+
+#else  // sdl 2
+    SDL_SysWMinfo info;
+
+    SDL_VERSION(&(info.version));
+
+    if (!SDL_GetWindowWMInfo(win, &info)) {
+        return PyLong_FromSize_t(0);
+    }
+
+#if defined(SDL_VIDEO_DRIVER_WINDOWS)
+    if (info.subsystem == SDL_SYSWM_WINDOWS) {
+        handle = (size_t)info.info.win.window;
+    }
+#endif
+#if defined(SDL_VIDEO_DRIVER_X11)
+    if (info.subsystem == SDL_SYSWM_X11) {
+        handle = (size_t)info.info.x11.window;
+    }
+#endif
+#if defined(SDL_VIDEO_DRIVER_COCOA)
+    if (info.subsystem == SDL_SYSWM_COCOA) {
+        handle = (size_t)info.info.cocoa.window;
+    }
+#endif
+#if defined(SDL_VIDEO_DRIVER_UIKIT)
+    if (info.subsystem == SDL_SYSWM_UIKIT) {
+        handle = (size_t)info.info.uikit.window;
+    }
+#endif
+#if defined(SDL_VIDEO_DRIVER_ANDROID)
+    if (info.subsystem == SDL_SYSWM_ANDROID) {
+        handle = (size_t)info.info.android.window;
+    }
+#endif
+#if defined(SDL_VIDEO_DRIVER_VIVANTE)
+    if (info.subsystem == SDL_SYSWM_VIVANTE) {
+        handle = (size_t)info.info.vivante.window;
+    }
+#endif
+#endif  // sdl 3
+
+    return PyLong_FromSize_t(handle);
+}
+
+static PyObject *
 window_get_utility(pgWindowObject *self, void *v)
 {
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
@@ -1448,6 +1536,7 @@ static PyGetSetDef _window_getset[] = {
      DOC_WINDOW_OPACITY, NULL},
     {"id", (getter)window_get_window_id, NULL, DOC_WINDOW_ID, NULL},
     {"opengl", (getter)window_get_opengl, NULL, DOC_WINDOW_OPENGL, NULL},
+    {"handle", (getter)window_get_handle, NULL, DOC_WINDOW_HANDLE, NULL},
     {"utility", (getter)window_get_utility, NULL, DOC_WINDOW_UTILITY, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
