@@ -1,4 +1,6 @@
+import gc
 import unittest
+import weakref
 
 import pygame
 import pygame._render as _render
@@ -464,6 +466,13 @@ class TextureTest(unittest.TestCase):
         result = self.renderer.to_surface()
         for x in range(64, 82):
             self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 50)))
+
+    def test_garbage_collection(self):
+        reference = weakref.ref(self.texture)
+        self.assertTrue(reference() is self.texture)
+        del self.texture
+        gc.collect()
+        self.assertIsNone(reference())
 
     def test_update(self):
         surface = pygame.Surface((100, 100))

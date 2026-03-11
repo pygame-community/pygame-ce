@@ -4,6 +4,7 @@ import glob
 import io
 import os
 import pathlib
+import random
 import tempfile
 import unittest
 from concurrent.futures import ThreadPoolExecutor
@@ -19,6 +20,8 @@ if _sdl_image_ver is not None:
     sdl_image_svg_jpeg_save_bug = (
         _sdl_image_ver <= (2, 0, 5) and pygame.get_sdl_byteorder() == pygame.BIG_ENDIAN
     )
+
+PG_DEPS_FROM_SYSTEM = "PG_DEPS_FROM_SYSTEM" in os.environ
 
 
 def check_magic(f, magic_hexes):
@@ -203,6 +206,11 @@ class ImageModuleTest(unittest.TestCase):
         pygame.image.get_sdl_image_version() == (2, 0, 5),
         "SDL image 2.0.5 png saving will save this 24 bit as RGBA, causing reader.asRGB8 to fail",
     )
+    @unittest.skipIf(
+        PG_DEPS_FROM_SYSTEM,
+        "If we are using system dependencies, we don't know the backend used "
+        "for PNG saving, and this test only works with libpng.",
+    )
     def testSavePNG24(self):
         """see if we can save a png with color values in the proper channels."""
         # Create a PNG file with known colors
@@ -238,6 +246,11 @@ class ImageModuleTest(unittest.TestCase):
             del reader
             os.remove(f_path)
 
+    @unittest.skipIf(
+        PG_DEPS_FROM_SYSTEM,
+        "If we are using system dependencies, we don't know the backend used "
+        "for PNG saving, and this test only works with libpng.",
+    )
     def testSavePNG8(self):
         """see if we can save an 8 bit png correctly"""
         # Create an 8-bit PNG file with known colors
@@ -269,7 +282,7 @@ class ImageModuleTest(unittest.TestCase):
             os.remove(f_path)
 
     @unittest.skipIf(
-        "PG_DEPS_FROM_SYSTEM" in os.environ,
+        PG_DEPS_FROM_SYSTEM,
         "If we are using system dependencies, we don't know the backend used "
         "for PNG saving, and this test only works with libpng.",
     )
@@ -414,6 +427,39 @@ class ImageModuleTest(unittest.TestCase):
             # clean up the temp file, even if test fails
             os.remove(temp_filename)
 
+    def test_save_tga_srcalpha(self):
+        WIDTH = 10
+        HEIGHT = 10
+        s = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        pixels = [
+            [
+                (
+                    random.randint(0, 255),
+                    random.randint(0, 255),
+                    random.randint(0, 255),
+                    random.randint(0, 255),
+                )
+                for _ in range(WIDTH)
+            ]
+            for _ in range(HEIGHT)
+        ]
+        for y in range(HEIGHT):
+            for x in range(WIDTH):
+                s.set_at((x, y), pixels[y][x])
+
+        with tempfile.NamedTemporaryFile(suffix=".tga", delete=False) as f:
+            temp_filename = f.name
+
+        try:
+            pygame.image.save(s, temp_filename)
+            s2 = pygame.image.load(temp_filename)
+            for y in range(HEIGHT):
+                for x in range(WIDTH):
+                    self.assertEqual(s2.get_at((x, y)), pixels[y][x])
+        finally:
+            # clean up the temp file, even if test fails
+            os.remove(temp_filename)
+
     def test_save_pathlib(self):
         surf = pygame.Surface((1, 1))
         surf.fill((23, 23, 23))
@@ -493,38 +539,22 @@ class ImageModuleTest(unittest.TestCase):
     def test_load_unicode_path(self):
         import shutil
 
-        orig = example_path("data/asprite.bmp")
-        temp = os.path.join(example_path("data"), "你好.bmp")
-        shutil.copy(orig, temp)
-        try:
-            im = pygame.image.load(temp)
-        finally:
-            os.remove(temp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            orig = example_path("data/asprite.bmp")
+            temp = os.path.join(tmpdir, "你好.bmp")
+            shutil.copy(orig, temp)
+            pygame.image.load(temp)
 
     def _unicode_save(self, temp_file):
         im = pygame.Surface((10, 10), 0, 32)
-        try:
-            with open(temp_file, "w") as f:
-                pass
-            os.remove(temp_file)
-        except OSError:
-            raise unittest.SkipTest("the path cannot be opened")
-
         self.assertFalse(os.path.exists(temp_file))
-
-        try:
-            pygame.image.save(im, temp_file)
-
-            self.assertGreater(os.path.getsize(temp_file), 10)
-        finally:
-            try:
-                os.remove(temp_file)
-            except OSError:
-                pass
+        pygame.image.save(im, temp_file)
+        self.assertGreater(os.path.getsize(temp_file), 10)
 
     def test_save_unicode_path(self):
         """save unicode object with non-ASCII chars"""
-        self._unicode_save("你好.bmp")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._unicode_save(os.path.join(tmpdir, "你好.bmp"))
 
     def assertPremultipliedAreEqual(self, string1, string2, source_string):
         self.assertEqual(len(string1), len(string2))

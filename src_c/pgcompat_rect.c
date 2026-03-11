@@ -1,7 +1,11 @@
 #include "pgcompat_rect.h"
 
 /* SDL 2.0.22 provides some utility functions for FRects */
-#if !(SDL_VERSION_ATLEAST(2, 0, 22))
+/* SDL3 changed how the edges are handled. Previously right/bottom edges were
+ * considered excluded from the FRect but now they aren't.
+ * For now do SDL2 compat, but consider changing this in the future.
+ * See: https://github.com/pygame-community/pygame-ce/issues/3571 */
+#if !(SDL_VERSION_ATLEAST(2, 0, 22)) || SDL_VERSION_ATLEAST(3, 0, 0)
 
 #ifndef CODE_BOTTOM
 #define CODE_BOTTOM 1
@@ -176,4 +180,4 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
     *Y2 = y2;
     return SDL_TRUE;
 }
-#endif /* !(SDL_VERSION_ATLEAST(2, 0, 22)) */
+#endif /* !(SDL_VERSION_ATLEAST(2, 0, 22)) || SDL_VERSION_ATLEAST(3, 0, 0) */

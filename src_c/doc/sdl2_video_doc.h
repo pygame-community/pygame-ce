@@ -1,6 +1,5 @@
 /* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SDL2VIDEO "Experimental pygame module for porting new SDL video systems"
-#define DOC_SDL2_VIDEO_MESSAGEBOX "messagebox(title, message, window=None, info=False, warn=False, buttons=('OK',), return_button=0, escape_button=0)\nCreate a native GUI message box"
 #define DOC_SDL2_VIDEO_RENDERERDRIVERINFO "pygame object encapsulating Renderer driver information"
 #define DOC_SDL2_VIDEO_GETDRIVERS "get_drivers() -> Iterator[RendererDriverInfo]\nYield info about the rendering drivers available for Renderer objects"
 #define DOC_SDL2_VIDEO_GETGRABBEDWINDOW "get_grabbed_window() -> Window or None\nGet the window with input grab enabled"

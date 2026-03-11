@@ -11,6 +11,10 @@ pygame.init()
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
+pygame.display.init()
+is_wayland = pygame.display.get_driver() == "wayland"
+pygame.display.quit()
+
 
 class WindowTypeTest(unittest.TestCase):
     DEFAULT_TITLE = "pygame window"
@@ -102,6 +106,7 @@ class WindowTypeTest(unittest.TestCase):
         SDL < (2, 0, 16),
         "requires SDL 2.0.16+",
     )
+    @unittest.skipIf(is_wayland, "not supported on wayland")
     def test_always_on_top_set(self):
         self.win.always_on_top = True
         self.assertTrue(self.win.always_on_top)
@@ -109,8 +114,9 @@ class WindowTypeTest(unittest.TestCase):
         self.assertFalse(self.win.always_on_top)
 
     @unittest.skipIf(
-        SDL < (2, 0, 18),
-        "requires SDL 2.0.18+",
+        SDL < (2, 0, 18)
+        or os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires SDL 2.0.18+ and SDL_VIDEODRIVER to be a non-null value",
     )
     def test_mouse_rect(self):
         self.win.mouse_rect = None
@@ -149,6 +155,7 @@ class WindowTypeTest(unittest.TestCase):
 
         self.win.size = (640, 480)
 
+    @unittest.skipIf(is_wayland, "not supported on wayland")
     def test_position(self):
         new_pos = (self.win.position[0] + 20, self.win.position[1] + 10)
         self.win.position = new_pos
@@ -160,8 +167,8 @@ class WindowTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: setattr(self.win, "position", 123))
 
         # test set position when init
-        win = Window(position=(20, 48))
-        self.assertTupleEqual((20, 48), win.position)
+        win = Window(position=new_pos)
+        self.assertTupleEqual(new_pos, win.position)
         win.destroy()
 
         self.assertRaises(TypeError, lambda: Window(position=123))
@@ -255,6 +262,7 @@ class WindowTypeTest(unittest.TestCase):
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
         "requires the SDL_VIDEODRIVER to be a non-null value",
     )
+    @unittest.skipIf(is_wayland, "not supported on wayland")
     def test_opacity_set(self):
         self.win.opacity = 0.5
         self.assertEqual(self.win.opacity, 0.5)

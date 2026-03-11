@@ -740,3 +740,30 @@
          .. versionadded:: 2.5.3
 
       .. ## Line.flip_ab_ip ##
+
+   .. method:: project
+
+         | :sl:`projects the line onto the given line`
+         | :sg:`project(point: tuple[float, float], clamp=False) -> tuple[float, float]`
+
+         This method takes in a point and one boolean keyword argument clamp. It outputs an orthogonally projected point onto the line.
+         If clamp is `True` it makes sure that the outputted point will be on the line segment (which might not be orthogonal), and if it is `False` (the default) then any point on the infinitely extended line may be outputted.
+         This method can be used to find the closest point on a line to the given point. The output is the unique point on the line or line segment that is the smallest distance away from the given point.
+
+
+         .. figure:: code_examples/project.png
+            :alt: project method image
+
+            Example of how it projects the point onto the line. The red point is the point we want to project and the blue point is what you would get as a result.
+
+
+         .. figure:: code_examples/project_clamp.png
+            :alt: project clamp argument image
+
+            Example of what the clamp argument changes. If it is `True`, the point is bounded between the line segment ends.
+
+            WARNING:  If the line has no length (i.e. the start and end points are the same) then the returned point of this function will be the same point as both ends of the line.
+
+         .. versionadded:: 2.5.6
+
+      .. ## Line.project ##

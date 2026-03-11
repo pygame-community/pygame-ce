@@ -34,11 +34,12 @@ automatically switch to operate on the new display.
 When the display mode is set, several events are placed on the pygame event
 queue. ``pygame.QUIT`` is sent when the user has requested the program to
 shut down. The window will receive ``pygame.ACTIVEEVENT`` events as the display
-gains and loses input focus. If the display is set with the
-``pygame.RESIZABLE`` flag, ``pygame.VIDEORESIZE`` events will be sent when the
-user adjusts the window dimensions. Hardware displays that draw direct to the
-screen will get ``pygame.VIDEOEXPOSE`` events when portions of the window must
-be redrawn.
+gains and loses input focus. If the display is set to be resizable with the
+``pygame.RESIZABLE`` flag, ``pygame.VIDEORESIZE`` event(s) will be sent when the
+user adjusts the window dimensions. Depending on your platform, this may be
+multiple gradual events or one event at the end (Windows). Hardware displays
+that draw direct to the screen will get ``pygame.VIDEOEXPOSE`` events when
+portions of the window must be redrawn.
 
 A new windowevent API was introduced in pygame 2.0.1. Check event module docs
 for more information on that
@@ -52,7 +53,7 @@ required).
 """
 
 from collections.abc import Iterable
-from typing import Literal, Optional, Union, overload
+from typing import Literal, overload
 
 from pygame._sdl2 import Window
 from pygame.constants import FULLSCREEN
@@ -285,7 +286,7 @@ def set_mode(
         on the major platforms this function was tested with.
     """
 
-def get_surface() -> Optional[Surface]:
+def get_surface() -> Surface | None:
     """Get a reference to the currently set display surface.
 
     Return a reference to the currently set display Surface. If no display mode
@@ -304,9 +305,9 @@ def flip() -> None:
 @overload
 def update() -> None: ...
 @overload
-def update(rectangle: Optional[RectLike], /) -> None: ...
+def update(rectangle: RectLike | None, /) -> None: ...
 @overload
-def update(rectangles: Iterable[Optional[RectLike]], /) -> None: ...
+def update(rectangles: Iterable[RectLike | None], /) -> None: ...
 @overload
 def update(x: float, y: float, w: float, h: float, /) -> None: ...
 @overload
@@ -678,7 +679,7 @@ def set_icon(surface: Surface, /) -> None:
     the icon before the display mode is set.
     """
 
-def set_caption(title: str, icontitle: Optional[str] = None, /) -> None:
+def set_caption(title: str, icontitle: str | None = None, /) -> None:
     """Set the current window caption.
 
     If the display has a window title, this function will change the name on the
@@ -744,6 +745,9 @@ def set_window_position(position: Point) -> None:
     ignore the window frame (y = 0 means the frame is hidden). The user will
     still be able to move the window after this call. See also
     :func:`pygame.display.get_window_position()`.
+
+    .. note:: This function is not supported on some video drivers (like wayland)
+        and a :exc:`pygame.error` exception may be raised in such cases.
 
     .. versionadded:: 2.5.0
     """
@@ -833,12 +837,12 @@ def get_desktop_refresh_rates() -> list[int]:
 
 def message_box(
     title: str,
-    message: Optional[str] = None,
+    message: str | None = None,
     message_type: Literal["info", "warn", "error"] = "info",
-    parent_window: Optional[Window] = None,
+    parent_window: Window | None = None,
     buttons: SequenceLike[str] = ("OK",),
     return_button: int = 0,
-    escape_button: Optional[int] = None,
+    escape_button: int | None = None,
 ) -> int:
     """Create a native GUI message box.
 

@@ -3,7 +3,7 @@
 .. versionadded:: 2.2.0
 """
 
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 from pygame._data_classes import PowerState
 
@@ -25,7 +25,7 @@ class _InstructionSets(TypedDict):
 
 class _Locale(TypedDict):
     language: str
-    country: Optional[str]
+    country: str | None
 
 def get_cpu_instruction_sets() -> _InstructionSets:
     """Get the information of CPU instruction sets.
@@ -144,7 +144,7 @@ def get_pref_locales() -> list[_Locale]:
     .. versionadded:: 2.2.0
     """
 
-def get_power_state() -> Optional[PowerState]:
+def get_power_state() -> PowerState | None:
     """Get the current power supply state.
 
     **Experimental:** feature available for testing and feedback.

@@ -384,6 +384,15 @@ class MouseModuleTest(MouseTests):
     )
     def test_set_relative_mode(self):
         """Tests that set_relative_mode hides the cursor."""
+        for val in (True, False):
+            if pygame.version.SDL >= (3, 0, 0):
+                with self.assertRaises(pygame.error):
+                    pygame.mouse.set_relative_mode(val)
+            else:
+                with self.assertWarns(DeprecationWarning):
+                    pygame.mouse.set_relative_mode(val)
+
+        pygame.display.set_mode((100, 100))
         pygame.mouse.set_visible(True)
         pygame.mouse.set_relative_mode(True)  # sets the mouse invisible
         visible = pygame.mouse.get_visible()
@@ -398,6 +407,7 @@ class MouseModuleTest(MouseTests):
     )
     def test_get_relative_mode(self):
         """Tests that get_relative_mode correctly reports the relative mode"""
+        pygame.display.set_mode((100, 100))
         pygame.mouse.set_relative_mode(True)
         self.assertEqual(pygame.mouse.get_relative_mode(), True)
         pygame.mouse.set_relative_mode(False)

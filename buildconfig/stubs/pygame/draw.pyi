@@ -568,3 +568,26 @@ def aalines(
     .. versionchanged:: 2.5.0 ``blend`` argument re-added for backcompat, but will
         always raise a deprecation exception when used
     """
+
+def flood_fill(surface: Surface, color: ColorLike | Surface, start_pos: Point) -> Rect:
+    """Fill an enclosed, same color area, on a surface.
+
+    Replace the color of a cluster of connected same-color pixels, beginning
+    from the starting position, with a repeating pattern or solid single color.
+
+    :param Surface surface: surface to draw on
+    :param color: color, or surface pattern, to draw with. The alpha value is optional if using a
+       tuple ``(RGB[A])``
+    :type color: :data:`pygame.typing.ColorLike` or a pattern to fill with, as a Surface
+    :param start_pos: starting position as a sequence of 2 ints/floats,
+       e.g. ``(x, y)``
+    :type start_pos: tuple(int or float, int or float) or
+       list(int or float, int or float) or Vector2(int or float, int or float)
+
+    :returns: a rect bounding the changed pixels, if nothing is drawn the
+       bounding rect's position will be the position of the starting point
+       and its width and height will be 0
+    :rtype: Rect
+
+    .. versionadded:: 2.5.6
+    """

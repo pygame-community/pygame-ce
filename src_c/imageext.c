@@ -148,6 +148,25 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         return RAISE(pgExc_SDLError, IMG_GetError());
     }
 
+    /* Vendor in fix from https://github.com/libsdl-org/SDL_image/pull/559.
+     * When that PR is merged this block can be removed. */
+    if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
+        Uint32 colorkey;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (SDL_GetSurfaceColorKey(surf, &colorkey))
+#else
+        if (SDL_GetColorKey(surf, &colorkey) == 0)
+#endif
+        {
+            SDL_Palette *pal = PG_GetSurfacePalette(surf);
+            if (pal && colorkey < (Uint32)pal->ncolors) {
+                SDL_Color c = pal->colors[colorkey];
+                c.a = SDL_ALPHA_OPAQUE;
+                SDL_SetPaletteColors(pal, &c, (int)colorkey, 1);
+            }
+        }
+    }
+
     final = (PyObject *)pgSurface_New(surf);
     if (final == NULL) {
         SDL_FreeSurface(surf);
