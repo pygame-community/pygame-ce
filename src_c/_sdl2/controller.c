@@ -30,7 +30,11 @@ controller_module_init(PyObject *module, PyObject *_null)
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_SetGamepadEventsEnabled(SDL_TRUE);
+#else
     SDL_GameControllerEventState(SDL_ENABLE);
+#endif
 
     Py_RETURN_NONE;
 }
@@ -82,12 +86,28 @@ controller_module_is_controller(PyObject *module, PyObject *args,
     return PyBool_FromLong(SDL_IsGameController(device_index));
 }
 
+static int
+_get_joystick_count()
+{
+    int count;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_JoystickID *joysticks = SDL_GetJoysticks(&count);
+    if (!joysticks) {
+        return -1;
+    }
+    SDL_free(joysticks);
+#else
+    count = SDL_NumJoysticks();
+#endif
+    return count;
+}
+
 static PyObject *
 controller_module_get_count(PyObject *module, PyObject *_null)
 {
     CONTROLLER_INIT_CHECK();
 
-    int count = SDL_NumJoysticks();
+    int count = _get_joystick_count();
     if (count < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -288,7 +308,11 @@ controller_set_mapping(pgControllerObject *self, PyObject *args,
 
     char guid_str[64];
     SDL_Joystick *joy = SDL_GameControllerGetJoystick(self->controller);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_GUIDToString(SDL_JoystickGetGUID(joy), guid_str, 63);
+#else
     SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joy), guid_str, 63);
+#endif
 
     PyObject *key, *value;
     const char *key_str, *value_str;
@@ -369,10 +393,17 @@ controller_rumble(pgControllerObject *self, PyObject *args, PyObject *kwargs)
     low_freq = MAX(MIN(low_freq, 1.0f), 0.0f) * 65535;
     high_freq = MAX(MIN(high_freq, 1.0f), 0.0f) * 65535;
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_bool success = SDL_GameControllerRumble(
+        self->controller, (Uint16)low_freq, (Uint16)high_freq, duration);
+
+    return PyBool_FromLong(success);
+#else
     int success = SDL_GameControllerRumble(self->controller, (Uint16)low_freq,
                                            (Uint16)high_freq, duration);
-
     return PyBool_FromLong(success == 0);
+
+#endif
 }
 
 static PyObject *
@@ -386,7 +417,7 @@ controller_stop_rumble(pgControllerObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
-static PyObject*
+static PyObject *
 controller_set_led(pgControllerObject *self, PyObject *arg)
 {
     CONTROLLER_INIT_CHECK();
@@ -399,13 +430,15 @@ controller_set_led(pgControllerObject *self, PyObject *arg)
     }
 
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
-    if (SDL_GameControllerSetLED(self->controller, colors[0], colors[1], colors[2]) < 0) {
+    if (SDL_GameControllerSetLED(self->controller, colors[0], colors[1],
+                                 colors[2]) < 0) {
         Py_RETURN_FALSE;
     }
     Py_RETURN_TRUE;
 #else
     // SDL3 renames the function and sets an error message on failure
-    bool result = SDL_SetGamepadLED(self->controller, colors[0], colors[1], colors[2]);
+    bool result =
+        SDL_SetGamepadLED(self->controller, colors[0], colors[1], colors[2]);
     if (!result) {
         // Clear the SDL error message that SDL set, for example if it didn't
         // have an addressable LED
@@ -441,7 +474,8 @@ static PyMethodDef controller_methods[] = {
      DOC_SDL2_CONTROLLER_CONTROLLER_RUMBLE},
     {"stop_rumble", (PyCFunction)controller_stop_rumble, METH_NOARGS,
      DOC_SDL2_CONTROLLER_CONTROLLER_STOPRUMBLE},
-    {"set_led", (PyCFunction)controller_set_led, METH_O, DOC_SDL2_CONTROLLER_CONTROLLER_SETLED},
+    {"set_led", (PyCFunction)controller_set_led, METH_O,
+     DOC_SDL2_CONTROLLER_CONTROLLER_SETLED},
     {NULL, NULL, 0, NULL}};
 
 static PyMemberDef controller_members[] = {
@@ -465,7 +499,12 @@ controller_new(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 
     CONTROLLER_INIT_CHECK();
 
-    if (id >= SDL_NumJoysticks() || !SDL_IsGameController(id)) {
+    int joycount = _get_joystick_count();
+    if (joycount < 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    if (id >= joycount || !SDL_IsGameController(id)) {
         return RAISE(pgExc_SDLError, "Invalid index");
     }
 
@@ -585,11 +624,11 @@ MODINIT_DEFINE(controller)
         .m_doc = DOC_SDL2_CONTROLLER,
         .m_size = -1,
         .m_methods = _controller_module_methods,
-/*
-#if PY_VERSION_HEX >= 0x030D0000
-        .m_slots = mod_controller_slots,
-#endif
-*/
+        /*
+        #if PY_VERSION_HEX >= 0x030D0000
+                .m_slots = mod_controller_slots,
+        #endif
+        */
     };
 
     import_pygame_base();
