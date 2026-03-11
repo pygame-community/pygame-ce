@@ -86,21 +86,28 @@ controller_module_is_controller(PyObject *module, PyObject *args,
     return PyBool_FromLong(SDL_IsGameController(device_index));
 }
 
-static PyObject *
-controller_module_get_count(PyObject *module, PyObject *_null)
+static int
+_get_joystick_count()
 {
-    CONTROLLER_INIT_CHECK();
-
-#if SDL_VERSION_ATLEAST(3, 0, 0)
     int count;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_JoystickID *joysticks = SDL_GetJoysticks(&count);
     if (!joysticks) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     SDL_free(joysticks);
 #else
-    int count = SDL_NumJoysticks();
+    count = SDL_NumJoysticks();
 #endif
+    return count;
+}
+
+static PyObject *
+controller_module_get_count(PyObject *module, PyObject *_null)
+{
+    CONTROLLER_INIT_CHECK();
+
+    int count = _get_joystick_count();
     if (count < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -408,9 +415,7 @@ controller_stop_rumble(pgControllerObject *self, PyObject *_null)
     if (!self->controller) {
         return RAISE(pgExc_SDLError, "Controller is not initialized");
     }
-    if (!SDL_GameControllerRumble(self->controller, 0, 0, 1)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
-    }
+    SDL_GameControllerRumble(self->controller, 0, 0, 1);
     Py_RETURN_NONE;
 }
 
@@ -493,16 +498,7 @@ controller_new(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 
     CONTROLLER_INIT_CHECK();
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    int joycount;
-    SDL_JoystickID *joysticks = SDL_GetJoysticks(&joycount);
-    if (!joysticks) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
-    }
-    SDL_free(joysticks);
-#else
-    int joycount = SDL_NumJoysticks();
-#endif
+    int joycount = _get_joystick_count();
 
     if (id >= joycount || !SDL_IsGameController(id)) {
         return RAISE(pgExc_SDLError, "Invalid index");
