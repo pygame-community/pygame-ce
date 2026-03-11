@@ -450,6 +450,13 @@ renderer_render_geometry(pgRendererObject *self, PyObject *args,
     pgGeometryMeshObject *mesh = (pgGeometryMeshObject *)mesh_obj;
     vertices = mesh->vertices;
 
+    if (mesh->vertices == NULL || mesh->vertex_count < 0 ||
+        mesh->index_count < 0) {
+        return RAISE(PyExc_ValueError,
+                     "Invalid mesh vertices. Ensure the mesh creation/update "
+                     "was successful.");
+    }
+
     if (!Py_IsNone(transform_obj)) {
         if (_get_transform_matrix(transform_obj, &a, &c, &tx, &b, &d, &ty) <
             0) {
@@ -1442,13 +1449,13 @@ _mesh_get_vertex(PyObject *vertex_obj, float *x, float *y, Uint8 *r, Uint8 *g,
     if (!PySequence_Check(vertex_obj)) {
         RAISERETURN(PyExc_TypeError,
                     "each vertex should be a sequence of (position, "
-                    "color, tex_coordinate)",
+                    "color, texture_coordinate)",
                     -1);
     }
     if (PySequence_Length(vertex_obj) != 3) {
         RAISERETURN(PyExc_TypeError,
                     "each vertex should be a sequence of (position, "
-                    "color, tex_coordinate)",
+                    "color, texture_coordinate)",
                     -1);
     }
 
@@ -1485,9 +1492,10 @@ _mesh_get_vertex(PyObject *vertex_obj, float *x, float *y, Uint8 *r, Uint8 *g,
     result = pg_TwoFloatsFromObj(tex_coord_obj, tex_coord_x, tex_coord_y);
     Py_DECREF(tex_coord_obj);
     if (!result) {
-        RAISERETURN(PyExc_TypeError,
-                    "each vertex's tex coord should be a coordinate (x, y)",
-                    -1);
+        RAISERETURN(
+            PyExc_TypeError,
+            "each vertex's texture coordinate should be a coordinate (x, y)",
+            -1);
     }
 
     return 0;
@@ -1503,8 +1511,10 @@ _mesh_free(pgGeometryMeshObject *mesh, SDL_Vertex *vertices, int *indices,
     mesh->vertices = mesh->transformed_vertices = NULL;
     mesh->indices = NULL;
     mesh->vertex_count = mesh->index_count = -1;
-    PyMem_Free(vertices);
-    if (use_indices) {
+    if (vertices) {
+        PyMem_Free(vertices);
+    }
+    if (use_indices && indices) {
         PyMem_Free(indices);
     }
 }
@@ -1542,6 +1552,7 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
         }
     }
     else {
+        mesh->index_count = 0;
         use_indices = 0;
     }
     vertex_count = (int)PySequence_Length(vertices_seq);
@@ -1574,10 +1585,7 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
         vertices = PyMem_New(SDL_Vertex, vertex_count);
     }
     if (!vertices) {
-        if (mesh->transformed_vertices) {
-            PyMem_Free(mesh->transformed_vertices);
-            mesh->transformed_vertices = NULL;
-        }
+        _mesh_free(mesh, NULL, indices, use_indices);
         PyErr_NoMemory();
         return -1;
     }
@@ -1586,12 +1594,7 @@ _mesh_rebuild(pgGeometryMeshObject *mesh, PyObject *vertices_seq,
             indices = PyMem_New(int, index_count);
         }
         if (!indices) {
-            mesh->vertices = NULL;
-            PyMem_Free(vertices);
-            if (mesh->transformed_vertices) {
-                PyMem_Free(mesh->transformed_vertices);
-                mesh->transformed_vertices = NULL;
-            }
+            _mesh_free(mesh, vertices, NULL, 1);
             PyErr_NoMemory();
             return -1;
         }
