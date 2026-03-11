@@ -107,6 +107,12 @@ draw_round_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1,
                 int x2, int y2, int radius, int width, Uint32 color,
                 int top_left, int top_right, int bottom_left, int bottom_right,
                 int *drawn_area);
+static void
+draw_round_rect_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                          PG_PixelFormat *surf_format, int x1, int y1, int x2,
+                          int y2, int radius, int width, Uint32 color,
+                          int top_left, int top_right, int bottom_left,
+                          int bottom_right, int *drawn_area);
 
 static int
 flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
@@ -1282,6 +1288,142 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
                         rect->x + rect->w - 1, rect->y + rect->h - 1, radius,
                         width, color, top_left_radius, top_right_radius,
                         bottom_left_radius, bottom_right_radius, drawn_area);
+        if (!pgSurface_Unlock(surfobj)) {
+            return RAISE(PyExc_RuntimeError, "error unlocking surface");
+        }
+    }
+
+    if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
+        return pgRect_New4(drawn_area[0], drawn_area[1],
+                           drawn_area[2] - drawn_area[0] + 1,
+                           drawn_area[3] - drawn_area[1] + 1);
+    }
+    else {
+        return pgRect_New4(rect->x, rect->y, 0, 0);
+    }
+}
+
+static PyObject *
+aarect(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    PyObject *colorobj, *rectobj;
+    SDL_Rect *rect = NULL, temp;
+    SDL_Surface *surf = NULL;
+    Uint32 color;
+    int width = 0, radius = 0; /* Default values. */
+    int top_left_radius = -1, top_right_radius = -1, bottom_left_radius = -1,
+        bottom_right_radius = -1;
+    SDL_Rect sdlrect;
+    SDL_Rect clipped;
+    int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
+                         INT_MIN}; /* Used to store bounding box values */
+    static char *keywords[] = {"surface",
+                               "color",
+                               "rect",
+                               "width",
+                               "border_radius",
+                               "border_top_left_radius",
+                               "border_top_right_radius",
+                               "border_bottom_left_radius",
+                               "border_bottom_right_radius",
+                               NULL};
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "O!OO|iiiiii", keywords, &pgSurface_Type, &surfobj,
+            &colorobj, &rectobj, &width, &radius, &top_left_radius,
+            &top_right_radius, &bottom_left_radius, &bottom_right_radius)) {
+        return NULL; /* Exception already set. */
+    }
+
+    if (!(rect = pgRect_FromObject(rectobj, &temp))) {
+        return RAISE(PyExc_TypeError, "rect argument is invalid");
+    }
+
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
+        return PyErr_Format(PyExc_ValueError,
+                            "unsupported surface bit depth (%d) for drawing",
+                            PG_SURF_BytesPerPixel(surf));
+    }
+
+    SDL_Rect surf_clip_rect;
+    if (!PG_GetSurfaceClipRect(surf, &surf_clip_rect)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    PG_PixelFormat *surf_format = PG_GetSurfaceFormat(surf);
+    if (surf_format == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    CHECK_LOAD_COLOR(colorobj)
+
+    if (width < 0) {
+        return pgRect_New4(rect->x, rect->y, 0, 0);
+    }
+
+    /* If there isn't any rounded rect-ness OR the rect is really thin in one
+       direction. The "really thin in one direction" check is necessary because
+       draw_round_rect fails (draws something bad) on rects with a dimension
+       that is 0 or 1 pixels across.*/
+    if ((radius <= 0 && top_left_radius <= 0 && top_right_radius <= 0 &&
+         bottom_left_radius <= 0 && bottom_right_radius <= 0) ||
+        abs(rect->w) < 2 || abs(rect->h) < 2) {
+        sdlrect.x = rect->x;
+        sdlrect.y = rect->y;
+        sdlrect.w = rect->w;
+        sdlrect.h = rect->h;
+        /* SDL_FillRect respects the clip rect already, but in order to
+            return the drawn area, we need to do this here, and keep the
+            pointer to the result in clipped */
+        if (!SDL_IntersectRect(&sdlrect, &surf_clip_rect, &clipped)) {
+            return pgRect_New4(rect->x, rect->y, 0, 0);
+        }
+        if (width > 0 && (width * 2) < clipped.w && (width * 2) < clipped.h) {
+            draw_rect(surf, surf_clip_rect, sdlrect.x, sdlrect.y,
+                      sdlrect.x + sdlrect.w - 1, sdlrect.y + sdlrect.h - 1,
+                      width, color);
+        }
+        else {
+            pgSurface_Prep(surfobj);
+            pgSurface_Lock(surfobj);
+            bool success = PG_FillSurfaceRect(surf, &clipped, color);
+            pgSurface_Unlock(surfobj);
+            pgSurface_Unprep(surfobj);
+            if (!success) {
+                return RAISE(pgExc_SDLError, SDL_GetError());
+            }
+        }
+        return pgRect_New(&clipped);
+    }
+    else {
+        if (!pgSurface_Lock(surfobj)) {
+            return RAISE(PyExc_RuntimeError, "error locking surface");
+        }
+
+        /* Little bit to normalize the rect: this matters for the rounded
+           rects, despite not mattering for the normal rects. */
+        if (rect->w < 0) {
+            rect->x += rect->w;
+            rect->w = -rect->w;
+        }
+        if (rect->h < 0) {
+            rect->y += rect->h;
+            rect->h = -rect->h;
+        }
+
+        if (width > rect->w / 2 || width > rect->h / 2) {
+            width = MAX(rect->w / 2, rect->h / 2);
+        }
+
+        draw_round_rect_xiaolinwu(
+            surf, surf_clip_rect, surf_format, rect->x, rect->y,
+            rect->x + rect->w - 1, rect->y + rect->h - 1, radius, width, color,
+            top_left_radius, top_right_radius, bottom_left_radius,
+            bottom_right_radius, drawn_area);
         if (!pgSurface_Unlock(surfobj)) {
             return RAISE(PyExc_RuntimeError, "error unlocking surface");
         }
@@ -4113,6 +4255,169 @@ draw_round_rect(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1,
     }
 }
 
+/* Use `draw_circle_xiaolinwu()` to draw the rounded corners of a rectangle. */
+static void
+draw_round_rect_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect,
+                          PG_PixelFormat *surf_format, int x1, int y1, int x2,
+                          int y2, int radius, int width, Uint32 color,
+                          int top_left, int top_right, int bottom_left,
+                          int bottom_right, int *drawn_area)
+{
+    int pts[16], i;
+    float q_top, q_left, q_bottom, q_right, f;
+    if (top_left < 0) {
+        top_left = radius;
+    }
+    if (top_right < 0) {
+        top_right = radius;
+    }
+    if (bottom_left < 0) {
+        bottom_left = radius;
+    }
+    if (bottom_right < 0) {
+        bottom_right = radius;
+    }
+    if ((top_left + top_right) > (x2 - x1 + 1) ||
+        (bottom_left + bottom_right) > (x2 - x1 + 1) ||
+        (top_left + bottom_left) > (y2 - y1 + 1) ||
+        (top_right + bottom_right) > (y2 - y1 + 1)) {
+        q_top = (x2 - x1 + 1) / (float)(top_left + top_right);
+        q_left = (y2 - y1 + 1) / (float)(top_left + bottom_left);
+        q_bottom = (x2 - x1 + 1) / (float)(bottom_left + bottom_right);
+        q_right = (y2 - y1 + 1) / (float)(top_right + bottom_right);
+        f = MIN(MIN(MIN(q_top, q_left), q_bottom), q_right);
+        top_left = (int)(top_left * f);
+        top_right = (int)(top_right * f);
+        bottom_left = (int)(bottom_left * f);
+        bottom_right = (int)(bottom_right * f);
+    }
+    if (width == 0) { /* Filled rect */
+        pts[0] = x1;
+        pts[1] = x1 + top_left;
+        pts[2] = x2 - top_right;
+        pts[3] = x2;
+        pts[4] = x2;
+        pts[5] = x2 - bottom_right;
+        pts[6] = x1 + bottom_left;
+        pts[7] = x1;
+        pts[8] = y1 + top_left;
+        pts[9] = y1;
+        pts[10] = y1;
+        pts[11] = y1 + top_right;
+        pts[12] = y2 - bottom_right;
+        pts[13] = y2;
+        pts[14] = y2;
+        pts[15] = y2 - bottom_left;
+        draw_fillpoly(surf, surf_clip_rect, pts, pts + 8, 8, color,
+                      drawn_area);
+        draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
+                              x2 - top_right, y1 + top_right, top_right,
+                              top_right, color, 1, 0, 0, 0, drawn_area);
+        draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, x1 + top_left,
+                              y1 + top_left, top_left, top_left, color, 0, 1,
+                              0, 0, drawn_area);
+        draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
+                              x1 + bottom_left, y2 - bottom_left, bottom_left,
+                              bottom_left, color, 0, 0, 1, 0, drawn_area);
+        draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
+                              x2 - bottom_right, y2 - bottom_right,
+                              bottom_right, bottom_right, color, 0, 0, 0, 1,
+                              drawn_area);
+    }
+    else {
+        if (x2 - top_right == x1 + top_left) {
+            for (i = 0; i < width; i++) {
+                set_and_check_rect(
+                    surf, surf_clip_rect, x1 + top_left, y1 + i, color,
+                    drawn_area); /* Fill gap if reduced radius */
+            }
+        }
+        else {
+            draw_line_width(surf, surf_clip_rect, color, x1 + top_left,
+                            y1 + (int)(width / 2) - 1 + width % 2,
+                            x2 - top_right,
+                            y1 + (int)(width / 2) - 1 + width % 2, width,
+                            drawn_area); /* Top line */
+        }
+        if (y2 - bottom_left == y1 + top_left) {
+            for (i = 0; i < width; i++) {
+                set_and_check_rect(
+                    surf, surf_clip_rect, x1 + i, y1 + top_left, color,
+                    drawn_area); /* Fill gap if reduced radius */
+            }
+        }
+        else {
+            draw_line_width(
+                surf, surf_clip_rect, color,
+                x1 + (int)(width / 2) - 1 + width % 2, y1 + top_left,
+                x1 + (int)(width / 2) - 1 + width % 2, y2 - bottom_left, width,
+                drawn_area); /* Left line */
+        }
+        if (x2 - bottom_right == x1 + bottom_left) {
+            for (i = 0; i < width; i++) {
+                set_and_check_rect(
+                    surf, surf_clip_rect, x1 + bottom_left, y2 - i, color,
+                    drawn_area); /* Fill gap if reduced radius */
+            }
+        }
+        else {
+            draw_line_width(surf, surf_clip_rect, color, x1 + bottom_left,
+                            y2 - (int)(width / 2), x2 - bottom_right,
+                            y2 - (int)(width / 2), width,
+                            drawn_area); /* Bottom line */
+        }
+        if (y2 - bottom_right == y1 + top_right) {
+            for (i = 0; i < width; i++) {
+                set_and_check_rect(
+                    surf, surf_clip_rect, x2 - i, y1 + top_right, color,
+                    drawn_area); /* Fill gap if reduced radius */
+            }
+        }
+        else {
+            draw_line_width(surf, surf_clip_rect, color, x2 - (int)(width / 2),
+                            y1 + top_right, x2 - (int)(width / 2),
+                            y2 - bottom_right, width,
+                            drawn_area); /* Right line */
+        }
+        if (width == 1) {
+            draw_circle_xiaolinwu_thin(
+                surf, surf_clip_rect, surf_format, x2 - top_right,
+                y1 + top_right, top_right, color, 1, 0, 0, 0, drawn_area);
+            draw_circle_xiaolinwu_thin(surf, surf_clip_rect, surf_format,
+                                       x1 + top_left, y1 + top_left, top_left,
+                                       color, 0, 1, 0, 0, drawn_area);
+            draw_circle_xiaolinwu_thin(
+                surf, surf_clip_rect, surf_format, x1 + bottom_left,
+                y2 - bottom_left, bottom_left, color, 0, 0, 1, 0, drawn_area);
+            draw_circle_xiaolinwu_thin(surf, surf_clip_rect, surf_format,
+                                       x2 - bottom_right, y2 - bottom_right,
+                                       bottom_right, color, 0, 0, 0, 1,
+                                       drawn_area);
+        }
+        else {
+            /* The `thickness` parameter of `draw_circle_xiaolinwu()` is one
+             * pixel wider than the actual drawn thickness, so we need to
+             * subtract 1 here.
+             */
+            --width;
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
+                                  x2 - top_right, y1 + top_right, top_right,
+                                  width, color, 1, 0, 0, 0, drawn_area);
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
+                                  x1 + top_left, y1 + top_left, top_left,
+                                  width, color, 0, 1, 0, 0, drawn_area);
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
+                                  x1 + bottom_left, y2 - bottom_left,
+                                  bottom_left, width, color, 0, 0, 1, 0,
+                                  drawn_area);
+            draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format,
+                                  x2 - bottom_right, y2 - bottom_right,
+                                  bottom_right, width, color, 0, 0, 0, 1,
+                                  drawn_area);
+        }
+    }
+}
+
 /* List of python functions */
 static PyMethodDef _draw_methods[] = {
     {"aaline", (PyCFunction)aaline, METH_VARARGS | METH_KEYWORDS,
@@ -4134,6 +4439,8 @@ static PyMethodDef _draw_methods[] = {
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_POLYGON},
     {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_RECT},
+    {"aarect", (PyCFunction)aarect, METH_VARARGS | METH_KEYWORDS,
+     DOC_DRAW_AARECT},
 
     {NULL, NULL, 0, NULL}};
 
