@@ -89,7 +89,8 @@ You can also find a list of constants for keyboard keys
     Event type                 Attributes/Notes
 
     QUIT
-    USEREVENT                  code
+    USEREVENT                  (Starting type of the user defined
+                                event types)
 
     KEYDOWN                    key, mod, unicode, scancode, window(1)
     KEYUP                      key, mod, unicode, scancode, window(1)
