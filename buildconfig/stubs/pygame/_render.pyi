@@ -97,8 +97,8 @@ class Texture:
         """Get or set the scale mode for texture drawing operations
 
         Valid scale modes are:
-           * ``pygame.SCALEMODE_NEAREST``: Nearest pixel sampling (also known as
-             nearest neighbor), preserving the texture's pixels when scaled.
+           * ``pygame.SCALEMODE_NEAREST`` (default): Nearest pixel sampling (also
+             known as nearest neighbor), preserving the texture's pixels when scaled.
            * ``pygame.SCALEMODE_LINEAR``: Linear filtering, smoothing the texture
              when scaled.
            * ``pygame.SCALEMODE_PIXELART``: Nearest pixel sampling with improved
