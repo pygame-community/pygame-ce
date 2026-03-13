@@ -1078,16 +1078,15 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     int staticc = 0;
     int streaming = 0;
     int target = 0;
-    int scale_quality = -1;
     int access = SDL_TEXTUREACCESS_STATIC;
     Uint32 Rmask, Gmask, Bmask, Amask;
     Uint32 format;
 
-    char *keywords[] = {"renderer",  "size",   "depth",         "static",
-                        "streaming", "target", "scale_quality", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|ipppi", keywords,
+    char *keywords[] = {"renderer",  "size",   "depth", "static",
+                        "streaming", "target", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|ippp", keywords,
                                      &renderer, &sizeobj, &depth, &staticc,
-                                     &streaming, &target, &scale_quality)) {
+                                     &streaming, &target)) {
         return -1;
     }
     if (depth == 0 || depth == 32) {
@@ -1141,24 +1140,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     if (!self->texture) {
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1)
     }
-    if (scale_quality != -1) {
-#if SDL_VERSION_ATLEAST(2, 0, 12)
-        RENDERER_PROPERTY_ERROR_CHECK(
-            SDL_SetTextureScaleMode(self->texture, scale_quality))
-#else
-        switch (scale_quality) {
-            case 0:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-                break;
-            case 1:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-                break;
-            case 2:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
-                break;
-        }
-#endif
-    }
+    SDL_SetTextureScaleMode(self->texture, SDL_ScaleModeNearest);
     self->width = width;
     self->height = height;
     return 0;
