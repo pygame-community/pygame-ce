@@ -733,6 +733,54 @@ blit_blend_rgba_add_avx2(SDL_BlitInfo *info)
 }
 #endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
           !defined(SDL_DISABLE_IMMINTRIN_H) */
+#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+    !defined(SDL_DISABLE_IMMINTRIN_H)
+void
+blit_blend_rgb_overlay_avx2(SDL_BlitInfo *info)
+{
+    SETUP_AVX2_BLITTER
+    SETUP_16BIT_SHUFFLE_OUT
+
+    const __m256i mm256_255 = _mm256_set1_epi16(255);
+    const __m256i mm256_127 = _mm256_set1_epi16(127);
+    const __m256i mm256_amask = _mm256_set1_epi32(info->dst->Amask);
+    const __m256i mm256_rgb_mask = _mm256_set1_epi32(~info->dst->Amask);
+
+    __m256i mm256_dst_alpha;
+
+    RUN_AVX2_BLITTER(
+        mm256_dst_alpha = _mm256_and_si256(pixels_dst, mm256_amask);
+        RUN_16BIT_SHUFFLE_OUT(
+            /* src * dst */
+            __m256i multiply = _mm256_mullo_epi16(shuff_src, shuff_dst);
+            /* divide by 127 */
+            multiply = _mm256_srli_epi16(multiply, 7);
+
+            /* 255 - dst */
+            __m256i inverted_dst = _mm256_sub_epi16(mm256_255, shuff_dst);
+            /* 255 - src */
+            __m256i inverted_src = _mm256_sub_epi16(mm256_255, shuff_src);
+            /* dst * src */
+            __m256i screen = _mm256_mullo_epi16(inverted_dst, inverted_src);
+            /* divide by 127 */
+            screen = _mm256_srli_epi16(screen, 7);
+            /* 255 - screen */
+            screen = _mm256_sub_epi16(mm256_255, screen);
+
+            __m256i gt_127 = _mm256_cmpgt_epi16(shuff_dst, mm256_127);
+            shuff_dst = _mm256_blendv_epi8(multiply, screen, gt_127);
+
+            ) pixels_dst = _mm256_and_si256(pixels_dst, mm256_rgb_mask);
+        pixels_dst = _mm256_or_si256(pixels_dst, mm256_dst_alpha);)
+}
+#else
+void
+blit_blend_rgb_overlay_avx2(SDL_BlitInfo *info)
+{
+    BAD_AVX2_FUNCTION_CALL;
+}
+#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+          !defined(SDL_DISABLE_IMMINTRIN_H) */
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
