@@ -1140,7 +1140,9 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     if (!self->texture) {
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1)
     }
-    SDL_SetTextureScaleMode(self->texture, SDL_ScaleModeNearest);
+    RENDERER_PROPERTY_ERROR_CHECK(
+        SDL_SetTextureScaleMode(self->texture, SDL_ScaleModeNearest))
+
     self->width = width;
     self->height = height;
     return 0;
