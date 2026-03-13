@@ -1046,6 +1046,26 @@ texture_set_blend_mode(pgTextureObject *self, PyObject *arg, void *closure)
 }
 
 static PyObject *
+texture_get_scale_mode(pgTextureObject *self, void *closure)
+{
+    SDL_ScaleMode scale_mode;
+    RENDERER_ERROR_CHECK(SDL_GetTextureScaleMode(self->texture, &scale_mode))
+    return PyLong_FromLong((long)scale_mode);
+}
+
+static int
+texture_set_scale_mode(pgTextureObject *self, PyObject *arg, void *closure)
+{
+    long longval = PyLong_AsLong(arg);
+    if (longval == -1 && PyErr_Occurred()) {
+        return -1;
+    }
+    RENDERER_PROPERTY_ERROR_CHECK(
+        SDL_SetTextureScaleMode(self->texture, (int)longval))
+    return 0;
+}
+
+static PyObject *
 texture_get_color(pgTextureObject *self, void *closure)
 {
     Uint8 color[4];
@@ -1270,6 +1290,11 @@ static PyGetSetDef texture_getset[] = {
      DOC_SDL2_VIDEO_TEXTURE_ALPHA, NULL},
     {"blend_mode", (getter)texture_get_blend_mode,
      (setter)texture_set_blend_mode, DOC_SDL2_VIDEO_TEXTURE_BLENDMODE, NULL},
+    {"scale_mode", (getter)texture_get_scale_mode,
+     (setter)texture_set_scale_mode,
+     "scale_mode -> int\nGet or set the scale mode for texture drawing "
+     "operations",
+     NULL},
     {"color", (getter)texture_get_color, (setter)texture_set_color,
      DOC_SDL2_VIDEO_TEXTURE_COLOR, NULL},
     {NULL, 0, NULL, NULL, NULL}};
