@@ -275,7 +275,7 @@ class TextureTest(unittest.TestCase):
 
     def test_scale_mode(self):
         self.assertEqual(pygame.SCALEMODE_NEAREST, self.texture.scale_mode)
-        self.texture.scale_mode == pygame.SCALEMODE_LINEAR
+        self.texture.scale_mode = pygame.SCALEMODE_LINEAR
         self.assertEqual(pygame.SCALEMODE_LINEAR, self.texture.scale_mode)
 
     def test_color(self):
