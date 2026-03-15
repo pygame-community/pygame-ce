@@ -39,4 +39,4 @@ jobs:
           sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev python3-dev
 
       - name: Check dev.py all
-        run: python3 dev.py all
+        run: python3 dev.py all --ci --commit_hash ${{ github.sha }} --branch "${{ github.head_ref || github.ref_name }}"

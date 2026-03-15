@@ -1,0 +1,8 @@
+#ifndef GIT_INFO
+#define GIT_INFO
+
+#define GIT_COMMIT_HASH_SHORT "@GIT_HASH_SHORT@"
+#define GIT_BRANCH "@GIT_BRANCH@"
+#define CI_BUILD @CI_BUILD@
+
+#endif

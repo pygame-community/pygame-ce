@@ -194,7 +194,7 @@ jobs:
       # so pass --ignore-dep ninja explicitly
       - name: Build and install pygame wheel
         shell: msys2 {0}
-        run: python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax
+        run: python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax  --ci --commit_hash ${{ github.sha }} --branch "${{ github.head_ref || github.ref_name }}"
 
       - name: Run tests
         env:
