@@ -1022,8 +1022,10 @@ texture_set_alpha(pgTextureObject *self, PyObject *arg, void *closure)
         unsigned long longval = PyLong_AsUnsignedLong(intobj);
         Py_DECREF(intobj);
         if (longval == (unsigned long)-1 && PyErr_Occurred()) {
-            RAISERETURN(PyExc_ValueError, "Texture alpha must be positive",
-                        -1);
+            RAISERETURN(
+                PyExc_ValueError,
+                "Invalid alpha for texture (either negative or too large)",
+                -1);
         }
         if (longval > 255) {
             alpha = 255;
