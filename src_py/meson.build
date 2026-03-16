@@ -28,6 +28,10 @@ if not sdl_ttf_dep.found() and freetype_dep.found()
     py.install_sources('ftfont.py', subdir: pg, rename: 'font.py')
 endif
 
+if sdl_api == 3
+    py.install_sources('_audio.py', subdir: pg)
+endif
+
 data_files = files(
     'freesansbold.ttf',
     'pygame_icon.bmp',
