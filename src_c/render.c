@@ -1037,8 +1037,7 @@ texture_set_alpha(pgTextureObject *self, PyObject *arg, void *closure)
             SDL_SetTextureAlphaMod(self->texture, alpha))
         return 0;
     }
-    RAISERETURN(PyExc_TypeError, "Texture alpha must be a number",
-                -1);
+    RAISERETURN(PyExc_TypeError, "Texture alpha must be a number", -1);
 }
 
 static PyObject *
