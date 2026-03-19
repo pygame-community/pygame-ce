@@ -2391,6 +2391,9 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
             PyExc_ValueError,
             "Destination surface must be the same size as source surface."));
     }
+    else if (newsurf->w == 0 || newsurf->h == 0) {
+        return newsurf;
+    }
 
     PG_PixelFormat *fmt, *newsurf_format;
     SDL_Palette *src_palette, *newsurf_palette;
