@@ -3,6 +3,14 @@
 :mod:`pygame.scrap`
 ===================
 
+.. module:: pygame.scrap
+   :synopsis: pygame module for clipboard support.
+
+| :sl:`pygame module for clipboard support.`
+
+**EXPERIMENTAL!**: This API may change or disappear in later pygame releases. If
+you use this, your code may break with the next pygame release.
+
 .. autopgmodule:: pygame.scrap
    :members:
 
