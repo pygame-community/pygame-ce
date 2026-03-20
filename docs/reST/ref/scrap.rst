@@ -3,29 +3,8 @@
 :mod:`pygame.scrap`
 ===================
 
-.. module:: pygame.scrap
-   :synopsis: pygame module for clipboard support.
-
-| :sl:`pygame module for clipboard support.`
-
-**EXPERIMENTAL!**: This API may change or disappear in later pygame releases. If
-you use this, your code may break with the next pygame release.
-
-The scrap module is for transferring data to/from the clipboard. This allows for
-transferring of strings between pygame and other applications. Currently, only strings
-are supported with the ``scrap.put_text``, ``scrap.get_text``, and ``scrap.has_text``
-functions. All other functions are deprecated as of pygame 2.2.0 and will be removed
-in a future release of pygame.
-
-.. note:: ``scrap.put_text``, ``scrap.get_text``, and ``scrap.has_text`` use the same
-   clipboard as the rest of the current API, but only strings are compatible with the
-   new API as of right now.
-
-.. autopgfunction:: put_text
-
-.. autopgfunction:: get_text
-
-.. autopgfunction:: has_text
+.. autopgmodule:: pygame.scrap
+   :members:
 
 **THE BELOW INFORMATION IS DEPRECATED IN PYGAME 2.2.0 AND WILL BE REMOVED IN THE FUTURE.**
 
