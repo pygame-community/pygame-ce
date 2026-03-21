@@ -6,9 +6,6 @@
 .. autopgmodule:: pygame.scrap
    :members:
 
-**EXPERIMENTAL!**: This API may change or disappear in later pygame releases. If
-you use this, your code may break with the next pygame release.
-
 **THE BELOW INFORMATION IS DEPRECATED IN PYGAME 2.2.0 AND WILL BE REMOVED IN THE FUTURE.**
 
 The scrap module is for transferring data to/from the clipboard. This allows
