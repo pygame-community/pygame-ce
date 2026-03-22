@@ -12,7 +12,7 @@ def ms_to_frames(sample_rate: int, ms: int) -> int:
     if sample_rate <= 0:
         raise ValueError("Sample rate must be greater than zero.")
     if ms < 0:
-        raise ValueError("MS must be positive.")
+        raise ValueError("MS must be non-negative.")
 
     return int(ms / 1000 * sample_rate)
 
@@ -22,7 +22,7 @@ def frames_to_ms(sample_rate: int, frames: int) -> int:
     if sample_rate <= 0:
         raise ValueError("Sample rate must be greater than zero.")
     if frames < 0:
-        raise ValueError("Frames must be positive.")
+        raise ValueError("Frames must be non-negative.")
 
     return int(frames / sample_rate * 1000)
 
