@@ -75,7 +75,7 @@ class Audio(_sdl3_mixer_c.Audio):
                 f"Audio 'spec' argument must be an AudioSpec, received {type(spec)}"
             )
 
-        return _sdl3_mixer_c.Audio.from_raw(
+        return super().from_raw(
             buffer, (spec.format, spec.channels, spec.frequency), preferred_mixer
         )
 
