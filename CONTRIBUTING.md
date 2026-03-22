@@ -26,26 +26,26 @@ We welcome all contributions! Typo fixes, docs corrections, new API, fixing segm
 ### 4. **Test your changes:**
    Depending on what you're changing, there are some things you should test locally before committing. Generating docs, building and running the unit tests, running mypy, etc. Regardless of what you're doing, you should always test your changes before pushing up. Never assume that you didn't break something, even with a minor commit.
 
-   #### Building docs
+#### Building docs
 
    ```bash
    python dev.py docs --full
    ```
 
-   #### Building pygame-ce
+#### Building pygame-ce
 
    ```bash
    python dev.py install
    ```
 
-   #### Running unit tests
+#### Running unit tests
 
    ```bash
    # build first
    python -m pygame.tests
    ```
 
-   #### Running mypy
+#### Running mypy
 
    ```bash
    # build first
