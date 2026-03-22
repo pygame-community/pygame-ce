@@ -7,23 +7,23 @@ We welcome all contributions! Typo fixes, docs corrections, new API, fixing segm
 
 ## How to Contribute
 
-### 1. **Fork the repository:**
+### 1. Fork the repository:
 Click the "Fork" button in the top right corner of the GitHub page. Then you'll need to clone your fork to your local machine.
 
 ```bash
 git clone https://github.com/yourusername/pygame-ce
 ```
 
-### 2. **Create a new branch:**
+### 2. Create a new branch:
 Create a new branch for your changes.  This keeps your changes separate from the main project until they're ready to be merged.  A good branch name describes the changes you're making, e.g., `fix-transform-scale-segfault` or `update-docs-in-some-function`.
 
 ```bash
 git checkout -b fix-transform-scale-segfault
 ```
 
-### 3. **Make your changes in your local copy of your fork**
+### 3. Make your changes in your local copy of your fork
 
-### 4. **Test your changes:**
+### 4. Test your changes:
 Depending on what you're changing, there are some things you should test locally before committing. Generating docs, building and running the unit tests, running mypy, etc. Regardless of what you're doing, you should always test your changes before pushing up. Never assume that you didn't break something, even with a minor commit.
 
 #### Building docs
@@ -52,24 +52,24 @@ python -m pygame.tests
 python dev.py stubs
 ```
 
-### 5. **Commit your changes:**
+### 5. Commit your changes:
 Time to commit with a clear, descriptive commit message.
 
 ```bash
 git commit -m "Fixed segfault in pygame.transform.scale when X"
 ```
 
-### 6. **Push your changes:**
+### 6. Push your changes:
 Time to push up to your remote repository
 
 ```bash
 git push --set-upstream origin fix-transform-scale-segfault
 ```
 
-### 7. **Create a pull request**
+### 7. Create a pull request
 Go to the original repository and click the "New pull request" button.  Select your forked repository and branch.  Provide a clear title and description of your changes in the pull request.
 
-### 8. **Review and merge**
+### 8. Review and merge
 Your pull request will be reviewed by the maintainers.  They may suggest changes or ask for clarification.  Once the review is complete, your changes will be merged into the main project.
 
 
