@@ -69,6 +69,7 @@ class MouseModuleInteractiveTest(MouseTests):
         pygame.mouse.set_pos([9.9, 9.9])
         pygame.mouse.set_pos([9.9, 9.9], force=True)
 
+
 class MouseModuleTest(MouseTests):
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,

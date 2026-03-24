@@ -40,17 +40,19 @@ mouse_set_pos(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (nargs == 1) {
         static char *kwids[] = {"pos", "force", NULL};
-        PyObject* pos = NULL;
+        PyObject *pos = NULL;
 
-        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", kwids, &pos, &force)) {
+        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", kwids, &pos,
+                                         &force)) {
             return NULL;
         }
-
-    } else {
+    }
+    else {
         static char *kwids[] = {"x", "y", "force", NULL};
         PyObject *_x, *_y = NULL;
 
-        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|i", kwids, &_x, &_y, &force)) {
+        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|i", kwids, &_x, &_y,
+                                         &force)) {
             return NULL;
         }
     }
@@ -79,7 +81,8 @@ mouse_set_pos(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (force) {
         SDL_WarpMouseInWindow(sdlWindow, (Uint16)x, (Uint16)y);
-    } else {
+    }
+    else {
         SDL_WarpMouseInWindow(NULL, (Uint16)x, (Uint16)y);
     }
 
