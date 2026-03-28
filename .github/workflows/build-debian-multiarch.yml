@@ -35,6 +35,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-debian-multiarch
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: write
+
 # this command is called in two places, so save it in an env first
 env:
   INSTALL_CMD: |
@@ -65,10 +69,12 @@ jobs:
           - { arch: armv7, base_image: 'balenalib/raspberrypi3-debian:bookworm' }
 
     steps:
-    - uses: actions/checkout@v6.0.2
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        persist-credentials: false
 
     - name: Build sources and run tests
-      uses: uraimo/run-on-arch-action@v3.0.1
+      uses: uraimo/run-on-arch-action@d94c13912ea685de38fccc1109385b83fd79427d # v3.0.1
       id: build
       with:
         arch: ${{ matrix.base_image && 'none' || matrix.arch }}
@@ -108,7 +114,7 @@ jobs:
 
     # Upload the generated files under github actions assets section
     - name: Upload dist
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: pygame-multiarch-${{ matrix.arch }}-dist
         path: ~/artifacts/*.whl
@@ -121,7 +127,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Download all multiarch artifacts
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         name: pygame-multiarch-armv7-dist
         path: ~/artifacts
@@ -134,7 +140,7 @@ jobs:
         done
 
     - name: Test armv7 wheel on armv6
-      uses: uraimo/run-on-arch-action@v3.0.1
+      uses: uraimo/run-on-arch-action@d94c13912ea685de38fccc1109385b83fd79427d # v3.0.1
       with:
         arch: armv6
         distro: bookworm
