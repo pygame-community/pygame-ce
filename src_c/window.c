@@ -960,7 +960,7 @@ window_get_handle(pgWindowObject *self, void *v)
             props, SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER, NULL);
     }
 
-#else  // sdl 2
+#else  // sdl 2:
     SDL_SysWMinfo info;
 
     SDL_VERSION(&(info.version));
@@ -969,36 +969,36 @@ window_get_handle(pgWindowObject *self, void *v)
         return PyLong_FromSize_t(0);
     }
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS)
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
     if (info.subsystem == SDL_SYSWM_WINDOWS) {
         handle = (size_t)info.info.win.window;
     }
-#endif
-#if defined(SDL_VIDEO_DRIVER_X11)
+#endif  // WINDOWS
+#ifdef SDL_VIDEO_DRIVER_X11
     if (info.subsystem == SDL_SYSWM_X11) {
         handle = (size_t)info.info.x11.window;
     }
-#endif
-#if defined(SDL_VIDEO_DRIVER_COCOA)
+#endif  // X11
+#ifdef SDL_VIDEO_DRIVER_COCOA
     if (info.subsystem == SDL_SYSWM_COCOA) {
         handle = (size_t)info.info.cocoa.window;
     }
-#endif
-#if defined(SDL_VIDEO_DRIVER_UIKIT)
+#endif  // COCOA
+#ifdef SDL_VIDEO_DRIVER_UIKIT
     if (info.subsystem == SDL_SYSWM_UIKIT) {
         handle = (size_t)info.info.uikit.window;
     }
-#endif
-#if defined(SDL_VIDEO_DRIVER_ANDROID)
+#endif  // UIKIT
+#ifdef SDL_VIDEO_DRIVER_ANDROID
     if (info.subsystem == SDL_SYSWM_ANDROID) {
         handle = (size_t)info.info.android.window;
     }
-#endif
-#if defined(SDL_VIDEO_DRIVER_VIVANTE)
+#endif  // ANDROID
+#ifdef SDL_VIDEO_DRIVER_VIVANTE
     if (info.subsystem == SDL_SYSWM_VIVANTE) {
         handle = (size_t)info.info.vivante.window;
     }
-#endif
+#endif  // VIVANTE
 #endif  // sdl 3
 
     return PyLong_FromSize_t(handle);
