@@ -88,9 +88,9 @@ class Orientation(IntEnum):
     PORTRAIT_FLIPPED = 4
 
 class DisplayMode:
-    """Object representing a specific mode of a Display.
+    """Pygame object representing a specific mode of a Display.
 
-    Displays can have different modes that have a different resolution or refresh
+    Displays can have modes that have a different resolution or refresh
     rate compared to the the monitor's maximum capability.
 
     Query the display modes of a Display object with the :data:`Display.current_mode`
@@ -99,9 +99,11 @@ class DisplayMode:
 
     .. versionadded:: 2.5.8
     """
+
+    __hash__ = None
     @property
     def display(self) -> Display:
-        """The Display object this mode is associated to."""
+        """The Display object this mode is associated with."""
     @property
     def width(self) -> int:
         """Horizontal resolution."""
@@ -126,7 +128,7 @@ class DisplayMode:
         """A Fraction with precise refresh rate numerator (or 0 if unspecified) and denominator."""
 
 class Display:
-    """Object representing a physical display.
+    """Pygame object representing a physical display.
 
     Query Display objects with the :func:`pygame.display.get_primary_display`
     and :func:`pygame.display.get_displays` functions.

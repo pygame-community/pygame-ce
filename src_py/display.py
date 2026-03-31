@@ -74,7 +74,7 @@ def _get_display(ID, unplugged=False) -> "Display | None":
 
 
 class DisplayMode:
-    # (display ID, width, height, pixel density, refresh rate numerator, refresh rate denominator)
+    # (display ID, width, height, pixel density, refresh rate, refresh numerator, refresh denominator)
     _mode_data: tuple
 
     def __init__(self):
@@ -87,6 +87,7 @@ class DisplayMode:
         return f"<DisplayMode {self.width}x{self.height}, {float(self.refresh_rate)}hz>"
 
     __repr__ = __str__
+    __hash__ = None
 
     @property
     def display(self):
