@@ -2,7 +2,7 @@ import fractions
 from enum import IntEnum
 
 # non-marked functions will eventually be obsolete
-import pygame._base_display as _base_display
+from pygame import _base_display
 from pygame._base_display import (
     Info,
     flip,
@@ -42,7 +42,7 @@ from pygame._base_display import (
 from pygame.version import SDL
 
 
-class DisplayOrientation(IntEnum):
+class Orientation(IntEnum):
     # Constants match SDL_DisplayOrientation
     UNKNOWN = 0
     LANDSCAPE = 1
@@ -77,6 +77,12 @@ class DisplayMode:
     # (display ID, width, height, pixel density, refresh rate numerator, refresh rate denominator)
     _mode_data: tuple
 
+    def __init__(self):
+        raise RuntimeError(
+            "Explicit initialization of 'DisplayMode' is forbidden. "
+            "Query display modes from a Display object's properties/methods."
+        )
+
     def __str__(self):
         return f"<DisplayMode {self.width}x{self.height}, {float(self.refresh_rate)}hz>"
 
@@ -104,7 +110,11 @@ class DisplayMode:
 
     @property
     def refresh_rate(self):
-        return fractions.Fraction(self._mode_data[4], self._mode_data[5])
+        return float(self._mode_data[4])
+
+    @property
+    def refresh_fraction(self):
+        return fractions.Fraction(self._mode_data[5], self._mode_data[6])
 
 
 class Display:
@@ -113,7 +123,8 @@ class Display:
     def __init__(self):
         raise RuntimeError(
             "Explicit initialization of 'Display' is forbidden. "
-            "Use 'pygame.display.get_displays', 'pygame.display.get_primary_display' or 'Display.from_...' instead."
+            "Use 'pygame.display.get_displays', 'pygame.display.get_primary_display' or "
+            "'Display.from_...' instead."
         )
 
     def __eq__(self, display):
@@ -121,8 +132,12 @@ class Display:
             return self._id == display._id
         return NotImplemented
 
-    def __hash__(self):
-        return hash(self._id)
+    if SDL >= (3, 0, 0):
+
+        def __hash__(self):
+            return hash(self._id)
+    else:
+        __hash__ = None
 
     def __str__(self):
         bounds = self.bounds
@@ -133,6 +148,14 @@ class Display:
     @property
     def name(self):
         return _base_display.get_name(self._id)
+
+    @property
+    def width(self):
+        return _base_display.get_size(self._id)[0]
+
+    @property
+    def height(self):
+        return _base_display.get_size(self._id)[1]
 
     @property
     def bounds(self):
@@ -150,13 +173,13 @@ class Display:
 
     @property
     def current_mode(self):
-        mode = DisplayMode()
+        mode = DisplayMode.__new__(DisplayMode)
         mode._mode_data = _base_display.get_current_mode_data(self._id)
         return mode
 
     @property
     def desktop_mode(self):
-        mode = DisplayMode()
+        mode = DisplayMode.__new__(DisplayMode)
         mode._mode_data = _base_display.get_desktop_mode_data(self._id)
         return mode
 
@@ -166,25 +189,25 @@ class Display:
         def fullscreen_modes(self):
             modes = []
             for data in _base_display.get_fullscreen_modes_data(self._id):
-                mode = DisplayMode()
+                mode = DisplayMode.__new__(DisplayMode)
                 mode._mode_data = data
                 modes.append(mode)
             return modes
 
     @property
     def orientation(self):
-        return _base_display.get_orientation(self._id)
+        return Orientation(_base_display.get_orientation(self._id))
 
     if SDL >= (3, 0, 0):
 
         @property
         def natural_orientation(self):
-            return _base_display.get_natural_orientation(self._id)
+            return Orientation(_base_display.get_natural_orientation(self._id))
 
         def get_closest_fullscreen_mode(
             self, width, height, refresh_rate, include_high_density_modes=True
         ):
-            mode = DisplayMode()
+            mode = DisplayMode.__new__(DisplayMode)
             mode._mode_data = _base_display.get_closest_fullscreen_mode(
                 self._id, width, height, refresh_rate, include_high_density_modes
             )
@@ -213,8 +236,8 @@ def get_displays():
     return [_get_display(_id) for _id in _base_display.get_displays()]
 
 
+# override quit behavior to clean Python-only side
 def quit():
-    # override quit behavior to clean Python-only side
     _displays.clear()
     _base_display.quit()
 

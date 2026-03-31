@@ -52,9 +52,12 @@ automatic stretching of the pygame display on Microsoft Windows (Vista or newer
 required).
 """
 
+import fractions
 from collections.abc import Iterable
+from enum import IntEnum
 from typing import Literal, overload
 
+from pygame import Rect
 from pygame.constants import FULLSCREEN
 from pygame.surface import Surface
 from pygame.typing import (
@@ -64,8 +67,168 @@ from pygame.typing import (
     RectLike,
     SequenceLike,
 )
+from pygame.version import SDL
 from pygame.window import Window
 from typing_extensions import deprecated  # added in 3.13
+
+class Orientation(IntEnum):
+    """IntEnum representing display orientation constants.
+
+    Flipped orientations are rotated 180 degrees from the standard equivalent.
+
+    Using ``repr()`` will print the constant name as well.
+
+    .. versionadded:: 2.5.8
+    """
+
+    UNKNOWN = 0
+    LANDSCAPE = 1
+    LANDSCAPE_FLIPPED = 2
+    PORTRAIT = 3
+    PORTRAIT_FLIPPED = 4
+
+class DisplayMode:
+    """Object representing a specific mode of a Display.
+
+    Displays can have different modes that have a different resolution or refresh
+    rate compared to the the monitor's maximum capability.
+
+    Query the display modes of a Display object with the :data:`Display.current_mode`
+    and :data:`Display.desktop_mode` properties. With SDL3, the :data:`Display.fullscreen_modes`
+    property and :func:`Display.get_closest_fullscreen_mode` method are also available.
+
+    .. versionadded:: 2.5.8
+    """
+    @property
+    def display(self) -> Display:
+        """The Display object this mode is associated to."""
+    @property
+    def width(self) -> int:
+        """Horizontal resolution."""
+    @property
+    def height(self) -> int:
+        """Vertical resolution."""
+    if SDL >= (3, 0, 0):
+        @property
+        def pixel_density(self) -> float:
+            """Scale converting mode width and height to pixels.
+
+            For example, a 1920x1080 mode with a pixel density of 2.0 would have
+            3840x2160 pixels.
+
+            .. note:: Requires SDL 3.0.0+
+            """
+    @property
+    def refresh_rate(self) -> float:
+        """Refresh rate or 0.0 if unspecified."""
+    @property
+    def refresh_fraction(self) -> fractions.Fraction:
+        """A Fraction with precise refresh rate numerator (or 0 if unspecified) and denominator."""
+
+class Display:
+    """Object representing a physical display.
+
+    Query Display objects with the :func:`pygame.display.get_primary_display`
+    and :func:`pygame.display.get_displays` functions.
+
+    .. versionadded:: 2.5.8
+    """
+    def __eq__(self, display: object) -> bool: ...
+    if SDL >= (3, 0, 0):
+        def __hash__(self) -> int: ...
+    else:
+        __hash__ = None
+    @property
+    def name(self) -> str:
+        """The name of the Display like a monitor's model identifier."""
+    @property
+    def width(self) -> int:
+        """Horizontal resolution in pixels."""
+    @property
+    def height(self) -> int:
+        """Vertical resolution in pixels."""
+    @property
+    def bounds(self) -> Rect:
+        """Rect representing the display position and resolution.
+
+        The primary display is typically positioned at (0, 0) and other displays
+        are tipically relative to it.
+        """
+    @property
+    def usable_bounds(self) -> Rect:
+        """The same area as Display.bounds with portions reserved by the system removed.
+
+        As this includes taskbars, menu bars, or docks, it is generally the
+        maximum space available for non-fullscreen windows.
+        """
+    if SDL >= (3, 0, 0):
+        @property
+        def content_scale(self) -> float:
+            """The scale for content based on the DPI settings of the display.
+
+            A 4K display might have a 2.0 (=200%) content scale, making UI elements
+            twice as big to improve readability.
+
+            A window's display scale may differ from the base value of the display
+            it is on, especially on high-DPI and multi-monitor configurations.
+
+            .. note:: Requires SDL 3.0.0+
+            """
+    @property
+    def current_mode(self) -> DisplayMode:
+        """The DisplayMode the display is currently using.
+
+        Generally overlaps with :data:`Display.desktop_mode` unless it was modified
+        by an exclusive fullscreen mode.
+        """
+    @property
+    def desktop_mode(self) -> DisplayMode:
+        """The native DisplayMode of the desktop."""
+    if SDL >= (3, 0, 0):
+        @property
+        def fullscreen_modes(self) -> list[DisplayMode]:
+            """A list of all the DisplayModes a Display supports for exclusive fullscreen.
+
+            The modes are sorted by width, height (largest to smallest), pixel
+            format (more colors to fewer colors), refresh rate (highest to lowest),
+            and pixel density (lowest to highest).
+
+            .. note:: Requires SDL 3.0.0+
+            """
+    @property
+    def orientation(self) -> Orientation:
+        """The current orientation of the Display."""
+    if SDL >= (3, 0, 0):
+        @property
+        def natural_orientation(self) -> Orientation:
+            """The natural orientation of the Display.
+
+            .. note:: Requires SDL 3.0.0+
+            """
+        def get_closest_fullscreen_mode(
+            self,
+            width: int,
+            height: int,
+            refresh_rate: float,
+            include_high_density_modes: bool = True,
+        ) -> DisplayMode | None:
+            """Returns the closest fullscreen DisplayMode matching the parameters.
+
+            If ``refresh_rate`` is 0.0, the desktop refresh rate is used instead.
+            The modes are scanned with the same priority as :data:`Display.fullscreen_modes`.
+            If all the available modes are too small, ``None`` is returned.
+
+            .. note:: Requires SDL 3.0.0+
+            """
+    @classmethod
+    def from_window(cls, window: Window) -> Display:
+        """Returns the Display object a window is on."""
+    @classmethod
+    def from_point(cls, point: IntPoint) -> Display:
+        """Returns the Display object containing the point."""
+    @classmethod
+    def from_rect(cls, rect: RectLike) -> Display:
+        """Returns the Display object entirely containing or closest to the center of a rect."""
 
 class _VidInfo:
     @property
@@ -152,6 +315,24 @@ def get_init() -> bool:
     """Returns True if the display module has been initialized.
 
     Returns True if the :mod:`pygame.display` module is currently initialized.
+    """
+
+def get_primary_display() -> Display:
+    """Returns the primary Display.
+
+    Calling this function implicitly initializes :mod:`pygame.display` if
+    it was not initialized before.
+
+    .. versionadded:: 2.5.8
+    """
+
+def get_displays() -> list[Display]:
+    """Returns a list of all of the available Displays.
+
+    Calling this function implicitly initializes :mod:`pygame.display` if
+    it was not initialized before.
+
+    .. versionadded:: 2.5.8
     """
 
 def set_mode(
@@ -867,72 +1048,3 @@ def message_box(
 
     .. versionadded:: 2.4.0
     """
-
-# Display
-
-import fractions
-from enum import IntEnum
-
-from pygame import Rect
-from pygame.version import SDL
-
-class DisplayOrientation(IntEnum):
-    UNKNOWN = 0
-    LANDSCAPE = 1
-    LANDSCAPE_FLIPPED = 2
-    PORTRAIT = 3
-    PORTRAIT_FLIPPED = 4
-
-class DisplayMode:
-    @property
-    def display(self) -> Display: ...
-    @property
-    def width(self) -> int: ...
-    @property
-    def height(self) -> int: ...
-    if SDL >= (3, 0, 0):
-        @property
-        def pixel_density(self) -> float: ...
-    @property
-    def refresh_rate(self) -> fractions.Fraction: ...
-
-class Display:
-    def __eq__(self, display: object) -> bool: ...
-    def __hash__(self) -> int: ...
-    @property
-    def name(self) -> str: ...
-    @property
-    def bounds(self) -> Rect: ...
-    @property
-    def usable_bounds(self) -> Rect: ...
-    if SDL >= (3, 0, 0):
-        @property
-        def content_scale(self) -> float: ...
-    @property
-    def current_mode(self) -> DisplayMode: ...
-    @property
-    def desktop_mode(self) -> DisplayMode: ...
-    if SDL >= (3, 0, 0):
-        @property
-        def fullscreen_modes(self) -> list[DisplayMode]: ...
-    @property
-    def orientation(self) -> DisplayOrientation: ...
-    if SDL >= (3, 0, 0):
-        @property
-        def natural_orientation(self) -> DisplayOrientation: ...
-        def get_closest_fullscreen_mode(
-            self,
-            width: int,
-            height: int,
-            refresh_rate: float,
-            include_high_density_modes: bool = True,
-        ) -> DisplayMode | None: ...
-    @classmethod
-    def from_window(cls, window: Window) -> Display: ...
-    @classmethod
-    def from_point(cls, point: IntPoint) -> Display: ...
-    @classmethod
-    def from_rect(cls, rect: RectLike) -> Display: ...
-
-def get_primary_display() -> Display: ...
-def get_displays() -> list[Display]: ...

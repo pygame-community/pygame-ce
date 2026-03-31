@@ -3826,7 +3826,11 @@ _pg_display_is_valid_id(PyObject *self, PyObject *arg)
 static PyObject *
 _pg_display_get_displays(PyObject *self, PyObject *_null)
 {
-    VIDEO_INIT_CHECK();
+    if (!SDL_WasInit(SDL_INIT_VIDEO)) {
+        if (!pg_display_init(NULL, NULL)) {
+            return NULL;
+        }
+    }
     int display_count;
     PyObject *result = NULL;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -3875,7 +3879,11 @@ _pg_display_get_displays(PyObject *self, PyObject *_null)
 static PyObject *
 _pg_display_get_primary_display(PyObject *self, PyObject *_null)
 {
-    VIDEO_INIT_CHECK();
+    if (!SDL_WasInit(SDL_INIT_VIDEO)) {
+        if (!pg_display_init(NULL, NULL)) {
+            return NULL;
+        }
+    }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_DisplayID primary_id = SDL_GetPrimaryDisplay();
     if (primary_id == 0) {
@@ -3904,6 +3912,25 @@ _pg_display_get_name(PyObject *self, PyObject *arg)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     return PyUnicode_FromString(name);
+}
+
+static PyObject *
+_pg_display_get_size(PyObject *self, PyObject *arg)
+{
+    VIDEO_INIT_CHECK();
+    PG_DisplayID_t display = GET_DISPLAY_ID(arg);
+    if (display == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
+    SDL_Rect bounds;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_GetDisplayBounds(display, &bounds)) {
+#else
+    if (SDL_GetDisplayBounds(display, &bounds) < 0) {
+#endif
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    return pg_tuple_couple_from_values_int(bounds.w, bounds.h);
 }
 
 static PyObject *
@@ -4006,16 +4033,16 @@ _build_display_mode_data(PG_DisplayID_t id, const SDL_DisplayMode *mode)
 {
     return Py_BuildValue(
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        "(Iiifii)",
+        "(Iiiffii)",
 #else
-        "(iiifii)",
+        "(iiifiii)",
 #endif
         id, mode->w, mode->h,
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        mode->pixel_density, mode->refresh_rate_numerator,
+        mode->pixel_density, mode->refresh_rate, mode->refresh_rate_numerator,
         mode->refresh_rate_denominator
 #else
-        -1.0f, mode->refresh_rate, 1
+        -1.0f, mode->refresh_rate, mode->refresh_rate, 1
 #endif
     );
 }
@@ -4316,6 +4343,7 @@ static PyMethodDef _pg_display_methods[] = {
     // Display
     {"is_valid_id", (PyCFunction)_pg_display_is_valid_id, METH_O, NULL},
     {"get_name", (PyCFunction)_pg_display_get_name, METH_O, NULL},
+    {"get_size", (PyCFunction)_pg_display_get_size, METH_O, NULL},
     {"get_bounds", (PyCFunction)_pg_display_get_bounds, METH_O, NULL},
     {"get_usable_bounds", (PyCFunction)_pg_display_get_usable_bounds, METH_O,
      NULL},
