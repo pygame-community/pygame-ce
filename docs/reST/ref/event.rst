@@ -10,51 +10,42 @@
 
 .. rubric:: Event queue
 
-Pygame handles all its event messaging through an event queue. The routines in
+Pygame handles all its event messaging through an event queue. The functions in
 this module help you manage that event queue. The input queue is heavily
 dependent on the video system (:mod:`pygame.display` or :class:`pygame.Window`).
-If it has not been initialized and a video mode not set/window not created,
-the event queue may not work properly.
+If a window has not been created, the event queue may not work properly.
 
 The event queue has an upper limit on the number of events it can hold. When
 the queue becomes full new events are quietly dropped. To prevent lost events,
 especially input events which signal a quit command, your program must handle
 events every frame (with :func:`pygame.event.get()`, :func:`pygame.event.pump()`,
-:func:`pygame.event.wait()`, :func:`pygame.event.peek()` or :func:`pygame.event.clear()`)
-and process them.
+:func:`pygame.event.wait()`, :func:`pygame.event.peek()` or
+:func:`pygame.event.clear()`).
 
 .. note:: Not handling events may cause the system to decide the program is
    frozen (not responding).
-
-The event queue also offers some simple filtering which can slightly help
-performance by blocking certain event types from the queue. Use
-:func:`pygame.event.set_allowed()` and :func:`pygame.event.set_blocked()` to
-change this filtering. By default, all event types can be placed on the queue.
 
 .. rubric:: Events of input devices
 
 To get the state of various input devices, you can forego the event queue and
 access the input devices directly with their appropriate modules:
-:mod:`pygame.mouse`, :mod:`pygame.key`, and :mod:`pygame.joystick`. If you use
-this method, remember that pygame requires some form of communication with the
-system window manager and other parts of the platform. To keep pygame in sync
-with the system, you will need to call :func:`pygame.event.pump()` to keep
-everything current. Usually, this should be called once per game loop.
-Note: Joysticks will not send any events until the device has been initialized.
+:mod:`pygame.mouse`, :mod:`pygame.key`, and :mod:`pygame.joystick`. However,
+the event queue still needs to be running internally to enable this; programs
+still need to use functions like :func:`pygame.event.get()` or
+:func:`pygame.event.pump()` periodically. Note: Joysticks will not send any
+events until the device has been initialized.
 
 .. rubric:: Event objects
 
 The event queue contains :class:`pygame.event.Event` event objects.
 There are a variety of ways to access the queued events, from simply
-checking for the existence of events, to grabbing them directly off the stack.
+checking for the existence of events, to popping them off of the event queue.
 
 All :class:`pygame.event.Event` instances contain an event type identifier
 and attributes specific to that event type. The event type identifier is
-accessible as the :attr:`pygame.event.Event.type` property. Any of the
-event specific attributes can be accessed through the
-:attr:`pygame.event.Event.__dict__` attribute or directly as an attribute
-of the event object (as member lookups are passed through to the object's
-dictionary values).
+accessible as the :attr:`pygame.event.Event.type` property. An event type's
+specific attributes can be accessed directly as an attribute on the event
+object.
 
 Users can create their own new events (or emulate system events) by
 instantiating :func:`pygame.event.Event()` themselves, usually paired
@@ -67,13 +58,11 @@ they are the same type and have identical attribute values.
 
 The event type identifier is in between the values of ``NOEVENT`` and
 ``NUMEVENTS``. User defined events should have a value in the inclusive range
-of ``USEREVENT`` to ``NUMEVENTS - 1``. User defined events can get a custom
-event number with :func:`pygame.event.custom_type()`.
-It is recommended all user events follow this system.
+of ``USEREVENT`` to ``NUMEVENTS - 1``. User defined events should reserve
+a custom event number with :func:`pygame.event.custom_type()`.
 
 While debugging and experimenting, you can print an event object for a quick
-display of its type and members. The function :func:`pygame.event.event_name()`
-can be used to get a string representing the name of the event type.
+display of its type and members.
 
 .. rubric:: Event types and attributes
 
@@ -132,7 +121,7 @@ You can also find a list of constants for keyboard keys
                                 on the window)
     DROPBEGIN                  window(1)
     DROPCOMPLETE               window(1)
-    DROPTEXT                   window(1) (Event only supported on X11)
+    DROPTEXT                   window(1)
 
     MIDIIN                     (Reserved for pygame.midi use)
     MIDIOUT                    (Reserved for pygame.midi use)
