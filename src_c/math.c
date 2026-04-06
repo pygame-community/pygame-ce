@@ -120,7 +120,7 @@ static PyObject *
 math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs);
 
 /* generic helper functions */
-static int
+static bool
 RealNumber_Check(PyObject *obj);
 static double
 PySequence_GetItem_AsDouble(PyObject *seq, Py_ssize_t index);
@@ -369,13 +369,10 @@ vector_elementwise(pgVector *vec, PyObject *args);
  * Global helper functions
  ********************************/
 
-static int
+static bool
 RealNumber_Check(PyObject *obj)
 {
-    if (obj && PyNumber_Check(obj) && !PyComplex_Check(obj)) {
-        return 1;
-    }
-    return 0;
+    return obj && PyNumber_Check(obj) && !PyComplex_Check(obj);
 }
 
 static double
