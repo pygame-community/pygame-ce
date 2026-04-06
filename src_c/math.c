@@ -885,7 +885,7 @@ vector_pos(pgVector *self)
     pgVector *ret = _vector_subtype_new(self);
 
     if (ret) {
-        memcpy(ret->coords, self->coords, sizeof(ret->coords[0]) * ret->dim);
+        memcpy(ret->coords, self->coords, sizeof(double) * VECTOR_MAX_SIZE);
     }
     return (PyObject *)ret;
 }
@@ -905,33 +905,25 @@ vector_nonzero(pgVector *self)
 static PyObject *
 vector_copy(pgVector *self, PyObject *_null)
 {
-    Py_ssize_t i;
     pgVector *ret = _vector_subtype_new(self);
 
     if (!ret) {
         return NULL;
     }
 
-    for (i = 0; i < self->dim; i++) {
-        ret->coords[i] = self->coords[i];
-    }
+    memcpy(ret->coords, self->coords, sizeof(double) * VECTOR_MAX_SIZE);
     return (PyObject *)ret;
 }
 
 static PyObject *
 vector_clamp_magnitude(pgVector *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    Py_ssize_t i;
-    pgVector *ret;
-
-    ret = _vector_subtype_new(self);
+    pgVector *ret = _vector_subtype_new(self);
     if (ret == NULL) {
         return NULL;
     }
 
-    for (i = 0; i < self->dim; ++i) {
-        ret->coords[i] = self->coords[i];
-    }
+    memcpy(ret->coords, self->coords, sizeof(double) * VECTOR_MAX_SIZE);
 
     PyObject *ret_val = vector_clamp_magnitude_ip(ret, args, nargs);
     if (!ret_val) {
@@ -1454,7 +1446,7 @@ vector_normalize(pgVector *self, PyObject *_null)
     if (ret == NULL) {
         return NULL;
     }
-    memcpy(ret->coords, self->coords, sizeof(ret->coords[0]) * ret->dim);
+    memcpy(ret->coords, self->coords, sizeof(double) * VECTOR_MAX_SIZE);
 
     PyObject *tmp = vector_normalize_ip(ret, NULL);
     if (!tmp) {
@@ -1577,7 +1569,6 @@ _vector_move_towards_helper(Py_ssize_t dim, double *origin_coords,
 static PyObject *
 vector_move_towards(pgVector *self, PyObject *args)
 {
-    Py_ssize_t i;
     PyObject *target;
     double target_coords[VECTOR_MAX_SIZE];
     double max_distance;
@@ -1595,10 +1586,7 @@ vector_move_towards(pgVector *self, PyObject *args)
     if (ret == NULL) {
         return NULL;
     }
-
-    for (i = 0; i < self->dim; ++i) {
-        ret->coords[i] = self->coords[i];
-    }
+    memcpy(ret->coords, self->coords, sizeof(double) * VECTOR_MAX_SIZE);
 
     _vector_move_towards_helper(self->dim, ret->coords, target_coords,
                                 max_distance);
@@ -1831,7 +1819,7 @@ vector_reflect_ip(pgVector *self, PyObject *normal)
                                 self->epsilon)) {
         return NULL;
     }
-    memcpy(self->coords, tmp_coords, self->dim * sizeof(tmp_coords[0]));
+    memcpy(self->coords, tmp_coords, sizeof(double) * VECTOR_MAX_SIZE);
     Py_RETURN_NONE;
 }
 
@@ -2306,8 +2294,7 @@ vector___round__(pgVector *self, PyObject *args)
         Py_DECREF(ret);
         return NULL;
     }
-
-    memcpy(ret->coords, self->coords, sizeof(ret->coords[0]) * ret->dim);
+    memcpy(ret->coords, self->coords, sizeof(double) * VECTOR_MAX_SIZE);
 
     if (o_ndigits == NULL || o_ndigits == Py_None) {
         for (i = 0; i < ret->dim; ++i) {
