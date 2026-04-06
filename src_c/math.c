@@ -2374,7 +2374,7 @@ _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
             char *delimiter[3] = {"Vector2(", ", ", ")"};
             Py_ssize_t error_code;
             error_code = _vector_coords_from_string(xOrSequence, delimiter,
-                                                    self->coords, self->dim);
+                                                    self->coords, 2);
             if (error_code == -2) {
                 return -1;
             }
@@ -2641,7 +2641,7 @@ static PyObject *
 vector2_as_polar(pgVector *self, PyObject *_null)
 {
     double r, phi;
-    r = sqrt(_scalar_product(self->coords, self->coords, self->dim));
+    r = sqrt(_scalar_product(self->coords, self->coords, 2));
     phi = RAD2DEG(atan2(self->coords[1], self->coords[0]));
     return Py_BuildValue("(dd)", r, phi);
 }
@@ -2818,7 +2818,7 @@ _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
             char *delimiter[4] = {"Vector3(", ", ", ", ", ")"};
             Py_ssize_t error_code;
             error_code = _vector_coords_from_string(xOrSequence, delimiter,
-                                                    self->coords, self->dim);
+                                                    self->coords, 3);
             if (error_code == -2) {
                 return -1;
             }
@@ -3494,13 +3494,13 @@ vector3_angle_to(pgVector *self, PyObject *other)
         return NULL;
     }
 
-    squared_length1 = _scalar_product(self->coords, self->coords, self->dim);
-    squared_length2 = _scalar_product(other_coords, other_coords, self->dim);
+    squared_length1 = _scalar_product(self->coords, self->coords, 3);
+    squared_length2 = _scalar_product(other_coords, other_coords, 3);
     tmp = sqrt(squared_length1 * squared_length2);
     if (tmp == 0) {
         return RAISE(PyExc_ValueError, "angle to zero vector is undefined.");
     }
-    angle = acos(_scalar_product(self->coords, other_coords, self->dim) / tmp);
+    angle = acos(_scalar_product(self->coords, other_coords, 3) / tmp);
     return PyFloat_FromDouble(RAD2DEG(angle));
 }
 
@@ -3508,7 +3508,7 @@ static PyObject *
 vector3_as_spherical(pgVector *self, PyObject *_null)
 {
     double r, theta, phi;
-    r = sqrt(_scalar_product(self->coords, self->coords, self->dim));
+    r = sqrt(_scalar_product(self->coords, self->coords, 3));
     if (r == 0.) {
         return Py_BuildValue("(ddd)", 0., 0., 0.);
     }
