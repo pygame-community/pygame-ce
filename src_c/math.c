@@ -2128,17 +2128,12 @@ vector_setAttr_swizzle(pgVector *self, PyObject *attr_name, PyObject *val)
     PyObject *attr_unicode;
     Py_ssize_t len = PySequence_Length(attr_name);
     double entry[VECTOR_MAX_SIZE];
-    int entry_was_set[VECTOR_MAX_SIZE];
+    bool entry_was_set[VECTOR_MAX_SIZE] = {0};
     int swizzle_err = SWIZZLE_ERR_NO_ERR;
     Py_ssize_t i;
 
     if (len == 1) {
         return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
-    }
-
-    /* if swizzling is enabled first try swizzle */
-    for (i = 0; i < self->dim; ++i) {
-        entry_was_set[i] = 0;
     }
 
     /* handle string and unicode uniformly */
