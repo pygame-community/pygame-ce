@@ -2278,25 +2278,24 @@ static PyObject *
 vector___round__(pgVector *self, PyObject *args)
 {
     Py_ssize_t i, ndigits;
-    PyObject *o_ndigits = NULL;
+    PyObject *o_ndigits = Py_None;
+
+    if (!PyArg_ParseTuple(args, "|O", &o_ndigits)) {
+        return NULL;
+    }
 
     pgVector *ret = _vector_subtype_new(self);
     if (ret == NULL) {
         return NULL;
     }
-
-    if (!PyArg_ParseTuple(args, "|O", &o_ndigits)) {
-        Py_DECREF(ret);
-        return NULL;
-    }
     memcpy(ret->coords, self->coords, sizeof(double) * VECTOR_MAX_SIZE);
 
-    if (o_ndigits == NULL || o_ndigits == Py_None) {
+    if (o_ndigits == Py_None) {
         for (i = 0; i < ret->dim; ++i) {
             ret->coords[i] = round(ret->coords[i]);
         }
     }
-    else if (RealNumber_Check(o_ndigits)) {
+    else {
         ndigits = PyNumber_AsSsize_t(o_ndigits, NULL);
         if (PyErr_Occurred()) {
             Py_DECREF(ret);
@@ -2306,11 +2305,6 @@ vector___round__(pgVector *self, PyObject *args)
             ret->coords[i] = round(ret->coords[i] * pow(10, (double)ndigits)) /
                              pow(10, (double)ndigits);
         }
-    }
-    else {
-        PyErr_SetString(PyExc_TypeError, "Argument must be an integer");
-        Py_DECREF(ret);
-        return NULL;
     }
 
     return (PyObject *)ret;
