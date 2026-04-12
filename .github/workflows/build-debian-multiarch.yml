@@ -11,6 +11,8 @@ on:
     branches: main
     paths-ignore:
       - 'docs/**'
+      - 'src_c/doc/**'
+      - 'buildconfig/stubs/**'
       - 'examples/**'
       - '.gitignore'
       - '*.rst'
@@ -23,6 +25,8 @@ on:
     branches: main
     paths-ignore:
       - 'docs/**'
+      - 'src_c/doc/**'
+      - 'buildconfig/stubs/**'
       - 'examples/**'
       - '.gitignore'
       - '*.rst'
