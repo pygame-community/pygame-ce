@@ -516,8 +516,17 @@ if host_machine.cpu_family() == 'arm'
         simd_sse2_neon = true
     endif
 elif host_machine.cpu_family() == 'aarch64'
-    # sse2neon doesn't support compiling under msvc
-    simd_sse2_neon = cc.get_id() != 'msvc'
+    # every aarch64 CPU supports NEON
+    simd_sse2_neon = true
+    if cc.get_id() == 'msvc'
+        flag = '/Zc:preprocessor'
+        if cc.has_argument(flag)
+            simd_sse2_neon_flags += [flag]
+        else
+            # if we can't set the flag, we can't use sse2neon on MSVC
+            simd_sse2_neon = false
+        endif
+    endif
 endif
 
 if simd_sse2_neon
