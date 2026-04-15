@@ -43,7 +43,13 @@ extern "C" {
 #endif
 
 #define BITMASK_W unsigned long int
-#define BITMASK_W_LEN (sizeof(BITMASK_W) * CHAR_BIT)
+#if ULONG_MAX == 0xFFFFFFFFUL
+#define BITMASK_W_LEN 32
+#elif ULONG_MAX == 0xFFFFFFFFFFFFFFFFUL
+#define BITMASK_W_LEN 64
+#else
+#error "Unsupported unsigned long size"
+#endif
 #define BITMASK_W_MASK (BITMASK_W_LEN - 1)
 #define BITMASK_N(n) ((BITMASK_W)1 << (n))
 
