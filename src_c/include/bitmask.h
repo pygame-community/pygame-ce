@@ -49,7 +49,7 @@ extern "C" {
 
 typedef struct bitmask {
     int w, h;
-    BITMASK_W bits[1];
+    BITMASK_W bits[];
 } bitmask_t;
 
 /* Creates a bitmask of width w and height h, where

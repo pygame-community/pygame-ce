@@ -118,7 +118,7 @@ bitmask_create(int w, int h)
         return 0;
     }
 
-    size = offsetof(bitmask_t, bits);
+    size = sizeof(bitmask_t);
 
     if (w && h) {
         size += h * ((w - 1) / BITMASK_W_LEN + 1) * sizeof(BITMASK_W);
