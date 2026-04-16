@@ -2822,6 +2822,65 @@ pg_get_desktop_screen_sizes(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+pg_get_desktop_usable_bounds(PyObject *self, PyObject *_null)
+{
+    int display_count, i;
+    PyObject *result = NULL;
+
+    VIDEO_INIT_CHECK();
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_DisplayID *displays = SDL_GetDisplays(&display_count);
+    if (displays == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+#else
+    display_count = SDL_GetNumVideoDisplays();
+    if (display_count < 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+#endif
+
+    result = PyList_New(display_count);
+    if (!result) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_free(displays);
+#endif
+        return NULL;
+    }
+
+    for (i = 0; i < display_count; i++) {
+        SDL_Rect bounds;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_DisplayID display_id = displays[i];
+        if (!SDL_GetDisplayUsableBounds(display_id, &bounds)) {
+            Py_DECREF(result);
+            SDL_free(displays);
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+#else
+        if (SDL_GetDisplayUsableBounds(i, &bounds) < 0) {
+            Py_DECREF(result);
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+#endif
+        PyObject *pg_rect = pgRect_New(&bounds);
+        if (pg_rect == NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            SDL_free(displays);
+#endif
+            Py_DECREF(result);
+            return NULL; /* exception already set */
+        }
+        PyList_SET_ITEM(result, i, pg_rect);
+    }
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_free(displays);
+#endif
+    return result;
+}
+static PyObject *
 pg_is_fullscreen(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
@@ -3838,6 +3897,8 @@ static PyMethodDef _pg_display_methods[] = {
      METH_NOARGS, "provisional API, subject to change"},
     {"get_desktop_sizes", (PyCFunction)pg_get_desktop_screen_sizes,
      METH_NOARGS, DOC_DISPLAY_GETDESKTOPSIZES},
+    {"get_desktop_usable_bounds", (PyCFunction)pg_get_desktop_usable_bounds,
+     METH_NOARGS, DOC_DISPLAY_GETDESKTOPUSABLEBOUNDS},
     {"is_fullscreen", (PyCFunction)pg_is_fullscreen, METH_NOARGS,
      DOC_DISPLAY_ISFULLSCREEN},
     {"is_vsync", (PyCFunction)pg_is_vsync, METH_NOARGS, DOC_DISPLAY_ISVSYNC},
