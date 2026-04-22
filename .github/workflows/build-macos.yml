@@ -37,7 +37,7 @@ jobs:
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           # The hash of all files in buildconfig manylinux-build and macdependencies is
@@ -98,14 +98,14 @@ jobs:
           persist-credentials: false
 
       - name: pip cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/Library/Caches/pip  # This cache path is only right on mac
           key: pip-cache-${{ matrix.macarch }}-${{ matrix.os }}
 
       - name: Fetch Mac deps
         id: macdep-cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
