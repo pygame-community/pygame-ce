@@ -2,6 +2,10 @@ import gc
 import unittest
 import weakref
 
+try:
+    import numpy
+except (ImportError, ModuleNotFoundError):
+    numpy = None
 import pygame
 import pygame._render as _render
 
@@ -161,6 +165,97 @@ class RendererTest(unittest.TestCase):
         for x in range(30, 50):
             self.assertEqual(surf.get_at((x, 20)), pygame.Color(255, 255, 0, 255))
             self.assertEqual(surf.get_at((x, 59)), pygame.Color(255, 255, 0, 255))
+
+    def make_geometry_mesh(self, colors, use_indices, mesh):
+        indices = []
+        vertices = []
+        # 10x10 2-px checkboard pattern mesh (either made with colors or texture UVs)
+        for x in range(10):
+            for y in range(10):
+                px = x * 2
+                py = y * 2
+                n = len(vertices)
+                indices += [n + 0, n + 1, n + 2, n + 2, n + 3, n + 0]
+                if (x + y) % 2 == 0:
+                    col = colors[0]
+                    uvl = 0
+                    uvr = 0.5
+                else:
+                    col = colors[1]
+                    uvl = 0.5
+                    uvr = 1
+                vertices += [
+                    ((px, py), col, (uvl, 0)),
+                    [[px + 2, py], col, [uvr, 0]],
+                    (pygame.Vector2(2, 2) + (px, py), col, pygame.Vector2(uvr, 1)),
+                ]
+                if not use_indices:  # duplicate the third one
+                    vertices.append(
+                        (pygame.Vector2(2, 2) + (px, py), col, pygame.Vector2(uvr, 1))
+                    )
+                vertices.append([(float(px), float(py + 2)), col, (uvl, 1)])
+                if not use_indices:  # duplicate the first one
+                    vertices.append(((px, py), col, (uvl, 0)))
+        if mesh:
+            mesh.update(vertices, indices=indices if use_indices else None)
+            return mesh
+        return _render.GeometryMesh(vertices, indices=indices if use_indices else None)
+
+    def check_geometry_result(self, scale, offset, colors):
+        colors = [pygame.Color(col) for col in colors]
+        surface = self.renderer.to_surface()
+        size = int(2 * scale)
+        for x in range(10):
+            for y in range(10):
+                expected = colors[0 if ((x + y) % 2 == 0) else 1]
+                for ox in range(size):
+                    for oy in range(size):
+                        pixel = surface.get_at(
+                            (offset + x * size + ox, offset + y * size + oy)
+                        )
+                        self.assertEqual(pixel, expected)
+
+    def test_render_geometry(self):
+        surf = pygame.Surface((20, 10))
+        surf.fill("blue")
+        pygame.draw.rect(surf, "pink", (0, 0, 10, 10))
+        texture = _render.Texture.from_surface(self.renderer, surf)
+        transform_matrices = [
+            [
+                1.5,
+                0,
+                10,
+                0,
+                1.5,
+                10,
+            ],
+        ]
+        if numpy is not None:
+            transform_matrices.append(
+                numpy.array(
+                    [
+                        [1.5, 0, 10],
+                        [0, 1.5, 10],
+                    ]
+                ),
+            )
+        self.renderer.draw_color = "black"
+        for use_indices in [False, True]:
+            mesh = None
+            for scale, offset, matrix in [
+                (1, 0, None),
+                *[(1.5, 10, mat) for mat in transform_matrices],
+            ]:
+                # no texture
+                mesh = self.make_geometry_mesh(["green", "red"], use_indices, mesh)
+                self.renderer.clear()
+                self.renderer.render_geometry(mesh, None, matrix)
+                self.check_geometry_result(scale, offset, ["green", "red"])
+                # with texture
+                mesh = self.make_geometry_mesh(["white", "white"], use_indices, mesh)
+                self.renderer.clear()
+                self.renderer.render_geometry(mesh, texture, matrix)
+                self.check_geometry_result(scale, offset, ["pink", "blue"])
 
     def test_viewport(self):
         self.assertEqual(self.renderer.get_viewport(), pygame.Rect(0, 0, 100, 100))
