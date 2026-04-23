@@ -106,8 +106,8 @@ def get_urls(x86=True, x64=True):
         'ea302368159ca64056b2519b3a624525f625220e',
         ],
         [
-        'https://github.com/libsdl-org/SDL_mixer/releases/download/prerelease-3.1.2/SDL3_mixer-devel-3.1.2-VC.zip',
-        '055992eb135197e74644bea65fdc8f8f0838b4ed'
+        'https://github.com/libsdl-org/SDL_mixer/releases/download/release-3.2.0/SDL3_mixer-devel-3.2.0-VC.zip',
+        '1d3b0d49a2af69ca8287f1ee6d024e960e28c4e8'
         ]
     ])
     if x86:
@@ -250,12 +250,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3_mixer-devel-3.1.2-VC/SDL3_mixer-3.1.2'
+                'SDL3_mixer-devel-3.2.0-VC/SDL3_mixer-3.2.0'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3_mixer-3.1.2'
+                'SDL3_mixer-3.2.0'
             )
         )
         copy(
