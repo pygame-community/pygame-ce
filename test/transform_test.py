@@ -1,3 +1,4 @@
+import itertools
 import os
 import platform
 import unittest
@@ -574,6 +575,32 @@ class TransformModuleTest(unittest.TestCase):
         for x in range(20):
             for y in range(20):
                 self.assertEqual(surface.get_at((x, y)), test_surface.get_at((x, y)))
+
+    def test_solid_overlay_zero_surfaces(self):
+        # zero surfaces here means surfaces for which one or both of width and height have a value of 0
+
+        for size, flags, depth, keep_alpha in itertools.product(
+            [(0, 0), (0, 1), (0, 42), (1, 0), (42, 0)],  # surface size
+            [pygame.SRCALPHA, 0],  # surface flags
+            [32, 16, None],  # surface depth
+            [True, False],  # keep alpha
+        ):
+            with self.subTest(
+                size=size, flags=flags, depth=depth, keep_alpha=keep_alpha
+            ):
+                if depth is None:
+                    surface = pygame.Surface(size, flags=flags)
+                else:
+                    surface = pygame.Surface(size, flags=flags, depth=depth)
+
+                self.assertEqual(
+                    pygame.transform.solid_overlay(
+                        surface,
+                        "white",
+                        keep_alpha=keep_alpha,
+                    ).size,
+                    size,
+                )
 
     def test_grayscale_simd_assumptions(self):
         # The grayscale SIMD algorithm relies on the destination surface pitch
