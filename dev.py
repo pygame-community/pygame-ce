@@ -275,6 +275,10 @@ class Dev:
         stripped = self.args.get("stripped", False)
         sanitize = self.args.get("sanitize")
         coverage = self.args.get("coverage", False)
+        ci = self.args.get("ci", False)
+        input_commit_hash = self.args.get("commit_hash", "")
+        input_branch = self.args.get("branch", "")
+        source = self.args.get("nosrc", False)
         if wheel_dir and coverage:
             pprint("Cannot pass --wheel and --coverage together", Colors.RED)
             sys.exit(1)
@@ -290,6 +294,10 @@ class Dev:
             build_suffix += "-cov"
         if wasm:
             build_suffix += "-wasm"
+        if ci:
+            build_suffix += "-ci"
+        if source:
+            build_suffix += "-source_bld"
 
         build_dir = Path(f".mesonpy-build{build_suffix}")
         install_args = [
@@ -331,6 +339,17 @@ class Dev:
 
         if sanitize:
             install_args.append(f"-Csetup-args=-Db_sanitize={sanitize}")
+
+        if ci:
+            install_args.append("-Csetup-args=-Dci=true")
+
+        if input_branch:
+            install_args.append(f"-Csetup-args=-Dbranch={input_branch}")
+
+        if input_commit_hash:
+            install_args.append(f"-Csetup-args=-Dcommit_hash={input_commit_hash}")
+
+        install_args.append(f"-Csetup-args=-Dsource_bld={source}")
 
         if wasm:
             wasm_cross_file = build_dir / "meson-cross-wasm.ini"
@@ -507,6 +526,18 @@ class Dev:
                 "supported if the underlying compiler supports the --coverage argument"
             ),
         )
+        build_parser.add_argument(
+            "--ci", action="store_true", help=("Log that this is a CI build")
+        )
+        build_parser.add_argument(
+            "--nosrc",
+            action="store_false",
+            help=("Log that this is a prerelease or release build"),
+        )
+
+        build_parser.add_argument("--commit_hash", help="Internal use for CI")
+
+        build_parser.add_argument("--branch", help="Internal use for CI")
 
         # Docs command
         docs_parser = subparsers.add_parser("docs", help="Generate docs")

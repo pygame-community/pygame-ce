@@ -72,6 +72,49 @@ if get_option('coverage')
     endif
 endif
 
+git = find_program('git', required: false)
+
+if get_option('source_bld')
+    if git.found()
+        # Get short commit hash
+        git_cmd = run_command(['git', 'rev-parse', '--short', 'HEAD'], check: false)
+        commit_hash = git_cmd.stdout().strip()
+
+        # Get branch name
+        branch_cmd = run_command(['git', 'branch', '--show-current'], check: false)
+        branch_name = branch_cmd.stdout().strip()
+    else
+        commit_hash = get_option('commit_hash')
+        branch_name = get_option('branch')
+    endif
+else
+    commit_hash = ''
+    branch_name = ''
+endif
+
+if get_option('ci')
+    ci_build = true
+else
+    ci_build = false
+endif
+
+if ci_build
+    ci_build_arg = 1
+else
+    ci_build_arg = 0
+endif
+
+commit_header = configure_file(
+    input: 'src_c/include/git_info.h.in',
+    output: 'git_info.h',
+    configuration: {
+        'GIT_HASH_SHORT': commit_hash,
+        'GIT_BRANCH': branch_name,
+        'CI_BUILD': ci_build_arg
+    }
+)
+configuration_inc = include_directories('.')
+
 pg_dir = py.get_install_dir() / pg
 
 sdl_api = get_option('sdl_api')

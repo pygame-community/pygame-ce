@@ -14,6 +14,7 @@ pygame = py.extension_module(
     base_files + cython_files,
     c_args: ['-DBUILD_STATIC=1'],
     dependencies: pg_base_deps + [sdl_image_dep, sdl_mixer_dep, sdl_ttf_dep, freetype_dep],
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -27,6 +28,7 @@ base = py.extension_module(
     'base.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -36,6 +38,7 @@ color = py.extension_module(
     'color.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -45,6 +48,7 @@ constants = py.extension_module(
     'constants.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -54,6 +58,7 @@ display = py.extension_module(
     'display.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -63,6 +68,7 @@ event = py.extension_module(
     'event.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -72,6 +78,7 @@ key = py.extension_module(
     'key.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -81,6 +88,7 @@ mouse = py.extension_module(
     'mouse.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -90,6 +98,7 @@ rect = py.extension_module(
     ['rect.c', 'pgcompat_rect.c'],
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -99,6 +108,7 @@ rwobject = py.extension_module(
     'rwobject.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -107,6 +117,7 @@ simd_blitters_avx2 = static_library(
     'simd_blitters_avx2',
     'simd_blitters_avx2.c',
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     c_args: simd_avx2_flags + warnings_error,
 )
 
@@ -114,6 +125,7 @@ simd_blitters_sse2 = static_library(
     'simd_blitters_sse2',
     'simd_blitters_sse2.c',
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     c_args: simd_sse2_neon_flags + warnings_error,
 )
 
@@ -121,6 +133,7 @@ simd_surface_fill_avx2 = static_library(
     'simd_surface_fill_avx2',
     'simd_surface_fill_avx2.c',
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     c_args: simd_avx2_flags + warnings_error,
 )
 
@@ -128,6 +141,7 @@ simd_surface_fill_sse2 = static_library(
     'simd_surface_fill_sse2',
     'simd_surface_fill_sse2.c',
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     c_args: simd_sse2_neon_flags + warnings_error,
 )
 
@@ -146,6 +160,7 @@ surface = py.extension_module(
         simd_surface_fill_sse2,
     ],
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -155,6 +170,7 @@ surflock = py.extension_module(
     'surflock.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -164,6 +180,7 @@ time = py.extension_module(
     'time.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -173,6 +190,7 @@ joystick = py.extension_module(
     'joystick.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -182,6 +200,7 @@ draw = py.extension_module(
     'draw.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -191,6 +210,7 @@ image = py.extension_module(
     'image.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -199,6 +219,7 @@ simd_transform_avx2 = static_library(
     'simd_transform_avx2',
     'simd_transform_avx2.c',
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     c_args: simd_avx2_flags + warnings_error,
 )
 
@@ -206,6 +227,7 @@ simd_transform_sse2 = static_library(
     'simd_transform_sse2',
     'simd_transform_sse2.c',
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     c_args: simd_sse2_neon_flags + warnings_error,
 )
 
@@ -232,6 +254,7 @@ transform = py.extension_module(
     link_with: [simd_transform_avx2, simd_transform_sse2],
     objects: transform_objs,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -241,6 +264,7 @@ mask = py.extension_module(
     ['mask.c', 'bitmask.c'],
     c_args: warnings_error + warnings_temp_mask,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -250,6 +274,7 @@ bufferproxy = py.extension_module(
     'bufferproxy.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -259,6 +284,7 @@ pixelarray = py.extension_module(
     'pixelarray.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -268,6 +294,7 @@ math = py.extension_module(
     'math.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -277,6 +304,7 @@ pixelcopy = py.extension_module(
     'pixelcopy.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -286,6 +314,7 @@ newbuffer = py.extension_module(
     'newbuffer.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -296,6 +325,7 @@ system = py.extension_module(
     'system.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -305,6 +335,7 @@ geometry = py.extension_module(
     'geometry.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -314,6 +345,7 @@ window = py.extension_module(
     'window.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -325,6 +357,7 @@ _render = py.extension_module(
     'render.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -337,6 +370,7 @@ gfxdraw = py.extension_module(
     ['gfxdraw.c', 'SDL_gfx/SDL_gfxPrimitives.c'],
     # c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     install: true,
     subdir: pg,
 )
@@ -375,6 +409,7 @@ _camera = py.extension_module(
     pg_camera_sources,
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     link_args: pg_camera_link,
     install: true,
     subdir: pg,
@@ -391,6 +426,7 @@ scrap = py.extension_module(
     'scrap.c',
     c_args: warnings_error,
     dependencies: pg_base_deps,
+    include_directories: configuration_inc,
     link_args: pg_scrap_link,
     install: true,
     subdir: pg,
@@ -404,6 +440,7 @@ if sdl_image_dep.found()
         'imageext.c',
         c_args: warnings_error,
         dependencies: pg_base_deps + sdl_image_dep,
+        include_directories: configuration_inc,
         install: true,
         subdir: pg,
     )
@@ -415,6 +452,7 @@ if sdl_ttf_dep.found()
         'font.c',
         c_args: warnings_error,
         dependencies: pg_base_deps + sdl_ttf_dep,
+        include_directories: configuration_inc,
         install: true,
         subdir: pg,
     )
@@ -440,6 +478,7 @@ if sdl_api != 3
         'mixer.c',
         c_args: warnings_error,
         dependencies: pg_base_deps + sdl_mixer_dep,
+        include_directories: configuration_inc,
         install: true,
         subdir: pg,
     )
@@ -449,6 +488,7 @@ if sdl_api != 3
         'music.c',
         c_args: warnings_error,
         dependencies: pg_base_deps + sdl_mixer_dep,
+        include_directories: configuration_inc,
         install: true,
         subdir: pg,
     )
@@ -470,6 +510,7 @@ if freetype_dep.found()
         ],
         c_args: warnings_error + warnings_temp_freetype,
         dependencies: pg_base_deps + freetype_dep,
+        include_directories: configuration_inc,
         install: true,
         subdir: pg,
     )
@@ -481,6 +522,7 @@ if portmidi_dep.found()
         fs.is_file('pypm.c') ? 'pypm.c' : 'cython/pygame/pypm.pyx',
         # c_args: warnings_error,
         dependencies: pg_base_deps + portmidi_deps,
+        include_directories: configuration_inc,
         install: true,
         subdir: pg,
     )
