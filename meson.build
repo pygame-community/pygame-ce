@@ -214,7 +214,7 @@ if plat == 'win'
         warning('Missing windows prebuilts. Falling back to legacy prebuilts')
 
         sdl_ver = (sdl_api == 3) ? '3.4.0' : '2.32.10'
-        sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.8'
+        sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.10'
         sdl_mixer_ver = '2.8.1'
         sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
 
