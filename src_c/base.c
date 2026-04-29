@@ -774,7 +774,7 @@ _pg_new_capsuleinterface(Py_buffer *view_p)
     int i;
 
     cinter_size =
-        (sizeof(pgCapsuleInterface) + sizeof(Py_intptr_t) * (2 * ndim - 1));
+        (sizeof(pgCapsuleInterface) + sizeof(Py_intptr_t) * (2 * ndim));
     cinter_p = (pgCapsuleInterface *)PyMem_Malloc(cinter_size);
     if (!cinter_p) {
         PyErr_NoMemory();
@@ -1265,7 +1265,7 @@ _pg_arraystruct_as_buffer(Py_buffer *view_p, PyObject *cobj,
 {
     pgViewInternals *internal_p;
     Py_ssize_t sz =
-        (sizeof(pgViewInternals) + (2 * inter_p->nd - 1) * sizeof(Py_ssize_t));
+        (sizeof(pgViewInternals) + (2 * inter_p->nd) * sizeof(Py_ssize_t));
     int readonly = (inter_p->flags & PAI_WRITEABLE) ? 0 : 1;
     Py_ssize_t i;
 
@@ -1646,7 +1646,7 @@ _pg_values_as_buffer(Py_buffer *view_p, int flags, PyObject *typestr,
                         "require writable buffer, but it is read-only");
         return -1;
     }
-    sz = sizeof(pgViewInternals) + (2 * ndim - 1) * sizeof(Py_ssize_t);
+    sz = sizeof(pgViewInternals) + (2 * ndim) * sizeof(Py_ssize_t);
     internal_p = (pgViewInternals *)PyMem_Malloc(sz);
     if (!internal_p) {
         PyErr_NoMemory();
