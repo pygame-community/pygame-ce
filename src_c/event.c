@@ -1387,7 +1387,7 @@ dict_from_event(SDL_Event *event)
             obj = pg_tuple_couple_from_values_int((int)event->wheel.mouseX,
                                                   (int)event->wheel.mouseY);
 #else
-            obj = pg_tuple_couple_from_values_int(0, 0);
+        obj = pg_tuple_couple_from_values_int(0, 0);
 #endif /* SDL_VERSION_ATLEAST(2, 26, 0) */
             _pg_insobj(dict, "pos", obj);
 
