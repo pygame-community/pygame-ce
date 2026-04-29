@@ -160,7 +160,7 @@ These ``TEXT*`` events are useful to implement inputs/languages that require com
 provided by the system's IME (Input Method Editor). The ``TEXTINPUT`` event is only
 fired when the text is confirmed.
 
-(``5``): Position information was added to ``MOUSEWHEEL`` events in SDL 2.0.26.  If
+(``5``): Position information was added to ``MOUSEWHEEL`` events in SDL 2.26.0  If
 pygame was build on a version lower than that, the ``pos`` attribute is ``(0, 0)``.
 
 |
