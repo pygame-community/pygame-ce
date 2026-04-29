@@ -1380,6 +1380,14 @@ dict_from_event(SDL_Event *event)
                 dict, "touch",
                 PyBool_FromLong((event->wheel.which == SDL_TOUCH_MOUSEID)));
 
+#if SDL_VERSION_ATLEAST(2, 0, 26)
+            obj = pg_tuple_couple_from_values_int((int)event->wheel.mouseX,
+                                                  (int)event->wheel.mouseY);
+#else
+            obj = pg_tuple_couple_from_values_int(0, 0);
+#endif
+            _pg_insobj(dict, "pos", obj);
+
             break;
         case SDL_TEXTINPUT:
             /* https://wiki.libsdl.org/SDL_TextInputEvent */
