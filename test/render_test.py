@@ -273,6 +273,11 @@ class TextureTest(unittest.TestCase):
         self.texture.blend_mode = pygame.BLENDMODE_BLEND
         self.assertEqual(pygame.BLENDMODE_BLEND, self.texture.blend_mode)
 
+    def test_scale_mode(self):
+        self.assertEqual(pygame.SCALEMODE_NEAREST, self.texture.scale_mode)
+        self.texture.scale_mode = pygame.SCALEMODE_LINEAR
+        self.assertEqual(pygame.SCALEMODE_LINEAR, self.texture.scale_mode)
+
     def test_color(self):
         self.assertEqual(pygame.Color(255, 255, 255, 255), self.texture.color)
         self.texture.color = pygame.Color(100, 110, 120, 130)
