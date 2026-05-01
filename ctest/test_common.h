@@ -15,7 +15,7 @@ struct TestCase {
     for an individual test case. The test case itself, and a struct instance
     called meta_TEST_CASE_NAME. The struct has two pieces of important
     information that unity needs: the name in string format and the line
-    number of the test. This would be an absolute nighmare to maintain by
+    number of the test. This would be an absolute nightmare to maintain by
     hand, so I defined a macro to do it automagically for us.
 
     The RUN_TEST_PG_INTERNAL macro then references that struct for each test
