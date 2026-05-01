@@ -94,6 +94,11 @@ def get_all(mod: Any):
     return [i for i in dir(mod) if not i.startswith("_")]
 
 
+def fmt_list(seq: list[str]):
+    inner = "\n".join(f'    "{i}",' for i in seq)
+    return f"[\n{inner}\n]\n"
+
+
 # store all imports of __init__.pyi
 pygame_all_imports = {"pygame": PG_AUTOIMPORT_SUBMODS}
 for k, v in PG_AUTOIMPORT_CLASSES.items():
@@ -120,6 +125,8 @@ with open(constants_file, "w") as f:
     for element in pygame_all_imports[".constants"]:
         constant_type = getattr(pygame.constants, element).__class__.__name__
         f.write(f"{element}: {constant_type}\n")
+
+    f.write("__all__ = " + fmt_list(pygame.constants.__all__))
 
 
 # write __init__.pyi file
@@ -156,6 +163,8 @@ with open(locals_file, "w") as f:
     for element in get_all(pygame.locals):
         constant_type = getattr(pygame.locals, element).__class__.__name__
         f.write(f"{element}: {constant_type}\n")
+
+    f.write("__all__ = " + fmt_list(pygame.locals.__all__))
 
 # copy typing.py to typing.pyi for type checkers
 typing_py_file = pathlib.Path(__file__).parent.parent.parent / "src_py" / "typing.py"

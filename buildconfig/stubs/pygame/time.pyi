@@ -5,7 +5,7 @@ constant frame rate.
 Times in pygame-ce are represented in milliseconds (1/1000 of a second).
 """
 
-from typing import Union, final
+from typing import final
 
 from pygame.event import Event
 
@@ -37,13 +37,13 @@ def delay(milliseconds: int, /) -> int:
     This returns the actual number of milliseconds used.
     """
 
-def set_timer(event: Union[int, Event], millis: int, loops: int = 0) -> None:
+def set_timer(event: int | Event, millis: int, loops: int = 0) -> None:
     """Repeatedly create an event on the event queue.
 
     Set an event to appear on the event queue every given number of milliseconds.
     The first event will not appear until the amount of time has passed.
 
-    The ``event`` attribute can be a ``pygame.event.Event`` object or an integer
+    The ``event`` parameter can be a ``pygame.event.Event`` object or an integer
     type that denotes an event.
 
     ``loops`` is an integer that denotes the number of events posted. If 0 (default)
@@ -66,8 +66,7 @@ def set_timer(event: Union[int, Event], millis: int, loops: int = 0) -> None:
     However, calling this function with an integer event type would place event objects
     on the queue that don't have a common dict reference.
 
-    ``loops`` replaces the ``once`` argument, and this does not break backward
-    compatibility.
+    This function is not supported on web (WASM/Emscripten) builds.
 
     .. versionaddedold:: 2.0.0.dev3 once argument added.
     .. versionchangedold:: 2.0.1 event argument supports ``pygame.event.Event`` object
@@ -95,9 +94,10 @@ class Clock:
         keep the game running slower than the given ticks per second. This can be
         used to help limit the runtime speed of a game. By calling
         ``Clock.tick(40)`` once per frame, the program will never run at more
-        than 40 frames per second.
+        than 40 frames per second. Passing 0 (the default) places no limit on
+        the framerate.
 
-        Note that this function uses SDL_Delay function which is not accurate on
+        Note that this function uses ``SDL_Delay``, which is not accurate on
         every platform, but does not use much CPU. Use tick_busy_loop if you want
         an accurate timer, and don't mind chewing CPU.
         """
@@ -112,7 +112,8 @@ class Clock:
         keep the game running slower than the given ticks per second. This can be
         used to help limit the runtime speed of a game. By calling
         ``Clock.tick_busy_loop(40)`` once per frame, the program will never run at
-        more than 40 frames per second.
+        more than 40 frames per second. Passing 0 (the default) places no limit on
+        the framerate.
 
         Note that this function uses :func:`pygame.time.delay`, which uses lots
         of CPU in a busy loop to make sure that timing is more accurate.
@@ -138,5 +139,6 @@ class Clock:
         """Compute the clock framerate.
 
         Compute your game's framerate (in frames per second). It is computed by
-        averaging the last ten calls to ``Clock.tick()``.
+        averaging the last ten calls to ``Clock.tick()``. Returns 0.0 if fewer
+        than ten ticks have been made.
         """

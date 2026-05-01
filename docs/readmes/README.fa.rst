@@ -6,8 +6,9 @@
 |DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
+|DiscordBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ `Français`_ **فارسی** `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ **فارسی** `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_ `Deutsch`_
 
 ---------------------------------------------------------------------------------------------------
 کتابخانه
@@ -189,7 +190,7 @@ Dependencies (وابستگی ها)
 مشاهده کنید.
 
 +----------+------------------------+
-| CPython  | >= 3.9 (Or use PyPy3)  |
+| CPython  | >= 3.10 (Or use PyPy3) |
 +----------+------------------------+
 | SDL      | >= 2.0.14              |
 +----------+------------------------+
@@ -235,14 +236,17 @@ LGPL-2.1-or-later **شناسه مجوز:**
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.3.0.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.3.0...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
 
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
+
+.. |DiscordBadge| image:: https://discord.com/api/guilds/772505616680878080/widget.png
+   :target: https://pyga.me/discord
 
 .. _pygame: https://pyga.me
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
@@ -261,3 +265,4 @@ LGPL-2.1-or-later **شناسه مجوز:**
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
 .. _Português (Brasil): README.pt-br.rst
+.. _Deutsch: README.de.rst

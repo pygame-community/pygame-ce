@@ -4,6 +4,13 @@ on:
   push:
     branches: 'release/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-gh-draft
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   manylinux:
     uses: ./.github/workflows/build-manylinux.yml
@@ -26,12 +33,11 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v5.0.0
-
       - name: Download all artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: pygame-wheels
+          pattern: pygame-wheels-*
           merge-multiple: true
 
       # Strips 'release/' from the ref_name, this helps us access the version
@@ -41,12 +47,12 @@ jobs:
         run: echo "VER=${GITHUB_REF_NAME#'release/'}" >> $GITHUB_OUTPUT
 
       - name: Generate release attestation
-        uses: actions/attest-build-provenance@v3.0.0
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: "pygame-wheels/*"
 
       - name: Draft a release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
           draft: true
           prerelease: ${{ contains(steps.ver.outputs.VER, 'dev') }}

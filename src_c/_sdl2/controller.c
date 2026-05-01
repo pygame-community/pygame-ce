@@ -260,7 +260,6 @@ controller_get_mapping(pgControllerObject *self, PyObject *_null)
         token = strtok_r(NULL, ",", &saveptr);
     }
 
-    SDL_free(saveptr);
     SDL_free(mapping);
     return dict;
 
@@ -268,7 +267,6 @@ err:
     Py_XDECREF(value_obj);
     Py_XDECREF(dict);
     SDL_free(mapping);
-    SDL_free(saveptr);
     return NULL;
 }
 

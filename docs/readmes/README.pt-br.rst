@@ -7,8 +7,9 @@
 |DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
+|DiscordBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ **Português (Brasil)**
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ **Português (Brasil)** `Deutsch`_
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Pygame_ é uma biblioteca gratuita e de código aberto, multiplataforma,
@@ -135,7 +136,7 @@ e gfxdraw contém uma versão embutida do SDL_gfx.
 Versões de dependências:
 
 +----------+------------------------+
-| CPython  | >= 3.9 (Ou use PyPy3)  |
+| CPython  | >= 3.10 (Ou use PyPy3) |
 +----------+------------------------+
 | SDL      | >= 2.0.14              |
 +----------+------------------------+
@@ -190,14 +191,17 @@ Veja em docs/licenses as licenças das dependências.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.2.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.3...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
 
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
+
+.. |DiscordBadge| image:: https://discord.com/api/guilds/772505616680878080/widget.png
+   :target: https://pyga.me/discord
 
 .. _Pygame: https://pyga.me
 .. _documentação do pygame-ce: https://pyga.me/docs/
@@ -212,7 +216,7 @@ Veja em docs/licenses as licenças das dependências.
 .. _Abrindo um Pull Request de Qualidade: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
 .. _rastreador de issues: https://github.com/pygame-community/pygame-ce/issues
 .. _rotular e vincular issues reportadas: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
-.. _Servidor Discord da Comunidade Pygame: https://discord.gg/pygame
+.. _Servidor Discord da Comunidade Pygame: https://pyga.me/discord
 .. _páginas do wiki: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _English: ./../../README.rst
@@ -226,3 +230,4 @@ Veja em docs/licenses as licenças das dependências.
 .. _Русский: README.ru.rst
 .. _Ελληνικά: README.gr.rst
 .. _Português (Brasil): README.pt-br.rst
+.. _Deutsch: README.de.rst

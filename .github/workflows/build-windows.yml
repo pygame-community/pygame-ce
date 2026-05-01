@@ -16,7 +16,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-windows
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
+  # windows build with legacy prebuilts
+  # this job is to be removed when we generalize the Windows ARM job
   build:
     name: ${{ matrix.winarch }}
     runs-on: windows-latest
@@ -31,22 +36,181 @@ jobs:
       CIBW_ARCHS: ${{ matrix.winarch }}
 
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-      - uses: TheMrMilchmann/setup-msvc-dev@v4  # this lets us use the developer command prompt on windows
+      # this lets us use the developer command prompt on windows
+      - uses: TheMrMilchmann/setup-msvc-dev@79dac248aac9d0059f86eae9d8b5bfab4e95e97c # v4.0.0
         with:
           arch: ${{ matrix.msvc-dev-arch }}
 
-      - name: Install uv for speed
-        uses: astral-sh/setup-uv@v6
-        with:
-          version: "0.8.3"
-
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v3.2.0
+        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
+        with:
+          extras: uv
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pygame-wheels-windows-${{ matrix.winarch }}
           path: ./wheelhouse/*.whl
           compression-level: 0  # wheels are already zip files, no need for more compression
+
+  deps:
+    name: ${{ matrix.winarch }} deps
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        include:
+          # for now, the x86 and x86_64 deps produced here are not used in our
+          # release wheels that the above build step produces.
+          - { winarch: x86_64, march: x86_64, msystem: MINGW64, os: windows-2022 }
+          - { winarch: x86, march: i686, msystem: MINGW32, os: windows-2022 }
+          - { winarch: aarch64, march: clang-aarch64, msystem: CLANGARM64, os: windows-11-arm }
+
+    steps:
+      - run: git config --global core.autocrlf input  # do not introduce carriage returns
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Test for Win Deps cache hit
+        id: windep-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
+          # The hash of all files in buildconfig manylinux-build and windependencies is
+          # the key to the cache. If anything changes here, the deps are built again
+          key: windep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/windependencies/*') }}-${{ matrix.winarch }}
+
+      # Setup msys environment
+      - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c # v2.31.1
+        if: steps.windep-cache.outputs.cache-hit != 'true'
+        with:
+          update: true
+          msystem: ${{ matrix.msystem }}
+          install: >
+            git
+            patch
+            mingw-w64-${{ matrix.march }}-gcc
+            mingw-w64-${{ matrix.march }}-binutils
+            mingw-w64-${{ matrix.march }}-tools
+            mingw-w64-${{ matrix.march }}-autotools
+            mingw-w64-${{ matrix.march }}-cmake
+            mingw-w64-${{ matrix.march }}-meson
+            mingw-w64-${{ matrix.march }}-python-pip
+            mingw-w64-${{ matrix.march }}-ca-certificates
+            mingw-w64-${{ matrix.march }}-nasm
+
+      # build win deps on cache miss
+      - name: Build Win Deps
+        if: steps.windep-cache.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: |
+          export WIN_ARCH="${{ matrix.winarch }}"
+          cd buildconfig/windependencies
+          bash ./build_win_deps.sh
+
+      - name: Upload win deps
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pygame_win_deps_${{ matrix.winarch }}
+          path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
+
+  build-arm:
+    name: ${{ matrix.winarch }}
+    needs: deps
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        include:
+          # TODO: uncomment below lines when we unify under the same system
+          # - { winarch: x86_64, cibw_arch: AMD64, os: windows-2022 }
+          # - { winarch: x86, cibw_arch: x86, os: windows-2022 }
+          - { winarch: aarch64, cibw_arch: ARM64, os: windows-11-arm }
+
+    env:
+      CIBW_ARCHS: ${{ matrix.cibw_arch }}
+
+    steps:
+      - run: git config --global core.autocrlf input  # do not introduce carriage returns
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Force 32-bit MSVC
+        if: matrix.winarch == 'x86'
+        uses: egor-tensin/vs-shell@9a932a62d05192eae18ca370155cf877eecc2202 # v2.1
+        with:
+          arch: x86
+
+      - name: Download Windows deps artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: pygame_win_deps_${{ matrix.winarch }}
+          path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
+
+      - name: Build and test wheels
+        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
+        with:
+          extras: uv
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pygame-wheels-windows-${{ matrix.winarch }}
+          path: ./wheelhouse/*.whl
+          compression-level: 0  # wheels are already zip files, no need for more compression
+
+  # it is important that this job doesn't upload any wheels, because they would
+  # then land up in github releases during a release.
+  msys2:
+    name: msys2 ${{ matrix.sys }}
+    needs: deps
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        include:
+          - { winarch: x86_64, sys: mingw64, env: x86_64, os: windows-latest }
+          - { winarch: x86_64, sys: ucrt64,  env: ucrt-x86_64, os: windows-latest }
+          - { winarch: x86_64, sys: clang64, env: clang-x86_64, os: windows-latest }
+          - { winarch: aarch64, sys: clangarm64, env: clang-aarch64, os: windows-11-arm }
+
+    steps:
+      - run: git config --global core.autocrlf input  # do not introduce carriage returns
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c # v2.31.1
+        with:
+          msystem: ${{ matrix.sys }}
+          update: true
+          install: >-
+            mingw-w64-${{ matrix.env }}-gcc
+            mingw-w64-${{ matrix.env }}-pkg-config
+            mingw-w64-${{ matrix.env }}-python
+            mingw-w64-${{ matrix.env }}-python-pip
+            mingw-w64-${{ matrix.env }}-python-sphinx
+            mingw-w64-${{ matrix.env }}-meson-python
+            mingw-w64-${{ matrix.env }}-cython
+
+      - name: Download Windows deps artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: pygame_win_deps_${{ matrix.winarch }}
+          path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
+
+      # pip does not know that ninja is installed, and tries to install it again.
+      # so pass --ignore-dep ninja explicitly
+      - name: Build and install pygame wheel
+        shell: msys2 {0}
+        run: python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax
+
+      - name: Run tests
+        env:
+          SDL_VIDEODRIVER: "dummy"
+          SDL_AUDIODRIVER: "disk"
+        shell: msys2 {0}
+        run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300

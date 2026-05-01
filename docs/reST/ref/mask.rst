@@ -273,7 +273,7 @@ to store which parts collide.
       | :sl:`Returns the number of overlapping set bits`
       | :sg:`overlap_area(other, offset) -> numbits`
 
-      Returns the number of overlapping set bits between between this mask and
+      Returns the number of overlapping set bits between this mask and
       ``other``.
 
       This can be useful for collision detection. An approximate collision
@@ -356,7 +356,7 @@ to store which parts collide.
       Creates a new :class:`Mask` of the requested size with its bits scaled
       from this mask.
 
-      :param size: the width and height (size) of the mask to create
+      :param scale: the width and height (size) of the mask to create
 
       :returns: a new :class:`Mask` object with its bits scaled from this mask
       :rtype: Mask
@@ -370,7 +370,7 @@ to store which parts collide.
       | :sl:`Draws a mask onto another`
       | :sg:`draw(other, offset) -> None`
 
-      Performs a bitwise OR, drawing ``othermask`` onto this mask.
+      Performs a bitwise OR, drawing ``other`` onto this mask.
 
       :param Mask other: the mask to draw onto this mask
       :param offset: the offset of ``other`` from this mask, for more
@@ -613,7 +613,7 @@ to store which parts collide.
       :param area: (optional) rectangular portion of the mask to draw. It can be a
          rect-like object (a Rect, a tuple or a list with 4 numbers or an object with a
          rect attribute, etc) or it can be None (the default) in which case it will use the
-         entire mask. If the given rect pertrudes outside the bounds of the mask (as returned
+         entire mask. If the given rect protrudes outside the bounds of the mask (as returned
          by :meth:`get_rect`), it will get clipped to fit those boundaries. If the final rect
          is smaller than the mask and no destination ``surface`` is given, the returned surface
          will have the same size as this final rect.

@@ -6669,6 +6669,31 @@ class DrawAACircleMixin:
                 msg="pixel at center should be black, not white",
             )
 
+    def test_aacircle__width(self):
+        """Ensures draw aacircle renders the correct width.
+        see https://github.com/pygame-community/pygame-ce/issues/3682
+        """
+        bg_color = pygame.Color("white")
+        fg_color = pygame.Color("black")
+        size = 10
+        radius = size - 1  # radius excludes the center pixel
+        surf = pygame.Surface((size, size))
+
+        for width in range(1, radius):  # test when width < radius
+            surf.fill(bg_color)
+            self.draw_aacircle(
+                surf, fg_color, (0, 0), radius, width, draw_bottom_right=True
+            )
+            rendered_width = 0
+            for x in range(size - 1, -1, -1):
+                if surf.get_at((x, 0)) == fg_color:
+                    rendered_width += 1
+                else:
+                    break
+            self.assertEqual(
+                rendered_width, width, msg="draw.aacircle rendered wrong width"
+            )
+
 
 class DrawAACircleTest(DrawAACircleMixin, DrawTestCase):
     """Test draw module function aacircle.
@@ -7537,7 +7562,9 @@ class DrawModuleTest(unittest.TestCase):
                 if depth == 8:
                     self.assertEqual(surf.get_at(pixel), pixel_colors_8[i])
                 elif depth == 16:
-                    self.assertEqual(surf.get_at(pixel), pixel_colors_16[i])
+                    # allow small delta difference to account for SDL3 changes.
+                    for x, y in zip(surf.get_at(pixel), pixel_colors_16[i]):
+                        self.assertAlmostEqual(x, y, delta=2)
                 else:
                     self.assertEqual(surf.get_at(pixel), pixel_colors_24_32[i])
 

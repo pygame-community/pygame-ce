@@ -21,6 +21,8 @@ on:
     branches: main
     paths-ignore:
       - 'docs/**'
+      - 'src_c/doc/**'
+      - 'buildconfig/stubs/**'
       - 'examples/**'
       - '.gitignore'
       - '*.rst'
@@ -34,6 +36,8 @@ on:
     branches: main
     paths-ignore:
       - 'docs/**'
+      - 'src_c/doc/**'
+      - 'buildconfig/stubs/**'
       - 'examples/**'
       - '.gitignore'
       - '*.rst'
@@ -46,6 +50,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-ubuntu-checks
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   debug_coverage:
     runs-on: ${{ matrix.os }}
@@ -55,9 +62,8 @@ jobs:
         os: [ ubuntu-24.04 ]
         # check our min python (minor) version and our max python (minor) version
         python: [
-          3.9.23,
-          3.13.5,
-          3.14.0rc1
+          3.10.17,
+          3.14.0,
         ]
 
     env:
@@ -68,7 +74,9 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        persist-credentials: false
 
     - name: Install pygame-ce deps
       # https://github.com/actions/runner-images/issues/7192
@@ -90,7 +98,7 @@ jobs:
 
     - name: Cache debug python build
       id: cache-python
-      uses: actions/cache@v4.3.0
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         key: ${{ matrix.python }}
         path: ~/.pyenv/versions/${{ matrix.python }}-debug/**
@@ -125,7 +133,7 @@ jobs:
     - name: Upload coverage html
       # want to continue only if the coverage generation was successful
       if: ${{ steps.gen-coverage.conclusion == 'success' && !cancelled() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: pygame-coverage-${{ matrix.os }}-${{ matrix.python }}
         path: ./out
@@ -136,16 +144,17 @@ jobs:
     needs: debug_coverage
 
     steps:
-    - uses: actions/checkout@v5.0.0
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         fetch-depth: 0  # fetch full history
+        persist-credentials: false
 
     - name: Check if any src_c files changed
       id: check-changes
       continue-on-error: true
       run: |
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          CHANGED_FILES=$(git diff --name-only origin/${GITHUB_BASE_REF}...HEAD)
         else
           CHANGED_FILES=$(git diff --name-only HEAD^1...HEAD)
         fi

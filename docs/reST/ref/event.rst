@@ -8,186 +8,176 @@
 
 | :sl:`pygame module for interacting with events and queues`
 
-Pygame handles all its event messaging through an event queue. The routines in
+.. rubric:: Event queue
+
+Pygame handles all its event messaging through an event queue. The functions in
 this module help you manage that event queue. The input queue is heavily
-dependent on the :mod:`pygame.display` module. If the display has not been
-initialized and a video mode not set, the event queue may not work properly.
+dependent on the video system (:mod:`pygame.display` or :class:`pygame.Window`).
+If a window has not been created, the event queue may not work properly.
 
 The event queue has an upper limit on the number of events it can hold. When
 the queue becomes full new events are quietly dropped. To prevent lost events,
 especially input events which signal a quit command, your program must handle
-events every frame (with ``pygame.event.get()``, ``pygame.event.pump()``,
-``pygame.event.wait()``, ``pygame.event.peek()`` or ``pygame.event.clear()``)
-and process them. Not handling events may cause your system to decide your
-program has locked up. To speed up queue processing use
-:func:`pygame.event.set_blocked()` to limit which events get queued.
+events every frame (with :func:`pygame.event.get()`, :func:`pygame.event.pump()`,
+:func:`pygame.event.wait()`, :func:`pygame.event.peek()` or
+:func:`pygame.event.clear()`).
+
+.. note:: Not handling events may cause the system to decide the program is
+   frozen (not responding).
+
+.. rubric:: Events of input devices
 
 To get the state of various input devices, you can forego the event queue and
 access the input devices directly with their appropriate modules:
-:mod:`pygame.mouse`, :mod:`pygame.key`, and :mod:`pygame.joystick`. If you use
-this method, remember that pygame requires some form of communication with the
-system window manager and other parts of the platform. To keep pygame in sync
-with the system, you will need to call :func:`pygame.event.pump()` to keep
-everything current. Usually, this should be called once per game loop.
-Note: Joysticks will not send any events until the device has been initialized.
+:mod:`pygame.mouse`, :mod:`pygame.key`, and :mod:`pygame.joystick`. However,
+the event queue still needs to be running internally to enable this; programs
+still need to use functions like :func:`pygame.event.get()` or
+:func:`pygame.event.pump()` periodically. Note: Joysticks will not send any
+events until the device has been initialized.
+
+.. rubric:: Event objects
 
 The event queue contains :class:`pygame.event.Event` event objects.
 There are a variety of ways to access the queued events, from simply
-checking for the existence of events, to grabbing them directly off the stack.
-The event queue also offers some simple filtering which can slightly help
-performance by blocking certain event types from the queue. Use
-:func:`pygame.event.set_allowed()` and :func:`pygame.event.set_blocked()` to
-change this filtering. By default, all event types can be placed on the queue.
+checking for the existence of events, to popping them off of the event queue.
 
 All :class:`pygame.event.Event` instances contain an event type identifier
 and attributes specific to that event type. The event type identifier is
-accessible as the :attr:`pygame.event.Event.type` property. Any of the
-event specific attributes can be accessed through the
-:attr:`pygame.event.Event.__dict__` attribute or directly as an attribute
-of the event object (as member lookups are passed through to the object's
-dictionary values). The event object has no method functions. Users can create
-their own new events with the :func:`pygame.event.Event()` function.
+accessible as the :attr:`pygame.event.Event.type` property. An event type's
+specific attributes can be accessed directly as an attribute on the event
+object.
 
-The event type identifier is in between the values of ``NOEVENT`` and
-``NUMEVENTS``. User defined events should have a value in the inclusive range
-of ``USEREVENT`` to ``NUMEVENTS - 1``. User defined events can get a custom
-event number with :func:`pygame.event.custom_type()`.
-It is recommended all user events follow this system.
+Users can create their own new events (or emulate system events) by
+instantiating :func:`pygame.event.Event()` themselves, usually paired
+with :func:`pygame.event.post()`.
 
 Events support equality and inequality comparisons. Two events are equal if
 they are the same type and have identical attribute values.
 
+.. rubric:: Custom events and debugging
+
+The event type identifier is in between the values of ``NOEVENT`` and
+``NUMEVENTS``. User defined events should have a value in the inclusive range
+of ``USEREVENT`` to ``NUMEVENTS - 1``. User defined events should reserve
+a custom event number with :func:`pygame.event.custom_type()`.
+
 While debugging and experimenting, you can print an event object for a quick
-display of its type and members. The function :func:`pygame.event.event_name()`
-can be used to get a string representing the name of the event type.
+display of its type and members.
+
+.. rubric:: Event types and attributes
 
 Events that come from the system will have a guaranteed set of member
-attributes based on the type. The following is a list of event types with their
-specific attributes.
-
-::
-
-    QUIT              none
-    ACTIVEEVENT       gain, state
-    KEYDOWN           key, mod, unicode, scancode
-    KEYUP             key, mod, unicode, scancode
-    MOUSEMOTION       pos, rel, buttons, touch
-    MOUSEBUTTONUP     pos, button, touch
-    MOUSEBUTTONDOWN   pos, button, touch
-    JOYAXISMOTION     joy (deprecated), instance_id, axis, value
-    JOYBALLMOTION     joy (deprecated), instance_id, ball, rel
-    JOYHATMOTION      joy (deprecated), instance_id, hat, value
-    JOYBUTTONUP       joy (deprecated), instance_id, button
-    JOYBUTTONDOWN     joy (deprecated), instance_id, button
-    VIDEORESIZE       size, w, h
-    VIDEOEXPOSE       none
-    USEREVENT         code
-
-.. versionchangedold:: 2.0.0 The ``joy`` attribute was deprecated, ``instance_id`` was added.
-
-.. versionchangedold:: 2.0.1 The ``unicode`` attribute was added to ``KEYUP`` event.
-
-Note that ``ACTIVEEVENT``, ``VIDEORESIZE`` and ``VIDEOEXPOSE`` are considered
-as "legacy" events, the use of pygame2 ``WINDOWEVENT`` API is recommended over
-the use of this older API.
+attributes based on the type. The following are lists of event types with their
+specific attributes and notes.
 
 You can also find a list of constants for keyboard keys
 :ref:`here <key-constants-label>`.
 
-|
-
-When compiled with SDL2, pygame has these additional events and their
-attributes.
-
 ::
 
-    AUDIODEVICEADDED   which, iscapture
-    AUDIODEVICEREMOVED which, iscapture
-    FINGERMOTION       touch_id, finger_id, x, y, dx, dy
-    FINGERDOWN         touch_id, finger_id, x, y, dx, dy
-    FINGERUP           touch_id, finger_id, x, y, dx, dy
-    MOUSEWHEEL         which, flipped, x, y, touch, precise_x, precise_y
-    MULTIGESTURE       touch_id, x, y, pinched, rotated, num_fingers
-    TEXTEDITING        text, start, length
-    TEXTINPUT          text
+    Event type                 Attributes/Notes
 
-.. versionaddedold:: 1.9.5
+    QUIT
+    USEREVENT                  (Starting type of the user defined
+                                event types)
 
-.. versionchangedold:: 2.0.2 Fixed amount horizontal scroll (x, positive to the right and negative to the left).
+    KEYDOWN                    key, mod, unicode, scancode, window(1)
+    KEYUP                      key, mod, unicode, scancode, window(1)
 
-.. versionchangedold:: 2.0.2 The ``touch`` attribute was added to all the ``MOUSE`` events.
+    MOUSEMOTION                pos, rel, buttons, touch(2), window(1)
+    MOUSEBUTTONUP              pos, button, touch(2), clicks(3), window(1)
+    MOUSEBUTTONDOWN            pos, button, touch(2), clicks(3), window(1)
+    MOUSEWHEEL                 which, flipped, x, y, touch(2), precise_x,
+                                precise_y, window(1)
 
-The ``touch`` attribute of ``MOUSE`` events indicates whether or not the events were generated
-by a touch input device, and not a real mouse. You might want to ignore such events, if your application
-already handles ``FINGERMOTION``, ``FINGERDOWN`` and ``FINGERUP`` events.
+    JOYAXISMOTION              instance_id, axis, value (deprecated: joy)
+    JOYBALLMOTION              instance_id, ball, rel (deprecated: joy)
+    JOYHATMOTION               instance_id, hat, value (deprecated: joy)
+    JOYBUTTONUP                instance_id, button (deprecated: joy)
+    JOYBUTTONDOWN              instance_id, button (deprecated: joy)
+    CONTROLLERDEVICEADDED      device_index
+    JOYDEVICEADDED             device_index
+    CONTROLLERDEVICEREMOVED    instance_id
+    JOYDEVICEREMOVED           instance_id
+    CONTROLLERDEVICEREMAPPED   instance_id
 
-.. versionadded:: 2.1.3 Added ``precise_x`` and ``precise_y`` to ``MOUSEWHEEL`` events
+    (Use the window event API instead of legacy events)
+    ACTIVEEVENT                gain, state (Legacy event)
+    VIDEORESIZE                size, w, h  (Legacy event)
+    VIDEOEXPOSE                            (Legacy event)
 
-|
+    AUDIODEVICEADDED           which, iscapture
+    AUDIODEVICEREMOVED         which, iscapture
 
-Many new events were introduced in pygame 2.
+    FINGERMOTION               touch_id, finger_id, x, y, dx, dy, window(1)
+    FINGERDOWN                 touch_id, finger_id, x, y, dx, dy, window(1)
+    FINGERUP                   touch_id, finger_id, x, y, dx, dy, window(1)
+    MULTIGESTURE               touch_id, x, y, pinched, rotated, num_fingers
 
-pygame can recognize text or files dropped in its window. If a file
-is dropped, ``DROPFILE`` event will be sent, ``file`` will be its path.
-The ``DROPTEXT`` event is only supported on X11.
+    TEXTEDITING(4)             text, start(4), length(4), window(1)
+    TEXTINPUT(4)               text, window(1)
 
-``MIDIIN`` and ``MIDIOUT`` are events reserved for :mod:`pygame.midi` use.
+    DROPFILE                   window(1), file (Path of the file dropped
+                                on the window)
+    DROPBEGIN                  window(1)
+    DROPCOMPLETE               window(1)
+    DROPTEXT                   window(1)
 
-pygame 2 also supports controller hot-plugging
+    MIDIIN                     (Reserved for pygame.midi use)
+    MIDIOUT                    (Reserved for pygame.midi use)
 
-::
+    KEYMAPCHANGED              (Keymap change due to language/keyboard
+                                layout change)
+    CLIPBOARDUPDATE            (Partially experimental)
+    LOCALECHANGED
 
-   Event name               Attributes and notes
-
-   DROPFILE                 file
-   DROPBEGIN
-   DROPCOMPLETE
-   DROPTEXT
-   MIDIIN
-   MIDIOUT
-   CONTROLLERDEVICEADDED    device_index
-   JOYDEVICEADDED           device_index
-   CONTROLLERDEVICEREMOVED  instance_id
-   JOYDEVICEREMOVED         instance_id
-   CONTROLLERDEVICEREMAPPED instance_id
-   KEYMAPCHANGED
-   CLIPBOARDUPDATE
-   RENDER_TARGETS_RESET
-   RENDER_DEVICE_RESET
-   LOCALECHANGED
-
-Also in this version, ``instance_id`` attributes were added to joystick events,
-and the ``joy`` attribute was deprecated.
-
-``KEYMAPCHANGED`` is a type of an event sent when keymap changes due to a
-system event such as an input language or keyboard layout change.
-
-``CLIPBOARDUPDATE`` is an event sent when clipboard changes. This can still
-be considered as an experimental feature, some kinds of clipboard changes might
-not trigger this event.
-
-``LOCALECHANGED`` is an event sent when user locale changes
-
-.. versionaddedold:: 2.0.0
-
-.. versionadded:: 2.1.3 ``KEYMAPCHANGED``, ``CLIPBOARDUPDATE``,
-   ``RENDER_TARGETS_RESET``, ``RENDER_DEVICE_RESET`` and ``LOCALECHANGED``
+    RENDER_TARGETS_RESET
+    RENDER_DEVICE_RESET
 
 |
 
-Since pygame 2.0.1, there are a new set of events, called window events.
-Here is a list of all window events, along with a short description
+(``1``): if a :class:`pygame.Window` instance exists for the window that the event
+occurred in, the ``window`` attribute of these events will be that instance,
+otherwise it will be ``None``.
+
+(``2``): The ``touch`` attribute of ``MOUSE`` events indicates whether or not the
+events were generated by a touch input device, and not a real mouse. You might
+want to ignore such events, if your application already handles ``FINGERMOTION``,
+``FINGERDOWN`` and ``FINGERUP`` events.
+
+(``3``): The ``clicks`` attribute of the ``MOUSEBUTTONDOWN`` and ``MOUSEBUTTONUP``
+events indicate the number of clicks occurring in rapid succession, e.g. ``1``
+for single-click, ``2`` for double-click, etc. Note that double, triple, or
+more clicks will still fire mouse events for each individual click, with a
+progressively increasing ``clicks`` attribute.
+
+(``4``): The ``start`` attribute of the ``TEXTEDITING`` event is the cursor position,
+in UTF-8 characters, where the new typing will be inserted into the editing text,
+while the ``length`` attribute is the number of UTF-8 characters that will be
+replaced by the new typing.
+
+These ``TEXT*`` events are useful to implement inputs/languages that require composition,
+provided by the system's IME (Input Method Editor). The ``TEXTINPUT`` event is only
+fired when the text is confirmed.
+
+|
+
+Here is a list of the new window events.
+
+All window events have a ``window`` attribute corresponding to the
+:class:`pygame.Window` that generated them.
 
 ::
 
-   Event type                Short description
+   Event type             Short description and additional attributes
 
    WINDOWSHOWN            Window became shown
    WINDOWHIDDEN           Window became hidden
    WINDOWEXPOSED          Window got updated by some external event
-   WINDOWMOVED            Window got moved
-   WINDOWRESIZED          Window got resized
-   WINDOWSIZECHANGED      Window changed its size
+   WINDOWMOVED            Window got moved        (x, y attributes)
+   WINDOWSIZECHANGED      Window size has changed (x, y attributes)
+   WINDOWRESIZED          Window got resized by the user/window manager
+                           (x, y attributes)
    WINDOWMINIMIZED        Window was minimized
    WINDOWMAXIMIZED        Window was maximized
    WINDOWRESTORED         Window was restored
@@ -198,34 +188,40 @@ Here is a list of all window events, along with a short description
    WINDOWCLOSE            Window was closed
    WINDOWTAKEFOCUS        Window was offered focus
    WINDOWHITTEST          Window has a special hit test
-   WINDOWICCPROFCHANGED   Window ICC profile changed (SDL backend >= 2.0.18)
-   WINDOWDISPLAYCHANGED   Window moved on a new display (SDL backend >= 2.0.18)
-
-
-``WINDOWMOVED``, ``WINDOWRESIZED`` and ``WINDOWSIZECHANGED`` have ``x`` and
-``y`` attributes, ``WINDOWDISPLAYCHANGED`` has a ``display_index`` attribute.
-All windowevents have a ``window`` attribute.
-
-.. versionaddedold:: 2.0.1
-
-.. versionadded:: 2.1.3 ``WINDOWICCPROFCHANGED`` and ``WINDOWDISPLAYCHANGED``
+   WINDOWICCPROFCHANGED   Window ICC profile changed
+                           (SDL backend >= 2.0.18)
+   WINDOWDISPLAYCHANGED   Window moved on a new display (display_index
+                           attribute. SDL backend >= 2.0.18)
 
 |
 
-On Android, the following events can be generated
+On Android, the following events can be generated:
 
 ::
 
-   Event type                 Short description
+   Event type                Short description
 
    APP_TERMINATING           OS is terminating the application
-   APP_LOWMEMORY             OS is low on memory, try to free memory if possible
+   APP_LOWMEMORY             OS is low on memory (try to free memory)
    APP_WILLENTERBACKGROUND   Application is entering background
    APP_DIDENTERBACKGROUND    Application entered background
    APP_WILLENTERFOREGROUND   Application is entering foreground
    APP_DIDENTERFOREGROUND    Application entered foreground
 
-.. versionadded:: 2.1.3
+|
+
+.. versionchangedold:: 2.0.0 The ``joy`` attribute was deprecated, ``instance_id`` was added.
+
+.. versionaddedold:: 2.0.1 Window events and the ``unicode`` attribute for ``KEYUP`` events.
+
+.. versionaddedold:: 2.0.2 The ``touch`` attribute was added to all the ``MOUSE`` events.
+
+.. versionadded:: 2.1.3 Android events, ``precise_x`` and ``precise_y`` to ``MOUSEWHEEL`` events,
+   ``KEYMAPCHANGED``, ``CLIPBOARDUPDATE``, ``LOCALECHANGED``, ``WINDOWICCPROFCHANGED``,
+   ``WINDOWDISPLAYCHANGED``, ``RENDER_TARGETS_RESET``, and ``RENDER_DEVICE_RESET``.
+
+.. versionadded:: 2.5.7 The ``clicks`` attribute was added to ``MOUSEBUTTONDOWN``
+   and ``MOUSEBUTTONUP`` events.
 
 |
 

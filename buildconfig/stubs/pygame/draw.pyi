@@ -28,7 +28,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
     See the :mod:`pygame.gfxdraw` module for alternative draw methods.
 """
 
-from typing import Union, overload
+from typing import overload
 
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -192,8 +192,7 @@ def circle(
     :param bool draw_bottom_right: (optional) if this is set to True then the bottom right corner
         of the circle will be drawn
 
-            | if any of the draw_circle_part is True then it will draw all circle parts that have the True
-            | value, otherwise it will draw the entire circle.
+            | If any quadrants are set to True, only they will be drawn, otherwise the entire circle will be drawn.
 
     :returns: a rect bounding the changed pixels, if nothing is drawn the
         bounding rect's position will be the ``center`` parameter value (float
@@ -211,15 +210,6 @@ def circle(
     .. versionchangedold:: 2.0.0.dev8 Added support for drawing circle quadrants.
     """
 
-@overload
-def aacircle(
-    surface: Surface,
-    color: ColorLike,
-    center: Point,
-    radius: float,
-    width: int = 0,
-) -> Rect: ...
-@overload
 def aacircle(
     surface: Surface,
     color: ColorLike,
@@ -230,13 +220,12 @@ def aacircle(
     draw_top_left: bool = False,
     draw_bottom_left: bool = False,
     draw_bottom_right: bool = False,
-) -> Rect: ...
-def aacircle(*args, **kwargs):  # type: ignore
+) -> Rect:
     """Draw an antialiased circle.
 
     Draws an antialiased circle on the given surface.
     Uses Xiaolin Wu Circle Algorithm.
-    adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
+    Adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
 
     :param Surface surface: surface to draw on
     :param color: color to draw with, the alpha value is optional if using a
@@ -269,8 +258,7 @@ def aacircle(*args, **kwargs):  # type: ignore
     :param bool draw_bottom_right: (optional) if this is set to True then the bottom right corner
         of the circle will be drawn
 
-            | if any of the draw_circle_part is True then it will draw all circle parts that have the True
-            | value, otherwise it will draw the entire circle.
+            | If any quadrants are set to True, only they will be drawn, otherwise the entire circle will be drawn.
 
     :returns: a rect bounding the changed pixels, if nothing is drawn the
         bounding rect's position will be the ``center`` parameter value (float
@@ -569,9 +557,7 @@ def aalines(
         always raise a deprecation exception when used
     """
 
-def flood_fill(
-    surface: Surface, color: Union[ColorLike, Surface], start_pos: Point
-) -> Rect:
+def flood_fill(surface: Surface, color: ColorLike | Surface, start_pos: Point) -> Rect:
     """Fill an enclosed, same color area, on a surface.
 
     Replace the color of a cluster of connected same-color pixels, beginning

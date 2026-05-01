@@ -36,7 +36,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: init
 
-   | :sl:`initialize the font module`
+   | :sl:`Initialize the font module.`
    | :sg:`init() -> None`
 
    This method is called automatically by ``pygame.init()``. It initializes the
@@ -49,7 +49,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: quit
 
-   | :sl:`uninitialize the font module`
+   | :sl:`Uninitialize the font module.`
    | :sg:`quit() -> None`
 
    Manually uninitialize SDL_ttf's font system. This is called automatically by
@@ -63,7 +63,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: get_init
 
-   | :sl:`true if the font module is initialized`
+   | :sl:`True if the font module is initialized.`
    | :sg:`get_init() -> bool`
 
    Test if the font module is initialized or not.
@@ -72,7 +72,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: get_default_font
 
-   | :sl:`get the filename of the default font`
+   | :sl:`Get the filename of the default font.`
    | :sg:`get_default_font() -> string`
 
    Return the filename of the system font. This is not the full path to the
@@ -83,7 +83,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: get_sdl_ttf_version
 
-   | :sl:`gets SDL_ttf version`
+   | :sl:`Gets SDL_ttf version.`
    | :sg:`get_sdl_ttf_version(linked=True) -> (major, minor, patch)`
 
    Returns a tuple of integers that identify SDL_ttf's version.
@@ -98,7 +98,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: get_fonts
 
-   | :sl:`get all available fonts`
+   | :sl:`Get all available fonts.`
    | :sg:`get_fonts() -> list of strings`
 
    Returns a list of all the fonts available on the system. The names of the
@@ -112,7 +112,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: match_font
 
-   | :sl:`find a specific font on the system`
+   | :sl:`Find a specific font on the system.`
    | :sg:`match_font(name, bold=False, italic=False) -> path`
 
    Returns the full path to a font file on the system. If bold or italic are
@@ -139,7 +139,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: SysFont
 
-   | :sl:`create a Font object from the system fonts`
+   | :sl:`Create a Font object from the system fonts.`
    | :sg:`SysFont(name, size, bold=False, italic=False) -> Font`
 
    Return a new Font object that is loaded from the system fonts. The font will
@@ -160,7 +160,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. class:: Font
 
-   | :sl:`create a new Font object from a file`
+   | :sl:`Create a new Font object from a file.`
    | :sg:`Font(filename=None, size=20) -> Font`
    | :sg:`Font(filename, size) -> Font`
    | :sg:`Font(pathlib.Path, size) -> Font`
@@ -280,7 +280,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: align
 
-      | :sl:`Set how rendered text is aligned when given a wrap length.`
+      | :sl:`Gets or sets how rendered text is aligned when given a wrap length.`
       | :sg:`align -> int`
 
       Can be set to `pygame.FONT_LEFT`, `pygame.FONT_RIGHT`, or
@@ -296,7 +296,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: point_size
 
-      | :sl:`Gets or sets the font's point size`
+      | :sl:`Gets or sets the font's point size.`
       | :sg:`point_size -> int`
 
       Returns the point size of the font. Will not be accurate upon initializing
@@ -306,9 +306,47 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.point_size ##
 
+
+   .. attribute:: outline
+
+      | :sl:`Gets or sets the font's outline thickness (pixels).`
+      | :sg:`outline -> int`
+
+      The outline value of the font.
+
+      When set to 0, the font will be drawn normally. When positive,
+      the text will be drawn as a hollow outline. The outline grows in all
+      directions a number of pixels equal to the value set. Negative values
+      are not allowed.
+
+      This can be drawn underneath unoutlined text to create a text outline
+      effect. For example: ::
+
+          def render_outlined(
+              font: pygame.Font,
+              text: str,
+              text_color: pygame.typing.ColorLike,
+              outline_color: pygame.typing.ColorLike,
+              outline_width: int,
+          ) -> pygame.Surface:
+              old_outline = font.outline
+              if old_outline != 0:
+                  font.outline = 0
+              base_text_surf = font.render(text, True, text_color)
+              font.outline = outline_width
+              outlined_text_surf = font.render(text, True, outline_color)
+
+              outlined_text_surf.blit(base_text_surf, (outline_width, outline_width))
+              font.outline = old_outline
+              return outlined_text_surf
+
+      .. versionadded:: 2.5.7
+
+      .. ## Font.outline ##
+
    .. method:: render
 
-      | :sl:`draw text on a new Surface`
+      | :sl:`Draw text on a new Surface.`
       | :sg:`render(text, antialias, color, bgcolor=None, wraplength=0) -> Surface`
 
       This creates a new Surface with the specified text rendered on it.
@@ -369,7 +407,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: size
 
-      | :sl:`determine the amount of space needed to render text`
+      | :sl:`Determine the amount of space needed to render text.`
       | :sg:`size(text, /) -> (width, height)`
 
       Returns the dimensions needed to render the text. This can be used to
@@ -384,7 +422,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: set_underline
 
-      | :sl:`control if text is rendered with an underline`
+      | :sl:`Control if text is rendered with an underline.`
       | :sg:`set_underline(bool, /) -> None`
 
       When enabled, all rendered fonts will include an underline. The underline
@@ -397,7 +435,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: get_underline
 
-      | :sl:`check if text will be rendered with an underline`
+      | :sl:`Check if text will be rendered with an underline.`
       | :sg:`get_underline() -> bool`
 
       Return True when the font underline is enabled.
@@ -408,7 +446,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: set_strikethrough
 
-      | :sl:`control if text is rendered with a strikethrough`
+      | :sl:`Control if text is rendered with a strikethrough.`
       | :sg:`set_strikethrough(bool, /) -> None`
 
       When enabled, all rendered fonts will include a strikethrough. The
@@ -423,7 +461,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: get_strikethrough
 
-      | :sl:`check if text will be rendered with a strikethrough`
+      | :sl:`Check if text will be rendered with a strikethrough.`
       | :sg:`get_strikethrough() -> bool`
 
       Return True when the font strikethrough is enabled.
@@ -436,7 +474,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: set_bold
 
-      | :sl:`enable fake rendering of bold text`
+      | :sl:`Enable fake rendering of bold text.`
       | :sg:`set_bold(bool, /) -> None`
 
       Enables the bold rendering of text. This is a fake stretching of the font
@@ -451,7 +489,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: get_bold
 
-      | :sl:`check if text will be rendered bold`
+      | :sl:`Check if text will be rendered bold.`
       | :sg:`get_bold() -> bool`
 
       Return True when the font bold rendering mode is enabled.
@@ -462,7 +500,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: set_italic
 
-      | :sl:`enable fake rendering of italic text`
+      | :sl:`Enable fake rendering of italic text.`
       | :sg:`set_italic(bool, /) -> None`
 
       Enables fake rendering of italic text. This is a fake skewing of the font
@@ -477,7 +515,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: metrics
 
-      | :sl:`gets the metrics for each character in the passed string`
+      | :sl:`Gets the metrics for each character in the passed string.`
       | :sg:`metrics(text, /) -> list`
 
       The list contains tuples for each character, which contain the minimum
@@ -494,7 +532,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: get_italic
 
-      | :sl:`check if the text will be rendered italic`
+      | :sl:`Check if the text will be rendered italic.`
       | :sg:`get_italic() -> bool`
 
       Return True when the font italic rendering mode is enabled.
@@ -503,43 +541,15 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.get_italic ##
 
-   .. method:: get_linesize
+   .. autopgmethod:: get_linesize
 
-      | :sl:`get the line space of the font text`
-      | :sg:`get_linesize() -> int`
+   .. autopgmethod:: set_linesize
 
-      Return the height in pixels for a line of text with the font. When
-      rendering multiple lines of text this is the recommended amount of space
-      between lines.
-
-      .. ## Font.get_linesize ##
-
-   .. method:: set_linesize
-
-      | :sl:`set the line space of the font text`
-      | :sg:`set_linesize(linesize) -> None`
-
-      Set the height in pixels for a line of text with the font. When rendering
-      multiple lines of text this refers to the amount of space between lines.
-      The value must be non-negative.
-
-      .. versionadded:: 2.5.4
-
-      .. ## Font.set_linesize ##
-
-   .. method:: get_height
-
-      | :sl:`get the height of the font`
-      | :sg:`get_height() -> int`
-
-      Return the height in pixels of the actual rendered text. This is the
-      average size for each glyph in the font.
-
-      .. ## Font.get_height ##
+   .. autopgmethod:: get_height
 
    .. method:: set_point_size
 
-      | :sl:`set the point size of the font`
+      | :sl:`Set the point size of the font.`
       | :sg:`set_point_size(size, /) -> None`
 
       Sets the point size of the font, which is the value that was used to
@@ -551,7 +561,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: get_point_size
 
-      | :sl:`get the point size of the font`
+      | :sl:`Get the point size of the font.`
       | :sg:`get_point_size() -> int`
 
       Returns the point size of the font. Will not be accurate upon
@@ -562,66 +572,13 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.get_point_size ##
 
-   .. method:: get_ascent
+   .. autopgmethod:: get_ascent
 
-      | :sl:`get the ascent of the font`
-      | :sg:`get_ascent() -> int`
+   .. autopgmethod:: get_descent
 
-      Return the height in pixels for the font ascent. The ascent is the number
-      of pixels from the font baseline to the top of the font.
+   .. autopgmethod:: set_script
 
-      .. ## Font.get_ascent ##
-
-   .. method:: get_descent
-
-      | :sl:`get the descent of the font`
-      | :sg:`get_descent() -> int`
-
-      Return the height in pixels for the font descent. The descent is the
-      number of pixels from the font baseline to the bottom of the font.
-
-      .. ## Font.get_descent ##
-
-   .. method:: set_script
-
-      | :sl:`set the script code for text shaping`
-      | :sg:`set_script(str, /) -> None`
-
-      Sets the script used by harfbuzz text shaping, taking a 4 character
-      script code as input. For example, Hindi is written in the Devanagari
-      script, for which the script code is `"Deva"`. See the full list of
-      script codes in `ISO 15924 <https://www.unicode.org/iso15924/iso15924-codes.html>`_.
-
-      This method requires pygame built with SDL_ttf 2.20.0 or above. Otherwise the
-      method will raise a pygame.error.
-
-      .. versionadded:: 2.1.4
-
-      .. ## Font.set_script ##
-
-   .. method:: set_direction
-
-      | :sl:`set the script direction for text shaping`
-      | :sg:`set_direction(direction) -> None`
-
-      Sets the font direction for harfbuzz text rendering, taking in an integer
-      between 0 and 3 (inclusive) as input. There are convenient constants defined
-      for use in this method.
-
-      * ``pygame.DIRECTION_LTR`` is for left-to-right text
-      * ``pygame.DIRECTION_RTL`` is for right-to-left text
-      * ``pygame.DIRECTION_TTB`` is for top-to-bottom text
-      * ``pygame.DIRECTION_BTT`` is for bottom-to-top text
-
-      This method requires pygame built with SDL_ttf 2.20.0 or above. Otherwise the
-      method will raise a pygame.error.
-
-      .. note:: multiline renders with :meth:`render` do not play nicely with top-to-bottom
-         or bottom-to-top rendering.
-
-      .. versionadded:: 2.1.4
-
-      .. ## font.set_direction ##
+   .. autopgmethod:: set_direction
 
    .. ## pygame.font.Font ##
 

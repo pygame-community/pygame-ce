@@ -19,3 +19,6 @@ SDL: SDLVersion
 ver: str
 vernum: PygameVersion
 rev: str
+
+# keep in sync with version.py
+__all__ = ["SDL", "ver", "vernum", "rev"]

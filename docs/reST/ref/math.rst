@@ -49,10 +49,10 @@ Multiple coordinates can be set and retrieved using slices or swizzling.
    print(v.yx)  # Vector2(2, 1)
    print(v.xyyx)  # (1.0, 2.0, 2.0, 1.0)
 
-Note above, that swizzling with 2 components will return a Vector2 instance
-again, while more than 2 components will result in a tuple. But since vectors
-support the iterator protocol, they can be unpacked, or converted to lists or
-tuples.
+Note above, that swizzling with 2 components will return a Vector2 instance,
+swizzling with 3 components will return a Vector3 instance, and swizzles of 4
+or more components will result in a tuple. But since vectors support the
+iterator protocol, they can be unpacked, or converted to lists or tuples.
 
 ::
 
@@ -115,7 +115,8 @@ Conversion can be combined with swizzling or slicing to create a new order
    Returns a number which is a linear interpolation between ``a``
    and ``b``. The third parameter determines how far between ``a`` and
    ``b`` the result is going to be.
-   If ``do_clamp`` is false, the result can exceed the range 0.0 to 1.0.
+   If ``do_clamp`` is false, ``value`` is not clamped to ``[0, 1]``,
+   allowing extrapolation outside the range ``[a, b]``.
 
    The formula is:
 
@@ -144,12 +145,12 @@ Conversion can be combined with swizzling or slicing to create a new order
 
    .. code-block:: python
 
-      > a = 10
-      > b = 20
-      > pygame.math.invlerp(10, 20, 11.5)
-      > 0.15
-      > pygame.math.lerp(10, 20, 0.15)
-      > 11.5
+      >>> a = 10
+      >>> b = 20
+      >>> pygame.math.invlerp(10, 20, 11.5)
+      0.15
+      >>> pygame.math.lerp(10, 20, 0.15)
+      11.5
 
 
    .. versionadded:: 2.5.0
@@ -161,15 +162,15 @@ Conversion can be combined with swizzling or slicing to create a new order
    | :sl:`returns value smoothly interpolated between a and b.`
    | :sg:`smoothstep(a, b, value, /) -> float`
 
-   Returns a number which is a "smooth" interpolation between ``a``
+   Returns a number which is a smooth interpolation between ``a``
    and ``b``. This means that the interpolation follows an s-shaped curve, with
    change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
    The third parameter determines how far between ``a`` and
-   ``b`` the result is going to be.
+   ``b`` the result is going to be. Value is clamped to ``[0, 1]``.
 
    The formula is:
 
-   ``a * interp + (1 - interp) * b``
+   ``a * (1 - interp) + b * interp``
 
    where:
 
@@ -192,9 +193,9 @@ Conversion can be combined with swizzling or slicing to create a new order
 
    .. code-block:: python
 
-      > value = 50
-      > pygame.math.remap(0, 100, 0, 200, value)
-      > 100.0
+      >>> value = 50
+      >>> pygame.math.remap(0, 100, 0, 200, value)
+      100.0
 
 
    .. versionadded:: 2.5.0
@@ -210,8 +211,6 @@ Conversion can be combined with swizzling or slicing to create a new order
    | :sg:`Vector2(Vector2) -> Vector2`
    | :sg:`Vector2(x, y) -> Vector2`
    | :sg:`Vector2((x, y)) -> Vector2`
-
-   Some general information about the ``Vector2`` class.
 
    .. versionchanged:: 2.1.3
       Inherited methods of vector subclasses now correctly return an instance of the
@@ -281,7 +280,8 @@ Conversion can be combined with swizzling or slicing to create a new order
       | :sg:`normalize() -> Vector2`
 
       Returns a new vector that has ``length`` equal to ``1`` and the same
-      direction as self.
+      direction as self. If the vector is the zero vector (i.e. has length
+      ``0`` thus no direction) a ``ValueError`` is raised.
 
       .. ## Vector2.normalize ##
 
@@ -291,14 +291,16 @@ Conversion can be combined with swizzling or slicing to create a new order
       | :sg:`normalize_ip() -> None`
 
       Normalizes the vector so that it has ``length`` equal to ``1``.
-      The direction of the vector is not changed.
+      The direction of the vector is not changed. If the vector is the zero
+      vector (i.e. has length ``0`` thus no direction) a ``ValueError`` is
+      raised.
 
       .. ## Vector2.normalize_ip ##
 
    .. method:: is_normalized
 
       | :sl:`tests if the vector is normalized i.e. has length == 1.`
-      | :sg:`is_normalized() -> Bool`
+      | :sg:`is_normalized() -> bool`
 
       Returns True if the vector has ``length`` equal to ``1``. Otherwise
       it returns ``False``.
@@ -389,8 +391,8 @@ Conversion can be combined with swizzling or slicing to create a new order
 
       Returns a Vector which is a linear interpolation between self and the
       given Vector. The second parameter determines how far between self and
-      other the result is going to be. It must be a value between ``0`` and ``1``
-      where ``0`` means self and ``1`` means other will be returned.
+      other the result is going to be. It must be a value between ``0`` and
+      ``1``, where ``0`` means self and ``1`` means other will be returned.
 
       .. ## Vector2.lerp ##
 
@@ -410,16 +412,17 @@ Conversion can be combined with swizzling or slicing to create a new order
    .. method:: smoothstep
 
       | :sl:`returns a smooth interpolation to the given vector.`
-      | :sg:`smoothstep(Vector2, float, /) -> Vector2`
+      | :sg:`smoothstep(Vector2, value, /) -> Vector2`
 
       Returns a Vector which is a smooth interpolation between self and the
       given Vector. This means that the interpolation follows an s-shaped curve, with
       change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
-      The third parameter determines how far between the two vectors the result is going to be.
+      The second parameter determines how far between the two vectors the result is going to be.
+      Value is clamped to ``[0, 1]``.
 
       The formula is:
 
-      ``a * interp + (1 - interp) * b``
+      ``a * (1 - interp) + b * interp``
 
       where:
 
@@ -569,9 +572,6 @@ Conversion can be combined with swizzling or slicing to create a new order
       | :sg:`clamp_magnitude(max_length, /) -> Vector2`
       | :sg:`clamp_magnitude(min_length, max_length, /) -> Vector2`
 
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave clamp_magnitude feedback with authors <https://github.com/pygame-community/pygame-ce>`_
-
       Returns a new copy of a vector with the magnitude clamped between
       ``max_length`` and ``min_length``. If only one argument is passed, it is
       taken to be the ``max_length``
@@ -696,8 +696,6 @@ Conversion can be combined with swizzling or slicing to create a new order
    | :sg:`Vector3(x, y, z) -> Vector3`
    | :sg:`Vector3((x, y, z)) -> Vector3`
 
-   Some general information about the Vector3 class.
-
    .. versionchanged:: 2.1.3
       Inherited methods of vector subclasses now correctly return an instance of the
       subclass instead of the superclass
@@ -770,7 +768,8 @@ Conversion can be combined with swizzling or slicing to create a new order
       | :sg:`normalize() -> Vector3`
 
       Returns a new vector that has ``length`` equal to ``1`` and the same
-      direction as self.
+      direction as self. If the vector is the zero vector (i.e. has length
+      ``0`` thus no direction) a ``ValueError`` is raised.
 
       .. ## Vector3.normalize ##
 
@@ -780,14 +779,15 @@ Conversion can be combined with swizzling or slicing to create a new order
       | :sg:`normalize_ip() -> None`
 
       Normalizes the vector so that it has ``length`` equal to ``1``. The
-      direction of the vector is not changed.
+      direction of the vector is not changed. If the vector is the zero vector
+      (i.e. has length ``0`` thus no direction) a ``ValueError`` is raised.
 
       .. ## Vector3.normalize_ip ##
 
    .. method:: is_normalized
 
       | :sl:`tests if the vector is normalized i.e. has length == 1.`
-      | :sg:`is_normalized() -> Bool`
+      | :sg:`is_normalized() -> bool`
 
       Returns True if the vector has ``length`` equal to ``1``. Otherwise it
       returns ``False``.
@@ -877,7 +877,7 @@ Conversion can be combined with swizzling or slicing to create a new order
       | :sg:`lerp(Vector3, float, /) -> Vector3`
 
       Returns a Vector which is a linear interpolation between self and the
-      given Vector. The second parameter determines how far between self an
+      given Vector. The second parameter determines how far between self and
       other the result is going to be. It must be a value between ``0`` and
       ``1``, where ``0`` means self and ``1`` means other will be returned.
 
@@ -899,16 +899,17 @@ Conversion can be combined with swizzling or slicing to create a new order
    .. method:: smoothstep
 
       | :sl:`returns a smooth interpolation to the given vector.`
-      | :sg:`smoothstep(Vector3, float, /) -> Vector3`
+      | :sg:`smoothstep(Vector3, value, /) -> Vector3`
 
       Returns a Vector which is a smooth interpolation between self and the
       given Vector. This means that the interpolation follows an s-shaped curve, with
       change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
-      The third parameter determines how far between the two vectors the result is going to be.
+      The second parameter determines how far between the two vectors the result is going to be.
+      Value is clamped to ``[0, 1]``.
 
       The formula is:
 
-      ``a * interp + (1 - interp) * b``
+      ``a * (1 - interp) + b * interp``
 
       where:
 
