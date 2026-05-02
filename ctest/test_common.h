@@ -25,6 +25,9 @@ struct TestCase {
     Note that the arguments to the test function must be *exactly*
     (PyObject * self, PyObject * _null), but due to gcc throwing a fit, I
     cannot just use token pasting to have the macro generate that part for me
+
+    Also note that tests are expected to end with PY_RETURN_NONE when
+   successful, or return NULL with an exception set when failed.
 */
 #define PG_CTEST(TestFunc)                                                     \
   static struct TestCase meta_##TestFunc = {#TestFunc, __LINE__};              \
@@ -35,13 +38,20 @@ struct TestCase {
     Unity.CurrentTestName = meta_##TestFunc.test_name;                         \
     Unity.CurrentTestLineNumber = meta_##TestFunc.line_num;                    \
     Unity.NumberOfTests++;                                                     \
+    PyObject *result = NULL;                                                   \
     if (TEST_PROTECT()) {                                                      \
       setUp();                                                                 \
-      TestFunc(self, _null);                                                   \
+      result = TestFunc(self, _null);                                          \
+      TEST_ASSERT_NOT_EQUAL(NULL, result);                                     \
     }                                                                          \
     if (TEST_PROTECT()) {                                                      \
       tearDown();                                                              \
     }                                                                          \
+    if (PyErr_Occurred()) {                                                    \
+      PyErr_Print();                                                           \
+      PyErr_Clear();                                                           \
+    }                                                                          \
+                                                                               \
     UnityConcludeTest();                                                       \
   }
 
