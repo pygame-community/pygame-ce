@@ -544,15 +544,9 @@ summary(
 # stores werror
 warnings_error = []
 
-# module specific warnings (TODO remove these by fixing code)
-warnings_temp_freetype = []
-warnings_temp_mask = []
-
 if cc.get_argument_syntax() == 'msvc'
     # base warnings on msvc
     add_global_arguments(['/W3', '/wd4142', '/wd4996'], language: 'c')
-
-    warnings_temp_mask += ['/wd6385', '/wd6386']
 
     if get_option('error_on_warns') and not is_pypy
         warnings_error += '/WX'
@@ -561,19 +555,6 @@ if cc.get_argument_syntax() == 'msvc'
 else
     # base warnings on gcc/clang
     add_global_arguments(['-Wall', '-Wno-error=unknown-pragmas'], language: 'c')
-
-    # check for exact gcc (flags not needed on clang)
-    if cc.get_id() == 'gcc'
-        warnings_temp_freetype += [
-            '-Wno-error=unused-but-set-variable',
-            '-Wno-error=array-bounds',
-        ]
-        warnings_temp_mask += '-Wno-error=array-bounds'
-    endif
-
-    if cc.sizeof('long') != 8
-        warnings_temp_mask += '-Wno-error=shift-count-overflow'
-    endif
 
     if get_option('error_on_warns') and not is_pypy
         warnings_error += '-Werror'
