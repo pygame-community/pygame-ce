@@ -807,8 +807,7 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
             break;
         default:
             Py_XDECREF(ret);
-            Py_INCREF(Py_NotImplemented);
-            return Py_NotImplemented;
+            return Py_NewRef(Py_NotImplemented);
     }
     return (PyObject *)ret;
 }
@@ -1402,8 +1401,7 @@ vector_richcompare(PyObject *o1, PyObject *o2, int op)
             Py_RETURN_TRUE;
         }
         else {
-            Py_INCREF(Py_NotImplemented);
-            return Py_NotImplemented;
+            return Py_NewRef(Py_NotImplemented);
         }
     }
 
@@ -3930,8 +3928,7 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
         }
     }
     else {
-        Py_INCREF(Py_NotImplemented);
-        return Py_NotImplemented;
+        return Py_NewRef(Py_NotImplemented);
     }
 
     return PyBool_FromLong(ret);
@@ -4213,15 +4210,13 @@ vector_elementwiseproxy_pow(PyObject *baseObj, PyObject *expoObj,
             }
         }
         else if (RealNumber_Check(expoObj)) {
-            /* INCREF so that we can unify the clean up code */
+            /* NEWREF so that we can unify the clean up code */
             for (i = 0; i < dim; i++) {
-                expos[i] = expoObj;
-                Py_INCREF(expoObj);
+                expos[i] = Py_NewRef(expoObj);
             }
         }
         else {
-            Py_INCREF(Py_NotImplemented);
-            ret = Py_NotImplemented;
+            ret = Py_NewRef(Py_NotImplemented);
             goto clean_up;
         }
     }
@@ -4238,15 +4233,13 @@ vector_elementwiseproxy_pow(PyObject *baseObj, PyObject *expoObj,
             }
         }
         else if (RealNumber_Check(baseObj)) {
-            /* INCREF so that we can unify the clean up code */
+            /* NEWREF so that we can unify the clean up code */
             for (i = 0; i < dim; i++) {
-                bases[i] = baseObj;
-                Py_INCREF(baseObj);
+                bases[i] = Py_NewRef(baseObj);
             }
         }
         else {
-            Py_INCREF(Py_NotImplemented);
-            ret = Py_NotImplemented;
+            ret = Py_NewRef(Py_NotImplemented);
             goto clean_up;
         }
     }
@@ -4398,8 +4391,7 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     // if value < min: return min
     int result = PyObject_RichCompareBool(value, min, Py_LT);
     if (result == 1) {
-        Py_INCREF(min);
-        return min;
+        return Py_NewRef(min);
     }
     else if (result == -1) {
         return NULL;
@@ -4408,15 +4400,13 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     // if value > max: return max
     result = PyObject_RichCompareBool(value, max, Py_GT);
     if (result == 1) {
-        Py_INCREF(max);
-        return max;
+        return Py_NewRef(max);
     }
     else if (result == -1) {
         return NULL;
     }
 
-    Py_INCREF(value);
-    return value;
+    return Py_NewRef(value);
 }
 
 #define RAISE_ARG_TYPE_ERROR(var)                                     \
