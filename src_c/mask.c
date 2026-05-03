@@ -780,8 +780,6 @@ Index:     [0]         [1]          [2]         [3]
     same row (index 2) and do the same.
 */
 #define SET_FROM_THRESHOLD_BPP(surf, surf_format, bits, u_threshold, bpp)   \
-    const int num_chunks = (surf->w + BITMASK_W_LEN - 1) / BITMASK_W_LEN;   \
-                                                                            \
     for (int y = 0; y < surf->h; y++) {                                     \
         Uint8 *srcp = (Uint8 *)surf->pixels + y * surf->pitch + a_off;      \
         int block_idx = y;                                                  \
