@@ -1388,6 +1388,8 @@ dict_from_event(SDL_Event *event)
                                                   (int)event->wheel.mouseY);
 #else
         obj = Py_None;
+        Py_INCREF(obj);
+
 #endif /* SDL_VERSION_ATLEAST(2, 26, 0) */
             _pg_insobj(dict, "pos", obj);
 
