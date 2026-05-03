@@ -43,24 +43,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-/* Pretty good idea from Tom Duff :-). */
-#ifndef LOOP_UNROLLED4
-#define LOOP_UNROLLED4(code, n, width) \
-    n = (width + 3) / 4;               \
-    switch (width & 3) {               \
-        case 0:                        \
-            do {                       \
-                code;                  \
-                case 3:                \
-                    code;              \
-                case 2:                \
-                    code;              \
-                case 1:                \
-                    code;              \
-            } while (--n > 0);         \
-    }
-#endif
-
 /* Macro to create mask objects. This will call the type's tp_new and tp_init.
  * Params:
  *     w: width of mask
@@ -779,6 +761,70 @@ set_pixel_color(Uint8 *pixel, Uint8 bpp, Uint32 color)
     }
 }
 
+/*
+    The following macro implements 32 and 24 bpp surface alpha -> bitmask
+    conversion and is only meant to be used inside set_from_threshold().
+
+    The bitmask is stored column-group-major, with each group being 32 or
+    64 bits depending on the platform.
+
+    Take a 128X2 surface 64-bit platform, the bitmap will be laid out as
+    follows.
+
+Index:     [0]         [1]          [2]         [3]
+        row0,col0   row1,col0    row0,col1   row1,col1
+        px 0-63      px 0-63      64-127     px 64-127
+
+    We exploit this and do all pixels of bits[0] in groups of 8 in parallel
+    (plus remaining 1-7 pixels one by one), then jump to the next group on the
+    same row (index 2) and do the same.
+*/
+#define SET_FROM_THRESHOLD_BPP(surf, surf_format, bits, u_threshold, bpp)   \
+    const int num_chunks = (surf->w + BITMASK_W_LEN - 1) / BITMASK_W_LEN;   \
+                                                                            \
+    for (int y = 0; y < surf->h; y++) {                                     \
+        Uint8 *srcp = (Uint8 *)surf->pixels + y * surf->pitch + a_off;      \
+        int block_idx = y;                                                  \
+        int x = 0;                                                          \
+        while (x < surf->w) {                                               \
+            int chunk_end = x + BITMASK_W_LEN - (x & BITMASK_W_MASK);       \
+            if (chunk_end > surf->w) {                                      \
+                chunk_end = surf->w;                                        \
+            }                                                               \
+            /* Fill the whole block */                                      \
+            while (x <= chunk_end - 8) {                                    \
+                if (srcp[0 * bpp] > u_threshold)                            \
+                    bits[block_idx] |= BITMASK_N((x + 0) & BITMASK_W_MASK); \
+                if (srcp[1 * bpp] > u_threshold)                            \
+                    bits[block_idx] |= BITMASK_N((x + 1) & BITMASK_W_MASK); \
+                if (srcp[2 * bpp] > u_threshold)                            \
+                    bits[block_idx] |= BITMASK_N((x + 2) & BITMASK_W_MASK); \
+                if (srcp[3 * bpp] > u_threshold)                            \
+                    bits[block_idx] |= BITMASK_N((x + 3) & BITMASK_W_MASK); \
+                if (srcp[4 * bpp] > u_threshold)                            \
+                    bits[block_idx] |= BITMASK_N((x + 4) & BITMASK_W_MASK); \
+                if (srcp[5 * bpp] > u_threshold)                            \
+                    bits[block_idx] |= BITMASK_N((x + 5) & BITMASK_W_MASK); \
+                if (srcp[6 * bpp] > u_threshold)                            \
+                    bits[block_idx] |= BITMASK_N((x + 6) & BITMASK_W_MASK); \
+                if (srcp[7 * bpp] > u_threshold)                            \
+                    bits[block_idx] |= BITMASK_N((x + 7) & BITMASK_W_MASK); \
+                srcp += bpp * 8;                                            \
+                x += 8;                                                     \
+            }                                                               \
+            /* remaining 1-7 pixels */                                      \
+            while (x < chunk_end) {                                         \
+                if (*srcp > u_threshold) {                                  \
+                    bits[block_idx] |= BITMASK_N(x & BITMASK_W_MASK);       \
+                }                                                           \
+                srcp += bpp;                                                \
+                x++;                                                        \
+            }                                                               \
+            /* go to the next block on the same row */                      \
+            block_idx += surf->h;                                           \
+        }                                                                   \
+    }
+
 /* For each surface pixel's alpha that is greater than the threshold,
  * the corresponding bitmask bit is set.
  *
@@ -797,7 +843,7 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
 {
     /* This function expects surf to be non-zero sized. */
     const Uint8 bpp = PG_FORMAT_BytesPerPixel(surf_format);
-    int x, y, n;
+    int x, y;
     Uint8 *srcp;
     const int src_skip = surf->pitch - surf->w * bpp;
 
@@ -809,14 +855,17 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
         bitmask_fill(bitmask);
         return;
     }
-    else if (bpp < 3) {
+
+    const Uint8 u_threshold = (Uint8)threshold;
+
+    if (bpp < 3) {
         Uint8 r, g, b, a;
         srcp = (Uint8 *)surf->pixels;
         for (y = 0; y < surf->h; ++y) {
             for (x = 0; x < surf->w; ++x, srcp += bpp) {
                 PG_GetRGBA(bpp == 1 ? *srcp : *((Uint16 *)srcp), surf_format,
                            surf_palette, &r, &g, &b, &a);
-                if (a > threshold) {
+                if (a > u_threshold) {
                     bitmask_setbit(bitmask, x, y);
                 }
             }
@@ -825,33 +874,21 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
         return;
     }
 
-    /* With this strategy we avoid to get the rgb channels that we don't need
-     * and instead we just jump from alpha channel to alpha channel, comparing
-     * it with the threshold. */
-
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-    const char _a_off = surf_format->Ashift >> 3;
+    const char a_off = surf_format->Ashift >> 3;
 #else
-    const char _a_off = 3 - (surf_format->Ashift >> 3);
+    const char a_off = 3 - (surf_format->Ashift >> 3);
 #endif
 
-    srcp = (Uint8 *)surf->pixels + _a_off;
-    const Uint8 u_threshold = (Uint8)threshold;
+    BITMASK_W *bits = bitmask->bits;
 
-    for (y = 0; y < surf->h; ++y) {
-        x = 0;
-        LOOP_UNROLLED4(
-            {
-                if ((*srcp) > u_threshold) {
-                    bitmask_setbit(bitmask, x, y);
-                }
-                srcp += bpp;
-                x++;
-            },
-            n, surf->w);
-
-        srcp += src_skip;
+    if (bpp == 4) {
+        SET_FROM_THRESHOLD_BPP(surf, surf_format, bits, u_threshold, 4);
+        return;
     }
+
+    /* 24-BIT case*/
+    SET_FROM_THRESHOLD_BPP(surf, surf_format, bits, u_threshold, 3);
 }
 
 /* For each surface pixel's color that is not equal to the colorkey, the
