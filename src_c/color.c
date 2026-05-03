@@ -1625,8 +1625,7 @@ _color_add(PyObject *obj1, PyObject *obj2)
     pgColorObject *color1 = (pgColorObject *)obj1;
     pgColorObject *color2 = (pgColorObject *)obj2;
     if (!pgColor_Check(obj1) || !pgColor_Check(obj2)) {
-        Py_INCREF(Py_NotImplemented);
-        return Py_NotImplemented;
+        return Py_NewRef(Py_NotImplemented);
     }
     rgba[0] = MIN(color1->data[0] + color2->data[0], 255);
     rgba[1] = MIN(color1->data[1] + color2->data[1], 255);
@@ -1645,8 +1644,7 @@ _color_sub(PyObject *obj1, PyObject *obj2)
     pgColorObject *color1 = (pgColorObject *)obj1;
     pgColorObject *color2 = (pgColorObject *)obj2;
     if (!pgColor_Check(obj1) || !pgColor_Check(obj2)) {
-        Py_INCREF(Py_NotImplemented);
-        return Py_NotImplemented;
+        return Py_NewRef(Py_NotImplemented);
     }
     rgba[0] = MAX(color1->data[0] - color2->data[0], 0);
     rgba[1] = MAX(color1->data[1] - color2->data[1], 0);
@@ -1665,8 +1663,7 @@ _color_mul(PyObject *obj1, PyObject *obj2)
     pgColorObject *color1 = (pgColorObject *)obj1;
     pgColorObject *color2 = (pgColorObject *)obj2;
     if (!pgColor_Check(obj1) || !pgColor_Check(obj2)) {
-        Py_INCREF(Py_NotImplemented);
-        return Py_NotImplemented;
+        return Py_NewRef(Py_NotImplemented);
     }
     rgba[0] = MIN(color1->data[0] * color2->data[0], 255);
     rgba[1] = MIN(color1->data[1] * color2->data[1], 255);
@@ -1685,8 +1682,7 @@ _color_div(PyObject *obj1, PyObject *obj2)
     pgColorObject *color1 = (pgColorObject *)obj1;
     pgColorObject *color2 = (pgColorObject *)obj2;
     if (!pgColor_Check(obj1) || !pgColor_Check(obj2)) {
-        Py_INCREF(Py_NotImplemented);
-        return Py_NotImplemented;
+        return Py_NewRef(Py_NotImplemented);
     }
     if (color2->data[0] != 0) {
         rgba[0] = color1->data[0] / color2->data[0];
@@ -1713,8 +1709,7 @@ _color_mod(PyObject *obj1, PyObject *obj2)
     pgColorObject *color1 = (pgColorObject *)obj1;
     pgColorObject *color2 = (pgColorObject *)obj2;
     if (!pgColor_Check(obj1) || !pgColor_Check(obj2)) {
-        Py_INCREF(Py_NotImplemented);
-        return Py_NotImplemented;
+        return Py_NewRef(Py_NotImplemented);
     }
     if (color2->data[0] != 0) {
         rgba[0] = color1->data[0] % color2->data[0];
@@ -2099,8 +2094,7 @@ _color_richcompare(PyObject *o1, PyObject *o2, int opid)
     }
 
 Unimplemented:
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
+    return Py_NewRef(Py_NotImplemented);
 }
 
 static int
@@ -2138,8 +2132,7 @@ _color_getbuffer(pgColorObject *color, Py_buffer *view, int flags)
         view->strides = 0;
     }
     view->suboffsets = 0;
-    Py_INCREF(color);
-    view->obj = (PyObject *)color;
+    view->obj = Py_NewRef(color);
     return 0;
 }
 
