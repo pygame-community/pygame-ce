@@ -1819,13 +1819,13 @@ _set_at_pixels(int x, int y, Uint8 *pixels, PG_PixelFormat *format,
         case 3:
             byte_buf = (Uint8 *)(pixels + y * surf_pitch) + x * 3;
 #if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            *(byte_buf + (format->Rshift >> 3)) = (Uint8)(the_color >> 16);
-            *(byte_buf + (format->Gshift >> 3)) = (Uint8)(the_color >> 8);
-            *(byte_buf + (format->Bshift >> 3)) = (Uint8)the_color;
+            byte_buf[0] = (Uint8)(the_color);
+            byte_buf[1] = (Uint8)(the_color >> 8);
+            byte_buf[2] = (Uint8)(the_color >> 16);
 #else
-            *(byte_buf + 2 - (format->Rshift >> 3)) = (Uint8)(the_color >> 16);
-            *(byte_buf + 2 - (format->Gshift >> 3)) = (Uint8)(the_color >> 8);
-            *(byte_buf + 2 - (format->Bshift >> 3)) = (Uint8)the_color;
+            byte_buf[0] = (Uint8)(the_color >> 16);
+            byte_buf[1] = (Uint8)(the_color >> 8);
+            byte_buf[2] = (Uint8)(the_color);
 #endif
             break;
         default: /* case 4: */
