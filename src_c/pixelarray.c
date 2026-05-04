@@ -1164,22 +1164,19 @@ _array_assign_sequence(pgPixelArrayObject *array, Py_ssize_t low,
             }
             break;
         case 3: {
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            Uint32 Roffset = surf_format->Rshift >> 3;
-            Uint32 Goffset = surf_format->Gshift >> 3;
-            Uint32 Boffset = surf_format->Bshift >> 3;
-#else
-            Uint32 Roffset = 2 - (surf_format->Rshift >> 3);
-            Uint32 Goffset = 2 - (surf_format->Gshift >> 3);
-            Uint32 Boffset = 2 - (surf_format->Bshift >> 3);
-#endif
             for (y = 0; y < dim1; ++y) {
                 pixel_p = pixelrow;
                 val_color_p = val_colors;
                 for (x = 0; x < dim0; ++x) {
-                    pixel_p[Roffset] = (Uint8)(*val_color_p >> 16);
-                    pixel_p[Goffset] = (Uint8)(*val_color_p >> 8);
-                    pixel_p[Boffset] = (Uint8)*val_color_p;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                    pixel_p[0] = (Uint8)*val_color_p;
+                    pixel_p[1] = (Uint8)(*val_color_p >> 8);
+                    pixel_p[2] = (Uint8)(*val_color_p >> 16);
+#else
+                    pixel_p[0] = (Uint8)(*val_color_p >> 16);
+                    pixel_p[1] = (Uint8)(*val_color_p >> 8);
+                    pixel_p[2] = (Uint8)*val_color_p;
+#endif
                     pixel_p += stride0;
                     ++val_color_p;
                 }
@@ -1261,25 +1258,18 @@ _array_assign_slice(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
             }
         } break;
         case 3: {
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            Uint32 Roffset = surf_format->Rshift >> 3;
-            Uint32 Goffset = surf_format->Gshift >> 3;
-            Uint32 Boffset = surf_format->Bshift >> 3;
-#else
-            Uint32 Roffset = 2 - (surf_format->Rshift >> 3);
-            Uint32 Goffset = 2 - (surf_format->Gshift >> 3);
-            Uint32 Boffset = 2 - (surf_format->Bshift >> 3);
-#endif
-            Uint8 r = (Uint8)(color >> 16);
-            Uint8 g = (Uint8)(color >> 8);
-            Uint8 b = (Uint8)(color);
-
             for (y = 0; y < dim1; ++y) {
                 pixel_p = pixelrow;
                 for (x = 0; x < dim0; ++x) {
-                    pixel_p[Roffset] = r;
-                    pixel_p[Goffset] = g;
-                    pixel_p[Boffset] = b;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                    pixel_p[0] = (Uint8)color;
+                    pixel_p[1] = (Uint8)(color >> 8);
+                    pixel_p[2] = (Uint8)(color >> 16);
+#else
+                    pixel_p[0] = (Uint8)(color >> 16);
+                    pixel_p[1] = (Uint8)(color >> 8);
+                    pixel_p[2] = (Uint8)color;
+#endif
                     pixel_p += stride0;
                 }
                 pixelrow += stride1;
@@ -1395,19 +1385,16 @@ _pxarray_ass_item(pgPixelArrayObject *array, Py_ssize_t index, PyObject *value)
             }
             break;
         case 3: {
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            Uint32 Roffset = surf_format->Rshift >> 3;
-            Uint32 Goffset = surf_format->Gshift >> 3;
-            Uint32 Boffset = surf_format->Bshift >> 3;
-#else
-            Uint32 Roffset = 2 - (surf_format->Rshift >> 3);
-            Uint32 Goffset = 2 - (surf_format->Gshift >> 3);
-            Uint32 Boffset = 2 - (surf_format->Bshift >> 3);
-#endif
             for (y = 0; y < dim1; ++y) {
-                pixel_p[Roffset] = (Uint8)(color >> 16);
-                pixel_p[Goffset] = (Uint8)(color >> 8);
-                pixel_p[Boffset] = (Uint8)color;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                pixel_p[0] = (Uint8)color;
+                pixel_p[1] = (Uint8)(color >> 8);
+                pixel_p[2] = (Uint8)(color >> 16);
+#else
+                pixel_p[0] = (Uint8)(color >> 16);
+                pixel_p[1] = (Uint8)(color >> 8);
+                pixel_p[2] = (Uint8)color;
+#endif
                 pixel_p += stride1;
             }
             break;
