@@ -671,6 +671,11 @@ MODINIT_DEFINE(constants)
     DEC_CONSTS(FLASH_UNTIL_FOCUSED, -1);
 #endif
 
+    DEC_CONSTS(LINE_RENDER_DEFAULT, 0)
+    DEC_CONSTS(LINE_RENDER_POINT, 1)
+    DEC_CONSTS(LINE_RENDER_LINE, 2)
+    DEC_CONSTS(LINE_RENDER_GEOMETRY, 3)
+
     if (PyModule_AddObject(module, "__all__", all_list)) {
         Py_DECREF(all_list);
         Py_DECREF(module);
