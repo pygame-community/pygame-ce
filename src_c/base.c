@@ -45,7 +45,7 @@ static int pg_is_init = 0;
 static bool pg_sdl_was_init = 0;
 SDL_Window *pg_default_window = NULL;
 pgSurfaceObject *pg_default_screen = NULL;
-static int pg_env_blend_alpha_SDL2 = 0;
+int pg_env_blend_alpha_SDL2 = 0;
 
 /* compare compiled to linked, raise python error on incompatibility */
 int
