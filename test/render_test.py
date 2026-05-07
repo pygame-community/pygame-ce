@@ -267,6 +267,14 @@ class TextureTest(unittest.TestCase):
         self.assertEqual(255, self.texture.alpha)
         self.texture.alpha = 128
         self.assertEqual(128, self.texture.alpha)
+        self.texture.alpha = 64.8
+        self.assertEqual(64, self.texture.alpha)
+        self.texture.alpha = 512
+        self.assertEqual(255, self.texture.alpha)
+        with self.assertRaises(TypeError):
+            self.texture.alpha = "128"
+        with self.assertRaises(ValueError):
+            self.texture.alpha = -64
 
     def test_blend_mode(self):
         self.assertEqual(pygame.BLENDMODE_NONE, self.texture.blend_mode)
