@@ -123,7 +123,7 @@ jobs:
         sudo cmake --install . --config Release
 
     - name: Build with SDL3
-      run: python3 dev.py build --sdl3
+      run: python3 dev.py build --sdl3 --ci --commit_hash ${{ github.sha }} --branch "${{ github.head_ref || github.ref_name }}"
 
     # eventually we need to run all tests, but for now test that importing pygame
     # works

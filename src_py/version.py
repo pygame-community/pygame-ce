@@ -27,7 +27,13 @@ The python version information should always compare greater than any previous
 releases. (hmm, until we get to versions > 10)
 """
 
-from pygame.base import __version__, get_sdl_version
+from pygame.base import (
+    __branch_name__,
+    __built_on_ci__,
+    __commit_hash__,
+    __version__,
+    get_sdl_version,
+)
 
 
 class SoftwareVersion(tuple):
@@ -69,6 +75,9 @@ _sdl_tuple = get_sdl_version()
 SDL = SDLVersion(_sdl_tuple[0], _sdl_tuple[1], _sdl_tuple[2])
 
 ver = __version__  # pylint: disable=invalid-name
+commit = __commit_hash__ if __commit_hash__ else None
+branch = __branch_name__ if __branch_name__ else None
+ci_build = __built_on_ci__
 vernum = PygameVersion(*map(int, ver.split(".")[:3]))
 rev = ""  # pylint: disable=invalid-name
 
