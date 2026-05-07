@@ -88,7 +88,7 @@ You can also find a list of constants for keyboard keys
     MOUSEBUTTONUP              pos, button, touch(2), clicks(3), window(1)
     MOUSEBUTTONDOWN            pos, button, touch(2), clicks(3), window(1)
     MOUSEWHEEL                 which, flipped, x, y, touch(2), precise_x,
-                                precise_y, window(1)
+                                precise_y, window(1), pos(5)
 
     JOYAXISMOTION              instance_id, axis, value (deprecated: joy)
     JOYBALLMOTION              instance_id, ball, rel (deprecated: joy)
@@ -160,6 +160,9 @@ These ``TEXT*`` events are useful to implement inputs/languages that require com
 provided by the system's IME (Input Method Editor). The ``TEXTINPUT`` event is only
 fired when the text is confirmed.
 
+(``5``): Position information was added to ``MOUSEWHEEL`` events in SDL 2.26.0  If
+pygame was build on a version lower than that, the ``pos`` attribute is ``None``.
+
 |
 
 Here is a list of the new window events.
@@ -222,6 +225,8 @@ On Android, the following events can be generated:
 
 .. versionadded:: 2.5.7 The ``clicks`` attribute was added to ``MOUSEBUTTONDOWN``
    and ``MOUSEBUTTONUP`` events.
+
+.. versionadded:: 2.5.8 The ``pos`` attribute was added to ``MOUSEWHEEL`` events.
 
 |
 
