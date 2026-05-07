@@ -2391,6 +2391,9 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
             PyExc_ValueError,
             "Destination surface must be the same size as source surface."));
     }
+    else if (newsurf->w == 0 || newsurf->h == 0) {
+        return newsurf;
+    }
 
     PG_PixelFormat *fmt, *newsurf_format;
     SDL_Palette *src_palette, *newsurf_palette;
@@ -2451,68 +2454,34 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
         const int dst_skip = newsurf->pitch / 4 - newsurf->w;
         int n, height = src->h;
 
-        if (srcobj == dstobj) {
-            if (!keep_alpha) {
-                while (height--) {
-                    LOOP_UNROLLED4(
-                        {
-                            if (*srcp) {
-                                *dstp = color;
-                            }
-                            srcp += 4;
-                            dstp++;
-                        },
-                        n, src->w);
-                    srcp += src_skip;
-                    dstp += dst_skip;
-                }
-            }
-            else {
-                while (height--) {
-                    LOOP_UNROLLED4(
-                        {
-                            if ((a = *srcp)) {
-                                *dstp = color | (a << dst_ashift);
-                            }
-                            srcp += 4;
-                            dstp++;
-                        },
-                        n, src->w);
-                    srcp += src_skip;
-                    dstp += dst_skip;
-                }
+        if (!keep_alpha) {
+            while (height--) {
+                LOOP_UNROLLED4(
+                    {
+                        if (*srcp) {
+                            *dstp = color;
+                        }
+                        srcp += 4;
+                        dstp++;
+                    },
+                    n, src->w);
+                srcp += src_skip;
+                dstp += dst_skip;
             }
         }
         else {
-            if (!keep_alpha) {
-                while (height--) {
-                    LOOP_UNROLLED4(
-                        {
-                            if (*srcp) {
-                                *dstp = color;
-                            }
-                            srcp += 4;
-                            dstp++;
-                        },
-                        n, src->w);
-                    srcp += src_skip;
-                    dstp += dst_skip;
-                }
-            }
-            else {
-                while (height--) {
-                    LOOP_UNROLLED4(
-                        {
-                            if ((a = *srcp)) {
-                                *dstp = color | (a << dst_ashift);
-                            }
-                            srcp += 4;
-                            dstp++;
-                        },
-                        n, src->w);
-                    srcp += src_skip;
-                    dstp += dst_skip;
-                }
+            while (height--) {
+                LOOP_UNROLLED4(
+                    {
+                        if ((a = *srcp)) {
+                            *dstp = color | (a << dst_ashift);
+                        }
+                        srcp += 4;
+                        dstp++;
+                    },
+                    n, src->w);
+                srcp += src_skip;
+                dstp += dst_skip;
             }
         }
     }
