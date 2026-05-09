@@ -20,17 +20,11 @@
 */
 
 /* Handle clipboard text and data in arbitrary formats */
-#include <limits.h>
-#include <stdio.h>
+#include "pygame.h"
 
-#ifdef PG_SDL3
-#include <SDL3/SDL.h>
-#else
-#include <SDL.h>
+#ifndef PG_SDL3
 #include "SDL_syswm.h"
 #endif
-
-#include "pygame.h"
 
 #include "pgcompat.h"
 

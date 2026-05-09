@@ -1,6 +1,8 @@
 #ifndef PGFONT_INTERNAL_H
 #define PGFONT_INTERNAL_H
 
+#include <Python.h>
+
 #ifdef PG_SDL3
 #include <SDL3_ttf/SDL_ttf.h>
 
