@@ -189,9 +189,9 @@ All window events have a ``window`` attribute corresponding to the
    WINDOWTAKEFOCUS        Window was offered focus
    WINDOWHITTEST          Window has a special hit test
    WINDOWICCPROFCHANGED   Window ICC profile changed
-                           (SDL backend >= 2.0.18)
+                           (SDL backend >= 2.0.20)
    WINDOWDISPLAYCHANGED   Window moved on a new display (display_index
-                           attribute. SDL backend >= 2.0.18)
+                           attribute. SDL backend >= 2.0.20)
 
 |
 
