@@ -437,7 +437,7 @@ solves no longer exists, it will likely be removed in the future.
 
       Return True when the font underline is enabled.
 
-       .. note:: This is the same as the :attr:`underline` attribute.
+      .. note:: This is the same as the :attr:`underline` attribute.
 
       .. ## Font.get_underline ##
 
@@ -463,9 +463,9 @@ solves no longer exists, it will likely be removed in the future.
 
       Return True when the font strikethrough is enabled.
 
-       .. note:: This is the same as the :attr:`strikethrough` attribute.
+      .. note:: This is the same as the :attr:`strikethrough` attribute.
 
-       .. versionadded:: 2.1.3
+      .. versionadded:: 2.1.3
 
       .. ## Font.get_strikethrough ##
 
@@ -549,6 +549,8 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`Set the point size of the font.`
       | :sg:`set_point_size(size, /) -> None`
 
+      .. note:: This is the same as the :attr:`point_size` attribute.
+
       .. versionadded:: 2.3.1
 
       .. ## Font.set_point_size ##
@@ -561,6 +563,8 @@ solves no longer exists, it will likely be removed in the future.
       Returns the point size of the font. Will not be accurate upon
       initializing the font object when the font name is initialized
       as ``None``.
+
+      .. note:: This is the same as the :attr:`point_size` attribute.
 
       .. versionadded:: 2.3.1
 
