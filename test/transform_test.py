@@ -1269,6 +1269,39 @@ class TransformModuleTest(unittest.TestCase):
         finally:
             pygame.display.quit()
 
+    def test_laplacian__cross_format(self):
+        # Regression: laplacian used to map the filtered RGB with the source
+        # format and write the bytes directly into the destination, which
+        # swapped channels when the surfaces had the same bytes-per-pixel
+        # (so the size check passed) but different channel layouts.
+        SIZE = 32
+        # RGBA layout for the source (R at the low byte).
+        s1 = pygame.Surface(
+            (SIZE, SIZE),
+            0,
+            32,
+            masks=(0xFF, 0xFF00, 0xFF0000, 0xFF000000),
+        )
+        s1.fill((10, 10, 70))
+        pygame.draw.line(s1, (255, 0, 0), (3, 10), (20, 20))
+        pygame.draw.line(s1, (255, 0, 0), (0, 31), (31, 31))
+
+        # BGRA layout for the destination — different channel order.
+        s2 = pygame.Surface(
+            (SIZE, SIZE),
+            0,
+            32,
+            masks=(0xFF0000, 0xFF00, 0xFF, 0xFF000000),
+        )
+        pygame.transform.laplacian(s1, s2)
+
+        # Compare RGB only; the alpha channel is also laplacian-filtered
+        # and isn't relevant to the channel-order bug under test.
+        self.assertEqual(s2.get_at((0, 0))[:3], (0, 0, 0))
+        self.assertEqual(s2.get_at((3, 10))[:3], (255, 0, 0))
+        self.assertEqual(s2.get_at((0, 31))[:3], (255, 0, 0))
+        self.assertEqual(s2.get_at((31, 31))[:3], (255, 0, 0))
+
     def test_average_surfaces(self):
         """ """
 
