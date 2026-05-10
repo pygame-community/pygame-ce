@@ -2197,12 +2197,9 @@ clamp_4
         case 3:                                                          \
             p_byte_buf =                                                 \
                 (Uint8 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x) * 3; \
-            *(p_byte_buf + (p_format->Rshift >> 3)) =                    \
-                (Uint8)(p_color >> p_format->Rshift);                    \
-            *(p_byte_buf + (p_format->Gshift >> 3)) =                    \
-                (Uint8)(p_color >> p_format->Gshift);                    \
-            *(p_byte_buf + (p_format->Bshift >> 3)) =                    \
-                (Uint8)(p_color >> p_format->Bshift);                    \
+            p_byte_buf[0] = (Uint8)(p_color);                            \
+            p_byte_buf[1] = (Uint8)(p_color >> 8);                       \
+            p_byte_buf[2] = (Uint8)(p_color >> 16);                      \
             break;                                                       \
         default:                                                         \
             *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x)) =    \
@@ -2226,12 +2223,9 @@ clamp_4
         case 3:                                                          \
             p_byte_buf =                                                 \
                 (Uint8 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x) * 3; \
-            *(p_byte_buf + 2 - (p_format->Rshift >> 3)) =                \
-                (Uint8)(p_color >> p_format->Rshift);                    \
-            *(p_byte_buf + 2 - (p_format->Gshift >> 3)) =                \
-                (Uint8)(p_color >> p_format->Gshift);                    \
-            *(p_byte_buf + 2 - (p_format->Bshift >> 3)) =                \
-                (Uint8)(p_color >> p_format->Bshift);                    \
+            p_byte_buf[0] = (Uint8)(p_color >> 16);                      \
+            p_byte_buf[1] = (Uint8)(p_color >> 8);                       \
+            p_byte_buf[2] = (Uint8)(p_color);                            \
             break;                                                       \
         default:                                                         \
             *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x)) =    \
