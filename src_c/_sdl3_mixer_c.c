@@ -97,6 +97,9 @@ pg_mixer_obj_play_audio(PGMixerObject *self, PyObject *args, PyObject *kwargs)
     char *keywords[] = {"audio", NULL};
     PyObject *audio_type =
         PyObject_GetAttrString((PyObject *)self, "_audio_type");
+    if (audio_type == NULL) {
+        return NULL;
+    }
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", keywords, audio_type,
                                      &audio)) {
@@ -414,6 +417,9 @@ pg_audio_obj_init(PGAudioObject *self, PyObject *args, PyObject *kwargs)
     char *keywords[] = {"file", "predecode", "preferred_mixer", NULL};
     PyObject *mixer_type =
         PyObject_GetAttrString((PyObject *)self, "_mixer_type");
+    if (mixer_type == NULL) {
+        return -1;
+    }
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|pO", keywords, &file,
                                      &predecode, &mixer_or_none)) {
@@ -497,6 +503,9 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
     char *keywords[] = {"buffer", "spec", "preferred_mixer", NULL};
     PyObject *mixer_type =
         PyObject_GetAttrString((PyObject *)cls, "_mixer_type");
+    if (mixer_type == NULL) {
+        return NULL;
+    }
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O", keywords, &buffer,
                                      &spec_obj, &mixer_or_none)) {
@@ -547,6 +556,8 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
+    // LoadRawAudio does a copy (unlike LoadRawAudioNoCopy), so it is not
+    // necessary to keep any references to the buffer.
     MIX_Audio *raw_audio = MIX_LoadRawAudio(mixer, buf, (size_t)len, &spec);
     if (raw_audio == NULL) {
         Py_DECREF(bytes);
@@ -569,6 +580,9 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
     char *keywords[] = {"hz", "amplitude", "preferred_mixer", "ms", NULL};
     PyObject *mixer_type =
         PyObject_GetAttrString((PyObject *)cls, "_mixer_type");
+    if (mixer_type == NULL) {
+        return NULL;
+    }
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "if|Oi", keywords, &hz,
                                      &amplitude, &mixer_or_none, &ms)) {
@@ -591,8 +605,6 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
         return NULL;
     }
 
-    // MIX_CreateSineWaveAudio is bugged right now (2025-10-04),
-    // complains about invalid context parameter.
     MIX_Audio *sine_wave_audio =
         MIX_CreateSineWaveAudio(mixer, hz, amplitude, ms);
     if (sine_wave_audio == NULL) {
@@ -686,12 +698,12 @@ pg_audio_obj_get_metadata(PGAudioObject *self, PyObject *_null)
         total_track_obj = Py_NewRef(Py_None);
     }
 
-    SDL_UnlockProperties(props);
-
     PyObject *meta_dict =
         Py_BuildValue("{sz sz sz sz sN sN}", "title", title, "artist", artist,
                       "album", album, "copyright", copyright, "track_num",
                       track_obj, "total_tracks", total_track_obj);
+
+    SDL_UnlockProperties(props);
 
     return meta_dict;
 }
@@ -872,6 +884,9 @@ pg_track_obj_set_audio(PGTrackObject *self, PyObject *args, PyObject *kwargs)
     char *keywords[] = {"audio", NULL};
     PyObject *audio_type =
         PyObject_GetAttrString((PyObject *)self, "_audio_type");
+    if (audio_type == NULL) {
+        return NULL;
+    }
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords,
                                      &audio_or_none)) {
@@ -995,6 +1010,7 @@ pg_track_obj_set_filestream(PGTrackObject *self, PyObject *args,
     }
 
     if (!MIX_SetTrackIOStream(self->track, io, true)) {
+        SDL_CloseIO(io);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 

@@ -107,10 +107,8 @@ class Track(_sdl3_mixer_c.Track):
         _sdl3_mixer_c.Track.__init__(self, mixer)
 
     def set_audiostream(self, audiostream: audio.AudioStream | None) -> None:
-        if isinstance(audiostream, audio.AudioStream):
+        if isinstance(audiostream, audio.AudioStream) or audiostream is None:
             _sdl3_mixer_c.Track.set_audiostream(self, audiostream)
-        elif audiostream is None:
-            _sdl3_mixer_c.Track.set_audiostream(self, None)
         else:
             raise TypeError(
                 "audiostream argument must be an AudioStream or None, "
