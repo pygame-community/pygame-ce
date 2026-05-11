@@ -788,8 +788,7 @@ pg_track_obj_init(PGTrackObject *self, PyObject *args, PyObject *kwargs)
     // Mixers own Tracks. When the Mixer is deallocated, the tracks become
     // invalid. So we need to hold a reference to prevent Mixer deallocating
     // before any of the Tracks it owns.
-    Py_INCREF(mixer);
-    self->mixer_obj = (PyObject *)mixer;
+    self->mixer_obj = Py_NewRef(mixer);
 
     return 0;
 }
@@ -811,8 +810,7 @@ pg_track_obj_dealloc(PGTrackObject *self)
 static PyObject *
 pg_track_obj_get_mixer(PGTrackObject *self, PyObject *_null)
 {
-    Py_INCREF(self->mixer_obj);
-    return self->mixer_obj;
+    return Py_NewRef(self->mixer_obj);
 }
 
 static PyObject *
@@ -914,8 +912,7 @@ pg_track_obj_set_audio(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 
     if (audio != NULL) {
         // We've successfully added an audio object, yay!
-        Py_INCREF(audio_or_none);
-        self->source_obj = audio_or_none;
+        self->source_obj = Py_NewRef(audio_or_none);
     }
 
     Py_RETURN_NONE;
@@ -927,8 +924,7 @@ pg_track_obj_get_audio(PGTrackObject *self, PyObject *_null)
     if (MIX_GetTrackAudio(self->track) != NULL) {
         // This track object owns an audio, therefore our source object must
         // be non-null, and an audio object.
-        Py_INCREF(self->source_obj);
-        return self->source_obj;
+        return Py_NewRef(self->source_obj);
     }
 
     Py_RETURN_NONE;
@@ -973,8 +969,7 @@ pg_track_obj_set_audiostream(PGTrackObject *self, PyObject *args,
 
     if (stream != NULL) {
         // We've successfully added an audio object, yay!
-        Py_INCREF(audiostream_or_none);
-        self->source_obj = audiostream_or_none;
+        self->source_obj = Py_NewRef(audiostream_or_none);
     }
 
     Py_RETURN_NONE;
@@ -986,8 +981,7 @@ pg_track_obj_get_audiostream(PGTrackObject *self, PyObject *_null)
     if (MIX_GetTrackAudioStream(self->track) != NULL) {
         // This track object owns an audio, therefore our source object must
         // be non-null, and an audio object.
-        Py_INCREF(self->source_obj);
-        return self->source_obj;
+        return Py_NewRef(self->source_obj);
     }
 
     Py_RETURN_NONE;
@@ -1022,8 +1016,7 @@ pg_track_obj_set_filestream(PGTrackObject *self, PyObject *args,
     // Theoretically this is keeping Python file object (like BytesIO) alive
     // through the stream, but maybe the rwObject subsystem is smart enough
     // to do that.
-    Py_INCREF(file_obj);
-    self->source_obj = file_obj;
+    self->source_obj = Py_NewRef(file_obj);
 
     Py_RETURN_NONE;
 }
