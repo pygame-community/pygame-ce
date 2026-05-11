@@ -146,8 +146,7 @@ surf_colorspace(PyObject *self, PyObject *arg)
     SDL_UnlockSurface(newsurf);
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return (PyObject *)surfobj2;
+        return (PyObject *)Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(newsurf);
@@ -432,8 +431,7 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
     }
 
     if (surfobj) {
-        Py_INCREF(surfobj);
-        return (PyObject *)surfobj;
+        return (PyObject *)Py_NewRef(surfobj);
     }
     else {
         return (PyObject *)pgSurface_New(surf);
@@ -470,8 +468,7 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
     }
 
     if (surfobj) {
-        Py_INCREF(surfobj);
-        return (PyObject *)surfobj;
+        return (PyObject *)Py_NewRef(surfobj);
     }
     else {
         return (PyObject *)pgSurface_New(surf);
