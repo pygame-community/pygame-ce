@@ -577,15 +577,15 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
     int hz, ms = -1;
     float amplitude;
     PyObject *mixer_or_none = Py_None;
-    char *keywords[] = {"hz", "amplitude", "preferred_mixer", "ms", NULL};
+    char *keywords[] = {"hz", "amplitude", "ms", "preferred_mixer", NULL};
     PyObject *mixer_type =
         PyObject_GetAttrString((PyObject *)cls, "_mixer_type");
     if (mixer_type == NULL) {
         return NULL;
     }
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "if|Oi", keywords, &hz,
-                                     &amplitude, &mixer_or_none, &ms)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "if|iO", keywords, &hz,
+                                     &amplitude, &ms, &mixer_or_none)) {
         Py_DECREF(mixer_type);
         return NULL;
     }
