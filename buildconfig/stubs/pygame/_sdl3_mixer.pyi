@@ -80,8 +80,8 @@ class Audio:
         cls,
         hz: int,
         amplitude: float,
-        preferred_mixer: Mixer | None = None,
         ms: int = -1,
+        preferred_mixer: Mixer | None = None,
     ) -> Audio: ...
     @property
     def duration_frames(self) -> int | None: ...
