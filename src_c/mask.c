@@ -825,9 +825,10 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
             row0,col0   row1,col0    row0,col1   row1,col1
             px 0-63      px 0-63      64-127     px 64-127
 
-    We exploit this and do all pixels of bits[0] in groups of 8 in parallel
-    (plus remaining 1-7 pixels one by one), then jump to the next group on the
-    same row (index 2) and do the same.
+    For each scanline we process one BITMASK_W-sized chunk at a time reading
+    from the source in groups of 8 in parallel (plus remaining 1-7 pixels one
+    by one), accumulating bits into a local "block" word and storing it before
+    advancing to the next horizontal chunk (block_idx += surf->h).
     */
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
@@ -842,6 +843,8 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
         srcp = (Uint8 *)surf->pixels + y * surf->pitch + a_off;
         int block_idx = y;
         x = 0;
+        BITMASK_W block = 0;
+
         while (x < surf->w) {
             int chunk_end = x + BITMASK_W_LEN - (x & BITMASK_W_MASK);
             if (chunk_end > surf->w) {
@@ -850,29 +853,30 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
 
             /* Fill the whole block */
             while (x <= chunk_end - 8) {
+                const int bp = x & BITMASK_W_MASK;
                 if (srcp[0] > u_threshold) {
-                    bits[block_idx] |= BITMASK_N((x + 0) & BITMASK_W_MASK);
+                    block |= BITMASK_N(bp + 0);
                 }
                 if (srcp[4] > u_threshold) {
-                    bits[block_idx] |= BITMASK_N((x + 1) & BITMASK_W_MASK);
+                    block |= BITMASK_N(bp + 1);
                 }
                 if (srcp[8] > u_threshold) {
-                    bits[block_idx] |= BITMASK_N((x + 2) & BITMASK_W_MASK);
+                    block |= BITMASK_N(bp + 2);
                 }
                 if (srcp[12] > u_threshold) {
-                    bits[block_idx] |= BITMASK_N((x + 3) & BITMASK_W_MASK);
+                    block |= BITMASK_N(bp + 3);
                 }
                 if (srcp[16] > u_threshold) {
-                    bits[block_idx] |= BITMASK_N((x + 4) & BITMASK_W_MASK);
+                    block |= BITMASK_N(bp + 4);
                 }
                 if (srcp[20] > u_threshold) {
-                    bits[block_idx] |= BITMASK_N((x + 5) & BITMASK_W_MASK);
+                    block |= BITMASK_N(bp + 5);
                 }
                 if (srcp[24] > u_threshold) {
-                    bits[block_idx] |= BITMASK_N((x + 6) & BITMASK_W_MASK);
+                    block |= BITMASK_N(bp + 6);
                 }
                 if (srcp[28] > u_threshold) {
-                    bits[block_idx] |= BITMASK_N((x + 7) & BITMASK_W_MASK);
+                    block |= BITMASK_N(bp + 7);
                 }
                 srcp += 32;
                 x += 8;
@@ -881,11 +885,14 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
             /* remaining 1-7 pixels */
             while (x < chunk_end) {
                 if (*srcp > u_threshold) {
-                    bits[block_idx] |= BITMASK_N(x & BITMASK_W_MASK);
+                    block |= BITMASK_N(x & BITMASK_W_MASK);
                 }
                 srcp += 4;
                 x++;
             }
+
+            bits[block_idx] = block;
+            block = 0;
 
             /* go to the next block on the same row */
             block_idx += surf->h;
