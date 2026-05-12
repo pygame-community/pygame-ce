@@ -550,8 +550,7 @@ surf_scale(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return (PyObject *)surfobj2;
+        return Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(newsurf);
@@ -588,8 +587,7 @@ surf_scale_by(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return (PyObject *)surfobj2;
+        return Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(newsurf);
@@ -651,8 +649,7 @@ surf_scale2x(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_UnlockSurface(newsurf);
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return surfobj2;
+        return Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(newsurf);
@@ -680,8 +677,7 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
     SURF_INIT_CHECK(surf)
 
     if (surf->w < 1 || surf->h < 1) {
-        Py_INCREF(surfobj);
-        return (PyObject *)surfobj;
+        return Py_NewRef(surfobj);
     }
 
     if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4) {
@@ -1610,8 +1606,7 @@ surf_scalesmooth(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return (PyObject *)surfobj2;
+        return Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(newsurf);
@@ -1648,8 +1643,7 @@ surf_scalesmooth_by(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return (PyObject *)surfobj2;
+        return Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(newsurf);
@@ -2360,8 +2354,7 @@ surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return (PyObject *)surfobj2;
+        return Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(newsurf);
@@ -2565,8 +2558,7 @@ surf_solid_overlay(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return (PyObject *)surfobj2;
+        return Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(newsurf);
@@ -2851,8 +2843,7 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_END_ALLOW_THREADS;
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return (PyObject *)surfobj2;
+        return Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(dst);
@@ -3118,8 +3109,7 @@ surf_laplacian(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_UnlockSurface(newsurf);
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return surfobj2;
+        return Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(newsurf);
@@ -3449,8 +3439,7 @@ surf_average_surfaces(PyObject *self, PyObject *args, PyObject *kwargs)
         SDL_UnlockSurface(newsurf);
 
         if (surfobj2) {
-            Py_INCREF(surfobj2);
-            ret = surfobj2;
+            ret = Py_NewRef(surfobj2);
         }
         else {
             ret = (PyObject *)pgSurface_New(newsurf);
@@ -4040,8 +4029,7 @@ surf_box_blur(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (dst_surf_obj) {
-        Py_INCREF(dst_surf_obj);
-        return (PyObject *)dst_surf_obj;
+        return Py_NewRef(dst_surf_obj);
     }
 
     return (PyObject *)pgSurface_New(new_surf);
@@ -4073,8 +4061,7 @@ surf_gaussian_blur(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (dst_surf_obj) {
-        Py_INCREF(dst_surf_obj);
-        return (PyObject *)dst_surf_obj;
+        return Py_NewRef(dst_surf_obj);
     }
 
     return (PyObject *)pgSurface_New(new_surf);
@@ -4188,8 +4175,7 @@ surf_invert(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return (PyObject *)surfobj2;
+        return Py_NewRef(surfobj2);
     }
     return (PyObject *)pgSurface_New(newsurf);
 }
@@ -4246,8 +4232,7 @@ surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (dst) {
-        Py_INCREF(dst);
-        return (PyObject *)dst;
+        return Py_NewRef(dst);
     }
 
     return (PyObject *)pgSurface_New(new_surf);
