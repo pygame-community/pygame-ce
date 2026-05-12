@@ -875,8 +875,7 @@ pg_post_event(Uint32 type, PyObject *dict)
         return SDL_SetError("insufficient memory (internal malloc failed)");
     }
 
-    Py_INCREF(dict);
-    dict_proxy->dict = dict;
+    dict_proxy->dict = Py_NewRef(dict);
     /* initially set to 0 - unlocked state */
     dict_proxy->lock = 0;
     dict_proxy->num_on_queue = 0;
@@ -1607,8 +1606,7 @@ dict_from_event(SDL_Event *event)
 #endif
         pgWindow = Py_None;
     }
-    Py_INCREF(pgWindow);
-    _pg_insobj(dict, "window", pgWindow);
+    _pg_insobj(dict, "window", Py_NewRef(pgWindow));
     return dict;
 }
 
@@ -1728,8 +1726,7 @@ pg_event_richcompare(PyObject *o1, PyObject *o2, int opid)
     }
 
 Unimplemented:
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
+    return Py_NewRef(Py_NotImplemented);
 }
 
 static int
@@ -1749,8 +1746,7 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
 
     if (!dict) {
         if (kwargs) {
-            dict = kwargs;
-            Py_INCREF(dict);
+            dict = Py_NewRef(kwargs);
         }
         else {
             dict = PyDict_New();
@@ -2017,8 +2013,7 @@ _pg_eventtype_as_seq(PyObject *obj, Py_ssize_t *len)
     if (PySequence_Check(obj)) {
         *len = PySequence_Size(obj);
         /* The returned object gets decref'd later, so incref now */
-        Py_INCREF(obj);
-        return obj;
+        return Py_NewRef(obj);
     }
     else if (PyLong_Check(obj)) {
         return Py_BuildValue("(O)", obj);
