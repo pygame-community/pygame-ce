@@ -2620,7 +2620,6 @@ pgMask_GetBuffer(pgMaskObject *self, Py_buffer *view, int flags)
         view->format = NULL;
     }
     view->suboffsets = NULL;
-
     view->obj = Py_NewRef(self);
 
     return 0;

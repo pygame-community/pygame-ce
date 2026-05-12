@@ -769,7 +769,7 @@ pg_get_surface(PyObject *self, PyObject *_null)
         if (!surface) {
             Py_RETURN_NONE;
         }
-        return (PyObject *)Py_NewRef(surface);
+        return Py_NewRef(surface);
     }
     else if (win == NULL) {
         Py_RETURN_NONE;
@@ -784,9 +784,9 @@ pg_get_surface(PyObject *self, PyObject *_null)
                 return NULL;
             }
             pg_SetDefaultWindowSurface(new_surface);
-            return (PyObject *)Py_NewRef(new_surface);
+            return Py_NewRef(new_surface);
         }
-        return (PyObject *)Py_NewRef(old_surface);
+        return Py_NewRef(old_surface);
     }
     return NULL;
 }
@@ -1874,7 +1874,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     }
 
     /*return the window's surface (screen)*/
-    return (PyObject *)Py_NewRef(surface);
+    return Py_NewRef(surface);
 
 DESTROY_WINDOW:
 

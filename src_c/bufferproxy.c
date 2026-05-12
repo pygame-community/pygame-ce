@@ -471,7 +471,7 @@ proxy_getbuffer(pgBufferProxyObject *self, Py_buffer *view_p, int flags)
         PyMem_Free(obj_view_p);
         return -1;
     }
-    view_p->obj = (PyObject *)Py_NewRef(self);
+    view_p->obj = Py_NewRef(self);
     view_p->buf = obj_view_p->buf;
     view_p->len = obj_view_p->len;
     view_p->readonly = obj_view_p->readonly;
