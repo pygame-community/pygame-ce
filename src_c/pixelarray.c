@@ -416,8 +416,7 @@ _pxarray_get_dict(pgPixelArrayObject *self, void *closure)
         }
         self->dict = dict;
     }
-    Py_INCREF(dict);
-    return dict;
+    return Py_NewRef(dict);
 }
 
 /**
@@ -620,8 +619,7 @@ _pxarray_getbuffer(pgPixelArrayObject *self, Py_buffer *view_p, int flags)
     else {
         view_p->format = 0;
     }
-    Py_INCREF(self);
-    view_p->obj = (PyObject *)self;
+    view_p->obj = Py_NewRef(self);
     view_p->buf = self->pixels;
     view_p->len = len;
     view_p->readonly = 0;
@@ -1620,8 +1618,7 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
 
         if (size == 0) {
             /* array[,], array[()] ... */
-            Py_INCREF(array);
-            return (PyObject *)array;
+            return Py_NewRef(array);
         }
         if (size > 2 || (size == 2 && !dim1)) {
             return RAISE(PyExc_IndexError, "too many indices for the array");
@@ -1671,8 +1668,7 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
                                            ystop, ystep);
     }
     else if (op == Py_Ellipsis) {
-        Py_INCREF(array);
-        return (PyObject *)array;
+        return Py_NewRef(array);
     }
     else if (PySlice_Check(op)) {
         /* A slice */
