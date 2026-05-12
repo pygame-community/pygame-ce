@@ -877,8 +877,10 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
                 x++;
             }
 
-            bits[block_idx] = block;
-            block = 0;
+            if (block) {
+                bits[block_idx] = block;
+                block = 0;
+            }
 
             /* go to the next block on the same row */
             block_idx += surf->h;
