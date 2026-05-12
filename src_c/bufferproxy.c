@@ -82,12 +82,14 @@ _get_buffer_from_dict(PyObject *dict, Py_buffer *view_p, int flags)
     if (!obj) {
         obj = Py_None;
     }
+    Py_INCREF(obj);
     py_callback = PyDict_GetItemString(dict, "before");
 
     if (py_callback) {
         PyObject *py_rval;
 
-        py_rval = PyObject_CallOneArg(Py_NewRef(py_callback), Py_NewRef(obj));
+        Py_INCREF(py_callback);
+        py_rval = PyObject_CallOneArg(py_callback, obj);
         Py_DECREF(py_callback);
         if (!py_rval) {
             pgBuffer_Release(pg_dict_view_p);

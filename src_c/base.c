@@ -1134,8 +1134,7 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
             Py_DECREF(cobj);
             return -1;
         }
-        Py_INCREF(obj);
-        view_p->obj = obj;
+        view_p->obj = Py_NewRef(obj);
         Py_DECREF(cobj);
         success = 1;
     }
@@ -1148,8 +1147,7 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
             Py_DECREF(dict);
             return -1;
         }
-        Py_INCREF(obj);
-        view_p->obj = obj;
+        view_p->obj = Py_NewRef(obj);
         Py_DECREF(dict);
         success = 1;
     }
