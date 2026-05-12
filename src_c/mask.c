@@ -854,30 +854,16 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
             /* Fill the whole block */
             while (x <= chunk_end - 8) {
                 const int bp = x & BITMASK_W_MASK;
-                if (srcp[0] > u_threshold) {
-                    block |= BITMASK_N(bp + 0);
-                }
-                if (srcp[4] > u_threshold) {
-                    block |= BITMASK_N(bp + 1);
-                }
-                if (srcp[8] > u_threshold) {
-                    block |= BITMASK_N(bp + 2);
-                }
-                if (srcp[12] > u_threshold) {
-                    block |= BITMASK_N(bp + 3);
-                }
-                if (srcp[16] > u_threshold) {
-                    block |= BITMASK_N(bp + 4);
-                }
-                if (srcp[20] > u_threshold) {
-                    block |= BITMASK_N(bp + 5);
-                }
-                if (srcp[24] > u_threshold) {
-                    block |= BITMASK_N(bp + 6);
-                }
-                if (srcp[28] > u_threshold) {
-                    block |= BITMASK_N(bp + 7);
-                }
+                // clang-format off
+                if (srcp[0]  > u_threshold) block |= BITMASK_N(bp + 0);
+                if (srcp[4]  > u_threshold) block |= BITMASK_N(bp + 1);
+                if (srcp[8]  > u_threshold) block |= BITMASK_N(bp + 2);
+                if (srcp[12] > u_threshold) block |= BITMASK_N(bp + 3);
+                if (srcp[16] > u_threshold) block |= BITMASK_N(bp + 4);
+                if (srcp[20] > u_threshold) block |= BITMASK_N(bp + 5);
+                if (srcp[24] > u_threshold) block |= BITMASK_N(bp + 6);
+                if (srcp[28] > u_threshold) block |= BITMASK_N(bp + 7);
+                // clang-format on
                 srcp += 32;
                 x += 8;
             }
