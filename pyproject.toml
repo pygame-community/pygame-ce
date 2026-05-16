@@ -79,6 +79,7 @@ build-frontend = "build[uv]"
 # here we build wheels for all supported python versions. We do not support musllinux
 # and free threaded builds as of now. We also skip Python 3.10 build on ARM Windows
 # because it is very very unlikely to be used (numpy does it too).
+
 build = "cp3{10,11,12,13,14}-* pp311-*"
 skip = ["*-musllinux_*", "cp31?t-*", "cp310-win_arm64"]
 # build[uv] is verbose by default, so below flag is not needed here
@@ -93,6 +94,8 @@ environment = { SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="disk" }
 test-command = "python -m pygame.tests -v --exclude opengl,music,timing --time_out 300"
 test-requires = ["numpy"]
 
+[tool.uv]
+exclude-dependencies = ["pygame"]
 [tool.cibuildwheel.config-settings]
 setup-args = [
     "-Derror_on_warns=true",
