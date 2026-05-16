@@ -451,15 +451,12 @@ surface_str(PyObject *self)
         return NULL;
     }
 
-    // 49 is max len of format str, plus null terminator
-    char format[50] = "<Surface(%dx%dx%d";
-    if (PyObject_IsTrue(colorkey)) {
-        strcat(format, ", colorkey=%S");
-    }
-    if (PyObject_IsTrue(global_alpha)) {
-        strcat(format, ", global_alpha=%S");
-    }
-    strcat(format, ")>");
+    const char *ck_part = PyObject_IsTrue(colorkey) ? ", colorkey=%S" : "";
+    const char *ga_part =
+        PyObject_IsTrue(global_alpha) ? ", global_alpha=%S" : "";
+    char format[64];
+    snprintf(format, sizeof(format), "<Surface(%%dx%%dx%%d%s%s)>", ck_part,
+             ga_part);
 
     // Because PyUnicode_FromFormat ignores extra args, if we have no colorkey,
     // but alpha, we can "move up" the global alpha to this spot No need to do
@@ -512,6 +509,11 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (width < 0 || height < 0) {
+        PyErr_SetString(pgExc_SDLError, "Invalid resolution for Surface");
+        return -1;
+    }
+    /* Prevent integer overflow in size calculations (width * height * bpp) */
+    if ((Sint64)width * height > SDL_MAX_SINT32) {
         PyErr_SetString(pgExc_SDLError, "Invalid resolution for Surface");
         return -1;
     }
