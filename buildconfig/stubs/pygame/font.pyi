@@ -19,7 +19,7 @@ def match_font(
     name: str | bytes | Iterable[str | bytes],
     bold: Hashable = False,
     italic: Hashable = False,
-) -> str: ...
+) -> str | None: ...
 def SysFont(
     name: str | bytes | Iterable[str | bytes] | None,
     size: int,
@@ -78,7 +78,9 @@ class Font:
     def set_bold(self, value: bool, /) -> None: ...
     def get_bold(self) -> bool: ...
     def set_italic(self, value: bool, /) -> None: ...
-    def metrics(self, text: str | bytes, /) -> list[tuple[int, int, int, int, int]]: ...
+    def metrics(
+        self, text: str | bytes, /
+    ) -> list[tuple[int, int, int, int, int] | None]: ...
     def get_italic(self) -> bool: ...
     def get_linesize(self) -> int:
         """
@@ -87,6 +89,8 @@ class Font:
         Return the height in pixels for a line of text with the font. When
         rendering multiple lines of text this is the recommended amount of space
         between lines.
+
+        See also :meth:`set_linesize`.
         """
 
     def set_linesize(self, linesize: int, /) -> None:
@@ -96,6 +100,8 @@ class Font:
         Set the height in pixels for a line of text with the font. When rendering
         multiple lines of text this refers to the amount of space between lines.
         The value must be non-negative.
+
+        See also :meth:`get_linesize`.
 
         .. versionadded:: 2.5.4
         """

@@ -73,7 +73,7 @@ solves no longer exists, it will likely be removed in the future.
 .. function:: get_default_font
 
    | :sl:`Get the filename of the default font.`
-   | :sg:`get_default_font() -> string`
+   | :sg:`get_default_font() -> str`
 
    Return the filename of the system font. This is not the full path to the
    file. This file can usually be found in the same directory as the font
@@ -99,7 +99,7 @@ solves no longer exists, it will likely be removed in the future.
 .. function:: get_fonts
 
    | :sl:`Get all available fonts.`
-   | :sg:`get_fonts() -> list of strings`
+   | :sg:`get_fonts() -> list[str]`
 
    Returns a list of all the fonts available on the system. The names of the
    fonts will be set to lowercase with all spaces and punctuation removed. This
@@ -113,7 +113,7 @@ solves no longer exists, it will likely be removed in the future.
 .. function:: match_font
 
    | :sl:`Find a specific font on the system.`
-   | :sg:`match_font(name, bold=False, italic=False) -> path`
+   | :sg:`match_font(name, bold=False, italic=False) -> str | None`
 
    Returns the full path to a font file on the system. If bold or italic are
    set to true, this will attempt to find the correct family of font.
@@ -127,13 +127,10 @@ solves no longer exists, it will likely be removed in the future.
 
    .. versionchanged:: 2.1.3 Checks through user fonts instead of just global fonts for Windows.
 
-   Example:
+   Example::
 
-   ::
-
-       print pygame.font.match_font('bitstreamverasans')
-       # output is: /usr/share/fonts/truetype/ttf-bitstream-vera/Vera.ttf
-       # (but only if you have Vera on your system)
+       >>> pygame.font.match_font('Arial')
+       'C:\\WINDOWS\\Fonts\\arial.ttf'
 
    .. ## pygame.font.match_font ##
 
@@ -285,7 +282,7 @@ solves no longer exists, it will likely be removed in the future.
 
       Can be set to `pygame.FONT_LEFT`, `pygame.FONT_RIGHT`, or
       `pygame.FONT_CENTER`. This controls the text alignment behavior for the
-      font.
+      font. Defaults to `pygame.FONT_LEFT`.
 
       Requires pygame built with SDL_ttf 2.20.0, as all official pygame
       distributions are.
@@ -440,7 +437,7 @@ solves no longer exists, it will likely be removed in the future.
 
       Return True when the font underline is enabled.
 
-       .. note:: This is the same as the :attr:`underline` attribute.
+      .. note:: This is the same as the :attr:`underline` attribute.
 
       .. ## Font.get_underline ##
 
@@ -466,9 +463,9 @@ solves no longer exists, it will likely be removed in the future.
 
       Return True when the font strikethrough is enabled.
 
-       .. note:: This is the same as the :attr:`strikethrough` attribute.
+      .. note:: This is the same as the :attr:`strikethrough` attribute.
 
-       .. versionadded:: 2.1.3
+      .. versionadded:: 2.1.3
 
       .. ## Font.get_strikethrough ##
 
@@ -552,8 +549,7 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`Set the point size of the font.`
       | :sg:`set_point_size(size, /) -> None`
 
-      Sets the point size of the font, which is the value that was used to
-      initialize this font.
+      .. note:: This is the same as the :attr:`point_size` attribute.
 
       .. versionadded:: 2.3.1
 
@@ -567,6 +563,8 @@ solves no longer exists, it will likely be removed in the future.
       Returns the point size of the font. Will not be accurate upon
       initializing the font object when the font name is initialized
       as ``None``.
+
+      .. note:: This is the same as the :attr:`point_size` attribute.
 
       .. versionadded:: 2.3.1
 
