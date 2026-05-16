@@ -60,7 +60,8 @@ extern "C" {
 #if PY_VERSION_HEX < 0x030A00A3 && !defined(Py_NewRef)
 static inline PyObject* _Py_NewRef(PyObject *obj)
 {
-    return Py_NewRef(obj);
+    Py_INCREF(obj);
+    return obj;
 }
 #define Py_NewRef(obj) _Py_NewRef(_PyObject_CAST(obj))
 #endif
