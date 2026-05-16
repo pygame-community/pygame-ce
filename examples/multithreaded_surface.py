@@ -39,9 +39,35 @@ def multithreaded_func(
         surf.set_at(target_pixel, new_color)
 
 
-pixels = [(col, row) for col in range(WIDTH) for row in range(HEIGHT)]
+if "--load" not in sys.argv:
+    pixels = [(col, row) for col in range(WIDTH) for row in range(HEIGHT)]
+    colors = [get_random_color() for _ in range(WIDTH * HEIGHT)]
+    with open("params.txt", "w") as param_file:
+        lines = []
+        for x in range(WIDTH):
+            for y in range(HEIGHT):
+                color = colors[y * WIDTH + x]
+                lines.append(f"{x};{y};{color.r};{color.g};{color.b};{color.a}\n")
+        param_file.writelines(lines)
+else:
+    with open("params.txt", "r") as param_file:
+        pixels = []
+        colors = []
+        lines = param_file.readlines()
+        for line in lines:
+            split_line = line.strip().split(";")
+            x = int(split_line[0])
+            y = int(split_line[1])
+            color = pygame.Color("white")
+            color.r = int(split_line[2])
+            color.g = int(split_line[3])
+            color.b = int(split_line[4])
+            color.a = int(split_line[5])
+            pixel = (x, y)
 
-colors = [get_random_color() for _ in range(WIDTH * HEIGHT)]
+            pixels.append(pixel)
+            colors.append(color)
+
 
 args = [(pixel, colors[i]) for i, pixel in enumerate(pixels)]
 batches = {

@@ -329,23 +329,20 @@ typedef struct {
     PyObject *dependency;
 #if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
     PyMutex mutex;
-    int is_locked;
 #endif
 } pgSurfaceObject;
 #define pgSurface_AsSurface(x) (((pgSurfaceObject *)x)->surf)
 
 #if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
-#define LOCK_pgSurfaceObject(pgSurfacePtr)                     \
-    PyMutex_Lock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex)); \
-    ((pgSurfaceObject *)pgSurfacePtr)->is_locked = 1;
+#define LOCK_pgSurfaceObject(pgSurfacePtr) \
+    PyMutex_Lock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex));
 #else
 #define LOCK_pgSurfaceObject(pgSurfacePtr)
 #endif
 
 #if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
-#define UNLOCK_pgSurfaceObject(pgSurfacePtr)                     \
-    PyMutex_Unlock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex)); \
-    ((pgSurfaceObject *)pgSurfacePtr)->is_locked = 0;
+#define UNLOCK_pgSurfaceObject(pgSurfacePtr) \
+    PyMutex_Unlock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex));
 #else
 #define UNLOCK_pgSurfaceObject(pgSurfacePtr)
 #endif
@@ -664,14 +661,12 @@ PYGAMEAPI_EXTERN_SLOTS(geometry);
     if (PyUnstable_Module_SetGIL(module, Py_MOD_GIL_NOT_USED) < 0) { \
         Py_DECREF(module);                                           \
         return NULL;                                                 \
-    }                                                                \
-    printf("%s was compiled with GIL disabled (single)\n", name);
+    }
 #define DISABLE_GIL_MULTIPHASE_INITIALIZATION(name) \
     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
 
 #else  // PY_GIL_DISABLED is not defined
-#define DISABLE_GIL_SINGLE_INITIALIZATION(module, name) \
-    printf("%s was compiled with GIL disabled (single)\n", name);
+#define DISABLE_GIL_SINGLE_INITIALIZATION(module, name)
 #define DISABLE_GIL_MULTIPHASE_INITIALIZATION(name) \
     {Py_mod_gil, Py_MOD_GIL_USED},
 #endif
