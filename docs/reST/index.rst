@@ -8,8 +8,6 @@ Pygame-ce Front Page
 
    ref/*
    tutorials/en/*
-   tutorials/en/**/*
-   tutorials/ko/**/*
    tutorials/es/*
    c_api
    filepaths
@@ -145,9 +143,6 @@ Tutorials
 
 :doc:`Display Modes <tutorials/en/display-modes>`
   Getting a display surface for the screen.
-
-:doc:`한국어 튜토리얼 (Korean Tutorial) <tutorials/ko/빨간블록 검은블록/개요>`
-  빨간블록 검은블록
 
 :doc:`Tutorial de Pygame - Ejemplo del Chimpancé, Línea Por Línea <tutorials/es/ChimpanceLineaporLinea>`
   Los ejemplos de pygame incluyen un sencillo programa con un puño interactivo y un chimpancé.
