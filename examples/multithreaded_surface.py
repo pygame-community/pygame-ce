@@ -59,8 +59,8 @@ for batch in batches.values():
         new_thread.start()
         threads.append(new_thread)
 
-    while any([t.is_alive() for t in threads]):
-        continue
+    for t in threads:
+        t.join()
 end = perf_counter()
 
 pygame.image.save(pygame.transform.scale_by(surface, 10), "out.png")

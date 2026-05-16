@@ -350,12 +350,6 @@ typedef struct {
 #define UNLOCK_pgSurfaceObject(pgSurfacePtr)
 #endif
 
-#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
-#define IS_LOCKED(pgSurfacePtr) ((pgSurfaceObject *)pgSurfacePtr)->is_locked
-#else
-#define IS_LOCKED(pgSurfacePtr) 0
-#endif
-
 #ifndef PYGAMEAPI_SURFACE_INTERNAL
 #define pgSurface_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(surface, 0))
 

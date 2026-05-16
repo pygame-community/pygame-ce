@@ -526,14 +526,6 @@ class Surface:
         Returns the currently existing locks for the Surface.
         """
 
-    def mutex_is_locked(self) -> bool:
-        """Gets whether or not the mutex governing the surface's pixels is locked.
-
-        Only applies to free-threaded python builds.
-        On non-free-threaded builds, will always return False as there is no mutex
-        on non-free-threaded builds because the GIL prevents unauthorized access.
-        """
-
     def get_at(self, x_y: Point, /) -> Color:
         """Get the color value at a single pixel.
 
