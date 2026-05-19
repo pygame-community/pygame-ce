@@ -2,7 +2,7 @@ import fractions
 from enum import IntEnum
 
 # non-marked functions will eventually be obsolete
-from pygame import _base_display, error as sdl_error
+from pygame import _base_display, error as _sdl_error
 from pygame._base_display import (
     Info,
     flip,
@@ -39,11 +39,11 @@ from pygame._base_display import (
     toggle_fullscreen,
     update,
 )
-from pygame.version import SDL
+from pygame.version import SDL as _SDL_VER
 
 
 class Orientation(IntEnum):
-    # Constants match SDL_DisplayOrientation
+    # Constants match _SDL_VER_DisplayOrientation
     UNKNOWN = 0
     LANDSCAPE = 1
     LANDSCAPE_FLIPPED = 2
@@ -103,11 +103,13 @@ class DisplayMode:
     def height(self):
         return self._mode_data[2]
 
-    @property
-    def pixel_density(self):
-        if SDL < (3, 0, 0):
-            raise sdl_error("'DisplayMode.pixel_density' requires SDL 3.0.0+")
-        return self._mode_data[3]
+    if _SDL_VER >= (3, 0, 0):  # remove at the first sdl3 release
+
+        @property
+        def pixel_density(self):
+            if _SDL_VER < (3, 0, 0):
+                raise _sdl_error("'DisplayMode.pixel_density' requires _SDL_VER 3.0.0+")
+            return self._mode_data[3]
 
     @property
     def refresh_rate(self):
@@ -135,7 +137,7 @@ class Display:
 
     # python needs __hash__ = None to correctly disallow hashing,
     # conditionally raising would be incorrect.
-    if SDL >= (3, 0, 0):
+    if _SDL_VER >= (3, 0, 0):
 
         def __hash__(self):
             return hash(self._id)
@@ -168,11 +170,13 @@ class Display:
     def usable_bounds(self):
         return _base_display.get_usable_bounds(self._id)
 
-    @property
-    def content_scale(self):
-        if SDL < (3, 0, 0):
-            raise sdl_error("'Display.content_scale' requires SDL 3.0.0+")
-        return _base_display.get_content_scale(self._id)
+    if _SDL_VER >= (3, 0, 0):  # remove at the first sdl3 release
+
+        @property
+        def content_scale(self):
+            if _SDL_VER < (3, 0, 0):
+                raise _sdl_error("'Display.content_scale' requires _SDL_VER 3.0.0+")
+            return _base_display.get_content_scale(self._id)
 
     @property
     def current_mode(self):
@@ -186,39 +190,47 @@ class Display:
         mode._mode_data = _base_display.get_desktop_mode_data(self._id)
         return mode
 
-    @property
-    def fullscreen_modes(self):
-        if SDL < (3, 0, 0):
-            raise sdl_error("'Display.fullscreen_modes' requires SDL 3.0.0+")
-        modes = []
-        for data in _base_display.get_fullscreen_modes_data(self._id):
-            mode = DisplayMode.__new__(DisplayMode)
-            mode._mode_data = data
-            modes.append(mode)
-        return modes
+    if _SDL_VER >= (3, 0, 0):  # remove at the first sdl3 release
+
+        @property
+        def fullscreen_modes(self):
+            if _SDL_VER < (3, 0, 0):
+                raise _sdl_error("'Display.fullscreen_modes' requires _SDL_VER 3.0.0+")
+            modes = []
+            for data in _base_display.get_fullscreen_modes_data(self._id):
+                mode = DisplayMode.__new__(DisplayMode)
+                mode._mode_data = data
+                modes.append(mode)
+            return modes
 
     @property
     def orientation(self):
         return Orientation(_base_display.get_orientation(self._id))
 
-    @property
-    def natural_orientation(self):
-        if SDL < (3, 0, 0):
-            raise sdl_error("'Display.natural_orientation' requires SDL 3.0.0+")
-        return Orientation(_base_display.get_natural_orientation(self._id))
+    if _SDL_VER >= (3, 0, 0):  # remove at the first sdl3 release
 
-    def get_closest_fullscreen_mode(
-        self, width, height, refresh_rate, include_high_density_modes=True
-    ):
-        if SDL < (3, 0, 0):
-            raise sdl_error("'Display.get_closest_fullscreen_mode' requires SDL 3.0.0+")
-        mode = DisplayMode.__new__(DisplayMode)
-        mode._mode_data = _base_display.get_closest_fullscreen_mode(
-            self._id, width, height, refresh_rate, include_high_density_modes
-        )
-        if mode._mode_data is None:
-            return None
-        return mode
+        @property
+        def natural_orientation(self):
+            if _SDL_VER < (3, 0, 0):
+                raise _sdl_error(
+                    "'Display.natural_orientation' requires _SDL_VER 3.0.0+"
+                )
+            return Orientation(_base_display.get_natural_orientation(self._id))
+
+        def get_closest_fullscreen_mode(
+            self, width, height, refresh_rate, include_high_density_modes=True
+        ):
+            if _SDL_VER < (3, 0, 0):
+                raise _sdl_error(
+                    "'Display.get_closest_fullscreen_mode' requires _SDL_VER 3.0.0+"
+                )
+            mode = DisplayMode.__new__(DisplayMode)
+            mode._mode_data = _base_display.get_closest_fullscreen_mode(
+                self._id, width, height, refresh_rate, include_high_density_modes
+            )
+            if mode._mode_data is None:
+                return None
+            return mode
 
     @classmethod
     def from_window(cls, window):
@@ -247,4 +259,4 @@ def quit():
     _base_display.quit()
 
 
-del IntEnum, SDL
+del IntEnum
