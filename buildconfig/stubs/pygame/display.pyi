@@ -87,6 +87,7 @@ class Orientation(IntEnum):
     PORTRAIT = 3
     PORTRAIT_FLIPPED = 4
 
+# uncomment properties/methods at the first sdl3 release
 class DisplayMode:
     """Pygame object representing a specific mode of a Display.
 
@@ -110,16 +111,15 @@ class DisplayMode:
     @property
     def height(self) -> int:
         """Vertical resolution."""
-    if SDL >= (3, 0, 0):
-        @property
-        def pixel_density(self) -> float:
-            """Scale converting mode width and height to pixels.
-
-            For example, a 1920x1080 mode with a pixel density of 2.0 would have
-            3840x2160 pixels.
-
-            .. note:: Requires SDL 3.0.0+
-            """
+    # @property
+    # def pixel_density(self) -> float:
+    #     """Scale converting mode width and height to pixels.
+    #
+    #    For example, a 1920x1080 mode with a pixel density of 2.0 would have
+    #    3840x2160 pixels.
+    #
+    #    .. note:: Requires SDL 3.0.0+
+    #    """
     @property
     def refresh_rate(self) -> float:
         """Refresh rate or 0.0 if unspecified."""
@@ -136,10 +136,9 @@ class Display:
     .. versionadded:: 2.5.8
     """
     def __eq__(self, display: object) -> bool: ...
-    if SDL >= (3, 0, 0):
-        def __hash__(self) -> int: ...
-    else:
-        __hash__ = None  # type: ignore[assignment]
+    # change __hash__ assignment at the first sdl3 release
+    # def __hash__(self) -> int: ...
+    __hash__ = None  # type: ignore[assignment]
     @property
     def name(self) -> str:
         """The name of the Display like a monitor's model identifier."""
@@ -163,19 +162,18 @@ class Display:
         As this includes taskbars, menu bars, or docks, it is generally the
         maximum space available for non-fullscreen windows.
         """
-    if SDL >= (3, 0, 0):
-        @property
-        def content_scale(self) -> float:
-            """The scale for content based on the DPI settings of the display.
-
-            A 4K display might have a 2.0 (=200%) content scale, making UI elements
-            twice as big to improve readability.
-
-            A window's display scale may differ from the base value of the display
-            it is on, especially on high-DPI and multi-monitor configurations.
-
-            .. note:: Requires SDL 3.0.0+
-            """
+    # @property
+    # def content_scale(self) -> float:
+    #     """The scale for content based on the DPI settings of the display.
+    #
+    #     A 4K display might have a 2.0 (=200%) content scale, making UI elements
+    #     twice as big to improve readability.
+    #
+    #     A window's display scale may differ from the base value of the display
+    #     it is on, especially on high-DPI and multi-monitor configurations.
+    #
+    #     .. note:: Requires SDL 3.0.0+
+    #     """
     @property
     def current_mode(self) -> DisplayMode:
         """The DisplayMode the display is currently using.
@@ -186,42 +184,40 @@ class Display:
     @property
     def desktop_mode(self) -> DisplayMode:
         """The native DisplayMode of the desktop."""
-    if SDL >= (3, 0, 0):
-        @property
-        def fullscreen_modes(self) -> list[DisplayMode]:
-            """A list of all the DisplayModes a Display supports for exclusive fullscreen.
-
-            The modes are sorted by width, height (largest to smallest), pixel
-            format (more colors to fewer colors), refresh rate (highest to lowest),
-            and pixel density (lowest to highest).
-
-            .. note:: Requires SDL 3.0.0+
-            """
+    # @property
+    # def fullscreen_modes(self) -> list[DisplayMode]:
+    #     """A list of all the DisplayModes a Display supports for exclusive fullscreen.
+    #
+    #     The modes are sorted by width, height (largest to smallest), pixel
+    #     format (more colors to fewer colors), refresh rate (highest to lowest),
+    #     and pixel density (lowest to highest).
+    #
+    #     .. note:: Requires SDL 3.0.0+
+    #     """
     @property
     def orientation(self) -> Orientation:
         """The current orientation of the Display."""
-    if SDL >= (3, 0, 0):
-        @property
-        def natural_orientation(self) -> Orientation:
-            """The natural orientation of the Display.
-
-            .. note:: Requires SDL 3.0.0+
-            """
-        def get_closest_fullscreen_mode(
-            self,
-            width: int,
-            height: int,
-            refresh_rate: float,
-            include_high_density_modes: bool = True,
-        ) -> DisplayMode | None:
-            """Returns the closest fullscreen DisplayMode matching the parameters.
-
-            If ``refresh_rate`` is 0.0, the desktop refresh rate is used instead.
-            The modes are scanned with the same priority as :data:`Display.fullscreen_modes`.
-            If all the available modes are too small, ``None`` is returned.
-
-            .. note:: Requires SDL 3.0.0+
-            """
+    # @property
+    # def natural_orientation(self) -> Orientation:
+    #     """The natural orientation of the Display.
+    #
+    #     .. note:: Requires SDL 3.0.0+
+    #     """
+    # def get_closest_fullscreen_mode(
+    #     self,
+    #     width: int,
+    #     height: int,
+    #     refresh_rate: float,
+    #     include_high_density_modes: bool = True,
+    # ) -> DisplayMode | None:
+    #     """Returns the closest fullscreen DisplayMode matching the parameters.
+    #
+    #     If ``refresh_rate`` is 0.0, the desktop refresh rate is used instead.
+    #     The modes are scanned with the same priority as :data:`Display.fullscreen_modes`.
+    #     If all the available modes are too small, ``None`` is returned.
+    #
+    #     .. note:: Requires SDL 3.0.0+
+    #     """
     @classmethod
     def from_window(cls, window: Window) -> Display:
         """Returns the Display object a window is on."""
