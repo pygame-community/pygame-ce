@@ -508,7 +508,7 @@ class Mask:
         dest: RectLike | Point = (0, 0),
         area: RectLike | None = None,
     ) -> Surface:
-        """Returns a surface with the mask drawn on it`
+        """Returns a surface with the mask drawn on it.
 
         Draws this mask on the given surface. Set bits (bits set to 1) and unset
         bits (bits set to 0) can be drawn onto a surface.
