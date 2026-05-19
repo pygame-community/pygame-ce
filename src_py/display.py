@@ -74,7 +74,8 @@ def _get_display(ID, unplugged=False) -> "Display | None":
 
 
 class DisplayMode:
-    # (display ID, width, height, pixel density, refresh rate, refresh numerator, refresh denominator)
+    # (display ID, width, height, pixel density, refresh rate, refresh numerator,
+    # refresh denominator)
     _mode_data: tuple
 
     def __init__(self):
