@@ -8,7 +8,7 @@
 #endif
 
 /* SDL 2.0.22 provides some utility functions for FRects */
-#if !(SDL_VERSION_ATLEAST(2, 0, 22)) || SDL_VERSION_ATLEAST(3, 0, 0)
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
 
 SDL_bool
 PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,

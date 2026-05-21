@@ -5,7 +5,7 @@
  * considered excluded from the FRect but now they aren't.
  * For now do SDL2 compat, but consider changing this in the future.
  * See: https://github.com/pygame-community/pygame-ce/issues/3571 */
-#if !(SDL_VERSION_ATLEAST(2, 0, 22)) || SDL_VERSION_ATLEAST(3, 0, 0)
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
 
 #ifndef CODE_BOTTOM
 #define CODE_BOTTOM 1
@@ -47,8 +47,7 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
     float y = 0;
     float x1, y1;
     float x2, y2;
-    float rectx1;
-    float recty1;
+    float rectx1;    float recty1;
     float rectx2;
     float recty2;
     int outcode1, outcode2;
@@ -64,8 +63,8 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
     y2 = *Y2;
     rectx1 = rect->x;
     recty1 = rect->y;
-    rectx2 = rect->x + rect->w - 1;
-    recty2 = rect->y + rect->h - 1;
+    rectx2 = rect->x + rect->w - (rect->w >= 1.0f ? 1.0f : 0.0f);
+    recty2 = rect->y + rect->h - (rect->h >= 1.0f ? 1.0f : 0.0f);
 
     /* Check to see if entire line is inside rect */
     if (x1 >= rectx1 && x1 <= rectx2 && x2 >= rectx1 && x2 <= rectx2 &&
