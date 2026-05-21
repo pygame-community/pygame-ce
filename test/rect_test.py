@@ -3084,13 +3084,14 @@ class FRectTypeTest(RectTypeTest):
         """
         rect = FRect((0.2, 0.2), (0.6, 0.6))
 
-        # Ligne qui traverse clairement le rect
+        # Line clearly crossing through the rect
         line = ((0.0, 0.5), (1.0, 0.5))
         clipped = rect.clipline(line)
         self.assertNotEqual(clipped, (), "clipline should detect intersection")
         self.assertIsInstance(clipped, tuple)
 
-        # Ligne entierement en dehors
+        
+        # Line entirely outside
         line_outside = ((0.0, 0.0), (0.1, 0.1))
         self.assertTupleEqual(rect.clipline(line_outside), ())
 
