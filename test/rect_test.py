@@ -3074,7 +3074,6 @@ class FRectTypeTest(RectTypeTest):
 
             self.assertTupleEqual(clipped_line, expected_line)
 
-
     def test_clipline__small_frect_issue_3704(self):
         """Ensures FRect.clipline works with small float dimensions.
 
@@ -3090,7 +3089,6 @@ class FRectTypeTest(RectTypeTest):
         self.assertNotEqual(clipped, (), "clipline should detect intersection")
         self.assertIsInstance(clipped, tuple)
 
-        
         # Line entirely outside
         line_outside = ((0.0, 0.0), (0.1, 0.1))
         self.assertTupleEqual(rect.clipline(line_outside), ())

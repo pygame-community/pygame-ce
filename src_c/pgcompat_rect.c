@@ -47,7 +47,8 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
     float y = 0;
     float x1, y1;
     float x2, y2;
-    float rectx1;    float recty1;
+    float rectx1;
+    float recty1;
     float rectx2;
     float recty2;
     int outcode1, outcode2;
