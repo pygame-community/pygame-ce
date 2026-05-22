@@ -2401,8 +2401,7 @@ RectExport_richcompare(PyObject *o1, PyObject *o2, int opid)
     }
 
 Unimplemented:
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
+    return Py_NewRef(Py_NotImplemented);
 }
 
 /*width*/

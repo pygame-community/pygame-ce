@@ -275,8 +275,7 @@ _scrap_get_scrap(PyObject *self, PyObject *args)
             Py_RETURN_NONE;
         }
 
-        Py_INCREF(val);
-        return val;
+        return Py_NewRef(val);
     }
 
     /* pygame_get_scrap() only returns NULL or !NULL, but won't set any

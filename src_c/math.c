@@ -3729,8 +3729,7 @@ vector_iter(PyObject *vec)
         return NULL;
     }
     it->it_index = 0;
-    Py_INCREF(vec);
-    it->vec = (pgVector *)vec;
+    it->vec = (pgVector *)Py_NewRef(vec);
     return (PyObject *)it;
 }
 
@@ -4323,8 +4322,7 @@ vector_elementwise(pgVector *vec, PyObject *_null)
     if (proxy == NULL) {
         return NULL;
     }
-    Py_INCREF(vec);
-    proxy->vec = (pgVector *)vec;
+    proxy->vec = (pgVector *)Py_NewRef(vec);
 
     return (PyObject *)proxy;
 }

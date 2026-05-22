@@ -85,8 +85,7 @@ renderer_from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     self->target = NULL;
-    Py_INCREF(self);
-    return (PyObject *)self;
+    return Py_NewRef(self);
 }
 
 static PyObject *
@@ -402,8 +401,7 @@ renderer_blit(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     if (Py_IsNone(destobj)) {
         return renderer_get_viewport(self, NULL);
     }
-    Py_INCREF(destobj);
-    return destobj;
+    return Py_NewRef(destobj);
 }
 
 static PyObject *
@@ -548,8 +546,7 @@ renderer_get_target(pgRendererObject *self, void *closure)
     if (self->target == NULL) {
         Py_RETURN_NONE;
     }
-    Py_INCREF(self->target);
-    return (PyObject *)self->target;
+    return Py_NewRef(self->target);
 }
 
 static int
@@ -989,8 +986,7 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 texture_get_renderer(pgTextureObject *self, void *closure)
 {
-    Py_INCREF(self->renderer);
-    return (PyObject *)self->renderer;
+    return Py_NewRef(self->renderer);
 }
 
 static PyObject *

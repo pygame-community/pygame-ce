@@ -793,8 +793,7 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         }
     }
     else {
-        Py_INCREF(file);
-        path = file;
+        path = Py_NewRef(file);
     }
 
     if (path) {
@@ -1140,8 +1139,7 @@ _ftfont_getpath(pgFontObject *self, void *closure)
         PyErr_SetString(PyExc_AttributeError, "path unavailable");
         return 0;
     }
-    Py_INCREF(path);
-    return path;
+    return Py_NewRef(path);
 }
 
 static PyObject *
@@ -1435,8 +1433,7 @@ get_metrics(FontRenderMode *render, pgFontObject *font, PGFT_String *text)
                              &minx, &maxx, &miny, &maxy, &advance_x,
                              &advance_y) == 0) {
             if (gindex == 0) {
-                Py_INCREF(Py_None);
-                item = Py_None;
+                item = Py_NewRef(Py_None);
             }
             else {
                 item = Py_BuildValue("lllldd", minx, maxx, miny, maxy,
@@ -1448,8 +1445,7 @@ get_metrics(FontRenderMode *render, pgFontObject *font, PGFT_String *text)
             }
         }
         else {
-            Py_INCREF(Py_None);
-            item = Py_None;
+            item = Py_NewRef(Py_None);
         }
         PyList_SET_ITEM(list, i, item);
     }

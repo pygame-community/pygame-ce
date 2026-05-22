@@ -155,8 +155,7 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
             }
         }
         else {
-            Py_INCREF(Py_None);
-            val = Py_None;
+            val = Py_NewRef(Py_None);
         }
         if (PyDict_SetItemString(dict, "country", val)) {
             goto error;
@@ -199,16 +198,14 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
     }
 
     if (sec == -1) {
-        sec_py = Py_None;
-        Py_INCREF(Py_None);
+        sec_py = Py_NewRef(Py_None);
     }
     else {
         sec_py = PyLong_FromLong(sec);
     }
 
     if (pct == -1) {
-        pct_py = Py_None;
-        Py_INCREF(Py_None);
+        pct_py = Py_NewRef(Py_None);
     }
     else {
         pct_py = PyLong_FromLong(pct);
