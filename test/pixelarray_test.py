@@ -1330,7 +1330,7 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
     def test_set_pixel_24bit_formats(self):
         """Pixel assignment must write the correct channels on both RGB24 and BGR24.
 
-        On little-endian SDL, RGB24 has Rmask=0xFF (R at byte 0) while the
+        On little-endian systems, RGB24 has Rmask=0xFF (R at byte 0) while the
         default pygame.Surface(..., 24) produces BGR24 (Rmask=0xFF0000, R at
         byte 2).  The old _array_assign_index code assumed the mapped color was
         always 0x00RRGGBB, which silently worked for BGR24 but swapped R and B

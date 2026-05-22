@@ -957,7 +957,7 @@ class TransformModuleTest(unittest.TestCase):
     def test_threshold_set_color_24bit(self):
         """set_color channels must round-trip correctly on both RGB24 and BGR24 surfaces.
 
-        On little-endian SDL, SDL_PIXELFORMAT_RGB24 has Rmask=0xFF (R at byte 0)
+        On little-endian systems, SDL_PIXELFORMAT_RGB24 has Rmask=0xFF (R at byte 0)
         and SDL_PIXELFORMAT_BGR24 has Rmask=0xFF0000 (R at byte 2).  The old
         _set_at_pixels code assumed the_color was always packed 0x00RRGGBB, which
         happened to be correct for BGR24 but swapped R and B for RGB24.
