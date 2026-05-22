@@ -27,13 +27,13 @@ ComputeOutCodeF(const SDL_FRect *rect, float x, float y)
     if (y < rect->y) {
         code |= CODE_TOP;
     }
-    else if (y >= rect->y + rect->h) {
+    else if ((rect->h >= 1.0f) ? (y >= rect->y + rect->h) : (y > rect->y + rect->h)) {
         code |= CODE_BOTTOM;
     }
     if (x < rect->x) {
         code |= CODE_LEFT;
     }
-    else if (x >= rect->x + rect->w) {
+    else if ((rect->w >= 1.0f) ? (x >= rect->x + rect->w) : (x > rect->x + rect->w)) {
         code |= CODE_RIGHT;
     }
     return code;
