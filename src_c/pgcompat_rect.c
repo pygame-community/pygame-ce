@@ -1,11 +1,11 @@
 #include "pgcompat_rect.h"
 
-/* SDL_IntersectFRectAndLine has the same -1 boundary bug, always use custom impl */
+/* SDL_IntersectFRectAndLine has the same -1 boundary bug, always use custom
+ * impl */
 /* SDL3 changed how the edges are handled. Previously right/bottom edges were
  * considered excluded from the FRect but now they aren't.
  * For now do SDL2 compat, but consider changing this in the future.
  * See: https://github.com/pygame-community/pygame-ce/issues/3571 */
-
 
 #ifndef CODE_BOTTOM
 #define CODE_BOTTOM 1
@@ -27,18 +27,21 @@ ComputeOutCodeF(const SDL_FRect *rect, float x, float y)
     if (y < rect->y) {
         code |= CODE_TOP;
     }
-    else if ((rect->h >= 1.0f) ? (y >= rect->y + rect->h) : (y > rect->y + rect->h)) {
+    else if ((rect->h >= 1.0f) ? (y >= rect->y + rect->h)
+                               : (y > rect->y + rect->h)) {
         code |= CODE_BOTTOM;
     }
     if (x < rect->x) {
         code |= CODE_LEFT;
     }
-    else if ((rect->w >= 1.0f) ? (x >= rect->x + rect->w) : (x > rect->x + rect->w)) {
+    else if ((rect->w >= 1.0f) ? (x >= rect->x + rect->w)
+                               : (x > rect->x + rect->w)) {
         code |= CODE_RIGHT;
     }
     return code;
 }
 
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
 SDL_bool
 PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
                          float *Y2)
@@ -180,3 +183,5 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
     *Y2 = y2;
     return SDL_TRUE;
 }
+
+#endif /* !SDL_VERSION_ATLEAST(3, 0, 0) */
