@@ -2191,12 +2191,9 @@ clamp_4
         case 3:                                                          \
             p_byte_buf =                                                 \
                 (Uint8 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x) * 3; \
-            *(p_byte_buf + (p_format->Rshift >> 3)) =                    \
-                (Uint8)(p_color >> p_format->Rshift);                    \
-            *(p_byte_buf + (p_format->Gshift >> 3)) =                    \
-                (Uint8)(p_color >> p_format->Gshift);                    \
-            *(p_byte_buf + (p_format->Bshift >> 3)) =                    \
-                (Uint8)(p_color >> p_format->Bshift);                    \
+            p_byte_buf[0] = (Uint8)(p_color);                            \
+            p_byte_buf[1] = (Uint8)(p_color >> 8);                       \
+            p_byte_buf[2] = (Uint8)(p_color >> 16);                      \
             break;                                                       \
         default:                                                         \
             *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x)) =    \
@@ -2220,12 +2217,9 @@ clamp_4
         case 3:                                                          \
             p_byte_buf =                                                 \
                 (Uint8 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x) * 3; \
-            *(p_byte_buf + 2 - (p_format->Rshift >> 3)) =                \
-                (Uint8)(p_color >> p_format->Rshift);                    \
-            *(p_byte_buf + 2 - (p_format->Gshift >> 3)) =                \
-                (Uint8)(p_color >> p_format->Gshift);                    \
-            *(p_byte_buf + 2 - (p_format->Bshift >> 3)) =                \
-                (Uint8)(p_color >> p_format->Bshift);                    \
+            p_byte_buf[0] = (Uint8)(p_color >> 16);                      \
+            p_byte_buf[1] = (Uint8)(p_color >> 8);                       \
+            p_byte_buf[2] = (Uint8)(p_color);                            \
             break;                                                       \
         default:                                                         \
             *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x)) =    \
@@ -2888,6 +2882,7 @@ laplacian(SDL_Surface *surf, PG_PixelFormat *format, SDL_Surface *destsurf,
     pixels = (Uint8 *)surf->pixels;
     destpixels = (Uint8 *)destsurf->pixels;
     SDL_Palette *surf_palette = PG_GetSurfacePalette(surf);
+    SDL_Palette *destsurf_palette = PG_GetSurfacePalette(destsurf);
 
     /*
         -1 -1 -1
@@ -3005,8 +3000,8 @@ laplacian(SDL_Surface *surf, PG_PixelFormat *format, SDL_Surface *destsurf,
 
             // cast on the right to Uint32, and then clamp to 255.
 
-            the_color = PG_MapRGBA(format, surf_palette, acolor[0], acolor[1],
-                                   acolor[2], acolor[3]);
+            the_color = PG_MapRGBA(destformat, destsurf_palette, acolor[0],
+                                   acolor[1], acolor[2], acolor[3]);
 
             // set_at(destsurf, color, x,y);
 
@@ -3023,19 +3018,13 @@ laplacian(SDL_Surface *surf, PG_PixelFormat *format, SDL_Surface *destsurf,
                     byte_buf =
                         (Uint8 *)(destpixels + y * destsurf->pitch) + x * 3;
 #if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-                    *(byte_buf + (destformat->Rshift >> 3)) =
-                        (Uint8)(the_color >> format->Rshift);
-                    *(byte_buf + (destformat->Gshift >> 3)) =
-                        (Uint8)(the_color >> format->Gshift);
-                    *(byte_buf + (destformat->Bshift >> 3)) =
-                        (Uint8)(the_color >> format->Bshift);
+                    byte_buf[0] = (Uint8)(the_color);
+                    byte_buf[1] = (Uint8)(the_color >> 8);
+                    byte_buf[2] = (Uint8)(the_color >> 16);
 #else
-                    *(byte_buf + 2 - (destformat->Rshift >> 3)) =
-                        (Uint8)(the_color >> format->Rshift);
-                    *(byte_buf + 2 - (destformat->Gshift >> 3)) =
-                        (Uint8)(the_color >> format->Gshift);
-                    *(byte_buf + 2 - (destformat->Bshift >> 3)) =
-                        (Uint8)(the_color >> format->Bshift);
+                    byte_buf[0] = (Uint8)(the_color >> 16);
+                    byte_buf[1] = (Uint8)(the_color >> 8);
+                    byte_buf[2] = (Uint8)(the_color);
 #endif
                     break;
                 default:
