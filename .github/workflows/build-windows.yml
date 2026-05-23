@@ -142,7 +142,7 @@ jobs:
 
       - name: Force 32-bit MSVC
         if: matrix.winarch == 'x86'
-        uses: egor-tensin/vs-shell@9a932a62d05192eae18ca370155cf877eecc2202 # v2.1
+        uses: egor-tensin/vs-shell@54e4148eac794e4580591c2e0b7750f14b7891fc # v2.2
         with:
           arch: x86
 
