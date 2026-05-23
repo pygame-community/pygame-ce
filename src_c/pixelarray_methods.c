@@ -450,15 +450,6 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
             }
         } break;
         case 3: {
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            Uint32 Roffset = format->Rshift >> 3;
-            Uint32 Goffset = format->Gshift >> 3;
-            Uint32 Boffset = format->Bshift >> 3;
-#else
-            Uint32 Roffset = 2 - (format->Rshift >> 3);
-            Uint32 Goffset = 2 - (format->Gshift >> 3);
-            Uint32 Boffset = 2 - (format->Bshift >> 3);
-#endif
             Uint32 pxcolor;
             int ppa =
                 (SDL_ISPIXELFORMAT_ALPHA(format->format) && format->Amask);
@@ -466,23 +457,39 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
             for (y = 0; y < dim1; ++y) {
                 pixel_p = pixelrow;
                 for (x = 0; x < dim0; ++x) {
-                    pxcolor = (((Uint32)pixel_p[Roffset] << 16) +
-                               ((Uint32)pixel_p[Goffset] << 8) +
-                               ((Uint32)pixel_p[Boffset]));
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                    pxcolor = pixel_p[0] | ((Uint32)pixel_p[1] << 8) |
+                              ((Uint32)pixel_p[2] << 16);
+#else
+                    pxcolor = pixel_p[2] | ((Uint32)pixel_p[1] << 8) |
+                              ((Uint32)pixel_p[0] << 16);
+#endif
                     if (distance != 0.0) {
                         GET_PIXELVALS(r2, g2, b2, a2, pxcolor, format, palette,
                                       ppa);
                         if (COLOR_DIFF_RGB(wr, wg, wb, r1, g1, b1, r2, g2,
                                            b2) <= distance) {
-                            pixel_p[Roffset] = (Uint8)(rcolor >> 16);
-                            pixel_p[Goffset] = (Uint8)(rcolor >> 8);
-                            pixel_p[Boffset] = (Uint8)rcolor;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                            pixel_p[0] = (Uint8)rcolor;
+                            pixel_p[1] = (Uint8)(rcolor >> 8);
+                            pixel_p[2] = (Uint8)(rcolor >> 16);
+#else
+                            pixel_p[0] = (Uint8)(rcolor >> 16);
+                            pixel_p[1] = (Uint8)(rcolor >> 8);
+                            pixel_p[2] = (Uint8)rcolor;
+#endif
                         }
                     }
                     else if (pxcolor == dcolor) {
-                        pixel_p[Roffset] = (Uint8)(rcolor >> 16);
-                        pixel_p[Goffset] = (Uint8)(rcolor >> 8);
-                        pixel_p[Boffset] = (Uint8)rcolor;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                        pixel_p[0] = (Uint8)rcolor;
+                        pixel_p[1] = (Uint8)(rcolor >> 8);
+                        pixel_p[2] = (Uint8)(rcolor >> 16);
+#else
+                        pixel_p[0] = (Uint8)(rcolor >> 16);
+                        pixel_p[1] = (Uint8)(rcolor >> 8);
+                        pixel_p[2] = (Uint8)rcolor;
+#endif
                     }
                     pixel_p += stride0;
                 }

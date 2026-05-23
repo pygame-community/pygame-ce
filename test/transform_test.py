@@ -981,6 +981,35 @@ class TransformModuleTest(unittest.TestCase):
 
         self.assertEqual(result.get_at((0, 0)), diff_color)
 
+    def test_threshold_set_color_24bit(self):
+        """set_color channels must round-trip correctly on both RGB24 and BGR24 surfaces.
+
+        On little-endian systems, SDL_PIXELFORMAT_RGB24 has Rmask=0xFF (R at byte 0)
+        and SDL_PIXELFORMAT_BGR24 has Rmask=0xFF0000 (R at byte 2).  The old
+        _set_at_pixels code assumed the_color was always packed 0x00RRGGBB, which
+        happened to be correct for BGR24 but swapped R and B for RGB24.
+        """
+        masks_and_names = [
+            ((0xFF, 0xFF00, 0xFF0000, 0), "RGB24"),
+            ((0xFF0000, 0xFF00, 0xFF, 0), "BGR24"),
+        ]
+        set_color = (255, 0, 0)
+        for masks, name in masks_and_names:
+            with self.subTest(format=name):
+                surf = pygame.Surface((4, 4), depth=24, masks=masks)
+                surf.fill((0, 0, 0))
+                result = pygame.Surface((4, 4), depth=24, masks=masks)
+                pygame.transform.threshold(
+                    dest_surface=result,
+                    surface=surf,
+                    search_color=(0, 0, 0),
+                    threshold=(1, 1, 1),
+                    set_color=set_color,
+                    set_behavior=1,
+                    inverse_set=True,
+                )
+                self.assertEqual(result.get_at((0, 0))[:3], set_color)
+
     def test_threshold__uneven_colors(self):
         (w, h) = size = (16, 16)
 
