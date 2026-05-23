@@ -3083,15 +3083,25 @@ class FRectTypeTest(RectTypeTest):
         """
         rect = FRect((0.2, 0.2), (0.6, 0.6))
 
-        # Line clearly crossing through the rect
-        line = ((0.0, 0.5), (1.0, 0.5))
-        clipped = rect.clipline(line)
-        self.assertNotEqual(clipped, (), "clipline should detect intersection")
-        self.assertIsInstance(clipped, tuple)
+        # Horizontal line crossing through the rect
+        clipped = rect.clipline(((0.0, 0.5), (1.0, 0.5)))
+        self.assertNotEqual(clipped, (), "horizontal line should intersect")
 
-        # Line entirely outside
-        line_outside = ((0.0, 0.0), (0.1, 0.1))
-        self.assertTupleEqual(rect.clipline(line_outside), ())
+        # Vertical line crossing through the rect
+        clipped = rect.clipline(((0.5, 0.0), (0.5, 1.0)))
+        self.assertNotEqual(clipped, (), "vertical line should intersect")
+
+        # Diagonal line crossing through the rect
+        clipped = rect.clipline(((0.0, 0.0), (1.0, 1.0)))
+        self.assertNotEqual(clipped, (), "diagonal line should intersect")
+
+        # Line with one endpoint inside the rect
+        clipped = rect.clipline(((0.5, 0.5), (1.0, 0.5)))
+        self.assertNotEqual(clipped, (), "line from inside should intersect")
+
+        # Lines entirely outside the rect
+        self.assertTupleEqual(rect.clipline(((0.0, 0.0), (0.1, 0.1))), ())
+        self.assertTupleEqual(rect.clipline(((0.9, 0.9), (1.0, 1.0))), ())
 
     def test_contains(self):
         r = FRect(1, 2, 3, 4)

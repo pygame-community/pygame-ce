@@ -1,6 +1,7 @@
 #include "pgcompat_rect.h"
-/* SDL_IntersectFRectAndLine has the same -1 boundary bug, always use custom
- * impl */
+/* SDL2's SDL_IntersectFRectAndLine has a -1 boundary bug for small float
+ * rects (dimensions < 1.0). SDL3 has fixed this issue. Use our custom
+ * implementation for SDL2 only. */
 /* SDL3 changed how the edges are handled. Previously right/bottom edges were
  * considered excluded from the FRect but now they aren't.
  * For now do SDL2 compat, but consider changing this in the future.
@@ -23,18 +24,18 @@ static int
 ComputeOutCodeF(const SDL_FRect *rect, float x, float y)
 {
     int code = 0;
+    const float max_x = rect->x + rect->w;
+    const float max_y = rect->y + rect->h;
     if (y < rect->y) {
         code |= CODE_TOP;
     }
-    else if ((rect->h >= 1.0f) ? (y >= rect->y + rect->h)
-                               : (y > rect->y + rect->h)) {
+    else if ((rect->h >= 1.0f) ? (y >= max_y) : (y > max_y)) {
         code |= CODE_BOTTOM;
     }
     if (x < rect->x) {
         code |= CODE_LEFT;
     }
-    else if ((rect->w >= 1.0f) ? (x >= rect->x + rect->w)
-                               : (x > rect->x + rect->w)) {
+    else if ((rect->w >= 1.0f) ? (x >= max_x) : (x > max_x)) {
         code |= CODE_RIGHT;
     }
     return code;
