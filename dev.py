@@ -532,6 +532,7 @@ class Dev:
                 "supported if the underlying compiler supports the --coverage argument"
             ),
         )
+
         build_parser.add_argument(
             "--ci", action="store_true", help=("Log that this is a CI build")
         )
@@ -544,6 +545,7 @@ class Dev:
         build_parser.add_argument("--commit_hash", help="Internal use for CI")
 
         build_parser.add_argument("--branch", help="Internal use for CI")
+
         build_parser.add_argument(
             "--ctest", action="store_true", help="Build the C-direct unit tests"
         )
@@ -590,6 +592,11 @@ class Dev:
                 "Name(s) of sub-module(s) to test. If no args are given all are tested"
             ),
         )
+        all_parser.add_argument(
+            "--ci", action="store_true", help=("Log that this is a CI build")
+        )
+        all_parser.add_argument("--commit_hash", help="Internal use for CI")
+        all_parser.add_argument("--branch", help="Internal use for CI")
 
         args = parser.parse_args()
         self.args = vars(args)
