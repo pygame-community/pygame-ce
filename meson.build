@@ -74,35 +74,24 @@ endif
 
 git = find_program('git', required: false)
 
-if get_option('source_bld')
-    if git.found()
-        # Get short commit hash
-        git_cmd = run_command(['git', 'rev-parse', '--short', 'HEAD'], check: false)
-        commit_hash = git_cmd.stdout().strip()
+if git.found()
+    git_hash_cmd = run_command(['git', 'rev-parse', '--short', 'HEAD'], check: false)
+    commit_hash = git_hash_cmd.returncode() == 0 ? git_hash_cmd.stdout().strip() : ''
 
-        # Get branch name
-        branch_cmd = run_command(['git', 'branch', '--show-current'], check: false)
-        branch_name = branch_cmd.stdout().strip()
-    else
-        commit_hash = get_option('commit_hash')
-        branch_name = get_option('branch')
-    endif
+    git_branch_cmd = run_command(['git', 'branch', '--show-current'], check: false)
+    branch_name = git_branch_cmd.returncode() == 0 ? git_branch_cmd.stdout().strip() : ''
 else
     commit_hash = ''
     branch_name = ''
 endif
 
-if get_option('ci')
-    ci_build = true
-else
-    ci_build = false
-endif
-
-if ci_build
-    ci_build_arg = 1
-else
-    ci_build_arg = 0
-endif
+# GitHub Actions (and most CI systems) set CI=true in the environment
+_ci_env = run_command(
+    [find_program('python3', 'python'), '-c',
+     'import os, sys; sys.stdout.write(os.environ.get("CI", "false"))'],
+    check: false,
+).stdout().strip()
+ci_build_arg = _ci_env == 'true' ? 1 : 0
 
 commit_header = configure_file(
     input: 'src_c/include/git_info.h.in',
@@ -114,6 +103,7 @@ commit_header = configure_file(
     }
 )
 configuration_inc = include_directories('.')
+add_global_arguments('-DHAVE_GIT_INFO_H', language: 'c')
 
 pg_dir = py.get_install_dir() / pg
 

@@ -112,8 +112,7 @@ jobs:
       id: build-pygame-ce
       run: |
         pyenv global ${{ matrix.python }}-debug
-        python dev.py build --lax --coverage --sanitize undefined --ctest --ci --commit_hash ${{ github.sha }} --branch "${{ github.head_ref || github.ref_name }}"
-
+        python dev.py build --lax --coverage --ctest --sanitize undefined
     - name: Run tests
       env:
         SDL_VIDEODRIVER: "dummy"

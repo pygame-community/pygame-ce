@@ -71,7 +71,13 @@
 #error PG_VERSION_TAG must be defined
 #endif
 
+#ifdef HAVE_GIT_INFO_H
 #include "git_info.h"
+#else
+#define GIT_COMMIT_HASH_SHORT ""
+#define GIT_BRANCH ""
+#define CI_BUILD 0
+#endif
 
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \
     (1000 * (MAJOR) + 100 * (MINOR) + (PATCH))
