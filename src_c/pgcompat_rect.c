@@ -1,11 +1,8 @@
 #include "pgcompat_rect.h"
-/* SDL2's SDL_IntersectFRectAndLine has a -1 boundary bug for small float
- * rects (dimensions < 1.0). SDL3 has fixed this issue. Use our custom
- * implementation for SDL2 only. */
-/* SDL3 changed how the edges are handled. Previously right/bottom edges were
- * considered excluded from the FRect but now they aren't.
- * For now do SDL2 compat, but consider changing this in the future.
- * See: https://github.com/pygame-community/pygame-ce/issues/3571 */
+/* SDL2's SDL_IntersectFRectAndLine excludes right/bottom edges (integer
+ * pixel behavior), which causes incorrect results for float rects with
+ * sub-pixel dimensions (< 1.0). SDL3 changed this behavior.
+ * For now we maintain SDL2 compat; see issue #3571 for future changes. */
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
 #ifndef CODE_BOTTOM
 #define CODE_BOTTOM 1

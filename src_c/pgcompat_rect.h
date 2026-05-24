@@ -5,9 +5,10 @@
 #else
 #include <SDL.h>
 #endif
-/* SDL2's SDL_IntersectFRectAndLine has a -1 boundary bug for small float
- * rects (dimensions < 1.0). SDL3 has fixed this issue, so this custom
- * implementation is only used for SDL2. */
+/* SDL2's SDL_IntersectFRectAndLine excludes the right and bottom edges,
+ * which matches integer pixel behavior but causes incorrect results for
+ * float rects with sub-pixel dimensions (< 1.0). SDL3 changed this
+ * behavior. Use our custom implementation for SDL2 only. */
 #if !SDL_VERSION_ATLEAST(3, 0, 0)
 SDL_bool
 PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
