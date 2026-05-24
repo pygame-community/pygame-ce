@@ -93,16 +93,11 @@ _ci_env = run_command(
 ).stdout().strip()
 ci_build_arg = _ci_env == 'true' ? 1 : 0
 
-commit_header = configure_file(
-    input: 'src_c/include/git_info.h.in',
-    output: 'git_info.h',
-    configuration: {
-        'GIT_HASH_SHORT': commit_hash,
-        'GIT_BRANCH': branch_name,
-        'CI_BUILD': ci_build_arg
-    }
-)
-configuration_inc = include_directories('.')
+git_info_config = {
+    'GIT_HASH_SHORT': commit_hash,
+    'GIT_BRANCH': branch_name,
+    'CI_BUILD': ci_build_arg
+}
 add_global_arguments('-DHAVE_GIT_INFO_H', language: 'c')
 
 pg_dir = py.get_install_dir() / pg
