@@ -74,12 +74,23 @@ endif
 
 git = find_program('git', required: false)
 
+_py = find_program('python3', 'python')
+
 if git.found()
     git_hash_cmd = run_command(['git', 'rev-parse', '--short', 'HEAD'], check: false)
     commit_hash = git_hash_cmd.returncode() == 0 ? git_hash_cmd.stdout().strip() : ''
 
+    # --show-current is empty on detached HEAD (common in CI checkouts);
+    # fall back to GITHUB_HEAD_REF (PR branch) then GITHUB_REF_NAME (push branch)
     git_branch_cmd = run_command(['git', 'branch', '--show-current'], check: false)
     branch_name = git_branch_cmd.returncode() == 0 ? git_branch_cmd.stdout().strip() : ''
+    if branch_name == ''
+        branch_name = run_command(
+            [_py, '-c',
+             'import os, sys; sys.stdout.write(os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME", ""))'],
+            check: false,
+        ).stdout().strip()
+    endif
 else
     commit_hash = ''
     branch_name = ''
