@@ -217,8 +217,7 @@ mask_set_at(PyObject *self, PyObject *args, PyObject *kwargs)
         PyErr_Format(PyExc_IndexError, "%d, %d is out of bounds", x, y);
         return NULL;
     }
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
 }
 
 static PyObject *
@@ -248,8 +247,7 @@ mask_overlap(PyObject *self, PyObject *args, PyObject *kwargs)
         return pg_tuple_couple_from_values_int(xp, yp);
     }
     else {
-        Py_INCREF(Py_None);
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
 }
 
@@ -2622,9 +2620,7 @@ pgMask_GetBuffer(pgMaskObject *self, Py_buffer *view, int flags)
         view->format = NULL;
     }
     view->suboffsets = NULL;
-
-    Py_INCREF(self);
-    view->obj = (PyObject *)self;
+    view->obj = Py_NewRef(self);
 
     return 0;
 }

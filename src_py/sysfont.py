@@ -77,6 +77,12 @@ def initsysfonts_win32():
                 except OSError:
                     break
 
+                # https://github.com/pygame-community/pygame-ce/issues/3742
+                # Registry values could be other types besides strings.
+                # Lets skip those.
+                if not isinstance(font, str):
+                    continue
+
                 if splitext(font)[1].lower() not in OpenType_extensions:
                     continue
                 if not dirname(font):

@@ -1011,7 +1011,7 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
         }
         else {
             draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
-                                  posy, radius, width, color, 1, 1, 1, 1,
+                                  posy, radius, width - 1, color, 1, 1, 1, 1,
                                   drawn_area);
         }
     }
@@ -1029,7 +1029,7 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
         }
         else {
             draw_circle_xiaolinwu(surf, surf_clip_rect, surf_format, posx,
-                                  posy, radius, width, color, top_right,
+                                  posy, radius, width - 1, color, top_right,
                                   top_left, bottom_left, bottom_right,
                                   drawn_area);
         }
@@ -3489,6 +3489,9 @@ draw_circle_xiaolinwu(SDL_Surface *surf, SDL_Rect surf_clip_rect,
                       int thickness, Uint32 color, int top_right, int top_left,
                       int bottom_left, int bottom_right, int *drawn_area)
 {
+    /* The final drawn thickness will be 1 pixel greater than the value of the
+     * “thickness” parameter, as the iteration is performed over a closed
+     * interval. */
     for (int layer_radius = radius - thickness; layer_radius <= radius;
          layer_radius++) {
         int x = 0;

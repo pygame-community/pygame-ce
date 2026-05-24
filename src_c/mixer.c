@@ -676,8 +676,7 @@ pgSound_Play(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_XDECREF(channeldata[channelnum].sound);
     Py_XDECREF(channeldata[channelnum].queue);
     channeldata[channelnum].queue = NULL;
-    channeldata[channelnum].sound = self;
-    Py_INCREF(self);
+    channeldata[channelnum].sound = Py_NewRef(self);
 
     // make sure volume on this arbitrary channel is set to full
     Mix_Volume(channelnum, 128);
@@ -1049,8 +1048,7 @@ snd_getbuffer(PyObject *obj, Py_buffer *view, int flags)
             strides[ndim - 1] = itemsize;
         }
     }
-    Py_INCREF(obj);
-    view->obj = obj;
+    view->obj = Py_NewRef(obj);
     view->buf = chunk->abuf;
     view->len = (Py_ssize_t)chunk->alen;
     view->readonly = 0;
@@ -1141,9 +1139,8 @@ chan_play(PyObject *self, PyObject *args, PyObject *kwargs)
 
     Py_XDECREF(channeldata[channelnum].sound);
     Py_XDECREF(channeldata[channelnum].queue);
-    channeldata[channelnum].sound = sound;
+    channeldata[channelnum].sound = Py_NewRef(sound);
     channeldata[channelnum].queue = NULL;
-    Py_INCREF(sound);
     Py_RETURN_NONE;
 }
 
@@ -1178,14 +1175,11 @@ chan_queue(PyObject *self, PyObject *sound)
             Mix_GroupChannel(channelnum, (int)(intptr_t)chunk);
         }
         Py_END_ALLOW_THREADS;
-
-        channeldata[channelnum].sound = sound;
-        Py_INCREF(sound);
+        channeldata[channelnum].sound = Py_NewRef(sound);
     }
     else {
         Py_XDECREF(channeldata[channelnum].queue);
-        channeldata[channelnum].queue = sound;
-        Py_INCREF(sound);
+        channeldata[channelnum].queue = Py_NewRef(sound);
     }
     Py_RETURN_NONE;
 }
@@ -1358,8 +1352,7 @@ chan_get_sound(PyObject *self, PyObject *_null)
         Py_RETURN_NONE;
     }
 
-    Py_INCREF(sound);
-    return sound;
+    return Py_NewRef(sound);
 }
 
 static PyObject *
@@ -1373,8 +1366,7 @@ chan_get_queue(PyObject *self, PyObject *_null)
         Py_RETURN_NONE;
     }
 
-    Py_INCREF(sound);
-    return sound;
+    return Py_NewRef(sound);
 }
 
 static PyObject *

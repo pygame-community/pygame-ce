@@ -1043,8 +1043,7 @@ font_metrics(PyObject *self, PyObject *textobj)
         }
         else {
             /* Not UCS-2 (and old SDL) or no matching metrics. */
-            Py_INCREF(Py_None);
-            listitem = Py_None;
+            listitem = Py_NewRef(Py_None);
         }
         if (0 != PyList_Append(list, listitem)) {
             Py_DECREF(list);

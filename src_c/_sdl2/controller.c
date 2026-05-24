@@ -477,8 +477,7 @@ controller_new(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
     cur = _first_controller;
     while (cur) {
         if (cur->controller == controller) {
-            Py_INCREF(cur);
-            return (PyObject *)cur;
+            return Py_NewRef(cur);
         }
 
         if (!cur->next) {

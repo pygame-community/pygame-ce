@@ -86,8 +86,8 @@ def get_urls(x86=True, x64=True):
         'e3c79c1bde7a4b2064d1cd660d357e82a7f7e856'
         ],
         [
-        'https://github.com/pygame-community/SDL_image/releases/download/2.8.8-pgce/SDL2_image-devel-2.8.8-VCpgce.zip',
-        '8cd149cbaae2d362f2eaa69483d992e79f4836f5'
+        'https://github.com/pygame-community/SDL_image/releases/download/2.8.10-pgce/SDL2_image-devel-2.8.10-VCpgce.zip',
+        'daf020b5112b2330bcf89f4335415bfd4e65ed03'
         ],
         [
         'https://github.com/libsdl-org/SDL_image/releases/download/release-3.4.0/SDL3_image-devel-3.4.0-VC.zip',
@@ -102,12 +102,12 @@ def get_urls(x86=True, x64=True):
         '3786bc016d89ca4cf9739e4d342ca29e3e29c137'
         ],
         [
-        'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.1/SDL2_mixer-devel-2.8.1-VC.zip',
-        'ea302368159ca64056b2519b3a624525f625220e',
+        'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.2/SDL2_mixer-devel-2.8.2-VC.zip',
+        '7e01cc961326ec44a61009c61a409310489aee6b',
         ],
         [
-        'https://github.com/libsdl-org/SDL_mixer/releases/download/prerelease-3.1.2/SDL3_mixer-devel-3.1.2-VC.zip',
-        '055992eb135197e74644bea65fdc8f8f0838b4ed'
+        'https://github.com/libsdl-org/SDL_mixer/releases/download/release-3.2.2/SDL3_mixer-devel-3.2.2-VC.zip',
+        '08f249449d89eda826db548fcefcba759d97245d'
         ]
     ])
     if x86:
@@ -217,12 +217,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_image-devel-2.8.8-VCpgce/SDL2_image-2.8.8'
+                'SDL2_image-devel-2.8.10-VCpgce/SDL2_image-2.8.10'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_image-2.8.8'
+                'SDL2_image-2.8.10'
             )
         )
         copy(
@@ -239,23 +239,23 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_mixer-devel-2.8.1-VC/SDL2_mixer-2.8.1'
+                'SDL2_mixer-devel-2.8.2-VC/SDL2_mixer-2.8.2'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_mixer-2.8.1'
+                'SDL2_mixer-2.8.2'
             )
         )
         copy(
             os.path.join(
                 temp_dir,
-                'SDL3_mixer-devel-3.1.2-VC/SDL3_mixer-3.1.2'
+                'SDL3_mixer-devel-3.2.2-VC/SDL3_mixer-3.2.2'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL3_mixer-3.1.2'
+                'SDL3_mixer-3.2.2'
             )
         )
         copy(

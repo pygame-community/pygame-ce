@@ -45,7 +45,7 @@ static int pg_is_init = 0;
 static bool pg_sdl_was_init = 0;
 SDL_Window *pg_default_window = NULL;
 pgSurfaceObject *pg_default_screen = NULL;
-static int pg_env_blend_alpha_SDL2 = 0;
+int pg_env_blend_alpha_SDL2 = 0;
 
 /* compare compiled to linked, raise python error on incompatibility */
 int
@@ -774,7 +774,7 @@ _pg_new_capsuleinterface(Py_buffer *view_p)
     int i;
 
     cinter_size =
-        (sizeof(pgCapsuleInterface) + sizeof(Py_intptr_t) * (2 * ndim - 1));
+        (sizeof(pgCapsuleInterface) + sizeof(Py_intptr_t) * (2 * ndim));
     cinter_p = (pgCapsuleInterface *)PyMem_Malloc(cinter_size);
     if (!cinter_p) {
         PyErr_NoMemory();
@@ -1134,8 +1134,7 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
             Py_DECREF(cobj);
             return -1;
         }
-        Py_INCREF(obj);
-        view_p->obj = obj;
+        view_p->obj = Py_NewRef(obj);
         Py_DECREF(cobj);
         success = 1;
     }
@@ -1148,8 +1147,7 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
             Py_DECREF(dict);
             return -1;
         }
-        Py_INCREF(obj);
-        view_p->obj = obj;
+        view_p->obj = Py_NewRef(obj);
         Py_DECREF(dict);
         success = 1;
     }
@@ -1265,7 +1263,7 @@ _pg_arraystruct_as_buffer(Py_buffer *view_p, PyObject *cobj,
 {
     pgViewInternals *internal_p;
     Py_ssize_t sz =
-        (sizeof(pgViewInternals) + (2 * inter_p->nd - 1) * sizeof(Py_ssize_t));
+        (sizeof(pgViewInternals) + (2 * inter_p->nd) * sizeof(Py_ssize_t));
     int readonly = (inter_p->flags & PAI_WRITEABLE) ? 0 : 1;
     Py_ssize_t i;
 
@@ -1646,7 +1644,7 @@ _pg_values_as_buffer(Py_buffer *view_p, int flags, PyObject *typestr,
                         "require writable buffer, but it is read-only");
         return -1;
     }
-    sz = sizeof(pgViewInternals) + (2 * ndim - 1) * sizeof(Py_ssize_t);
+    sz = sizeof(pgViewInternals) + (2 * ndim) * sizeof(Py_ssize_t);
     internal_p = (pgViewInternals *)PyMem_Malloc(sz);
     if (!internal_p) {
         PyErr_NoMemory();

@@ -16,6 +16,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-windows
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   # windows build with legacy prebuilts
   # this job is to be removed when we generalize the Windows ARM job
@@ -33,21 +36,21 @@ jobs:
       CIBW_ARCHS: ${{ matrix.winarch }}
 
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-      - uses: TheMrMilchmann/setup-msvc-dev@v4  # this lets us use the developer command prompt on windows
+      # this lets us use the developer command prompt on windows
+      - uses: TheMrMilchmann/setup-msvc-dev@79dac248aac9d0059f86eae9d8b5bfab4e95e97c # v4.0.0
         with:
           arch: ${{ matrix.msvc-dev-arch }}
 
-      - name: Install uv for speed
-        uses: astral-sh/setup-uv@v7
-        with:
-          version: "0.9.2"
-
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
+        with:
+          extras: uv
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pygame-wheels-windows-${{ matrix.winarch }}
           path: ./wheelhouse/*.whl
@@ -68,11 +71,13 @@ jobs:
 
     steps:
       - run: git config --global core.autocrlf input  # do not introduce carriage returns
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Test for Win Deps cache hit
         id: windep-cache
-        uses: actions/cache@v5.0.2
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
           # The hash of all files in buildconfig manylinux-build and windependencies is
@@ -80,7 +85,7 @@ jobs:
           key: windep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/windependencies/*') }}-${{ matrix.winarch }}
 
       # Setup msys environment
-      - uses: msys2/setup-msys2@v2
+      - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c # v2.31.1
         if: steps.windep-cache.outputs.cache-hit != 'true'
         with:
           update: true
@@ -108,7 +113,7 @@ jobs:
           bash ./build_win_deps.sh
 
       - name: Upload win deps
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pygame_win_deps_${{ matrix.winarch }}
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
@@ -131,29 +136,28 @@ jobs:
 
     steps:
       - run: git config --global core.autocrlf input  # do not introduce carriage returns
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Force 32-bit MSVC
         if: matrix.winarch == 'x86'
-        uses: egor-tensin/vs-shell@v2
+        uses: egor-tensin/vs-shell@54e4148eac794e4580591c2e0b7750f14b7891fc # v2.2
         with:
           arch: x86
 
-      - name: Install uv for speed
-        uses: astral-sh/setup-uv@v7
-        with:
-          version: "0.9.2"
-
       - name: Download Windows deps artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: pygame_win_deps_${{ matrix.winarch }}
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
+        with:
+          extras: uv
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pygame-wheels-windows-${{ matrix.winarch }}
           path: ./wheelhouse/*.whl
@@ -176,8 +180,10 @@ jobs:
 
     steps:
       - run: git config --global core.autocrlf input  # do not introduce carriage returns
-      - uses: actions/checkout@v6.0.2
-      - uses: msys2/setup-msys2@v2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c # v2.31.1
         with:
           msystem: ${{ matrix.sys }}
           update: true
@@ -191,7 +197,7 @@ jobs:
             mingw-w64-${{ matrix.env }}-cython
 
       - name: Download Windows deps artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: pygame_win_deps_${{ matrix.winarch }}
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
