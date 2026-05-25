@@ -71,8 +71,16 @@
 #error PG_VERSION_TAG must be defined
 #endif
 
-#ifdef HAVE_GIT_INFO_H
-#include "git_info.h"
+#ifndef GIT_COMMIT_HASH_SHORT
+#error GIT_COMMIT_HASH_SHORT must be defined
+#endif
+
+#ifndef GIT_BRANCH
+#error GIT_BRANCH must be defined
+#endif
+
+#ifndef CI_BUILD
+#error CI_BUILD must be defined
 #endif
 
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \

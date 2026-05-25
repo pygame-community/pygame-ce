@@ -1,12 +1,3 @@
-# Generate git_info.h into the build's src_c/ directory so it is found
-# via the -Isrc_c build dir flag that meson adds for all targets here
-configure_file(
-    input: 'include/git_info.h.in',
-    output: 'git_info.h',
-    configuration: git_info_config,
-    install: false,
-)
-
 if plat.startswith('emscripten')  # single build
 
 base_files = ['base.c', 'bitmask.c', 'rotozoom.c', 'SDL_gfx/SDL_gfxPrimitives.c']
