@@ -2249,9 +2249,6 @@ MODINIT_DEFINE(base)
     }
 
     PyObject *ciBuild = PyBool_FromLong(CI_BUILD);
-    if (!ciBuild) {
-        goto error;
-    }
     if (PyModule_AddObject(module, "__built_on_ci__", ciBuild)) {
         Py_DECREF(ciBuild);
         goto error;

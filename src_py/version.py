@@ -81,4 +81,4 @@ ci_build = __built_on_ci__
 vernum = PygameVersion(*map(int, ver.split(".")[:3]))
 rev = ""  # pylint: disable=invalid-name
 
-__all__ = ["SDL", "ver", "vernum", "rev"]
+__all__ = ["SDL", "ver", "vernum", "rev", "commit", "branch", "ci_build"]
