@@ -463,6 +463,12 @@ pg_audio_get_audio_stream_data(PyObject *module, PyObject *const *args,
         return PyBytes_FromStringAndSize("", 0);
     }
 
+    // Allocates working space, then SDL copies into it, then we copy into a
+    // bytes object.
+    // It would be more efficient to create the bytes object and then write
+    // into it directly, but I didn't want to use _PyBytes_Resize (soft
+    // deprecated, not stable ABI). In the future this could use PyBytesWriter?
+
     void *buf = malloc(size);
     if (buf == NULL) {
         return PyErr_NoMemory();
