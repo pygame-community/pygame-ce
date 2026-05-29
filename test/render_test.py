@@ -47,6 +47,8 @@ class RendererTest(unittest.TestCase):
             self.renderer.to_surface(small_surf)
 
     def test_blit(self):
+        self.renderer.draw_color = "BLACK"
+        self.renderer.clear()
         surface = pygame.Surface((10, 10))
         surface.fill((80, 120, 160, 200))
         texture = _render.Texture.from_surface(self.renderer, surface)
@@ -79,6 +81,8 @@ class RendererTest(unittest.TestCase):
                 self.assertEqual(surf.get_at((x, y)), pygame.Color(255, 255, 0, 255))
 
     def test_draw_point(self):
+        self.renderer.draw_color = "BLACK"
+        self.renderer.clear()
         self.renderer.draw_color = "YELLOW"
         self.renderer.draw_point((10, 10))
         surf = self.renderer.to_surface()
@@ -308,6 +312,9 @@ class TextureTest(unittest.TestCase):
         self.assertEqual(surf_size, (texture2.width, texture2.height))
 
     def test_draw_triangle(self):
+        self.renderer.draw_color = "BLACK"
+        self.renderer.clear()
+
         texture2 = self.create_texture_from_surface()
         texture2.draw_triangle(
             (50, 10),
