@@ -23,7 +23,6 @@ class RendererTest(unittest.TestCase):
         self.window = pygame.Window(size=(100, 100))
         self.renderer = _render.Renderer(self.window)
 
-        self.renderer.draw_color = "BLACK"
         self.renderer.clear()
 
     def test_to_surface(self):
