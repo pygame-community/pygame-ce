@@ -71,15 +71,8 @@ def _get_platform_info():
         f"Linkage: {platform.architecture()[1]}\n"
     )
 
-    version_values = ver.split(".")
-    if (
-        len(version_values) == 4
-        and int(version_values[-1].replace("dev", "")) % 2
-        and commit is not None
-        and branch is not None
-    ):
-        ret += f"Commit Hash:\t\t{commit}\n"
-        ret += f"Branch Name:\t\t{branch}\n"
+    ret += f"Commit Hash:\t\t{commit if commit else 'Unavailable'}\n"
+    ret += f"Branch Name:\t\t{branch if branch else 'Unavailable'}\n"
     ret += f"Built on CI:\t\t{ci_build}\n\n"
 
     ret += f"Python:\t\t\t{platform.python_implementation()} {sys.version}\n"

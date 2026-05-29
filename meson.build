@@ -77,12 +77,12 @@ git = find_program('git', required: false)
 _py = find_program('python3', 'python')
 
 if git.found()
-    git_hash_cmd = run_command(['git', 'rev-parse', '--short', 'HEAD'], check: false)
+    git_hash_cmd = run_command(git, 'rev-parse', '--short', 'HEAD', check: false)
     commit_hash = git_hash_cmd.returncode() == 0 ? git_hash_cmd.stdout().strip() : ''
 
     # --show-current is empty on detached HEAD (common in CI checkouts);
     # fall back to GITHUB_HEAD_REF (PR branch) then GITHUB_REF_NAME (push branch)
-    git_branch_cmd = run_command(['git', 'branch', '--show-current'], check: false)
+    git_branch_cmd = run_command(git, 'branch', '--show-current', check: false)
     branch_name = git_branch_cmd.returncode() == 0 ? git_branch_cmd.stdout().strip() : ''
     if branch_name == ''
         branch_name = run_command(
@@ -92,8 +92,16 @@ if git.found()
         ).stdout().strip()
     endif
 else
-    commit_hash = ''
-    branch_name = ''
+    commit_hash = 'Git Not Found'
+    branch_name = 'Git Not Found'
+endif
+
+if commit_hash == ''
+    commit_hash = 'Git Commit Not Found'
+endif
+
+if branch_name == ''
+    branch_name = 'Git Branch Not Found'
 endif
 
 # GitHub Actions (and most CI systems) set CI=true in the environment
