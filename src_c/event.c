@@ -1345,13 +1345,9 @@ dict_from_event(SDL_Event *event)
             break;
         case SDL_MOUSEWHEEL:
             /* https://wiki.libsdl.org/SDL_MouseWheelEvent */
-#ifndef NO_SDL_MOUSEWHEEL_FLIPPED
             _pg_insobj(dict, "flipped",
                        PyBool_FromLong(event->wheel.direction ==
                                        SDL_MOUSEWHEEL_FLIPPED));
-#else
-            _pg_insobj(dict, "flipped", PyBool_FromLong(0));
-#endif
             _pg_insobj(dict, "x", PyLong_FromLong((long)event->wheel.x));
             _pg_insobj(dict, "y", PyLong_FromLong((long)event->wheel.y));
 
