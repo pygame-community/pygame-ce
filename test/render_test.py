@@ -23,7 +23,10 @@ class RendererTest(unittest.TestCase):
         self.window = pygame.Window(size=(100, 100))
         self.renderer = _render.Renderer(self.window)
 
+        init_draw_color = self.renderer.draw_color
+        self.renderer.draw_color = "BLACK"
         self.renderer.clear()
+        self.renderer.draw_color = init_draw_color
 
     def test_to_surface(self):
         self.renderer.draw_color = "YELLOW"
@@ -237,6 +240,7 @@ class TextureTest(unittest.TestCase):
     def setUp(self):
         self.window = pygame.Window(size=(100, 100))
         self.renderer = _render.Renderer(self.window)
+        self.renderer.clear()
         self.texture = _render.Texture(self.renderer, (80, 60))
 
     def create_texture_from_surface(self):
