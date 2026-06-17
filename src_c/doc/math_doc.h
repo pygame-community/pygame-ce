@@ -13,6 +13,7 @@
 #define DOC_MATH_VECTOR2_LENGTH "length() -> float\nreturns the Euclidean length of the vector."
 #define DOC_MATH_VECTOR2_LENGTHSQUARED "length_squared() -> float\nreturns the squared Euclidean length of the vector."
 #define DOC_MATH_VECTOR2_NORMALIZE "normalize() -> Vector2\nreturns a vector with the same direction but length 1."
+#define DOC_MATH_VECTOR2_NORMALIZEORZERO "normalize() -> Vector2\nreturns a vector with the same direction but length 1, or zero of it is a zero-vector.",
 #define DOC_MATH_VECTOR2_NORMALIZEIP "normalize_ip() -> None\nnormalizes the vector in place so that its length is 1."
 #define DOC_MATH_VECTOR2_ISNORMALIZED "is_normalized() -> bool\ntests if the vector is normalized i.e. has length == 1."
 #define DOC_MATH_VECTOR2_SCALETOLENGTH "scale_to_length(float, /) -> None\nscales the vector to a given length."
