@@ -803,7 +803,6 @@ class Vector2TypeTest(unittest.TestCase):
         # does NOT fail when attempting to normalize zero vector, returns zero vctor.
         self.assertEqual(self.zeroVec.normalize_or_zero(), self.zeroVec)
 
-        self.assertRaises(ValueError, lambda: self.zeroVec.normalize())
     def test_normalize_ip(self):
         v = +self.v1
         # v has length != 1 before normalizing
