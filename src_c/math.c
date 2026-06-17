@@ -219,7 +219,7 @@ vector_length_squared(pgVector *self, PyObject *args);
 static PyObject *
 vector_normalize(pgVector *self, PyObject *args);
 static PyObject *
-vector_normalize_io(pgVector *self, PyObject *args);
+vector_normalize_or_zero(pgVector *self, PyObject *args);
 static PyObject *
 vector_normalize_ip(pgVector *self, PyObject *args);
 static PyObject *
