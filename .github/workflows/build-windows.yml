@@ -46,7 +46,7 @@ jobs:
           arch: ${{ matrix.msvc-dev-arch }}
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
+        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
         with:
           extras: uv
 
@@ -153,7 +153,7 @@ jobs:
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
+        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
         with:
           extras: uv
 
