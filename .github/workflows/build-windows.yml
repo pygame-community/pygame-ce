@@ -85,7 +85,7 @@ jobs:
           key: windep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/windependencies/*') }}-${{ matrix.winarch }}
 
       # Setup msys environment
-      - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c # v2.31.1
+      - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
         if: steps.windep-cache.outputs.cache-hit != 'true'
         with:
           update: true
@@ -183,7 +183,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-      - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c # v2.31.1
+      - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
         with:
           msystem: ${{ matrix.sys }}
           update: true
