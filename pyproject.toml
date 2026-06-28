@@ -114,6 +114,13 @@ embuilder --pic --force build \
 """
 test-command = ""  # TODO: figure out how to test
 
+# cibuildwheel 4.0 now uses delvewheel to try to fix up Windows wheels with DLLs, which fails
+# out of the box with our CI. And do we really want something messing with our DLLs?
+# The status quo is that we add our resources to the build explicitly, that should be okay to
+# continue, so lets just turn this off for now.
+# Maybe it can be reinvestigated in the future.
+[tool.cibuildwheel.windows]
+repair-wheel-command = ""
 
 [tool.ruff]
 exclude = [
