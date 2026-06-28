@@ -107,13 +107,20 @@ build = "cp313-*"  # build only for the latest python version.
 # to cibuildwheel and/or pyodide.
 before-build = """
 sed -i 's/var SUPPORT_LONGJMP *= *[^;]*;/var SUPPORT_LONGJMP = "wasm";/' \
-  /home/runner/.cache/cibuildwheel/emsdk-4.0.9/emsdk-4.0.9/upstream/emscripten/src/settings.js &&
+  /home/runner/.cache/cibuildwheel/pyodide-build-0.35.0/0.29.4/emsdk/upstream/emscripten/src/settings.js &&
 embuilder --pic --force build \
   sdl2 libhtml5 sdl2_ttf 'sdl2_mixer:formats=ogg,mp3,mod,mid' \
   'sdl2_image:formats=bmp,gif,jpg,lbm,pcx,png,pnm,qoi,svg,tga,xcf,xpm,xv'
 """
 test-command = ""  # TODO: figure out how to test
 
+# cibuildwheel 4.0 now uses delvewheel to try to fix up Windows wheels with DLLs, which fails
+# out of the box with our CI. And do we really want something messing with our DLLs?
+# The status quo is that we add our resources to the build explicitly, that should be okay to
+# continue, so lets just turn this off for now.
+# Maybe it can be reinvestigated in the future.
+[tool.cibuildwheel.windows]
+repair-wheel-command = ""
 
 [tool.ruff]
 exclude = [
