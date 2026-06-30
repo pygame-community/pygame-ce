@@ -284,6 +284,18 @@ Conversion can be combined with swizzling or slicing to create a new order
       ``0`` thus no direction) a ``ValueError`` is raised.
 
       .. ## Vector2.normalize ##
+    
+   .. method:: normalize_or_zero
+
+      | :sl:`returns a normalized vector with the same direction, or the zero-vector if its length is zero.`
+      | :sg:`normalize_or_zero() -> Vector2`
+
+      Returns a new vector that has ``length`` equal to ``1`` and the same
+      direction as self. If the vector has length zero, no error is raised
+      and the zero vector is returned instead.
+
+      .. ## Vector2.normalize ##
+
 
    .. method:: normalize_ip
 
