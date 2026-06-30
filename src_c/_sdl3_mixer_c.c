@@ -486,7 +486,7 @@ pg_audio_obj_get_duration_ms(PGAudioObject *self, void *_null)
 }
 
 static PyObject *
-pg_audio_obj_get_duration_infinite(PGAudioObject *self, void *_null)
+pg_audio_obj_get_infinite(PGAudioObject *self, void *_null)
 {
     int64_t duration_frames = MIX_GetAudioDuration(self->audio);
     if (duration_frames == MIX_DURATION_INFINITE) {
@@ -732,8 +732,7 @@ static PyGetSetDef audio_obj_getsets[] = {
     {"duration_frames", (getter)pg_audio_obj_get_duration_frames, NULL, "TODO",
      NULL},
     {"duration_ms", (getter)pg_audio_obj_get_duration_ms, NULL, "TODO", NULL},
-    {"duration_infinite", (getter)pg_audio_obj_get_duration_infinite, NULL,
-     "TODO", NULL},
+    {"infinite", (getter)pg_audio_obj_get_infinite, NULL, "TODO", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef audio_obj_methods[] = {
