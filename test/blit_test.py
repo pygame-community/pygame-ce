@@ -71,6 +71,64 @@ class BlitTest(unittest.TestCase):
         s.blit(d, (0, 0), None, BLEND_SUB)
         self.assertEqual(s.get_at((0, 0))[0], 0)
 
+    def test_blend_overlay(self):
+        """Test that the overlay blend mode works."""
+
+        def overlay_colors(src, dst):
+            result = []
+            for src_c, dst_c in zip(src, dst):
+                if dst_c < 127:
+                    result.append((src_c * dst_c) >> 7)
+                else:
+                    result.append(255 - (((255 - src_c) * (255 - dst_c)) >> 7))
+            return Color(result)
+
+        # test 32 bit
+        dst = pygame.Surface((1, 1), depth=32)
+        overlay = pygame.Surface((1, 1), depth=32)
+
+        src_colors = [
+            (0, 0, 0, 255),
+            (255, 255, 255, 255),
+            (255, 0, 0, 255),
+            (0, 255, 0, 255),
+            (0, 0, 255, 255),
+            (255, 255, 0, 255),
+            (0, 255, 255, 255),
+            (128, 128, 128, 255),
+            (1, 32, 2, 255),
+            (32, 1, 2, 255),
+            (1, 2, 32, 255),
+            (1, 1, 1, 255),
+            (254, 254, 254, 255),
+        ]
+        dst_colors = src_colors.copy()
+
+        for src_color in src_colors:
+            for dst_color in dst_colors:
+                dst.fill(dst_color)
+                overlay.fill(src_color)
+                dst.blit(overlay, (0, 0), None, BLEND_OVERLAY)
+                self.assertEqual(
+                    overlay_colors(src_color, dst_color), dst.get_at((0, 0))
+                )
+
+        # test 24 bit
+        dst = pygame.Surface((1, 1), depth=24)
+        overlay = pygame.Surface((1, 1), depth=24)
+
+        src_colors24 = [(r, g, b) for r, g, b, a in src_colors]
+        dst_colors24 = src_colors24.copy()
+
+        for src_color in src_colors24:
+            for dst_color in dst_colors24:
+                dst.fill(dst_color)
+                overlay.fill(src_color)
+                dst.blit(overlay, (0, 0), None, BLEND_OVERLAY)
+                self.assertEqual(
+                    overlay_colors(src_color, dst_color), dst.get_at((0, 0))
+                )
+
     def make_blit_list(self, num_surfs):
         blit_list = []
         for i in range(num_surfs):
