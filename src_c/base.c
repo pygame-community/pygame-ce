@@ -20,6 +20,9 @@
   pete@shinners.org
 */
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
 #if defined(BUILD_STATIC)
 #define PYGAMEAPI_RECT_INTERNAL
 #define PYGAMEAPI_EVENT_INTERNAL
@@ -2227,6 +2230,30 @@ MODINIT_DEFINE(base)
     }
     if (PyModule_AddObject(module, "__version__", version)) {
         Py_DECREF(version);
+        goto error;
+    }
+
+    PyObject *hash = PyUnicode_FromFormat("%s", STR(GIT_COMMIT_HASH_SHORT));
+    if (!hash) {
+        goto error;
+    }
+    if (PyModule_AddObject(module, "__commit_hash__", hash)) {
+        Py_DECREF(hash);
+        goto error;
+    }
+
+    PyObject *branch = PyUnicode_FromFormat("%s", STR(GIT_BRANCH));
+    if (!branch) {
+        goto error;
+    }
+    if (PyModule_AddObject(module, "__branch_name__", branch)) {
+        Py_DECREF(branch);
+        goto error;
+    }
+
+    PyObject *ciBuild = PyBool_FromLong(CI_BUILD);
+    if (PyModule_AddObject(module, "__built_on_ci__", ciBuild)) {
+        Py_DECREF(ciBuild);
         goto error;
     }
 
