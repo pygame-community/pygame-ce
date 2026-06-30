@@ -57,6 +57,7 @@ from typing import Literal, overload
 
 from pygame._sdl2 import Window
 from pygame.constants import FULLSCREEN
+from pygame.rect import Rect
 from pygame.surface import Surface
 from pygame.typing import (
     ColorLike,
@@ -420,6 +421,24 @@ def get_desktop_sizes() -> list[tuple[int, int]]:
     ``pygame.display.list_modes()`` whenever applicable.
 
     .. versionaddedold:: 2.0.0
+    """
+
+def get_desktop_usable_bounds() -> list[Rect]:
+    """Get the bounding rects of the usable area of active desktops.
+
+    Returns a list of :class:`pygame.Rect` representing the bounding rectangles
+    of the usable area of the currently configured virtual desktops.
+
+    The usable area is the desktop area minus the areas that are used by
+    the operating system. This includes, for example, taskbars. The location
+    and size of the unusable areas depend on the operating system and its
+    configuration. The usable area is usually the area that maximized windows
+    fill.
+
+    The length of the list is not the same as the number of attached monitors,
+    as a desktop can be mirrored across multiple monitors.
+
+    .. versionadded:: 2.5.6
     """
 
 def list_modes(
