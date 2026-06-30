@@ -1968,7 +1968,7 @@ vector_str(pgVector *self)
     else {
         return RAISE(
             PyExc_NotImplementedError,
-            "repr() for Vectors of higher dimensions are not implemented yet");
+            "str() for Vectors of higher dimensions are not implemented yet");
     }
 
     if (!_vector_check_snprintf_success(tmp, STRING_BUF_SIZE_STR)) {
