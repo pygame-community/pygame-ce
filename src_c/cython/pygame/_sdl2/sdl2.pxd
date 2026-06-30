@@ -4,7 +4,17 @@
 from libc.string cimport memset
 from libc.stdio cimport *
 
-cdef extern from "SDL.h" nogil:
+cdef extern from * nogil:
+    """
+    #ifdef PG_SDL3
+    #include <SDL3/SDL.h>
+    #define SDL_INIT_TIMER 0
+    #define SDL_INIT_EVERYTHING 0
+    #define SDL_INIT_NOPARACHUTE 0
+    #else
+    #include <SDL.h>
+    #endif
+    """
     # SDL_stdinc.h provides the real ones based on platform.
     ctypedef char Sint8
     ctypedef unsigned char Uint8
