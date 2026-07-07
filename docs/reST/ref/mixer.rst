@@ -384,7 +384,7 @@ The following file formats are supported
    .. method:: play
 
       | :sl:`begin sound playback`
-      | :sg:`play(loops=0, maxtime=0, fade_ms=0) -> Channel`
+      | :sg:`play(loops=0, maxtime=0, fade_ms=0) -> Channel | None`
 
       Begin playback of the Sound (i.e., on the computer's speakers) on an
       available Channel. This will forcibly select a Channel, so playback may
