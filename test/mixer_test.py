@@ -18,6 +18,11 @@ IS_PYPY = "PyPy" == platform.python_implementation()
 FREQUENCIES = [11025, 22050, 44100, 48000]
 SIZES = [-16, -8, 8, 16]  # fixme
 # size 32 failed in test_get_init__returns_exact_values_used_for_init
+
+# SDL3 does not support unsigned 16 bit audio
+if pygame.get_sdl_version()[0] > 2:
+    SIZES.remove(16)
+
 CHANNELS = [1, 2]
 BUFFERS = [3024]
 
@@ -309,6 +314,10 @@ class MixerModuleTest(unittest.TestCase):
         freq = 22050
         format_list = [-8, 8, -16, 16]
         channels_list = [1, 2]
+
+        # SDL3 does not support unsigned 16 bit audio
+        if pygame.get_sdl_version()[0] > 2:
+            format_list.remove(16)
 
         a_lists = {f: [] for f in format_list}
         a32u_mono = arange(0, 256, 1, uint32)

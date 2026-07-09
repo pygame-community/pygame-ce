@@ -602,12 +602,28 @@ class BaseModuleTest(unittest.TestCase):
         self.assertFalse(pygame.get_init())
 
     def test_get_init__after_init(self):
+        if pygame.get_sdl_version()[0] > 2:
+            # See commment in test_get_init__after_quit
+            raise RuntimeError("This segfaults with mixer quit right now")
+
         # Test if get_init() gets the init state after pygame.init() called.
         pygame.init()
 
         self.assertTrue(pygame.get_init())
 
     def test_get_init__after_quit(self):
+        if pygame.get_sdl_version()[0] > 2:
+            # OK, so in the SDL3 version right now, there's an issue where we
+            # call SDL_Quit, it cleans up internal resources, then when
+            # mixer Track objects try to deallocate on our end it segfaults in
+            # SDL. We need more stringent management on our end for this.
+            # But I think it is still worth merging the current state as a
+            # beta version.
+            # Why not a conditional skip? I want this to be clear to people
+            # running SDL3 tests that action needs to happen, rather than
+            # a skip we might forget to ever remove.
+            raise RuntimeError("This segfaults with mixer quit right now")
+
         # Test if get_init() gets the init state after pygame.quit() called.
         pygame.init()
         pygame.quit()
