@@ -37,7 +37,7 @@ class Mixer(_sdl3_mixer_c.Mixer):
         spec: audio.AudioSpec | None = None,
     ) -> None:
         if spec is None:
-            _sdl3_mixer_c.Mixer.__init__(self, device._state, spec)
+            _sdl3_mixer_c.Mixer.__init__(self, device._state, None)
         elif isinstance(spec, audio.AudioSpec):
             _sdl3_mixer_c.Mixer.__init__(
                 self, device._state, (spec.format, spec.channels, spec.frequency)
