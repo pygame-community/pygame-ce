@@ -15,6 +15,7 @@ typedef struct {
     PyObject *mixer_obj_type;
     PyObject *audio_obj_type;
     PyObject *track_obj_type;
+    PyObject *audio_decoder_obj_type;
 } _mixer_state;
 
 #define GET_STATE(x) (_mixer_state *)PyModule_GetState(x)
@@ -32,6 +33,10 @@ typedef struct {
     PyObject *mixer_obj;
     PyObject *source_obj;
 } PGTrackObject;
+
+typedef struct {
+    PyObject_HEAD MIX_AudioDecoder *audio_decoder;
+} PGAudioDecoderObject;
 
 // ***************************************************************************
 // GLOBAL HELPER FUNCTIONS
@@ -1373,6 +1378,176 @@ static PyType_Spec track_spec = {
     .slots = track_slots};
 
 // ***************************************************************************
+// MIXER.AUDIODECODER CLASS
+// ***************************************************************************
+
+static int
+pg_audio_decoder_obj_init(PGAudioDecoderObject *self, PyObject *args,
+                          PyObject *kwargs)
+{
+    PyObject *file = NULL;
+    char *keywords[] = {"file", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &file)) {
+        return -1;
+    }
+
+    SDL_IOStream *io = pgRWops_FromObject(file, NULL);
+    if (io == NULL) {
+        return -1;
+    }
+
+    self->audio_decoder = MIX_CreateAudioDecoder_IO(io, true, 0);
+    if (self->audio_decoder == NULL) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+    return 0;
+}
+
+static void
+pg_audio_decoder_obj_dealloc(PGAudioDecoderObject *self)
+{
+    MIX_DestroyAudioDecoder(self->audio_decoder);
+    self->audio_decoder = NULL;
+    PyObject_GC_UnTrack(self);
+    PyTypeObject *tp = Py_TYPE(self);
+    freefunc free = PyType_GetSlot(tp, Py_tp_free);
+    free(self);
+    Py_DECREF(tp);
+}
+
+static PyObject *
+pg_audio_decoder_obj_decode(PGAudioDecoderObject *self, PyObject *args,
+                            PyObject *kwargs)
+{
+    PyObject *spec_obj, *size_obj = Py_None;
+    char *keywords[] = {"spec", "size", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", keywords, &spec_obj,
+                                     &size_obj)) {
+        return NULL;
+    }
+
+    // Python layer constructs spec tuple, we can assume it is correctly laid
+    // out.
+    SDL_AudioSpec spec;
+    spec.format = PyLong_AsInt(PyTuple_GetItem(spec_obj, 0));
+    spec.channels = PyLong_AsInt(PyTuple_GetItem(spec_obj, 1));
+    spec.freq = PyLong_AsInt(PyTuple_GetItem(spec_obj, 2));
+    // Check that they all succeeded
+    if (spec.format == -1 || spec.channels == -1 || spec.freq == -1) {
+        if (PyErr_Occurred()) {
+            return NULL;
+        }
+    }
+
+    if (Py_IsNone(size_obj)) {
+        // Without an explicit size requested, loop until the audio decoder is
+        // exhausted and return it all as one large bytes object. Decode
+        // directly into the writer's buffer, chunk by chunk.
+        const int chunk = 4096;
+        PyBytesWriter *writer = PyBytesWriter_Create(chunk);
+        if (writer == NULL) {
+            return NULL;  // exception already set
+        }
+
+        char *buf = (char *)PyBytesWriter_GetData(writer);
+        while (true) {
+            int bytes_decoded =
+                MIX_DecodeAudio(self->audio_decoder, buf, chunk, &spec);
+
+            // -1 on error
+            if (bytes_decoded < 0) {
+                PyBytesWriter_Discard(writer);
+                return RAISE(pgExc_SDLError, SDL_GetError());
+            }
+
+            // No more file to decode!
+            if (bytes_decoded == 0) {
+                break;
+            }
+
+            // Get the new buffer write location by advancing the current
+            // location by the number of bytes read, and allocate the space
+            // for the next chunk.
+            buf = PyBytesWriter_GrowAndUpdatePointer(writer, chunk,
+                                                     buf + bytes_decoded);
+            if (buf == NULL) {
+                PyBytesWriter_Discard(writer);
+                return NULL;
+            }
+        }
+
+        return PyBytesWriter_FinishWithPointer(writer, buf);
+    }
+
+    // If there is a size argument besides None...
+    // Decode the size argument, create a bytes object of that size,
+    // write into it, and send it off.
+
+    int size = PyLong_AsInt(size_obj);
+    if (size == -1 && PyErr_Occurred()) {
+        return NULL;
+    }
+
+    PyBytesWriter *writer = PyBytesWriter_Create(size);
+    if (writer == NULL) {
+        return NULL;  // exception already set
+    }
+
+    int bytes_decoded = MIX_DecodeAudio(
+        self->audio_decoder, PyBytesWriter_GetData(writer), size, &spec);
+    if (bytes_decoded < 0) {
+        PyBytesWriter_Discard(writer);
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    return PyBytesWriter_FinishWithSize(writer, bytes_decoded);
+}
+
+static PyObject *
+pg_audio_decoder_obj_get_spec(PGAudioDecoderObject *self, PyObject *_null)
+{
+    SDL_AudioSpec spec;
+    if (!MIX_GetAudioDecoderFormat(self->audio_decoder, &spec)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return NULL;
+    }
+
+    return Py_BuildValue("iii", spec.format, spec.channels, spec.freq);
+}
+
+static int
+pg_audio_decoder_obj_traverse(PyObject *op, visitproc visit, void *arg)
+{
+    // Visit the type
+    Py_VISIT(Py_TYPE(op));
+    return 0;
+}
+
+static PyMethodDef audio_decoder_obj_methods[] = {
+    {"decode", (PyCFunction)pg_audio_decoder_obj_decode,
+     METH_VARARGS | METH_KEYWORDS, NULL},
+    {"_get_spec", (PyCFunction)pg_audio_decoder_obj_get_spec, METH_NOARGS,
+     NULL},
+    {NULL, NULL, 0, NULL}};
+
+static PyType_Slot audio_decoder_slots[] = {
+    {Py_tp_init, pg_audio_decoder_obj_init},
+    {Py_tp_methods, audio_decoder_obj_methods},
+    {Py_tp_dealloc, pg_audio_decoder_obj_dealloc},
+    {Py_tp_traverse, pg_audio_decoder_obj_traverse},
+    {0, NULL}};
+
+static PyType_Spec audio_decoder_spec = {
+    .name = "AudioDecoder",
+    .basicsize = sizeof(PGAudioDecoderObject),
+    .itemsize = 0,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_BASETYPE,
+    .slots = audio_decoder_slots};
+
+// ***************************************************************************
 // MODULE METHODS
 // ***************************************************************************
 
@@ -1482,17 +1657,22 @@ pg_audio_exec(PyObject *module)
         PyType_FromModuleAndSpec(module, &audio_spec, NULL);
     state->track_obj_type =
         PyType_FromModuleAndSpec(module, &track_spec, NULL);
+    state->audio_decoder_obj_type =
+        PyType_FromModuleAndSpec(module, &audio_decoder_spec, NULL);
 
     // If any NULLs, error
     if (state->mixer_obj_type == NULL || state->audio_obj_type == NULL ||
-        state->track_obj_type == NULL) {
+        state->track_obj_type == NULL ||
+        state->audio_decoder_obj_type == NULL) {
         return -1;
     }
 
     // Add types to module
     if (PyModule_AddType(module, (PyTypeObject *)state->mixer_obj_type) < 0 ||
         PyModule_AddType(module, (PyTypeObject *)state->audio_obj_type) < 0 ||
-        PyModule_AddType(module, (PyTypeObject *)state->track_obj_type) < 0) {
+        PyModule_AddType(module, (PyTypeObject *)state->track_obj_type) < 0 ||
+        PyModule_AddType(module,
+                         (PyTypeObject *)state->audio_decoder_obj_type) < 0) {
         return -1;
     }
 
@@ -1516,6 +1696,7 @@ pg_mixer_traverse(PyObject *module, visitproc visit, void *arg)
     Py_VISIT(state->mixer_obj_type);
     Py_VISIT(state->audio_obj_type);
     Py_VISIT(state->track_obj_type);
+    Py_VISIT(state->audio_decoder_obj_type);
     return 0;
 }
 
@@ -1526,6 +1707,7 @@ pg_mixer_clear(PyObject *module)
     Py_CLEAR(state->mixer_obj_type);
     Py_CLEAR(state->audio_obj_type);
     Py_CLEAR(state->track_obj_type);
+    Py_CLEAR(state->audio_decoder_obj_type);
     return 0;
 }
 
