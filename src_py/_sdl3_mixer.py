@@ -114,3 +114,21 @@ class Track(_sdl3_mixer_c.Track):
                 "audiostream argument must be an AudioStream or None, "
                 f"received {type(audiostream)}"
             )
+
+
+class AudioDecoder(_sdl3_mixer_c.AudioDecoder):
+    @property
+    def spec(self) -> audio.AudioSpec:
+        return audio._internals.audio_spec_from_ints(
+            *_sdl3_mixer_c.AudioDecoder._get_spec(self)
+        )
+
+    def decode(self, spec: audio.AudioSpec, size: int | None = None) -> bytes:
+        if not isinstance(spec, audio.AudioSpec):
+            raise TypeError(
+                f"decode 'spec' argument must be an AudioSpec, received {type(spec)}"
+            )
+
+        return _sdl3_mixer_c.AudioDecoder.decode(
+            self, (spec.format, spec.channels, spec.frequency), size
+        )
