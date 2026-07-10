@@ -16,12 +16,14 @@ IS_PYPY = "PyPy" == platform.python_implementation()
 ################################### CONSTANTS ##################################
 
 FREQUENCIES = [11025, 22050, 44100, 48000]
-SIZES = [-16, -8, 8, 16]  # fixme
-# size 32 failed in test_get_init__returns_exact_values_used_for_init
 
 # SDL3 does not support unsigned 16 bit audio
 if pygame.get_sdl_version()[0] > 2:
-    SIZES.remove(16)
+    SIZES = [-16, -8, 8]
+else:
+    SIZES = [-16, -8, 8, 16]
+# fixme
+# size 32 failed in test_get_init__returns_exact_values_used_for_init
 
 CHANNELS = [1, 2]
 BUFFERS = [3024]
@@ -782,35 +784,37 @@ class ChannelTypeTest(unittest.TestCase):
 
         self.assertEqual(busy, expected_busy)
 
-    def todo_test_get_busy__active(self):
+    def test_get_busy__active(self):
         """Ensure an active channel's busy state is correct."""
-        self.fail()
 
-    def todo_test_get_endevent(self):
-        # __doc__ (as of 2008-08-02) for pygame.mixer.Channel.get_endevent:
+        filename = example_path(os.path.join("data", "house_lo.wav"))
+        sound = mixer.Sound(filename)
 
-        # Channel.get_endevent(): return type
-        # get the event a channel sends when playback stops
-        #
-        # Returns the event type to be sent every time the Channel finishes
-        # playback of a Sound. If there is no endevent the function returns
-        # pygame.NOEVENT.
-        #
+        ch = mixer.Channel(0)
+        ch.play(sound)
+        self.assertTrue(ch.get_busy())
 
-        self.fail()
+    def test_queue_and_get(self):
+        """Test channel queue system"""
 
-    def todo_test_get_queue(self):
-        # __doc__ (as of 2008-08-02) for pygame.mixer.Channel.get_queue:
+        filename = example_path(os.path.join("data", "house_lo.wav"))
+        sound1 = mixer.Sound(filename)
+        sound2 = mixer.Sound(filename)
 
-        # Channel.get_queue(): return Sound
-        # return any Sound that is queued
-        #
-        # If a Sound is already queued on this channel it will be returned.
-        # Once the queued sound begins playback it will no longer be on the
-        # queue.
-        #
+        ch0 = mixer.Channel(0)
 
-        self.fail()
+        ch0.queue(sound1)
+        ch0.play(sound2)
+        self.assertIsNone(ch0.get_queue(), "play should override queue")
+        ch0.stop()
+
+        ch1 = mixer.Channel(1)
+        ch1.play(sound1)
+        ch1.queue(sound2)
+        ch1.stop()  # stop sound 1
+        pygame.time.delay(1)
+        self.assertEqual(ch1.get_sound(), sound2, "should have moved to second sound")
+        ch1.stop()  # stop sound 2
 
     def todo_test_get_sound(self):
         # __doc__ (as of 2008-08-02) for pygame.mixer.Channel.get_sound:
@@ -870,50 +874,47 @@ class ChannelTypeTest(unittest.TestCase):
 
         self.fail()
 
-    def todo_test_queue(self):
-        # __doc__ (as of 2008-08-02) for pygame.mixer.Channel.queue:
+    def test_set_endevent(self):
+        filename = example_path(os.path.join("data", "house_lo.wav"))
+        sound = mixer.Sound(filename)
 
-        # Channel.queue(Sound): return None
-        # queue a Sound object to follow the current
-        #
-        # When a Sound is queued on a Channel, it will begin playing
-        # immediately after the current Sound is finished. Each channel can
-        # only have a single Sound queued at a time. The queued Sound will
-        # only play if the current playback finished automatically. It is
-        # cleared on any other call to Channel.stop() or Channel.play().
-        #
-        # If there is no sound actively playing on the Channel then the Sound
-        # will begin playing immediately.
-        #
+        ch = mixer.Channel(0)
+        event_type = pygame.event.custom_type()
 
-        self.fail()
+        # Test it rejects invalid types
+        with self.assertRaises(TypeError):
+            ch.set_endevent("hello world")
 
-    def todo_test_set_endevent(self):
-        # __doc__ (as of 2008-08-02) for pygame.mixer.Channel.set_endevent:
+        ch.set_endevent(event_type)
 
-        # Channel.set_endevent(): return None
-        # Channel.set_endevent(type): return None
-        # have the channel send an event when playback stops
-        #
-        # When an endevent is set for a channel, it will send an event to the
-        # pygame queue every time a sound finishes playing on that channel
-        # (not just the first time). Use pygame.event.get() to retrieve the
-        # endevent once it's sent.
-        #
-        # Note that if you called Sound.play(n) or Channel.play(sound,n), the
-        # end event is sent only once: after the sound has been played "n+1"
-        # times (see the documentation of Sound.play).
-        #
-        # If Channel.stop() or Channel.play() is called while the sound was
-        # still playing, the event will be posted immediately.
-        #
-        # The type argument will be the event id sent to the queue. This can
-        # be any valid event type, but a good choice would be a value between
-        # pygame.locals.USEREVENT and pygame.locals.NUMEVENTS. If no type
-        # argument is given then the Channel will stop sending endevents.
-        #
+        # Test it doesn't fail when display is not around
+        pygame.display.quit()
+        ch.play(sound)
+        ch.stop()
+        pygame.time.delay(1)
+        self.assertFalse(
+            ch.get_busy(),
+            "Channel should be no longer busy, and should not have crashed",
+        )
 
-        self.fail()
+        # When display (event system) is around, it should post the event
+        pygame.display.init()
+        ch.play(sound)
+        ch.stop()
+        pygame.time.delay(1)
+        self.assertEqual(
+            len([ev for ev in pygame.event.get() if ev.type == event_type]),
+            1,
+            "there should be exactly one event_type event in the queue",
+        )
+
+    def test_get_endevent(self):
+        ch = mixer.Channel(0)
+        event_type = pygame.event.custom_type()
+
+        self.assertEqual(ch.get_endevent(), pygame.NOEVENT)
+        ch.set_endevent(event_type)
+        self.assertEqual(ch.get_endevent(), event_type)
 
     def todo_test_set_volume(self):
         # __doc__ (as of 2008-08-02) for pygame.mixer.Channel.set_volume:
