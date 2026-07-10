@@ -150,13 +150,14 @@ def init(
         if potential_devices:
             mixer_device = potential_devices[0]
 
-    MixerInternals.initialized = True
     MixerInternals.mixer_buf_spec = mixer_spec
     MixerInternals.mixer = _sdl3_mixer.Mixer(mixer_device, mixer_spec)
     MixerInternals.channels = [Channel._allocate(i) for i in range(8)]
     MixerInternals.reserved_channels = 0
 
     music._init()
+
+    MixerInternals.initialized = True
 
 
 def pre_init(
@@ -222,8 +223,7 @@ def get_driver() -> str:
 
 
 def set_num_channels(count: int, /) -> None:
-    if not MixerInternals.initialized:
-        raise pygame.error("mixer not initialized")
+    MixerInternals.init_check()
 
     # TODO: lock
     channels = MixerInternals.channels
@@ -239,15 +239,13 @@ def set_num_channels(count: int, /) -> None:
 
 
 def get_num_channels() -> int:
-    if not MixerInternals.initialized:
-        raise pygame.error("mixer not initialized")
+    MixerInternals.init_check()
 
     return len(MixerInternals.channels)
 
 
 def set_reserved(count: int, /) -> int:
-    if not MixerInternals.initialized:
-        raise pygame.error("mixer not initialized")
+    MixerInternals.init_check()
 
     if count < 0:
         count = 0
@@ -261,6 +259,8 @@ def set_reserved(count: int, /) -> int:
 
 
 def find_channel(force: bool = False):
+    MixerInternals.init_check()
+
     # TODO lock?
     for channel in MixerInternals.channels:
         if not channel.get_busy():
@@ -272,6 +272,8 @@ def find_channel(force: bool = False):
 
 
 def set_soundfont(paths: str | None = None, /) -> None:
+    MixerInternals.init_check()
+
     # TODO: thread this through SDL_mixer.decoder.fluidsynth.soundfont_path
     # on load
     if paths is not None and not isinstance(paths, str):
@@ -284,7 +286,17 @@ def set_soundfont(paths: str | None = None, /) -> None:
 
 
 def get_soundfont() -> str | None:
+    MixerInternals.init_check()
+
     return MixerInternals.soundfount
+
+
+# TODO: missing methods
+# stop
+# pause
+# unpause
+# fadeout
+# get_busy
 
 
 get_sdl_mixer_version = _sdl3_mixer.get_sdl_mixer_version
@@ -562,8 +574,7 @@ class Channel:
         # Users don't construct channels, they retrieve one out of the
         # preallocated MixerInternals.channels pool by index. The real
         # allocation happens in _allocate (used internally by the mixer).
-        if not MixerInternals.initialized:
-            raise pygame.error("mixer not initialized")
+        MixerInternals.init_check()
 
         channels = MixerInternals.channels
         if not isinstance(id, int):
@@ -587,12 +598,20 @@ class Channel:
         self._track = _sdl3_mixer.Track(MixerInternals.mixer)
         self._track.set_stopped_callback(self._stopped_callback)
         self._sound = None
-        self._start_time = 0
+        self._queued_sound = None
+        self._start_time = 0  # Used for mixer.find_channel
+        self._end_event = 0
         return self
 
     def _stopped_callback(self, _: _sdl3_mixer.Track, __: None) -> None:
+        if self._end_event and pygame.display.get_init():
+            pygame.event.post(pygame.Event(self._end_event, {}))
+
         # Be sure to set the sound back to None when it's done playing!
         self._sound = None
+
+        if self._queued_sound is not None:
+            self.play(self._queued_sound)
 
     @property
     def id(self) -> int:
@@ -609,6 +628,7 @@ class Channel:
             self._track.remove_tag(self._sound._tag)
 
         self._sound = sound
+        self._queued_sound = None
         self._track.set_audio(sound._audio)
         self._track.add_tag(sound._tag)
         self._track.play(loops=loops, max_ms=maxtime, fadein_ms=fade_ms)
@@ -624,7 +644,16 @@ class Channel:
         self._track.resume()
 
     def fadeout(self, time: int, /) -> None:
-        self._track.stop(fade_out_frames=self.track.ms_to_frames(time))
+        self._track.stop(fade_out_frames=self._track.ms_to_frames(time))
+
+    def queue(self, sound: Sound, /) -> None:
+        if not isinstance(sound, Sound):
+            raise TypeError("The argument must be an instance of Sound")
+
+        if not self.get_busy():
+            self.play(sound)
+        else:
+            self._queued_sound = sound
 
     def set_source_location(self, angle: float, distance: float, /) -> None:
         distance = round(distance)
@@ -640,7 +669,7 @@ class Channel:
             self._track.gain = arg1
             return
 
-        if arg2 == None:
+        if arg2 is None:
             arg2 = arg1
 
         self._track.set_stereo(arg1, arg2)
@@ -653,6 +682,20 @@ class Channel:
 
     def get_sound(self) -> Sound | None:
         return self._sound
+
+    def get_queue(self) -> Sound | None:
+        return self._queued_sound
+
+    def set_endevent(self, type: int = 0, /) -> None:
+        if not isinstance(type, int):
+            raise TypeError(
+                f"'{type(id).__name__}'object cannot be interpreted as an integer"
+            )
+
+        self._end_event = type
+
+    def get_endevent(self) -> int:
+        return self._end_event
 
 
 SoundType = Sound
@@ -684,7 +727,7 @@ class MusicImplementation:
 
     def _stopped_callback(self, _: _sdl3_mixer.Track, __: None) -> None:
         if self._end_event and pygame.display.get_init():
-            pygame.event.post(pygame.Event(0, {}))
+            pygame.event.post(pygame.Event(self._end_event, {}))
 
         if self._queued_audio is not None:
             self._audio = self._queued_audio
@@ -777,7 +820,7 @@ class MusicImplementation:
         if self._track is None:
             raise pygame.error("mixer not initialized")
 
-        self._track.set_playback_position(self._track.ms_to_frames(round(pos)))
+        self._track.set_playback_position(self._track.ms_to_frames(round(pos * 1000)))
 
     def get_pos(self) -> int:
         if self._track is None:
@@ -786,6 +829,8 @@ class MusicImplementation:
         if self._audio is None:
             return -1
 
+        # TODO: this implementation is not faithful to the original
+        # See https://github.com/pygame-community/pygame-ce/pull/3843#discussion_r3554684908
         return self._track.frames_to_ms(self._track.get_playback_position())
 
     def queue(self, filename: FileLike, namehint: str = "", loops: int = 0) -> None:
@@ -798,6 +843,11 @@ class MusicImplementation:
         self._queued_loops = loops
 
     def set_endevent(self, event_type: int, /) -> None:
+        if not isinstance(type, int):
+            raise TypeError(
+                f"'{type(id).__name__}'object cannot be interpreted as an integer"
+            )
+
         self._end_event = event_type
 
     def get_endevent(self) -> int:
