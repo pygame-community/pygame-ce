@@ -66,11 +66,11 @@ static PyObject *
 _scrap_has_text(PyObject *self, PyObject *args);
 
 /* Determine what type of clipboard we are using */
-#if !defined(__WIN32__)
+#if !defined(WIN32)
 #define SDL2_SCRAP
 #include "scrap_sdl2.c"
 
-#elif defined(__WIN32__)
+#elif defined(WIN32)
 #define WIN_SCRAP
 #include "scrap_win.c"
 

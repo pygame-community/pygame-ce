@@ -48,7 +48,7 @@
 /* SDL needs WIN32 */
 #if !defined(WIN32) &&                                           \
     (defined(MS_WIN32) || defined(_WIN32) || defined(__WIN32) || \
-     defined(__WIN32__) || defined(_WINDOWS))
+     defined(__WIN32__) || defined(_WINDOWS) || defined(SDL_PLATFORM_WIN32))
 #define WIN32
 #endif
 
