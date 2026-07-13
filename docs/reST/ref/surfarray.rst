@@ -267,6 +267,9 @@ will be locked during the lifetime of the array.
    make_surface uses the array struct interface to acquire array properties,
    so is not limited to just NumPy arrays. See :mod:`pygame.pixelcopy`.
 
+   NumPy float arrays are also accepted, but are first rounded to the
+   nearest integer and copied into a new array.
+
    New in pygame 1.9.2: array struct interface support.
 
    .. ## pygame.surfarray.make_surface ##
@@ -280,6 +283,11 @@ will be locked during the lifetime of the array.
    converting the array into a Surface and blitting. The array must be the same
    dimensions as the Surface and will completely replace all pixel values. Only
    integer, ASCII character and record arrays are accepted.
+
+   NumPy float arrays are also accepted, but are first rounded to the
+   nearest integer and copied into a new array. This extra copy defeats
+   the performance benefit this function is meant to provide, so pass an
+   integer array directly whenever possible.
 
    This function will temporarily lock the Surface as the new values are
    copied.
