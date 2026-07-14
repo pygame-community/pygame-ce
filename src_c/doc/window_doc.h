@@ -17,6 +17,7 @@
 #define DOC_WINDOW_POSITION "position -> tuple[int, int]\nGet or set the window position in screen coordinates."
 #define DOC_WINDOW_OPACITY "opacity -> float\nGet or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque)."
 #define DOC_WINDOW_OPENGL "opengl -> bool\nGet if the window supports OpenGL."
+#define DOC_WINDOW_HANDLE "handle -> int\nGet the window handle provided by the window manager if supported otherwise 0"
 #define DOC_WINDOW_UTILITY "utility -> bool\nGet if the window is an utility window (**read-only**)."
 #define DOC_WINDOW_FROMDISPLAYMODULE "from_display_module() -> Window\nCreate a Window object using window data from display module."
 #define DOC_WINDOW_GETSURFACE "get_surface() -> Surface\nGet the window surface."

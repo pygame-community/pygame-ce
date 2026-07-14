@@ -9,6 +9,8 @@ on:
     branches: main
     paths-ignore:
       - 'docs/**'
+      - 'src_c/doc/**'
+      - 'buildconfig/stubs/**'
       - 'examples/**'
       - '.gitignore'
       - '*.rst'
@@ -21,6 +23,8 @@ on:
     branches: main
     paths-ignore:
       - 'docs/**'
+      - 'src_c/doc/**'
+      - 'buildconfig/stubs/**'
       - 'examples/**'
       - '.gitignore'
       - '*.rst'
@@ -33,8 +37,11 @@ on:
   workflow_call:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-ubuntu-sdist
+  group: ${{ github.workflow }}-${{ github.ref }}-build-sdl3
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -52,8 +59,10 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v6.0.2
-    - uses: actions/setup-python@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+        persist-credentials: false
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
       with:
         python-version: '3.14'
 
@@ -107,6 +116,17 @@ jobs:
       run: |
         git clone https://github.com/libsdl-org/SDL_ttf
         cd SDL_ttf
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release --parallel
+        sudo cmake --install . --config Release
+
+    - name: Install SDL3_mixer
+      if: matrix.os != 'windows-latest'
+      run: |
+        git clone https://github.com/libsdl-org/SDL_mixer
+        cd SDL_mixer
         mkdir build
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release ..

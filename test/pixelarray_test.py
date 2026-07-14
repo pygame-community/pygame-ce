@@ -1327,6 +1327,90 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
         with self.assertRaises(ValueError):
             test[400, 400] = [255, 255, 0]
 
+    def test_set_pixel_24bit_formats(self):
+        """Pixel assignment must write the correct channels on both RGB24 and BGR24.
+
+        On little-endian systems, RGB24 has Rmask=0xFF (R at byte 0) while the
+        default pygame.Surface(..., 24) produces BGR24 (Rmask=0xFF0000, R at
+        byte 2).  The old _array_assign_index code assumed the mapped color was
+        always 0x00RRGGBB, which silently worked for BGR24 but swapped R and B
+        for RGB24.
+        """
+        color = (200, 100, 50)
+        masks_and_names = [
+            ((0xFF, 0xFF00, 0xFF0000, 0), "RGB24"),
+            ((0xFF0000, 0xFF00, 0xFF, 0), "BGR24"),
+        ]
+        for masks, name in masks_and_names:
+            with self.subTest(format=name):
+                sf = pygame.Surface((4, 4), depth=24, masks=masks)
+                sf.fill((0, 0, 0))
+                ar = pygame.PixelArray(sf)
+                ar[1][2] = color
+                del ar
+                self.assertEqual(sf.get_at((1, 2))[:3], color)
+
+    def test_set_slice_24bit_formats(self):
+        """Slice assignment with a single color must write correctly on RGB24 and BGR24."""
+        color = (200, 100, 50)
+        masks_and_names = [
+            ((0xFF, 0xFF00, 0xFF0000, 0), "RGB24"),
+            ((0xFF0000, 0xFF00, 0xFF, 0), "BGR24"),
+        ]
+        for masks, name in masks_and_names:
+            with self.subTest(format=name):
+                sf = pygame.Surface((4, 4), depth=24, masks=masks)
+                sf.fill((0, 0, 0))
+                ar = pygame.PixelArray(sf)
+                ar[0:2] = color
+                del ar
+                self.assertEqual(sf.get_at((0, 0))[:3], color)
+                self.assertEqual(sf.get_at((1, 3))[:3], color)
+                self.assertEqual(sf.get_at((2, 0))[:3], (0, 0, 0))
+
+    def test_set_sequence_24bit_formats(self):
+        """Slice assignment with a color list must write correctly on RGB24 and BGR24."""
+        color_a = (200, 100, 50)
+        color_b = (10, 20, 30)
+        masks_and_names = [
+            ((0xFF, 0xFF00, 0xFF0000, 0), "RGB24"),
+            ((0xFF0000, 0xFF00, 0xFF, 0), "BGR24"),
+        ]
+        for masks, name in masks_and_names:
+            with self.subTest(format=name):
+                sf = pygame.Surface((4, 4), depth=24, masks=masks)
+                sf.fill((0, 0, 0))
+                ar = pygame.PixelArray(sf)
+                ar[0:2] = [color_a, color_b]
+                del ar
+                self.assertEqual(sf.get_at((0, 0))[:3], color_a)
+                self.assertEqual(sf.get_at((1, 0))[:3], color_b)
+
+    def test_replace_24bit_formats(self):
+        """PixelArray.replace must match and write the correct channels on RGB24 and BGR24."""
+        old_color = (200, 100, 50)
+        new_color = (10, 20, 30)
+        masks_and_names = [
+            ((0xFF, 0xFF00, 0xFF0000, 0), "RGB24"),
+            ((0xFF0000, 0xFF00, 0xFF, 0), "BGR24"),
+        ]
+        for masks, name in masks_and_names:
+            with self.subTest(format=name):
+                sf = pygame.Surface((4, 4), depth=24, masks=masks)
+                sf.fill(old_color)
+                ar = pygame.PixelArray(sf)
+                ar.replace(old_color, new_color)
+                del ar
+                self.assertEqual(sf.get_at((0, 0))[:3], new_color)
+                self.assertEqual(sf.get_at((3, 3))[:3], new_color)
+
+                # distance-based variant
+                sf.fill(old_color)
+                ar = pygame.PixelArray(sf)
+                ar.replace(old_color, new_color, distance=0.1)
+                del ar
+                self.assertEqual(sf.get_at((0, 0))[:3], new_color)
+
 
 @unittest.skipIf(IS_PYPY, "pypy having issues")
 class PixelArrayArrayInterfaceTest(unittest.TestCase, TestMixin):

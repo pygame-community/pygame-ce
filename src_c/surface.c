@@ -1012,22 +1012,14 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
             break;
         case 3:
             byte_buf = (Uint8 *)(pixels + y * surf->pitch) + x * 3;
-            // Shouldn't this be able to happen without awareness of shifts?
-            // mapped color -> pixel and all.
 #if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            *(byte_buf + (format->Rshift >> 3)) =
-                (Uint8)(color >> format->Rshift);
-            *(byte_buf + (format->Gshift >> 3)) =
-                (Uint8)(color >> format->Gshift);
-            *(byte_buf + (format->Bshift >> 3)) =
-                (Uint8)(color >> format->Bshift);
+            byte_buf[0] = (Uint8)(color);
+            byte_buf[1] = (Uint8)(color >> 8);
+            byte_buf[2] = (Uint8)(color >> 16);
 #else
-            *(byte_buf + 2 - (format->Rshift >> 3)) =
-                (Uint8)(color >> format->Rshift);
-            *(byte_buf + 2 - (format->Gshift >> 3)) =
-                (Uint8)(color >> format->Gshift);
-            *(byte_buf + 2 - (format->Bshift >> 3)) =
-                (Uint8)(color >> format->Bshift);
+            byte_buf[0] = (Uint8)(color >> 16);
+            byte_buf[1] = (Uint8)(color >> 8);
+            byte_buf[2] = (Uint8)(color);
 #endif
             break;
         default: /* case 4: */
@@ -1220,8 +1212,7 @@ surf_get_locks(PyObject *self, PyObject *_null)
             return NULL;
         }
         if (weakref_getref_result == 0) {
-            tmp = Py_None;
-            Py_INCREF(tmp);
+            tmp = Py_NewRef(Py_None);
         }
         PyTuple_SetItem(tuple, i, tmp);
     }
@@ -3272,8 +3263,7 @@ surf_subsurface(PyObject *self, PyObject *args)
         PyMem_Free(data);
         return NULL;
     }
-    Py_INCREF(self);
-    data->owner = self;
+    data->owner = Py_NewRef(self);
     data->offsetx = rect->x;
     data->offsety = rect->y;
     ((pgSurfaceObject *)subobj)->subsurface = data;
@@ -3338,8 +3328,7 @@ surf_get_parent(PyObject *self, PyObject *_null)
         Py_RETURN_NONE;
     }
 
-    Py_INCREF(subdata->owner);
-    return subdata->owner;
+    return Py_NewRef(subdata->owner);
 }
 
 static PyObject *
@@ -3353,8 +3342,7 @@ surf_get_abs_parent(PyObject *self, PyObject *_null)
 
     subdata = ((pgSurfaceObject *)self)->subsurface;
     if (!subdata) {
-        Py_INCREF(self);
-        return self;
+        return Py_NewRef(self);
     }
 
     subdata = ((pgSurfaceObject *)self)->subsurface;
@@ -3365,8 +3353,7 @@ surf_get_abs_parent(PyObject *self, PyObject *_null)
         owner = subdata->owner;
     }
 
-    Py_INCREF(owner);
-    return owner;
+    return Py_NewRef(owner);
 }
 
 static PyObject *
@@ -3784,8 +3771,7 @@ surf_premul_alpha_ip(pgSurfaceObject *self, PyObject *_null)
     SURF_INIT_CHECK(surf)
 
     if (!surf->w || !surf->h) {
-        Py_INCREF(self);
-        return (PyObject *)self;
+        return Py_NewRef(self);
     }
 
     pgSurface_Prep(self);
@@ -3802,8 +3788,7 @@ surf_premul_alpha_ip(pgSurfaceObject *self, PyObject *_null)
 
     pgSurface_Unprep(self);
 
-    Py_INCREF(self);
-    return (PyObject *)self;
+    return Py_NewRef(self);
 }
 
 static int
@@ -3829,8 +3814,7 @@ _get_buffer_0D(PyObject *obj, Py_buffer *view_p, int flags)
             view_p->strides[0] = view_p->itemsize;
         }
     }
-    Py_INCREF(obj);
-    view_p->obj = obj;
+    view_p->obj = Py_NewRef(obj);
     return 0;
 }
 
@@ -3887,8 +3871,7 @@ _get_buffer_1D(PyObject *obj, Py_buffer *view_p, int flags)
         }
     }
     view_p->suboffsets = 0;
-    Py_INCREF(obj);
-    view_p->obj = obj;
+    view_p->obj = Py_NewRef(obj);
     return 0;
 }
 
@@ -3973,8 +3956,7 @@ _get_buffer_2D(PyObject *obj, Py_buffer *view_p, int flags)
     view_p->strides[0] = itemsize;
     view_p->strides[1] = surface->pitch;
     view_p->suboffsets = 0;
-    Py_INCREF(obj);
-    view_p->obj = obj;
+    view_p->obj = Py_NewRef(obj);
     return 0;
 }
 
@@ -4057,8 +4039,7 @@ _get_buffer_3D(PyObject *obj, Py_buffer *view_p, int flags)
 #endif /* SDL_BYTEORDER != SDL_LIL_ENDIAN */
     }
     view_p->buf = startpixel;
-    Py_INCREF(obj);
-    view_p->obj = obj;
+    view_p->obj = Py_NewRef(obj);
     return 0;
 }
 
@@ -4196,8 +4177,7 @@ _get_buffer_colorplane(PyObject *obj, Py_buffer *view_p, int flags, char *name,
     view_p->shape[1] = surface->h;
     view_p->strides[0] = pixelsize;
     view_p->strides[1] = surface->pitch;
-    Py_INCREF(obj);
-    view_p->obj = obj;
+    view_p->obj = Py_NewRef(obj);
     return 0;
 }
 

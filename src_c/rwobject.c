@@ -167,8 +167,7 @@ _trydecode_pathlibobj(PyObject *obj)
     if (!ret) {
         /* A valid object was not passed. But we do not consider it an error */
         PyErr_Clear();
-        Py_INCREF(obj);
-        return obj;
+        return Py_NewRef(obj);
     }
     return ret;
 }

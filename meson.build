@@ -214,8 +214,8 @@ if plat == 'win'
         warning('Missing windows prebuilts. Falling back to legacy prebuilts')
 
         sdl_ver = (sdl_api == 3) ? '3.4.0' : '2.32.10'
-        sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.8'
-        sdl_mixer_ver = '2.8.1'
+        sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.10'
+        sdl_mixer_ver = (sdl_api == 3) ? '3.2.2' : '2.8.2'
         sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
 
         arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
@@ -516,8 +516,17 @@ if host_machine.cpu_family() == 'arm'
         simd_sse2_neon = true
     endif
 elif host_machine.cpu_family() == 'aarch64'
-    # sse2neon doesn't support compiling under msvc
-    simd_sse2_neon = cc.get_id() != 'msvc'
+    # every aarch64 CPU supports NEON
+    simd_sse2_neon = true
+    if cc.get_id() == 'msvc'
+        flag = '/Zc:preprocessor'
+        if cc.has_argument(flag)
+            simd_sse2_neon_flags += [flag]
+        else
+            # if we can't set the flag, we can't use sse2neon on MSVC
+            simd_sse2_neon = false
+        endif
+    endif
 endif
 
 if simd_sse2_neon
@@ -535,15 +544,9 @@ summary(
 # stores werror
 warnings_error = []
 
-# module specific warnings (TODO remove these by fixing code)
-warnings_temp_freetype = []
-warnings_temp_mask = []
-
 if cc.get_argument_syntax() == 'msvc'
     # base warnings on msvc
     add_global_arguments(['/W3', '/wd4142', '/wd4996'], language: 'c')
-
-    warnings_temp_mask += ['/wd6385', '/wd6386']
 
     if get_option('error_on_warns') and not is_pypy
         warnings_error += '/WX'
@@ -552,19 +555,6 @@ if cc.get_argument_syntax() == 'msvc'
 else
     # base warnings on gcc/clang
     add_global_arguments(['-Wall', '-Wno-error=unknown-pragmas'], language: 'c')
-
-    # check for exact gcc (flags not needed on clang)
-    if cc.get_id() == 'gcc'
-        warnings_temp_freetype += [
-            '-Wno-error=unused-but-set-variable',
-            '-Wno-error=array-bounds',
-        ]
-        warnings_temp_mask += '-Wno-error=array-bounds'
-    endif
-
-    if cc.sizeof('long') != 8
-        warnings_temp_mask += '-Wno-error=shift-count-overflow'
-    endif
 
     if get_option('error_on_warns') and not is_pypy
         warnings_error += '-Werror'
@@ -590,4 +580,9 @@ if not get_option('stripped') and not plat.startswith('emscripten')
     subdir('buildconfig/stubs')
     install_subdir('examples', install_dir: pg_dir, install_tag: 'pg-tag')
     # TODO: install headers? not really important though
+
+    if get_option('ctest')
+        subproject('unity')
+        subdir('ctest')
+    endif
 endif

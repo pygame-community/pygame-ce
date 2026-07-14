@@ -46,8 +46,4 @@ typedef uint8_t Uint8;
 
 #endif /* defined(SDL_VERSION_ATLEAST) */
 
-#ifndef SDL_MOUSEWHEEL_FLIPPED
-#define NO_SDL_MOUSEWHEEL_FLIPPED
-#endif
-
 #endif /* ~defined(PGCOMPAT_H) */

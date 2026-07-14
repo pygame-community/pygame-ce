@@ -5,11 +5,11 @@ cd $(dirname `readlink -f "$0"`)
 
 SDL2_VER="2.32.10"
 SDL2="SDL2-$SDL2_VER"
-IMG2_VER="2.8.8"
+IMG2_VER="2.8.10"
 IMG2="SDL2_image-$IMG2_VER"
 TTF2_VER="2.24.0"
 TTF2="SDL2_ttf-$TTF2_VER"
-MIX2_VER="2.8.1"
+MIX2_VER="2.8.2"
 MIX2="SDL2_mixer-$MIX2_VER"
 
 

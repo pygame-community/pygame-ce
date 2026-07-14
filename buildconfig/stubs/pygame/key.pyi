@@ -305,6 +305,11 @@ def get_just_released() -> ScancodeWrapper:
     The result of this function is updated when new events are processed,
     e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
 
+    A key can be marked as "just released" even if it is currently pressed
+    according to :func:`pygame.key.get_pressed()`, if it was released and pressed
+    again during the same frame. Multiple releases and presses of the same key
+    are not distinguished from a single release with this function.
+
     .. seealso:: :func:`pygame.key.get_just_pressed()`
 
     .. note::
@@ -432,6 +437,8 @@ def start_text_input() -> None:
 
     Text input events handling is on by default.
 
+    .. seealso:: :func:`pygame.key.stop_text_input()`
+
     .. versionaddedold:: 2.0.0
     """
 
@@ -440,7 +447,7 @@ def stop_text_input() -> None:
 
     Stop receiving ``pygame.TEXTEDITING`` and ``pygame.TEXTINPUT``
     events. If an on-screen keyboard or IME editor was shown with
-    ``pygame.key.start_text_input()``, hide it again.
+    :func:`pygame.key.start_text_input()`, hide it again.
 
     Text input events handling is on by default.
 
