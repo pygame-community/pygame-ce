@@ -520,6 +520,10 @@ K_x: int
 K_y: int
 K_z: int
 LIL_ENDIAN: int
+LINE_RENDER_DEFAULT: int
+LINE_RENDER_GEOMETRY: int
+LINE_RENDER_LINE: int
+LINE_RENDER_POINT: int
 LOCALECHANGED: int
 MIDIIN: int
 MIDIOUT: int
@@ -1193,6 +1197,10 @@ __all__ = [
     "FLASH_CANCEL",
     "FLASH_BRIEFLY",
     "FLASH_UNTIL_FOCUSED",
+    "LINE_RENDER_DEFAULT",
+    "LINE_RENDER_POINT",
+    "LINE_RENDER_LINE",
+    "LINE_RENDER_GEOMETRY",
     "Rect",
     "Color",
 ]
