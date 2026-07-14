@@ -219,6 +219,8 @@ vector_length_squared(pgVector *self, PyObject *args);
 static PyObject *
 vector_normalize(pgVector *self, PyObject *args);
 static PyObject *
+vector_normalize_or_zero(pgVector *self, PyObject *args);
+static PyObject *
 vector_normalize_ip(pgVector *self, PyObject *args);
 static PyObject *
 vector_dot(pgVector *self, PyObject *other);
@@ -1453,6 +1455,41 @@ vector_normalize(pgVector *self, PyObject *_null)
 }
 
 static PyObject *
+vector_normalize_or_zero(pgVector *self, PyObject *_null)
+{
+    pgVector *ret = _vector_subtype_new(self);
+    if (ret == NULL)
+    {
+        return NULL;
+    }
+    
+    /* Check length zero */
+    if (sqrt(_scalar_product(self->coords, self->coords, self->dim) == 0))
+    {
+        /* Return 0 vector if zero */
+        for (Py_ssize_t i = 0; i < self->dim; i++) {
+            ret->coords[i] = 0;
+        }
+        return (PyObject *) ret;
+
+    }
+    else
+    {
+        /* Otherwise return a normalized vector as normal.
+           It would be preferrable to not rewrite this code but other functions fail if zero. */
+        memcpy(ret->coords, self->coords, sizeof(double) * VECTOR_MAX_SIZE);
+        double length = sqrt(_scalar_product(
+            self->coords, self->coords, self->dim));
+
+        for (Py_ssize_t i = 0; i < self->dim; i++) {
+            ret->coords[i] /= length;
+        }
+    }
+    return (PyObject *)ret;
+}
+
+
+static PyObject *
 vector_normalize_ip(pgVector *self, PyObject *_null)
 {
     Py_ssize_t i;
@@ -2674,6 +2711,8 @@ static PyMethodDef vector2_methods[] = {
      DOC_MATH_VECTOR2_NORMALIZE},
     {"normalize_ip", (PyCFunction)vector_normalize_ip, METH_NOARGS,
      DOC_MATH_VECTOR2_NORMALIZEIP},
+    {"normalize_or_zero", (PyCFunction)vector_normalize_or_zero, METH_NOARGS,
+     DOC_MATH_VECTOR2_NORMALIZEORZERO},
     {"is_normalized", (PyCFunction)vector_is_normalized, METH_NOARGS,
      DOC_MATH_VECTOR2_ISNORMALIZED},
     {"cross", (PyCFunction)vector2_cross, METH_O, DOC_MATH_VECTOR2_CROSS},
