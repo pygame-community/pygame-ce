@@ -1,9 +1,13 @@
 import gc
+import platform
+import sys
 import unittest
 import weakref
 
 import pygame
 import pygame._render as _render
+
+IS_PYPY = "PyPy" == platform.python_implementation()
 
 
 class DrawableObject:
@@ -234,6 +238,24 @@ class RendererTest(unittest.TestCase):
         self.assertEqual(self.renderer.draw_color, pygame.Color(0, 0, 0, 0))
         self.renderer.draw_color = "YELLOW"
         self.assertEqual(self.renderer.draw_color, pygame.Color(255, 255, 0, 255))
+
+    @unittest.skipIf(IS_PYPY, "PyPy doesn't have sys.getrefcount")
+    def test_from_window__no_reference_leak(self):
+        # Renderer.from_window() used to return an object with an extra,
+        # untracked reference (see issue #3799): the object it returned
+        # already came back from Renderer.tp_new() with a refcount of 1,
+        # but from_window() incremented it again before returning, so the
+        # object was never freed even after the caller's only reference
+        # to it was dropped.
+        pygame.display.set_mode((100, 100), pygame.SCALED)
+        self.addCleanup(pygame.display.quit)
+        window = pygame.Window.from_display_module()
+
+        renderer = _render.Renderer.from_window(window)
+        # getrefcount()'s own argument adds a temporary reference, so a
+        # renderer held by exactly one real reference (the local variable
+        # here) should report a refcount of 2, not 3.
+        self.assertEqual(sys.getrefcount(renderer), 2)
 
 
 class TextureTest(unittest.TestCase):

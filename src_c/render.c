@@ -85,7 +85,7 @@ renderer_from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     self->target = NULL;
-    return Py_NewRef(self);
+    return (PyObject *)self;
 }
 
 static PyObject *
