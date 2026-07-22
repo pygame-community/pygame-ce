@@ -1,10 +1,13 @@
 import gc
+import platform
 import sys
 import unittest
 import weakref
 
 import pygame
 import pygame._render as _render
+
+IS_PYPY = "PyPy" == platform.python_implementation()
 
 
 class DrawableObject:
@@ -236,6 +239,7 @@ class RendererTest(unittest.TestCase):
         self.renderer.draw_color = "YELLOW"
         self.assertEqual(self.renderer.draw_color, pygame.Color(255, 255, 0, 255))
 
+    @unittest.skipIf(IS_PYPY, "PyPy doesn't have sys.getrefcount")
     def test_from_window__no_reference_leak(self):
         # Renderer.from_window() used to return an object with an extra,
         # untracked reference (see issue #3799): the object it returned
