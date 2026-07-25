@@ -901,11 +901,7 @@ snd_get_samples_address(PyObject *self, PyObject *closure)
 
     MIXER_INIT_CHECK();
 
-#if SIZEOF_VOID_P > SIZEOF_LONG
-    return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)chunk->abuf);
-#else
-    return PyLong_FromUnsignedLong((unsigned long)chunk->abuf);
-#endif
+    return PyLong_FromVoidPtr(chunk->abuf);
 }
 
 PyMethodDef sound_methods[] = {
