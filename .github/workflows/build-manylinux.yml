@@ -51,7 +51,7 @@ jobs:
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
-      uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9
+      uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
       with:
         images: ghcr.io/${{ github.repository }}_${{ matrix.arch }}
         tags: type=raw,value=${{ hashFiles('buildconfig/manylinux-build/**') }}
