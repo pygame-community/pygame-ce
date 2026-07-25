@@ -393,6 +393,9 @@ surface_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->weakreflist = NULL;
         self->dependency = NULL;
         self->locklist = NULL;
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+        memset(&(self->mutex), 0, sizeof(PyMutex));
+#endif
     }
     return (PyObject *)self;
 }
@@ -910,7 +913,12 @@ surf_get_at(PyObject *self, PyObject *position)
         return RAISE(PyExc_RuntimeError, "invalid color depth for surface");
     }
 
+    LOCK_pgSurfaceObject((pgSurfaceObject *)self);
     if (!pgSurface_Lock((pgSurfaceObject *)self)) {
+        PRINT_AND_CLEAR_EXCEPTION
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
+        PRINT_AND_CLEAR_EXCEPTION
+        PyErr_SetString(pgExc_SDLError, "Failed to lock surface");
         return NULL;
     }
 
@@ -943,9 +951,14 @@ surf_get_at(PyObject *self, PyObject *position)
             break;
     }
     if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
+        PRINT_AND_CLEAR_EXCEPTION
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
+        PRINT_AND_CLEAR_EXCEPTION
+        PyErr_SetString(pgExc_SDLError, "Failed to unlock surface in get_at");
         return NULL;
     }
 
+    UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
     return pgColor_New(rgba);
 }
 
@@ -991,6 +1004,7 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     if (x < clip_rect.x || x >= clip_rect.x + clip_rect.w || y < clip_rect.y ||
         y >= clip_rect.y + clip_rect.h) {
         /* out of clip area */
+
         Py_RETURN_NONE;
     }
 
@@ -998,7 +1012,13 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         return NULL;
     }
 
+    LOCK_pgSurfaceObject((pgSurfaceObject *)self);
     if (!pgSurface_Lock((pgSurfaceObject *)self)) {
+        PRINT_AND_CLEAR_EXCEPTION
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
+        PRINT_AND_CLEAR_EXCEPTION
+        PyErr_SetString(pgExc_SDLError, "Failed to lock surface");
+
         return NULL;
     }
     pixels = (Uint8 *)surf->pixels;
@@ -1028,8 +1048,13 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
+        PRINT_AND_CLEAR_EXCEPTION
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
+        PRINT_AND_CLEAR_EXCEPTION
+        PyErr_SetString(pgExc_SDLError, "Failed to unlock surface in set_at");
         return NULL;
     }
+    UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
 
     Py_RETURN_NONE;
 }
@@ -1060,8 +1085,12 @@ surf_get_at_mapped(PyObject *self, PyObject *position)
         return RAISE(PyExc_RuntimeError, "invalid color depth for surface");
     }
 
+    LOCK_pgSurfaceObject((pgSurfaceObject *)self);
     if (!pgSurface_Lock((pgSurfaceObject *)self)) {
-        return NULL;
+        PRINT_AND_CLEAR_EXCEPTION
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
+        PRINT_AND_CLEAR_EXCEPTION
+        return RAISE(pgExc_SDLError, "Failed to lock mutex");
     }
 
     pixels = (Uint8 *)surf->pixels;
@@ -1086,9 +1115,13 @@ surf_get_at_mapped(PyObject *self, PyObject *position)
             break;
     }
     if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
-        return NULL;
+        PRINT_AND_CLEAR_EXCEPTION
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
+        PRINT_AND_CLEAR_EXCEPTION
+        return RAISE(pgExc_SDLError, "Failed to unlock mutex");
     }
 
+    UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
     return PyLong_FromLong((long)color);
 }
 
@@ -1105,13 +1138,18 @@ surf_map_rgb(PyObject *self, PyObject *args)
 
     SURF_INIT_CHECK(surf)
 
+    LOCK_pgSurfaceObject((pgSurfaceObject *)self);
     PG_PixelFormat *format;
     SDL_Palette *palette;
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
+        PRINT_AND_CLEAR_EXCEPTION
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
+        PRINT_AND_CLEAR_EXCEPTION
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     color = PG_MapRGBA(format, palette, rgba[0], rgba[1], rgba[2], rgba[3]);
+    UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
     return PyLong_FromLong(color);
 }
 
@@ -1129,9 +1167,13 @@ surf_unmap_rgb(PyObject *self, PyObject *arg)
     }
     SURF_INIT_CHECK(surf)
 
+    LOCK_pgSurfaceObject((pgSurfaceObject *)self);
     PG_PixelFormat *format;
     SDL_Palette *palette;
     if (!PG_GetSurfaceDetails(surf, &format, &palette)) {
+        PRINT_AND_CLEAR_EXCEPTION
+        UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
+        PRINT_AND_CLEAR_EXCEPTION
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1143,6 +1185,7 @@ surf_unmap_rgb(PyObject *self, PyObject *arg)
         rgba[3] = 255;
     }
 
+    UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
     return pgColor_New(rgba);
 }
 
@@ -4720,9 +4763,9 @@ MODINIT_DEFINE(surface)
                                                        // be supported later
 #endif
 #if PY_VERSION_HEX >= 0x030d0000
-        {Py_mod_gil, Py_MOD_GIL_USED},  // TODO: support this later
+        DISABLE_GIL_MULTIPHASE_INITIALIZATION("surface")
 #endif
-        {0, NULL}};
+            {0, NULL}};
 #endif
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "surface",

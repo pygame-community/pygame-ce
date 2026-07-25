@@ -327,8 +327,25 @@ typedef struct {
     PyObject *weakreflist;
     PyObject *locklist;
     PyObject *dependency;
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+    PyMutex mutex;
+#endif
 } pgSurfaceObject;
 #define pgSurface_AsSurface(x) (((pgSurfaceObject *)x)->surf)
+
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+#define LOCK_pgSurfaceObject(pgSurfacePtr) \
+    PyMutex_Lock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex));
+#else
+#define LOCK_pgSurfaceObject(pgSurfacePtr)
+#endif
+
+#if PY_VERSION_HEX >= 0x030D0000 && Py_GIL_DISABLED
+#define UNLOCK_pgSurfaceObject(pgSurfacePtr) \
+    PyMutex_Unlock(&(((pgSurfaceObject *)pgSurfacePtr)->mutex));
+#else
+#define UNLOCK_pgSurfaceObject(pgSurfacePtr)
+#endif
 
 #ifndef PYGAMEAPI_SURFACE_INTERNAL
 #define pgSurface_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(surface, 0))
@@ -639,6 +656,21 @@ PYGAMEAPI_EXTERN_SLOTS(geometry);
         }                                                               \
     }
 
+#if Py_GIL_DISABLED
+#define DISABLE_GIL_SINGLE_INITIALIZATION(module, name)              \
+    if (PyUnstable_Module_SetGIL(module, Py_MOD_GIL_NOT_USED) < 0) { \
+        Py_DECREF(module);                                           \
+        return NULL;                                                 \
+    }
+#define DISABLE_GIL_MULTIPHASE_INITIALIZATION(name) \
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+
+#else  // PY_GIL_DISABLED is not defined
+#define DISABLE_GIL_SINGLE_INITIALIZATION(module, name)
+#define DISABLE_GIL_MULTIPHASE_INITIALIZATION(name) \
+    {Py_mod_gil, Py_MOD_GIL_USED},
+#endif
+
 static PG_INLINE PyObject *
 pg_tuple_couple_from_values_int(int val1, int val2)
 {
@@ -791,3 +823,9 @@ pg_PointList_FromArrayDouble(double const *array, int arr_length)
     __cached_exception_traceback = NULL;
 
 #endif
+
+#define PRINT_AND_CLEAR_EXCEPTION \
+    if (PyErr_Occurred()) {       \
+        PyErr_Print();            \
+        PyErr_Clear();            \
+    }
