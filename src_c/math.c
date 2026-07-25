@@ -2630,11 +2630,7 @@ vector2_from_polar(pgVector *self, PyObject *args)
 
     Py_RETURN_NONE;
 }
-static PyObject *
-vector_getsafepickle(pgRectObject *self, void *_null)
-{
-    Py_RETURN_TRUE;
-}
+
 /* for pickling */
 static PyObject *
 vector2_reduce(PyObject *oself, PyObject *_null)
@@ -2705,8 +2701,6 @@ static PyMethodDef vector2_methods[] = {
      DOC_MATH_VECTOR2_CLAMPMAGNITUDE},
     {"clamp_magnitude_ip", (PyCFunction)vector_clamp_magnitude_ip,
      METH_FASTCALL, DOC_MATH_VECTOR2_CLAMPMAGNITUDEIP},
-    {"__safe_for_unpickling__", (PyCFunction)vector_getsafepickle, METH_NOARGS,
-     NULL},
     {"__reduce__", (PyCFunction)vector2_reduce, METH_NOARGS, NULL},
     {"__round__", (PyCFunction)vector___round__, METH_VARARGS, NULL},
 
@@ -3613,8 +3607,6 @@ static PyMethodDef vector3_methods[] = {
      DOC_MATH_VECTOR3_CLAMPMAGNITUDE},
     {"clamp_magnitude_ip", (PyCFunction)vector_clamp_magnitude_ip,
      METH_FASTCALL, DOC_MATH_VECTOR3_CLAMPMAGNITUDEIP},
-    {"__safe_for_unpickling__", (PyCFunction)vector_getsafepickle, METH_NOARGS,
-     NULL},
     {"__reduce__", (PyCFunction)vector3_reduce, METH_NOARGS, NULL},
     {"__round__", (PyCFunction)vector___round__, METH_VARARGS, NULL},
 
