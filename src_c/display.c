@@ -83,10 +83,7 @@ _display_state_cleanup(_DisplayState *state)
         free(state->title);
         state->title = NULL;
     }
-    if (state->icon) {
-        Py_XDECREF(state->icon);
-        state->icon = NULL;
-    }
+    Py_CLEAR(state->icon);
     if (state->gl_context) {
         SDL_GL_DeleteContext(state->gl_context);
         state->gl_context = NULL;
@@ -2703,8 +2700,7 @@ pg_set_icon(PyObject *self, PyObject *surface)
             return NULL;
         }
     }
-    Py_XDECREF(state->icon);
-    state->icon = Py_NewRef(surface);
+    Py_XSETREF(state->icon, Py_NewRef(surface));
     if (win) {
         SDL_SetWindowIcon(win, pgSurface_AsSurface(surface));
     }

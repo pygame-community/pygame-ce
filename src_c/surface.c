@@ -410,15 +410,8 @@ surface_cleanup(pgSurfaceObject *self)
         PyMem_Free(self->subsurface);
         self->subsurface = NULL;
     }
-    if (self->dependency) {
-        Py_DECREF(self->dependency);
-        self->dependency = NULL;
-    }
-
-    if (self->locklist) {
-        Py_DECREF(self->locklist);
-        self->locklist = NULL;
-    }
+    Py_CLEAR(self->dependency);
+    Py_CLEAR(self->locklist);
     self->owner = 0;
 }
 
@@ -4256,8 +4249,7 @@ _release_buffer(Py_buffer *view_p)
 
     Py_DECREF(consumer_ref);
     PyMem_Free(internal);
-    Py_DECREF(view_p->obj);
-    view_p->obj = 0;
+    Py_CLEAR(view_p->obj);
 }
 
 static int

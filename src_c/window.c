@@ -157,9 +157,7 @@ window_destroy(pgWindowObject *self, PyObject *_null)
         // since this surface will be deallocated by SDL when the window is
         // destroyed.
         self->surf->surf = NULL;
-
-        Py_DECREF(self->surf);
-        self->surf = NULL;
+        Py_CLEAR(self->surf);
     }
     Py_RETURN_NONE;
 }

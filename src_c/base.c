@@ -1179,10 +1179,7 @@ pgBuffer_Release(pg_buffer *pg_view_p)
 void
 _pg_release_buffer_generic(Py_buffer *view_p)
 {
-    if (view_p->obj) {
-        Py_XDECREF(view_p->obj);
-        view_p->obj = 0;
-    }
+    Py_CLEAR(view_p->obj);
 }
 
 void

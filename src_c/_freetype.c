@@ -733,8 +733,7 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         _PGFT_Quit(self->freetype);
         self->freetype = 0;
     }
-    Py_XDECREF(self->path);
-    self->path = 0;
+    Py_CLEAR(self->path);
     self->is_scalable = 0;
 
     self->face_size = face_size;

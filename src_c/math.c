@@ -3680,8 +3680,7 @@ vectoriter_next(vectoriter *it)
         return PyFloat_FromDouble(item);
     }
 
-    Py_DECREF(it->vec);
-    it->vec = NULL;
+    Py_CLEAR(it->vec);
     return NULL;
 }
 

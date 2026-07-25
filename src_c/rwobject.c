@@ -118,16 +118,14 @@ fetch_object_methods(pgRWHelper *helper, PyObject *obj)
 
     if (PyObject_HasAttrString(obj, "read")) {
         helper->read = PyObject_GetAttrString(obj, "read");
-        if (helper->read && !PyCallable_Check(helper->read)) {
-            Py_DECREF(helper->read);
-            helper->read = NULL;
+        if (!PyCallable_Check(helper->read)) {
+            Py_CLEAR(helper->read);
         }
     }
     if (PyObject_HasAttrString(obj, "write")) {
         helper->write = PyObject_GetAttrString(obj, "write");
-        if (helper->write && !PyCallable_Check(helper->write)) {
-            Py_DECREF(helper->write);
-            helper->write = NULL;
+        if (!PyCallable_Check(helper->write)) {
+            Py_CLEAR(helper->write);
         }
     }
     if (!helper->read && !helper->write) {
@@ -136,23 +134,20 @@ fetch_object_methods(pgRWHelper *helper, PyObject *obj)
     }
     if (PyObject_HasAttrString(obj, "seek")) {
         helper->seek = PyObject_GetAttrString(obj, "seek");
-        if (helper->seek && !PyCallable_Check(helper->seek)) {
-            Py_DECREF(helper->seek);
-            helper->seek = NULL;
+        if (!PyCallable_Check(helper->seek)) {
+            Py_CLEAR(helper->seek);
         }
     }
     if (PyObject_HasAttrString(obj, "tell")) {
         helper->tell = PyObject_GetAttrString(obj, "tell");
-        if (helper->tell && !PyCallable_Check(helper->tell)) {
-            Py_DECREF(helper->tell);
-            helper->tell = NULL;
+        if (!PyCallable_Check(helper->tell)) {
+            Py_CLEAR(helper->tell);
         }
     }
     if (PyObject_HasAttrString(obj, "close")) {
         helper->close = PyObject_GetAttrString(obj, "close");
-        if (helper->close && !PyCallable_Check(helper->close)) {
-            Py_DECREF(helper->close);
-            helper->close = NULL;
+        if (!PyCallable_Check(helper->close)) {
+            Py_CLEAR(helper->close);
         }
     }
     return 0;
