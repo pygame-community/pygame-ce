@@ -3749,7 +3749,7 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
 {
     Py_ssize_t i, dim;
     int ret = 1;
-    double diff, value;
+    double diff;
     pgVector *vec;
     PyObject *other;
 
@@ -3780,127 +3780,81 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
     dim = vec->dim;
 
     double other_coords[VECTOR_MAX_SIZE];
-    if (pg_VectorCoordsFromObj(other, dim, other_coords)) {
-        /* use diff == diff to check for NaN */
-        /* TODO: how should NaN be handled with LT/LE/GT/GE? */
-        switch (op) {
-            case Py_EQ:
-                for (i = 0; i < dim; i++) {
-                    diff = vec->coords[i] - other_coords[i];
-                    if ((diff != diff) || (fabs(diff) >= vec->epsilon)) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            case Py_NE:
-                for (i = 0; i < dim; i++) {
-                    diff = vec->coords[i] - other_coords[i];
-                    if ((diff == diff) && (fabs(diff) < vec->epsilon)) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            case Py_LT:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] >= other_coords[i]) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            case Py_LE:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] > other_coords[i]) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            case Py_GT:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] <= other_coords[i]) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            case Py_GE:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] < other_coords[i]) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            default:
-                PyErr_BadInternalCall();
-                return NULL;
+
+    // First, try to interpret the other object as a vector.
+    if (!pg_VectorCoordsFromObj(other, dim, other_coords)) {
+        // If that doesn't work, interpret it as a float.
+        double value = PyFloat_AsDouble(other);
+
+        // If interpreting as a float fails, this object must be unsupported
+        // for this operation. Return Py_NotImplemented.
+        if (value == -1.0 && PyErr_Occurred()) {
+            PyErr_Clear();
+            return Py_NewRef(Py_NotImplemented);
+        }
+
+        // Broadcast into other_coords for unified vector/scalar path below.
+        for (i = 0; i < dim; i++) {
+            other_coords[i] = value;
         }
     }
-    else if (RealNumber_Check(other)) {
-        /* the following PyFloat_AsDouble call should never fail because
-           then RealNumber_Check should have returned false */
-        value = PyFloat_AsDouble(other);
-        switch (op) {
-            case Py_EQ:
-                for (i = 0; i < dim; i++) {
-                    diff = vec->coords[i] - value;
-                    if (diff != diff || fabs(diff) >= vec->epsilon) {
-                        ret = 0;
-                        break;
-                    }
+
+    /* use diff == diff to check for NaN */
+    /* TODO: how should NaN be handled with LT/LE/GT/GE? */
+    switch (op) {
+        case Py_EQ:
+            for (i = 0; i < dim; i++) {
+                diff = vec->coords[i] - other_coords[i];
+                if ((diff != diff) || (fabs(diff) >= vec->epsilon)) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            case Py_NE:
-                for (i = 0; i < dim; i++) {
-                    diff = vec->coords[i] - value;
-                    if (diff == diff && fabs(diff) < vec->epsilon) {
-                        ret = 0;
-                        break;
-                    }
+            }
+            break;
+        case Py_NE:
+            for (i = 0; i < dim; i++) {
+                diff = vec->coords[i] - other_coords[i];
+                if ((diff == diff) && (fabs(diff) < vec->epsilon)) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            case Py_LT:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] >= value) {
-                        ret = 0;
-                        break;
-                    }
+            }
+            break;
+        case Py_LT:
+            for (i = 0; i < dim; i++) {
+                if (vec->coords[i] >= other_coords[i]) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            case Py_LE:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] > value) {
-                        ret = 0;
-                        break;
-                    }
+            }
+            break;
+        case Py_LE:
+            for (i = 0; i < dim; i++) {
+                if (vec->coords[i] > other_coords[i]) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            case Py_GT:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] <= value) {
-                        ret = 0;
-                        break;
-                    }
+            }
+            break;
+        case Py_GT:
+            for (i = 0; i < dim; i++) {
+                if (vec->coords[i] <= other_coords[i]) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            case Py_GE:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] < value) {
-                        ret = 0;
-                        break;
-                    }
+            }
+            break;
+        case Py_GE:
+            for (i = 0; i < dim; i++) {
+                if (vec->coords[i] < other_coords[i]) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            default:
-                PyErr_BadInternalCall();
-                return NULL;
-        }
-    }
-    else {
-        return Py_NewRef(Py_NotImplemented);
+            }
+            break;
+        default:
+            PyErr_BadInternalCall();
+            return NULL;
     }
 
     return PyBool_FromLong(ret);
