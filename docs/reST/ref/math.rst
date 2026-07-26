@@ -1101,6 +1101,11 @@ Conversion can be combined with swizzling or slicing to create a new order
 
       DEPRECATED: Use rotate_y_rad_ip() instead.
 
+      .. warning::
+         Due to a historical bug, this deprecated function actually
+         applies rotation around the X-axis. Please use
+         :meth:`rotate_y_rad_ip` instead.
+
       .. versionaddedold:: 2.0.0
       .. deprecatedold:: 2.1.1
 
@@ -1164,6 +1169,11 @@ Conversion can be combined with swizzling or slicing to create a new order
       | :sg:`rotate_z_ip_rad(angle, /) -> None`
 
       DEPRECATED: Use rotate_z_rad_ip() instead.
+
+      .. warning::
+         Due to a historical bug, this deprecated function actually
+         applies rotation around the X-axis. Please use
+         :meth:`rotate_z_rad_ip` instead.
 
       .. deprecatedold:: 2.1.1
 
