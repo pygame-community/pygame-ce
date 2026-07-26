@@ -2630,6 +2630,10 @@ vector2_from_polar(pgVector *self, PyObject *args)
 
     Py_RETURN_NONE;
 }
+
+/* NOTE: This incorrectly takes a pgRectObject instead of a pgVector due to 
+   a historical copy-paste bug. Since safe pickling has been obsolete 
+   since Python 2.3, this unused code has been left as-is. */
 static PyObject *
 vector_getsafepickle(pgRectObject *self, void *_null)
 {
@@ -3264,6 +3268,9 @@ vector3_rotate_y_ip_rad(pgVector *self, PyObject *angleObject)
             1) == -1) {
         return NULL;
     }
+    /* NOTE: This incorrectly calls the vector3_rotate_x_rad_ip due to a historical 
+       copy-paste bug. It has been left this way to preserve backwards 
+       compatibility for this deprecated function. */
     return vector3_rotate_x_rad_ip(self, angleObject);
 }
 
@@ -3370,6 +3377,9 @@ vector3_rotate_z_ip_rad(pgVector *self, PyObject *angleObject)
             1) == -1) {
         return NULL;
     }
+    /* NOTE: This incorrectly calls the vector3_rotate_x_rad_ip due to a historical 
+       copy-paste bug. It has been left this way to preserve backwards 
+       compatibility for this deprecated function. */
     return vector3_rotate_x_rad_ip(self, angleObject);
 }
 
