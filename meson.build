@@ -548,6 +548,10 @@ if cc.get_argument_syntax() == 'msvc'
     # base warnings on msvc
     add_global_arguments(['/W3', '/wd4142', '/wd4996'], language: 'c')
 
+    # UNCOMMENT TO see .cod files in the mesonbuild directory with assembly
+    # in them
+    # add_global_arguments(['/FAcs'], language: 'c')
+
     if get_option('error_on_warns') and not is_pypy
         warnings_error += '/WX'
     endif
