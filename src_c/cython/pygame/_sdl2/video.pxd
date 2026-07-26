@@ -341,6 +341,8 @@ cdef extern from "SDL.h" nogil:
                                    float *ly);
 
 
+    int SDL_VERSION_ATLEAST(int major, int minor, int patch)
+
     # https://wiki.libsdl.org/SDL_GetWindowPixelFormat
     # https://wiki.libsdl.org/SDL_IntersectRect
     # https://wiki.libsdl.org/SDL_SetRelativeMouseMode
