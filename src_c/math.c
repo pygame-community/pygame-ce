@@ -2630,10 +2630,6 @@ vector2_from_polar(pgVector *self, PyObject *args)
 
     Py_RETURN_NONE;
 }
-
-/* NOTE: This incorrectly takes a pgRectObject instead of a pgVector due to 
-   a historical copy-paste bug. Since safe pickling has been obsolete 
-   since Python 2.3, this unused code has been left as-is. */
 static PyObject *
 vector_getsafepickle(pgRectObject *self, void *_null)
 {
