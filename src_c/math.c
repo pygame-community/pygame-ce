@@ -3264,7 +3264,7 @@ vector3_rotate_y_ip_rad(pgVector *self, PyObject *angleObject)
             1) == -1) {
         return NULL;
     }
-    return vector3_rotate_x_rad_ip(self, angleObject);
+    return vector3_rotate_y_rad_ip(self, angleObject);
 }
 
 static PyObject *
@@ -3370,7 +3370,7 @@ vector3_rotate_z_ip_rad(pgVector *self, PyObject *angleObject)
             1) == -1) {
         return NULL;
     }
-    return vector3_rotate_x_rad_ip(self, angleObject);
+    return vector3_rotate_z_rad_ip(self, angleObject);
 }
 
 static PyObject *
