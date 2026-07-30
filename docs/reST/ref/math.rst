@@ -1105,7 +1105,6 @@ Conversion can be combined with swizzling or slicing to create a new order
          Due to a historical bug, this function incorrectly applied rotation around the X-axis. 
          This has been fixed to correctly rotate around the Y-axis.
 
-      .. versionchanged:: 2.5.8 Fixed rotation axis bug (previously rotated around X-axis).
       .. versionaddedold:: 2.0.0
       .. deprecatedold:: 2.1.1
 
@@ -1174,7 +1173,6 @@ Conversion can be combined with swizzling or slicing to create a new order
          Due to a historical bug, this function incorrectly applied rotation around the X-axis. 
          This has been fixed to correctly rotate around the Z-axis.
 
-      .. versionchanged:: 2.5.8 Fixed rotation axis bug (previously rotated around X-axis).
       .. deprecatedold:: 2.1.1
 
       .. ## Vector3.rotate_z_ip_rad ##
