@@ -1356,21 +1356,12 @@ dict_from_event(SDL_Event *event)
                        PyFloat_FromDouble((double)event->wheel.x));
             _pg_insobj(dict, "precise_y",
                        PyFloat_FromDouble((double)event->wheel.y));
-#elif SDL_VERSION_ATLEAST(2, 0, 18)
+#else
             _pg_insobj(dict, "precise_x",
                        PyFloat_FromDouble((double)event->wheel.preciseX));
             _pg_insobj(dict, "precise_y",
                        PyFloat_FromDouble((double)event->wheel.preciseY));
-
-#else /* ~SDL_VERSION_ATLEAST(2, 0, 18) */
-        /* fallback to regular x and y when SDL version used does not
-         * support precise fields */
-        _pg_insobj(dict, "precise_x",
-                   PyFloat_FromDouble((double)event->wheel.x));
-        _pg_insobj(dict, "precise_y",
-                   PyFloat_FromDouble((double)event->wheel.y));
-
-#endif /* ~SDL_VERSION_ATLEAST(2, 0, 18) */
+#endif
             _pg_insobj(
                 dict, "touch",
                 PyBool_FromLong((event->wheel.which == SDL_TOUCH_MOUSEID)));
