@@ -1101,12 +1101,12 @@ Conversion can be combined with swizzling or slicing to create a new order
 
       DEPRECATED: Use rotate_y_rad_ip() instead.
 
-      .. note::
-         Due to a historical bug, this function incorrectly applied rotation around the X-axis. 
-         This has been fixed to correctly rotate around the Y-axis.
-
       .. versionaddedold:: 2.0.0
       .. deprecatedold:: 2.1.1
+      .. versionchanged:: 2.5.8
+         Fixed a regression introduced in 2.1.1 where this method incorrectly rotated
+         around the X-axis instead of the Y-axis. In versions prior to 2.1.1, rotation
+         around the Y-axis worked correctly.
 
       .. ## Vector3.rotate_y_ip_rad ##
 
@@ -1169,11 +1169,12 @@ Conversion can be combined with swizzling or slicing to create a new order
 
       DEPRECATED: Use rotate_z_rad_ip() instead.
 
-      .. note::
-         Due to a historical bug, this function incorrectly applied rotation around the X-axis. 
-         This has been fixed to correctly rotate around the Z-axis.
-
+      .. versionaddedold:: 2.0.0
       .. deprecatedold:: 2.1.1
+      .. versionchanged:: 2.5.8
+         Fixed a regression introduced in 2.1.1 where this method incorrectly rotated
+         around the X-axis instead of the Z-axis. In versions prior to 2.1.1, rotation
+         around the Z-axis worked correctly.
 
       .. ## Vector3.rotate_z_ip_rad ##
 
