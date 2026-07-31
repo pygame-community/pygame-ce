@@ -4330,20 +4330,12 @@ static PyObject *
 surf_get_pixels_address(PyObject *self, PyObject *closure)
 {
     SDL_Surface *surface = pgSurface_AsSurface(self);
-    void *address;
 
     if (!surface) {
         Py_RETURN_NONE;
     }
-    if (!surface->pixels) {
-        return PyLong_FromLong(0L);
-    }
-    address = surface->pixels;
-#if SIZEOF_VOID_P > SIZEOF_LONG
-    return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)address);
-#else
-    return PyLong_FromUnsignedLong((unsigned long)address);
-#endif
+
+    return PyLong_FromVoidPtr(surface->pixels);
 }
 
 static int
