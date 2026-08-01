@@ -51,9 +51,6 @@
 
 #define TWO_PI (2. * M_PI)
 
-#define RAD_TO_DEG (180.0 / M_PI)
-#define DEG_TO_RAD (M_PI / 180.0)
-
 #ifndef M_PI_2
 #define M_PI_2 (M_PI / 2.0)
 #endif /* M_PI_2 */
@@ -96,8 +93,8 @@ static PyTypeObject pgVectorIter_Type;
 #define _vector_subtype_new(x) \
     ((pgVector *)(Py_TYPE(x)->tp_new(Py_TYPE(x), NULL, NULL)))
 
-#define DEG2RAD(angle) ((angle) * M_PI / 180.)
-#define RAD2DEG(angle) ((angle) * 180. / M_PI)
+#define DEG2RAD(angle) ((angle) * (M_PI / 180.))
+#define RAD2DEG(angle) ((angle) * (180. / M_PI))
 
 typedef struct {
     PyObject_HEAD double coords[VECTOR_MAX_SIZE]; /* Coordinates */
@@ -1360,9 +1357,8 @@ static PyObject *
 vector_get_angle(pgVector *self, void *closure)
 {
     double angle_rad = _pg_atan2(self->coords[1], self->coords[0]);
-    double angle_deg = angle_rad * RAD_TO_DEG;
 
-    return PyFloat_FromDouble(angle_deg);
+    return PyFloat_FromDouble(RAD2DEG(angle_rad));
 }
 
 static PyObject *
