@@ -1,9 +1,12 @@
+import io
 import pathlib
 import platform
 import sys
 import unittest
 
+import pygame
 from pygame import encode_file_path, encode_string
+from pygame.tests.test_utils import example_path
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
@@ -128,6 +131,72 @@ class RWopsEncodeFilePathTest(unittest.TestCase):
 
         for etype in ("SyntaxError", self):
             self.assertRaises(TypeError, encode_file_path, "test", etype)
+
+
+class FailingFileObject:
+    """File-like object that raises a Python exception on a selected operation."""
+
+    def __init__(self, operation, exception):
+        with open(example_path("data/alien1.png"), "rb") as f:
+            self._file = io.BytesIO(f.read())
+
+        self._operation = operation
+        self._exception = exception
+
+    def read(self, *args, **kwargs):
+        if self._operation == "read":
+            raise self._exception
+        return self._file.read(*args, **kwargs)
+
+    def write(self, *args, **kwargs):
+        if self._operation == "write":
+            raise self._exception
+        return self._file.write(*args, **kwargs)
+
+    def seek(self, *args, **kwargs):
+        if self._operation == "seek":
+            raise self._exception
+        return self._file.seek(*args, **kwargs)
+
+    def tell(self):
+        return self._file.tell()
+
+    def flush(self):
+        return self._file.flush()
+
+    def close(self):
+        return self._file.close()
+
+
+class RWopsUnderlyingFileErrorTest(unittest.TestCase):
+    """
+    Test Python exceptions from file-like object operations.
+    """
+
+    def test_read_error(self):
+        error = RuntimeError("read operation failed")
+
+        with self.assertRaises(pygame.error):
+            pygame.image.load(FailingFileObject("read", error))
+
+    def test_write_error(self):
+        error = RuntimeError("write operation failed")
+        surface = pygame.Surface((10, 10))
+        with self.assertRaises(pygame.error) as context:
+            pygame.image.save(
+                surface,
+                FailingFileObject("write", error),
+            )
+            # SDL_image forwards the underlying error message in the save path
+            # for now, but if this changes in the future the below assertion is
+            # safe to remove
+            self.assertIn(str(error), str(context.exception))
+
+    def test_seek_error(self):
+        error = RuntimeError("seek operation failed")
+
+        with self.assertRaises(pygame.error):
+            pygame.image.load(FailingFileObject("seek", error))
 
 
 if __name__ == "__main__":
