@@ -845,7 +845,7 @@ pg_view_get_shape_obj(Py_buffer *view)
         return 0;
     }
     for (i = 0; i < view->ndim; ++i) {
-        lengthobj = PyLong_FromLong((long)view->shape[i]);
+        lengthobj = PyLong_FromSsize_t(view->shape[i]);
         if (!lengthobj) {
             Py_DECREF(shapeobj);
             return 0;
@@ -866,7 +866,7 @@ pg_view_get_strides_obj(Py_buffer *view)
         return 0;
     }
     for (i = 0; i < view->ndim; ++i) {
-        lengthobj = PyLong_FromLong((long)view->strides[i]);
+        lengthobj = PyLong_FromSsize_t(view->strides[i]);
         if (!lengthobj) {
             Py_DECREF(shapeobj);
             return 0;
@@ -966,7 +966,7 @@ _pg_shape_as_tuple(PyArrayInterface *inter_p)
         return 0;
     }
     for (i = 0; i < inter_p->nd; ++i) {
-        lengthobj = PyLong_FromLong((long)inter_p->shape[i]);
+        lengthobj = PyLong_FromSsize_t(inter_p->shape[i]);
         if (!lengthobj) {
             Py_DECREF(shapeobj);
             return 0;
@@ -999,7 +999,7 @@ _pg_strides_as_tuple(PyArrayInterface *inter_p)
         return 0;
     }
     for (i = 0; i < inter_p->nd; ++i) {
-        lengthobj = PyLong_FromLong((long)inter_p->strides[i]);
+        lengthobj = PyLong_FromSsize_t(inter_p->strides[i]);
         if (!lengthobj) {
             Py_DECREF(stridesobj);
             return 0;

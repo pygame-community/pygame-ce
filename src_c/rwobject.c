@@ -360,8 +360,7 @@ _pg_rw_size(SDL_RWops *context)
         goto end;
     }
 
-    size = PyLong_AsLongLong(tmp);
-    if (size == -1 && PyErr_Occurred() != NULL) {
+    if (PyLong_AsInt64(tmp, &size) == -1) {
         PyErr_Print();
         goto end;
     }
@@ -584,9 +583,9 @@ _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
         goto end;
     }
 
-    retval = PyLong_AsLongLong(result);
-    if (retval == -1 && PyErr_Occurred()) {
+    if (PyLong_AsInt64(result, &retval) == -1) {
         PyErr_Clear();
+        retval = -1;
     }
 
     Py_DECREF(result);
