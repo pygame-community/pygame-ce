@@ -68,11 +68,10 @@ def get_arraytype() -> str:
 def get_arraytypes() -> tuple[str]:
     """Gets the array system types currently supported.
 
-    DEPRECATED: Checks, which array systems are available and returns them as a tuple of
+    DEPRECATED: Checks which array systems are available and returns them as a tuple of
     strings. The values of the tuple can be used directly in the
-    :func:`pygame.sndarray.use_arraytype` () method. If no supported array
-    system could be found, None will be returned.  Using this function will raise a
-    ``DeprecationWarning``.
+    :func:`pygame.sndarray.use_arraytype` method. Using this function will
+    raise a ``DeprecationWarning``.
 
     .. versionaddedold:: 1.8
     """
