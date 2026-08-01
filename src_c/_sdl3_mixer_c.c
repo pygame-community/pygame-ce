@@ -1408,9 +1408,9 @@ pg_audio_decoder_obj_init(PGAudioDecoderObject *self, PyObject *args,
 static void
 pg_audio_decoder_obj_dealloc(PGAudioDecoderObject *self)
 {
+    PyObject_GC_UnTrack(self);
     MIX_DestroyAudioDecoder(self->audio_decoder);
     self->audio_decoder = NULL;
-    PyObject_GC_UnTrack(self);
     PyTypeObject *tp = Py_TYPE(self);
     freefunc free = PyType_GetSlot(tp, Py_tp_free);
     free(self);
@@ -1489,6 +1489,11 @@ pg_audio_decoder_obj_decode(PGAudioDecoderObject *self, PyObject *args,
     int size = PyLong_AsInt(size_obj);
     if (size == -1 && PyErr_Occurred()) {
         return NULL;
+    }
+
+    // This would also be caught by PyBytesWriter_Create, but lets be explicit.
+    if (size < 0) {
+        return RAISE(PyExc_ValueError, "size must be >= 0");
     }
 
     PyBytesWriter *writer = PyBytesWriter_Create(size);
