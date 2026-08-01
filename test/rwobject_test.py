@@ -187,10 +187,11 @@ class RWopsUnderlyingFileErrorTest(unittest.TestCase):
                 surface,
                 FailingFileObject("write", error),
             )
-            # SDL_image forwards the underlying error message in the save path
-            # for now, but if this changes in the future the below assertion is
-            # safe to remove
-            self.assertIn(str(error), str(context.exception))
+
+        # SDL_image forwards the underlying error message in the save path
+        # for now, but if this changes in the future the below assertion is
+        # safe to remove
+        self.assertIn(str(error), str(context.exception))
 
     def test_seek_error(self):
         error = RuntimeError("seek operation failed")

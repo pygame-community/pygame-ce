@@ -82,10 +82,21 @@ _pg_sdl_error_from_py_exc()
             value ? PyUnicode_FromFormat("Got %S: %S", type, value)
                   : PyUnicode_FromFormat("Got %S", type);
 
-        SDL_SetError("%s", error_str
-                               ? PyUnicode_AsUTF8(error_str)
-                               : "An unknown error occured, probably some "
-                                 "memory allocation failed");
+        const char *message =
+            "An unknown error occurred, a memory allocation probably failed";
+        if (error_str) {
+            const char *utf8_message = PyUnicode_AsUTF8(error_str);
+            if (utf8_message) {
+                message = utf8_message;
+            }
+            else {
+                PyErr_Clear();
+            }
+        }
+        else {
+            PyErr_Clear();
+        }
+        SDL_SetError("%s", message);
         Py_XDECREF(error_str);
     }
     Py_XDECREF(type);
@@ -647,9 +658,10 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
         goto end;
     }
 
+    /* TODO: Handle other bytes-like objects here */
     if (!PyBytes_Check(result)) {
         Py_DECREF(result);
-        _pg_sdl_error_from_py_exc();
+        SDL_SetError("read returned non-bytes object when bytes was expected");
         retval = 0;
         goto end;
     }
