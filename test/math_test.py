@@ -2186,14 +2186,14 @@ class Vector3TypeTest(unittest.TestCase):
         vec = Vector3(1, 0, 0)
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always", DeprecationWarning)
-            
+
             # This previously (and incorrectly) rotated around the X axis
             vec.rotate_y_ip_rad(math.pi / 2)
-            
+
             self.assertEqual(len(w), 1)
             self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
             self.assertIn("vector3_rotate_y_rad_ip", str(w[-1].message))
-            
+
         # Verify it now correctly rotates around the Y axis
         self.assertEqual(vec, (0, 0, -1))
 
@@ -2252,14 +2252,14 @@ class Vector3TypeTest(unittest.TestCase):
         vec = Vector3(1, 0, 0)
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always", DeprecationWarning)
-            
+
             # This previously (and incorrectly) rotated around the X axis
             vec.rotate_z_ip_rad(math.pi / 2)
-            
+
             self.assertEqual(len(w), 1)
             self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
             self.assertIn("vector3_rotate_z_rad_ip", str(w[-1].message))
-            
+
         # Verify it now correctly rotates around the Z axis
         self.assertEqual(vec, (0, 1, 0))
 
