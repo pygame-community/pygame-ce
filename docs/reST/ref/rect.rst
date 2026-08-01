@@ -6,8 +6,8 @@
 .. currentmodule:: pygame
 
 .. class:: Rect
-
-   | :sl:`pygame object for storing rectangular coordinates`
+   
+   | :sl:`Pygame object for storing rectangular coordinates.`
    | :sg:`Rect(left, top, width, height, /) -> Rect`
    | :sg:`Rect((left, top), (width, height), /) -> Rect`
    | :sg:`Rect(object, /) -> Rect`
@@ -114,539 +114,58 @@
       Beware of non-integer relative centers! For Rects (but not FRects), ``relcenter``
       will truncate the numbers in the returned tuple.
 
+   .. autopgmethod:: copy
 
-   .. method:: copy
+   .. autopgmethod:: move
 
-      | :sl:`copy the rectangle`
-      | :sg:`copy() -> Rect`
+   .. autopgmethod:: move_ip
 
-      Returns a new rectangle having the same position and size as the original.
+   .. autopgmethod:: move_to
 
-      New in pygame 1.9
+   .. autopgmethod:: inflate
 
-      .. ## Rect.copy ##
+   .. autopgmethod:: inflate_ip
 
-   .. method:: move
+   .. autopgmethod:: scale_by
 
-      | :sl:`moves the rectangle`
-      | :sg:`move(x, y, /) -> Rect`
+   .. autopgmethod:: scale_by_ip
 
-      Returns a new rectangle that is moved by the given offset. The x and y
-      arguments can be any integer value, positive or negative.
+   .. autopgmethod:: update
 
-      .. ## Rect.move ##
+   .. autopgmethod:: clamp
 
-   .. method:: move_ip
+   .. autopgmethod:: clamp_ip
 
-      | :sl:`moves the rectangle, in place`
-      | :sg:`move_ip(x, y, /) -> None`
+   .. autopgmethod:: clip
 
-      Same as the ``Rect.move()`` method, but operates in place.
+   .. autopgmethod:: clipline
 
-      .. ## Rect.move_ip ##
+   .. autopgmethod:: union
 
-   .. method:: move_to
+   .. autopgmethod:: union_ip
 
-      | :sl:`moves the rectangle to the specified position`
-      | :sg:`move_to(**kwargs) -> Rect`
+   .. autopgmethod:: unionall
 
-      Returns a new rectangle that is moved to the given position and optionally resized.
-      You must provide keyword arguments to the method such as ``center``, ``left``,
-      ``midbottom``, ``size`` that correspond to the rectangle's attributes and the
-      method will return a new rectangle whose specified attributes are set to the given value.
+   .. autopgmethod:: unionall_ip
 
-      It is similar to :meth:`Surface.get_rect` but instead of a calling it as a surface method
-      you call it as a rectangle method.
+   .. autopgmethod:: fit
 
-      .. versionadded:: 2.4.0
+   .. autopgmethod:: normalize
 
-      .. ## Rect.move_to ##
+   .. autopgmethod:: contains
 
-   .. method:: inflate
+   .. autopgmethod:: collidepoint
 
-      | :sl:`grow or shrink the rectangle size`
-      | :sg:`inflate(x, y, /) -> Rect`
+   .. autopgmethod:: colliderect
 
-      Returns a new rectangle with the size changed by the given offset. The
-      rectangle remains centered around its current center. Negative values
-      will shrink the rectangle. Note, uses integers, if the offset given is
-      too small(< 2 > -2), center will be off.
+   .. autopgmethod:: collidelist
 
-      .. ## Rect.inflate ##
+   .. autopgmethod:: collidelistall
 
-   .. method:: inflate_ip
+   .. autopgmethod:: collideobjects
 
-      | :sl:`grow or shrink the rectangle size, in place`
-      | :sg:`inflate_ip(x, y, /) -> None`
+   .. autopgmethod:: collideobjectsall
 
-      Same as the ``Rect.inflate()`` method, but operates in place.
+   .. autopgmethod:: collidedict
 
-      .. ## Rect.inflate_ip ##
-
-   .. method:: scale_by
-
-      | :sl:`scale the rectangle by given a multiplier`
-      | :sg:`scale_by(scale_by) -> Rect`
-      | :sg:`scale_by(x, y) -> Rect`
-
-      Returns a new rectangle with the size scaled by the given multipliers.
-      The rectangle remains centered around its current center. A single
-      scalar or separate width and height scalars are allowed. Values above
-      one will increase the size of the rectangle, whereas values between
-      zero and one will decrease the size of the rectangle.
-
-      .. versionadded:: 2.3.1
-
-      .. versionchanged:: 2.5.2 the argument ``scale_by`` can now be passed as a positional argument
-
-      .. ## Rect.scale_by ##
-
-   .. method:: scale_by_ip
-
-      | :sl:`grow or shrink the rectangle size, in place`
-      | :sg:`scale_by_ip(scale_by) -> None`
-      | :sg:`scale_by_ip(x, y) -> None`
-
-      Same as the ``Rect.scale_by()`` method, but operates in place.
-
-      .. versionadded:: 2.3.1
-
-      .. versionchanged:: 2.5.2 the argument ``scale_by`` can now be passed as a positional argument
-
-      .. ## Rect.scale_by_ip ##
-
-   .. method:: update
-
-      | :sl:`sets the position and size of the rectangle`
-      | :sg:`update(left, top, width, height, /) -> None`
-      | :sg:`update((left, top), (width, height), /) -> None`
-      | :sg:`update(object, /) -> None`
-
-      Sets the position and size of the rectangle, in place. See
-      parameters for :meth:`pygame.Rect` for the parameters of this function.
-
-      .. versionaddedold:: 2.0.1
-
-      .. ## Rect.update ##
-
-   .. method:: clamp
-
-      | :sl:`moves the rectangle inside another`
-      | :sg:`clamp(rect, /) -> Rect`
-
-      Returns a new rectangle that is moved to be completely inside the
-      argument Rect. If the rectangle is too large to fit inside, it is
-      centered inside the argument Rect, but its size is not changed.
-
-      .. ## Rect.clamp ##
-
-   .. method:: clamp_ip
-
-      | :sl:`moves the rectangle inside another, in place`
-      | :sg:`clamp_ip(rect, /) -> None`
-
-      Same as the ``Rect.clamp()`` method, but operates in place.
-
-      .. ## Rect.clamp_ip ##
-
-   .. method:: clip
-
-      | :sl:`crops a rectangle inside another`
-      | :sg:`clip(rect, /) -> Rect`
-
-      Returns a new rectangle that is cropped to be completely inside the
-      argument Rect. If the two rectangles do not overlap to begin with, a Rect
-      with 0 size is returned.
-
-      .. ## Rect.clip ##
-
-   .. method:: clipline
-
-      | :sl:`crops a line inside a rectangle`
-      | :sg:`clipline(x1, y1, x2, y2, /) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline(x1, y1, x2, y2, /) -> ()`
-      | :sg:`clipline((x1, y1), (x2, y2), /) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline((x1, y1), (x2, y2), /) -> ()`
-      | :sg:`clipline((x1, y1, x2, y2), /) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline((x1, y1, x2, y2), /) -> ()`
-      | :sg:`clipline(((x1, y1), (x2, y2)), /) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline(((x1, y1), (x2, y2)), /) -> ()`
-
-      Returns the coordinates of a line that is cropped to be completely inside
-      the rectangle. If the line does not overlap the rectangle, then an empty
-      tuple is returned.
-
-      The line to crop can be any of the following formats (floats can be used
-      in place of ints, but they will be truncated):
-
-         - four ints
-         - 2 lists/tuples/Vector2s of 2 ints
-         - a list/tuple of four ints
-         - a list/tuple of 2 lists/tuples/Vector2s of 2 ints
-
-      :returns: a tuple with the coordinates of the given line cropped to be
-         completely inside the rectangle is returned, if the given line does
-         not overlap the rectangle, an empty tuple is returned
-      :rtype: tuple(tuple(int, int), tuple(int, int)) or ()
-
-      :raises TypeError: if the line coordinates are not given as one of the
-         above described line formats
-
-      .. note ::
-         This method can be used for collision detection between a rect and a
-         line. See example code below.
-
-      .. note ::
-         The ``rect.bottom`` and ``rect.right`` attributes of a
-         :mod:`pygame.Rect` always lie one pixel outside of its actual border.
-
-      ::
-
-         # Example using clipline().
-         clipped_line = rect.clipline(line)
-
-         if clipped_line:
-             # If clipped_line is not an empty tuple then the line
-             # collides/overlaps with the rect. The returned value contains
-             # the endpoints of the clipped line.
-             start, end = clipped_line
-             x1, y1 = start
-             x2, y2 = end
-         else:
-             print("No clipping. The line is fully outside the rect.")
-
-      .. versionaddedold:: 2.0.0
-
-      .. ## Rect.clipline ##
-
-   .. method:: union
-
-      | :sl:`joins two rectangles into one`
-      | :sg:`union(rect, /) -> Rect`
-
-      Returns a new rectangle that completely covers the area of the two
-      provided rectangles. There may be area inside the new Rect that is not
-      covered by the originals.
-
-      .. ## Rect.union ##
-
-   .. method:: union_ip
-
-      | :sl:`joins two rectangles into one, in place`
-      | :sg:`union_ip(rect, /) -> None`
-
-      Same as the ``Rect.union()`` method, but operates in place.
-
-      .. ## Rect.union_ip ##
-
-   .. method:: unionall
-
-      | :sl:`the union of many rectangles`
-      | :sg:`unionall(rect_sequence, /) -> Rect`
-
-      Returns the union of one rectangle with a sequence of many rectangles.
-
-      .. ## Rect.unionall ##
-
-   .. method:: unionall_ip
-
-      | :sl:`the union of many rectangles, in place`
-      | :sg:`unionall_ip(rect_sequence, /) -> None`
-
-      The same as the ``Rect.unionall()`` method, but operates in place.
-
-      .. ## Rect.unionall_ip ##
-
-   .. method:: fit
-
-      | :sl:`resize and move a rectangle with aspect ratio`
-      | :sg:`fit(rect, /) -> Rect`
-
-      Returns a new rectangle that is moved and resized to fit another. The
-      aspect ratio of the original Rect is preserved, so the new rectangle may
-      be smaller than the target in either width or height.
-
-      .. ## Rect.fit ##
-
-   .. method:: normalize
-
-      | :sl:`correct negative sizes`
-      | :sg:`normalize() -> None`
-
-      This will flip the width or height of a rectangle if it has a negative
-      size. The rectangle will remain in the same place, with only the sides
-      swapped.
-
-      .. ## Rect.normalize ##
-
-   .. method:: contains
-
-      | :sl:`test if one rectangle is inside another`
-      | :sg:`contains(rect, /) -> bool`
-
-      Returns true when the argument is completely inside the Rect.
-
-      .. ## Rect.contains ##
-
-   .. method:: collidepoint
-
-      | :sl:`test if a point is inside a rectangle`
-      | :sg:`collidepoint(x, y, /) -> bool`
-      | :sg:`collidepoint((x, y), /) -> bool`
-
-      Returns true if the given point is inside the rectangle. A point along
-      the right or bottom edge is not considered to be inside the rectangle.
-
-      .. note ::
-         For collision detection between a rect and a line the :meth:`clipline`
-         method can be used.
-
-      .. ## Rect.collidepoint ##
-
-   .. method:: colliderect
-
-      | :sl:`test if two rectangles overlap`
-      | :sg:`colliderect(rect, /) -> bool`
-
-      Returns true if any portion of either rectangle overlap (except the
-      top+bottom or left+right edges).
-
-      .. note ::
-         For collision detection between a rect and a line the :meth:`clipline`
-         method can be used.
-
-      .. ## Rect.colliderect ##
-
-   .. method:: collidelist
-
-      | :sl:`test if one rectangle in a list intersects`
-      | :sg:`collidelist(list, /) -> index`
-
-      Test whether the rectangle collides with any in a sequence of rectangles.
-      The index of the first collision found is returned. If no collisions are
-      found an index of -1 is returned.
-
-      .. ## Rect.collidelist ##
-
-   .. method:: collidelistall
-
-      | :sl:`test if all rectangles in a list intersect`
-      | :sg:`collidelistall(list, /) -> indices`
-
-      Returns a list of all the indices that contain rectangles that collide
-      with the Rect. If no intersecting rectangles are found, an empty list is
-      returned.
-
-      Not only Rects are valid arguments, but these are all valid calls:
-
-      .. code-block:: python
-          :linenos:
-
-          Rect = pygame.Rect
-          r = Rect(0, 0, 10, 10)
-
-          list_of_rects = [Rect(1, 1, 1, 1), Rect(2, 2, 2, 2)]
-          indices0 = r.collidelistall(list_of_rects)
-
-          list_of_lists = [[1, 1, 1, 1], [2, 2, 2, 2]]
-          indices1 = r.collidelistall(list_of_lists)
-
-          list_of_tuples = [(1, 1, 1, 1), (2, 2, 2, 2)]
-          indices2 = r.collidelistall(list_of_tuples)
-
-          list_of_double_tuples = [((1, 1), (1, 1)), ((2, 2), (2, 2))]
-          indices3 = r.collidelistall(list_of_double_tuples)
-
-          class ObjectWithRectAttribute(object):
-              def __init__(self, r):
-                  self.rect = r
-
-          list_of_object_with_rect_attribute = [
-              ObjectWithRectAttribute(Rect(1, 1, 1, 1)),
-              ObjectWithRectAttribute(Rect(2, 2, 2, 2)),
-          ]
-          indices4 = r.collidelistall(list_of_object_with_rect_attribute)
-
-          class ObjectWithCallableRectAttribute(object):
-              def __init__(self, r):
-                  self._rect = r
-
-              def rect(self):
-                  return self._rect
-
-          list_of_object_with_callable_rect = [
-              ObjectWithCallableRectAttribute(Rect(1, 1, 1, 1)),
-              ObjectWithCallableRectAttribute(Rect(2, 2, 2, 2)),
-          ]
-          indices5 = r.collidelistall(list_of_object_with_callable_rect)
-
-
-      .. ## Rect.collidelistall ##
-
-   .. method:: collideobjects
-
-      | :sl:`test if any object in a list intersects`
-      | :sg:`collideobjects(rect_list) -> object`
-      | :sg:`collideobjects(obj_list, key=func) -> object`
-
-      Test whether the rectangle collides with any object in the sequence.
-      The object of the first collision found is returned. If no collisions are
-      found then ``None`` is returned
-
-      If key is given, then it should be a method taking an object from the list
-      as input and returning a rect like object e.g. ``lambda obj: obj.rectangle``.
-      If an object has multiple attributes of type Rect then key could return one
-      of them.
-
-      .. code-block:: python
-          :linenos:
-
-          r = Rect(1, 1, 10, 10)
-
-          rects = [
-              Rect(1, 1, 10, 10),
-              Rect(5, 5, 10, 10),
-              Rect(15, 15, 1, 1),
-              Rect(2, 2, 1, 1),
-          ]
-
-          result = r.collideobjects(rects)  # -> <rect(1, 1, 10, 10)>
-          print(result)
-
-          class ObjectWithSomRectAttribute:
-              def __init__(self, name, collision_box, draw_rect):
-                  self.name = name
-                  self.draw_rect = draw_rect
-                  self.collision_box = collision_box
-
-              def __repr__(self):
-                  return f'<{self.__class__.__name__}("{self.name}", {list(self.collision_box)}, {list(self.draw_rect)})>'
-
-          objects = [
-              ObjectWithSomRectAttribute("A", Rect(15, 15, 1, 1), Rect(150, 150, 50, 50)),
-              ObjectWithSomRectAttribute("B", Rect(1, 1, 10, 10), Rect(300, 300, 50, 50)),
-              ObjectWithSomRectAttribute("C", Rect(5, 5, 10, 10), Rect(200, 500, 50, 50)),
-          ]
-
-          # collision = r.collideobjects(objects) # this does not work because the items in the list are no Rect like object
-          collision = r.collideobjects(
-              objects, key=lambda o: o.collision_box
-          )  # -> <ObjectWithSomRectAttribute("B", [1, 1, 10, 10], [300, 300, 50, 50])>
-          print(collision)
-
-          screen_rect = r.collideobjects(objects, key=lambda o: o.draw_rect)  # -> None
-          print(screen_rect)
-
-      .. versionadded:: 2.1.3
-
-      .. ## Rect.collideobjects ##
-
-   .. method:: collideobjectsall
-
-      | :sl:`test if all objects in a list intersect`
-      | :sg:`collideobjectsall(rect_list) -> objects`
-      | :sg:`collideobjectsall(obj_list, key=func) -> objects`
-
-      Returns a list of all the objects that contain rectangles that collide
-      with the Rect. If no intersecting objects are found, an empty list is
-      returned.
-
-      If key is given, then it should be a method taking an object from the list
-      as input and returning a rect like object e.g. ``lambda obj: obj.rectangle``.
-      If an object has multiple attributes of type Rect then key could return one
-      of them.
-
-      .. code-block:: python
-          :linenos:
-
-          r = Rect(1, 1, 10, 10)
-
-          rects = [
-              Rect(1, 1, 10, 10),
-              Rect(5, 5, 10, 10),
-              Rect(15, 15, 1, 1),
-              Rect(2, 2, 1, 1),
-          ]
-
-          result = r.collideobjectsall(
-              rects
-          )  # -> [<rect(1, 1, 10, 10)>, <rect(5, 5, 10, 10)>, <rect(2, 2, 1, 1)>]
-          print(result)
-
-          class ObjectWithSomRectAttribute:
-              def __init__(self, name, collision_box, draw_rect):
-                  self.name = name
-                  self.draw_rect = draw_rect
-                  self.collision_box = collision_box
-
-              def __repr__(self):
-                  return f'<{self.__class__.__name__}("{self.name}", {list(self.collision_box)}, {list(self.draw_rect)})>'
-
-          objects = [
-              ObjectWithSomRectAttribute("A", Rect(1, 1, 10, 10), Rect(300, 300, 50, 50)),
-              ObjectWithSomRectAttribute("B", Rect(5, 5, 10, 10), Rect(200, 500, 50, 50)),
-              ObjectWithSomRectAttribute("C", Rect(15, 15, 1, 1), Rect(150, 150, 50, 50)),
-          ]
-
-          # collisions = r.collideobjectsall(objects) # this does not work because ObjectWithSomRectAttribute is not a Rect like object
-          collisions = r.collideobjectsall(
-              objects, key=lambda o: o.collision_box
-          )  # -> [<ObjectWithSomRectAttribute("A", [1, 1, 10, 10], [300, 300, 50, 50])>, <ObjectWithSomRectAttribute("B", [5, 5, 10, 10], [200, 500, 50, 50])>]
-          print(collisions)
-
-          screen_rects = r.collideobjectsall(objects, key=lambda o: o.draw_rect)  # -> []
-          print(screen_rects)
-
-      .. versionadded:: 2.1.3
-
-      .. ## Rect.collideobjectsall ##
-
-   .. method:: collidedict
-
-      | :sl:`test if one rectangle in a dictionary intersects`
-      | :sg:`collidedict(rect_dict) -> (key, value)`
-      | :sg:`collidedict(rect_dict) -> None`
-      | :sg:`collidedict(rect_dict, values=False) -> (key, value)`
-      | :sg:`collidedict(rect_dict, values=False) -> None`
-
-      Returns the first key and value pair that intersects with the calling
-      Rect object. If no collisions are found, ``None`` is returned. If
-      ``values`` is False (default) then the dict's keys will be used in the
-      collision detection, otherwise the dict's values will be used.
-
-      .. note ::
-         Rect objects cannot be used as keys in a dictionary (they are not
-         hashable), so they must be converted to a tuple.
-         e.g. ``rect.collidedict({tuple(key_rect) : value})``
-
-      .. versionchanged:: 2.4.0
-         ``values`` is now accepted as a keyword argument. Type Stub updated
-         to use boolean ``True`` or ``False``, but any truthy or falsy value
-         will be valid.
-
-      .. ## Rect.collidedict ##
-
-   .. method:: collidedictall
-
-      | :sl:`test if all rectangles in a dictionary intersect`
-      | :sg:`collidedictall(rect_dict) -> [(key, value), ...]`
-      | :sg:`collidedictall(rect_dict, values=False) -> [(key, value), ...]`
-
-      Returns a list of all the key and value pairs that intersect with the
-      calling Rect object. If no collisions are found an empty list is returned.
-      If ``values`` is False (default) then the dict's keys will be used in the
-      collision detection, otherwise the dict's values will be used.
-
-      .. note ::
-         Rect objects cannot be used as keys in a dictionary (they are not
-         hashable), so they must be converted to a tuple.
-         e.g. ``rect.collidedictall({tuple(key_rect) : value})``
-
-      .. versionchanged:: 2.4.0
-         ``values`` is now accepted as a keyword argument. Type Stub updated
-         to use boolean ``True`` or ``False``, but any truthy or falsy value
-         will be valid.
-
-      .. ## Rect.collidedictall ##
-
-   .. ## pygame.Rect ##
+   .. autopgmethod:: collidedictall
