@@ -486,23 +486,22 @@ def smoothstep(a: float, b: float, value: float, /) -> float:
 def remap(
     i_min: float, i_max: float, o_min: float, o_max: float, value: float, /
 ) -> float:
-    """Returns value smoothly interpolated between a and b.
+    """Remaps value from given input range to given output range.
 
-    Returns a number which is a smooth interpolation between ``a``
-    and ``b``. This means that the interpolation follows an s-shaped curve, with
-    change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
-    The third parameter determines how far between ``a`` and
-    ``b`` the result is going to be. Value is clamped to ``[0, 1]``.
+    Returns a number which is the value remapped from ``[i_min, i_max]`` range to
+    ``[o_min, o_max]`` range.
+    If ``i_min`` and ``i_max`` are equal, it raises a ``ValueError``.
 
-    The formula is:
+    Example:
 
-    ``a * (1 - interp) + b * interp``
+    .. code-block:: python
 
-    where:
+        >>> value = 50
+        >>> pygame.math.remap(0, 100, 0, 200, value)
+        100.0
 
-    ``interp = value * value * (3 - 2 * value)``
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.5.0
     """
 
 @deprecated("Functionality is removed")
