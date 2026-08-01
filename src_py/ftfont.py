@@ -141,7 +141,7 @@ class Font(_Font):
     def set_strikethrough(self, value):
         """set_strikethrough(bool) -> None
         control if the text is rendered struck through"""
-        self.strikethrough = value
+        self.strikethrough = bool(value)
 
     def get_strikethrough(self):
         """get_strikethrough() -> bool
