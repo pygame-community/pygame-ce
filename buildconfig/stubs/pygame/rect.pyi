@@ -29,7 +29,7 @@ _RectTypeCompatible_co = TypeVar(
 
 class _GenericRect(Collection[_N]):
     """Pygame object for storing rectangular coordinates.
-    
+
     .. versionadded:: 2.2
         Added ``FRect`` class that is functionally identical to ``Rect`` but uses
         floats instead of integers, enabling fractional precision and avoiding
@@ -245,17 +245,17 @@ class _GenericRect(Collection[_N]):
     def __copy__(self) -> Self: ...
     def copy(self) -> Self:
         """Copy the rectangle.
-        
+
         Returns a new rectangle having the same position and size as the original.
-        
+
         New in pygame 1.9
         """
     @overload
     def move(self, x: float, y: float, /) -> Self: ...
     @overload
-    def move(self, move_by: Point, /) -> Self: 
+    def move(self, move_by: Point, /) -> Self:
         """Moves the rectangle.
-        
+
         Returns a new rectangle that is moved by the given offset. The x and y
         arguments can be any integer value, positive or negative.
         """
@@ -285,7 +285,7 @@ class _GenericRect(Collection[_N]):
     @overload
     def inflate(self, inflate_by: Point, /) -> Self:
         """Grow or shrink the rectangle size.
-        
+
         Returns a new rectangle with the size changed by the given offset. The
         rectangle remains centered around its current center. Negative values
         will shrink the rectangle. Note, uses integers, if the offset given is
@@ -296,7 +296,7 @@ class _GenericRect(Collection[_N]):
     @overload
     def inflate_ip(self, inflate_by: Point, /) -> None:
         """Grow or shrink the rectangle size, in place.
-        
+
         Same as the ``Rect.inflate()`` method, but operates in place.
         """
     @overload
@@ -304,7 +304,7 @@ class _GenericRect(Collection[_N]):
     @overload
     def scale_by(self, scale_by: Point) -> Self:
         """Scale the rectangle by given a multiplier.
-        
+
         Returns a new rectangle with the size scaled by the given multipliers.
         The rectangle remains centered around its current center. A single
         scalar or separate width and height scalars are allowed. Values above
@@ -347,9 +347,7 @@ class _GenericRect(Collection[_N]):
     @overload
     def clamp(self, left_top: Point, width_height: Point, /) -> Self: ...
     @overload
-    def clamp(
-        self, left: float, top: float, width: float, height: float, /
-    ) -> Self:
+    def clamp(self, left: float, top: float, width: float, height: float, /) -> Self:
         """Moves the rectangle inside another.
 
         Returns a new rectangle that is moved to be completely inside the
@@ -361,11 +359,9 @@ class _GenericRect(Collection[_N]):
     @overload
     def clamp_ip(self, left_top: Point, width_height: Point, /) -> None: ...
     @overload
-    def clamp_ip(
-        self, left: float, top: float, width: float, height: float, /
-    ) -> None:
+    def clamp_ip(self, left: float, top: float, width: float, height: float, /) -> None:
         """Moves the rectangle inside another, in place.
-        
+
         Same as the ``Rect.clamp()`` method, but operates in place.
         """
     @overload
@@ -375,7 +371,7 @@ class _GenericRect(Collection[_N]):
     @overload
     def clip(self, left: float, top: float, width: float, height: float, /) -> Self:
         """Crops a rectangle inside another.
-        
+
         Returns a new rectangle that is cropped to be completely inside the
         argument Rect. If the two rectangles do not overlap to begin with, a Rect
         with 0 size is returned.
@@ -444,9 +440,7 @@ class _GenericRect(Collection[_N]):
     @overload
     def union(self, left_top: Point, width_height: Point, /) -> Self: ...
     @overload
-    def union(
-        self, left: float, top: float, width: float, height: float, /
-    ) -> Self:
+    def union(self, left: float, top: float, width: float, height: float, /) -> Self:
         """Joins two rectangles into one.
 
         Returns a new rectangle that completely covers the area of the two
@@ -458,16 +452,14 @@ class _GenericRect(Collection[_N]):
     @overload
     def union_ip(self, left_top: Point, width_height: Point, /) -> None: ...
     @overload
-    def union_ip(
-        self, left: float, top: float, width: float, height: float, /
-    ) -> None:
+    def union_ip(self, left: float, top: float, width: float, height: float, /) -> None:
         """Joins two rectangles into one, in place.
 
         Same as the ``Rect.union()`` method, but operates in place.
         """
     def unionall(self, rect: SequenceLike[_RectTypeCompatible_co], /) -> Self:
         """The union of many rectangles.
-        
+
         Returns the union of one rectangle with a sequence of many rectangles.
         """
     def unionall_ip(
@@ -491,25 +483,23 @@ class _GenericRect(Collection[_N]):
         """
     def normalize(self) -> None:
         """Correct negative sizes.
-        
+
         This will flip the width or height of a rectangle if it has a negative
         size. The rectangle will remain in the same place, with only the sides
         swapped.
         """
-    def __contains__(self, rect: RectLike | _N, /) -> bool: # type: ignore[override]
+    def __contains__(self, rect: RectLike | _N, /) -> bool:  # type: ignore[override]
         """Test if one rectangle is inside another.
-        
+
         Returns true when the argument is completely inside the Rect."""
     @overload
     def contains(self, rect: RectLike, /) -> bool: ...
     @overload
     def contains(self, left_top: Point, width_height: Point, /) -> bool: ...
     @overload
-    def contains(
-        self, left: float, top: float, width: float, height: float, /
-    ) -> bool:
+    def contains(self, left: float, top: float, width: float, height: float, /) -> bool:
         """Test if one rectangle is inside another.
-        
+
         Returns true when the argument is completely inside the Rect."""
     @overload
     def collidepoint(self, x: float, y: float, /) -> bool: ...
@@ -541,11 +531,9 @@ class _GenericRect(Collection[_N]):
             For collision detection between a rect and a line the :meth:`clipline`
             method can be used.
         """
-    def collidelist(
-        self, rect_list: SequenceLike[_RectTypeCompatible_co], /
-    ) -> int:
+    def collidelist(self, rect_list: SequenceLike[_RectTypeCompatible_co], /) -> int:
         """Test if one rectangle in a list intersects.
-        
+
         Test whether the rectangle collides with any in a sequence of rectangles.
         The index of the first collision found is returned. If no collisions are
         found an index of -1 is returned.
@@ -554,7 +542,7 @@ class _GenericRect(Collection[_N]):
         self, rect_list: SequenceLike[_RectTypeCompatible_co], /
     ) -> list[int]:
         """Test if all rectangles in a list intersect.
-        
+
         Returns a list of all the indices that contain rectangles that collide
         with the Rect. If no intersecting rectangles are found, an empty list is
         returned.
@@ -606,7 +594,7 @@ class _GenericRect(Collection[_N]):
         self, objects: SequenceLike[_T], key: Callable[[_T], RectLike] | None = None
     ) -> _T | None:
         """Test if any object in a list intersects.
-        
+
         Test whether the rectangle collides with any object in the sequence.
         The object of the first collision found is returned. If no collisions are
         found then ``None`` is returned
@@ -661,7 +649,7 @@ class _GenericRect(Collection[_N]):
         self, objects: SequenceLike[_T], key: Callable[[_T], RectLike] | None = None
     ) -> list[_T]:
         """Test if all objects in a list intersect.
-        
+
         Returns a list of all the objects that contain rectangles that collide
         with the Rect. If no intersecting objects are found, an empty list is
         returned.

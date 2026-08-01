@@ -6,7 +6,7 @@
 .. currentmodule:: pygame
 
 .. class:: Rect
-   
+
    | :sl:`Pygame object for storing rectangular coordinates.`
    | :sg:`Rect(left, top, width, height, /) -> Rect`
    | :sg:`Rect((left, top), (width, height), /) -> Rect`
