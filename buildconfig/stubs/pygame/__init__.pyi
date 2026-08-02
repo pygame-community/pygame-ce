@@ -78,7 +78,16 @@ from .rwobject import (
     encode_string as encode_string,
 )
 
-from .version import SDL as SDL, rev as rev, ver as ver, vernum as vernum
+from .version import (
+    SDL as SDL,
+    branch as branch,
+    ci_build as ci_build,
+    commit as commit,
+    rev as rev,
+    ver as ver,
+    vernum as vernum,
+)
+
 from .constants import (
     ACTIVEEVENT as ACTIVEEVENT,
     ANYFORMAT as ANYFORMAT,
