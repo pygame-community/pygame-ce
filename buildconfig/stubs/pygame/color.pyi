@@ -152,6 +152,7 @@ class Color(Collection[int]):
     The ``Oklab`` representation of the Color. The ``Oklab`` components are in
     the ranges ``L`` = [0, 1], ``a`` = [-.4, .4], ``b`` = [-.4, .4], A = [0,
     1]. ``L`` is perceived lightness, ``a`` is how green/red the color is, ``b`` is how blue/yellow it is, and ``A`` is alpha.
+    If ``A`` is not provided, 1.0 will be used.
     Note that this will not return the absolutely exact ``Oklab`` values for the set ``RGB``
     values in all cases. Due to the ``RGB`` mapping from 0-255 and the
     ``Oklab`` mapping from 0-1 or -.4-.4 rounding errors may cause the ``Oklab`` values to
@@ -166,6 +167,7 @@ class Color(Collection[int]):
     The ``Oklch`` representation of the Color. The ``Oklch`` components are in
     the ranges ``L`` = [0, 1], ``C`` = [0, .4], ``h`` = [-180, 180], A = [0,
     1]. ``L`` is perceived lightness, ``C`` is the chroma, ``h`` is the angle of hue in degrees, and ``A`` is alpha.
+    If ``A`` is not provided, 1.0 will be used.
     Note that while ``h`` will always be returned in the [-180,180] range, any angle is acceptable as input.
     Note that this will not return the absolutely exact ``Oklch`` values for the set ``RGB``
     values in all cases. Due to the ``RGB`` mapping from 0-255 and the
@@ -286,10 +288,15 @@ class Color(Collection[int]):
 
     @overload
     @classmethod
-    def from_oklab(cls, object: tuple[float, float, float], /) -> Color: ...
+    def from_oklab(
+        cls, object: tuple[float, float, float] | tuple[float, float, float, float], /
+    ) -> Color: ...
     @overload
     @classmethod
     def from_oklab(cls, l: float, a: float, b: float, /) -> Color: ...
+    @overload
+    @classmethod
+    def from_oklab(cls, l: float, a: float, b: float, alpha: float, /) -> Color: ...
     @classmethod  # type: ignore
     def from_oklab(cls, *args) -> Color:  # type: ignore
         """Returns a Color object from a Oklab representation.
@@ -302,10 +309,15 @@ class Color(Collection[int]):
 
     @overload
     @classmethod
-    def from_oklch(cls, object: tuple[float, float, float], /) -> Color: ...
+    def from_oklch(
+        cls, object: tuple[float, float, float] | tuple[float, float, float], /
+    ) -> Color: ...
     @overload
     @classmethod
     def from_oklch(cls, l: float, c: float, h: float, /) -> Color: ...
+    @overload
+    @classmethod
+    def from_oklch(cls, l: float, c: float, h: float, alpha: float, /) -> Color: ...
     @classmethod  # type: ignore
     def from_oklch(cls, *args) -> Color:  # type: ignore
         """Returns a Color object from a Oklch representation.
