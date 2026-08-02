@@ -310,7 +310,7 @@ class Color(Collection[int]):
     def from_oklch(cls, *args) -> Color:  # type: ignore
         """Returns a Color object from a Oklch representation.
 
-        Creates a Color object from the given Oklch components. Refer to :attr:`Color.Oklch`
+        Creates a Color object from the given Oklch components. Refer to :attr:`Color.oklch`
         for more information.
 
         .. versionadded:: 2.5.8

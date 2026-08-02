@@ -847,16 +847,17 @@ class ColorTypeTest(unittest.TestCase):
         oklch_tuple = pygame.Color.from_oklch((0.62795, 0.25768, 29.23388))
         oklch_instance = pygame.Color(0, 0, 0, 0).from_oklch(0.62795, 0.25768, 29.23388)
 
-        self.assertEqual(oklch, (254, 0, 0))
-        self.assertEqual(oklch_tuple, (254, 0, 0))
-        self.assertEqual(oklch_instance, (254, 0, 0))
+        self.assertEqual(oklch, (255, 0, 0))
+        self.assertEqual(oklch_tuple, (255, 0, 0))
+        self.assertEqual(oklch_instance, (255, 0, 0))
 
         self.assertRaises(
-            ValueError, lambda: pygame.Color.from_oklab(0.5, 0.5, 0.5, "lel", "foo")
+            ValueError, lambda: pygame.Color.from_oklch(0.5, 0.2, 0.2, "lel", "foo")
         )
         self.assertRaises(
-            ValueError, lambda: pygame.Color.from_oklab((0.5, 0.5, 0.5, 0.5))
+            ValueError, lambda: pygame.Color.from_oklch((0.5, 0.2, 0.2, 0.5))
         )
+        self.assertRaises(ValueError, lambda: pygame.Color.from_oklch((0.5, 0.5, 20)))
 
         # Test a bunch of colors
         colors = {
@@ -870,7 +871,6 @@ class ColorTypeTest(unittest.TestCase):
         }
         for rgb, lch in colors.items():
             c = pygame.Color(rgb)
-            print(rgb, lch, c.oklab, c.oklch)
             self.assertAlmostEqual(c.oklch[0], lch[0], 4)
             self.assertAlmostEqual(c.oklch[1], lch[1], 4)
 
@@ -1072,17 +1072,17 @@ class ColorTypeTest(unittest.TestCase):
 
     def test_oklab__all_elements_within_limits(self):
         for c in rgba_combos_Color_generator():
-            l, a, b = c.oklab
-            self.assertTrue(0 <= l <= 1)
+            lightness, a, b = c.oklab
+            self.assertTrue(0 <= lightness <= 1)
             self.assertTrue(-0.4 <= a <= 0.4)
             self.assertTrue(-0.4 <= b <= 0.4)
 
     def test_oklch__all_elements_within_limits(self):
         for c in rgba_combos_Color_generator():
-            l, C, h = c.oklch
-            self.assertTrue(0 <= l <= 1)
-            self.assertTrue(0 <= C <= 0.4)
-            self.assertTrue(-180 <= h <= 180)
+            lightness, chroma, hue = c.oklch
+            self.assertTrue(0 <= lightness <= 1)
+            self.assertTrue(0 <= chroma <= 0.4)
+            self.assertTrue(-180 <= hue <= 180)
 
     def test_i1i2i3__all_elements_within_limits(self):
         for c in rgba_combos_Color_generator():

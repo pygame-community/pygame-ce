@@ -294,7 +294,7 @@ static PyGetSetDef _color_getsets[] = {
     {"oklab", (getter)_color_get_oklab, (setter)_color_set_oklab,
      DOC_COLOR_OKLAB, NULL},
     {"oklch", (getter)_color_get_oklch, (setter)_color_set_oklch,
-     DOC_COLOR_OKLAB, NULL},
+     DOC_COLOR_OKLCH, NULL},
     {"normalized", (getter)_color_get_normalized,
      (setter)_color_set_normalized, DOC_COLOR_NORMALIZED, NULL},
     {"hex", (getter)_color_get_hex, (setter)_color_set_hex, DOC_COLOR_HEX,
@@ -1508,7 +1508,7 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
     return 0;
 }
 
-double
+static double
 _correct_srgb_channel_to_linear(double x)
 {
     if (x >= 0.04045) {
@@ -1519,7 +1519,7 @@ _correct_srgb_channel_to_linear(double x)
     }
 }
 
-double
+static double
 _correct_srgb_channel_to_linear_inv(double x)
 {
     if (x >= 0.0031308) {
@@ -1546,45 +1546,49 @@ _color_get_rgb_to_oklab(Uint8 rgb[3], double lab[3])
         They can be found here: https://bottosson.github.io/posts/oklab/
     */
 
-    double l =
-        0.4122214708f * red + 0.5363325363f * green + 0.0514459929f * blue;
-    double m =
-        0.2119034982f * red + 0.6806995451f * green + 0.1073969566f * blue;
-    double s =
-        0.0883024619f * red + 0.2817188376f * green + 0.6299787005f * blue;
+    double l = 0.4122214708 * red + 0.5363325363 * green + 0.0514459929 * blue;
+    double m = 0.2119034982 * red + 0.6806995451 * green + 0.1073969566 * blue;
+    double s = 0.0883024619 * red + 0.2817188376 * green + 0.6299787005 * blue;
 
     double l_ = cbrt(l);
     double m_ = cbrt(m);
     double s_ = cbrt(s);
 
-    lab[0] = 0.2104542553f * l_ + 0.7936177850f * m_ - 0.0040720468f * s_;
-    lab[1] = 1.9779984951f * l_ - 2.4285922050f * m_ + 0.4505937099f * s_;
-    lab[2] = 0.0259040371f * l_ + 0.7827717662f * m_ - 0.8086757660f * s_;
+    lab[0] = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_;
+    lab[1] = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_;
+    lab[2] = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_;
+}
+
+static Uint8
+_srgb_channel_to_byte(double x)
+{
+    x = _correct_srgb_channel_to_linear_inv(x) * 255.0;
+    if (x > 255.0) {
+        return 255;
+    }
+    if (x < 0.0 || isnan(x)) {
+        return 0;
+    }
+    return (Uint8)(x + .5);
 }
 
 static void
 _color_get_oklab_to_rgb(double lab[3], Uint8 rgb[3])
 {
-    double l_ = lab[0] + 0.3963377774f * lab[1] + 0.2158037573f * lab[2];
-    double m_ = lab[0] - 0.1055613458f * lab[1] - 0.0638541728f * lab[2];
-    double s_ = lab[0] - 0.0894841775f * lab[1] - 1.2914855480f * lab[2];
+    double l_ = lab[0] + 0.3963377774 * lab[1] + 0.2158037573 * lab[2];
+    double m_ = lab[0] - 0.1055613458 * lab[1] - 0.0638541728 * lab[2];
+    double s_ = lab[0] - 0.0894841775 * lab[1] - 1.2914855480 * lab[2];
 
     double l = l_ * l_ * l_;
     double m = m_ * m_ * m_;
     double s = s_ * s_ * s_;
 
-    rgb[0] = (Uint8)(_correct_srgb_channel_to_linear_inv(+4.0767416621f * l -
-                                                         3.3077115913f * m +
-                                                         0.2309699292f * s) *
-                     255);
-    rgb[1] = (Uint8)(_correct_srgb_channel_to_linear_inv(-1.2684380046f * l +
-                                                         2.6097574011f * m -
-                                                         0.3413193965f * s) *
-                     255);
-    rgb[2] = (Uint8)(_correct_srgb_channel_to_linear_inv(-0.0041960863f * l -
-                                                         0.7034186147f * m +
-                                                         1.7076147010f * s) *
-                     255);
+    rgb[0] = _srgb_channel_to_byte(+4.0767416621 * l - 3.3077115913 * m +
+                                   0.2309699292 * s);
+    rgb[1] = _srgb_channel_to_byte(-1.2684380046 * l + 2.6097574011 * m -
+                                   0.3413193965 * s);
+    rgb[2] = _srgb_channel_to_byte(-0.0041960863 * l - 0.7034186147 * m +
+                                   1.7076147010 * s);
 }
 
 static PyObject *
@@ -1610,7 +1614,7 @@ _color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
         return -1;
     }
 
-    /* I1 */
+    /* L */
     item = PySequence_GetItem(value, 0);
     if (!item || !_get_double(item, &(lab[0])) || lab[0] < 0 || lab[0] > 1) {
         Py_XDECREF(item);
@@ -1619,7 +1623,7 @@ _color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
     }
     Py_DECREF(item);
 
-    /* I2 */
+    /* a */
     item = PySequence_GetItem(value, 1);
     if (!item || !_get_double(item, &(lab[1])) || lab[1] < -.4 ||
         lab[1] > .4) {
@@ -1629,7 +1633,7 @@ _color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
     }
     Py_DECREF(item);
 
-    /* I2 */
+    /* b */
     item = PySequence_GetItem(value, 2);
     if (!item || !_get_double(item, &(lab[2])) || lab[2] < -.4 ||
         lab[2] > .4) {
@@ -1643,6 +1647,10 @@ _color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
 
     return 0;
 }
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 static PyObject *
 _color_get_oklch(pgColorObject *color, void *closure)
@@ -1664,14 +1672,14 @@ _color_set_oklch(pgColorObject *color, PyObject *value, void *closure)
     PyObject *item;
     double lch[3] = {0, 0, 0};
 
-    DEL_ATTR_NOT_SUPPORTED_CHECK("oklab", value);
+    DEL_ATTR_NOT_SUPPORTED_CHECK("oklch", value);
 
     if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
         PyErr_SetString(PyExc_ValueError, "invalid oklch value");
         return -1;
     }
 
-    /* I1 */
+    /* L */
     item = PySequence_GetItem(value, 0);
     if (!item || !_get_double(item, &(lch[0])) || lch[0] < 0 || lch[0] > 1) {
         Py_XDECREF(item);
@@ -1680,7 +1688,7 @@ _color_set_oklch(pgColorObject *color, PyObject *value, void *closure)
     }
     Py_DECREF(item);
 
-    /* I2 */
+    /* C */
     item = PySequence_GetItem(value, 1);
     if (!item || !_get_double(item, &(lch[1])) || lch[1] < 0 || lch[1] > .4) {
         Py_XDECREF(item);
@@ -1689,7 +1697,7 @@ _color_set_oklch(pgColorObject *color, PyObject *value, void *closure)
     }
     Py_DECREF(item);
 
-    /* I2 */
+    /* h */
     item = PySequence_GetItem(value, 2);
     if (!item || !_get_double(item, &(lch[2]))) {
         Py_XDECREF(item);
