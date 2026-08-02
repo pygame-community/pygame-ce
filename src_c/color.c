@@ -103,6 +103,8 @@ _color_from_space(char *space, PyObject *args);
 COLOR_FROM_SPACE(hsva);
 COLOR_FROM_SPACE(hsla);
 COLOR_FROM_SPACE(cmy);
+COLOR_FROM_SPACE(oklab);
+COLOR_FROM_SPACE(oklch);
 COLOR_FROM_SPACE(i1i2i3);
 COLOR_FROM_SPACE(normalized);
 COLOR_FROM_SPACE(hex);
@@ -141,6 +143,14 @@ static PyObject *
 _color_get_cmy(pgColorObject *, void *);
 static int
 _color_set_cmy(pgColorObject *, PyObject *, void *);
+static PyObject *
+_color_get_oklab(pgColorObject *color, void *closure);
+static int
+_color_set_oklab(pgColorObject *, PyObject *, void *);
+static PyObject *
+_color_get_oklch(pgColorObject *color, void *closure);
+static int
+_color_set_oklch(pgColorObject *, PyObject *, void *);
 static PyObject *
 _color_get_normalized(pgColorObject *, void *);
 static int
@@ -229,6 +239,10 @@ static PyMethodDef _color_methods[] = {
      DOC_COLOR_FROMHSLA},
     {"from_cmy", (PyCFunction)_color_from_cmy, METH_CLASS | METH_VARARGS,
      DOC_COLOR_FROMCMY},
+    {"from_oklab", (PyCFunction)_color_from_oklab, METH_CLASS | METH_VARARGS,
+     DOC_COLOR_FROMOKLAB},
+    {"from_oklch", (PyCFunction)_color_from_oklch, METH_CLASS | METH_VARARGS,
+     DOC_COLOR_FROMOKLCH},
     {"from_i1i2i3", (PyCFunction)_color_from_i1i2i3, METH_CLASS | METH_VARARGS,
      DOC_COLOR_FROMI1I2I3},
     {"from_normalized", (PyCFunction)_color_from_normalized,
@@ -277,6 +291,10 @@ static PyGetSetDef _color_getsets[] = {
      DOC_COLOR_I1I2I3, NULL},
     {"cmy", (getter)_color_get_cmy, (setter)_color_set_cmy, DOC_COLOR_CMY,
      NULL},
+    {"oklab", (getter)_color_get_oklab, (setter)_color_set_oklab,
+     DOC_COLOR_OKLAB, NULL},
+    {"oklch", (getter)_color_get_oklch, (setter)_color_set_oklch,
+     DOC_COLOR_OKLAB, NULL},
     {"normalized", (getter)_color_get_normalized,
      (setter)_color_set_normalized, DOC_COLOR_NORMALIZED, NULL},
     {"hex", (getter)_color_get_hex, (setter)_color_set_hex, DOC_COLOR_HEX,
@@ -722,6 +740,12 @@ _color_from_space(char *space, PyObject *args)
     }
     else if (strcmp(space, "cmy") == 0) {
         set_success = _color_set_cmy(color, args, NULL);
+    }
+    else if (strcmp(space, "oklab") == 0) {
+        set_success = _color_set_oklab(color, args, NULL);
+    }
+    else if (strcmp(space, "oklch") == 0) {
+        set_success = _color_set_oklch(color, args, NULL);
     }
     else if (strcmp(space, "i1i2i3") == 0) {
         set_success = _color_set_i1i2i3(color, args, NULL);
@@ -1480,6 +1504,210 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
     color->data[0] = (Uint8)((1.0 - cmy[0]) * 255);
     color->data[1] = (Uint8)((1.0 - cmy[1]) * 255);
     color->data[2] = (Uint8)((1.0 - cmy[2]) * 255);
+
+    return 0;
+}
+
+double
+_correct_srgb_channel_to_linear(double x)
+{
+    if (x >= 0.04045) {
+        return pow(((x + 0.055) / (1 + 0.055)), 2.4);
+    }
+    else {
+        return x / 12.92;
+    }
+}
+
+double
+_correct_srgb_channel_to_linear_inv(double x)
+{
+    if (x >= 0.0031308) {
+        return (1.055) * pow(x, 1.0 / 2.4) - 0.055;
+    }
+    else {
+        return 12.92 * x;
+    }
+}
+
+static void
+_color_get_rgb_to_oklab(Uint8 rgb[3], double lab[3])
+{
+    /* Normalize */
+    double red = rgb[0] / 255.0;
+    double green = rgb[1] / 255.0;
+    double blue = rgb[2] / 255.0;
+    red = _correct_srgb_channel_to_linear(red);
+    green = _correct_srgb_channel_to_linear(green);
+    blue = _correct_srgb_channel_to_linear(blue);
+
+    /*
+        These numbers come from the matrix definition of OKLab
+        They can be found here: https://bottosson.github.io/posts/oklab/
+    */
+
+    double l =
+        0.4122214708f * red + 0.5363325363f * green + 0.0514459929f * blue;
+    double m =
+        0.2119034982f * red + 0.6806995451f * green + 0.1073969566f * blue;
+    double s =
+        0.0883024619f * red + 0.2817188376f * green + 0.6299787005f * blue;
+
+    double l_ = cbrt(l);
+    double m_ = cbrt(m);
+    double s_ = cbrt(s);
+
+    lab[0] = 0.2104542553f * l_ + 0.7936177850f * m_ - 0.0040720468f * s_;
+    lab[1] = 1.9779984951f * l_ - 2.4285922050f * m_ + 0.4505937099f * s_;
+    lab[2] = 0.0259040371f * l_ + 0.7827717662f * m_ - 0.8086757660f * s_;
+}
+
+static void
+_color_get_oklab_to_rgb(double lab[3], Uint8 rgb[3])
+{
+    double l_ = lab[0] + 0.3963377774f * lab[1] + 0.2158037573f * lab[2];
+    double m_ = lab[0] - 0.1055613458f * lab[1] - 0.0638541728f * lab[2];
+    double s_ = lab[0] - 0.0894841775f * lab[1] - 1.2914855480f * lab[2];
+
+    double l = l_ * l_ * l_;
+    double m = m_ * m_ * m_;
+    double s = s_ * s_ * s_;
+
+    rgb[0] = (Uint8)(_correct_srgb_channel_to_linear_inv(+4.0767416621f * l -
+                                                         3.3077115913f * m +
+                                                         0.2309699292f * s) *
+                     255);
+    rgb[1] = (Uint8)(_correct_srgb_channel_to_linear_inv(-1.2684380046f * l +
+                                                         2.6097574011f * m -
+                                                         0.3413193965f * s) *
+                     255);
+    rgb[2] = (Uint8)(_correct_srgb_channel_to_linear_inv(-0.0041960863f * l -
+                                                         0.7034186147f * m +
+                                                         1.7076147010f * s) *
+                     255);
+}
+
+static PyObject *
+_color_get_oklab(pgColorObject *color, void *closure)
+{
+    double lab[3] = {0, 0, 0};
+
+    _color_get_rgb_to_oklab(color->data, lab);
+
+    return Py_BuildValue("(fff)", lab[0], lab[1], lab[2]);
+}
+
+static int
+_color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
+{
+    PyObject *item;
+    double lab[3] = {0, 0, 0};
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK("oklab", value);
+
+    if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
+        PyErr_SetString(PyExc_ValueError, "invalid oklab value");
+        return -1;
+    }
+
+    /* I1 */
+    item = PySequence_GetItem(value, 0);
+    if (!item || !_get_double(item, &(lab[0])) || lab[0] < 0 || lab[0] > 1) {
+        Py_XDECREF(item);
+        PyErr_SetString(PyExc_ValueError, "invalid oklab value");
+        return -1;
+    }
+    Py_DECREF(item);
+
+    /* I2 */
+    item = PySequence_GetItem(value, 1);
+    if (!item || !_get_double(item, &(lab[1])) || lab[1] < -.4 ||
+        lab[1] > .4) {
+        Py_XDECREF(item);
+        PyErr_SetString(PyExc_ValueError, "invalid oklab value");
+        return -1;
+    }
+    Py_DECREF(item);
+
+    /* I2 */
+    item = PySequence_GetItem(value, 2);
+    if (!item || !_get_double(item, &(lab[2])) || lab[2] < -.4 ||
+        lab[2] > .4) {
+        Py_XDECREF(item);
+        PyErr_SetString(PyExc_ValueError, "invalid oklab value");
+        return -1;
+    }
+    Py_DECREF(item);
+
+    _color_get_oklab_to_rgb(lab, color->data);
+
+    return 0;
+}
+
+static PyObject *
+_color_get_oklch(pgColorObject *color, void *closure)
+{
+    double lab[3] = {0, 0, 0};
+
+    _color_get_rgb_to_oklab(color->data, lab);
+
+    double chroma = sqrt(lab[1] * lab[1] + lab[2] * lab[2]);
+    double hue_radians = atan2(lab[2], lab[1]);
+    double hue_degrees = hue_radians * (180.0 / M_PI);
+
+    return Py_BuildValue("(fff)", lab[0], chroma, hue_degrees);
+}
+
+static int
+_color_set_oklch(pgColorObject *color, PyObject *value, void *closure)
+{
+    PyObject *item;
+    double lch[3] = {0, 0, 0};
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK("oklab", value);
+
+    if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
+        PyErr_SetString(PyExc_ValueError, "invalid oklch value");
+        return -1;
+    }
+
+    /* I1 */
+    item = PySequence_GetItem(value, 0);
+    if (!item || !_get_double(item, &(lch[0])) || lch[0] < 0 || lch[0] > 1) {
+        Py_XDECREF(item);
+        PyErr_SetString(PyExc_ValueError, "invalid oklch value");
+        return -1;
+    }
+    Py_DECREF(item);
+
+    /* I2 */
+    item = PySequence_GetItem(value, 1);
+    if (!item || !_get_double(item, &(lch[1])) || lch[1] < 0 || lch[1] > .4) {
+        Py_XDECREF(item);
+        PyErr_SetString(PyExc_ValueError, "invalid oklch value");
+        return -1;
+    }
+    Py_DECREF(item);
+
+    /* I2 */
+    item = PySequence_GetItem(value, 2);
+    if (!item || !_get_double(item, &(lch[2]))) {
+        Py_XDECREF(item);
+        PyErr_SetString(PyExc_ValueError, "invalid oklch value");
+        return -1;
+    }
+    Py_DECREF(item);
+
+    /* Convert h from degrees to radians for the trig functions*/
+    lch[2] = lch[2] * (M_PI / 180.0);
+
+    double lab[3] = {0, 0, 0};
+
+    lab[0] = lch[0];
+    lab[1] = lch[1] * cos(lch[2]);
+    lab[2] = lch[1] * sin(lch[2]);
+
+    _color_get_oklab_to_rgb(lab, color->data);
 
     return 0;
 }

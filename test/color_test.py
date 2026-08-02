@@ -802,6 +802,87 @@ class ColorTypeTest(unittest.TestCase):
             ValueError, lambda: pygame.Color.from_cmy((0.5, 0.5, 0.5, 0.5))
         )
 
+    def test_from_oklab(self):
+        # Test each method of construction
+        oklab = pygame.Color.from_oklab(0.62796, 0.22486, 0.12585)  # FF0000
+        oklab_tuple = pygame.Color.from_oklab((0.62796, 0.22486, 0.12585))
+        oklab_instance = pygame.Color(0, 0, 0, 0).from_oklab(0.62796, 0.22486, 0.12585)
+
+        self.assertEqual(oklab, (255, 0, 0))
+        self.assertEqual(oklab_tuple, (255, 0, 0))
+        self.assertEqual(oklab_instance, (255, 0, 0))
+
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_oklab(0.5, 0.5, 0.5, "lel", "foo")
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_oklab((0.5, 0.5, 0.5, 0.5))
+        )
+
+        # Test a bunch of colors
+        colors = {
+            (255, 0, 0): (0.62796, 0.22486, 0.12585),
+            (0, 255, 255): (0.90540, -0.14944, -0.0394),
+            (255, 255, 255): (1, 0, 0),
+            (0, 255, 0): (0.86644, -0.23389, 0.1795),
+            (0, 0, 0): (0, 0, 0),
+            (32, 65, 123): (0.38369, -0.01702, -0.10469),
+            (250, 60, 130): (0.66107, 0.22719, 0.01643),
+            (15, 175, 23): (0.65489, -0.17216, 0.13022),
+        }
+        for rgb, lab in colors.items():
+            c = pygame.Color(rgb)
+            self.assertAlmostEqual(c.oklab[0], lab[0], 4)
+            self.assertAlmostEqual(c.oklab[1], lab[1], 4)
+            self.assertAlmostEqual(c.oklab[2], lab[2], 4)
+
+            c = pygame.Color.from_oklab(lab)
+            self.assertAlmostEqual(c.rgb[0], rgb[0], delta=1)
+            self.assertAlmostEqual(c.rgb[1], rgb[1], delta=1)
+            self.assertAlmostEqual(c.rgb[2], rgb[2], delta=1)
+
+    def test_from_oklch(self):
+        # Test each method of construction
+        oklch = pygame.Color.from_oklch(0.62795, 0.25768, 29.23388)  # FF0000
+        oklch_tuple = pygame.Color.from_oklch((0.62795, 0.25768, 29.23388))
+        oklch_instance = pygame.Color(0, 0, 0, 0).from_oklch(0.62795, 0.25768, 29.23388)
+
+        self.assertEqual(oklch, (254, 0, 0))
+        self.assertEqual(oklch_tuple, (254, 0, 0))
+        self.assertEqual(oklch_instance, (254, 0, 0))
+
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_oklab(0.5, 0.5, 0.5, "lel", "foo")
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_oklab((0.5, 0.5, 0.5, 0.5))
+        )
+
+        # Test a bunch of colors
+        colors = {
+            (255, 0, 0): (0.62795, 0.25768, 29.23388),
+            (0, 255, 0): (0.86643, 0.29482, 142.49533),
+            (0, 0, 255): (0.45201, 0.31321, -95.94797),
+            (0, 0, 0): (0, 0, 0),
+            (255, 255, 255): (1, 0, 0),
+            (59, 130, 246): (0.62308, 0.18801, -100.18546),
+            (65, 32, 2): (0.28352, 0.06533, 57.9107),
+        }
+        for rgb, lch in colors.items():
+            c = pygame.Color(rgb)
+            print(rgb, lch, c.oklab, c.oklch)
+            self.assertAlmostEqual(c.oklch[0], lch[0], 4)
+            self.assertAlmostEqual(c.oklch[1], lch[1], 4)
+
+            # When chroma is close to zero, hue angle is meaningless and produces arbitrary values according to rounding, so skip it
+            if lch[1] >= 0.01:
+                self.assertAlmostEqual(c.oklch[2], lch[2], 4)
+
+            c = pygame.Color.from_oklch(lch)
+            self.assertAlmostEqual(c.rgb[0], rgb[0], delta=1)
+            self.assertAlmostEqual(c.rgb[1], rgb[1], delta=1)
+            self.assertAlmostEqual(c.rgb[2], rgb[2], delta=1)
+
     def test_from_hsva(self):
         hsva = pygame.Color.from_hsva(0, 100, 100, 100)
         hsva_tuple = pygame.Color.from_hsva((0, 100, 100, 100))
@@ -989,6 +1070,20 @@ class ColorTypeTest(unittest.TestCase):
             self.assertTrue(0 <= m <= 1)
             self.assertTrue(0 <= y <= 1)
 
+    def test_oklab__all_elements_within_limits(self):
+        for c in rgba_combos_Color_generator():
+            l, a, b = c.oklab
+            self.assertTrue(0 <= l <= 1)
+            self.assertTrue(-0.4 <= a <= 0.4)
+            self.assertTrue(-0.4 <= b <= 0.4)
+
+    def test_oklch__all_elements_within_limits(self):
+        for c in rgba_combos_Color_generator():
+            l, C, h = c.oklch
+            self.assertTrue(0 <= l <= 1)
+            self.assertTrue(0 <= C <= 0.4)
+            self.assertTrue(-180 <= h <= 180)
+
     def test_i1i2i3__all_elements_within_limits(self):
         for c in rgba_combos_Color_generator():
             i1, i2, i3 = c.i1i2i3
@@ -1086,6 +1181,12 @@ class ColorTypeTest(unittest.TestCase):
     def test_cmy__sanity_testing_converted_should_not_raise(self):
         self.colorspaces_converted_should_not_raise("cmy")
 
+    def test_oklab__sanity_testing_converted_should_not_raise(self):
+        self.colorspaces_converted_should_not_raise("oklab")
+
+    def test_oklch__sanity_testing_converted_should_not_raise(self):
+        self.colorspaces_converted_should_not_raise("oklch")
+
     def test_i1i2i3__sanity_testing_converted_should_not_raise(self):
         self.colorspaces_converted_should_not_raise("i1i2i3")
 
@@ -1109,7 +1210,7 @@ class ColorTypeTest(unittest.TestCase):
                 self.assertTrue(abs(other.b - c.b) <= 1)
                 self.assertTrue(abs(other.g - c.g) <= 1)
                 # CMY and I1I2I3 do not care about the alpha
-                if prop not in ("cmy", "i1i2i3"):
+                if prop not in ("cmy", "oklab", "oklch", "i1i2i3"):
                     self.assertTrue(abs(other.a - c.a) <= 1)
 
             except ValueError:
@@ -1123,6 +1224,12 @@ class ColorTypeTest(unittest.TestCase):
 
     def test_cmy__sanity_testing_converted_should_equate_bar_rounding(self):
         self.colorspaces_converted_should_equate_bar_rounding("cmy")
+
+    def test_oklab__sanity_testing_converted_should_equate_bar_rounding(self):
+        self.colorspaces_converted_should_equate_bar_rounding("oklab")
+
+    def test_oklch__sanity_testing_converted_should_equate_bar_rounding(self):
+        self.colorspaces_converted_should_equate_bar_rounding("oklch")
 
     def test_i1i2i3__sanity_testing_converted_should_equate_bar_rounding(self):
         self.colorspaces_converted_should_equate_bar_rounding("i1i2i3")

@@ -146,6 +146,35 @@ class Color(Collection[int]):
     differ slightly from what you might expect.
     """
 
+    oklab: tuple[float, float, float]
+    """Gets or sets the Oklab representation of the Color.
+
+    The ``Oklab`` representation of the Color. The ``Oklab`` components are in
+    the ranges ``L`` = [0, 1], ``a`` = [-.4, .4], ``b`` = [-.4, .4].
+    ``L`` is perceived lightness, ``a`` is how green/red the color is, and ``b`` is how blue/yellow it is.
+    Note that this will not return the absolutely exact ``Oklab`` values for the set ``RGB``
+    values in all cases. Due to the ``RGB`` mapping from 0-255 and the
+    ``Oklab`` mapping from 0-1 or -.4-.4 rounding errors may cause the ``Oklab`` values to
+    differ slightly from what you might expect.
+
+    .. versionadded:: 2.5.8
+    """
+
+    oklch: tuple[float, float, float]
+    """Gets or sets the Oklch representation of the Color.
+
+    The ``Oklch`` representation of the Color. The ``Oklch`` components are in
+    the ranges ``L`` = [0, 1], ``C`` = [0, .4], ``h`` = [-180, 180].
+    ``L`` is perceived lightness, ``C`` is the chroma, and ``h`` is the angle of hue in degrees.
+    Note that while ``h`` will always be returned in the [-180,180] range, any angle is acceptable as input.
+    Note that this will not return the absolutely exact ``Oklch`` values for the set ``RGB``
+    values in all cases. Due to the ``RGB`` mapping from 0-255 and the
+    ``Oklch`` mapping from 0-1, 0-.4, and -180-180 rounding errors may cause the ``Oklch`` values to
+    differ slightly from what you might expect. This is especially the case as chroma approaches zero.
+
+    .. versionadded:: 2.5.8
+    """
+
     hsva: tuple[float, float, float, float]
     """Gets or sets the HSVA representation of the Color.
 
@@ -253,6 +282,38 @@ class Color(Collection[int]):
         for more information.
 
         .. versionadded:: 2.3.1
+        """
+
+    @overload
+    @classmethod
+    def from_oklab(cls, object: tuple[float, float, float], /) -> Color: ...
+    @overload
+    @classmethod
+    def from_oklab(cls, l: float, a: float, b: float, /) -> Color: ...
+    @classmethod  # type: ignore
+    def from_oklab(cls, *args) -> Color:  # type: ignore
+        """Returns a Color object from a Oklab representation.
+
+        Creates a Color object from the given Oklab components. Refer to :attr:`Color.oklab`
+        for more information.
+
+        .. versionadded:: 2.5.8
+        """
+
+    @overload
+    @classmethod
+    def from_oklch(cls, object: tuple[float, float, float], /) -> Color: ...
+    @overload
+    @classmethod
+    def from_oklch(cls, l: float, c: float, h: float, /) -> Color: ...
+    @classmethod  # type: ignore
+    def from_oklch(cls, *args) -> Color:  # type: ignore
+        """Returns a Color object from a Oklch representation.
+
+        Creates a Color object from the given Oklch components. Refer to :attr:`Color.Oklch`
+        for more information.
+
+        .. versionadded:: 2.5.8
         """
 
     @overload
