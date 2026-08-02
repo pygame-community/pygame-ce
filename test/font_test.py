@@ -585,6 +585,11 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(f.strikethrough)
         f.strikethrough = False
         self.assertFalse(f.strikethrough)
+        # a non-bool value is coerced to a bool
+        f.strikethrough = 4
+        self.assertIs(f.strikethrough, True)
+        f.strikethrough = 0
+        self.assertIs(f.strikethrough, False)
 
     def test_set_align_property(self):
         if pygame_font.__name__ == "pygame.ftfont":

@@ -141,12 +141,14 @@ class Font(_Font):
     def set_strikethrough(self, value):
         """set_strikethrough(bool) -> None
         control if the text is rendered struck through"""
-        self.strikethrough = bool(value)
+        self._strikethrough = bool(value)
 
     def get_strikethrough(self):
         """get_strikethrough() -> bool
         check if the text will be rendered struck through"""
-        return self.strikethrough
+        return self._strikethrough
+
+    strikethrough = property(get_strikethrough, set_strikethrough)
 
     def metrics(self, text):
         """metrics(text) -> list
