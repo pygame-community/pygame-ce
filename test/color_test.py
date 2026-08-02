@@ -804,11 +804,11 @@ class ColorTypeTest(unittest.TestCase):
 
     def test_from_oklab(self):
         # Test each method of construction
-        oklab = pygame.Color.from_oklab(0.62796, 0.22486, 0.12585)  # FF0000
+        oklab = pygame.Color.from_oklab(0.62796, 0.22486, 0.12585, 0.5)  # FF0000
         oklab_tuple = pygame.Color.from_oklab((0.62796, 0.22486, 0.12585))
         oklab_instance = pygame.Color(0, 0, 0, 0).from_oklab(0.62796, 0.22486, 0.12585)
 
-        self.assertEqual(oklab, (255, 0, 0))
+        self.assertEqual(oklab, (255, 0, 0, 128))
         self.assertEqual(oklab_tuple, (255, 0, 0))
         self.assertEqual(oklab_instance, (255, 0, 0))
 
@@ -816,7 +816,7 @@ class ColorTypeTest(unittest.TestCase):
             ValueError, lambda: pygame.Color.from_oklab(0.5, 0.5, 0.5, "lel", "foo")
         )
         self.assertRaises(
-            ValueError, lambda: pygame.Color.from_oklab((0.5, 0.5, 0.5, 0.5))
+            ValueError, lambda: pygame.Color.from_oklab((0.5, 0.2, 0.2, 0.5, 0.2))
         )
 
         # Test a bunch of colors
@@ -832,6 +832,9 @@ class ColorTypeTest(unittest.TestCase):
         }
         for rgb, lab in colors.items():
             c = pygame.Color(rgb)
+            print(c.oklab)
+            c.oklab = c.oklab
+            print(c.oklab)
             self.assertAlmostEqual(c.oklab[0], lab[0], 4)
             self.assertAlmostEqual(c.oklab[1], lab[1], 4)
             self.assertAlmostEqual(c.oklab[2], lab[2], 4)
@@ -843,11 +846,11 @@ class ColorTypeTest(unittest.TestCase):
 
     def test_from_oklch(self):
         # Test each method of construction
-        oklch = pygame.Color.from_oklch(0.62795, 0.25768, 29.23388)  # FF0000
+        oklch = pygame.Color.from_oklch(0.62795, 0.25768, 29.23388, 0.5)  # FF0000
         oklch_tuple = pygame.Color.from_oklch((0.62795, 0.25768, 29.23388))
         oklch_instance = pygame.Color(0, 0, 0, 0).from_oklch(0.62795, 0.25768, 29.23388)
 
-        self.assertEqual(oklch, (255, 0, 0))
+        self.assertEqual(oklch, (255, 0, 0, 128))
         self.assertEqual(oklch_tuple, (255, 0, 0))
         self.assertEqual(oklch_instance, (255, 0, 0))
 
@@ -855,9 +858,15 @@ class ColorTypeTest(unittest.TestCase):
             ValueError, lambda: pygame.Color.from_oklch(0.5, 0.2, 0.2, "lel", "foo")
         )
         self.assertRaises(
-            ValueError, lambda: pygame.Color.from_oklch((0.5, 0.2, 0.2, 0.5))
+            ValueError, lambda: pygame.Color.from_oklch((0.5, 0.2, 0.2, 0.5, 0.2))
         )
         self.assertRaises(ValueError, lambda: pygame.Color.from_oklch((0.5, 0.5, 20)))
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_oklch((0.5, 0.5, float("nan")))
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_oklch((0.5, 0.5, float("inf")))
+        )
 
         # Test a bunch of colors
         colors = {
@@ -1072,17 +1081,19 @@ class ColorTypeTest(unittest.TestCase):
 
     def test_oklab__all_elements_within_limits(self):
         for c in rgba_combos_Color_generator():
-            lightness, a, b = c.oklab
+            lightness, a, b, alpha = c.oklab
             self.assertTrue(0 <= lightness <= 1)
             self.assertTrue(-0.4 <= a <= 0.4)
             self.assertTrue(-0.4 <= b <= 0.4)
+            self.assertTrue(0 <= alpha <= 1.0)
 
     def test_oklch__all_elements_within_limits(self):
         for c in rgba_combos_Color_generator():
-            lightness, chroma, hue = c.oklch
+            lightness, chroma, hue, alpha = c.oklch
             self.assertTrue(0 <= lightness <= 1)
             self.assertTrue(0 <= chroma <= 0.4)
             self.assertTrue(-180 <= hue <= 180)
+            self.assertTrue(0 <= alpha <= 1.0)
 
     def test_i1i2i3__all_elements_within_limits(self):
         for c in rgba_combos_Color_generator():

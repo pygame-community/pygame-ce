@@ -146,12 +146,12 @@ class Color(Collection[int]):
     differ slightly from what you might expect.
     """
 
-    oklab: tuple[float, float, float]
+    oklab: tuple[float, float, float, float]
     """Gets or sets the Oklab representation of the Color.
 
     The ``Oklab`` representation of the Color. The ``Oklab`` components are in
-    the ranges ``L`` = [0, 1], ``a`` = [-.4, .4], ``b`` = [-.4, .4].
-    ``L`` is perceived lightness, ``a`` is how green/red the color is, and ``b`` is how blue/yellow it is.
+    the ranges ``L`` = [0, 1], ``a`` = [-.4, .4], ``b`` = [-.4, .4], A = [0,
+    1]. ``L`` is perceived lightness, ``a`` is how green/red the color is, ``b`` is how blue/yellow it is, and ``A`` is alpha.
     Note that this will not return the absolutely exact ``Oklab`` values for the set ``RGB``
     values in all cases. Due to the ``RGB`` mapping from 0-255 and the
     ``Oklab`` mapping from 0-1 or -.4-.4 rounding errors may cause the ``Oklab`` values to
@@ -160,12 +160,12 @@ class Color(Collection[int]):
     .. versionadded:: 2.5.8
     """
 
-    oklch: tuple[float, float, float]
+    oklch: tuple[float, float, float, float]
     """Gets or sets the Oklch representation of the Color.
 
     The ``Oklch`` representation of the Color. The ``Oklch`` components are in
-    the ranges ``L`` = [0, 1], ``C`` = [0, .4], ``h`` = [-180, 180].
-    ``L`` is perceived lightness, ``C`` is the chroma, and ``h`` is the angle of hue in degrees.
+    the ranges ``L`` = [0, 1], ``C`` = [0, .4], ``h`` = [-180, 180], A = [0,
+    1]. ``L`` is perceived lightness, ``C`` is the chroma, ``h`` is the angle of hue in degrees, and ``A`` is alpha.
     Note that while ``h`` will always be returned in the [-180,180] range, any angle is acceptable as input.
     Note that this will not return the absolutely exact ``Oklch`` values for the set ``RGB``
     values in all cases. Due to the ``RGB`` mapping from 0-255 and the
