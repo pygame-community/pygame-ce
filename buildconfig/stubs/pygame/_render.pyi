@@ -145,4 +145,25 @@ class Texture:
 
 @final
 class Image:
-    pass
+    def __init__(
+        self,
+        texture_or_image: Union[Texture, Image],
+        srcrect: Optional[RectLike] = None,
+    ) -> None: ...
+    def get_rect(self) -> Rect: ...
+    def draw(
+        self, srcrect: Optional[RectLike] = None, dstrect: Optional[RectLike] = None
+    ) -> None: ...
+    angle: float
+    origin: Optional[Iterable[float]]
+    flip_x: bool
+    flip_y: bool
+    alpha: int
+    blend_mode: int
+    texture: Texture
+    srcrect: Rect
+
+    @property
+    def color(self) -> Color: ...
+    @color.setter
+    def color(self, value: ColorLike) -> None: ...
