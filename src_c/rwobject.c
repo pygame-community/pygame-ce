@@ -70,6 +70,40 @@ static int
 _pg_rw_close(SDL_RWops *);
 #endif
 
+/* If a python exception is set, it is cleared and a corresponding SDL error is
+ * set */
+static void
+_pg_sdl_error_from_py_exc()
+{
+    PyObject *type, *value, *traceback;
+    PyErr_Fetch(&type, &value, &traceback);
+    if (type) {
+        PyObject *error_str =
+            value ? PyUnicode_FromFormat("Got %S: %S", type, value)
+                  : PyUnicode_FromFormat("Got %S", type);
+
+        const char *message =
+            "An unknown error occurred, a memory allocation probably failed";
+        if (error_str) {
+            const char *utf8_message = PyUnicode_AsUTF8(error_str);
+            if (utf8_message) {
+                message = utf8_message;
+            }
+            else {
+                PyErr_Clear();
+            }
+        }
+        else {
+            PyErr_Clear();
+        }
+        SDL_SetError("%s", message);
+        Py_XDECREF(error_str);
+    }
+    Py_XDECREF(type);
+    Py_XDECREF(value);
+    Py_XDECREF(traceback);
+}
+
 /* Converter function used by PyArg_ParseTupleAndKeywords with the "O&" format.
  *
  * Returns: 1 on success
@@ -339,7 +373,7 @@ _pg_rw_size(SDL_RWops *context)
      */
     pos = PyObject_CallNoArgs(helper->tell);
     if (!pos) {
-        PyErr_Print();
+        _pg_sdl_error_from_py_exc();
         goto end;
     }
 
@@ -347,7 +381,7 @@ _pg_rw_size(SDL_RWops *context)
      */
     tmp = PyObject_CallFunction(helper->seek, "ii", 0, SEEK_END);
     if (!tmp) {
-        PyErr_Print();
+        _pg_sdl_error_from_py_exc();
         goto end;
     }
     Py_DECREF(tmp);
@@ -356,12 +390,12 @@ _pg_rw_size(SDL_RWops *context)
      */
     tmp = PyObject_CallNoArgs(helper->tell);
     if (!tmp) {
-        PyErr_Print();
+        _pg_sdl_error_from_py_exc();
         goto end;
     }
 
     if (PyLong_AsInt64(tmp, &size) == -1) {
-        PyErr_Print();
+        _pg_sdl_error_from_py_exc();
         goto end;
     }
     Py_DECREF(tmp);
@@ -370,7 +404,7 @@ _pg_rw_size(SDL_RWops *context)
      */
     tmp = PyObject_CallOneArg(helper->seek, pos);
     if (!tmp) {
-        PyErr_Print();
+        _pg_sdl_error_from_py_exc();
         goto end;
     }
 
@@ -404,7 +438,7 @@ _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
     size_t retval;
 
     if (!helper->write) {
-        return -1;
+        return 0;
     }
 
     PyGILState_STATE state = PyGILState_Ensure();
@@ -412,8 +446,8 @@ _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
     result = PyObject_CallFunction(helper->write, "y#", (const char *)ptr,
                                    (Py_ssize_t)size * num);
     if (!result) {
-        PyErr_Print();
-        retval = -1;
+        _pg_sdl_error_from_py_exc();
+        retval = 0;
         goto end;
     }
 
@@ -448,7 +482,7 @@ _pg_rw_close(SDL_RWops *context)
     if (helper->close) {
         result = PyObject_CallNoArgs(helper->close);
         if (!result) {
-            PyErr_Print();
+            _pg_sdl_error_from_py_exc();
 #if SDL_VERSION_ATLEAST(3, 0, 0)
             retval = false;
 #else
@@ -569,7 +603,7 @@ _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
         result = PyObject_CallFunction(helper->seek, "Li", (long long)offset,
                                        whence);
         if (!result) {
-            PyErr_Print();
+            _pg_sdl_error_from_py_exc();
             retval = -1;
             goto end;
         }
@@ -578,13 +612,13 @@ _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
 
     result = PyObject_CallNoArgs(helper->tell);
     if (!result) {
-        PyErr_Print();
+        _pg_sdl_error_from_py_exc();
         retval = -1;
         goto end;
     }
 
     if (PyLong_AsInt64(result, &retval) == -1) {
-        PyErr_Clear();
+        _pg_sdl_error_from_py_exc();
         retval = -1;
     }
 
@@ -612,22 +646,23 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
     Py_ssize_t retval;
 
     if (!helper->read) {
-        return -1;
+        return 0;
     }
 
     PyGILState_STATE state = PyGILState_Ensure();
     result = PyObject_CallFunction(helper->read, "K",
                                    (unsigned long long)size * maxnum);
     if (!result) {
-        PyErr_Print();
-        retval = -1;
+        _pg_sdl_error_from_py_exc();
+        retval = 0;
         goto end;
     }
 
+    /* TODO: Handle other bytes-like objects here */
     if (!PyBytes_Check(result)) {
         Py_DECREF(result);
-        PyErr_Print();
-        retval = -1;
+        SDL_SetError("read returned non-bytes object when bytes was expected");
+        retval = 0;
         goto end;
     }
 
