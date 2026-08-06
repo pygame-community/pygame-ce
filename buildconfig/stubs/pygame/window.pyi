@@ -17,7 +17,7 @@ class Window:
     window class will continue to be developed, and we're excited to share
     the new functionality this class offers.
 
-    .. note:: You can only call window-related functions (e.g. setting title, 
+    .. note:: You can only call window-related functions (e.g. setting title,
         position, etc.) from the same thread that created the Window instance.
 
     :param str title: The title of the window.
