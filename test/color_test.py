@@ -837,17 +837,23 @@ class ColorTypeTest(unittest.TestCase):
         }
         for rgb, lab in colors.items():
             c = pygame.Color(rgb)
-            print(c.oklab)
-            c.oklab = c.oklab
-            print(c.oklab)
+
+            # Check RGB converts to OkLab
             self.assertAlmostEqual(c.oklab[0], lab[0], 4)
             self.assertAlmostEqual(c.oklab[1], lab[1], 4)
             self.assertAlmostEqual(c.oklab[2], lab[2], 4)
 
             c = pygame.Color.from_oklab(lab)
-            self.assertAlmostEqual(c.rgb[0], rgb[0], delta=1)
-            self.assertAlmostEqual(c.rgb[1], rgb[1], delta=1)
-            self.assertAlmostEqual(c.rgb[2], rgb[2], delta=1)
+
+            # Check OkLab converts to RGB
+            self.assertAlmostEqual(c.rgb[0], rgb[0])
+            self.assertAlmostEqual(c.rgb[1], rgb[1])
+            self.assertAlmostEqual(c.rgb[2], rgb[2])
+
+            # Check OkLab produces the same value as was input
+            self.assertAlmostEqual(c.oklab[0], lab[0], 4)
+            self.assertAlmostEqual(c.oklab[1], lab[1], 4)
+            self.assertAlmostEqual(c.oklab[2], lab[2], 4)
 
     def test_from_oklch(self):
         # Test each method of construction
@@ -888,17 +894,26 @@ class ColorTypeTest(unittest.TestCase):
         }
         for rgb, lch in colors.items():
             c = pygame.Color(rgb)
+
+            # Check RGB converts to Lch
             self.assertAlmostEqual(c.oklch[0], lch[0], 4)
             self.assertAlmostEqual(c.oklch[1], lch[1], 4)
-
             # When chroma is close to zero, hue angle is meaningless and produces arbitrary values according to rounding, so skip it
             if lch[1] >= 0.01:
                 self.assertAlmostEqual(c.oklch[2], lch[2], 4)
 
             c = pygame.Color.from_oklch(lch)
-            self.assertAlmostEqual(c.rgb[0], rgb[0], delta=1)
-            self.assertAlmostEqual(c.rgb[1], rgb[1], delta=1)
-            self.assertAlmostEqual(c.rgb[2], rgb[2], delta=1)
+            # Check OkLch converts to RGB
+            self.assertAlmostEqual(c.rgb[0], rgb[0])
+            self.assertAlmostEqual(c.rgb[1], rgb[1])
+            self.assertAlmostEqual(c.rgb[2], rgb[2])
+
+            # Check OkLch produces the same value as was input
+            self.assertAlmostEqual(c.oklch[0], lch[0], 4)
+            self.assertAlmostEqual(c.oklch[1], lch[1], 4)
+            # When chroma is close to zero, hue angle is meaningless and produces arbitrary values according to rounding, so skip it
+            if lch[1] >= 0.01:
+                self.assertAlmostEqual(c.oklch[2], lch[2], 4)
 
     def test_from_hsva(self):
         hsva = pygame.Color.from_hsva(0, 100, 100, 100)
