@@ -47,12 +47,31 @@ class PixelArray:
     # if indexing into a 2D PixelArray, a 1D PixelArray will be set
     # if indexing into a 1D PixelArray, an int will be set
     @overload
-    def __setitem__(self, index: int, value: PixelArray | int) -> None: ...
+    def __setitem__(
+        self,
+        index: int,
+        value: PixelArray | int | _PixelColor | SequenceLike[_PixelColor],
+    ) -> None: ...
     @overload
-    def __setitem__(self, index_range: slice, value: PixelArray) -> None: ...
+    def __setitem__(
+        self, index_range: slice, value: PixelArray | SequenceLike[_PixelColor]
+    ) -> None: ...
     # only valid for a 2D PixelArray
     @overload
-    def __setitem__(self, indices: tuple[int, int], value: int) -> None: ...
+    def __setitem__(
+        self, indices: tuple[int, int], value: int | _PixelColor
+    ) -> None: ...
+    @overload
+    def __setitem__(
+        self,
+        indices: (
+            tuple[int | slice | None | EllipsisType]
+            | tuple[
+                int | slice | None | EllipsisType, int | slice | None | EllipsisType
+            ]
+        ),
+        value: PixelArray | int | _PixelColor | SequenceLike[_PixelColor],
+    ) -> None: ...
     # item assignment returns None
     @overload
     def __setitem__(self, ell: EllipsisType, value: PixelArray) -> None: ...
