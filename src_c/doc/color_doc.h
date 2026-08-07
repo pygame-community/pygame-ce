@@ -5,8 +5,6 @@
 #define DOC_COLOR_B "b -> int\nGets or sets the blue value of the Color."
 #define DOC_COLOR_A "a -> int\nGets or sets the alpha value of the Color."
 #define DOC_COLOR_CMY "cmy -> tuple[float, float, float]\nGets or sets the CMY representation of the Color."
-#define DOC_COLOR_OKLAB "oklab -> tuple[float, float, float, float]\nGets or sets the Oklab representation of the Color."
-#define DOC_COLOR_OKLCH "oklch -> tuple[float, float, float, float]\nGets or sets the Oklch representation of the Color."
 #define DOC_COLOR_HSVA "hsva -> tuple[float, float, float, float]\nGets or sets the HSVA representation of the Color."
 #define DOC_COLOR_HSLA "hsla -> tuple[float, float, float, float]\nGets or sets the HSLA representation of the Color."
 #define DOC_COLOR_I1I2I3 "i1i2i3 -> tuple[float, float, float]\nGets or sets the I1I2I3 representation of the Color."
