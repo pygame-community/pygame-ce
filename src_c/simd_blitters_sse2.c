@@ -962,4 +962,42 @@ blit_blend_rgba_max_sse2(SDL_BlitInfo *info)
     SETUP_SSE2_BLITTER
     RUN_SSE2_BLITTER({ mm128_dst = _mm_max_epu8(mm128_dst, mm128_src); })
 }
+void
+blit_blend_rgb_overlay_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER
+    SETUP_SSE2_16BIT_SHUFFLE_OUT
+
+    const __m128i mm128_255 = _mm_set1_epi16(255);
+    const __m128i mm128_127 = _mm_set1_epi16(127);
+    const __m128i mm128_amask = _mm_set1_epi32(info->dst->Amask);
+    const __m128i mm128_rgb_mask = _mm_set1_epi32(~info->dst->Amask);
+
+    __m128i mm128_dst_alpha;
+
+    RUN_SSE2_BLITTER(
+        mm128_dst_alpha = _mm_and_si128(mm128_dst, mm128_amask);
+        RUN_SSE2_16BIT_SHUFFLE_OUT(
+            /* src * dst */
+            __m128i multiply = _mm_mullo_epi16(shuff_src, shuff_dst);
+            /* divide by 127 */
+            multiply = _mm_srli_epi16(multiply, 7);
+
+            /* 255 - dst */
+            __m128i inverted_dst = _mm_sub_epi16(mm128_255, shuff_dst);
+            /* 255 - src */
+            __m128i inverted_src = _mm_sub_epi16(mm128_255, shuff_src);
+            /* dst * src */
+            __m128i screen = _mm_mullo_epi16(inverted_dst, inverted_src);
+            /* divide by 127 */
+            screen = _mm_srli_epi16(screen, 7);
+            /* 255 - screen */
+            screen = _mm_sub_epi16(mm128_255, screen);
+
+            __m128i gt_127 = _mm_cmpgt_epi16(shuff_dst, mm128_127);
+            shuff_dst = _mm_or_si128(_mm_and_si128(gt_127, screen),
+                                     _mm_andnot_si128(gt_127, multiply));)
+            mm128_dst = _mm_and_si128(mm128_dst, mm128_rgb_mask);
+        mm128_dst = _mm_or_si128(mm128_dst, mm128_dst_alpha);)
+}
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
