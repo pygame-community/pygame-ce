@@ -147,45 +147,44 @@ class Color(Collection[int]):
     """
 
     @property
-    def oklab(self) -> tuple[float, float, float, float]: ...
+    def oklab(self) -> tuple[float, float, float, float]:
+        """Gets or sets the Oklab representation of the Color.
+
+        The ``Oklab`` representation of the Color. The ``Oklab`` components are in
+        the ranges ``L`` = [0, 1], ``a`` = [-.4, .4], ``b`` = [-.4, .4], A = [0,
+        1]. ``L`` is perceived lightness, ``a`` is how green/red the color is, ``b`` is how blue/yellow it is, and ``A`` is alpha.
+        If ``A`` is not provided, 1.0 will be used.
+        Note that this will not return the absolutely exact ``Oklab`` values for the set ``RGB``
+        values in all cases. Due to the ``RGB`` mapping from 0-255 and the
+        ``Oklab`` mapping from 0-1 or -.4-.4 rounding errors may cause the ``Oklab`` values to
+        differ slightly from what you might expect.
+
+        .. versionadded:: 2.5.8
+        """
     @oklab.setter
     def oklab(
         self, arg: tuple[float, float, float] | tuple[float, float, float, float]
     ) -> None: ...
-    """Gets or sets the Oklab representation of the Color.
-
-    The ``Oklab`` representation of the Color. The ``Oklab`` components are in
-    the ranges ``L`` = [0, 1], ``a`` = [-.4, .4], ``b`` = [-.4, .4], A = [0,
-    1]. ``L`` is perceived lightness, ``a`` is how green/red the color is, ``b`` is how blue/yellow it is, and ``A`` is alpha.
-    If ``A`` is not provided, 1.0 will be used.
-    Note that this will not return the absolutely exact ``Oklab`` values for the set ``RGB``
-    values in all cases. Due to the ``RGB`` mapping from 0-255 and the
-    ``Oklab`` mapping from 0-1 or -.4-.4 rounding errors may cause the ``Oklab`` values to
-    differ slightly from what you might expect.
-
-    .. versionadded:: 2.5.8
-    """
-
     @property
-    def oklch(self) -> tuple[float, float, float, float]: ...
+    def oklch(self) -> tuple[float, float, float, float]:
+        """Gets or sets the Oklch representation of the Color.
+
+        The ``Oklch`` representation of the Color. The ``Oklch`` components are in
+        the ranges ``L`` = [0, 1], ``C`` = [0, .4], ``h`` = [-180, 180], A = [0,
+        1]. ``L`` is perceived lightness, ``C`` is the chroma, ``h`` is the angle of hue in degrees, and ``A`` is alpha.
+        If ``A`` is not provided, 1.0 will be used.
+        Note that while ``h`` will always be returned in the [-180,180] range, any angle is acceptable as input.
+        Note that this will not return the absolutely exact ``Oklch`` values for the set ``RGB``
+        values in all cases. Due to the ``RGB`` mapping from 0-255 and the
+        ``Oklch`` mapping from 0-1, 0-.4, and -180-180 rounding errors may cause the ``Oklch`` values to
+        differ slightly from what you might expect. This is especially the case as chroma approaches zero.
+
+        .. versionadded:: 2.5.8
+        """
     @oklch.setter
     def oklch(
         self, value: tuple[float, float, float] | tuple[float, float, float, float]
     ) -> None: ...
-    """Gets or sets the Oklch representation of the Color.
-
-    The ``Oklch`` representation of the Color. The ``Oklch`` components are in
-    the ranges ``L`` = [0, 1], ``C`` = [0, .4], ``h`` = [-180, 180], A = [0,
-    1]. ``L`` is perceived lightness, ``C`` is the chroma, ``h`` is the angle of hue in degrees, and ``A`` is alpha.
-    If ``A`` is not provided, 1.0 will be used.
-    Note that while ``h`` will always be returned in the [-180,180] range, any angle is acceptable as input.
-    Note that this will not return the absolutely exact ``Oklch`` values for the set ``RGB``
-    values in all cases. Due to the ``RGB`` mapping from 0-255 and the
-    ``Oklch`` mapping from 0-1, 0-.4, and -180-180 rounding errors may cause the ``Oklch`` values to
-    differ slightly from what you might expect. This is especially the case as chroma approaches zero.
-
-    .. versionadded:: 2.5.8
-    """
 
     hsva: tuple[float, float, float, float]
     """Gets or sets the HSVA representation of the Color.
