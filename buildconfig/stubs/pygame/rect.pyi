@@ -463,7 +463,7 @@ class _GenericRect(Collection[_N]):
         Returns the union of one rectangle with a sequence of many rectangles.
         """
     def unionall_ip(
-        self, rect_SequenceLike: SequenceLike[_RectTypeCompatible_co], /
+        self, rect: SequenceLike[_RectTypeCompatible_co], /
     ) -> None:
         """The union of many rectangles, in place.
 
