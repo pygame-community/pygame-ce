@@ -16,7 +16,7 @@
 #define DOC_RECT_UNION "union(rect, /) -> Rect\nunion(left_top, width_height, /) -> Rect\nunion(left, top, width, height, /) -> Rect\nJoins two rectangles into one."
 #define DOC_RECT_UNIONIP "union_ip(rect, /) -> None\nunion_ip(left_top, width_height, /) -> None\nunion_ip(left, top, width, height, /) -> None\nJoins two rectangles into one, in place."
 #define DOC_RECT_UNIONALL "unionall(rect, /) -> Rect\nThe union of many rectangles."
-#define DOC_RECT_UNIONALLIP "unionall_ip(rect_SequenceLike, /) -> None\nThe union of many rectangles, in place."
+#define DOC_RECT_UNIONALLIP "unionall_ip(rect, /) -> None\nThe union of many rectangles, in place."
 #define DOC_RECT_FIT "fit(rect, /) -> Rect\nfit(left_top, width_height, /) -> Rect\nfit(left, top, width, height, /) -> Rect\nResize and move a rectangle with aspect ratio."
 #define DOC_RECT_NORMALIZE "normalize() -> None\nCorrect negative sizes."
 #define DOC_RECT_CONTAINS "contains(rect, /) -> bool\ncontains(left_top, width_height, /) -> bool\ncontains(left, top, width, height, /) -> bool\nTest if one rectangle is inside another."
