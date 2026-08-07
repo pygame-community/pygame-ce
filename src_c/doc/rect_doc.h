@@ -1,5 +1,5 @@
 /* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
-#define DOC_RECT "Rect(left, top, width, height, /) -> Rect\nRect((left, top), (width, height), /) -> Rect\nRect(object, /) -> Rect\nRect() -> Rect\nFRect(left, top, width, height, /) -> FRect\nFRect((left, top), (width, height), /) -> FRect\nFRect(object, /) -> FRect\nFRect() -> FRect\nPygame object for storing rectangular coordinates."
+#define DOC_RECT "Rect(left, top, width, height, /) -> Rect\nRect(left_top, width_height, /) -> Rect\nRect(single_arg, /) -> Rect\nRect() -> Rect\nFRect(left, top, width, height, /) -> FRect\nFRect((left, top), (width, height), /) -> FRect\nFRect(object, /) -> FRect\nFRect() -> FRect\nPygame object for storing rectangular coordinates."
 #define DOC_RECT_COPY "copy() -> Rect\nCopy the rectangle."
 #define DOC_RECT_MOVE "move(x, y, /) -> Rect\nmove(move_by, /) -> Rect\nMoves the rectangle."
 #define DOC_RECT_MOVEIP "move_ip(x, y, /) -> None\nmove_ip(move_by, /) -> None\nMoves the rectangle, in place."
