@@ -1739,7 +1739,7 @@ _color_set_oklch(pgColorObject *color, PyObject *value, void *closure)
         if (!item || !_get_double(item, &(alpha)) || alpha < 0.0 ||
             alpha > 1.0) {
             Py_XDECREF(item);
-            PyErr_SetString(PyExc_ValueError, "invalid oklab value");
+            PyErr_SetString(PyExc_ValueError, "invalid oklch value");
             return -1;
         }
         Py_DECREF(item);
