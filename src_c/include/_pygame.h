@@ -791,3 +791,14 @@ pg_PointList_FromArrayDouble(double const *array, int arr_length)
     __cached_exception_traceback = NULL;
 
 #endif
+
+// Should be defined in SDL if not defined in the standard library, but just in
+// case, let's define it here
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338327950288
+#endif
+
+#define TWO_PI 2.0 * M_PI
+
+#define DEG2RAD(angle) ((angle) * (M_PI / 180.))
+#define RAD2DEG(angle) ((angle) * (180. / M_PI))
