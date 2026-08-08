@@ -1,10 +1,12 @@
 """Debug functionality that allows for more useful issue reporting"""
 
 import importlib
+import io
 import platform
 import sys
 import traceback
 from os import environ
+from typing import Protocol
 
 from pygame.system import get_cpu_instruction_sets
 from pygame.version import ver
@@ -81,7 +83,11 @@ def _get_platform_info():
     return ret
 
 
-def print_debug_info(filename=None):
+class FileObject(Protocol):
+    def write(self, s: str, /) -> int: ...
+
+
+def print_debug_info(filename: str | None = None, fileobject: FileObject | None = None):
     """Gets debug information for reporting bugs. Prints to console
     if filename is not specified, otherwise writes to that file
     (note: if filename is not an empty file, it will overwrite whatever is
@@ -178,9 +184,17 @@ def print_debug_info(filename=None):
     else:
         debug_str += "Mixer Driver:\t\tMixer Not Initialized"
 
-    if filename is None:
-        print(debug_str)
+    debug_str += "\n"
 
-    else:
+    write_to_new_file = filename is not None
+    write_to_existing_file = fileobject is not None
+
+    if not write_to_new_file and not write_to_existing_file:
+        print(debug_str, end="")
+
+    if write_to_new_file:
         with open(filename, "w", encoding="utf8") as debugfile:
             debugfile.write(debug_str)
+
+    if write_to_existing_file:
+        fileobject.write(debug_str)
