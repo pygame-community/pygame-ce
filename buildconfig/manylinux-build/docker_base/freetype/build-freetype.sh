@@ -7,7 +7,11 @@ FREETYPE="freetype-2.14.1"
 HARFBUZZ_VER=12.1.0
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
-curl -sL --retry 10 https://download.savannah.gnu.org/releases/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
+# Savannah seems to be broken right now
+#curl -sL --retry 10 https://download.savannah.gnu.org/releases/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
+# Replacing temporarily with an artifact hosted on our end
+curl -sL --retry 10 https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/freetype-2.14.1.tar.gz > freetype-2.14.1.tar.gz
+
 curl -sL --retry 10 https://github.com/harfbuzz/harfbuzz/releases/download/${HARFBUZZ_VER}/${HARFBUZZ_NAME}.tar.xz > ${HARFBUZZ_NAME}.tar.xz
 sha512sum -c freetype.sha512
 
