@@ -1,6 +1,6 @@
 # AI Policy
 
-This policy is inspired by [RustPython's AI policy](http://github.com/RustPython/.github/blob/main/AI_POLICY.md).
+This policy is inspired by [RustPython's AI policy](https://github.com/RustPython/.github/blob/main/AI_POLICY.md).
 
 The pygame-ce project has the following requirements for AI usage:
 
@@ -20,7 +20,7 @@ The pygame-ce project has the following requirements for AI usage:
         to resolve it.
     * You ***shall not***, under any circumstances, create an issue then immediately create a pull request to bypass these rules.
 
-* *Pull requests created by AI agents ***shall*** have been vetted by a human*.
+* *Pull requests created with the help of AI ***shall*** have been vetted by a human*.
 
     * You ***shall*** manually review any pull requests created by an AI agent before posting it.
     * You ***shall*** manually test any pull requests created by an AI agent before posting it.
@@ -59,6 +59,8 @@ are competent enough to be trusted with more free usage of AI. However, the rule
 Members may be exempt from immediate ban at the discretion of the Steering Council.
 
 ***The pygame-ce Steering Council reserves the right to make exceptions to these rules or enforce additional rules as deemed necessary***.
+
+***Even if you don't use an AI agent to create your pull request, you're still expected to thoroughly review and test your changes.***
 
 # Disclosing AI assistance in commit messages
 
