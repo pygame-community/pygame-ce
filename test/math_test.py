@@ -791,6 +791,18 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertAlmostEqual(self.v1.x * v.y - self.v1.y * v.x, 0.0)
         self.assertRaises(ValueError, lambda: self.zeroVec.normalize())
 
+    def test_normalize_or_zero(self):
+        # Same tests as normalize, with check for zero vector
+        v = self.v1.normalize_or_zero()
+        self.assertAlmostEqual(v.x * v.x + v.y * v.y, 1.0)
+        # v1 is unchanged
+        self.assertEqual(self.v1.x, self.l1[0])
+        self.assertEqual(self.v1.y, self.l1[1])
+        # v2 is parallel to v1
+        self.assertAlmostEqual(self.v1.x * v.y - self.v1.y * v.x, 0.0)
+        # does NOT fail when attempting to normalize zero vector, returns zero vctor.
+        self.assertEqual(self.zeroVec.normalize_or_zero(), self.zeroVec)
+
     def test_normalize_ip(self):
         v = +self.v1
         # v has length != 1 before normalizing
