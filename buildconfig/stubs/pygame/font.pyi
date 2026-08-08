@@ -124,9 +124,10 @@ class Font:
         """
         Determine the amount of space needed to render text.
 
-        Returns the dimensions needed to render the text. This can be used to
-        help determine the positioning needed for text before it is rendered. It
-        can also be used for word wrapping and other layout effects.
+        Returns the dimensions (width, height) needed to render the text.
+        This can be used to help determine the positioning needed for text
+        before it is rendered. It can also be used for word wrapping and other
+        layout effects.
 
         Be aware that most fonts use kerning which adjusts the widths for
         specific letter pairs. For example, the width for "ae" will not always
