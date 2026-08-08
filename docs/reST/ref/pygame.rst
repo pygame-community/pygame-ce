@@ -208,19 +208,40 @@ object instead of the module, which can be used to test for availability.
 .. function:: print_debug_info
 
    | :sl:`retrieves useful information for debugging and issue-reporting purposes`
-   | :sg:`print_debug_info(filename=None) -> None`
+   | :sg:`print_debug_info(filename=None, fileobject=None) -> None`
 
    Constructs a string containing details on the system, the python interpreter,
-   the pygame version, and the linked and compiled versions of the libraries that
-   pygame wraps. If ``filename`` is ``None``, then the string is printed into the
-   console. Otherwise, the debug string is written to the specified file.
+   the pygame version, the linked and compiled versions of the libraries that
+   pygame wraps, and the display and mixer drivers. If both ``filename`` and
+   ``fileobject`` are ``None``, then the string is printed into the console.
+   Otherwise, the debug string is written to the specified file. If both
+   ``filename`` and ``fileobject`` are specified, then both will be honored.
+
+   .. note:: ``fileobject`` is expected to have a method ``write`` with the same signature
+      as the ``io.TextIOBase.write`` `signature <https://docs.python.org/3/library/io.html#io.TextIOBase.write>`_.
 
    .. note::
       If ``pygame.freetype`` has not been initialized with :func:`pygame.init` or :func:`pygame.freetype.init`,
       then the linked and compiled versions of FreeType will be "Unk" since this information is not
       available before initialization.
 
+   .. note::
+      If the display has never been initialized using :func:`pygame.init`, :func:`pygame.display.init`, or by
+      constructing a Window object, then the display driver will be "Display Not Initialized" because that
+      information is not yet available.
+
+   .. note::
+      If ``pygame.mixer`` has not been initialized with :func:`pygame.init` or :func:`pygame.mixer.init`,
+      then the mixer driver will be displayed as "Mixer Not Initialized" because that information is not
+      yet available.
+
    .. versionadded:: 2.1.4
+
+   .. versionchanged:: 2.5.0 Added display and mixer driver outputs.
+
+   .. versionchanged:: 2.5.4 Added GIL status to the output.
+
+   .. versionchanged:: 2.5.8 Added ``fileobject`` parameter, and now a newline is appended to the end on file writes.
 
    .. ## pygame.print_debug_info ##
 
