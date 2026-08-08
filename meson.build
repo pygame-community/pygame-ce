@@ -178,7 +178,7 @@ if plat == 'win'
             lib_dir / 'libportmidi.dll',
             lib_dir / 'libsharpyuv.dll',
             lib_dir / 'libsndfile.dll',
-            lib_dir / 'libtiff.dll',
+            lib_dir / 'libtiff-6.dll',
             lib_dir / 'libvorbis.dll',
             lib_dir / 'libvorbisenc.dll',
             lib_dir / 'libvorbisfile.dll',
