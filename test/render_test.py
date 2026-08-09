@@ -1,9 +1,13 @@
 import gc
+import platform
+import sys
 import unittest
 import weakref
 
 import pygame
 import pygame._render as _render
+
+IS_PYPY = "PyPy" == platform.python_implementation()
 
 
 class DrawableObject:
@@ -234,6 +238,19 @@ class RendererTest(unittest.TestCase):
         self.assertEqual(self.renderer.draw_color, pygame.Color(0, 0, 0, 0))
         self.renderer.draw_color = "YELLOW"
         self.assertEqual(self.renderer.draw_color, pygame.Color(255, 255, 0, 255))
+
+    @unittest.skipIf(IS_PYPY, "PyPy doesn't have sys.getrefcount")
+    def test_refcount_from_window(self):
+        # Regression test for a reference leak in Renderer.from_window when
+        # the window is borrowed from the display module (issue #3799): tp_new
+        # already returns a new reference, so the function must NOT Py_NewRef
+        # it again. With the leak getrefcount(r) returned 3; the correct count
+        # is 2 (the local `r` plus the temporary arg to sys.getrefcount).
+        d = pygame.display.set_mode((500, 500), pygame.SCALED)
+        w = pygame.Window.from_display_module()
+        r = _render.Renderer.from_window(w)
+
+        self.assertEqual(sys.getrefcount(r), 2)
 
 
 class TextureTest(unittest.TestCase):
