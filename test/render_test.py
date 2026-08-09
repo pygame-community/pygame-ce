@@ -246,11 +246,14 @@ class RendererTest(unittest.TestCase):
         # already returns a new reference, so the function must NOT Py_NewRef
         # it again. With the leak getrefcount(r) returned 3; the correct count
         # is 2 (the local `r` plus the temporary arg to sys.getrefcount).
-        d = pygame.display.set_mode((500, 500), pygame.SCALED)
+        _ = pygame.display.set_mode((500, 500), pygame.SCALED)
         w = pygame.Window.from_display_module()
         r = _render.Renderer.from_window(w)
 
-        self.assertEqual(sys.getrefcount(r), 2)
+        if sys.version_info < (3, 14):
+            self.assertEqual(sys.getrefcount(r), 2)
+        else:
+            self.assertEqual(sys.getrefcount(r), 1)
 
 
 class TextureTest(unittest.TestCase):
