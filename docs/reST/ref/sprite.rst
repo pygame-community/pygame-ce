@@ -855,6 +855,66 @@ Sprites are not thread safe. So lock them yourself if using threads.
 
    .. ## pygame.sprite.spritecollideany ##
 
+.. function:: pointcollide_mask
+
+   | :sl:`collision detection of a point with a sprite, using a mask.`
+   | :sg:`pointcollide_mask(point, sprite) -> bool`
+
+   Tests for collision between a point and a sprite, by testing if the sprite's bitmask
+   overlap (uses :func:`pygame.mask.Mask.get_at`). If the sprite has a
+   ``mask`` attribute, it is used as the mask, otherwise a mask is created from
+   the sprite's ``image`` (uses :func:`pygame.mask.from_surface`). Sprites must
+   have a ``rect`` attribute; the ``mask`` attribute is optional.
+
+   Returns a bool indicating existence of a nonzero value at the mask position.
+   The collision point is offset from ``sprite``'s rect position. This makes it
+   identical to the actual screen position of ``sprite``.
+
+   This function is intended to be passed as a ``collide_callback`` function
+   to pointcollide (see :meth:`pointcollide`).
+
+   .. note::
+      To increase performance, create and set a ``mask`` attribute for all
+      sprites that will use this function to check for collisions. Otherwise,
+      each time this function is called it will create a new mask.
+
+   .. note::
+      A new mask needs to be recreated each time a sprite's image is changed
+      (e.g. if a new image is used or the existing image is rotated).
+
+   ::
+
+      # Example of mask creation for a sprite.
+      sprite.mask = pygame.mask.from_surface(sprite.image)
+
+   :returns: A bool indicating collision of the sprite's mask at point.
+   :rtype: bool
+
+   .. ## pygame.sprite.pointcollide_mask ##
+
+.. function:: pointcollide
+
+   | :sl:`find all sprites in a group that collide with a given point`
+   | :sg:`pointcollide(point, group, dokill, collide_callback=None) -> list[Sprite]`
+
+   This will find collisions at point ``point`` with all the Sprites in ``group``.
+   Collision is determined by comparing the ``Sprite.rect`` attribute of each 
+   Sprite with the point, or by using the ``collide_callback`` function if it is not None.
+
+   If ``dokill`` is True, the colliding Sprites will be removed from all groups
+   they are a part of.
+
+   The ``collide_callback`` argument is a callback function used to calculate if the point
+   collides with a sprite. It should take a point and a sprite as values and return
+   a bool value indicating if they are colliding. If collide_callback is not passed,
+   then all sprites must have a "rect" value, which is a rectangle of the sprite area,
+   which will be used to calculate the collision.
+   
+   :returns: A list of sprites that collide at point.
+   :rtype: list[Sprite]
+
+   .. ## pygame.sprite.pointcollide ##
+
 .. ##  ##
 
 .. ## pygame.sprite ##

@@ -55,3 +55,5 @@
 #define DOC_SPRITE_COLLIDEMASK "collide_mask(sprite1, sprite2) -> (int, int)\ncollide_mask(sprite1, sprite2) -> None\nCollision detection between two sprites, using masks."
 #define DOC_SPRITE_GROUPCOLLIDE "groupcollide(group1, group2, dokill1, dokill2, collided = None) -> Sprite_dict\nFind all sprites that collide between two groups."
 #define DOC_SPRITE_SPRITECOLLIDEANY "spritecollideany(sprite, group, collided = None) -> Sprite\nspritecollideany(sprite, group, collided = None) -> None\nSimple test if a sprite intersects anything in a group."
+#define DOC_SPRITE_POINTCOLLIDEMASK "pointcollide_mask(point, sprite) -> bool\ncollision detection of a point with a sprite, using a mask."
+#define DOC_SPRITE_POINTCOLLIDE "pointcollide(point, group, dokill, collide_callback=None) -> list[Sprite]\nfind all sprites in a group that collide with a given point"

@@ -1659,10 +1659,11 @@ class collide_circle_ratio:  # noqa pylint: disable=invalid-name; this is a func
         return distancesquared <= (leftradius + rightradius) ** 2
 
 
-def collide_mask(left, right):
+def collide_mask(left, right) -> tuple[int, int] | None:
     """collision detection between two sprites, using masks.
 
-    pygame.sprite.collide_mask(SpriteLeft, SpriteRight): bool
+    pygame.sprite.collide_mask(SpriteLeft, SpriteRight):
+        return tuple[int,int] | Nonne
 
     Tests for collision between two sprites by testing if their bitmasks
     overlap. If the sprites have a "mask" attribute, that is used as the mask;
@@ -1686,71 +1687,6 @@ def collide_mask(left, right):
     return leftmask.overlap(rightmask, (xoffset, yoffset))
 
 
-def pointcollide_mask(point: tuple[int, int], sprite: Sprite) -> bool:
-    """
-    collision detection between a point and a sprite, using masks.
-
-    pygame.sprite.collide_mask(point, sprite): bool
-
-    Tests for collision between a point and a sprite by testing if the sprites' bitmask
-    is occupied at the point. If the sprite has a "mask" attribute, that is used as the mask;
-    otherwise, a mask is created from the sprite image. Intended to be passed
-    as a collided callback function to pointcollide. Sprites must
-    have a "rect" and an optional "mask" attribute.
-    """
-    xoffset = point[0] - sprite.rect[0]
-    yoffset = point[1] - sprite.rect[1]
-    try:
-        mask = sprite.mask
-    except AttributeError:
-        mask = from_surface(sprite.image)
-
-    if (
-        xoffset < 0
-        or xoffset >= mask.get_size()[0]
-        or yoffset < 0
-        or yoffset >= mask.get_size()[1]
-    ):
-        return False
-    return bool(mask.get_at((xoffset, yoffset)))
-
-
-def pointcollide(
-    point: tuple[int, int], group: Group, dokill: bool, collide_callback=None
-) -> list[Sprite]:
-    """find sprites in a Group that intersect a point
-
-    pygame.sprite.pointcollide(point,group,dokill,collide_callback=None):
-        return list[Sprite]
-
-        Return a list containing all Sprites in a Group that intersect with a point.
-        Intersection is determinded by comparing the Sprite.rect attribute
-        of each Sprite.
-
-        The dokill argument is a bool. If set to True, all Sprites that collide
-        will be removed from the Group.
-
-        The collide_callback function is used to calculate if two sprites are colliding.
-        It should take a point and a Sprite as values, and return a boll value indicating
-        if the point collides with the Sprite. If collide_callback is not passed, pointcollide_mask is used.
-    """
-    default_callback = pointcollide_mask
-
-    collided_sprites = []
-    if collide_callback is not None:
-        collided_sprites = [
-            sprite for sprite in group if collide_callback(point, sprite)
-        ]
-    else:
-        collided_sprites = [
-            sprite for sprite in group if default_callback(point, sprite)
-        ]
-    if dokill:
-        for group_sprite in collided_sprites:
-            group_sprite.kill()
-    return collided_sprites
-
-
 def spritecollide(sprite, group, dokill, collided=None):
     """find Sprites in a Group that intersect another Sprite
 
@@ -1766,9 +1702,9 @@ def spritecollide(sprite, group, dokill, collided=None):
 
     The collided argument is a callback function used to calculate if two
     sprites are colliding. it should take two sprites as values, and return a
-    bool value indicating if they are colliding. If collided is not passed, all
-    sprites must have a "rect" value, which is a rectangle of the sprite area,
-    which will be used to calculate the collision.
+    value indicating if they are colliding that can be evaluated as a bool.
+    If collided is not passed, all sprites must have a "rect" value, which is a
+    rectangle of the sprite area, which will be used to calculate the collision.
 
     """
     if collided is not None:
@@ -1851,3 +1787,70 @@ def spritecollideany(sprite, group, collided=None):
             if sprite_rect_collide(group_sprite.rect):
                 return group_sprite
     return None
+
+
+def pointcollide_mask(point: tuple[int, int], sprite: Sprite) -> bool:
+    """
+    collision detection between a point and a sprite, using masks.
+
+    pygame.sprite.collide_mask(point, sprite): return bool
+
+    Tests for collision between a point and a sprite by testing if the sprites' bitmask
+    is occupied at the point. If the sprite has a "mask" attribute, that is used as the mask;
+    otherwise, a mask is created from the sprite image. Intended to be passed
+    as a collided callback function to pointcollide. Sprites must
+    have a "rect" and an optional "mask" attribute.
+    """
+    xoffset = point[0] - sprite.rect[0]
+    yoffset = point[1] - sprite.rect[1]
+    try:
+        mask = sprite.mask
+    except AttributeError:
+        mask = from_surface(sprite.image)
+
+    if (
+        xoffset < 0
+        or xoffset >= mask.get_size()[0]
+        or yoffset < 0
+        or yoffset >= mask.get_size()[1]
+    ):
+        return False
+    return bool(mask.get_at((xoffset, yoffset)))
+
+
+def pointcollide(
+    point: tuple[int, int], group: Group, dokill: bool, collide_callback=None
+) -> list[Sprite]:
+    """find sprites in a Group that intersect a point
+
+    pygame.sprite.pointcollide(point,group,dokill,collide_callback=None):
+        return list[Sprite]
+
+        Return a list containing all Sprites in a Group that intersect with a point.
+        Intersection is determinded by comparing the Sprite.rect attribute
+        of each Sprite.
+
+        The dokill argument is a bool. If set to True, all Sprites that collide
+        will be removed from the Group.
+
+        The collide_callback function is used to calculate if two sprites are colliding.
+        It should take a point and a Sprite as values, and return a bool value indicating
+        if the point collides with the Sprite.
+
+        If collide_callback is not passed, all sprites must have a "rect" value, which
+        is a rectangle of the sprite area that will be used to calculate the collision.
+    """
+
+    collided_sprites = []
+    if collide_callback is not None:
+        collided_sprites = [
+            sprite for sprite in group if collide_callback(point, sprite)
+        ]
+    else:
+        collided_sprites = [
+            sprite for sprite in group if sprite.rect.collidepoint(point)
+        ]
+    if dokill:
+        for group_sprite in collided_sprites:
+            group_sprite.kill()
+    return collided_sprites
