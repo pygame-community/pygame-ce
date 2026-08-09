@@ -979,10 +979,11 @@ class SurfaceTypeTest(unittest.TestCase):
         try:
             # Open a tiny dummy window format to set Pygame's video conversion rules
             pygame.display.set_mode((1, 1), pygame.HIDDEN)
-            
-            # Create a base surface and a dummy target surface
+            # Create base surface and fill with non-default distinct RGBA data
             base_surf = pygame.Surface((10, 10), pygame.SRCALPHA)
-            target_surf = pygame.Surface((10, 10), pygame.SRCALPHA)
+            base_surf.fill((17, 34, 51, 127))
+            # Create a target surface with an entirely different pixel format (16-bit, no alpha)
+            target_surf = pygame.Surface((10, 10), 0, 16)
             
             # Test without an argument
             res_no_arg = base_surf.convert_alpha()
@@ -992,10 +993,16 @@ class SurfaceTypeTest(unittest.TestCase):
                 warnings.simplefilter("ignore", DeprecationWarning)
                 res_with_arg = base_surf.convert_alpha(target_surf)
             
-            # Verify both outputs exist and match properties exactly (proving the argument does nothing)
+            # Verify both outputs match exactly, proving target_surf is ignored 
+            # and doesn't corrupt pixel data or force its own format layout
             self.assertIsInstance(res_with_arg, pygame.Surface)
             self.assertEqual(res_no_arg.get_size(), res_with_arg.get_size())
             self.assertEqual(res_no_arg.get_flags(), res_with_arg.get_flags())
+            self.assertEqual(res_no_arg.get_bitsize(), res_with_arg.get_bitsize())
+            
+            # Verify pixel data matches across boundary coordinates
+            for point in ((0, 0), (9, 9)):
+                self.assertEqual(res_no_arg.get_at(point), res_with_arg.get_at(point))
         finally:
             pygame.display.quit()
 
