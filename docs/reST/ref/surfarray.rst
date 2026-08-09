@@ -288,9 +288,8 @@ will be locked during the lifetime of the array.
    arrays.
 
    Float arrays are first rounded to the nearest integer and copied into
-   a new array before blitting. This extra copy defeats the performance
-   benefit this function is meant to provide, so pass an integer array
-   directly whenever possible.
+   a new array before blitting. This is significantly slower (on the order of 2x)
+   versus passing an integer array.
 
    This function will temporarily lock the Surface as the new values are
    copied.
