@@ -972,6 +972,34 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(background.get_at((99, 99)), background_color)
         self.assertEqual(background.get_at((450, 450)), background_color)
 
+    def test_convert_alpha_with_argument(self):
+        """Ensures passing a target surface to convert_alpha doesn't crash or alter output (#599)."""
+        import warnings
+        pygame.display.init()
+        try:
+            # Open a tiny dummy window format to set Pygame's video conversion rules
+            pygame.display.set_mode((1, 1), pygame.HIDDEN)
+            
+            # Create a base surface and a dummy target surface
+            base_surf = pygame.Surface((10, 10), pygame.SRCALPHA)
+            target_surf = pygame.Surface((10, 10), pygame.SRCALPHA)
+            
+            # Test without an argument
+            res_no_arg = base_surf.convert_alpha()
+            
+            # Test with an argument (suppressing the internal positional deprecation warning)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                res_with_arg = base_surf.convert_alpha(target_surf)
+            
+            # Verify both outputs exist and match properties exactly (proving the argument does nothing)
+            self.assertIsInstance(res_with_arg, pygame.Surface)
+            self.assertEqual(res_no_arg.get_size(), res_with_arg.get_size())
+            self.assertEqual(res_no_arg.get_flags(), res_with_arg.get_flags())
+        finally:
+            pygame.display.quit()
+
+
 
 class TestSurfaceBlit(unittest.TestCase):
     """Tests basic blitting functionality and options."""
