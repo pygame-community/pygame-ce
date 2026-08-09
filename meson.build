@@ -178,7 +178,7 @@ if plat == 'win'
             lib_dir / 'libportmidi.dll',
             lib_dir / 'libsharpyuv.dll',
             lib_dir / 'libsndfile.dll',
-            lib_dir / 'libtiff.dll',
+            lib_dir / 'libtiff-6.dll',
             lib_dir / 'libvorbis.dll',
             lib_dir / 'libvorbisenc.dll',
             lib_dir / 'libvorbisfile.dll',
@@ -214,7 +214,7 @@ if plat == 'win'
         warning('Missing windows prebuilts. Falling back to legacy prebuilts')
 
         sdl_ver = (sdl_api == 3) ? '3.4.0' : '2.32.10'
-        sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.10'
+        sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.12'
         sdl_mixer_ver = (sdl_api == 3) ? '3.2.2' : '2.8.2'
         sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
 
