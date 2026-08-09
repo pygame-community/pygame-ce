@@ -4,7 +4,7 @@ name: Build WASM (Emscripten)
 # any other branch. Also, skip any non-source changes from running on CI
 on:
   push:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -18,7 +18,7 @@ on:
       - '!.github/workflows/build-emsdk.yml'
 
   pull_request:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'

@@ -4,10 +4,10 @@ name: macOS
 # to main.
 on:
   push:
-    branches: main
+    branches: [main, main-2.x]
 
   pull_request:
-    branches: main
+    branches: [main, main-2.x]
 
   # the github release drafter can call this workflow
   workflow_call:
