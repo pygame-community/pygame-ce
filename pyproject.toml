@@ -19,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Games/Entertainment",
@@ -79,7 +80,7 @@ build-frontend = "build[uv]"
 # here we build wheels for all supported python versions. We do not support musllinux
 # and free threaded builds as of now. We also skip Python 3.10 build on ARM Windows
 # because it is very very unlikely to be used (numpy does it too).
-build = "cp3{10,11,12,13,14}-* pp311-*"
+build = "cp3{10,11,12,13,14,15}-* pp311-*"
 skip = ["*-musllinux_*", "cp31?t-*", "cp310-win_arm64"]
 # build[uv] is verbose by default, so below flag is not needed here
 # build-verbosity = 3
@@ -107,7 +108,7 @@ build = "cp313-*"  # build only for the latest python version.
 # to cibuildwheel and/or pyodide.
 before-build = """
 sed -i 's/var SUPPORT_LONGJMP *= *[^;]*;/var SUPPORT_LONGJMP = "wasm";/' \
-  /home/runner/.cache/cibuildwheel/pyodide-build-0.35.0/0.29.4/emsdk/upstream/emscripten/src/settings.js &&
+  /home/runner/.cache/cibuildwheel/pyodide-build-0.39.0/0.29.4/emsdk/upstream/emscripten/src/settings.js &&
 embuilder --pic --force build \
   sdl2 libhtml5 sdl2_ttf 'sdl2_mixer:formats=ogg,mp3,mod,mid' \
   'sdl2_image:formats=bmp,gif,jpg,lbm,pcx,png,pnm,qoi,svg,tga,xcf,xpm,xv'
@@ -150,6 +151,20 @@ only-binary = ["numpy"]
 # 2. skip all pypy+arm combinations
 # 3. skip pypy 3.11 manylinux and cpython 3.14 manylinux (numpy has newer manylinux
 # wheels for this which is incompatible with our manylinux version)
+# 4. skip all 3.15 (numpy doesn't have release with wheels yet)
 [[tool.cibuildwheel.overrides]]
-select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp314-manylinux_*}"
+select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp314-manylinux_*,cp315-*}"
 test-requires = []
+
+# On MacOS 3.15 x86_64 compilation running on an ARM64 runner, with
+# build-frontend="build[uv]", I get the error:
+#
+# The built wheel `markupsafe-3.0.3-cp315-cp315-macosx_10_15_x86_64.whl`
+#    <       is not compatible with the current Python 3.15 on macOS aarch64
+#
+# In the uv source, it says "this should never happen". But I'm not sure if
+# it's a bug in CIBW, UV, build, or something else.
+# ANYWAYS, it seems to work with build based on pip, so lets do that.
+[[tool.cibuildwheel.overrides]]
+select = "cp315-macosx_x86_64"
+build-frontend = "build"
