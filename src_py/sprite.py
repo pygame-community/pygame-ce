@@ -1663,7 +1663,7 @@ def collide_mask(left, right) -> tuple[int, int] | None:
     """collision detection between two sprites, using masks.
 
     pygame.sprite.collide_mask(SpriteLeft, SpriteRight):
-        return tuple[int,int] | Nonne
+        return tuple[int,int] | None
 
     Tests for collision between two sprites by testing if their bitmasks
     overlap. If the sprites have a "mask" attribute, that is used as the mask;
