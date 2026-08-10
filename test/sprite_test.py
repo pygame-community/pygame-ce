@@ -492,6 +492,39 @@ class SpriteCollideTest(unittest.TestCase):
         self.assertFalse(pygame.sprite.collide_rect(self.s1, self.s3))
         self.assertFalse(pygame.sprite.collide_rect(self.s3, self.s1))
 
+    def test_pointcollide__without_collided_callback(self):
+        # pygame.sprite.pointcollide(point, group, dokill, collide_callback) -> list
+        # collision detection between point and group
+
+        miss_point=[100,100]
+        hit_point=[40,5]
+
+        # test no kill
+        expected_list = []
+        crashed = pygame.sprite.pointcollide(miss_point, self.ag, False)
+        self.assertListEqual(expected_list, crashed)
+
+        expected_list = [self.s1]
+        crashed = pygame.sprite.pointcollide(hit_point, self.ag, False)
+        self.assertListEqual(expected_list, crashed)
+
+        # test multi-collide
+        self.s2.rect = self.s2.rect.move_to(topleft=hit_point)
+        self.s3.rect = self.s3.rect.move_to(center=hit_point)
+        expected_list = sorted([self.s2,self.s3],key=id)
+        crashed = pygame.sprite.pointcollide(hit_point, self.ag2, False)
+        crashed = sorted(crashed,key=id)
+        self.assertListEqual(expected_list,crashed)
+
+        # Test dokill=True (kill colliding sprites).
+        expected_list = [self.s1]
+        crashed = pygame.sprite.pointcollide(hit_point, self.ag, True)
+        self.assertListEqual(expected_list, crashed)
+        self.assertListEqual(self.ag.sprites(),[])
+
+    def test_pointcollide__with_collided_callback(self):
+        pass
+
 
 ################################################################################
 
