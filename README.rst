@@ -125,13 +125,13 @@ Dependency versions:
 +----------+------------------------+
 | CPython  | >= 3.10 (Or use PyPy3) |
 +----------+------------------------+
-| SDL      | >= 2.0.14              |
+| SDL      | >= 2.0.20              |
 +----------+------------------------+
 | SDL_mixer| >= 2.0.4               |
 +----------+------------------------+
-| SDL_image| >= 2.0.4               |
+| SDL_image| >= 2.0.5               |
 +----------+------------------------+
-| SDL_ttf  | >= 2.0.15              |
+| SDL_ttf  | >= 2.0.18              |
 +----------+------------------------+
 
 How to Contribute
@@ -173,8 +173,8 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.7.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.7...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/

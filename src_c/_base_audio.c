@@ -1,12 +1,13 @@
 #include "pygame.h"
 #include "pgcompat.h"
 #include "structmember.h"
+#include "_base_audio.h"
 
 // Useful heap type example @
 // https://github.com/python/cpython/blob/main/Modules/xxlimited.c
 
 // ***************************************************************************
-// OVERALL DEFINITIONS
+// OVERALL DEFINITIONS (Also see header file)
 // ***************************************************************************
 
 typedef struct {
@@ -16,14 +17,6 @@ typedef struct {
 } audio_state;
 
 #define GET_STATE(x) (audio_state *)PyModule_GetState(x)
-
-typedef struct {
-    PyObject_HEAD SDL_AudioDeviceID devid;
-} PGAudioDeviceStateObject;
-
-typedef struct {
-    PyObject_HEAD SDL_AudioStream *stream;
-} PGAudioStreamStateObject;
 
 #define AUDIO_INIT_CHECK(module)                               \
     if (!(GET_STATE(module))->audio_initialized) {             \

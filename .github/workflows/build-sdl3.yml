@@ -6,7 +6,7 @@ name: SDL3 build
 # from running on CI
 on:
   push:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -20,7 +20,7 @@ on:
       - '!.github/workflows/build-sdl3.yml'
 
   pull_request:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -59,10 +59,10 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
-    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: '3.14'
 
@@ -116,6 +116,17 @@ jobs:
       run: |
         git clone https://github.com/libsdl-org/SDL_ttf
         cd SDL_ttf
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release --parallel
+        sudo cmake --install . --config Release
+
+    - name: Install SDL3_mixer
+      if: matrix.os != 'windows-latest'
+      run: |
+        git clone https://github.com/libsdl-org/SDL_mixer
+        cd SDL_mixer
         mkdir build
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release ..

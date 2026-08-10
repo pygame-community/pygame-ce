@@ -520,13 +520,7 @@ _pxarray_get_arrayinterface(pgPixelArrayObject *self, void *closure)
 static PyObject *
 _pxarray_get_pixelsaddress(pgPixelArrayObject *self, void *closure)
 {
-    void *address = self->pixels;
-
-#if SIZEOF_VOID_P > SIZEOF_LONG
-    return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)address);
-#else
-    return PyLong_FromUnsignedLong((unsigned long)address);
-#endif
+    return PyLong_FromVoidPtr(self->pixels);
 }
 
 static int

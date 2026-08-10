@@ -410,15 +410,8 @@ surface_cleanup(pgSurfaceObject *self)
         PyMem_Free(self->subsurface);
         self->subsurface = NULL;
     }
-    if (self->dependency) {
-        Py_DECREF(self->dependency);
-        self->dependency = NULL;
-    }
-
-    if (self->locklist) {
-        Py_DECREF(self->locklist);
-        self->locklist = NULL;
-    }
+    Py_CLEAR(self->dependency);
+    Py_CLEAR(self->locklist);
     self->owner = 0;
 }
 
@@ -4256,8 +4249,7 @@ _release_buffer(Py_buffer *view_p)
 
     Py_DECREF(consumer_ref);
     PyMem_Free(internal);
-    Py_DECREF(view_p->obj);
-    view_p->obj = 0;
+    Py_CLEAR(view_p->obj);
 }
 
 static int
@@ -4330,20 +4322,12 @@ static PyObject *
 surf_get_pixels_address(PyObject *self, PyObject *closure)
 {
     SDL_Surface *surface = pgSurface_AsSurface(self);
-    void *address;
 
     if (!surface) {
         Py_RETURN_NONE;
     }
-    if (!surface->pixels) {
-        return PyLong_FromLong(0L);
-    }
-    address = surface->pixels;
-#if SIZEOF_VOID_P > SIZEOF_LONG
-    return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)address);
-#else
-    return PyLong_FromUnsignedLong((unsigned long)address);
-#endif
+
+    return PyLong_FromVoidPtr(surface->pixels);
 }
 
 static int

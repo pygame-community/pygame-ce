@@ -3,204 +3,17 @@
 :mod:`pygame.math`
 ==================
 
-.. module:: pygame.math
-   :synopsis: pygame module for vector classes
+.. autopgmodule:: pygame.math
 
-| :sl:`pygame module for vector classes`
+.. autopgfunction:: clamp
 
-The pygame math module currently provides Vector classes in two and three
-dimensions, ``Vector2`` and ``Vector3`` respectively.
+.. autopgfunction:: lerp
 
-They support the following numerical operations: ``vec + vec``, ``vec - vec``,
-``vec * number``, ``number * vec``, ``vec / number``, ``vec // number``, ``vec += vec``,
-``vec -= vec``, ``vec *= number``, ``vec /= number``, ``vec //= number``, ``round(vec, ndigits=0)``.
+.. autopgfunction:: invlerp
 
-All these operations will be performed elementwise.
-In addition ``vec * vec`` will perform a scalar-product (a.k.a. dot-product).
-If you want to multiply every element from vector v with every element from
-vector w you can use the elementwise method: ``v.elementwise() * w``
+.. autopgfunction:: smoothstep
 
-The coordinates of a vector can be retrieved or set using attributes or
-subscripts
-
-::
-
-   v = pygame.Vector3()
-
-   v.x = 5
-   v[1] = 2 * v.x
-   print(v[1]) # 10
-
-   v.x == v[0]
-   v.y == v[1]
-   v.z == v[2]
-
-Multiple coordinates can be set and retrieved using slices or swizzling.
-
-::
-
-   v = pygame.Vector2()
-   v.xy = 1, 2
-   v[:] = 1, 2
-   print(v)  # Vector2(1, 2)
-   print(v.x)  # 1.0
-   print(v.y)  # 2.0
-   print(v.xy)  # Vector2(1, 2)
-   print(v.yx)  # Vector2(2, 1)
-   print(v.xyyx)  # (1.0, 2.0, 2.0, 1.0)
-
-Note above, that swizzling with 2 components will return a Vector2 instance,
-swizzling with 3 components will return a Vector3 instance, and swizzles of 4
-or more components will result in a tuple. But since vectors support the
-iterator protocol, they can be unpacked, or converted to lists or tuples.
-
-::
-
-   v = Vector2(1, 2)
-   print(*v)  # 1.0 2.0
-   print(tuple(v))  # (1.0, 2.0)
-   print(tuple(v.yx))  # (2.0, 1.0)
-
-
-A vector can be converted to other data types using the built-in constructors
-
-::
-
-    v = pygame.Vector2(1, 2)
-
-    list(v) == [1.0, 2.0]
-    tuple(v) == (1.0, 2.0)
-    set(v) == {1.0, 2.0}
-
-Conversion can be combined with swizzling or slicing to create a new order
-
-::
-
-    v = pygame.Vector3(1, 2, 3)
-
-    list(v.xz) == [1.0, 3.0]
-    list(v.zyx) == [3.0, 2.0, 1.0]
-    list(v.yyy) == [2.0, 2.0, 2.0]
-    tuple(v.xyyzzz) == (1.0, 2.0, 2.0, 3.0, 3.0, 3.0)
-    tuple(v.zxyxzzyx) == (3.0, 1.0, 2.0, 1.0, 3.0, 3.0, 2.0, 1.0)
-    set(v.yxzxzyzxyx) == {1.0, 2.0, 3.0} # sets remove duplicates
-
-    list(v[:]) == [1.0, 2.0, 3.0]
-    tuple(v[::-1]) == (3.0, 2.0, 1.0)
-    set(v[1:3]) == {2.0, 3.0}
-
-.. versionaddedold:: 1.9.2pre
-.. versionchangedold:: 1.9.4 Removed experimental notice.
-.. versionchangedold:: 1.9.4 Allow scalar construction like GLSL Vector2(2) == Vector2(2.0, 2.0)
-.. versionchangedold:: 1.9.4 :mod:`pygame.math` import not required. More convenient ``pygame.Vector2`` and ``pygame.Vector3``.
-.. versionchanged:: 2.1.4 `round` returns a new vector with components rounded to the specified digits.
-
-.. function:: clamp
-
-   | :sl:`returns value clamped to min and max.`
-   | :sg:`clamp(value, min, max, /) -> float`
-
-   Clamps a numeric ``value`` so that it's no lower than ``min``, and no higher
-   than ``max``.
-
-   .. versionadded:: 2.1.3
-
-   .. ## math.clamp ##
-
-.. function:: lerp
-
-   | :sl:`returns value linearly interpolated between a and b`
-   | :sg:`lerp(a, b, value, do_clamp=True, /) -> float`
-
-   Returns a number which is a linear interpolation between ``a``
-   and ``b``. The third parameter determines how far between ``a`` and
-   ``b`` the result is going to be.
-   If ``do_clamp`` is false, ``value`` is not clamped to ``[0, 1]``,
-   allowing extrapolation outside the range ``[a, b]``.
-
-   The formula is:
-
-   ``a + (b - a) * value``.
-
-   .. versionadded:: 2.4.0
-
-   .. ## math.lerp ##
-
-.. function:: invlerp
-
-   | :sl:`returns value inverse interpolated between a and b`
-   | :sg:`invlerp(a, b, value, /) -> float`
-
-   Returns a number which is an inverse interpolation between ``a``
-   and ``b``. The third parameter ``value`` is the result of the linear interpolation
-   between a and b with a certain coefficient. In other words, this coefficient
-   will be the result of this function.
-   If ``b`` and ``a`` are equal, it raises a ``ValueError``.
-
-   The formula is:
-
-   ``(v - a)/(b - a)``.
-
-   This is an example explaining what is above :
-
-   .. code-block:: python
-
-      >>> a = 10
-      >>> b = 20
-      >>> pygame.math.invlerp(10, 20, 11.5)
-      0.15
-      >>> pygame.math.lerp(10, 20, 0.15)
-      11.5
-
-
-   .. versionadded:: 2.5.0
-
-   .. ## math.invlerp ##
-
-.. function:: smoothstep
-
-   | :sl:`returns value smoothly interpolated between a and b.`
-   | :sg:`smoothstep(a, b, value, /) -> float`
-
-   Returns a number which is a smooth interpolation between ``a``
-   and ``b``. This means that the interpolation follows an s-shaped curve, with
-   change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
-   The third parameter determines how far between ``a`` and
-   ``b`` the result is going to be. Value is clamped to ``[0, 1]``.
-
-   The formula is:
-
-   ``a * (1 - interp) + b * interp``
-
-   where:
-
-   ``interp = value * value * (3 - 2 * value)``
-
-   .. versionadded:: 2.4.0
-
-   .. ## math.smoothstep ##
-
-.. function:: remap
-
-   | :sl:`remaps value from given input range to given output range`
-   | :sg:`remap(i_min, i_max, o_min, o_max, value, /) -> float`
-
-   Returns a number which is the value remapped from ``[i_min, i_max]`` range to
-   ``[o_min, o_max]`` range.
-   If ``i_min`` and ``i_max`` are equal, it raises a ``ValueError``.
-
-   Example:
-
-   .. code-block:: python
-
-      >>> value = 50
-      >>> pygame.math.remap(0, 100, 0, 200, value)
-      100.0
-
-
-   .. versionadded:: 2.5.0
-
-   .. ## math.remap ##
+.. autopgfunction:: remap
 
 .. class:: Vector2
 
@@ -1103,6 +916,10 @@ Conversion can be combined with swizzling or slicing to create a new order
 
       .. versionaddedold:: 2.0.0
       .. deprecatedold:: 2.1.1
+      .. versionchanged:: 2.5.8
+         Fixed a regression introduced in 2.1.1 where this method incorrectly rotated
+         around the X-axis instead of the Y-axis. In versions prior to 2.1.1, rotation
+         around the Y-axis worked correctly.
 
       .. ## Vector3.rotate_y_ip_rad ##
 
@@ -1165,7 +982,12 @@ Conversion can be combined with swizzling or slicing to create a new order
 
       DEPRECATED: Use rotate_z_rad_ip() instead.
 
+      .. versionaddedold:: 2.0.0
       .. deprecatedold:: 2.1.1
+      .. versionchanged:: 2.5.8
+         Fixed a regression introduced in 2.1.1 where this method incorrectly rotated
+         around the X-axis instead of the Z-axis. In versions prior to 2.1.1, rotation
+         around the Z-axis worked correctly.
 
       .. ## Vector3.rotate_z_ip_rad ##
 
