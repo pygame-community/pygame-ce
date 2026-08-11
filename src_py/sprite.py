@@ -1793,7 +1793,7 @@ def pointcollide_mask(point: tuple[int, int], sprite: Sprite) -> bool:
     """
     collision detection between a point and a sprite, using masks.
 
-    pygame.sprite.collide_mask(point, sprite): return bool
+    pygame.sprite.pointcollide_mask(point, sprite): return bool
 
     Tests for collision between a point and a sprite by testing if the sprites' bitmask
     is occupied at the point. If the sprite has a "mask" attribute, that is used as the mask;
