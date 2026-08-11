@@ -213,7 +213,7 @@ def pointcollide(
     point: tuple [int,int],
     group: AbstractGroup[_SpriteT],
     dokill: bool,
-    collide_callback: Callable[[tuple[int,int]], _HasRect] | None = None,
+    collide_callback: Callable[[tuple[int,int], _HasRect],bool] | None = None,
 ) -> list[_SpriteT]: ...
 def pointcollide_mask(
     point: tuple [int,int],
