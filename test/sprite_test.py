@@ -496,8 +496,8 @@ class SpriteCollideTest(unittest.TestCase):
         # pygame.sprite.pointcollide(point, group, dokill, collide_callback) -> list
         # collision detection between point and group
 
-        miss_point=[100,100]
-        hit_point=[40,5]
+        miss_point = [999, 999]
+        hit_point = [40, 5]
 
         # test no kill
         expected_list = []
@@ -511,19 +511,52 @@ class SpriteCollideTest(unittest.TestCase):
         # test multi-collide
         self.s2.rect = self.s2.rect.move_to(topleft=hit_point)
         self.s3.rect = self.s3.rect.move_to(center=hit_point)
-        expected_list = sorted([self.s2,self.s3],key=id)
+        expected_list = sorted([self.s2, self.s3], key=id)
         crashed = pygame.sprite.pointcollide(hit_point, self.ag2, False)
-        crashed = sorted(crashed,key=id)
-        self.assertListEqual(expected_list,crashed)
+        crashed = sorted(crashed, key=id)
+        self.assertListEqual(expected_list, crashed)
 
         # Test dokill=True (kill colliding sprites).
         expected_list = [self.s1]
         crashed = pygame.sprite.pointcollide(hit_point, self.ag, True)
         self.assertListEqual(expected_list, crashed)
-        self.assertListEqual(self.ag.sprites(),[])
+        self.assertListEqual(self.ag.sprites(), [])
 
     def test_pointcollide__with_collided_callback(self):
-        pass
+        collided_callback_true = lambda point, spr: True
+        collided_callback_false = lambda point, spr: False
+
+        miss_point = [999, 999]
+        hit_point = [0, 0]
+
+        # test no kill
+        expected_list = []
+        crashed = pygame.sprite.pointcollide(
+            hit_point, self.ag, False, collided_callback_false
+        )
+
+        self.assertListEqual(expected_list, crashed)
+
+        expected_list = [self.s1]
+        crashed = pygame.sprite.pointcollide(
+            hit_point, self.ag, False, collided_callback_true
+        )
+        self.assertListEqual(expected_list, crashed)
+
+        # Test dokill=True (kill colliding sprites).
+        expected_list = []
+        crashed = pygame.sprite.pointcollide(
+            hit_point, self.ag, True, collided_callback_false
+        )
+
+        self.assertListEqual(expected_list, crashed)
+
+        expected_list = [self.s1]
+        crashed = pygame.sprite.pointcollide(
+            hit_point, self.ag, True, collided_callback_true
+        )
+        self.assertListEqual(expected_list, crashed)
+        self.assertListEqual(self.ag.sprites(), [])
 
 
 ################################################################################
