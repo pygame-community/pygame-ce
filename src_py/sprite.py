@@ -1831,7 +1831,7 @@ def pointcollide(
         of each Sprite.
 
         The dokill argument is a bool. If set to True, all Sprites that collide
-        will be removed from the Group.
+        will be removed from all groups they are a part of.
 
         The collide_callback function is used to calculate if two sprites are colliding.
         It should take a point and a Sprite as values, and return a bool value indicating
