@@ -1048,6 +1048,11 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
 
+    if (self->_win) {
+        PyErr_SetString(PyExc_RuntimeError, "Window object already initialized, cannot call __init__ again");
+        return -1;
+    }
+
     _kw = PyDict_New();
     if (!_kw) {
         return -1;

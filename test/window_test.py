@@ -294,6 +294,12 @@ class WindowTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: Window(aaa=True))
         self.assertRaises(TypeError, lambda: Window(aaa=False))
 
+    def test_reinit(self):
+        # Should raise RuntimeError if __init__ is called on
+        # an initialized Window
+        with self.assertRaises(RuntimeError):
+            self.win.__init__()
+
     def test_set_icon(self):
         self.assertRaises(TypeError, lambda: self.win.set_icon(1234))
 
