@@ -7,6 +7,7 @@ import unittest
 import pygame
 import pygame.examples
 
+
 class PyinstallerTest(unittest.TestCase):
     """Tests that pygame-ce can be frozen into a standalone executable
     using PyInstaller.
@@ -19,13 +20,19 @@ class PyinstallerTest(unittest.TestCase):
     def test_pyinstaller_build_and_run(self):
         """A minimal pygame-ce script can be frozen with PyInstaller and
         the resulting executable runs successfully (exit code 0)."""
+        if any(name.endswith("_editable_loader") for name in sys.modules):
+            self.skipTest(
+                "pygame-ce is installed in editable mode; PyInstaller cannot "
+                "see through the editable-install import hook to bundle it"
+            )
+
         example_script = os.path.join(
             os.path.dirname(os.path.abspath(pygame.examples.__file__)),
             "headless_no_windows_needed.py",
         )
         self.assertTrue(
             os.path.isfile(example_script),
-            f"expected example script not found: {example_script}"
+            f"expected example script not found: {example_script}",
         )
 
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -80,6 +87,7 @@ class PyinstallerTest(unittest.TestCase):
                 0,
                 f"frozen executable exited nonzero:\n{run_result.stderr.decode(errors='replace')}",
             )
+
 
 if __name__ == "__main__":
     unittest.main()
