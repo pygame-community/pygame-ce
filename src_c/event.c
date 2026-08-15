@@ -105,7 +105,9 @@ static char released_keys[SDL_NUM_SCANCODES] = {0};
 static char pressed_mouse_buttons[5] = {0};
 static char released_mouse_buttons[5] = {0};
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
 static PyObject *display_get_display_func = NULL;
+#endif
 
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
@@ -1126,14 +1128,9 @@ get_joy_device_index(int instance_id)
     return PyLong_FromLong(device_index);
 }
 
-static PyObject *
-get_display_from_id(
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    SDL_DisplayID display,
-#else
-    uint32_t display,
-#endif
-    int unplugged)
+static PyObject *
+get_display_from_id(SDL_DisplayID display, int unplugged)
 {
     if (display_get_display_func == NULL) {
         // cache pygame.display._get_display
@@ -1157,6 +1154,7 @@ get_display_from_id(
     return PyObject_CallFunction(display_get_display_func, "(Ip)", display,
                                  unplugged);
 }
+#endif // SDL_VERSION_ATLEAST(3, 0, 0)
 
 static PyObject *
 dict_from_event(SDL_Event *event)

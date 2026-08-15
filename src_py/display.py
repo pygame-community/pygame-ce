@@ -2,6 +2,7 @@ import fractions
 from enum import IntEnum
 
 # non-marked functions will eventually be obsolete
+from pygame import _base_display
 from pygame._base_display import (
     Info,
     flip,
