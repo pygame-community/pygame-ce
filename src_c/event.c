@@ -1154,7 +1154,7 @@ get_display_from_id(SDL_DisplayID display, int unplugged)
     return PyObject_CallFunction(display_get_display_func, "(Ip)", display,
                                  unplugged);
 }
-#endif // SDL_VERSION_ATLEAST(3, 0, 0)
+#endif  // SDL_VERSION_ATLEAST(3, 0, 0)
 
 static PyObject *
 dict_from_event(SDL_Event *event)
