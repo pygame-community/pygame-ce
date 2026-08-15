@@ -2,7 +2,6 @@ import fractions
 from enum import IntEnum
 
 # non-marked functions will eventually be obsolete
-from pygame import _base_display, error as _sdl_error
 from pygame._base_display import (
     Info,
     flip,
@@ -39,7 +38,6 @@ from pygame._base_display import (
     toggle_fullscreen,
     update,
 )
-from pygame.version import SDL as _SDL_VER
 
 
 class Orientation(IntEnum):
@@ -104,13 +102,9 @@ class DisplayMode:
     def height(self):
         return self._mode_data[2]
 
-    if _SDL_VER >= (3, 0, 0):  # remove at the first sdl3 release
-
-        @property
-        def pixel_density(self):
-            if _SDL_VER < (3, 0, 0):
-                raise _sdl_error("'DisplayMode.pixel_density' requires _SDL_VER 3.0.0+")
-            return self._mode_data[3]
+    @property
+    def pixel_density(self):
+        return self._mode_data[3]
 
     @property
     def refresh_rate(self):
@@ -136,14 +130,8 @@ class Display:
             return self._id == display._id
         return NotImplemented
 
-    # python needs __hash__ = None to correctly disallow hashing,
-    # conditionally raising would be incorrect.
-    if _SDL_VER >= (3, 0, 0):
-
-        def __hash__(self):
-            return hash(self._id)
-    else:
-        __hash__ = None
+    def __hash__(self):
+        return hash(self._id)
 
     def __str__(self):
         bounds = self.bounds
@@ -171,13 +159,9 @@ class Display:
     def usable_bounds(self):
         return _base_display.get_usable_bounds(self._id)
 
-    if _SDL_VER >= (3, 0, 0):  # remove at the first sdl3 release
-
-        @property
-        def content_scale(self):
-            if _SDL_VER < (3, 0, 0):
-                raise _sdl_error("'Display.content_scale' requires _SDL_VER 3.0.0+")
-            return _base_display.get_content_scale(self._id)
+    @property
+    def content_scale(self):
+        return _base_display.get_content_scale(self._id)
 
     @property
     def current_mode(self):
@@ -191,47 +175,33 @@ class Display:
         mode._mode_data = _base_display.get_desktop_mode_data(self._id)
         return mode
 
-    if _SDL_VER >= (3, 0, 0):  # remove at the first sdl3 release
-
-        @property
-        def fullscreen_modes(self):
-            if _SDL_VER < (3, 0, 0):
-                raise _sdl_error("'Display.fullscreen_modes' requires _SDL_VER 3.0.0+")
-            modes = []
-            for data in _base_display.get_fullscreen_modes_data(self._id):
-                mode = DisplayMode.__new__(DisplayMode)
-                mode._mode_data = data
-                modes.append(mode)
-            return modes
+    @property
+    def fullscreen_modes(self):
+        modes = []
+        for data in _base_display.get_fullscreen_modes_data(self._id):
+            mode = DisplayMode.__new__(DisplayMode)
+            mode._mode_data = data
+            modes.append(mode)
+        return modes
 
     @property
     def orientation(self):
         return Orientation(_base_display.get_orientation(self._id))
 
-    if _SDL_VER >= (3, 0, 0):  # remove at the first sdl3 release
+    @property
+    def natural_orientation(self):
+        return Orientation(_base_display.get_natural_orientation(self._id))
 
-        @property
-        def natural_orientation(self):
-            if _SDL_VER < (3, 0, 0):
-                raise _sdl_error(
-                    "'Display.natural_orientation' requires _SDL_VER 3.0.0+"
-                )
-            return Orientation(_base_display.get_natural_orientation(self._id))
-
-        def get_closest_fullscreen_mode(
-            self, width, height, refresh_rate, include_high_density_modes=True
-        ):
-            if _SDL_VER < (3, 0, 0):
-                raise _sdl_error(
-                    "'Display.get_closest_fullscreen_mode' requires _SDL_VER 3.0.0+"
-                )
-            mode = DisplayMode.__new__(DisplayMode)
-            mode._mode_data = _base_display.get_closest_fullscreen_mode(
-                self._id, width, height, refresh_rate, include_high_density_modes
-            )
-            if mode._mode_data is None:
-                return None
-            return mode
+    def get_closest_fullscreen_mode(
+        self, width, height, refresh_rate, include_high_density_modes=True
+    ):
+        mode = DisplayMode.__new__(DisplayMode)
+        mode._mode_data = _base_display.get_closest_fullscreen_mode(
+            self._id, width, height, refresh_rate, include_high_density_modes
+        )
+        if mode._mode_data is None:
+            return None
+        return mode
 
     @classmethod
     def from_window(cls, window):

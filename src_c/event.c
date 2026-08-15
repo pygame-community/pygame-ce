@@ -467,11 +467,11 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY_PGE(WINDOWHITTEST);
         _PG_HANDLE_PROXIFY_PGE(WINDOWICCPROFCHANGED);
         _PG_HANDLE_PROXIFY_PGE(WINDOWDISPLAYCHANGED);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
         _PG_HANDLE_PROXIFY_PGE(DISPLAYORIENTATION);
         _PG_HANDLE_PROXIFY_PGE(DISPLAYCONNECTED);
         _PG_HANDLE_PROXIFY_PGE(DISPLAYDISCONNECTED);
         _PG_HANDLE_PROXIFY_PGE(DISPLAYMOVED);
-#if SDL_VERSION_ATLEAST(3, 0, 0)
         _PG_HANDLE_PROXIFY_SDL3(DISPLAY_DESKTOP_MODE_CHANGED);
         _PG_HANDLE_PROXIFY_SDL3(DISPLAY_CURRENT_MODE_CHANGED);
         _PG_HANDLE_PROXIFY_SDL3(DISPLAY_CONTENT_SCALE_CHANGED);
@@ -1062,6 +1062,7 @@ _pg_name_from_eventtype(int type)
             return "WindowICCProfChanged";
         case PGE_WINDOWDISPLAYCHANGED:
             return "WindowDisplayChanged";
+#if SDL_VERSION_ATLEAST(3, 0, 0)
         case PGE_DISPLAYORIENTATION:
             return "DisplayOrientationChanged";
         case PGE_DISPLAYCONNECTED:
@@ -1070,7 +1071,6 @@ _pg_name_from_eventtype(int type)
             return "DisplayRemoved";
         case PGE_DISPLAYMOVED:
             return "DisplayMoved";
-#if SDL_VERSION_ATLEAST(3, 0, 0)
         case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
             return "DisplayDesktopModeChanged";
         case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
@@ -1607,28 +1607,21 @@ dict_from_event(SDL_Event *event)
 #endif /* (defined(unix) || ... */
 #endif /* !SDL_VERSION_ATLEAST(3, 0, 0) */
     } /* switch (event->type) */
-    /* Events that don't have any attributes are not handled in switch
-     * statement */
+        /* Events that don't have any attributes are not handled in switch
+         * statement */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
     switch (event->type) {
         case PGE_DISPLAYORIENTATION:
         case PGE_DISPLAYCONNECTED:
         case PGE_DISPLAYDISCONNECTED:
         case PGE_DISPLAYMOVED:
-#if SDL_VERSION_ATLEAST(3, 0, 0)
         case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
         case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
         case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
-        case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED:
-#endif
-        {
+        case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED: {
             int unplugged = event->type == PGE_DISPLAYDISCONNECTED ? 1 : 0;
-            PyObject *display_obj = get_display_from_id(
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-                event->display.displayID,
-#else
-                event->display.display,
-#endif
-                unplugged);
+            PyObject *display_obj =
+                get_display_from_id(event->display.displayID, unplugged);
             if (display_obj == NULL) {
                 Py_DECREF(dict);
                 return NULL;
@@ -1639,6 +1632,7 @@ dict_from_event(SDL_Event *event)
         default:
             break;
     }
+#endif
     SDL_Window *window;
     switch (event->type) {
         case PGE_WINDOWSHOWN:
