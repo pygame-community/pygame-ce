@@ -8,6 +8,10 @@
 #include "doc/sdl2_video_doc.h"
 #include "doc/window_doc.h"
 
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#include <SDL_syswm.h>
+#endif
+
 static int is_window_mod_init = 0;
 
 #if !defined(__APPLE__)
@@ -126,8 +130,7 @@ get_grabbed_window(PyObject *self, PyObject *_null)
         if (!win_obj) {
             Py_RETURN_NONE;
         }
-        Py_INCREF(win_obj);
-        return win_obj;
+        return Py_NewRef(win_obj);
     }
     Py_RETURN_NONE;
 }
@@ -154,9 +157,7 @@ window_destroy(pgWindowObject *self, PyObject *_null)
         // since this surface will be deallocated by SDL when the window is
         // destroyed.
         self->surf->surf = NULL;
-
-        Py_DECREF(self->surf);
-        self->surf = NULL;
+        Py_CLEAR(self->surf);
     }
     Py_RETURN_NONE;
 }
@@ -173,8 +174,7 @@ window_get_surface(pgWindowObject *self, PyObject *_null)
             return RAISE(pgExc_SDLError,
                          "display.set_mode has not been called yet.");
         }
-        Py_INCREF(surf);
-        return surf;
+        return Py_NewRef(surf);
     }
 
     _surf = SDL_GetWindowSurface(self->_win);
@@ -194,8 +194,7 @@ window_get_surface(pgWindowObject *self, PyObject *_null)
     }
     self->surf->surf = _surf;
 
-    Py_INCREF(self->surf);
-    return (PyObject *)self->surf;
+    return Py_NewRef(self->surf);
 }
 
 static PyObject *
@@ -504,83 +503,46 @@ window_set_grab_mouse(pgWindowObject *self, PyObject *arg, void *v)
         return -1;
     }
 
-#if SDL_VERSION_ATLEAST(2, 0, 16)
     SDL_SetWindowMouseGrab(self->_win, enable);
-#else
-    SDL_SetWindowGrab(self->_win, enable);
-#endif
-
     return 0;
 }
 
 static PyObject *
 window_get_grab_mouse(pgWindowObject *self, void *v)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_MOUSE_GRABBED);
-#else
-    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
-                           SDL_WINDOW_INPUT_GRABBED);
-#endif
 }
 
 static PyObject *
 window_get_mouse_grabbed(pgWindowObject *self, void *v)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowMouseGrab(self->_win));
-#else
-    return PyBool_FromLong(SDL_GetWindowGrab(self->_win));
-#endif
 }
 
 static int
 window_set_grab_keyboard(pgWindowObject *self, PyObject *arg, void *v)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 16)
     int enable = PyObject_IsTrue(arg);
     if (enable == -1) {
         return -1;
     }
 
     SDL_SetWindowKeyboardGrab(self->_win, enable);
-#else
-    if (PyErr_WarnEx(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+",
-                     1) == -1) {
-        return -1;
-    }
-#endif
     return 0;
 }
 
 static PyObject *
 window_get_grab_keyboard(pgWindowObject *self, void *v)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_KEYBOARD_GRABBED);
-#else
-    if (PyErr_WarnEx(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+",
-                     1) == -1) {
-        return NULL;
-    }
-    return PyBool_FromLong(SDL_FALSE);
-#endif
 }
 
 static PyObject *
 window_get_keyboard_grabbed(pgWindowObject *self, void *v)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowKeyboardGrab(self->_win));
-#else
-    if (PyErr_WarnEx(PyExc_Warning, "'keyboard_captured' requires SDL 2.0.16+",
-                     1) == -1) {
-        return NULL;
-    }
-    return PyBool_FromLong(SDL_FALSE);
-#endif
 }
 
 static int
@@ -647,20 +609,12 @@ window_get_borderless(pgWindowObject *self, void *v)
 static int
 window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 16)
     int enable = PyObject_IsTrue(arg);
     if (enable == -1) {
         return -1;
     }
 
     SDL_SetWindowAlwaysOnTop(self->_win, enable);
-#else
-    if (PyErr_WarnEx(PyExc_Warning,
-                     "Setting 'always_on_top' requires SDL 2.0.16+",
-                     1) == -1) {
-        return -1;
-    }
-#endif  // SDL_VERSION_ATLEAST(2, 0, 16)
     return 0;
 }
 
@@ -684,7 +638,6 @@ window_get_window_id(pgWindowObject *self, PyObject *_null)
 static int
 window_set_mouse_rect(pgWindowObject *self, PyObject *arg, void *v)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 18)
     SDL_Rect tmp_rect;
     SDL_Rect *mouse_rect_p = pgRect_FromObject(arg, &tmp_rect);
     if (mouse_rect_p == NULL && arg != Py_None) {
@@ -700,31 +653,17 @@ window_set_mouse_rect(pgWindowObject *self, PyObject *arg, void *v)
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
-#else
-    if (PyErr_WarnEx(PyExc_Warning,
-                     "Setting 'mouse_rect' requires SDL 2.0.18+", 1) == -1) {
-        return -1;
-    }
-#endif  // SDL_VERSION_ATLEAST(2, 0, 18)
     return 0;
 }
 
 static PyObject *
 window_get_mouse_rect(pgWindowObject *self, void *v)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 18)
     const SDL_Rect *mouse_rect_p = SDL_GetWindowMouseRect(self->_win);
     if (mouse_rect_p == NULL) {
         Py_RETURN_NONE;
     }
     return pgRect_New((SDL_Rect *)mouse_rect_p);
-#else
-    if (PyErr_WarnEx(PyExc_Warning,
-                     "Getting 'mouse_rect' requires SDL 2.0.18+", 1) == -1) {
-        return NULL;
-    }
-    Py_RETURN_NONE;
-#endif  // SDL_VERSION_ATLEAST(2, 0, 18)
 }
 
 static int
@@ -937,6 +876,90 @@ window_get_opengl(pgWindowObject *self, void *v)
 }
 
 static PyObject *
+window_get_handle(pgWindowObject *self, void *v)
+{
+    SDL_Window *win = self->_win;
+    size_t handle = 0;
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    const char *driver = SDL_GetCurrentVideoDriver();
+    if (driver == NULL) {
+        handle = 0;
+        return PyLong_FromSize_t(handle);
+    }
+
+    SDL_PropertiesID props = SDL_GetWindowProperties(win);
+
+    if (!strcmp(driver, "windows")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "x11")) {
+        handle = (size_t)SDL_GetNumberProperty(
+            props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+    }
+    else if (!strcmp(driver, "cocoa")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "uikit")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "android")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+    }
+    else if (!strcmp(driver, "vivante")) {
+        handle = (size_t)SDL_GetPointerProperty(
+            props, SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER, NULL);
+    }
+
+#else  // sdl 2:
+    SDL_SysWMinfo info;
+
+    SDL_VERSION(&(info.version));
+
+    if (!SDL_GetWindowWMInfo(win, &info)) {
+        return PyLong_FromSize_t(0);
+    }
+
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
+    if (info.subsystem == SDL_SYSWM_WINDOWS) {
+        handle = (size_t)info.info.win.window;
+    }
+#endif  // WINDOWS
+#ifdef SDL_VIDEO_DRIVER_X11
+    if (info.subsystem == SDL_SYSWM_X11) {
+        handle = (size_t)info.info.x11.window;
+    }
+#endif  // X11
+#ifdef SDL_VIDEO_DRIVER_COCOA
+    if (info.subsystem == SDL_SYSWM_COCOA) {
+        handle = (size_t)info.info.cocoa.window;
+    }
+#endif  // COCOA
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+    if (info.subsystem == SDL_SYSWM_UIKIT) {
+        handle = (size_t)info.info.uikit.window;
+    }
+#endif  // UIKIT
+#ifdef SDL_VIDEO_DRIVER_ANDROID
+    if (info.subsystem == SDL_SYSWM_ANDROID) {
+        handle = (size_t)info.info.android.window;
+    }
+#endif  // ANDROID
+#ifdef SDL_VIDEO_DRIVER_VIVANTE
+    if (info.subsystem == SDL_SYSWM_VIVANTE) {
+        handle = (size_t)info.info.vivante.window;
+    }
+#endif  // VIVANTE
+#endif  // sdl 3
+
+    return PyLong_FromSize_t(handle);
+}
+
+static PyObject *
 window_get_utility(pgWindowObject *self, void *v)
 {
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
@@ -1111,25 +1134,13 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     }
                 }
                 else if (!strcmp(_key_str, "mouse_grabbed")) {
-                    if (_value_bool)
-#if SDL_VERSION_ATLEAST(2, 0, 16)
+                    if (_value_bool) {
                         flags |= SDL_WINDOW_MOUSE_GRABBED;
-#else
-                        flags |= SDL_WINDOW_INPUT_GRABBED;
-#endif
+                    }
                 }
                 else if (!strcmp(_key_str, "keyboard_grabbed")) {
                     if (_value_bool) {
-#if SDL_VERSION_ATLEAST(2, 0, 16)
                         flags |= SDL_WINDOW_KEYBOARD_GRABBED;
-#else
-                        if (PyErr_WarnEx(PyExc_Warning,
-                                         "Keyword 'keyboard_grabbed' requires "
-                                         "SDL 2.0.16+",
-                                         1) == -1) {
-                            return -1;
-                        }
-#endif
                     }
                 }
                 else if (!strcmp(_key_str, "input_focus")) {
@@ -1307,8 +1318,7 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
 
     pgWindowObject *self = (pgWindowObject *)pg_get_pg_window(window);
     if (self != NULL) {
-        Py_INCREF(self);
-        return (PyObject *)self;
+        return Py_NewRef(self);
     }
 
     self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
@@ -1321,7 +1331,6 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
 static PyObject *
 window_flash(pgWindowObject *self, PyObject *arg)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 16)
     long operation = PyLong_AsLong(arg);
     if (operation == -1 && PyErr_Occurred()) {
         return RAISE(PyExc_TypeError,
@@ -1343,9 +1352,6 @@ window_flash(pgWindowObject *self, PyObject *arg)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
-#else
-    return RAISE(pgExc_SDLError, "'Window.flash' requires SDL 2.0.16+");
-#endif /* SDL_VERSION_ATLEAST(2, 0, 16) */
 }
 
 PyObject *
@@ -1448,6 +1454,7 @@ static PyGetSetDef _window_getset[] = {
      DOC_WINDOW_OPACITY, NULL},
     {"id", (getter)window_get_window_id, NULL, DOC_WINDOW_ID, NULL},
     {"opengl", (getter)window_get_opengl, NULL, DOC_WINDOW_OPENGL, NULL},
+    {"handle", (getter)window_get_handle, NULL, DOC_WINDOW_HANDLE, NULL},
     {"utility", (getter)window_get_utility, NULL, DOC_WINDOW_UTILITY, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };

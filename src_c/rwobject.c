@@ -118,16 +118,14 @@ fetch_object_methods(pgRWHelper *helper, PyObject *obj)
 
     if (PyObject_HasAttrString(obj, "read")) {
         helper->read = PyObject_GetAttrString(obj, "read");
-        if (helper->read && !PyCallable_Check(helper->read)) {
-            Py_DECREF(helper->read);
-            helper->read = NULL;
+        if (!PyCallable_Check(helper->read)) {
+            Py_CLEAR(helper->read);
         }
     }
     if (PyObject_HasAttrString(obj, "write")) {
         helper->write = PyObject_GetAttrString(obj, "write");
-        if (helper->write && !PyCallable_Check(helper->write)) {
-            Py_DECREF(helper->write);
-            helper->write = NULL;
+        if (!PyCallable_Check(helper->write)) {
+            Py_CLEAR(helper->write);
         }
     }
     if (!helper->read && !helper->write) {
@@ -136,23 +134,20 @@ fetch_object_methods(pgRWHelper *helper, PyObject *obj)
     }
     if (PyObject_HasAttrString(obj, "seek")) {
         helper->seek = PyObject_GetAttrString(obj, "seek");
-        if (helper->seek && !PyCallable_Check(helper->seek)) {
-            Py_DECREF(helper->seek);
-            helper->seek = NULL;
+        if (!PyCallable_Check(helper->seek)) {
+            Py_CLEAR(helper->seek);
         }
     }
     if (PyObject_HasAttrString(obj, "tell")) {
         helper->tell = PyObject_GetAttrString(obj, "tell");
-        if (helper->tell && !PyCallable_Check(helper->tell)) {
-            Py_DECREF(helper->tell);
-            helper->tell = NULL;
+        if (!PyCallable_Check(helper->tell)) {
+            Py_CLEAR(helper->tell);
         }
     }
     if (PyObject_HasAttrString(obj, "close")) {
         helper->close = PyObject_GetAttrString(obj, "close");
-        if (helper->close && !PyCallable_Check(helper->close)) {
-            Py_DECREF(helper->close);
-            helper->close = NULL;
+        if (!PyCallable_Check(helper->close)) {
+            Py_CLEAR(helper->close);
         }
     }
     return 0;
@@ -167,8 +162,7 @@ _trydecode_pathlibobj(PyObject *obj)
     if (!ret) {
         /* A valid object was not passed. But we do not consider it an error */
         PyErr_Clear();
-        Py_INCREF(obj);
-        return obj;
+        return Py_NewRef(obj);
     }
     return ret;
 }
@@ -366,8 +360,7 @@ _pg_rw_size(SDL_RWops *context)
         goto end;
     }
 
-    size = PyLong_AsLongLong(tmp);
-    if (size == -1 && PyErr_Occurred() != NULL) {
+    if (PyLong_AsInt64(tmp, &size) == -1) {
         PyErr_Print();
         goto end;
     }
@@ -590,9 +583,9 @@ _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
         goto end;
     }
 
-    retval = PyLong_AsLongLong(result);
-    if (retval == -1 && PyErr_Occurred()) {
+    if (PyLong_AsInt64(result, &retval) == -1) {
         PyErr_Clear();
+        retval = -1;
     }
 
     Py_DECREF(result);

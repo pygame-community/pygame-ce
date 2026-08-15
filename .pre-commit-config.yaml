@@ -15,6 +15,7 @@ repos:
               | ^.*\.svg$
               | ^.*\.sfd$
               | docs/LGPL.txt
+              | subprojects/.*
           )$
     - id: trailing-whitespace
       exclude: |
@@ -23,6 +24,7 @@ repos:
               | ^.*\.svg$
               | ^.*\.sfd$
               | docs/LGPL.txt
+              | subprojects/.*
           )$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -47,4 +49,5 @@ repos:
                 | src_c/include/sse2neon.h
                 | src_c/include/pythoncapi_compat.h
                 | src_c/pypm.c
+                | subprojects/.*
             )$

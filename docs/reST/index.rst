@@ -8,8 +8,6 @@ Pygame-ce Front Page
 
    ref/*
    tutorials/en/*
-   tutorials/en/**/*
-   tutorials/ko/**/*
    tutorials/es/*
    c_api
    filepaths
@@ -34,9 +32,7 @@ Here is a slightly more fleshed out example, which shows you how to move somethi
 .. literalinclude:: ref/code_examples/base_script_example.py
 
 For more in depth reference, check out the :ref:`tutorials-reference-label`
-section below, check out a video tutorial (`I'm a fan of this one
-<https://www.youtube.com/watch?v=AY9MnQ4x3zk>`_), or reference the API
-documentation by module.
+section below, or reference the API documentation by module.
 
 Experimental modules
 --------------------
@@ -93,9 +89,17 @@ Documents
 Tutorials
 ---------
 
-:doc:`Introduction to Pygame <tutorials/en/intro-to-pygame>`
-  An introduction to the basics of pygame.
-  This is written for users of Python and appeared in volume two of the Py magazine.
+| `Master Python by making 5 games [the new ultimate introduction to pygame] <https://www.youtube.com/watch?v=8OMghdHP-zs>`_
+|   YouTube video by Clear Code.
+
+| `Pygame in 18 Minutes <https://www.youtube.com/watch?v=blLLtdv4tvo>`_
+|   YouTube video by DaFluffyPotato.
+
+| `Introduction to Pygame-ce, 2D game programming <https://github.com/adamsralf/pygame_book/blob/main/00%20pygamece.pdf>`_
+|   Book by Ralf Adams.
+
+:doc:`Newbie Guide <tutorials/en/newbie-guide>`
+  A list of thirteen helpful tips for people to get comfortable using pygame.
 
 :doc:`Import and Initialize <tutorials/en/import-init>`
   The beginning steps on importing and initializing pygame.
@@ -111,11 +115,18 @@ Tutorials
   This was inspired by the annoying flash banner of the early 2000s.
   This tutorial examines every line of code used in the example.
 
+:doc:`What is Premultiplied Alpha? <tutorials/en/premultiplied-alpha>`
+  An explanation of alpha compositing and the advantages of using premultiplied alpha.
+
 :doc:`Sprite Module Introduction <tutorials/en/intro-to-sprites>`
   Pygame includes a higher level sprite module to help organize games.
   The sprite module includes several classes that help manage details found in almost all games types.
   The Sprite classes are a bit more advanced than the regular pygame modules,
   and need more understanding to be properly used.
+
+:doc:`Introduction to Pygame <tutorials/en/intro-to-pygame>`
+  An introduction to the basics of pygame.
+  This is written for users of Python and appeared in volume two of the Py magazine.
 
 :doc:`Surfarray Introduction <tutorials/en/intro-to-surfarray>`
   Pygame used the NumPy python module to allow efficient per pixel effects on images.
@@ -127,26 +138,16 @@ Tutorials
   watch live streams, and do some basic computer vision.
   This tutorial covers those use cases.
 
-:doc:`Newbie Guide <tutorials/en/newbie-guide>`
-  A list of thirteen helpful tips for people to get comfortable using pygame.
-
 :doc:`Making Games Tutorial <tutorials/en/make-games>`
   A large tutorial that covers the bigger topics needed to create an entire game.
 
 :doc:`Display Modes <tutorials/en/display-modes>`
   Getting a display surface for the screen.
 
-:doc:`한국어 튜토리얼 (Korean Tutorial) <tutorials/ko/빨간블록 검은블록/개요>`
-  빨간블록 검은블록
-
 :doc:`Tutorial de Pygame - Ejemplo del Chimpancé, Línea Por Línea <tutorials/es/ChimpanceLineaporLinea>`
   Los ejemplos de pygame incluyen un sencillo programa con un puño interactivo y un chimpancé.
   Está inspirado en el molesto banner de flash de principios de la década de 2000.
   Este tutorial examina cada línea de código utilizada en el ejemplo.
-
-:doc:`What is Premultiplied Alpha? <tutorials/en/premultiplied-alpha>`
-  An explanation of alpha compositing and the advantages of using premultipled alpha.
-
 
 Reference
 ---------

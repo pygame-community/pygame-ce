@@ -646,13 +646,6 @@ pg_frect_str(pgFRectObject *self)
     return pg_frect_repr(self);
 }
 
-/* True for both types of rects */
-static PyObject *
-pg_rect_getsafepickle(pgRectObject *self, void *closure)
-{
-    Py_RETURN_TRUE;
-}
-
 static PyGetSetDef pg_frect_getsets[] = {
     {"x", (getter)pg_frect_getleft, (setter)pg_frect_setleft, NULL, NULL},
     {"y", (getter)pg_frect_gettop, (setter)pg_frect_settop, NULL, NULL},
@@ -693,9 +686,6 @@ static PyGetSetDef pg_frect_getsets[] = {
      NULL},
     {"relcenter", (getter)pg_frect_getrelcenter, (setter)pg_frect_setrelcenter,
      NULL, NULL},
-
-    {"__safe_for_unpickling__", (getter)pg_rect_getsafepickle, NULL, NULL,
-     NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
@@ -737,9 +727,6 @@ static PyGetSetDef pg_rect_getsets[] = {
      NULL},
     {"relcenter", (getter)pg_rect_getrelcenter, (setter)pg_rect_setrelcenter,
      NULL, NULL},
-
-    {"__safe_for_unpickling__", (getter)pg_rect_getsafepickle, NULL, NULL,
-     NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 

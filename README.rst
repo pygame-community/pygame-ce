@@ -7,8 +7,8 @@
 |DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
+|DiscordBadge|
 
-**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_ `Deutsch`_
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Pygame_ is a free and open-source cross-platform library
@@ -125,13 +125,13 @@ Dependency versions:
 +----------+------------------------+
 | CPython  | >= 3.10 (Or use PyPy3) |
 +----------+------------------------+
-| SDL      | >= 2.0.14              |
+| SDL      | >= 2.0.20              |
 +----------+------------------------+
 | SDL_mixer| >= 2.0.4               |
 +----------+------------------------+
-| SDL_image| >= 2.0.4               |
+| SDL_image| >= 2.0.5               |
 +----------+------------------------+
-| SDL_ttf  | >= 2.0.15              |
+| SDL_ttf  | >= 2.0.18              |
 +----------+------------------------+
 
 How to Contribute
@@ -173,14 +173,17 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.7.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.7...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
 
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
+
+.. |DiscordBadge| image:: https://discord.com/api/guilds/772505616680878080/widget.png
+   :target: https://pyga.me/discord
 
 .. _Pygame: https://pyga.me
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
@@ -193,17 +196,5 @@ See docs/licenses for licenses of dependencies.
 .. _Opening a Great Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
 .. _issue tracker: https://github.com/pygame-community/pygame-ce/issues
 .. _label and link reported issues: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
-.. _Pygame Community Discord Server: https://discord.gg/pygame
+.. _Pygame Community Discord Server: https://pyga.me/discord
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
-
-.. _简体中文: ./docs/readmes/README.zh-cn.rst
-.. _繁體中文: ./docs/readmes/README.zh-tw.rst
-.. _Français: ./docs/readmes/README.fr.rst
-.. _فارسی: ./docs/readmes/README.fa.rst
-.. _Español: ./docs/readmes/README.es.rst
-.. _日本語: ./docs/readmes/README.ja.rst
-.. _Italiano: ./docs/readmes/README.it.rst
-.. _Русский: ./docs/readmes/README.ru.rst
-.. _Ελληνικά: ./docs/readmes/README.gr.rst
-.. _Português (Brasil): ./docs/readmes/README.pt-br.rst
-.. _Deutsch: ./docs/readmes/README.de.rst

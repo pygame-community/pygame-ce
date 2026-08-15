@@ -36,7 +36,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: init
 
-   | :sl:`initialize the font module`
+   | :sl:`Initialize the font module.`
    | :sg:`init() -> None`
 
    This method is called automatically by ``pygame.init()``. It initializes the
@@ -49,7 +49,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: quit
 
-   | :sl:`uninitialize the font module`
+   | :sl:`Uninitialize the font module.`
    | :sg:`quit() -> None`
 
    Manually uninitialize SDL_ttf's font system. This is called automatically by
@@ -63,83 +63,24 @@ solves no longer exists, it will likely be removed in the future.
 
 .. function:: get_init
 
-   | :sl:`true if the font module is initialized`
+   | :sl:`True if the font module is initialized.`
    | :sg:`get_init() -> bool`
 
    Test if the font module is initialized or not.
 
    .. ## pygame.font.get_init ##
 
-.. function:: get_default_font
+.. autopgfunction:: get_default_font
 
-   | :sl:`get the filename of the default font`
-   | :sg:`get_default_font() -> string`
+.. autopgfunction:: get_sdl_ttf_version
 
-   Return the filename of the system font. This is not the full path to the
-   file. This file can usually be found in the same directory as the font
-   module, but it can also be bundled in separate archives.
+.. autopgfunction:: get_fonts
 
-   .. ## pygame.font.get_default_font ##
-
-.. function:: get_sdl_ttf_version
-
-   | :sl:`gets SDL_ttf version`
-   | :sg:`get_sdl_ttf_version(linked=True) -> (major, minor, patch)`
-
-   Returns a tuple of integers that identify SDL_ttf's version.
-   SDL_ttf is the underlying font rendering library, written in C,
-   on which pygame's font module depends. If 'linked' is True (the default),
-   the function returns the version of the linked TTF library.
-   Otherwise this function returns the version of TTF pygame was compiled with
-
-   .. versionadded:: 2.1.3
-
-   .. ## pygame.font.get_sdl_ttf_version ##
-
-.. function:: get_fonts
-
-   | :sl:`get all available fonts`
-   | :sg:`get_fonts() -> list of strings`
-
-   Returns a list of all the fonts available on the system. The names of the
-   fonts will be set to lowercase with all spaces and punctuation removed. This
-   works on most systems, but some will return an empty list if they cannot
-   find fonts.
-
-   .. versionchanged:: 2.1.3 Checks through user fonts instead of just global fonts for Windows.
-
-   .. ## pygame.font.get_fonts ##
-
-.. function:: match_font
-
-   | :sl:`find a specific font on the system`
-   | :sg:`match_font(name, bold=False, italic=False) -> path`
-
-   Returns the full path to a font file on the system. If bold or italic are
-   set to true, this will attempt to find the correct family of font.
-
-   The font name can also be an iterable of font names, a string of
-   comma-separated font names, or a bytes of comma-separated font names, in
-   which case the set of names will be searched in order.
-   If none of the given names are found, None is returned.
-
-   .. versionaddedold:: 2.0.1 Accept an iterable of font names.
-
-   .. versionchanged:: 2.1.3 Checks through user fonts instead of just global fonts for Windows.
-
-   Example:
-
-   ::
-
-       print pygame.font.match_font('bitstreamverasans')
-       # output is: /usr/share/fonts/truetype/ttf-bitstream-vera/Vera.ttf
-       # (but only if you have Vera on your system)
-
-   .. ## pygame.font.match_font ##
+.. autopgfunction:: match_font
 
 .. function:: SysFont
 
-   | :sl:`create a Font object from the system fonts`
+   | :sl:`Create a Font object from the system fonts.`
    | :sg:`SysFont(name, size, bold=False, italic=False) -> Font`
 
    Return a new Font object that is loaded from the system fonts. The font will
@@ -160,7 +101,7 @@ solves no longer exists, it will likely be removed in the future.
 
 .. class:: Font
 
-   | :sl:`create a new Font object from a file`
+   | :sl:`Create a new Font object from a file.`
    | :sg:`Font(filename=None, size=20) -> Font`
    | :sg:`Font(filename, size) -> Font`
    | :sg:`Font(pathlib.Path, size) -> Font`
@@ -280,12 +221,12 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: align
 
-      | :sl:`Set how rendered text is aligned when given a wrap length.`
+      | :sl:`Gets or sets how rendered text is aligned when given a wrap length.`
       | :sg:`align -> int`
 
       Can be set to `pygame.FONT_LEFT`, `pygame.FONT_RIGHT`, or
       `pygame.FONT_CENTER`. This controls the text alignment behavior for the
-      font.
+      font. Defaults to `pygame.FONT_LEFT`.
 
       Requires pygame built with SDL_ttf 2.20.0, as all official pygame
       distributions are.
@@ -296,7 +237,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: point_size
 
-      | :sl:`Gets or sets the font's point size`
+      | :sl:`Gets or sets the font's point size.`
       | :sg:`point_size -> int`
 
       Returns the point size of the font. Will not be accurate upon initializing
@@ -309,7 +250,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: outline
 
-      | :sl:`Gets or sets the font's outline thickness (pixels)`
+      | :sl:`Gets or sets the font's outline thickness (pixels).`
       | :sg:`outline -> int`
 
       The outline value of the font.
@@ -346,7 +287,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: render
 
-      | :sl:`draw text on a new Surface`
+      | :sl:`Draw text on a new Surface.`
       | :sg:`render(text, antialias, color, bgcolor=None, wraplength=0) -> Surface`
 
       This creates a new Surface with the specified text rendered on it.
@@ -405,261 +346,43 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.render ##
 
-   .. method:: size
+   .. autopgmethod:: size
 
-      | :sl:`determine the amount of space needed to render text`
-      | :sg:`size(text, /) -> (width, height)`
+   .. autopgmethod:: set_underline
 
-      Returns the dimensions needed to render the text. This can be used to
-      help determine the positioning needed for text before it is rendered. It
-      can also be used for word wrapping and other layout effects.
+   .. autopgmethod:: get_underline
 
-      Be aware that most fonts use kerning which adjusts the widths for
-      specific letter pairs. For example, the width for "ae" will not always
-      match the width for "a" + "e".
+   .. autopgmethod:: set_strikethrough
 
-      .. ## Font.size ##
+   .. autopgmethod:: get_strikethrough
 
-   .. method:: set_underline
+   .. autopgmethod:: set_bold
 
-      | :sl:`control if text is rendered with an underline`
-      | :sg:`set_underline(bool, /) -> None`
+   .. autopgmethod:: get_bold
 
-      When enabled, all rendered fonts will include an underline. The underline
-      is always one pixel thick, regardless of font size. This can be mixed
-      with the bold, italic and strikethrough modes.
+   .. autopgmethod:: set_italic
 
-      .. note:: This is the same as the :attr:`underline` attribute.
+   .. autopgmethod:: metrics
 
-      .. ## Font.set_underline ##
+   .. autopgmethod:: get_italic
 
-   .. method:: get_underline
+   .. autopgmethod:: get_linesize
 
-      | :sl:`check if text will be rendered with an underline`
-      | :sg:`get_underline() -> bool`
+   .. autopgmethod:: set_linesize
 
-      Return True when the font underline is enabled.
+   .. autopgmethod:: get_height
 
-       .. note:: This is the same as the :attr:`underline` attribute.
+   .. autopgmethod:: set_point_size
 
-      .. ## Font.get_underline ##
+   .. autopgmethod:: get_point_size
 
-   .. method:: set_strikethrough
+   .. autopgmethod:: get_ascent
 
-      | :sl:`control if text is rendered with a strikethrough`
-      | :sg:`set_strikethrough(bool, /) -> None`
+   .. autopgmethod:: get_descent
 
-      When enabled, all rendered fonts will include a strikethrough. The
-      strikethrough is always one pixel thick, regardless of font size.
-      This can be mixed with the bold, italic and underline modes.
+   .. autopgmethod:: set_script
 
-      .. note:: This is the same as the :attr:`strikethrough` attribute.
-
-      .. versionadded:: 2.1.3
-
-      .. ## Font.set_strikethrough ##
-
-   .. method:: get_strikethrough
-
-      | :sl:`check if text will be rendered with a strikethrough`
-      | :sg:`get_strikethrough() -> bool`
-
-      Return True when the font strikethrough is enabled.
-
-       .. note:: This is the same as the :attr:`strikethrough` attribute.
-
-       .. versionadded:: 2.1.3
-
-      .. ## Font.get_strikethrough ##
-
-   .. method:: set_bold
-
-      | :sl:`enable fake rendering of bold text`
-      | :sg:`set_bold(bool, /) -> None`
-
-      Enables the bold rendering of text. This is a fake stretching of the font
-      that doesn't look good on many font types. If possible load the font from
-      a real bold font file. While bold, the font will have a different width
-      than when normal. This can be mixed with the italic, underline and
-      strikethrough modes.
-
-      .. note:: This is the same as the :attr:`bold` attribute.
-
-      .. ## Font.set_bold ##
-
-   .. method:: get_bold
-
-      | :sl:`check if text will be rendered bold`
-      | :sg:`get_bold() -> bool`
-
-      Return True when the font bold rendering mode is enabled.
-
-      .. note:: This is the same as the :attr:`bold` attribute.
-
-      .. ## Font.get_bold ##
-
-   .. method:: set_italic
-
-      | :sl:`enable fake rendering of italic text`
-      | :sg:`set_italic(bool, /) -> None`
-
-      Enables fake rendering of italic text. This is a fake skewing of the font
-      that doesn't look good on many font types. If possible load the font from
-      a real italic font file. While italic the font will have a different
-      width than when normal. This can be mixed with the bold, underline and
-      strikethrough modes.
-
-      .. note:: This is the same as the :attr:`italic` attribute.
-
-      .. ## Font.set_italic ##
-
-   .. method:: metrics
-
-      | :sl:`gets the metrics for each character in the passed string`
-      | :sg:`metrics(text, /) -> list`
-
-      The list contains tuples for each character, which contain the minimum
-      ``X`` offset, the maximum ``X`` offset, the minimum ``Y`` offset, the
-      maximum ``Y`` offset and the advance offset (bearing plus width) of the
-      character. [(minx, maxx, miny, maxy, advance), (minx, maxx, miny, maxy,
-      advance), ...]. None is entered in the list for each unrecognized
-      character.
-
-      .. versionchanged:: 2.5.4 This function now supports all unicode codepoints.
-         Previously, only a subset that was representable in UCS-2 was supported.
-
-      .. ## Font.metrics ##
-
-   .. method:: get_italic
-
-      | :sl:`check if the text will be rendered italic`
-      | :sg:`get_italic() -> bool`
-
-      Return True when the font italic rendering mode is enabled.
-
-      .. note:: This is the same as the :attr:`italic` attribute.
-
-      .. ## Font.get_italic ##
-
-   .. method:: get_linesize
-
-      | :sl:`get the line space of the font text`
-      | :sg:`get_linesize() -> int`
-
-      Return the height in pixels for a line of text with the font. When
-      rendering multiple lines of text this is the recommended amount of space
-      between lines.
-
-      .. ## Font.get_linesize ##
-
-   .. method:: set_linesize
-
-      | :sl:`set the line space of the font text`
-      | :sg:`set_linesize(linesize) -> None`
-
-      Set the height in pixels for a line of text with the font. When rendering
-      multiple lines of text this refers to the amount of space between lines.
-      The value must be non-negative.
-
-      .. versionadded:: 2.5.4
-
-      .. ## Font.set_linesize ##
-
-   .. method:: get_height
-
-      | :sl:`get the height of the font`
-      | :sg:`get_height() -> int`
-
-      Return the height in pixels of the actual rendered text. This is the
-      average size for each glyph in the font.
-
-      .. ## Font.get_height ##
-
-   .. method:: set_point_size
-
-      | :sl:`set the point size of the font`
-      | :sg:`set_point_size(size, /) -> None`
-
-      Sets the point size of the font, which is the value that was used to
-      initialize this font.
-
-      .. versionadded:: 2.3.1
-
-      .. ## Font.set_point_size ##
-
-   .. method:: get_point_size
-
-      | :sl:`get the point size of the font`
-      | :sg:`get_point_size() -> int`
-
-      Returns the point size of the font. Will not be accurate upon
-      initializing the font object when the font name is initialized
-      as ``None``.
-
-      .. versionadded:: 2.3.1
-
-      .. ## Font.get_point_size ##
-
-   .. method:: get_ascent
-
-      | :sl:`get the ascent of the font`
-      | :sg:`get_ascent() -> int`
-
-      Return the height in pixels for the font ascent. The ascent is the number
-      of pixels from the font baseline to the top of the font.
-
-      .. ## Font.get_ascent ##
-
-   .. method:: get_descent
-
-      | :sl:`get the descent of the font`
-      | :sg:`get_descent() -> int`
-
-      Return the height in pixels for the font descent. The descent is the
-      number of pixels from the font baseline to the bottom of the font.
-
-      .. ## Font.get_descent ##
-
-   .. method:: set_script
-
-      | :sl:`set the script code for text shaping`
-      | :sg:`set_script(str, /) -> None`
-
-      Sets the script used by harfbuzz text shaping, taking a 4 character
-      script code as input. For example, Hindi is written in the Devanagari
-      script, for which the script code is `"Deva"`. See the full list of
-      script codes in `ISO 15924 <https://www.unicode.org/iso15924/iso15924-codes.html>`_.
-
-      This method requires pygame built with SDL_ttf 2.20.0 or above. Otherwise the
-      method will raise a pygame.error.
-
-      .. versionadded:: 2.1.4
-
-      .. ## Font.set_script ##
-
-   .. method:: set_direction
-
-      | :sl:`set the script direction for text shaping`
-      | :sg:`set_direction(direction) -> None`
-
-      Sets the font direction for harfbuzz text rendering, taking in an integer
-      between 0 and 3 (inclusive) as input. There are convenient constants defined
-      for use in this method.
-
-      * ``pygame.DIRECTION_LTR`` is for left-to-right text
-      * ``pygame.DIRECTION_RTL`` is for right-to-left text
-      * ``pygame.DIRECTION_TTB`` is for top-to-bottom text
-      * ``pygame.DIRECTION_BTT`` is for bottom-to-top text
-
-      This method requires pygame built with SDL_ttf 2.20.0 or above. Otherwise the
-      method will raise a pygame.error.
-
-      .. note:: multiline renders with :meth:`render` do not play nicely with top-to-bottom
-         or bottom-to-top rendering.
-
-      .. versionadded:: 2.1.4
-
-      .. ## font.set_direction ##
+   .. autopgmethod:: set_direction
 
    .. ## pygame.font.Font ##
 

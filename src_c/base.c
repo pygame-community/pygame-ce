@@ -45,7 +45,7 @@ static int pg_is_init = 0;
 static bool pg_sdl_was_init = 0;
 SDL_Window *pg_default_window = NULL;
 pgSurfaceObject *pg_default_screen = NULL;
-static int pg_env_blend_alpha_SDL2 = 0;
+int pg_env_blend_alpha_SDL2 = 0;
 
 /* compare compiled to linked, raise python error on incompatibility */
 int
@@ -774,7 +774,7 @@ _pg_new_capsuleinterface(Py_buffer *view_p)
     int i;
 
     cinter_size =
-        (sizeof(pgCapsuleInterface) + sizeof(Py_intptr_t) * (2 * ndim - 1));
+        (sizeof(pgCapsuleInterface) + sizeof(Py_intptr_t) * (2 * ndim));
     cinter_p = (pgCapsuleInterface *)PyMem_Malloc(cinter_size);
     if (!cinter_p) {
         PyErr_NoMemory();
@@ -845,7 +845,7 @@ pg_view_get_shape_obj(Py_buffer *view)
         return 0;
     }
     for (i = 0; i < view->ndim; ++i) {
-        lengthobj = PyLong_FromLong((long)view->shape[i]);
+        lengthobj = PyLong_FromSsize_t(view->shape[i]);
         if (!lengthobj) {
             Py_DECREF(shapeobj);
             return 0;
@@ -866,7 +866,7 @@ pg_view_get_strides_obj(Py_buffer *view)
         return 0;
     }
     for (i = 0; i < view->ndim; ++i) {
-        lengthobj = PyLong_FromLong((long)view->strides[i]);
+        lengthobj = PyLong_FromSsize_t(view->strides[i]);
         if (!lengthobj) {
             Py_DECREF(shapeobj);
             return 0;
@@ -966,7 +966,7 @@ _pg_shape_as_tuple(PyArrayInterface *inter_p)
         return 0;
     }
     for (i = 0; i < inter_p->nd; ++i) {
-        lengthobj = PyLong_FromLong((long)inter_p->shape[i]);
+        lengthobj = PyLong_FromSsize_t(inter_p->shape[i]);
         if (!lengthobj) {
             Py_DECREF(shapeobj);
             return 0;
@@ -999,7 +999,7 @@ _pg_strides_as_tuple(PyArrayInterface *inter_p)
         return 0;
     }
     for (i = 0; i < inter_p->nd; ++i) {
-        lengthobj = PyLong_FromLong((long)inter_p->strides[i]);
+        lengthobj = PyLong_FromSsize_t(inter_p->strides[i]);
         if (!lengthobj) {
             Py_DECREF(stridesobj);
             return 0;
@@ -1134,8 +1134,7 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
             Py_DECREF(cobj);
             return -1;
         }
-        Py_INCREF(obj);
-        view_p->obj = obj;
+        view_p->obj = Py_NewRef(obj);
         Py_DECREF(cobj);
         success = 1;
     }
@@ -1148,8 +1147,7 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
             Py_DECREF(dict);
             return -1;
         }
-        Py_INCREF(obj);
-        view_p->obj = obj;
+        view_p->obj = Py_NewRef(obj);
         Py_DECREF(dict);
         success = 1;
     }
@@ -1181,10 +1179,7 @@ pgBuffer_Release(pg_buffer *pg_view_p)
 void
 _pg_release_buffer_generic(Py_buffer *view_p)
 {
-    if (view_p->obj) {
-        Py_XDECREF(view_p->obj);
-        view_p->obj = 0;
-    }
+    Py_CLEAR(view_p->obj);
 }
 
 void
@@ -1265,7 +1260,7 @@ _pg_arraystruct_as_buffer(Py_buffer *view_p, PyObject *cobj,
 {
     pgViewInternals *internal_p;
     Py_ssize_t sz =
-        (sizeof(pgViewInternals) + (2 * inter_p->nd - 1) * sizeof(Py_ssize_t));
+        (sizeof(pgViewInternals) + (2 * inter_p->nd) * sizeof(Py_ssize_t));
     int readonly = (inter_p->flags & PAI_WRITEABLE) ? 0 : 1;
     Py_ssize_t i;
 
@@ -1646,7 +1641,7 @@ _pg_values_as_buffer(Py_buffer *view_p, int flags, PyObject *typestr,
                         "require writable buffer, but it is read-only");
         return -1;
     }
-    sz = sizeof(pgViewInternals) + (2 * ndim - 1) * sizeof(Py_ssize_t);
+    sz = sizeof(pgViewInternals) + (2 * ndim) * sizeof(Py_ssize_t);
     internal_p = (pgViewInternals *)PyMem_Malloc(sz);
     if (!internal_p) {
         PyErr_NoMemory();

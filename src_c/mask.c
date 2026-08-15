@@ -43,24 +43,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-/* Pretty good idea from Tom Duff :-). */
-#ifndef LOOP_UNROLLED4
-#define LOOP_UNROLLED4(code, n, width) \
-    n = (width + 3) / 4;               \
-    switch (width & 3) {               \
-        case 0:                        \
-            do {                       \
-                code;                  \
-                case 3:                \
-                    code;              \
-                case 2:                \
-                    code;              \
-                case 1:                \
-                    code;              \
-            } while (--n > 0);         \
-    }
-#endif
-
 /* Macro to create mask objects. This will call the type's tp_new and tp_init.
  * Params:
  *     w: width of mask
@@ -217,8 +199,7 @@ mask_set_at(PyObject *self, PyObject *args, PyObject *kwargs)
         PyErr_Format(PyExc_IndexError, "%d, %d is out of bounds", x, y);
         return NULL;
     }
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_NewRef(Py_None);
 }
 
 static PyObject *
@@ -248,8 +229,7 @@ mask_overlap(PyObject *self, PyObject *args, PyObject *kwargs)
         return pg_tuple_couple_from_values_int(xp, yp);
     }
     else {
-        Py_INCREF(Py_None);
-        return Py_None;
+        return Py_NewRef(Py_None);
     }
 }
 
@@ -797,7 +777,7 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
 {
     /* This function expects surf to be non-zero sized. */
     const Uint8 bpp = PG_FORMAT_BytesPerPixel(surf_format);
-    int x, y, n;
+    int x, y;
     Uint8 *srcp;
     const int src_skip = surf->pitch - surf->w * bpp;
 
@@ -809,14 +789,17 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
         bitmask_fill(bitmask);
         return;
     }
-    else if (bpp < 3) {
+
+    const Uint8 u_threshold = (Uint8)threshold;
+
+    if (bpp < 3) {
         Uint8 r, g, b, a;
         srcp = (Uint8 *)surf->pixels;
         for (y = 0; y < surf->h; ++y) {
             for (x = 0; x < surf->w; ++x, srcp += bpp) {
                 PG_GetRGBA(bpp == 1 ? *srcp : *((Uint16 *)srcp), surf_format,
                            surf_palette, &r, &g, &b, &a);
-                if (a > threshold) {
+                if (a > u_threshold) {
                     bitmask_setbit(bitmask, x, y);
                 }
             }
@@ -825,32 +808,81 @@ set_from_threshold(SDL_Surface *surf, PG_PixelFormat *surf_format,
         return;
     }
 
-    /* With this strategy we avoid to get the rgb channels that we don't need
-     * and instead we just jump from alpha channel to alpha channel, comparing
-     * it with the threshold. */
+    if (bpp != 4) {
+        return;
+    }
+
+    /*
+    The bitmask is stored column-group-major, with each group being 32 or
+    64 bits depending on the platform.
+
+    Take a 128X2 surface 64-bit platform, the bitmap will be laid out as
+    follows.
+
+    Index:     [0]         [1]          [2]         [3]
+            row0,col0   row1,col0    row0,col1   row1,col1
+            px 0-63      px 0-63      64-127     px 64-127
+
+    For each scanline we process one BITMASK_W-sized chunk at a time reading
+    from the source in groups of 8 in parallel (plus remaining 1-7 pixels one
+    by one), accumulating bits into a local "block" word and storing it before
+    advancing to the next horizontal chunk (block_idx += surf->h).
+    */
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-    const char _a_off = surf_format->Ashift >> 3;
+    const char a_off = surf_format->Ashift >> 3;
 #else
-    const char _a_off = 3 - (surf_format->Ashift >> 3);
+    const char a_off = 3 - (surf_format->Ashift >> 3);
 #endif
 
-    srcp = (Uint8 *)surf->pixels + _a_off;
-    const Uint8 u_threshold = (Uint8)threshold;
+    BITMASK_W *bits = bitmask->bits;
 
-    for (y = 0; y < surf->h; ++y) {
+    for (y = 0; y < surf->h; y++) {
+        srcp = (Uint8 *)surf->pixels + y * surf->pitch + a_off;
+        int block_idx = y;
         x = 0;
-        LOOP_UNROLLED4(
-            {
-                if ((*srcp) > u_threshold) {
-                    bitmask_setbit(bitmask, x, y);
-                }
-                srcp += bpp;
-                x++;
-            },
-            n, surf->w);
+        BITMASK_W block = 0;
 
-        srcp += src_skip;
+        while (x < surf->w) {
+            int chunk_end = x + BITMASK_W_LEN - (x & BITMASK_W_MASK);
+            if (chunk_end > surf->w) {
+                chunk_end = surf->w;
+            }
+
+            /* Fill the whole block */
+            while (x <= chunk_end - 8) {
+                const int bp = x & BITMASK_W_MASK;
+                // clang-format off
+                if (srcp[0]  > u_threshold) block |= BITMASK_N(bp + 0);
+                if (srcp[4]  > u_threshold) block |= BITMASK_N(bp + 1);
+                if (srcp[8]  > u_threshold) block |= BITMASK_N(bp + 2);
+                if (srcp[12] > u_threshold) block |= BITMASK_N(bp + 3);
+                if (srcp[16] > u_threshold) block |= BITMASK_N(bp + 4);
+                if (srcp[20] > u_threshold) block |= BITMASK_N(bp + 5);
+                if (srcp[24] > u_threshold) block |= BITMASK_N(bp + 6);
+                if (srcp[28] > u_threshold) block |= BITMASK_N(bp + 7);
+                // clang-format on
+                srcp += 32;
+                x += 8;
+            }
+
+            /* remaining 1-7 pixels */
+            while (x < chunk_end) {
+                if (*srcp > u_threshold) {
+                    block |= BITMASK_N(x & BITMASK_W_MASK);
+                }
+                srcp += 4;
+                x++;
+            }
+
+            if (block) {
+                bits[block_idx] = block;
+                block = 0;
+            }
+
+            /* go to the next block on the same row */
+            block_idx += surf->h;
+        }
     }
 }
 
@@ -2622,9 +2654,7 @@ pgMask_GetBuffer(pgMaskObject *self, Py_buffer *view, int flags)
         view->format = NULL;
     }
     view->suboffsets = NULL;
-
-    Py_INCREF(self);
-    view->obj = (PyObject *)self;
+    view->obj = Py_NewRef(self);
 
     return 0;
 }

@@ -85,8 +85,7 @@ renderer_from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     self->target = NULL;
-    Py_INCREF(self);
-    return (PyObject *)self;
+    return Py_NewRef(self);
 }
 
 static PyObject *
@@ -177,7 +176,6 @@ static PyObject *
 renderer_fill_triangle(pgRendererObject *self, PyObject *args,
                        PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1, *p2, *p3;
     SDL_Vertex vertices[3];
     static char *keywords[] = {"p1", "p2", "p3", NULL};
@@ -196,10 +194,6 @@ renderer_fill_triangle(pgRendererObject *self, PyObject *args,
     RENDERER_ERROR_CHECK(
         SDL_RenderGeometry(self->renderer, NULL, vertices, 3, NULL, 0))
     Py_RETURN_NONE;
-#else
-    RAISE(PyExc_TypeError, "fill_triangle() requires SDL 2.0.18 or newer");
-    Py_RETURN_NONE;
-#endif
 }
 
 static PyObject *
@@ -224,7 +218,6 @@ renderer_draw_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1, *p2, *p3, *p4;
     SDL_Vertex vertices[4];
     static char *keywords[] = {"p1", "p2", "p3", "p4", NULL};
@@ -246,10 +239,6 @@ renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     RENDERER_ERROR_CHECK(
         SDL_RenderGeometry(self->renderer, NULL, vertices, 4, indices, 6))
     Py_RETURN_NONE;
-#else
-    RAISE(PyExc_TypeError, "fill_quad() requires SDL 2.0.18 or newer");
-    Py_RETURN_NONE;
-#endif
 }
 
 static PyObject *
@@ -402,8 +391,7 @@ renderer_blit(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     if (Py_IsNone(destobj)) {
         return renderer_get_viewport(self, NULL);
     }
-    Py_INCREF(destobj);
-    return destobj;
+    return Py_NewRef(destobj);
 }
 
 static PyObject *
@@ -548,8 +536,7 @@ renderer_get_target(pgRendererObject *self, void *closure)
     if (self->target == NULL) {
         Py_RETURN_NONE;
     }
-    Py_INCREF(self->target);
-    return (PyObject *)self->target;
+    return Py_NewRef(self->target);
 }
 
 static int
@@ -749,7 +736,6 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 texture_draw_triangle(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1_xyobj, *p2_xyobj, *p3_xyobj,
         *p1_uvobj = Py_None, *p2_uvobj = Py_None, *p3_uvobj = Py_None,
         *p1_modobj = Py_None, *p2_modobj = Py_None, *p3_modobj = Py_None;
@@ -815,16 +801,11 @@ texture_draw_triangle(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     RENDERER_ERROR_CHECK(SDL_RenderGeometry(
         self->renderer->renderer, self->texture, vertices, 3, NULL, 0))
     Py_RETURN_NONE;
-#else
-    RAISE(PyExc_TypeError, "draw_triangle() requires SDL 2.0.18 or newer");
-    Py_RETURN_NONE;
-#endif
 }
 
 static PyObject *
 texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1_xyobj, *p2_xyobj, *p3_xyobj, *p4_xyobj,
         *p1_uvobj = Py_None, *p2_uvobj = Py_None, *p3_uvobj = Py_None,
         *p4_uvobj = Py_None, *p1_modobj = Py_None, *p2_modobj = Py_None,
@@ -910,10 +891,6 @@ texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     RENDERER_ERROR_CHECK(SDL_RenderGeometry(
         self->renderer->renderer, self->texture, vertices, 6, NULL, 0))
     Py_RETURN_NONE;
-#else
-    RAISE(PyExc_TypeError, "draw_triangle() requires SDL 2.0.18 or newer");
-    Py_RETURN_NONE;
-#endif
 }
 
 static PyObject *
@@ -989,8 +966,7 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 texture_get_renderer(pgTextureObject *self, void *closure)
 {
-    Py_INCREF(self->renderer);
-    return (PyObject *)self->renderer;
+    return Py_NewRef(self->renderer);
 }
 
 static PyObject *
@@ -1142,22 +1118,8 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1)
     }
     if (scale_quality != -1) {
-#if SDL_VERSION_ATLEAST(2, 0, 12)
         RENDERER_PROPERTY_ERROR_CHECK(
             SDL_SetTextureScaleMode(self->texture, scale_quality))
-#else
-        switch (scale_quality) {
-            case 0:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-                break;
-            case 1:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-                break;
-            case 2:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
-                break;
-        }
-#endif
     }
     self->width = width;
     self->height = height;
