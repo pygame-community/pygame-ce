@@ -823,6 +823,9 @@ class ColorTypeTest(unittest.TestCase):
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_oklab((0.5, 0.25, 0.0, 2.0))
         )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color(0, 0, 0).from_oklab(("ahs", 0, 0))
+        )
 
         # Test a bunch of colors
         colors = {
@@ -880,6 +883,9 @@ class ColorTypeTest(unittest.TestCase):
         )
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_oklab((0.5, 0.25, 0.0, 2.0))
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color(0, 0, 0).from_oklch(("ahs", 0, 0))
         )
 
         # Test a bunch of colors
