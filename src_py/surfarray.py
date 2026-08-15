@@ -100,7 +100,14 @@ def blit_array(surface, array):
     Directly copy values from an array into a Surface. This is faster than
     converting the array into a Surface and blitting. The array must be the
     same dimensions as the Surface and will completely replace all pixel
-    values. Only integer, ascii character and record arrays are accepted.
+    values. Accepted array types are integer, ascii character and record
+    arrays, as well as ``float32``, ``float64`` and (where available)
+    ``float96`` NumPy arrays.
+
+    Float arrays are first rounded to the nearest integer and copied into
+    a new array before blitting. This extra copy defeats the performance
+    benefit this function is meant to provide, so pass an integer array
+    directly whenever possible.
 
     This function will temporarily lock the Surface as the new values are
     copied.
@@ -116,7 +123,11 @@ def make_surface(array):
     Copy an array to a new surface.
 
     Create a new Surface that best resembles the data and format on the
-    array. The array can be 2D or 3D with any sized integer values.
+    array. The array can be 2D or 3D with any sized integer values, or
+    ``float32``, ``float64`` or (where available) ``float96`` NumPy arrays.
+
+    Float arrays are first rounded to the nearest integer and copied into
+    a new array before creating the surface.
     """
     if isinstance(array, numpy_ndarray) and array.dtype in numpy_floats:
         array = array.round(0).astype(numpy_uint32)
