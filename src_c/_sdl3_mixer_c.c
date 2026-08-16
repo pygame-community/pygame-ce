@@ -1421,6 +1421,10 @@ static PyObject *
 pg_audio_decoder_obj_decode(PGAudioDecoderObject *self, PyObject *args,
                             PyObject *kwargs)
 {
+    // TODO for free threading: This object is not thread safe, so releasing
+    // the GIL has not been implemented because multiple threads could call
+    // into the same object and cause races even in a non free threaded build.
+
     PyObject *spec_obj, *size_obj = Py_None;
     char *keywords[] = {"spec", "size", NULL};
 
@@ -1446,15 +1450,18 @@ pg_audio_decoder_obj_decode(PGAudioDecoderObject *self, PyObject *args,
         // Without an explicit size requested, loop until the audio decoder is
         // exhausted and return it all as one large bytes object. Decode
         // directly into the writer's buffer, chunk by chunk.
-        const int chunk = 4096;
+
+        // 65kb (2**16) is about 1/3 second of 48kHz stereo S16
+        const int chunk = 65536;
         PyBytesWriter *writer = PyBytesWriter_Create(chunk);
         if (writer == NULL) {
             return NULL;  // exception already set
         }
 
         char *buf = (char *)PyBytesWriter_GetData(writer);
-        while (true) {
-            int bytes_decoded =
+        int bytes_decoded;
+        do {
+            bytes_decoded =
                 MIX_DecodeAudio(self->audio_decoder, buf, chunk, &spec);
 
             // -1 on error
@@ -1463,21 +1470,17 @@ pg_audio_decoder_obj_decode(PGAudioDecoderObject *self, PyObject *args,
                 return RAISE(pgExc_SDLError, SDL_GetError());
             }
 
-            // No more file to decode!
-            if (bytes_decoded == 0) {
-                break;
-            }
-
             // Get the new buffer write location by advancing the current
-            // location by the number of bytes read, and allocate the space
-            // for the next chunk.
+            // location by the number of bytes decoded, and allocate the space
+            // for the next chunk. On the final pass nothing was decoded, so
+            // this just over-allocates a chunk that is trimmed off below.
             buf = PyBytesWriter_GrowAndUpdatePointer(writer, chunk,
                                                      buf + bytes_decoded);
             if (buf == NULL) {
                 PyBytesWriter_Discard(writer);
                 return NULL;
             }
-        }
+        } while (bytes_decoded > 0);
 
         return PyBytesWriter_FinishWithPointer(writer, buf);
     }
