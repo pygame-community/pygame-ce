@@ -501,14 +501,14 @@ _pg_pgevent_deproxify(Uint32 type)
 static Uint32
 _pg_pgevent_type(SDL_Event *event)
 {
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
-    if (event->type == SDL_WINDOWEVENT) {
-        return PGE_WINDOWSHOWN + event->window.event - 1;
-    }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
     if (event->type == SDL_DISPLAYEVENT) {
         return PGE_DISPLAYORIENTATION + event->display.event - 1;
     }
 #endif
+    if (event->type == SDL_WINDOWEVENT) {
+        return PGE_WINDOWSHOWN + event->window.event - 1;
+    }
     return event->type;
 }
 
@@ -1343,11 +1343,13 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "x", PyLong_FromLong(event->window.data1));
             _pg_insobj(dict, "y", PyLong_FromLong(event->window.data2));
             break;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
         case PGE_DISPLAYORIENTATION:
             /* other PGE_DISPLAY* events do not have attributes */
             _pg_insobj(dict, "orientation",
                        PyLong_FromLong(event->display.data1));
             break;
+#endif
         case SDL_AUDIODEVICEADDED:
         case SDL_AUDIODEVICEREMOVED:
             _pg_insobj(
