@@ -105,6 +105,10 @@ static char released_keys[SDL_NUM_SCANCODES] = {0};
 static char pressed_mouse_buttons[5] = {0};
 static char released_mouse_buttons[5] = {0};
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static PyObject *display_get_display_func = NULL;
+#endif
+
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
 #define PG_LOCK_EVFILTER_MUTEX
@@ -364,6 +368,11 @@ _pg_get_event_unicode(SDL_Event *event)
     case PGPOST_##name:          \
         return proxify ? PGPOST_##name : SDL_##name
 
+#define _PG_HANDLE_PROXIFY_SDL3(name) \
+    case SDL_EVENT_##name:            \
+    case PGPOST_##name:               \
+        return proxify ? PGPOST_##name : SDL_EVENT_##name
+
 #define _PG_HANDLE_PROXIFY_PGE(name) \
     case PGE_##name:                 \
     case PGPOST_##name:              \
@@ -460,6 +469,16 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY_PGE(WINDOWHITTEST);
         _PG_HANDLE_PROXIFY_PGE(WINDOWICCPROFCHANGED);
         _PG_HANDLE_PROXIFY_PGE(WINDOWDISPLAYCHANGED);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_ORIENTATION);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_ADDED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_REMOVED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_MOVED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_DESKTOP_MODE_CHANGED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_CURRENT_MODE_CHANGED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_CONTENT_SCALE_CHANGED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_USABLE_BOUNDS_CHANGED);
+#endif
         default:
             return type;
     }
@@ -798,6 +817,9 @@ pgEvent_AutoQuit(PyObject *self, PyObject *_null)
          * stops returning new types when they are finished, without that
          * test preventing further tests from getting a custom event type.*/
         _custom_event = _PGE_CUSTOM_EVENT_INIT;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        Py_CLEAR(display_get_display_func);
+#endif
     }
     _pg_event_is_init = 0;
     Py_RETURN_NONE;
@@ -1038,6 +1060,24 @@ _pg_name_from_eventtype(int type)
             return "WindowICCProfChanged";
         case PGE_WINDOWDISPLAYCHANGED:
             return "WindowDisplayChanged";
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        case SDL_EVENT_DISPLAY_ORIENTATION:
+            return "DisplayOrientationChanged";
+        case SDL_EVENT_DISPLAY_ADDED:
+            return "DisplayAdded";
+        case SDL_EVENT_DISPLAY_REMOVED:
+            return "DisplayRemoved";
+        case SDL_EVENT_DISPLAY_MOVED:
+            return "DisplayMoved";
+        case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
+            return "DisplayDesktopModeChanged";
+        case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
+            return "DisplayCurrentModeChanged";
+        case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
+            return "DisplayContentScaleChanged";
+        case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED:
+            return "DisplayUsableBoundsChanged";
+#endif
     }
     if (type >= PGE_USEREVENT && type < PG_NUMEVENTS) {
         return "UserEvent";
@@ -1084,6 +1124,34 @@ get_joy_device_index(int instance_id)
     int device_index = pgJoystick_GetDeviceIndexByInstanceID(instance_id);
     return PyLong_FromLong(device_index);
 }
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static PyObject *
+get_display_from_id(SDL_DisplayID display, int unplugged)
+{
+    if (display_get_display_func == NULL) {
+        // cache pygame.display._get_display
+        PyObject *display_module = PyImport_ImportModule("pygame.display");
+        if (display_module == NULL) {
+            return NULL;
+        }
+
+        display_get_display_func =
+            PyObject_GetAttrString(display_module, "_get_display");
+        Py_DECREF(display_module);
+
+        if (display_get_display_func == NULL ||
+            !PyCallable_Check(display_get_display_func)) {
+            Py_XDECREF(display_get_display_func);
+            display_get_display_func = NULL;
+            return NULL;
+        }
+    }
+
+    return PyObject_CallFunction(display_get_display_func, "(Ip)", display,
+                                 unplugged);
+}
+#endif  // SDL_VERSION_ATLEAST(3, 0, 0)
 
 static PyObject *
 dict_from_event(SDL_Event *event)
@@ -1270,6 +1338,13 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "x", PyLong_FromLong(event->window.data1));
             _pg_insobj(dict, "y", PyLong_FromLong(event->window.data2));
             break;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        case SDL_EVENT_DISPLAY_ORIENTATION:
+            /* other SDL_EVENT_DISPLAY* events do not have attributes */
+            _pg_insobj(dict, "orientation",
+                       PyLong_FromLong(event->display.data1));
+            break;
+#endif
         case SDL_AUDIODEVICEADDED:
         case SDL_AUDIODEVICEREMOVED:
             _pg_insobj(
@@ -1527,8 +1602,32 @@ dict_from_event(SDL_Event *event)
 #endif /* (defined(unix) || ... */
 #endif /* !SDL_VERSION_ATLEAST(3, 0, 0) */
     } /* switch (event->type) */
-    /* Events that don't have any attributes are not handled in switch
-     * statement */
+        /* Events that don't have any attributes are not handled in switch
+         * statement */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    switch (event->type) {
+        case SDL_EVENT_DISPLAY_ORIENTATION:
+        case SDL_EVENT_DISPLAY_ADDED:
+        case SDL_EVENT_DISPLAY_REMOVED:
+        case SDL_EVENT_DISPLAY_MOVED:
+        case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
+        case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
+        case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
+        case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED: {
+            int unplugged = event->type == SDL_EVENT_DISPLAY_REMOVED ? 1 : 0;
+            PyObject *display_obj =
+                get_display_from_id(event->display.displayID, unplugged);
+            if (display_obj == NULL) {
+                Py_DECREF(dict);
+                return NULL;
+            }
+            _pg_insobj(dict, "display", display_obj);
+            break;
+        }
+        default:
+            break;
+    }
+#endif
     SDL_Window *window;
     switch (event->type) {
         case PGE_WINDOWSHOWN:
