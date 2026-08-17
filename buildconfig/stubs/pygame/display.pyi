@@ -90,7 +90,7 @@ class DisplayMode:
     """Pygame object representing a specific mode of a Display.
 
     Displays can have modes that have a different resolution or refresh
-    rate compared to the the monitor's maximum capability.
+    rate compared to the monitor's maximum capability.
 
     Query the display modes of a Display object with the :data:`Display.current_mode`,
     :data:`Display.desktop_mode` and :data:`Display.fullscreen_modes` properties and the
@@ -151,7 +151,7 @@ class Display:
         """Rect representing the display position and resolution.
 
         The primary display is typically positioned at (0, 0) and other displays
-        are tipically relative to it.
+        are typically relative to it.
         """
     @property
     def usable_bounds(self) -> Rect:

@@ -113,6 +113,8 @@ class DisplayMode:
 
     @property
     def refresh_fraction(self):
+        if self._mode_data[5] == 0 and self._mode_data[6] == 0:
+            return fractions.Fraction(0)
         return fractions.Fraction(self._mode_data[5], self._mode_data[6])
 
 

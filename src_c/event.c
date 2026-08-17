@@ -822,7 +822,9 @@ pgEvent_AutoQuit(PyObject *self, PyObject *_null)
          * stops returning new types when they are finished, without that
          * test preventing further tests from getting a custom event type.*/
         _custom_event = _PGE_CUSTOM_EVENT_INIT;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
         Py_CLEAR(display_get_display_func);
+#endif
     }
     _pg_event_is_init = 0;
     Py_RETURN_NONE;
