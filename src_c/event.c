@@ -470,10 +470,10 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY_PGE(WINDOWICCPROFCHANGED);
         _PG_HANDLE_PROXIFY_PGE(WINDOWDISPLAYCHANGED);
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        _PG_HANDLE_PROXIFY_PGE(DISPLAYORIENTATION);
-        _PG_HANDLE_PROXIFY_PGE(DISPLAYCONNECTED);
-        _PG_HANDLE_PROXIFY_PGE(DISPLAYDISCONNECTED);
-        _PG_HANDLE_PROXIFY_PGE(DISPLAYMOVED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_ORIENTATION);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_ADDED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_REMOVED);
+        _PG_HANDLE_PROXIFY_SDL3(DISPLAY_MOVED);
         _PG_HANDLE_PROXIFY_SDL3(DISPLAY_DESKTOP_MODE_CHANGED);
         _PG_HANDLE_PROXIFY_SDL3(DISPLAY_CURRENT_MODE_CHANGED);
         _PG_HANDLE_PROXIFY_SDL3(DISPLAY_CONTENT_SCALE_CHANGED);
@@ -501,14 +501,11 @@ _pg_pgevent_deproxify(Uint32 type)
 static Uint32
 _pg_pgevent_type(SDL_Event *event)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (event->type == SDL_DISPLAYEVENT) {
-        return PGE_DISPLAYORIENTATION + event->display.event - 1;
-    }
-#endif
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     if (event->type == SDL_WINDOWEVENT) {
         return PGE_WINDOWSHOWN + event->window.event - 1;
     }
+#endif
     return event->type;
 }
 
@@ -520,12 +517,10 @@ static bool
 _pg_event_psuedo_block(SDL_Event *event)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    if ((event->type >= SDL_EVENT_WINDOW_FIRST &&
-         event->type <= SDL_EVENT_WINDOW_LAST) ||
-        (event->type >= SDL_EVENT_DISPLAY_FIRST &&
-         event->type <= SDL_EVENT_DISPLAY_LAST)) {
+    if (event->type >= SDL_EVENT_WINDOW_FIRST &&
+        event->type <= SDL_EVENT_WINDOW_LAST) {
 #else
-    if (event->type == SDL_WINDOWEVENT || event->type == SDL_DISPLAYEVENT) {
+    if (event->type == SDL_WINDOWEVENT) {
 #endif
         return true;
     }
@@ -1066,13 +1061,13 @@ _pg_name_from_eventtype(int type)
         case PGE_WINDOWDISPLAYCHANGED:
             return "WindowDisplayChanged";
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        case PGE_DISPLAYORIENTATION:
+        case SDL_EVENT_DISPLAY_ORIENTATION:
             return "DisplayOrientationChanged";
-        case PGE_DISPLAYCONNECTED:
+        case SDL_EVENT_DISPLAY_ADDED:
             return "DisplayAdded";
-        case PGE_DISPLAYDISCONNECTED:
+        case SDL_EVENT_DISPLAY_REMOVED:
             return "DisplayRemoved";
-        case PGE_DISPLAYMOVED:
+        case SDL_EVENT_DISPLAY_MOVED:
             return "DisplayMoved";
         case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
             return "DisplayDesktopModeChanged";
@@ -1344,8 +1339,8 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "y", PyLong_FromLong(event->window.data2));
             break;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        case PGE_DISPLAYORIENTATION:
-            /* other PGE_DISPLAY* events do not have attributes */
+        case SDL_EVENT_DISPLAY_ORIENTATION:
+            /* other SDL_EVENT_DISPLAY* events do not have attributes */
             _pg_insobj(dict, "orientation",
                        PyLong_FromLong(event->display.data1));
             break;
@@ -1611,15 +1606,15 @@ dict_from_event(SDL_Event *event)
          * statement */
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     switch (event->type) {
-        case PGE_DISPLAYORIENTATION:
-        case PGE_DISPLAYCONNECTED:
-        case PGE_DISPLAYDISCONNECTED:
-        case PGE_DISPLAYMOVED:
+        case SDL_EVENT_DISPLAY_ORIENTATION:
+        case SDL_EVENT_DISPLAY_ADDED:
+        case SDL_EVENT_DISPLAY_REMOVED:
+        case SDL_EVENT_DISPLAY_MOVED:
         case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
         case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
         case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
         case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED: {
-            int unplugged = event->type == PGE_DISPLAYDISCONNECTED ? 1 : 0;
+            int unplugged = event->type == SDL_EVENT_DISPLAY_REMOVED ? 1 : 0;
             PyObject *display_obj =
                 get_display_from_id(event->display.displayID, unplugged);
             if (display_obj == NULL) {

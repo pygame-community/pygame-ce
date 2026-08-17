@@ -72,6 +72,12 @@ def _get_display(ID, unplugged=False) -> "Display | None":
     return display
 
 
+def _make_mode(data) -> "DisplayMode":
+    mode = DisplayMode.__new__(DisplayMode)
+    mode._mode_data = data
+    return mode
+
+
 class DisplayMode:
     # (display ID, width, height, pixel density, refresh rate, refresh numerator,
     # refresh denominator)
@@ -168,24 +174,18 @@ class Display:
 
     @property
     def current_mode(self):
-        mode = DisplayMode.__new__(DisplayMode)
-        mode._mode_data = _base_display.get_current_mode_data(self._id)
-        return mode
+        return _make_mode(_base_display.get_current_mode_data(self._id))
 
     @property
     def desktop_mode(self):
-        mode = DisplayMode.__new__(DisplayMode)
-        mode._mode_data = _base_display.get_desktop_mode_data(self._id)
-        return mode
+        return _make_mode(_base_display.get_desktop_mode_data(self._id))
 
     @property
     def fullscreen_modes(self):
-        modes = []
-        for data in _base_display.get_fullscreen_modes_data(self._id):
-            mode = DisplayMode.__new__(DisplayMode)
-            mode._mode_data = data
-            modes.append(mode)
-        return modes
+        return [
+            _make_mode(data)
+            for data in _base_display.get_fullscreen_modes_data(self._id)
+        ]
 
     @property
     def orientation(self):
@@ -198,13 +198,12 @@ class Display:
     def get_closest_fullscreen_mode(
         self, width, height, refresh_rate, include_high_density_modes=True
     ):
-        mode = DisplayMode.__new__(DisplayMode)
-        mode._mode_data = _base_display.get_closest_fullscreen_mode(
+        data = _base_display.get_closest_fullscreen_mode(
             self._id, width, height, refresh_rate, include_high_density_modes
         )
-        if mode._mode_data is None:
+        if data is None:
             return None
-        return mode
+        return _make_mode(data)
 
     @classmethod
     def from_window(cls, window):
