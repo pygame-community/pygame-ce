@@ -25,20 +25,48 @@
 static PyObject *
 pg_touch_num_devices(PyObject *self, PyObject *_null)
 {
-    return PyLong_FromLong(SDL_GetNumTouchDevices());
+    int count;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+
+    SDL_TouchID *devices = SDL_GetTouchDevices(&count);
+    if (devices == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    SDL_free(devices);
+#else
+    count = SDL_GetNumTouchDevices();
+#endif
+    return PyLong_FromLong(count);
 }
 
 static PyObject *
-pg_touch_get_device(PyObject *self, PyObject *index)
+pg_touch_get_device(PyObject *self, PyObject *index_obj)
 {
     SDL_TouchID touchid;
-    if (!PyLong_Check(index)) {
+    if (!PyLong_Check(index_obj)) {
         return RAISE(PyExc_TypeError,
                      "index must be an integer "
                      "specifying a device to get the ID for");
     }
-
-    touchid = SDL_GetTouchDevice(PyLong_AsLong(index));
+    int index = PyLong_AsLong(index_obj);
+    if (PyErr_Occurred()) {
+        return NULL;  // exception already set
+    }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int count;
+    SDL_TouchID *devices = SDL_GetTouchDevices(&count);
+    if (devices == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    if (index < 0 || index >= count) {
+        SDL_free(devices);
+        return RAISE(PyExc_IndexError, "index is out of bounds");
+    }
+    touchid = devices[index];
+    SDL_free(devices);
+#else
+    touchid = SDL_GetTouchDevice(index);
+#endif
     if (touchid == 0) {
         /* invalid index */
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -47,21 +75,32 @@ pg_touch_get_device(PyObject *self, PyObject *index)
 }
 
 static PyObject *
-pg_touch_num_fingers(PyObject *self, PyObject *device_id)
+pg_touch_num_fingers(PyObject *self, PyObject *device_id_obj)
 {
     int fingercount;
-    if (!PyLong_Check(device_id)) {
+    if (!PyLong_Check(device_id_obj)) {
         return RAISE(PyExc_TypeError,
                      "device_id must be an integer "
                      "specifying a touch device");
     }
+    SDL_TouchID device_id = PyLong_AsLongLong(device_id_obj);
+    if (PyErr_Occurred()) {
+        return NULL;  // exception already set
+    }
 
     VIDEO_INIT_CHECK();
-
-    fingercount = SDL_GetNumTouchFingers(PyLong_AsLongLong(device_id));
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_Finger **fingers = SDL_GetTouchFingers(device_id, &fingercount);
+    if (fingers == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    SDL_free(fingers);
+#else
+    fingercount = SDL_GetNumTouchFingers(device_id);
     if (fingercount == 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
+#endif
     return PyLong_FromLong(fingercount);
 }
 #if !defined(BUILD_STATIC)
@@ -95,14 +134,30 @@ pg_touch_get_finger(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     VIDEO_INIT_CHECK();
-
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int fingercount;
+    SDL_Finger **fingers = SDL_GetTouchFingers(touchid, &fingercount);
+    if (fingers == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    if (index < 0 || index >= fingercount) {
+        SDL_free(fingers);
+        return RAISE(PyExc_IndexError, "index is out of bounds");
+    }
+    finger = fingers[index];
+#else
     if (!(finger = SDL_GetTouchFinger(touchid, index))) {
         Py_RETURN_NONE;
     }
+#endif
 
     fingerobj = PyDict_New();
-    if (!fingerobj)
+    if (!fingerobj) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_free(fingers);
+#endif
         return NULL;
+    }
 
     _pg_insobj(fingerobj, "id", PyLong_FromLongLong(finger->id));
     _pg_insobj(fingerobj, "x", PyFloat_FromDouble(finger->x));
@@ -110,10 +165,15 @@ pg_touch_get_finger(PyObject *self, PyObject *args, PyObject *kwargs)
     _pg_insobj(fingerobj, "pressure", PyFloat_FromDouble(finger->pressure));
 
     if (PyErr_Occurred()) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        SDL_free(fingers);
+#endif
         Py_DECREF(fingerobj);
         return NULL;
     }
-
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_free(fingers);
+#endif
     return fingerobj;
 }
 
