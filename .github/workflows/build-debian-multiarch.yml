@@ -39,9 +39,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-debian-multiarch
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  packages: write
+permissions: {}
 
 # this command is called in two places, so save it in an env first
 env:
@@ -58,6 +56,9 @@ jobs:
   build-multiarch:
     name: Debian (Bookworm - 12) [${{ matrix.arch }}]
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
 
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
