@@ -885,6 +885,12 @@ RectExport_dealloc(RectObject *self)
 static int
 RectExport_init(RectObject *self, PyObject *args, PyObject *kwds)
 {
+    if (kwds && PyDict_GET_SIZE(kwds)) {
+        PyErr_SetString(PyExc_TypeError,
+                        ObjectName "() does not accept keyword arguments");
+        return -1;
+    }
+
     if (PyTuple_GET_SIZE(args) == 0) {
         return 0;
     }

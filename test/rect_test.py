@@ -16,6 +16,22 @@ class RectTypeTest(unittest.TestCase):
     def _assertCountEqual(self, *args, **kwargs):
         self.assertCountEqual(*args, **kwargs)
 
+    def test_rect_constructor__no_keywords(self):
+        """Ensures Rect creation is positional-only and rejects keywords."""
+        with self.assertRaises(TypeError):
+            Rect(left=1, top=2, width=3, height=4)
+        with self.assertRaises(TypeError):
+            Rect(single_arg=(1, 2, 3, 4))
+        with self.assertRaises(TypeError):
+            Rect(x=1, y=2, w=3, h=4)
+        with self.assertRaises(TypeError):
+            Rect((1, 2, 3, 4), width=5)
+
+        # Positional forms are unaffected.
+        self.assertEqual(Rect(1, 2, 3, 4), Rect((1, 2), (3, 4)))
+        self.assertEqual(Rect((1, 2, 3, 4)), Rect((1, 2), (3, 4)))
+        self.assertEqual(Rect(), Rect(0, 0, 0, 0))
+
     def testConstructionXYWidthHeight(self):
         r = Rect(1, 2, 3, 4)
         self.assertEqual(1, r.left)
