@@ -11,7 +11,7 @@ cdef extern from "SDL.h" nogil:
 
     ctypedef Uint32 SDL_AudioDeviceID
     ctypedef Uint16 SDL_AudioFormat
-    ctypedef void (*SDL_AudioCallback)(void *userdata, Uint8 *stream, int len)
+    ctypedef void (*SDL_AudioCallback)(void *userdata, Uint8 *stream, int len) noexcept nogil
 
     ctypedef struct SDL_AudioSpec:
         int freq
