@@ -1,10 +1,12 @@
 """Debug functionality that allows for more useful issue reporting"""
 
 import importlib
+import io
 import platform
 import sys
 import traceback
 from os import environ
+from typing import Protocol
 
 from pygame.system import get_cpu_instruction_sets
 from pygame.version import ver
@@ -81,14 +83,66 @@ def _get_platform_info():
     return ret
 
 
-def print_debug_info(filename=None):
+def append_dep_version(dep_name, get_version, tab_count, input_str) -> str:
+    """
+    Internal helper to append SDL + Freetype versions to the debug string
+    """
+    debug_str = input_str
+    tabs = "\t" * tab_count
+    debug_str += (
+        f"{dep_name} versions:{tabs}Linked: {str_from_tuple(get_version())}\t"
+        f"Compiled: {str_from_tuple(get_version(linked=False))}\n"
+    )
+
+    return debug_str
+
+
+def append_driver_info(
+    display_init, mixer_init, get_display_driver, get_mixer_driver, input_str
+):
+    """
+    Internal helper to append the Display and Mixer driver info to the debug string
+    """
+    debug_str = input_str
+    if display_init():
+        driver = get_display_driver()
+        if driver.upper() != "X11":
+            debug_str += f"Display Driver:\t\t{driver}\n"
+        else:
+            is_xwayland = (environ.get("XDG_SESSION_TYPE") == "wayland") or (
+                "WAYLAND_DISPLAY" in environ
+            )
+            debug_str += f"Display Driver:\t\t{driver} ( xwayland == {is_xwayland} )\n"
+    else:
+        debug_str += "Display Driver:\t\tDisplay Not Initialized\n"
+
+    if mixer_init():
+        debug_str += f"Mixer Driver:\t\t{get_mixer_driver()}"
+    else:
+        debug_str += "Mixer Driver:\t\tMixer Not Initialized"
+
+    return debug_str
+
+
+class FileObject(Protocol):
+    def write(self, s: str, /) -> int: ...
+
+
+def print_debug_info(
+    filename: str | None = None, fileobject: FileObject | None = None
+) -> None:
     """Gets debug information for reporting bugs. Prints to console
-    if filename is not specified, otherwise writes to that file
+    if both filename and fileobject are None, otherwise writes
+    to the specified file(s).
     (note: if filename is not an empty file, it will overwrite whatever is
     in there)
+    (note: if fileobject is not specified, it will call the write method as-is,
+    it will not try to seek to the end or anything)
 
     Args:
         filename: string name of the file to save
+        fileobject: object representing a file, duck typed to require a
+                    `write(self, s: str, /) -> int` method
     """
     debug_str = ""
 
@@ -136,51 +190,27 @@ def print_debug_info(filename=None):
 
     debug_str += _get_platform_info()
 
-    debug_str += (
-        f"SDL versions:\t\tLinked: {str_from_tuple(get_sdl_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_version(linked=False))}\n"
+    debug_str = append_dep_version("SDL", get_sdl_version, 2, debug_str)
+    debug_str = append_dep_version("SDL Mixer", get_sdl_mixer_version, 1, debug_str)
+    debug_str = append_dep_version("SDL Font", get_sdl_ttf_version, 1, debug_str)
+    debug_str = append_dep_version("SDL Image", get_sdl_image_version, 1, debug_str)
+    debug_str = append_dep_version("Freetype", ft_version, 1, debug_str)
+
+    debug_str = append_driver_info(
+        display_init, mixer_init, get_display_driver, get_mixer_driver, debug_str
     )
 
-    debug_str += (
-        f"SDL Mixer versions:\tLinked: {str_from_tuple(get_sdl_mixer_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_mixer_version(linked=False))}\n"
-    )
+    debug_str += "\n"
 
-    debug_str += (
-        f"SDL Font versions:\tLinked: {str_from_tuple(get_sdl_ttf_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_ttf_version(linked=False))}\n"
-    )
+    write_to_new_file = filename is not None
+    write_to_existing_file = fileobject is not None
 
-    debug_str += (
-        f"SDL Image versions:\tLinked: {str_from_tuple(get_sdl_image_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_image_version(linked=False))}\n"
-    )
+    if not write_to_new_file and not write_to_existing_file:
+        print(debug_str, end="")
 
-    debug_str += (
-        f"Freetype versions:\tLinked: {str_from_tuple(ft_version())}\t"
-        f"Compiled: {str_from_tuple(ft_version(linked=False))}\n\n"
-    )
-
-    if display_init():
-        driver = get_display_driver()
-        if driver.upper() != "X11":
-            debug_str += f"Display Driver:\t\t{driver}\n"
-        else:
-            is_xwayland = (environ.get("XDG_SESSION_TYPE") == "wayland") or (
-                "WAYLAND_DISPLAY" in environ
-            )
-            debug_str += f"Display Driver:\t\t{driver} ( xwayland == {is_xwayland} )\n"
-    else:
-        debug_str += "Display Driver:\t\tDisplay Not Initialized\n"
-
-    if mixer_init():
-        debug_str += f"Mixer Driver:\t\t{get_mixer_driver()}"
-    else:
-        debug_str += "Mixer Driver:\t\tMixer Not Initialized"
-
-    if filename is None:
-        print(debug_str)
-
-    else:
+    if write_to_new_file:
         with open(filename, "w", encoding="utf8") as debugfile:
             debugfile.write(debug_str)
+
+    if write_to_existing_file:
+        fileobject.write(debug_str)
