@@ -1601,16 +1601,15 @@ _color_raise_with_existing_as_cause(PyObject *excType, const char *message)
     PyObject *type, *value, *traceback;
     PyErr_Fetch(&type, &value, &traceback);
     PyErr_NormalizeException(&type, &value, &traceback);
-    Py_XDECREF(type);
-    Py_XDECREF(traceback);
-    PyObject *new_value;
-    new_value = PyObject_CallFunction(excType, "s", message);
+    PyObject *new_value = PyObject_CallFunction(excType, "s", message);
     if (!new_value) {
         // This should never happen, if constructing the exception fails
         // something has gone horribly wrong
         PyErr_Restore(type, value, traceback);
         return;
     }
+    Py_XDECREF(type);
+    Py_XDECREF(traceback);
     PyException_SetCause(new_value, value);
     PyErr_SetObject(excType, new_value);
     Py_DECREF(new_value);
@@ -1638,9 +1637,19 @@ _color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("oklab", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
-        PySequence_Size(value) > 4) {
-        PyErr_SetString(PyExc_ValueError, "invalid oklab value");
+    if (!PySequence_Check(value)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "invalid oklab value: must be a sequence");
+        return -1;
+    }
+
+    Py_ssize_t size = PySequence_Size(value);
+    if (size == -1) {
+        return -1;
+    }
+    if (size < 3 || size > 4) {
+        PyErr_SetString(PyExc_ValueError,
+                        "invalid oklab value: must have three or four values");
         return -1;
     }
 
@@ -1650,12 +1659,13 @@ _color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
         return -1;
     }
     if (!_get_double(item, &(lab[0]))) {
+        Py_DECREF(item);
         _color_raise_with_existing_as_cause(
             PyExc_ValueError,
             "invalid oklab value: lightness (index 0) must be a valid number");
         return -1;
     }
-    if (lab[0] < 0 || lab[0] > 1) {
+    if (lab[0] < 0 || lab[0] > 1 || isnan(lab[0])) {
         Py_DECREF(item);
         PyErr_SetString(PyExc_ValueError,
                         "invalid oklab value: lightness (index 0) must be "
@@ -1670,12 +1680,13 @@ _color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
         return -1;
     }
     if (!_get_double(item, &(lab[1]))) {
+        Py_DECREF(item);
         _color_raise_with_existing_as_cause(
             PyExc_ValueError,
             "invalid oklab value: a (index 1) must be a valid number");
         return -1;
     }
-    if (lab[1] < -.4 || lab[1] > .4) {
+    if (lab[1] < -.4 || lab[1] > .4 || isnan(lab[1])) {
         Py_XDECREF(item);
         PyErr_SetString(PyExc_ValueError,
                         "invalid oklab value: a must be between -0.4 and 0.4");
@@ -1689,12 +1700,13 @@ _color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
         return -1;
     }
     if (!_get_double(item, &(lab[2]))) {
+        Py_DECREF(item);
         _color_raise_with_existing_as_cause(
             PyExc_ValueError,
             "invalid oklab value: b (index 2) must be a valid number");
         return -1;
     }
-    if (lab[2] < -.4 || lab[2] > .4) {
+    if (lab[2] < -.4 || lab[2] > .4 || isnan(lab[2])) {
         Py_XDECREF(item);
         PyErr_SetString(PyExc_ValueError,
                         "invalid oklab value: b must be between -0.4 and 0.4");
@@ -1710,6 +1722,7 @@ _color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
             return -1;
         }
         if (!_get_double(item, &(alpha))) {
+            Py_DECREF(item);
             _color_raise_with_existing_as_cause(
                 PyExc_ValueError,
                 "invalid oklab value: alpha (index 3) must be a valid number");
@@ -1764,7 +1777,11 @@ _color_set_oklch(pgColorObject *color, PyObject *value, void *closure)
         return -1;
     }
 
-    if (PySequence_Size(value) < 3 || PySequence_Size(value) > 4) {
+    Py_ssize_t size = PySequence_Size(value);
+    if (size == -1) {
+        return -1;
+    }
+    if (size < 3 || size > 4) {
         PyErr_SetString(
             PyExc_ValueError,
             "invalid oklch value: sequence must have either 3 or 4 elements");
@@ -1777,12 +1794,13 @@ _color_set_oklch(pgColorObject *color, PyObject *value, void *closure)
         return -1;
     }
     if (!_get_double(item, &(lch[0]))) {
+        Py_DECREF(item);
         _color_raise_with_existing_as_cause(
             PyExc_ValueError,
             "invalid oklch value: lightness (index 0) must be a valid number");
         return -1;
     }
-    if (lch[0] < 0 || lch[0] > 1) {
+    if (lch[0] < 0 || lch[0] > 1 || isnan(lch[0])) {
         Py_DECREF(item);
         PyErr_SetString(PyExc_ValueError,
                         "invalid oklch value: lightness (index 0) must be "
@@ -1797,16 +1815,17 @@ _color_set_oklch(pgColorObject *color, PyObject *value, void *closure)
         return -1;
     }
     if (!_get_double(item, &(lch[1]))) {
+        Py_DECREF(item);
         _color_raise_with_existing_as_cause(
             PyExc_ValueError,
             "invalid oklch value: chroma (index 1) must be a valid number");
         return -1;
     }
-    if (lch[1] < 0 || lch[1] > .4) {
+    if (lch[1] < 0 || lch[1] > .4 || isnan(lch[1])) {
         Py_DECREF(item);
-        PyErr_SetString(
-            PyExc_ValueError,
-            "invalid oklch value: chroma (index 1) must between 0.0 and 0.4");
+        PyErr_SetString(PyExc_ValueError,
+                        "invalid oklch value: chroma (index 1) must be "
+                        "between 0.0 and 0.4");
         return -1;
     }
     Py_DECREF(item);
@@ -1817,6 +1836,7 @@ _color_set_oklch(pgColorObject *color, PyObject *value, void *closure)
         return -1;
     }
     if (!_get_double(item, &(lch[2]))) {
+        Py_DECREF(item);
         _color_raise_with_existing_as_cause(
             PyExc_ValueError,
             "invalid oklch value: hue (index 2) must be a valid number");
@@ -1839,6 +1859,7 @@ _color_set_oklch(pgColorObject *color, PyObject *value, void *closure)
             return -1;
         }
         if (!_get_double(item, &(alpha))) {
+            Py_DECREF(item);
             _color_raise_with_existing_as_cause(
                 PyExc_ValueError,
                 "invalid oklch value: alpha (index 3) must be a valid number");
