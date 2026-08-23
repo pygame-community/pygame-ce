@@ -1603,11 +1603,16 @@ _color_raise_with_existing_as_cause(PyObject *excType, const char *message)
     PyErr_NormalizeException(&type, &value, &traceback);
     Py_XDECREF(type);
     Py_XDECREF(traceback);
-    PyErr_SetString(excType, message);
     PyObject *new_type, *new_value, *new_traceback;
-    PyErr_Fetch(&new_type, &new_value, &new_traceback);
+    new_value = PyObject_CallFunction(excType, "s", message);
+    if (!new_value) {
+        // This should never happen, if constructing the exception fails
+        // something has gone horribly wrong
+        PyErr_Restore(type, value, traceback);
+        return;
+    }
     PyException_SetCause(new_value, value);
-    PyErr_Restore(new_type, new_value, new_traceback);
+    PyErr_SetObject(excType, new_value);
 }
 
 /*
@@ -1709,7 +1714,7 @@ _color_set_oklab(pgColorObject *color, PyObject *value, void *closure)
                 "invalid oklab value: alpha (index 3) must be a valid number");
             return -1;
         }
-        if (alpha < 0.0 || alpha > 1.0) {
+        if (alpha < 0.0 || alpha > 1.0 || isnan(alpha)) {
             Py_XDECREF(item);
             PyErr_SetString(PyExc_ValueError,
                             "invalid oklab value: alpha (index 3) must be "
