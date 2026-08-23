@@ -1603,7 +1603,7 @@ _color_raise_with_existing_as_cause(PyObject *excType, const char *message)
     PyErr_NormalizeException(&type, &value, &traceback);
     Py_XDECREF(type);
     Py_XDECREF(traceback);
-    PyObject *new_type, *new_value, *new_traceback;
+    PyObject *new_value;
     new_value = PyObject_CallFunction(excType, "s", message);
     if (!new_value) {
         // This should never happen, if constructing the exception fails
@@ -1613,6 +1613,7 @@ _color_raise_with_existing_as_cause(PyObject *excType, const char *message)
     }
     PyException_SetCause(new_value, value);
     PyErr_SetObject(excType, new_value);
+    Py_DECREF(new_value);
 }
 
 /*
