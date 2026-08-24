@@ -69,7 +69,7 @@ class PixelArray:
     def __setitem__(
         self,
         indices: (
-            tuple[_ArrayIndexAny] # 1 item of any type
+            tuple[_ArrayIndexAny]  # 1 item of any type
             # 2 items with one that is not an int
             | tuple[_ArrayIndexNoInt, _ArrayIndexAny]
             | tuple[_ArrayIndexAny, _ArrayIndexNoInt]
