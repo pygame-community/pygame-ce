@@ -196,6 +196,7 @@ def spritecollide(
     group: AbstractGroup[_SpriteT],
     dokill: bool,
     collided: Callable[[_HasRectT, _SpriteT], bool] | None = None,
+    exclude: set | None = None,
 ) -> list[_SpriteT]: ...
 def groupcollide(
     groupa: AbstractGroup[_SpriteT],
@@ -208,4 +209,5 @@ def spritecollideany(
     sprite: _HasRectT,
     group: AbstractGroup[_SpriteT],
     collided: Callable[[_HasRectT, _SpriteT], bool] | None = None,
+    exclude: set | None = None,
 ) -> _SpriteT | None: ...
