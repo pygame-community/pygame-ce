@@ -1709,6 +1709,8 @@ def spritecollide(sprite, group, dokill, collided=None, exclude=None):
     the check (this also excludes them from dokill).
 
     """
+    exclude = exclude if exclude is not None else set()
+
     collided = (
         collided
         if collided is not None
@@ -1783,6 +1785,8 @@ def spritecollideany(sprite, group, collided=None, exclude=None):
     the check.
 
     """
+    exclude = exclude if exclude is not None else set()
+
     collided = (
         collided
         if collided is not None
