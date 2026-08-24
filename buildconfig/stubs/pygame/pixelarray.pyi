@@ -54,7 +54,9 @@ class PixelArray:
     ) -> None: ...
     @overload
     def __setitem__(
-        self, index_range: slice, value: PixelArray | SequenceLike[_PixelColor]
+        self,
+        index_range: slice,
+        value: PixelArray | SequenceLike[_PixelColor] | _PixelColor,
     ) -> None: ...
     # only valid for a 2D PixelArray
     @overload
@@ -74,7 +76,11 @@ class PixelArray:
     ) -> None: ...
     # item assignment returns None
     @overload
-    def __setitem__(self, ell: EllipsisType, value: PixelArray) -> None: ...
+    def __setitem__(
+        self,
+        ell: EllipsisType,
+        value: PixelArray | SequenceLike[_PixelColor] | _PixelColor,
+    ) -> None: ...
     def make_surface(self) -> Surface: ...
     def replace(
         self,
