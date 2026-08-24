@@ -119,7 +119,6 @@
     - For assignment, a tuple can only be a color. Any other sequence type
       is a sequence of colors.
 
-
    .. versionaddedold: 1.8.0
       Subscript support
 
@@ -174,7 +173,7 @@
       | :sl:`Returns the array size.`
       | :sg:`shape -> tuple of int's`
 
-      A tuple or length :attr:`ndim` giving the length of each
+      A tuple of length :attr:`ndim` giving the length of each
       dimension. Analogous to :meth:`Surface.get_size`.
 
       .. versionaddedold:: 1.9.2
@@ -184,10 +183,10 @@
       | :sl:`Returns byte offsets for each array dimension.`
       | :sg:`strides -> tuple of int's`
 
-      A tuple or length :attr:`ndim` byte counts. When a stride is
-      multiplied by the corresponding index it gives the offset
-      of that index from the start of the array. A stride is negative
-      for an array that has is inverted (has a negative step).
+      A tuple of length :attr:`ndim` giving the strides in bytes. When an index
+      is multiplied by the corresponding stride, it gives the offset in bytes
+      from the start of the array for that index. A stride is negative
+      for an array that is inverted (has a negative step).
 
       .. versionaddedold:: 1.9.2
 
@@ -215,7 +214,7 @@
       | :sg:`replace(color, repcolor, distance=0, weights=(0.299, 0.587, 0.114)) -> None`
 
       Replaces the pixels with the passed color in the PixelArray by changing
-      them them to the passed replacement color.
+      them to the passed replacement color.
 
       It uses a simple weighted Euclidean distance formula to calculate the
       distance between the colors. The distance space ranges from 0.0 to 1.0
