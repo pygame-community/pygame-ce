@@ -372,6 +372,22 @@ class SpriteCollideTest(unittest.TestCase):
         collided_sprite = sprite.spritecollideany(self.s2, self.ag, None, {self.s1})
         self.assertIs(collided_sprite, None, "self.s1 may not have been excluded.")
 
+        # Since the new group we make below (ag3) has self.s1, self.s2, and self.s3 (in that order),
+        # these lines ensure that ordering is preserved in spritecollideany and that excluding one
+        # sprite in the group keeps the others.
+        ag3 = sprite.AbstractGroup()
+        ag3.add(self.s1, self.s2, self.s3)
+        collided_sprite = sprite.spritecollideany(self.s1, ag3, False, None, {self.s1})
+        self.assertIsNot(
+            self.s1, collided_sprite, "self.s1 may not have been excluded."
+        )
+        self.assertIsNot(
+            self.s3,
+            collided_sprite,
+            "Ordering has not been preserved in collided_sprites.",
+        )
+        self.assertIs(self.s2, collided_sprite, "self.s2 may have been excluded.")
+
     def test_spritecollide__with_exclude_set(self):
         # Make all the sprites collide with each other.
         self.s1.rect.center = (0, 0)
