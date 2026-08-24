@@ -1709,7 +1709,6 @@ def spritecollide(sprite, group, dokill, collided=None, exclude=None):
     the check (this also excludes them from dokill).
 
     """
-    group_set = set(group.sprites()) - (exclude if exclude is not None else set())
     collided = (
         collided
         if collided is not None
@@ -1724,8 +1723,8 @@ def spritecollide(sprite, group, dokill, collided=None, exclude=None):
 
     collided_sprites = [
         kill_if_do_kill(group_sprite)
-        for group_sprite in group_set
-        if collided(sprite, group_sprite)
+        for group_sprite in group
+        if group_sprite not in exclude and collided(sprite, group_sprite)
     ]
     return collided_sprites
 
@@ -1784,15 +1783,14 @@ def spritecollideany(sprite, group, collided=None, exclude=None):
     the check.
 
     """
-    group_set = set(group.sprites()) - (exclude if exclude is not None else set())
     collided = (
         collided
         if collided is not None
         else lambda sprite, group_sprite: sprite.rect.colliderect(group_sprite.rect)
     )
 
-    for group_sprite in group_set:
-        if collided(sprite, group_sprite):
+    for group_sprite in group:
+        if group_sprite not in exclude and collided(sprite, group_sprite):
             return group_sprite
 
     return None
