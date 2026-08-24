@@ -361,7 +361,11 @@ class SpriteCollideTest(unittest.TestCase):
         # and self.s3 (in that order), these lines test that ordering is maintained
         # in spritecollideany with exclude and that self.s2 is excluded.
         collided_sprite = sprite.spritecollideany(self.s1, self.ag2, None, {self.s2})
-        self.assertIs(collided_sprite, self.s3, "self.s2 may not have been excluded or ordering may not be preserved.")
+        self.assertIs(
+            collided_sprite,
+            self.s3,
+            "self.s2 may not have been excluded or ordering may not be preserved.",
+        )
 
         # Since self.ag only contains self.s1, this test ensures that excluding the
         # only sprite in a group makes it return None.
@@ -376,16 +380,30 @@ class SpriteCollideTest(unittest.TestCase):
 
         # Since self.ag only contains self.s1 and self.ag2 contains self.s2
         # and self.s3 (in that order), these lines test that self.s2 is excluded.
-        collided_sprites = sprite.spritecollide(self.s1, self.ag2, False, None, {self.s2})
+        collided_sprites = sprite.spritecollide(
+            self.s1, self.ag2, False, None, {self.s2}
+        )
         self.assertIn(self.s3, collided_sprites, "self.s3 may have been excluded.")
-        self.assertNotIn(self.s2, collided_sprites, "self.s2 may not have been excluded.")
-        self.assertNotIn(self.s1, collided_sprites, "self.s1 may have been added to self.ag2.")
-        self.assertEqual(len(collided_sprites), 1, "There are multiple sprites in collided_sprites.")
+        self.assertNotIn(
+            self.s2, collided_sprites, "self.s2 may not have been excluded."
+        )
+        self.assertNotIn(
+            self.s1, collided_sprites, "self.s1 may have been added to self.ag2."
+        )
+        self.assertEqual(
+            len(collided_sprites), 1, "There are multiple sprites in collided_sprites."
+        )
 
         # Since self.ag only contains self.s1, these lines ensure that excluding the
         # only sprite in a group makes it return an empty list.
-        collided_sprites = sprite.spritecollide(self.s2, self.ag, False, None, {self.s1})
-        self.assertEqual(len(collided_sprites), 0, "Make sure nothing besides self.s1 was added to self.ag and that self.s1 is excluded.")
+        collided_sprites = sprite.spritecollide(
+            self.s2, self.ag, False, None, {self.s1}
+        )
+        self.assertEqual(
+            len(collided_sprites),
+            0,
+            "Make sure nothing besides self.s1 was added to self.ag and that self.s1 is excluded.",
+        )
 
         # Since the new group we make below (ag3) has self.s1, self.s2, and self.s3 (in that order),
         # these lines ensure that ordering is preserved in spritecollide and that excluding one
@@ -393,11 +411,19 @@ class SpriteCollideTest(unittest.TestCase):
         ag3 = sprite.AbstractGroup()
         ag3.add(self.s1, self.s2, self.s3)
         collided_sprites = sprite.spritecollide(self.s1, ag3, False, None, {self.s1})
-        self.assertNotIn(self.s1, collided_sprites, "self.s1 may not have been excluded.")
+        self.assertNotIn(
+            self.s1, collided_sprites, "self.s1 may not have been excluded."
+        )
         self.assertIn(self.s2, collided_sprites, "self.s2 may have been excluded.")
         self.assertIn(self.s3, collided_sprites, "self.s3 may have been excluded.")
-        self.assertEqual(len(collided_sprites), 2, "There are not 2 sprites in collided_sprites.")
-        self.assertEqual(collided_sprites, [self.s2, self.s3], "Ordering has not been preserved in collided_sprites.")
+        self.assertEqual(
+            len(collided_sprites), 2, "There are not 2 sprites in collided_sprites."
+        )
+        self.assertEqual(
+            collided_sprites,
+            [self.s2, self.s3],
+            "Ordering has not been preserved in collided_sprites.",
+        )
 
     def test_groupcollide__without_collided_callback(self):
         # pygame.sprite.groupcollide(groupa, groupb, dokilla, dokillb) -> dict
