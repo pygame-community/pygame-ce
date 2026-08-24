@@ -377,7 +377,7 @@ class SpriteCollideTest(unittest.TestCase):
         # sprite in the group keeps the others.
         ag3 = sprite.AbstractGroup()
         ag3.add(self.s1, self.s2, self.s3)
-        collided_sprite = sprite.spritecollideany(self.s1, ag3, False, None, {self.s1})
+        collided_sprite = sprite.spritecollideany(self.s1, ag3, None, {self.s1})
         self.assertIsNot(
             self.s1, collided_sprite, "self.s1 may not have been excluded."
         )
