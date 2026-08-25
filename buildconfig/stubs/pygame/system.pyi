@@ -205,8 +205,12 @@ def get_power_state() -> PowerState | None:
     .. versionadded:: 2.4.0
     """
 
-def get_theme() -> Literal["light", "dark", "unknown"]:
-    """Returns the current system theme: light, dark, or unknown.
+def get_theme() -> int:
+    """Returns the current system theme.
+
+    The returned system theme can be ``pygame.SYSTEM_THEME_DARK``,
+    ``pygame.SYSTEM_THEME_LIGHT`` or the sentinel ``0`` if the system
+    theme is unknown.
 
     .. versionadded:: 3.0.0
     """

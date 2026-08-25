@@ -252,14 +252,7 @@ static PyObject *
 pg_system_get_theme(PyObject *self, PyObject *_null)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    switch (SDL_GetSystemTheme()) {
-        case SDL_SYSTEM_THEME_LIGHT:
-            return PyUnicode_FromString("light");
-        case SDL_SYSTEM_THEME_DARK:
-            return PyUnicode_FromString("dark");
-        default:
-            return PyUnicode_FromString("unknown");
-    }
+    return PyLong_FromLong((long)SDL_GetSystemTheme());
 #else
     return RAISE(pgExc_SDLError,
                  "'pygame.system.get_theme' requires SDL 3.0.0+");
