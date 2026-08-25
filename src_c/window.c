@@ -969,8 +969,13 @@ window_get_utility(pgWindowObject *self, void *v)
 static PyObject *
 window_get_transparent(pgWindowObject *self, void *v)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_TRANSPARENT);
+#else
+    return RAISE(pgExc_SDLError,
+                 "'pygame.Window.transparent' requires SDL 3.0.0+");
+#endif
 }
 
 static void
