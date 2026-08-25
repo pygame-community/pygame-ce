@@ -1689,7 +1689,7 @@ def collide_mask(left, right):
 def spritecollide(sprite, group, dokill, collided=None, exclude=None):
     """find Sprites in a Group that intersect another Sprite
 
-    pygame.sprite.spritecollide(sprite, group, dokill, collided=None):
+    pygame.sprite.spritecollide(sprite, group, dokill, collided=None, exclude=None):
         return Sprite_list
 
     Return a list containing all Sprites in a Group that intersect with another
@@ -1765,7 +1765,7 @@ def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
 def spritecollideany(sprite, group, collided=None, exclude=None):
     """finds any sprites in a group that collide with the given sprite
 
-    pygame.sprite.spritecollideany(sprite, group): return sprite
+    pygame.sprite.spritecollideany(sprite, group, collided=None, exclude=None): return sprite
 
     Given a sprite and a group of sprites, this will return any single
     sprite that collides with the given sprite. If there are no
