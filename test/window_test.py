@@ -217,33 +217,6 @@ class WindowTypeTest(unittest.TestCase):
             TypeError, lambda: setattr(self.win, "minimum_size", "null_str")
         )
 
-    def test_aspect_ratio(self):
-        self.win = Window()
-
-        self.assertIsInstance(self.win.aspect_ratio, tuple)
-        self.assertTupleEqual(self.win.aspect_ratio, (0.0, 0.0))
-
-        self.win.aspect_ratio = (1, 2)
-        self.assertTupleEqual(self.win.aspect_ratio, (1.0, 2.0))
-
-        self.win.aspect_ratio = (1, 1)
-        self.assertTupleEqual(self.win.size, (640, 640))
-
-        self.win.aspect_ratio = (1, 2)
-        self.win.size = (600, 200)
-        self.assertTupleEqual(self.win.size, (600, 300))
-
-        self.win.aspect_ratio = (0, 0)
-        self.win.size = (200, 150)
-        self.assertTupleEqual(self.win.size, (200, 150))
-
-        with self.assertRaises(ValueError):
-            self.win.aspect_ratio = 1.6
-        with self.assertRaises(ValueError):
-            self.win.aspect_ratio = None
-        with self.assertRaises(ValueError):
-            self.win.aspect_ratio = "unlimited"
-
     def test_min_size_interact_with_max_size(self):
         # Use a new window to prevent being influenced by other tests
         self.win = Window()
@@ -479,6 +452,34 @@ class WindowTypeTest(unittest.TestCase):
     def test_handle(self):
         window = pygame.Window()
         self.assertIsInstance(window.handle, int)
+
+    @unittest.skipIf(SDL < (3, 0, 0), "aspect_ratio requires SDL3")
+    def test_aspect_ratio(self):
+        self.win = Window()
+
+        self.assertIsInstance(self.win.aspect_ratio, tuple)
+        self.assertTupleEqual(self.win.aspect_ratio, (0.0, 0.0))
+
+        self.win.aspect_ratio = (1, 2)
+        self.assertTupleEqual(self.win.aspect_ratio, (1.0, 2.0))
+
+        self.win.aspect_ratio = (1, 1)
+        self.assertTupleEqual(self.win.size, (640, 640))
+
+        self.win.aspect_ratio = (1, 2)
+        self.win.size = (600, 200)
+        self.assertTupleEqual(self.win.size, (600, 300))
+
+        self.win.aspect_ratio = (0, 0)
+        self.win.size = (200, 150)
+        self.assertTupleEqual(self.win.size, (200, 150))
+
+        with self.assertRaises(TypeError):
+            self.win.aspect_ratio = 1.6
+        with self.assertRaises(TypeError):
+            self.win.aspect_ratio = None
+        with self.assertRaises(TypeError):
+            self.win.aspect_ratio = "unlimited"
 
     def tearDown(self):
         self.win.destroy()
