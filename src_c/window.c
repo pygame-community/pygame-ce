@@ -978,7 +978,7 @@ window_get_progress_state(pgWindowObject *self, void *v)
 
     return PyLong_FromLong((long)progress_state);
 #else
-    return RAISE(pgExc_SDLError, "Window.progress_state requires SDL 3.0.0+")
+    return RAISE(pgExc_SDLError, "Window.progress_state requires SDL 3.0.0+");
 #endif
 }
 
@@ -1015,7 +1015,7 @@ window_get_progress_value(pgWindowObject *self, void *v)
 
     return PyFloat_FromDouble((double)progress_value);
 #else
-    return RAISE(pgExc_SDLError, "Window.progress_value requires SDL 3.0.0+")
+    return RAISE(pgExc_SDLError, "Window.progress_value requires SDL 3.0.0+");
 #endif
 }
 
