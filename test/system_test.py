@@ -2,6 +2,7 @@ import os
 import unittest
 
 import pygame
+from pygame.version import SDL
 
 
 class SystemModuleTest(unittest.TestCase):
@@ -117,6 +118,12 @@ class SystemModuleTest(unittest.TestCase):
                 ),
                 1,
             )
+
+    @unittest.skipIf(SDL < (3, 0, 0), "get_theme requires SDL3")
+    def test_get_theme(self):
+        theme = pygame.system.get_theme()
+        self.assertIsInstance(theme, str)
+        self.assertIn(theme, ["light", "dark", "unknown"])
 
 
 if __name__ == "__main__":

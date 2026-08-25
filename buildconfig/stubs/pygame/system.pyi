@@ -3,7 +3,7 @@
 .. versionadded:: 2.2.0
 """
 
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 from pygame._data_classes import PowerState
 
@@ -203,4 +203,10 @@ def get_power_state() -> PowerState | None:
     but not both.
 
     .. versionadded:: 2.4.0
+    """
+
+def get_theme() -> Literal["light", "dark", "unknown"]:
+    """Returns the current system theme: light, dark, or unknown.
+
+    .. versionadded:: 3.0.0
     """
