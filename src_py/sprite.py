@@ -1717,17 +1717,16 @@ def spritecollide(sprite, group, dokill, collided=None, exclude=None):
         else lambda sprite, group_sprite: sprite.rect.colliderect(group_sprite.rect)
     )
 
-    kill_if_do_kill = (
-        (lambda group_sprite: (group_sprite.kill(), group_sprite)[1])
-        if dokill
-        else (lambda group_sprite: group_sprite)
-    )
-
     collided_sprites = [
-        kill_if_do_kill(group_sprite)
+        group_sprite
         for group_sprite in group
         if group_sprite not in exclude and collided(sprite, group_sprite)
     ]
+
+    if dokill:
+        for group_sprite in collided_sprites:
+            group_sprite.kill()
+
     return collided_sprites
 
 
