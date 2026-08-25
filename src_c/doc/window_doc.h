@@ -1,5 +1,5 @@
 /* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
-#define DOC_WINDOW "Window(title='pygame window', size=(640, 480), position=WINDOWPOS_UNDEFINED, *, fullscreen=..., fullscreen_desktop=..., opengl=..., vulkan=..., hidden=..., borderless=..., resizable=..., minimized=..., maximized=..., mouse_grabbed=..., keyboard_grabbed=..., input_focus=..., mouse_focus=..., allow_high_dpi=..., mouse_capture=..., always_on_top=..., utility=...) -> Window\nPygame object that represents a window."
+#define DOC_WINDOW "Window(title='pygame window', size=(640, 480), position=WINDOWPOS_UNDEFINED, *, fullscreen=..., fullscreen_desktop=..., opengl=..., vulkan=..., hidden=..., borderless=..., resizable=..., minimized=..., maximized=..., mouse_grabbed=..., keyboard_grabbed=..., input_focus=..., mouse_focus=..., allow_high_dpi=..., mouse_capture=..., always_on_top=..., utility=..., transparent=...) -> Window\nPygame object that represents a window."
 #define DOC_WINDOW_GRABMOUSE "grab_mouse -> bool\nGet or set the window's mouse grab mode."
 #define DOC_WINDOW_GRABKEYBOARD "grab_keyboard -> bool\nGet or set the window's keyboard grab mode."
 #define DOC_WINDOW_MOUSEGRABBED "mouse_grabbed -> bool\nGet if the mouse cursor is confined to the window (**read-only**)."
@@ -19,6 +19,7 @@
 #define DOC_WINDOW_OPENGL "opengl -> bool\nGet if the window supports OpenGL."
 #define DOC_WINDOW_HANDLE "handle -> int\nGet the window handle provided by the window manager if supported otherwise 0"
 #define DOC_WINDOW_UTILITY "utility -> bool\nGet if the window is an utility window (**read-only**)."
+#define DOC_WINDOW_TRANSPARENT "transparent -> bool\nGet if the window has a per-pixel alpha buffer (**read-only**)."
 #define DOC_WINDOW_FROMDISPLAYMODULE "from_display_module() -> Window\nCreate a Window object using window data from display module."
 #define DOC_WINDOW_GETSURFACE "get_surface() -> Surface\nGet the window surface."
 #define DOC_WINDOW_FLIP "flip() -> None\nUpdate the display surface to the window."
