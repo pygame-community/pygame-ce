@@ -1376,7 +1376,7 @@ window_show_system_menu(pgWindowObject *self, PyObject *args)
 #endif
 }
 
-static PyObject *
+PyObject *
 window_repr(pgWindowObject *self)
 {
     const char *title;
