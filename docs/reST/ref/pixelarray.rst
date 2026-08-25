@@ -183,14 +183,20 @@
       | :sl:`Returns byte offsets for each array dimension.`
       | :sg:`strides -> tuple of int's`
 
-      A tuple of length :attr:`ndim` giving each stride in bytes. Multiplying
-      the index and its corresponding stride gives the offset in bytes for that
-      index, which are summed together from each index (for 2D pixel arrays)
-      to get the total byte offset from the start of the array.
+      A tuple of length :attr:`ndim` giving each stride in bytes.
+
+      For a given 1D or 2D index, its "byte offset" is the position in bytes of the
+      pixel in the pixel array, relative to the start of the array's data.
+
+      To calculate the byte offset, the index for each dimension is multiplied
+      by the corresponding stride, and then added up (for 2D pixel arrays).
 
       For example, a standard PixelArray's strides for a 10x20 Surface is ``(4, 40)``.
+      The ``4`` is because each pixel is 4 bytes.
+      The ``40`` is 4 times width; each row of 10 pixels is 40 bytes, so increasing
+      the y index by 1 corresponds to moving 40 bytes forward to skip a row.
 
-      A stride is negative for an array that is inverted (has a negative step).
+      A stride can be negative, for an array that is inverted (has a negative step).
 
       .. versionaddedold:: 1.9.2
 
