@@ -966,6 +966,79 @@ window_get_utility(pgWindowObject *self, void *v)
                            SDL_WINDOW_UTILITY);
 }
 
+static PyObject *
+window_get_progress_state(pgWindowObject *self, void *v)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_ProgressState progress_state = SDL_GetWindowProgressState(self->_win);
+
+    if (progress_state == SDL_PROGRESS_STATE_INVALID) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    return PyLong_FromLong((long)progress_state);
+#else
+    return RAISE(pgExc_SDLError, "Window.progress_state requires SDL 3.0.0+")
+#endif
+}
+
+static int
+window_set_progress_state(pgWindowObject *self, PyObject *arg, void *v)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int progress_state = (int)PyLong_AsLong(arg);
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+
+    if (SDL_SetWindowProgressState(
+            self->_win, (SDL_ProgressState)progress_state) == SDL_FALSE) {
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+    }
+
+    return 0;
+#else
+    RAISERETURN(pgExc_SDLError, "Window.progress_state requires SDL 3.0.0+",
+                -1)
+#endif
+}
+
+static PyObject *
+window_get_progress_value(pgWindowObject *self, void *v)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    float progress_value = SDL_GetWindowProgressValue(self->_win);
+
+    if (progress_value < 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    return PyFloat_FromDouble((double)progress_value);
+#else
+    return RAISE(pgExc_SDLError, "Window.progress_value requires SDL 3.0.0+")
+#endif
+}
+
+static int
+window_set_progress_value(pgWindowObject *self, PyObject *arg, void *v)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    float progress_value = (float)PyFloat_AsDouble(arg);
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+
+    if (SDL_SetWindowProgressValue(self->_win, progress_value) == SDL_FALSE) {
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+    }
+
+    return 0;
+#else
+    RAISERETURN(pgExc_SDLError, "Window.progress_value requires SDL 3.0.0+",
+                -1)
+#endif
+}
+
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
@@ -1456,6 +1529,10 @@ static PyGetSetDef _window_getset[] = {
     {"opengl", (getter)window_get_opengl, NULL, DOC_WINDOW_OPENGL, NULL},
     {"handle", (getter)window_get_handle, NULL, DOC_WINDOW_HANDLE, NULL},
     {"utility", (getter)window_get_utility, NULL, DOC_WINDOW_UTILITY, NULL},
+    {"progress_state", (getter)window_get_progress_state,
+     (setter)window_set_progress_state, DOC_WINDOW_PROGRESSSTATE, NULL},
+    {"progress_value", (getter)window_get_progress_value,
+     (setter)window_set_progress_value, DOC_WINDOW_PROGRESSVALUE, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
