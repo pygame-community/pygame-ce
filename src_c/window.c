@@ -969,7 +969,7 @@ window_get_utility(pgWindowObject *self, void *v)
 static PyObject *
 window_get_progress_state(pgWindowObject *self, void *v)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 4, 0)
     SDL_ProgressState progress_state = SDL_GetWindowProgressState(self->_win);
 
     if (progress_state == SDL_PROGRESS_STATE_INVALID) {
@@ -978,14 +978,14 @@ window_get_progress_state(pgWindowObject *self, void *v)
 
     return PyLong_FromLong((long)progress_state);
 #else
-    return RAISE(pgExc_SDLError, "Window.progress_state requires SDL 3.0.0+");
+    return RAISE(pgExc_SDLError, "Window.progress_state requires SDL 3.4.0+");
 #endif
 }
 
 static int
 window_set_progress_state(pgWindowObject *self, PyObject *arg, void *v)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 4, 0)
     int progress_state = (int)PyLong_AsLong(arg);
     if (PyErr_Occurred()) {
         return -1;
@@ -998,7 +998,7 @@ window_set_progress_state(pgWindowObject *self, PyObject *arg, void *v)
 
     return 0;
 #else
-    RAISERETURN(pgExc_SDLError, "Window.progress_state requires SDL 3.0.0+",
+    RAISERETURN(pgExc_SDLError, "Window.progress_state requires SDL 3.4.0+",
                 -1)
 #endif
 }
@@ -1006,7 +1006,7 @@ window_set_progress_state(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_progress_value(pgWindowObject *self, void *v)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 4, 0)
     float progress_value = SDL_GetWindowProgressValue(self->_win);
 
     if (progress_value < 0) {
@@ -1015,14 +1015,14 @@ window_get_progress_value(pgWindowObject *self, void *v)
 
     return PyFloat_FromDouble((double)progress_value);
 #else
-    return RAISE(pgExc_SDLError, "Window.progress_value requires SDL 3.0.0+");
+    return RAISE(pgExc_SDLError, "Window.progress_value requires SDL 3.4.0+");
 #endif
 }
 
 static int
 window_set_progress_value(pgWindowObject *self, PyObject *arg, void *v)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 4, 0)
     float progress_value = (float)PyFloat_AsDouble(arg);
     if (PyErr_Occurred()) {
         return -1;
@@ -1034,7 +1034,7 @@ window_set_progress_value(pgWindowObject *self, PyObject *arg, void *v)
 
     return 0;
 #else
-    RAISERETURN(pgExc_SDLError, "Window.progress_value requires SDL 3.0.0+",
+    RAISERETURN(pgExc_SDLError, "Window.progress_value requires SDL 3.4.0+",
                 -1)
 #endif
 }

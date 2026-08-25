@@ -453,7 +453,9 @@ class WindowTypeTest(unittest.TestCase):
         window = pygame.Window()
         self.assertIsInstance(window.handle, int)
 
-    @unittest.skipIf(SDL < (3, 0, 0), "progress_state and progress_value require SDL3")
+    @unittest.skipIf(
+        SDL < (3, 4, 0), "progress_state and progress_value require SDL 3.4.0+"
+    )
     def test_progress_state_and_value(self):
         window = pygame.Window()
         self.assertIsInstance(window.progress_state, int)
