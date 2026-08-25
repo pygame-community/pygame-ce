@@ -1354,7 +1354,29 @@ window_flash(pgWindowObject *self, PyObject *arg)
     Py_RETURN_NONE;
 }
 
-PyObject *
+static PyObject *
+window_show_system_menu(pgWindowObject *self, PyObject *args)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int x, y;
+
+    if (!pg_TwoIntsFromObj(args, &x, &y)) {
+        return RAISE(PyExc_TypeError,
+                     "invalid position argument for Window.show_system_menu");
+    }
+
+    if (!SDL_ShowWindowSystemMenu(self->_win, x, y)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    Py_RETURN_NONE;
+#else
+    return RAISE(pgExc_SDLError,
+                 "Window.show_system_menu requires SDL 3.0.0+");
+#endif
+}
+
+static PyObject *
 window_repr(pgWindowObject *self)
 {
     const char *title;
@@ -1420,6 +1442,8 @@ static PyMethodDef window_methods[] = {
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_WINDOW_FROMDISPLAYMODULE},
     {"flash", (PyCFunction)window_flash, METH_O, DOC_WINDOW_FLASH},
+    {"show_system_menu", (PyCFunction)window_show_system_menu, METH_VARARGS,
+     DOC_WINDOW_SHOWSYSTEMMENU},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef _window_getset[] = {

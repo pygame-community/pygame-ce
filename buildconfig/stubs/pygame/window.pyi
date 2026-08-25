@@ -1,3 +1,5 @@
+from typing import overload
+
 from pygame.locals import WINDOWPOS_UNDEFINED
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -511,4 +513,20 @@ class Window:
 
         .. versionadded:: 2.5.2
         """
+
+    @overload
+    def show_system_menu(self, x: int, y: int, /) -> None: ...
+    @overload
+    def show_system_menu(self, pos: Point, /) -> None: ...
+    def show_system_menu(self, *args) -> None:  # type: ignore
+        """Show the system's default window menu at the given position.
+
+        The position is relative to the origin (top left) of the client area.
+
+        On platforms or desktops where this is unsupported, this method
+        does nothing.
+
+        .. versionadded:: 3.0.0
+        """
+
     relative_mouse: bool
