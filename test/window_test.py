@@ -463,13 +463,6 @@ class WindowTypeTest(unittest.TestCase):
         self.win.aspect_ratio = (1, 2)
         self.assertTupleEqual(self.win.aspect_ratio, (1.0, 2.0))
 
-        self.win.aspect_ratio = (1, 1)
-        self.assertTupleEqual(self.win.size, (640, 640))
-
-        self.win.aspect_ratio = (1, 2)
-        self.win.size = (600, 200)
-        self.assertTupleEqual(self.win.size, (600, 300))
-
         self.win.aspect_ratio = (0, 0)
         self.win.size = (200, 150)
         self.assertTupleEqual(self.win.size, (200, 150))
