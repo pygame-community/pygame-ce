@@ -999,7 +999,7 @@ window_set_progress_state(pgWindowObject *self, PyObject *arg, void *v)
     return 0;
 #else
     RAISERETURN(pgExc_SDLError, "Window.progress_state requires SDL 3.4.0+",
-                -1)
+                -1);
 #endif
 }
 
@@ -1035,7 +1035,7 @@ window_set_progress_value(pgWindowObject *self, PyObject *arg, void *v)
     return 0;
 #else
     RAISERETURN(pgExc_SDLError, "Window.progress_value requires SDL 3.4.0+",
-                -1)
+                -1);
 #endif
 }
 
