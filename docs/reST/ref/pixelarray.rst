@@ -191,10 +191,15 @@
       To calculate the byte offset, the index for each dimension is multiplied
       by the corresponding stride, and then added up (for 2D pixel arrays).
 
-      For example, a standard PixelArray's strides for a 10x20 Surface is ``(4, 40)``.
-      The ``4`` is because each pixel is 4 bytes.
-      The ``40`` is 4 times width; each row of 10 pixels is 40 bytes, so increasing
-      the y index by 1 corresponds to moving 40 bytes forward to skip a row.
+      For example, a standard PixelArray's strides
+      for a typical 10x20 Surface is ``(4, 40)``.
+
+      Each pixel in the Surface is 4 bytes: 1 byte for each of the standard 3 color
+      channels (RGB/BGR) plus the 1 potentially unused alpha channel (A).
+
+      The ``4`` x stride is because each pixel is 4 bytes.
+      The ``40`` y stride is 4 times width; each row of 10 pixels is 40 bytes, so
+      increasing the y index by 1 corresponds to moving 40 bytes forward to skip a row.
 
       A stride can be negative, for an array that is inverted (has a negative step).
 
