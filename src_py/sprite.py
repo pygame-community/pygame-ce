@@ -1705,8 +1705,8 @@ def spritecollide(sprite, group, dokill, collided=None, exclude=None):
     sprites must have a "rect" value, which is a rectangle of the sprite area,
     which will be used to calculate the collision.
 
-    The exclude argument is a set containing all of the sprites to exclude from
-    the check (this also excludes them from dokill).
+    The exclude argument is an object supporting __contains__ containing all of
+    the sprites to exclude from the check (this also excludes them from dokill).
 
     """
     exclude = exclude if exclude is not None else set()
@@ -1780,8 +1780,8 @@ def spritecollideany(sprite, group, collided=None, exclude=None):
     sprites must have a "rect" value, which is a rectangle of the sprite area,
     which will be used to calculate the collision.
 
-    The exclude argument is a set containing all of the sprites to exclude from
-    the check.
+    The exclude argument is an object supporting __contains__ containing all of
+    the sprites to exclude from the check (this also excludes them from dokill).
 
     """
     exclude = exclude if exclude is not None else set()

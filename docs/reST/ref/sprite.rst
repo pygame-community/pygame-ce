@@ -672,8 +672,8 @@ Sprites are not thread safe. So lock them yourself if using threads.
    sprites must have a "rect" value, which is a rectangle of the sprite area,
    which will be used to calculate the collision.
 
-   The exclude argument is a set containing all of the sprites to exclude from
-   the check (this also excludes them from dokill).
+   The exclude argument is an object supporting ``__contains__`` containing all of
+   the sprites to exclude from the check (this also excludes them from dokill).
 
    collided callables:
 
@@ -856,8 +856,8 @@ Sprites are not thread safe. So lock them yourself if using threads.
    sprites must have a "rect" value, which is a rectangle of the sprite area,
    which will be used to calculate the collision.
 
-   The exclude argument is a set containing all of the sprites to exclude from
-   the check.
+   The exclude argument is an object supporting ``__contains__`` containing all of
+   the sprites to exclude from the check (this also excludes them from dokill).
 
    .. ## pygame.sprite.spritecollideany ##
 
