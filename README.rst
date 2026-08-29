@@ -122,6 +122,8 @@ For a headless SDL3 test run, use::
 SDL3 is currently supported on native Linux, macOS, and Windows builds.
 The legacy ``buildconfig``/``Setup`` path and Emscripten/Pyodide builds remain
 SDL2-only and reject SDL3 selection rather than silently mixing SDL versions.
+The private ``pygame._sdl2`` namespace is also SDL2-only; SDL3 builds expose
+the SDL3-native ``pygame._audio`` and ``_sdl3_mixer`` modules instead.
 
 
 Dependencies

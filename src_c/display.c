@@ -1222,13 +1222,14 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
     if (scale_env != NULL) {
         flags |= PGS_SCALED;
-        /* TODO: figure out SDL3 equivalent */
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    #ifndef PG_SDL3
         if (strcmp(scale_env, "photo") == 0) {
             SDL_SetHintWithPriority(SDL_HINT_RENDER_SCALE_QUALITY, "best",
                                     SDL_HINT_NORMAL);
         }
-#endif
+    #else
+        (void)scale_env;
+    #endif
     }
 
     if (size != NULL) {
@@ -1526,8 +1527,34 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
             if (!win) {
                 /*open window*/
                 if (hwnd != 0) {
-/* TODO: figure SDL3 equivalent */
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
+                    SDL_PropertiesID props = SDL_CreateProperties();
+                    if (props) {
+                        const char *driver = SDL_GetCurrentVideoDriver();
+                        if (driver && strcmp(driver, "windows") == 0) {
+                            SDL_SetPointerProperty(
+                                props,
+                                SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER,
+                                (void *)hwnd);
+                        }
+                        else if (driver && strcmp(driver, "x11") == 0) {
+                            SDL_SetNumberProperty(
+                                props,
+                                SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER,
+                                (Sint64)hwnd);
+                        }
+                        else {
+                            SDL_DestroyProperties(props);
+                            props = 0;
+                            SDL_SetError(
+                                "SDL_WINDOWID is unsupported by the active SDL3 video driver");
+                        }
+                    }
+                    if (props) {
+                        win = SDL_CreateWindowWithProperties(props);
+                        SDL_DestroyProperties(props);
+                    }
+#else
                     win = SDL_CreateWindowFrom((void *)hwnd);
 #endif
                 }

@@ -22,10 +22,20 @@ Important gaps are still present:
 - The legacy `buildconfig` path writes `Setup.SDL2` and searches for SDL2 headers, libraries, and DLLs.
 - Windows and MSYS2 dependency discovery has SDL2-only setup functions.
 - Emscripten and Pyodide link against SDL2 unconditionally.
-- `_render`, `gfxdraw`, and other C extension targets are explicitly disabled for SDL3.
+- `_sdl2` and other C extension targets remain explicitly disabled for SDL3; `_render` and `gfxdraw` are now enabled and tested under both SDL APIs.
 - Several source files contain SDL3 TODOs, removed-API workarounds, or SDL2 compatibility assumptions.
 - The README dependency table and build documentation describe SDL2 only.
 - The SDL3 workflow has no Windows SDL3 installation step and its full test job is disabled.
+
+### Verified Progress
+
+- SDL3 has been built locally with SDL 3.4.15, SDL3_image 3.5.0, SDL3_ttf 3.3.0, and SDL3_mixer 3.3.0 with old-name compatibility disabled.
+- Core compatibility work is committed in `e213404bb` (`Port core compatibility paths to SDL3`).
+- `gfxdraw` SDL3 support is committed in `7699d2854` (`Port gfxdraw primitives to SDL3`); its focused and neighboring draw tests pass under SDL2 and SDL3.
+- `_render` SDL3 support is committed in `6a8ff81f5` (`Port _render extension to SDL3`); its focused tests pass under SDL3, and the SDL2 renderer, draw, and gfxdraw suites remain green.
+- Native Meson SDL selection now reports the selected API, uses matching SDL2/SDL3 Windows runtime names, and rejects unsupported SDL3 Emscripten/Pyodide builds instead of linking SDL2 silently.
+- The legacy `buildconfig` path now rejects an explicit SDL3 request; common SDL feature branches use `PG_SDL3`, and SDL surface-lock return values are normalized for core and SDL_gfx callers.
+- The private `_sdl2` namespace is explicitly retained as an SDL2-only compatibility API; SDL3 builds fail at import time with a clear error and use the SDL3-native `_audio` and `_sdl3_mixer` modules instead.
 
 ## Migration Principles
 
@@ -43,7 +53,7 @@ Important gaps are still present:
 - [ ] Classify each SDL2 call as unchanged, renamed, signature-changed, removed, behavior-changed, or requiring emulation.
 - [ ] Record the minimum supported versions for SDL3, SDL3_image, SDL3_ttf, and SDL3_mixer, and pin one tested dependency set for CI and wheels.
 - [ ] Define the support matrix: native Linux, Windows, macOS, Emscripten/Pyodide, Python versions, optional modules, headless mode, audio backends, and OpenGL.
-- [ ] Decide whether `pygame._sdl2` remains the stable Python compatibility name when backed by SDL3, whether a new `_sdl3` namespace is needed, and which SDL2-only behavior is intentionally unavailable.
+- [x] Decide whether `pygame._sdl2` remains the stable Python compatibility name when backed by SDL3, whether a new `_sdl3` namespace is needed, and which SDL2-only behavior is intentionally unavailable. `_sdl2` remains SDL2-only; SDL3 uses the native `_audio` and `_sdl3_mixer` modules.
 - [ ] Add a tracking checklist or issue links for every inventory item. No subsystem should be considered complete because it merely compiles.
 
 **Gate:** The team can state the supported SDL3/dependency versions, platform matrix, public compatibility policy, and an owner/status for every SDL-facing subsystem.
@@ -85,7 +95,10 @@ Port in dependency order, testing each subsystem against both SDL APIs:
 4. **Image and font paths:** `image.c`, `imageext.c`, `font.c`, `freetype/`, and SDL_image/SDL_ttf integration. Verify palette creation, text metrics, Unicode handling, and all supported image formats.
 5. **Audio and IO:** `mixer.c`, `_audio.py`, `_sdl3_mixer_c.c`, `rwobject.c`, music decoding, device enumeration, callbacks, format negotiation, and stream/file lifetime rules.
 6. **Timing and platform features:** `time.c`, `joystick.c` platform branches, macOS/Windows/Linux-specific code, environment variables, and OpenGL context setup.
-7. **Rendering extensions:** port `render.c` and its Cython/Python surface, then `gfxdraw` and any SDL-backed optional modules currently disabled by `src_c/meson.build`.
+7. **Rendering extensions:**
+  - [x] Port `render.c` and its Cython/Python surface to SDL3 while retaining SDL2 support.
+  - [x] Port `gfxdraw` to SDL3 while retaining SDL2 support.
+  - [ ] Port the remaining SDL-backed optional modules currently disabled by `src_c/meson.build`.
 
 For each module:
 
@@ -98,10 +111,10 @@ For each module:
 
 ## Phase 4: Cython and Private SDL-Facing APIs
 
-- [ ] Audit `src_c/cython/pygame/_sdl2/*.pyx` and `.pxd` files for SDL2 declarations, constants, callbacks, ownership, and struct layout assumptions.
-- [ ] Decide whether the `_sdl2` Python namespace is retained as a compatibility namespace, supplemented by `_sdl3`, or split by build. Keep import behavior deterministic and document the choice.
-- [ ] Port `_sdl2.audio`, `_sdl2.video`, `_sdl2.mixer`, controller, and touch bindings to the chosen policy. Do not leave an importable module that fails only when its first SDL3 operation is called.
-- [ ] Reconcile the existing SDL3-only `_audio.py` and `_sdl3_mixer.py` with the public pygame mixer/audio APIs and packaging rules.
+- [x] Audit `src_c/cython/pygame/_sdl2/*.pyx` and `.pxd` files for SDL2 declarations, constants, callbacks, ownership, and struct layout assumptions.
+- [x] Decide whether the `_sdl2` Python namespace is retained as a compatibility namespace, supplemented by `_sdl3`, or split by build. `_sdl2` remains SDL2-only and raises an import-time error in SDL3 builds.
+- [x] Port `_sdl2.audio`, `_sdl2.video`, `_sdl2.mixer`, controller, and touch bindings to the chosen policy. These bindings remain available only for SDL2; SDL3 builds do not install them.
+- [x] Reconcile the existing SDL3-only `_audio.py` and `_sdl3_mixer.py` with the public pygame mixer/audio APIs and packaging rules.
 - [ ] Update generated stubs, type annotations, allow lists, PyInstaller hooks, Briefcase bootstrap behavior, and module documentation for the selected namespace policy.
 
 **Gate:** Every supported SDL-facing Python import either works with tested semantics or fails early with a clear, documented exception.

@@ -137,16 +137,15 @@ jobs:
         cmake --build . --config Release --parallel
         sudo cmake --install . --config Release
 
+    - name: Install SDL3 prebuilts (windows)
+      if: matrix.os == 'windows-latest'
+      run: python buildconfig/download_win_prebuilt.py
+
     - name: Build with SDL3
       run: python3 dev.py build --sdl3
 
-    # eventually we need to run all tests, but for now test that importing pygame
-    # works
-    - name: Test import works
-      run: python3 -c 'import pygame'
-
-    # - name: Run tests
-    #   env:
-    #     SDL_VIDEODRIVER: "dummy"
-    #     SDL_AUDIODRIVER: "disk"
-    #   run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300
+    - name: Run tests
+      env:
+        SDL_VIDEODRIVER: "dummy"
+        SDL_AUDIODRIVER: "disk"
+      run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300

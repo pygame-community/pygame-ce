@@ -336,8 +336,6 @@ gfxdraw = py.extension_module(
     subdir: pg,
 )
 
-# pygame._sdl2
-# TODO: support SDL3
 if sdl_api != 3
 subdir('_sdl2')
 endif
