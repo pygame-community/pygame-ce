@@ -201,7 +201,8 @@ def print_debug_info(filename: str | None = None) -> None:
 
     if filename is not None:
         warnings.warn(
-            "filename parameter is deprecated, printing to console. To get the output into a file, use get_debug_info() to get the string.",
+            "filename parameter is deprecated, printing to console. "
+            "To get the output into a file, use get_debug_info() to get the string.",
             DeprecationWarning,
             stacklevel=2,
         )
