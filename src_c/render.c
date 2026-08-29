@@ -1,7 +1,6 @@
 #define PYGAMEAPI_RENDER_INTERNAL
 
 #include "pygame.h"
-
 #include "pgcompat.h"
 
 #include "doc/sdl2_video_doc.h"
@@ -427,7 +426,7 @@ renderer_to_surface(pgRendererObject *self, PyObject *args, PyObject *kwargs)
         surface = pgSurface_New(read_surface);
     }
     else {
-        bool blit_ok = SDL_BlitSurface(read_surface, NULL, surf, NULL);
+        bool blit_ok = PG_BlitSurfaceSuccess(read_surface, NULL, surf, NULL);
         SDL_DestroySurface(read_surface);
         if (!blit_ok) {
             Py_DECREF(surface);
@@ -1114,7 +1113,9 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         SDL_QueryTexture(self->texture, &format, NULL, NULL, NULL))
 #endif
     if (format != PG_SURF_FORMATENUM(surf)) {
-        RENDERER_ERROR_CHECK(SDL_GetSurfaceBlendMode(surf, &blend))
+        if (!PG_GetSurfaceBlendMode(surf, &blend)) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
 #ifdef PG_SDL3
         converted_surf = SDL_ConvertSurface(surf, format);
 #else
@@ -1127,11 +1128,7 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         if (converted_surf == NULL) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
-#ifdef PG_SDL3
-        if (!SDL_SetSurfaceBlendMode(converted_surf, blend)) {
-#else
-        if (SDL_SetSurfaceBlendMode(converted_surf, blend) < 0) {
-#endif
+        if (!PG_SetSurfaceBlendMode(converted_surf, blend)) {
             SDL_FreeSurface(converted_surf);
 #ifndef PG_SDL3
             SDL_FreeFormat(pixel_format);

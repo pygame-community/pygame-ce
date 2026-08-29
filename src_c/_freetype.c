@@ -686,7 +686,7 @@ _ftfont_dealloc(pgFontObject *self)
     SDL_RWops *src = _PGFT_GetRWops(self);
     _PGFT_UnloadFont(self->freetype, self);
     if (src) {
-        SDL_RWclose(src);
+        PG_CloseIO(src);
     }
     _PGFT_Quit(self->freetype);
 
@@ -769,10 +769,10 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         goto end;
     }
 
-    if (SDL_RWsize(source) <= 0) {
+    if (PG_SizeIO(source) <= 0) {
         PyErr_Format(PyExc_ValueError,
                      "Font file object has an invalid file size: %lld",
-                     SDL_RWsize(source));
+                     PG_SizeIO(source));
         goto end;
     }
 

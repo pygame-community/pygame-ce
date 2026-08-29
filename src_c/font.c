@@ -710,7 +710,7 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
             /* If an explicit background was provided and the rendering options
             resolve to Render_Solid, that needs to be explicitly handled. */
             if (surf != NULL && bg_rgba_obj != Py_None) {
-                SDL_SetColorKey(surf, 0, 0);
+                PG_SetSurfaceColorKey(surf, SDL_FALSE, 0);
                 SDL_Palette *palette = PG_GetSurfacePalette(surf);
                 if (palette) {
                     palette->colors[0].r = backg.r;
@@ -1321,10 +1321,10 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
         fontsize = 1;
     }
 
-    if (SDL_RWsize(rw) <= 0) {
+    if (PG_SizeIO(rw) <= 0) {
         PyErr_Format(PyExc_ValueError,
                      "Font file object has an invalid file size: %lld",
-                     SDL_RWsize(rw));
+                     PG_SizeIO(rw));
         goto error;
     }
 

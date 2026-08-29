@@ -212,7 +212,7 @@ v4l2_process_image(pgCameraObject *self, const void *image, int buffer_size,
         return 1;
     }
 
-    SDL_LockSurface(surf);
+    PG_LockSurface(surf);
 
     switch (self->pixelformat) {
         case V4L2_PIX_FMT_RGB24:

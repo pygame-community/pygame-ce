@@ -39,11 +39,7 @@ ComputeOutCodeF(const SDL_FRect *rect, float x, float y)
     return code;
 }
 
-#ifdef PG_SDL3
-bool
-#else
-SDL_bool
-#endif
+PG_SDLBool
 PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
                          float *Y2)
 {

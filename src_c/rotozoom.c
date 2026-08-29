@@ -537,7 +537,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
          * New source surface is 32bit with a defined RGBA ordering
          */
         rz_src = PG_CreateSurface(src->w, src->h, SDL_PIXELFORMAT_ABGR8888);
-        SDL_BlitSurface(src, NULL, rz_src, NULL);
+        PG_BlitSurfaceSuccess(src, NULL, rz_src, NULL);
         src_converted = 1;
     }
 
@@ -588,7 +588,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         rz_dst =
             PG_CreateSurface(dstwidth, dstheight, PG_SURF_FORMATENUM(rz_src));
         if (SDL_HasColorKey(src)) {
-            SDL_GetColorKey(src, &colorkey);
+            PG_GetSurfaceColorKey(src, &colorkey);
             if (!PG_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
@@ -602,7 +602,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Lock source surface
          */
-        SDL_LockSurface(rz_src);
+        PG_LockSurface(rz_src);
         /*
          * Check which kind of surface we have
          */
@@ -616,7 +616,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Turn on source-alpha support
          */
-        SDL_SetSurfaceAlphaMod(rz_dst, SDL_ALPHA_OPAQUE);
+        PG_SetSurfaceAlphaMod(rz_dst, SDL_ALPHA_OPAQUE);
         /*
          * Unlock source surface
          */
@@ -647,7 +647,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         rz_dst =
             PG_CreateSurface(dstwidth, dstheight, PG_SURF_FORMATENUM(rz_src));
         if (SDL_HasColorKey(src)) {
-            SDL_GetColorKey(src, &colorkey);
+            PG_GetSurfaceColorKey(src, &colorkey);
             if (!PG_SetSurfaceColorKey(rz_dst, SDL_TRUE, colorkey)) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
@@ -661,7 +661,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Lock source surface
          */
-        SDL_LockSurface(rz_src);
+        PG_LockSurface(rz_src);
         /*
          * Check which kind of surface we have
          */
@@ -673,7 +673,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Turn on source-alpha support
          */
-        SDL_SetSurfaceAlphaMod(rz_dst, SDL_ALPHA_OPAQUE);
+        PG_SetSurfaceAlphaMod(rz_dst, SDL_ALPHA_OPAQUE);
         /*
          * Unlock source surface
          */

@@ -10,6 +10,7 @@ LGPL (c) A. Schiffler
 #define _SDL_gfxPrimitives_h
 
 #include <math.h>
+#include <stdbool.h>
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif
@@ -113,6 +114,17 @@ GFX_LockSurface(SDL_Surface *surface)
         return SDL_LockSurface(surface) ? 0 : -1;
 #else
         return SDL_LockSurface(surface);
+#endif
+}
+
+static inline bool
+GFX_BlitSurfaceSuccess(SDL_Surface *src, const SDL_Rect *srcrect,
+                       SDL_Surface *dst, SDL_Rect *dstrect)
+{
+#ifdef PG_SDL3
+        return SDL_BlitSurface(src, srcrect, dst, dstrect);
+#else
+        return SDL_BlitSurface(src, srcrect, dst, dstrect) == 0;
 #endif
 }
 

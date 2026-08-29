@@ -515,10 +515,10 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
             SDL_FreeSurface(surface);
             return 0;
         }
-        SDL_SetColorKey(surface, SDL_TRUE, (FT_UInt32)0);
+        PG_SetSurfaceColorKey(surface, SDL_TRUE, (FT_UInt32)0);
         if (fgcolor->a != SDL_ALPHA_OPAQUE) {
-            SDL_SetSurfaceAlphaMod(surface, fgcolor->a);
-            SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
+            PG_SetSurfaceAlphaMod(surface, fgcolor->a);
+            PG_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
         }
         fgcolor = &mono_fgcolor;
         font_surf.render_gray = __render_glyph_GRAY_as_MONO1;

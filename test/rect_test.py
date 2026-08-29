@@ -3074,6 +3074,13 @@ class FRectTypeTest(RectTypeTest):
 
             self.assertTupleEqual(clipped_line, expected_line)
 
+    def test_clipline__right_and_bottom_edges_are_exclusive(self):
+        rect = FRect(0, 0, 10, 10)
+
+        self.assertTupleEqual(rect.clipline((10, 5), (10, 5)), ())
+        self.assertTupleEqual(rect.clipline((5, 10), (5, 10)), ())
+        self.assertTupleEqual(rect.clipline((10, 10), (10, 10)), ())
+
     def test_contains(self):
         r = FRect(1, 2, 3, 4)
 

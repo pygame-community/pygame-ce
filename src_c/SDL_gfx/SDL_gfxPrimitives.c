@@ -5831,7 +5831,7 @@ _HLineTextured(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y,
         source_rect.w = w;
         source_rect.x = texture_x_walker;
         dst_rect.x = x1;
-        result = (SDL_BlitSurface(texture, &source_rect, dst, &dst_rect) == 0);
+        result = GFX_BlitSurfaceSuccess(texture, &source_rect, dst, &dst_rect);
     }
     else {  // we need to draw multiple times
         // draw the first segment
@@ -5840,7 +5840,7 @@ _HLineTextured(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y,
         source_rect.x = texture_x_walker;
         dst_rect.x = x1;
         result |=
-            (SDL_BlitSurface(texture, &source_rect, dst, &dst_rect) == 0);
+            GFX_BlitSurfaceSuccess(texture, &source_rect, dst, &dst_rect);
         write_width = texture->w;
 
         // now draw the rest
@@ -5853,7 +5853,7 @@ _HLineTextured(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y,
             source_rect.w = write_width;
             dst_rect.x = x1 + pixels_written;
             result |=
-                (SDL_BlitSurface(texture, &source_rect, dst, &dst_rect) == 0);
+                GFX_BlitSurfaceSuccess(texture, &source_rect, dst, &dst_rect);
             pixels_written += write_width;
         }
     }
@@ -6395,7 +6395,9 @@ int characterColor(SDL_Surface * dst, Sint16 x, Sint16 y, char c, Uint32 color)
 	/*
 	* Draw bitmap onto destination surface
 	*/
-	result = SDL_BlitSurface(gfxPrimitivesFont[ci], &srect, dst, &drect);
+    result = GFX_BlitSurfaceSuccess(gfxPrimitivesFont[ci], &srect, dst, &drect)
+                     ? 0
+                     : -1;
 
 	return (result);
 }
@@ -6790,7 +6792,7 @@ void _murphyParaline(SDL_gfxMurphyIterator *m, Sint16 x, Sint16 y, int d1)
 	* Lock the surface
 	*/
 	if (SDL_MUSTLOCK(m->dst)) {
-		SDL_LockSurface(m->dst);
+                GFX_LockSurface(m->dst);
 	}
 
 	for (p = 0; p <= m->u; p++) {
@@ -6909,7 +6911,7 @@ void _murphyIteration(SDL_gfxMurphyIterator *m, Uint8 miter,
 			* Lock the surface
 			*/
 			if (SDL_MUSTLOCK(m->dst)) {
-				SDL_LockSurface(m->dst);
+                                GFX_LockSurface(m->dst);
 			}
 
 			_bresenhamInitialize(&b, m2x, m2y, m1x, m1y);

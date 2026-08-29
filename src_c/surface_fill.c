@@ -105,7 +105,7 @@ surface_fill_blend_add(SDL_Surface *surface, PG_PixelFormat *fmt,
     int result = -1;
     int ppa;
     SDL_BlendMode mode;
-    SDL_GetSurfaceBlendMode(surface, &mode);
+    PG_GetSurfaceBlendMode(surface, &mode);
 
     ppa = (fmt->Amask && mode != SDL_BLENDMODE_NONE);
 
@@ -194,7 +194,7 @@ surface_fill_blend_sub(SDL_Surface *surface, PG_PixelFormat *fmt,
     int result = -1;
     int ppa;
     SDL_BlendMode mode;
-    SDL_GetSurfaceBlendMode(surface, &mode);
+    PG_GetSurfaceBlendMode(surface, &mode);
 
     ppa = (fmt->Amask && mode != SDL_BLENDMODE_NONE);
 
@@ -282,7 +282,7 @@ surface_fill_blend_mult(SDL_Surface *surface, PG_PixelFormat *fmt,
     int result = -1;
     int ppa;
     SDL_BlendMode mode;
-    SDL_GetSurfaceBlendMode(surface, &mode);
+    PG_GetSurfaceBlendMode(surface, &mode);
 
     ppa = (fmt->Amask && mode != SDL_BLENDMODE_NONE);
 
@@ -370,7 +370,7 @@ surface_fill_blend_min(SDL_Surface *surface, PG_PixelFormat *fmt,
     int result = -1;
     int ppa;
     SDL_BlendMode mode;
-    SDL_GetSurfaceBlendMode(surface, &mode);
+    PG_GetSurfaceBlendMode(surface, &mode);
 
     ppa = (fmt->Amask && mode != SDL_BLENDMODE_NONE);
 
@@ -458,7 +458,7 @@ surface_fill_blend_max(SDL_Surface *surface, PG_PixelFormat *fmt,
     int result = -1;
     int ppa;
     SDL_BlendMode mode;
-    SDL_GetSurfaceBlendMode(surface, &mode);
+    PG_GetSurfaceBlendMode(surface, &mode);
 
     ppa = (fmt->Amask && mode != SDL_BLENDMODE_NONE);
 
@@ -549,7 +549,7 @@ surface_fill_blend_rgba_add(SDL_Surface *surface, PG_PixelFormat *fmt,
     int result = -1;
     int ppa;
     SDL_BlendMode mode;
-    SDL_GetSurfaceBlendMode(surface, &mode);
+    PG_GetSurfaceBlendMode(surface, &mode);
 
     ppa = (fmt->Amask && mode != SDL_BLENDMODE_NONE);
 
@@ -620,7 +620,7 @@ surface_fill_blend_rgba_sub(SDL_Surface *surface, PG_PixelFormat *fmt,
     int result = -1;
     int ppa;
     SDL_BlendMode mode;
-    SDL_GetSurfaceBlendMode(surface, &mode);
+    PG_GetSurfaceBlendMode(surface, &mode);
 
     ppa = (fmt->Amask && mode != SDL_BLENDMODE_NONE);
 
@@ -691,7 +691,7 @@ surface_fill_blend_rgba_mult(SDL_Surface *surface, PG_PixelFormat *fmt,
     int result = -1;
     int ppa;
     SDL_BlendMode mode;
-    SDL_GetSurfaceBlendMode(surface, &mode);
+    PG_GetSurfaceBlendMode(surface, &mode);
 
     ppa = (fmt->Amask && mode != SDL_BLENDMODE_NONE);
 
@@ -761,7 +761,7 @@ surface_fill_blend_rgba_min(SDL_Surface *surface, PG_PixelFormat *fmt,
     int result = -1;
     int ppa;
     SDL_BlendMode mode;
-    SDL_GetSurfaceBlendMode(surface, &mode);
+    PG_GetSurfaceBlendMode(surface, &mode);
 
     ppa = (fmt->Amask && mode != SDL_BLENDMODE_NONE);
 
@@ -831,7 +831,7 @@ surface_fill_blend_rgba_max(SDL_Surface *surface, PG_PixelFormat *fmt,
     int result = -1;
     int ppa;
     SDL_BlendMode mode;
-    SDL_GetSurfaceBlendMode(surface, &mode);
+    PG_GetSurfaceBlendMode(surface, &mode);
 
     ppa = (fmt->Amask && mode != SDL_BLENDMODE_NONE);
 

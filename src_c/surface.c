@@ -639,7 +639,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
 
     if (!(flags & PGS_SRCALPHA)) {
         /* We ignore the error if any. */
-        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
+        PG_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 
         /* When the display format has a full alpha channel (macOS right now),
          * Surfaces may be created with an unreqested alpha channel, which
@@ -832,7 +832,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
 
     if (!(flags & PGS_SRCALPHA)) {
         /* We ignore the error if any. */
-        SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
+        PG_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 
         /* When the display format has a full alpha channel (macOS right now),
          * Surfaces may be created with an unreqested alpha channel, which
@@ -1454,7 +1454,7 @@ surf_get_colorkey(pgSurfaceObject *self, PyObject *_null)
         Py_RETURN_NONE;
     }
 
-    SDL_GetColorKey(surf, &mapped_color);
+    PG_GetSurfaceColorKey(surf, &mapped_color);
 
     PG_PixelFormat *format;
     SDL_Palette *palette;
@@ -1650,7 +1650,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
 
-        SDL_GetColorKey(surf, &colorkey);
+        PG_GetSurfaceColorKey(surf, &colorkey);
         if (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(surf))) {
             PG_GetRGBA(colorkey, surf_format, surf_palette, &key_r, &key_g,
                        &key_b, &key_a);
@@ -1781,13 +1781,13 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                 SDL_FreePalette(palette);
             }
 
-            SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
+            PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
         }
     }
     else {
         newsurf = pg_DisplayFormat(surf);
         if (newsurf) {
-            SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
+            PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
         }
     }
 
@@ -1805,7 +1805,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     }
 #else
     if ((has_colorkey = SDL_HasColorKey(surf))) {
-        SDL_GetColorKey(surf, &colorkey);
+        PG_GetSurfaceColorKey(surf, &colorkey);
         if (SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(surf))) {
             SDL_GetRGBA(colorkey, surf->format, &key_r, &key_g, &key_b,
                         &key_a);
@@ -1936,7 +1936,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                 }
             }
             newsurf = PG_ConvertSurface(surf, format);
-            SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
+            PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
             SDL_FreeFormat(format);
             SDL_FreePalette(palette);
         }
@@ -1944,7 +1944,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     else {
         newsurf = pg_DisplayFormat(surf);
         if (newsurf) {
-            SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
+            PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
         }
     }
 
@@ -2054,7 +2054,7 @@ surf_convert_alpha(pgSurfaceObject *self, PyObject *args)
 
     newsurf = pg_DisplayFormatAlpha(surf);
     if (newsurf) {
-        SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND);
+        PG_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND);
     }
     final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
 
@@ -3238,7 +3238,7 @@ surf_subsurface(PyObject *self, PyObject *args)
         }
     }
     if (SDL_HasColorKey(surf)) {
-        SDL_GetColorKey(surf, &colorkey);
+        PG_GetSurfaceColorKey(surf, &colorkey);
         if (!PG_SetSurfaceColorKey(sub, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(sub);
@@ -3396,7 +3396,7 @@ surf_get_bounding_rect(PyObject *self, PyObject *args, PyObject *kwargs)
     int bpp = PG_FORMAT_BytesPerPixel(format);
 
     if ((has_colorkey = SDL_HasColorKey(surf))) {
-        SDL_GetColorKey(surf, &colorkey);
+        PG_GetSurfaceColorKey(surf, &colorkey);
         PG_GetRGBA(colorkey, format, palette, &keyr, &keyg, &keyb, &a);
     }
 
@@ -4469,7 +4469,7 @@ PG_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst,
         if (dstrect) { /* update output parameter */
             *dstrect = r_dst;
         }
-        return SDL_BlitSurface(src, srcrect, dst, dstrect) ? 0 : -1;
+        return PG_BlitSurfaceSuccess(src, srcrect, dst, dstrect) ? 0 : -1;
     }
 end:
     if (dstrect) {
@@ -4477,7 +4477,7 @@ end:
     }
     return 0;
 #else
-    return SDL_BlitSurface(src, srcrect, dst, dstrect);
+    return PG_BlitSurfaceSuccess(src, srcrect, dst, dstrect) ? 0 : -1;
 #endif
 }
 

@@ -447,7 +447,7 @@ _PGFT_TryLoadFont_Filename(FreeTypeInstance *ft, pgFontObject *fontobj,
                      "No such file or directory: '%s'.", filename);
         return -1;
     }
-    SDL_RWclose(sdlfile);
+    PG_CloseIO(sdlfile);
 
     file_len = strlen(filename);
     filename_alloc = _PGFT_malloc(file_len + 1);
@@ -473,17 +473,15 @@ RWops_read(FT_Stream stream, unsigned long offset, unsigned char *buffer,
     SDL_RWops *src;
 
     src = (SDL_RWops *)stream->descriptor.pointer;
-    SDL_RWseek(src, (int)offset, SEEK_SET);
+    if (PG_SeekIO(src, (Sint64)offset, SEEK_SET) < 0) {
+        return 0;
+    }
 
     if (count == 0) {
         return 0;
     }
 
-#ifdef PG_SDL3
-    return (unsigned long)SDL_ReadIO(src, buffer, count);
-#else
-    return (unsigned long)SDL_RWread(src, buffer, 1, (int)count);
-#endif
+    return (unsigned long)PG_ReadIO(src, buffer, count);
 }
 
 int
@@ -493,7 +491,7 @@ _PGFT_TryLoadFont_RWops(FreeTypeInstance *ft, pgFontObject *fontobj,
     FT_Stream stream;
     Sint64 position;
 
-    position = SDL_RWtell(src);
+    position = PG_TellIO(src);
     if (position < 0) {
         PyErr_SetString(pgExc_SDLError, "Failed to seek in font stream");
         return -1;
@@ -507,7 +505,7 @@ _PGFT_TryLoadFont_RWops(FreeTypeInstance *ft, pgFontObject *fontobj,
     stream->read = RWops_read;
     stream->descriptor.pointer = src;
     stream->pos = (unsigned long)position;
-    stream->size = (unsigned long)(SDL_RWsize(src));
+    stream->size = (unsigned long)(PG_SizeIO(src));
 
     fontobj->id.font_index = (FT_Long)font_index;
     fontobj->id.open_args.flags = FT_OPEN_STREAM;

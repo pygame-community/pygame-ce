@@ -589,7 +589,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     else if (!strcmp(format, "RGBA")) {
         if ((hascolorkey = SDL_HasColorKey(surf))) {
-            SDL_GetColorKey(surf, &colorkey);
+            PG_GetSurfaceColorKey(surf, &colorkey);
         }
         byte_width = surf->w * 4;
     }
@@ -1199,7 +1199,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         if (!surf) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
-        SDL_LockSurface(surf);
+        PG_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
             memcpy(((char *)surf->pixels) + looph * surf->pitch,
                    DATAROW(data, looph, pitch, h, flipped), w);
@@ -1230,7 +1230,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         if (!surf) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
-        SDL_LockSurface(surf);
+        PG_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
             Uint8 *pix =
                 (Uint8 *)DATAROW(surf->pixels, looph, surf->pitch, h, flipped);
@@ -1274,7 +1274,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         if (!surf) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
-        SDL_LockSurface(surf);
+        PG_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
@@ -1302,7 +1302,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         if (!surf) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
-        SDL_LockSurface(surf);
+        PG_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
@@ -1330,7 +1330,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         if (!surf) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
-        SDL_LockSurface(surf);
+        PG_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
@@ -1358,7 +1358,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         if (!surf) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
-        SDL_LockSurface(surf);
+        PG_LockSurface(surf);
         for (looph = 0; looph < h; ++looph) {
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
@@ -1691,6 +1691,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     Uint32 surf_colorkey;
     SDL_Rect r;
     int bpp;
+    int result = 0;
     Uint8 *rlebuf = NULL;
 
     h.infolen = 0;
@@ -1722,7 +1723,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     }
 
     if ((have_surf_colorkey = SDL_HasColorKey(surface))) {
-        SDL_GetColorKey(surface, &surf_colorkey);
+        PG_GetSurfaceColorKey(surface, &surf_colorkey);
     }
 
     if (srcbpp == 8) {
@@ -1764,11 +1765,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     SETLE16(h.height, surface->h);
     h.flags = TGA_ORIGIN_UPPER | (alpha ? 8 : 0);
 
-#ifdef PG_SDL3
-    if (!SDL_WriteIO(out, &h, sizeof(h)))
-#else
-    if (!SDL_RWwrite(out, &h, sizeof(h), 1))
-#endif
+    if (PG_WriteIO(out, &h, sizeof(h)) != sizeof(h))
         return -1;
 
     if (h.has_cmap) {
@@ -1779,11 +1776,8 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
             entry[1] = surf_palette->colors[i].g;
             entry[2] = surf_palette->colors[i].r;
             entry[3] = ((unsigned)i == surf_colorkey) ? 0 : 0xff;
-#ifdef PG_SDL3
-            if (!SDL_WriteIO(out, entry, h.cmap_bits >> 3))
-#else
-            if (!SDL_RWwrite(out, entry, h.cmap_bits >> 3, 1))
-#endif
+            if (PG_WriteIO(out, entry, h.cmap_bits >> 3) !=
+                (size_t)(h.cmap_bits >> 3))
                 return -1;
         }
     }
@@ -1818,12 +1812,10 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     for (r.y = 0; r.y < surface->h; r.y++) {
         int n;
         void *buf;
-#ifdef PG_SDL3
-        if (!SDL_BlitSurface(surface, &r, linebuf, NULL))
-#else
-        if (SDL_BlitSurface(surface, &r, linebuf, NULL) < 0)
-#endif
+        if (!PG_BlitSurfaceSuccess(surface, &r, linebuf, NULL)) {
+            result = -1;
             break;
+        }
         if (rle) {
             buf = rlebuf;
             n = rle_line(linebuf->pixels, rlebuf, surface->w, bpp);
@@ -1832,12 +1824,10 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
             buf = linebuf->pixels;
             n = surface->w * bpp;
         }
-#ifdef PG_SDL3
-        if (!SDL_WriteIO(out, buf, n))
-#else
-        if (!SDL_RWwrite(out, buf, n, 1))
-#endif
+        if (PG_WriteIO(out, buf, (size_t)n) != (size_t)n) {
+            result = -1;
             break;
+        }
     }
 
     /* restore flags */
@@ -1847,7 +1837,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
 
     free(rlebuf);
     SDL_FreeSurface(linebuf);
-    return 0;
+    return result;
 
 error:
     free(rlebuf);
@@ -1864,7 +1854,7 @@ SaveTGA(SDL_Surface *surface, const char *file, int rle)
         return -1;
     }
     ret = SaveTGA_RW(surface, out, rle);
-    SDL_RWclose(out);
+    PG_CloseIO(out);
     return ret;
 }
 

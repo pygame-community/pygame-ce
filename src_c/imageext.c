@@ -152,11 +152,7 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
      * When that PR is merged this block can be removed. */
     if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         Uint32 colorkey;
-#ifdef PG_SDL3
-        bool has_colorkey = SDL_GetSurfaceColorKey(surf, &colorkey);
-#else
-        bool has_colorkey = SDL_GetColorKey(surf, &colorkey) == 0;
-#endif
+        bool has_colorkey = PG_GetSurfaceColorKey(surf, &colorkey);
         SDL_Palette *pal = PG_GetSurfacePalette(surf);
         if (pal) {
             if (!has_colorkey) {
@@ -172,10 +168,10 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
             if (has_colorkey && colorkey < (Uint32)pal->ncolors) {
                 SDL_Color c = pal->colors[colorkey];
                 c.a = SDL_ALPHA_OPAQUE;
-                SDL_SetPaletteColors(pal, &c, (int)colorkey, 1);
+                PG_SetPaletteColors(pal, &c, (int)colorkey, 1);
 #ifdef PG_SDL3
                 if (!SDL_SurfaceHasColorKey(surf)) {
-                    SDL_SetSurfaceColorKey(surf, true, colorkey);
+                    PG_SetSurfaceColorKey(surf, true, colorkey);
                 }
 #endif
             }
@@ -223,7 +219,7 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
 #else
     surf = IMG_LoadSizedSVG_RW(rw, width, height);
 #endif
-    SDL_RWclose(rw);
+    PG_CloseIO(rw);
     Py_END_ALLOW_THREADS;
     if (surf == NULL) {
         return RAISE(pgExc_SDLError, IMG_GetError());

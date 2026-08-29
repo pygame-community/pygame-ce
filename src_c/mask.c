@@ -968,7 +968,7 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_BEGIN_ALLOW_THREADS; /* Release the GIL. */
 
     if (SDL_HasColorKey(surf)) {
-        SDL_GetColorKey(surf, &colorkey);
+        PG_GetSurfaceColorKey(surf, &colorkey);
         set_from_colorkey(surf, maskobj->mask, colorkey);
     }
     else {  // use threshold

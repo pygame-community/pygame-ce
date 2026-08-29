@@ -1893,8 +1893,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
             PyErr_Clear();
         }
         else if (icon_colorkey != -1) {
-            SDL_SetColorKey(pgSurface_AsSurface(state->icon), SDL_TRUE,
-                            icon_colorkey);
+            PG_SetSurfaceColorKey(pgSurface_AsSurface(state->icon), SDL_TRUE,
+                                  icon_colorkey);
         }
     }
     if (state->icon) {
@@ -2572,14 +2572,14 @@ pg_set_palette(PyObject *self, PyObject *args)
         Py_DECREF(surface);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    if (!SDL_SetPaletteColors(pal, colors, 0, len)) {
+    if (!PG_SetPaletteColors(pal, colors, 0, len)) {
         SDL_FreePalette(pal);
         free((char *)colors);
         Py_DECREF(surface);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-    SDL_SetSurfacePalette(surf, pal);
+    PG_SetSurfacePalette(surf, pal);
     SDL_FreePalette(pal);
     free((char *)colors);
     Py_DECREF(surface);

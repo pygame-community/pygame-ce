@@ -119,9 +119,9 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
             okay = 0;
         }
 
-        SDL_GetSurfaceAlphaMod(src, &info.src_blanket_alpha);
+        PG_GetSurfaceAlphaMod(src, &info.src_blanket_alpha);
         if ((info.src_has_colorkey = SDL_HasColorKey(src))) {
-            SDL_GetColorKey(src, &info.src_colorkey);
+            PG_GetSurfaceColorKey(src, &info.src_colorkey);
         }
         if (!PG_GetSurfaceBlendMode(src, &info.src_blend) ||
             !PG_GetSurfaceBlendMode(dst, &info.dst_blend)) {
@@ -1698,7 +1698,9 @@ int
 premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst)
 {
     SDL_BlendMode src_blend;
-    SDL_GetSurfaceBlendMode(src, &src_blend);
+    if (!PG_GetSurfaceBlendMode(src, &src_blend)) {
+        return -2;
+    }
 
     PG_PixelFormat *src_format, *dst_format;
     SDL_Palette *src_palette, *dst_palette;

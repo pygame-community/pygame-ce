@@ -758,7 +758,7 @@ windows_process_image(pgCameraObject *self, BYTE *data, DWORD length,
         return 0;
     }
 
-    SDL_LockSurface(surf);
+    PG_LockSurface(surf);
 
     int size = self->width * self->height;
 

@@ -1340,7 +1340,7 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
             return RAISE(PyExc_RuntimeError, "error converting pattern surf");
         }
 
-        SDL_SetSurfaceRLE(pattern, SDL_FALSE);
+        PG_SetSurfaceRLE(pattern, SDL_FALSE);
 
         color = 0;
     }

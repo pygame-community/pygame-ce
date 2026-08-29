@@ -531,11 +531,55 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 #define PG_GetSurfaceBlendMode SDL_GetSurfaceBlendMode
 #define PG_GetSurfaceAlphaMod SDL_GetSurfaceAlphaMod
 #define PG_SetSurfaceAlphaMod SDL_SetSurfaceAlphaMod
+#define PG_GetSurfaceColorKey SDL_GetSurfaceColorKey
 #define PG_FillSurfaceRect SDL_FillSurfaceRect
 static inline bool
 PG_LockSurface(SDL_Surface *surface)
 {
     return SDL_LockSurface(surface);
+}
+
+static inline bool
+PG_CloseIO(SDL_RWops *context)
+{
+    return SDL_CloseIO(context);
+}
+
+static inline size_t
+PG_ReadIO(SDL_RWops *context, void *ptr, size_t bytes)
+{
+    return SDL_ReadIO(context, ptr, bytes);
+}
+
+static inline size_t
+PG_WriteIO(SDL_RWops *context, const void *ptr, size_t bytes)
+{
+    return SDL_WriteIO(context, ptr, bytes);
+}
+
+static inline Sint64
+PG_SizeIO(SDL_RWops *context)
+{
+    return SDL_GetIOSize(context);
+}
+
+static inline Sint64
+PG_SeekIO(SDL_RWops *context, Sint64 offset, int whence)
+{
+    return SDL_RWseek(context, offset, whence);
+}
+
+static inline Sint64
+PG_TellIO(SDL_RWops *context)
+{
+    return SDL_TellIO(context);
+}
+
+static inline bool
+PG_BlitSurfaceSuccess(SDL_Surface *src, const SDL_Rect *srcrect,
+                      SDL_Surface *dst, SDL_Rect *dstrect)
+{
+    return SDL_BlitSurface(src, srcrect, dst, dstrect);
 }
 
 #define PG_GetRGBA SDL_GetRGBA
@@ -664,6 +708,12 @@ PG_SetSurfaceColorKey(SDL_Surface *surface, bool enabled, Uint32 key)
 }
 
 static inline bool
+PG_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key)
+{
+    return SDL_GetColorKey(surface, key) == 0;
+}
+
+static inline bool
 PG_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
 {
     return SDL_SetSurfaceBlendMode(surface, blendMode) == 0;
@@ -697,6 +747,49 @@ static inline bool
 PG_LockSurface(SDL_Surface *surface)
 {
     return SDL_LockSurface(surface) == 0;
+}
+
+static inline bool
+PG_CloseIO(SDL_RWops *context)
+{
+    return SDL_RWclose(context) == 0;
+}
+
+static inline size_t
+PG_ReadIO(SDL_RWops *context, void *ptr, size_t bytes)
+{
+    return SDL_RWread(context, ptr, 1, bytes);
+}
+
+static inline size_t
+PG_WriteIO(SDL_RWops *context, const void *ptr, size_t bytes)
+{
+    return SDL_RWwrite(context, ptr, 1, bytes);
+}
+
+static inline Sint64
+PG_SizeIO(SDL_RWops *context)
+{
+    return SDL_RWsize(context);
+}
+
+static inline Sint64
+PG_SeekIO(SDL_RWops *context, Sint64 offset, int whence)
+{
+    return SDL_RWseek(context, offset, whence);
+}
+
+static inline Sint64
+PG_TellIO(SDL_RWops *context)
+{
+    return SDL_RWtell(context);
+}
+
+static inline bool
+PG_BlitSurfaceSuccess(SDL_Surface *src, const SDL_Rect *srcrect,
+                      SDL_Surface *dst, SDL_Rect *dstrect)
+{
+    return SDL_BlitSurface(src, srcrect, dst, dstrect) == 0;
 }
 
 // NOTE:

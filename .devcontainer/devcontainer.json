@@ -5,6 +5,7 @@
     "context": ".."
   },
   "runArgs": [
+    "--ipc=host",
     "--net=host",
 
     "--gpus=all",

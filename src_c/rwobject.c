@@ -742,11 +742,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
                     /* If out of memory, decref oencoded to be safe, and try
                      * to close out `rw` as well. */
                     Py_DECREF(oencoded);
-#ifdef PG_SDL3
-                    if (!SDL_RWclose(rw)) {
-#else
-                    if (SDL_RWclose(rw) < 0) {
-#endif
+                    if (!PG_CloseIO(rw)) {
                         PyErr_SetString(PyExc_IOError, SDL_GetError());
                     }
                     return (SDL_RWops *)PyErr_NoMemory();

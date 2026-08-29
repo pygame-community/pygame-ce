@@ -197,7 +197,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
     }
 
     if (SDL_HasColorKey(surf)) {
-        SDL_GetColorKey(surf, &colorkey);
+        PG_GetSurfaceColorKey(surf, &colorkey);
         if (!PG_SetSurfaceColorKey(newsurf, SDL_TRUE, colorkey)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
@@ -241,7 +241,7 @@ rotate90(SDL_Surface *src, int angle)
     }
 
     Py_BEGIN_ALLOW_THREADS;
-    SDL_LockSurface(dst);
+    PG_LockSurface(dst);
     srcrow = (char *)src->pixels;
     dstrow = (char *)dst->pixels;
     srcstepx = dststepx = PG_SURF_BytesPerPixel(src);
@@ -638,8 +638,8 @@ surf_scale2x(PyObject *self, PyObject *args, PyObject *kwargs)
                      "Source and destination surfaces need the same format.");
     }
 
-    SDL_LockSurface(newsurf);
-    SDL_LockSurface(surf);
+    PG_LockSurface(newsurf);
+    PG_LockSurface(surf);
 
     Py_BEGIN_ALLOW_THREADS;
     scale2x(surf, newsurf);
@@ -720,7 +720,7 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 
     /* get the background color */
     if (!SDL_HasColorKey(surf)) {
-        SDL_LockSurface(surf);
+        PG_LockSurface(surf);
         switch (PG_SURF_BytesPerPixel(surf)) {
             case 1:
                 bgcolor = *(Uint8 *)surf->pixels;
@@ -750,10 +750,10 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
         bgcolor &= ~surf_format->Amask;
     }
     else {
-        SDL_GetColorKey(surf, &bgcolor);
+        PG_GetSurfaceColorKey(surf, &bgcolor);
     }
 
-    SDL_LockSurface(newsurf);
+    PG_LockSurface(newsurf);
     pgSurface_Lock(surfobj);
 
     Py_BEGIN_ALLOW_THREADS;
@@ -793,7 +793,7 @@ surf_flip(PyObject *self, PyObject *args, PyObject *kwargs)
     srcpitch = surf->pitch;
     dstpitch = newsurf->pitch;
 
-    SDL_LockSurface(newsurf);
+    PG_LockSurface(newsurf);
     pgSurface_Lock(surfobj);
 
     srcpix = (Uint8 *)surf->pixels;
@@ -954,7 +954,7 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
     else {
         Py_BEGIN_ALLOW_THREADS;
         surf32 = PG_CreateSurface(surf->w, surf->h, SDL_PIXELFORMAT_ABGR8888);
-        SDL_BlitSurface(surf, NULL, surf32, NULL);
+        PG_BlitSurfaceSuccess(surf, NULL, surf32, NULL);
         Py_END_ALLOW_THREADS;
     }
 
@@ -1008,7 +1008,7 @@ chop(SDL_Surface *src, int x, int y, int width, int height)
     }
 
     Py_BEGIN_ALLOW_THREADS;
-    SDL_LockSurface(dst);
+    PG_LockSurface(dst);
     srcrow = (char *)src->pixels;
     dstrow = (char *)dst->pixels;
     srcstepx = dststepx = PG_SURF_BytesPerPixel(src);
@@ -1549,7 +1549,7 @@ smoothscale_to(PyObject *self, pgSurfaceObject *srcobj,
     }
 
     if (width && height) {
-        SDL_LockSurface(retsurf);
+        PG_LockSurface(retsurf);
         pgSurface_Lock(srcobj);
 
         /* handle trivial case */
@@ -3087,8 +3087,8 @@ surf_laplacian(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-    SDL_LockSurface(newsurf);
-    SDL_LockSurface(surf);
+    PG_LockSurface(newsurf);
+    PG_LockSurface(surf);
 
     Py_BEGIN_ALLOW_THREADS;
     laplacian(surf, surf_format, newsurf, newsurf_format);
@@ -3408,7 +3408,7 @@ surf_average_surfaces(PyObject *self, PyObject *args, PyObject *kwargs)
         }
 
         /* Copy surface pointer, and also lock surface. */
-        SDL_LockSurface(surf);
+        PG_LockSurface(surf);
         surfaces[loop] = surf;
 
         Py_DECREF(obj);
@@ -3419,7 +3419,7 @@ surf_average_surfaces(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!an_error) {
         /* Process images, get average surface. */
 
-        SDL_LockSurface(newsurf);
+        PG_LockSurface(newsurf);
 
         Py_BEGIN_ALLOW_THREADS;
         average_surfaces(surfaces, size, newsurf, palette_colors);
@@ -3965,7 +3965,7 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
         radius = MIN(src->w, src->h) - 1;
     }
 
-    SDL_LockSurface(retsurf);
+    PG_LockSurface(retsurf);
     pgSurface_Lock(srcobj);
 
     Py_BEGIN_ALLOW_THREADS;

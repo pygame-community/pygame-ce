@@ -135,7 +135,7 @@ surf_colorspace(PyObject *self, PyObject *arg)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-    SDL_LockSurface(newsurf);
+    PG_LockSurface(newsurf);
     pgSurface_Lock(surfobj);
 
     Py_BEGIN_ALLOW_THREADS;

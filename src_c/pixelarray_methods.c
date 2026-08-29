@@ -137,7 +137,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
 #ifdef PG_SDL3
         if (SDL_ISPIXELFORMAT_INDEXED(surf->format)) {
             SDL_Palette *palette = SDL_GetSurfacePalette(surf);
-            if (palette && !SDL_SetSurfacePalette(temp_surf, palette)) {
+            if (palette && !PG_SetSurfacePalette(temp_surf, palette)) {
                 SDL_DestroySurface(temp_surf);
                 return RAISE(pgExc_SDLError, SDL_GetError());
             }
@@ -168,7 +168,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
 
     /* Acquire a temporary lock. */
     if (SDL_MUSTLOCK(new_surf)) {
-        SDL_LockSurface(new_surf);
+        PG_LockSurface(new_surf);
     }
 
     new_pixels = (Uint8 *)new_surf->pixels;
