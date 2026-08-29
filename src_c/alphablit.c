@@ -1592,7 +1592,7 @@ pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
         return (-1);
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (src->flags & SDL_SURFACE_LOCKED || dst->flags & SDL_SURFACE_LOCKED)
 #else
     if (src->locked || dst->locked)

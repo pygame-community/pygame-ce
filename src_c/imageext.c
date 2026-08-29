@@ -126,14 +126,14 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     SDL_UnlockMutex(_pg_img_mutex);
     */
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     surf = IMG_LoadTyped_IO(rw, 1, type);
 #else
     surf = IMG_LoadTyped_RW(rw, 1, type);
 #endif
     Py_END_ALLOW_THREADS;
 #else /* ~WITH_THREAD */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     surf = IMG_LoadTyped_IO(rw, 1, type);
 #else
     surf = IMG_LoadTyped_RW(rw, 1, type);
@@ -152,7 +152,7 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
      * When that PR is merged this block can be removed. */
     if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         Uint32 colorkey;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         bool has_colorkey = SDL_GetSurfaceColorKey(surf, &colorkey);
 #else
         bool has_colorkey = SDL_GetColorKey(surf, &colorkey) == 0;
@@ -173,7 +173,7 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
                 SDL_Color c = pal->colors[colorkey];
                 c.a = SDL_ALPHA_OPAQUE;
                 SDL_SetPaletteColors(pal, &c, (int)colorkey, 1);
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                 if (!SDL_SurfaceHasColorKey(surf)) {
                     SDL_SetSurfaceColorKey(surf, true, colorkey);
                 }
@@ -218,7 +218,7 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     Py_BEGIN_ALLOW_THREADS;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     surf = IMG_LoadSizedSVG_IO(rw, width, height);
 #else
     surf = IMG_LoadSizedSVG_RW(rw, width, height);
@@ -267,7 +267,7 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     Py_BEGIN_ALLOW_THREADS;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     surfs = IMG_LoadAnimationTyped_IO(rw, 1, type);
 #else
     surfs = IMG_LoadAnimationTyped_RW(rw, 1, type);
@@ -366,14 +366,14 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         char *ext = iext_find_extension(name);
         if (!strcasecmp(ext, "jpeg") || !strcasecmp(ext, "jpg")) {
             if (rw != NULL) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                 result = IMG_SaveJPG_IO(surf, rw, 0, JPEG_QUALITY) ? 0 : -1;
 #else
                 result = IMG_SaveJPG_RW(surf, rw, 0, JPEG_QUALITY);
 #endif
             }
             else {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                 result = IMG_SaveJPG(surf, name, JPEG_QUALITY) ? 0 : -1;
 #else
                 result = IMG_SaveJPG(surf, name, JPEG_QUALITY);
@@ -383,14 +383,14 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         else if (!strcasecmp(ext, "png")) {
             /*Py_BEGIN_ALLOW_THREADS; */
             if (rw != NULL) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                 result = IMG_SavePNG_IO(surf, rw, 0) ? 0 : -1;
 #else
                 result = IMG_SavePNG_RW(surf, rw, 0);
 #endif
             }
             else {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                 result = IMG_SavePNG(surf, name) ? 0 : -1;
 #else
                 result = IMG_SavePNG(surf, name);
@@ -423,7 +423,7 @@ imageext_get_sdl_image_version(PyObject *self, PyObject *args,
                                PyObject *kwargs)
 {
     int linked = 1;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     int version = SDL_IMAGE_VERSION;
 #else
     SDL_version version;
@@ -437,7 +437,7 @@ imageext_get_sdl_image_version(PyObject *self, PyObject *args,
     }
 
     if (linked) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         version = IMG_Version();
 #else
         version = *IMG_Linked_Version();

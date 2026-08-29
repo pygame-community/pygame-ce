@@ -562,7 +562,7 @@ renderer_coordinates_to_window(pgRendererObject *self, PyObject *args,
                      "point must be a sequence of two numbers");
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     float wx, wy;
     SDL_RenderCoordinatesToWindow(self->renderer, lx, ly, &wx, &wy);
 
@@ -592,7 +592,7 @@ renderer_coordinates_from_window(pgRendererObject *self, PyObject *args,
                      "point must be a sequence of two numbers");
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     SDL_RenderCoordinatesFromWindow(self->renderer, wx, wy, &lx, &ly);
 #else
     SDL_RenderWindowToLogical(self->renderer, (int)wx, (int)wy, &lx, &ly);

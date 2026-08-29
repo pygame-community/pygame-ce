@@ -103,7 +103,7 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
     int num_locales;
     SDL_Locale *current_locale;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     SDL_Locale **locales = SDL_GetPreferredLocales(&num_locales);
     if (!locales) {
         /* Return an empty list if SDL function does not return any useful
@@ -134,7 +134,7 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
             goto error;
         }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         current_locale = locales[i];
 #else
         current_locale = locales + i;

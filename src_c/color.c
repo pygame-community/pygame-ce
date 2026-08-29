@@ -2473,7 +2473,7 @@ pg_MappedColorFromObj(PyObject *val, SDL_Surface *surf, Uint32 *color,
     /* int is already handled, unset it */
     handle_flags &= ~PG_COLOR_HANDLE_INT;
     if (pg_RGBAFromObjEx(val, rgba, handle_flags)) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         *color = SDL_MapSurfaceRGBA(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
 #else
         *color = SDL_MapRGBA(surf->format, rgba[0], rgba[1], rgba[2], rgba[3]);

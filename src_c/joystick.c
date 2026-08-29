@@ -113,7 +113,7 @@ static PyObject *
 get_count(PyObject *self, PyObject *_null)
 {
     JOYSTICK_INIT_CHECK();
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     int ret;
     SDL_JoystickID *joysticks = SDL_GetJoysticks(&ret);
     if (!joysticks) {
@@ -211,14 +211,14 @@ joy_get_guid(PyObject *self, PyObject *_null)
         guid = SDL_JoystickGetGUID(joy);
     }
     else {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         return RAISE(pgExc_SDLError, "Invalid/closed joystick object");
 #else
         guid = SDL_JoystickGetDeviceGUID(pgJoystick_AsID(self));
 #endif
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     SDL_GUIDToString(guid, strguid, 33);
 #else
     SDL_JoystickGetGUIDString(guid, strguid, 33);
@@ -230,7 +230,7 @@ joy_get_guid(PyObject *self, PyObject *_null)
 const char *
 _pg_powerlevel_string(SDL_Joystick *joy)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     int percent = -1;
     SDL_PowerState state = SDL_GetJoystickPowerInfo(joy, &percent);
     if (state == SDL_POWERSTATE_ON_BATTERY) {
@@ -332,7 +332,7 @@ joy_rumble(pgJoystickObject *self, PyObject *args, PyObject *kwargs)
     low = (Uint32)(lowf * 0xFFFF);
     high = (Uint32)(highf * 0xFFFF);
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!SDL_JoystickRumble(joy, low, high, duration)) {
 #else
     if (SDL_JoystickRumble(joy, low, high, duration) == -1) {
@@ -548,7 +548,7 @@ joy_set_led(PyObject *self, PyObject *arg)
         return NULL;
     }
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
     if (SDL_JoystickSetLED(joy, colors[0], colors[1], colors[2]) < 0) {
         Py_RETURN_FALSE;
     }
@@ -629,7 +629,7 @@ pgJoystick_New(int id)
     JOYSTICK_INIT_CHECK();
 
     /* Open the SDL device */
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
     /* This check should be redundant because SDL_JoystickOpen already checks
      * and errors if id is out of bounds on SDL3 */
     if (id >= SDL_NumJoysticks()) {

@@ -166,7 +166,7 @@ _create_dib_buffer(char *data, size_t *count)
 int
 pygame_scrap_init(void)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     int retval = 0;
     window_handle = (HWND)SDL_GetPointerProperty(
         SDL_GetWindowProperties(pg_GetDefaultWindow()),

@@ -8,7 +8,7 @@
 #include "doc/sdl2_video_doc.h"
 #include "doc/window_doc.h"
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
 #include <SDL_syswm.h>
 #endif
 
@@ -102,7 +102,7 @@ static GL_glViewport_Func p_glViewport = NULL;
 static inline PyObject *
 pg_get_pg_window(SDL_Window *win)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     return SDL_GetPointerProperty(SDL_GetWindowProperties(win), "pg_window",
                                   NULL);
 #else
@@ -113,7 +113,7 @@ pg_get_pg_window(SDL_Window *win)
 static inline void
 pg_set_pg_window(SDL_Window *win, PyObject *pg_win)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     SDL_SetPointerProperty(SDL_GetWindowProperties(win), "pg_window", pg_win);
 #else
     SDL_SetWindowData(win, "pg_window", pg_win);
@@ -229,7 +229,7 @@ static int
 _window_opengl_set_viewport(SDL_Window *window, SDL_GLContext context,
                             int wnew, int hnew)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!SDL_GL_MakeCurrent(window, context))
 #else
     if (SDL_GL_MakeCurrent(window, context) < 0)
@@ -247,7 +247,7 @@ _window_opengl_set_viewport(SDL_Window *window, SDL_GLContext context,
 }
 
 // Callback function for surface auto resize or OpenGL viewport update
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 static bool SDLCALL
 #else
 static int SDLCALL
@@ -256,7 +256,7 @@ _resize_event_watch(void *userdata, SDL_Event *event)
 {
     pgWindowObject *event_window_pg;
     SDL_Window *event_window;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if ((event->type != SDL_WINDOWEVENT_SIZE_CHANGED)) {
         return 0;
     }
@@ -300,7 +300,7 @@ _resize_event_watch(void *userdata, SDL_Event *event)
 static PyObject *
 window_set_windowed(pgWindowObject *self, PyObject *_null)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!SDL_SetWindowFullscreen(self->_win, 0)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -312,7 +312,7 @@ window_set_windowed(pgWindowObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 /* Returns 1 on success, 0 on failure */
 static int
 pg_window_set_fullscreen(SDL_Window *window, int desktop)
@@ -359,7 +359,7 @@ window_set_fullscreen(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &desktop)) {
         return NULL;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!pg_window_set_fullscreen(self->_win, desktop)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -381,7 +381,7 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &input_only)) {
         return NULL;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     /* input_only ignored on SDL3 */
     SDL_RaiseWindow(self->_win);
 #else
@@ -449,7 +449,7 @@ window_minimize(pgWindowObject *self, PyObject *_null)
 static int SDLCALL
 PG_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!modal_window) {
         SDL_SetError("Invalid window");
         return -1;
@@ -645,7 +645,7 @@ window_set_mouse_rect(pgWindowObject *self, PyObject *arg, void *v)
                         "mouse_rect should be a Rect-like object or None");
         return -1;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!SDL_SetWindowMouseRect(self->_win, mouse_rect_p)) {
 #else
     if (SDL_SetWindowMouseRect(self->_win, mouse_rect_p) < 0) {
@@ -828,7 +828,7 @@ window_set_opacity(pgWindowObject *self, PyObject *arg, void *v)
     if (PyErr_Occurred()) {
         return -1;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!SDL_SetWindowOpacity(self->_win, opacity))
 #else
     if (SDL_SetWindowOpacity(self->_win, opacity))
@@ -843,7 +843,7 @@ window_set_opacity(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_opacity(pgWindowObject *self, void *v)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     float opacity = SDL_GetWindowOpacity(self->_win);
     if (opacity < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -881,7 +881,7 @@ window_get_handle(pgWindowObject *self, void *v)
     SDL_Window *win = self->_win;
     size_t handle = 0;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     const char *driver = SDL_GetCurrentVideoDriver();
     if (driver == NULL) {
         handle = 0;
@@ -996,7 +996,7 @@ window_dealloc(pgWindowObject *self, PyObject *_null)
 static SDL_Window *
 PG_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     SDL_Window *window = NULL;
 
     SDL_PropertiesID props = SDL_CreateProperties();
@@ -1053,7 +1053,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     int fullscreen_non_desktop = 0;
 #endif
     if (kwargs) {
@@ -1090,7 +1090,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     }
                 }
                 else if (!strcmp(_key_str, "fullscreen")) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                     fullscreen_non_desktop = 1;
 #endif
                     if (_value_bool) {
@@ -1098,7 +1098,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     }
                 }
                 else if (!strcmp(_key_str, "fullscreen_desktop")) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                     if (_value_bool) {
                         flags |= SDL_WINDOW_FULLSCREEN;
                     }
@@ -1161,7 +1161,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                         return -1;
                     }
                     if (_value_bool) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                         flags |= SDL_WINDOW_EXTERNAL;
 #else
                         flags |= SDL_WINDOW_FOREIGN;
@@ -1191,7 +1191,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                 else if (!strcmp(_key_str, "utility")) {
                     if (_value_bool) {
                         flags |= SDL_WINDOW_UTILITY;
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
                         flags |= SDL_WINDOW_SKIP_TASKBAR;
 #endif
                     }
@@ -1246,7 +1246,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (fullscreen_non_desktop) {
         if (!pg_window_set_fullscreen(_win, 0)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
@@ -1344,7 +1344,7 @@ window_flash(pgWindowObject *self, PyObject *arg)
         return RAISE(PyExc_ValueError, "Unsupported window flash operation.");
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!SDL_FlashWindow(self->_win, operation)) {
 #else
     if (SDL_FlashWindow(self->_win, operation) < 0) {

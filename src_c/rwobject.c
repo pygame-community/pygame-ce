@@ -46,7 +46,7 @@ static const char pg_default_errors[] = "backslashreplace";
 
 static PyObject *os_module = NULL;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 static Sint64
 _pg_rw_size(void *);
 static Sint64
@@ -299,7 +299,7 @@ pg_EncodeFilePath(PyObject *obj, PyObject *eclass)
 static int
 pgRWops_IsFileObject(SDL_RWops *rw)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     SDL_PropertiesID props = SDL_GetIOProperties(rw);
     if (!props) {
         // pgRWops_IsFileObject doesn't have any error checking facility
@@ -312,7 +312,7 @@ pgRWops_IsFileObject(SDL_RWops *rw)
 #endif
 }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 static Sint64
 _pg_rw_size(void *userdata)
 {
@@ -387,7 +387,7 @@ end:
     return retval;
 }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 static size_t
 _pg_rw_write(void *userdata, const void *ptr, size_t size,
              SDL_IOStatus *status)
@@ -418,7 +418,7 @@ _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
     }
 
     Py_DECREF(result);
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     retval = size;
 #else
     retval = num;
@@ -429,7 +429,7 @@ end:
     return retval;
 }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 static bool
 _pg_rw_close(void *userdata)
 {
@@ -449,7 +449,7 @@ _pg_rw_close(SDL_RWops *context)
         result = PyObject_CallNoArgs(helper->close);
         if (!result) {
             PyErr_Print();
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
             retval = false;
 #else
             retval = -1;
@@ -466,7 +466,7 @@ _pg_rw_close(SDL_RWops *context)
 
     PyMem_Free(helper);
     PyGILState_Release(state);
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
     SDL_FreeRW(context);
 #endif
     return retval;
@@ -491,7 +491,7 @@ pgRWops_FromFileObject(PyObject *obj)
         return NULL;
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     SDL_IOStreamInterface iface;
     SDL_INIT_INTERFACE(&iface);
     iface.size = _pg_rw_size;
@@ -543,7 +543,7 @@ pgRWops_FromFileObject(PyObject *obj)
     return rw;
 }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 static Sint64
 _pg_rw_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
@@ -596,7 +596,7 @@ end:
     return retval;
 }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 static size_t
 _pg_rw_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
 {
@@ -634,7 +634,7 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
     retval = PyBytes_GET_SIZE(result);
     if (retval) {
         memcpy(ptr, PyBytes_AsString(result), retval);
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
         retval /= size;
 #endif
     }
@@ -690,7 +690,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
                     /* If out of memory, decref oencoded to be safe, and try
                      * to close out `rw` as well. */
                     Py_DECREF(oencoded);
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                     if (!SDL_RWclose(rw)) {
 #else
                     if (SDL_RWclose(rw) < 0) {

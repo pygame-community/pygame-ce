@@ -434,7 +434,7 @@ _scrap_put_text(PyObject *self, PyObject *args)
         return NULL;
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!SDL_SetClipboardText(text)) {
 #else
     if (SDL_SetClipboardText(text)) {

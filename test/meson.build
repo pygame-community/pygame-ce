@@ -8,7 +8,6 @@ test_files = files(
     'camera_test.py',
     'color_test.py',
     'constants_test.py',
-    'controller_test.py',
     'ctest_test.py',
     'cursors_test.py',
     'debug_test.py',
@@ -30,8 +29,6 @@ test_files = files(
     'mask_test.py',
     'math_test.py',
     'midi_test.py',
-    'mixer_music_test.py',
-    'mixer_test.py',
     'mouse_test.py',
     'pixelarray_test.py',
     'pixelcopy_test.py',
@@ -42,7 +39,6 @@ test_files = files(
     'sdl3_mixer_test.py',
     'sdl2_namespace_test.py',
     'sndarray_tags.py',
-    'sndarray_test.py',
     'sprite_test.py',
     'surface_test.py',
     'surfarray_tags.py',
@@ -51,13 +47,22 @@ test_files = files(
     'sysfont_test.py',
     'system_test.py',
     'time_test.py',
-    'touch_test.py',
     'transform_test.py',
     'typing_test.py',
     'version_test.py',
-    'video_test.py',
     'window_test.py',
 )
+
+if sdl_api != 3
+    test_files += files(
+        'controller_test.py',
+        'mixer_music_test.py',
+        'mixer_test.py',
+        'sndarray_test.py',
+        'touch_test.py',
+        'video_test.py',
+    )
+endif
 
 py.install_sources(test_files, subdir: pg / 'tests')
 

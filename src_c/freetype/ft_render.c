@@ -439,7 +439,7 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
 
     if (bits_per_pixel == 8) {
         surface = PG_CreateSurface(width, height, SDL_PIXELFORMAT_INDEX8);
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         // We need to explicitly create palettes in SDL3
         SDL_CreateSurfacePalette(surface);
 #endif
@@ -709,7 +709,7 @@ _PGFT_Render_Array(FreeTypeInstance *ft, pgFontObject *fontobj,
     /*
      * Setup target surface struct
      */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     // Only BPP and Ashift are needed by functions called here
     SDL_PixelFormatDetails format;
     format.bytes_per_pixel = itemsize;

@@ -197,7 +197,7 @@ image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
             SDL_RWops *rw = pgRWops_FromFileObject(obj);
             if (rw != NULL) {
                 if (!strcasecmp(ext, "bmp")) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                     result = (SDL_SaveBMP_IO(surf, rw, 0) ? 0 : -1);
 #else
                     /* The SDL documentation didn't specify which negative
@@ -217,7 +217,7 @@ image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
         else {
             if (!strcasecmp(ext, "bmp")) {
                 Py_BEGIN_ALLOW_THREADS;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                 result = (SDL_SaveBMP(surf, name) ? 0 : -1);
 #else
                 /* The SDL documentation didn't specify which negative number
@@ -440,7 +440,7 @@ tobytes_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
 #endif /* PG_COMPILE_SSE4_2 */
 
 static void
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 tobytes_surf_32bpp(SDL_Surface *surf,
                    const SDL_PixelFormatDetails *format_details, int flipped,
                    int hascolorkey, Uint32 colorkey, char *serialized_image,
@@ -552,7 +552,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     surf = pgSurface_AsSurface(surfobj);
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     const SDL_PixelFormatDetails *format_details =
         SDL_GetPixelFormatDetails(surf->format);
     if (!format_details) {
@@ -1702,7 +1702,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
         return -1;
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     const SDL_PixelFormatDetails *surf_format =
         SDL_GetPixelFormatDetails(surface->format);
     if (!surf_format) {
@@ -1764,7 +1764,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     SETLE16(h.height, surface->h);
     h.flags = TGA_ORIGIN_UPPER | (alpha ? 8 : 0);
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!SDL_WriteIO(out, &h, sizeof(h)))
 #else
     if (!SDL_RWwrite(out, &h, sizeof(h), 1))
@@ -1779,7 +1779,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
             entry[1] = surf_palette->colors[i].g;
             entry[2] = surf_palette->colors[i].r;
             entry[3] = ((unsigned)i == surf_colorkey) ? 0 : 0xff;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
             if (!SDL_WriteIO(out, entry, h.cmap_bits >> 3))
 #else
             if (!SDL_RWwrite(out, entry, h.cmap_bits >> 3, 1))
@@ -1818,7 +1818,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     for (r.y = 0; r.y < surface->h; r.y++) {
         int n;
         void *buf;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         if (!SDL_BlitSurface(surface, &r, linebuf, NULL))
 #else
         if (SDL_BlitSurface(surface, &r, linebuf, NULL) < 0)
@@ -1832,7 +1832,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
             buf = linebuf->pixels;
             n = surface->w * bpp;
         }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         if (!SDL_WriteIO(out, buf, n))
 #else
         if (!SDL_RWwrite(out, buf, n, 1))

@@ -134,6 +134,15 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
                                            PG_SURF_FORMATENUM(surf)))) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
+#ifdef PG_SDL3
+        if (SDL_ISPIXELFORMAT_INDEXED(surf->format)) {
+            SDL_Palette *palette = SDL_GetSurfacePalette(surf);
+            if (palette && !SDL_SetSurfacePalette(temp_surf, palette)) {
+                SDL_DestroySurface(temp_surf);
+                return RAISE(pgExc_SDLError, SDL_GetError());
+            }
+        }
+#endif
     }
 
     /* Ensure the new surface has the same format as the original */

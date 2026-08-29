@@ -1654,7 +1654,7 @@ static PyObject *
 mixer_get_sdl_mixer_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int linked = 1; /* Default is linked version. */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     int version = SDL_MIXER_VERSION;
 #else
     SDL_version version;
@@ -1670,7 +1670,7 @@ mixer_get_sdl_mixer_version(PyObject *self, PyObject *args, PyObject *kwargs)
     /* MIXER_INIT_CHECK() is not required for these methods. */
 
     if (linked) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         version = Mix_Version();
 #else
         version = *Mix_Linked_Version();
@@ -1946,7 +1946,7 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
             return -1;
         }
         Py_BEGIN_ALLOW_THREADS;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         chunk = Mix_LoadWAV_IO(rw, 1);
 #else
         chunk = Mix_LoadWAV_RW(rw, 1);

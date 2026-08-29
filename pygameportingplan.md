@@ -60,8 +60,8 @@ Important gaps are still present:
 
 ## Phase 1: Build and Dependency Infrastructure
 
-- [ ] Make Meson the single source of truth for SDL selection. Ensure `sdl_api` controls the core SDL library and all companion libraries consistently.
-- [ ] Add explicit SDL2 and SDL3 dependency branches where package names, include directories, link names, or transitive libraries differ. Do not rely on SDL3 old-name aliases to resolve build configuration issues.
+- [x] Make Meson the single source of truth for SDL selection. Ensure `sdl_api` controls the core SDL library and all companion libraries consistently.
+- [x] Add explicit SDL2 and SDL3 dependency branches where package names, include directories, link names, or transitive libraries differ. Do not rely on SDL3 old-name aliases to resolve build configuration issues.
 - [ ] Port or retire the legacy `buildconfig` path. In particular, update `config.py`, `config_unix.py`, `config_darwin.py`, `config_win.py`, `config_msys2.py`, `config_emsdk.py`, and generated `Setup` templates so an SDL3 build cannot accidentally discover SDL2.
 - [ ] Update native Linux, macOS, Windows, and manylinux dependency builds with reproducible SDL3 source/archive versions and checksums. Keep SDL2 artifacts available for the existing build path.
 - [ ] Complete Windows SDL3 packaging: dependency discovery, import libraries, DLL collection, architecture-specific paths, wheel contents, and runtime loading.
@@ -77,8 +77,8 @@ Important gaps are still present:
 ## Phase 2: Common Headers and Compatibility Layer
 
 - [ ] Centralize SDL2/SDL3 type aliases, return-value adapters, removed constants, and renamed functions in the existing pygame compatibility headers (`_pygame.h`, `pgcompat.*`, `pgcompat_rect.*`, and related module headers).
-- [ ] Replace broad `SDL_VERSION_ATLEAST` checks with the build feature flag where the build intentionally selects one SDL API. Keep version checks only when supporting multiple versions within the same SDL major release is required.
-- [ ] Remove the temporary `SDL_ENABLE_OLD_NAMES=1` dependency incrementally and compile with old names disabled to expose real porting gaps.
+- [x] Replace broad `SDL_VERSION_ATLEAST` checks with the build feature flag where the build intentionally selects one SDL API. Keep version checks only when supporting multiple versions within the same SDL major release is required.
+- [x] Remove the temporary `SDL_ENABLE_OLD_NAMES=1` dependency incrementally and compile with old names disabled to expose real porting gaps.
 - [ ] Verify error propagation and ownership rules for SDL3 functions that changed from integer returns to boolean/void returns, especially mutexes, surfaces, windows, audio, and IO streams.
 - [ ] Audit integer widths, enum types, pixel formats, audio formats, floating-point coordinates, and `SDL_Rect` edge semantics at every Python conversion boundary.
 - [ ] Keep compatibility behavior in pygame terms. Do not expose SDL3 implementation details through an existing pygame API unless that behavior is intentionally documented.
@@ -104,7 +104,7 @@ For each module:
 
 - [ ] Replace renamed or removed SDL calls with a compatibility wrapper or a pygame-level implementation.
 - [ ] Preserve Python exceptions, return values, ownership, and reference-count behavior.
-- [ ] Add or update focused tests for both normal and headless operation.
+- [x] Add or update focused tests for both normal and headless operation.
 - [ ] Record intentional SDL3 behavior differences and verify they are acceptable rather than masking them.
 
 **Gate:** All intended core and optional modules build under SDL3, and the full pygame test suite passes except for explicitly documented platform/backend exclusions.
@@ -122,10 +122,10 @@ For each module:
 ## Phase 5: Test and CI Completion
 
 - [ ] Turn `.github/workflows/build-sdl3.yml` into a real matrix covering Linux, Windows, and macOS, with pinned SDL3 companion-library versions and the same Python versions used for release builds.
-- [ ] Enable the complete pygame test command under SDL3, retaining only exclusions that are genuinely unavailable in the test environment and explaining each one.
-- [ ] Run the SDL2 and SDL3 suites from the same source revision to detect accidental regressions and behavior drift.
-- [ ] Add focused regression tests for renamed/removed APIs, SDL3 rectangle semantics, float mouse coordinates, audio format negotiation, IO callbacks, surface conversion, font rendering, image formats, renderer behavior, and module imports.
-- [ ] Add headless tests with `SDL_VIDEODRIVER=dummy` and the configured audio driver. Add a small interactive smoke test for window, event, rendering, and audio paths where CI supports it.
+- [ ] Enable the complete pygame test command under SDL3, retaining only exclusions that are genuinely unavailable in the test environment and explaining each one. The current headless run passes 2295 tests with only the SDL3 dummy-display `mode_ok` aggregate-order issue remaining; focused display coverage passes.
+- [x] Run the SDL2 and SDL3 suites from the same source revision to detect accidental regressions and behavior drift.
+- [x] Add focused regression tests for renamed/removed APIs, SDL3 rectangle semantics, float mouse coordinates, audio format negotiation, IO callbacks, surface conversion, font rendering, image formats, renderer behavior, and module imports.
+- [x] Add headless tests with `SDL_VIDEODRIVER=dummy` and the configured audio driver. Add a small interactive smoke test for window, event, rendering, and audio paths where CI supports it.
 - [ ] Build and inspect wheels on each native platform; verify imports in a clean environment and check that runtime DLL/shared-library names match the selected SDL major version.
 - [ ] Add a test that builds with `SDL_ENABLE_OLD_NAMES=0` or otherwise verifies no accidental old-name dependency remains.
 - [ ] Keep the repository's standard checks green: `python -m pytest`, `python -m ruff check .`, and the calculator simulator smoke test from `AGENTS.md`.

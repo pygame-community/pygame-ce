@@ -477,7 +477,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     Uint32 Rmask, Gmask, Bmask, Amask;
     SDL_Surface *surface;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     PG_PixelFormatEnum format = SDL_PIXELFORMAT_UNKNOWN;
 #else
     SDL_PixelFormat default_format;
@@ -511,7 +511,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
 
     surface_cleanup(self);
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (depth && masks) { /* all info supplied, most errorchecking
                            * needed */
         if (pgSurface_Check(depth)) {
@@ -1642,7 +1642,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 
     pgSurface_Prep(self);
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if ((has_colorkey = SDL_HasColorKey(surf))) {
         PG_PixelFormat *surf_format;
         SDL_Palette *surf_palette;
@@ -1997,7 +1997,7 @@ pg_DisplayFormatAlpha(SDL_Surface *surface)
     }
 
     switch (dformat) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         case SDL_PIXELFORMAT_XBGR1555:
 #else
         case SDL_PIXELFORMAT_BGR555:
@@ -2958,7 +2958,7 @@ static PyObject *
 surf_get_flags(PyObject *self, PyObject *_null)
 {
     Uint32 sdl_flags = 0;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     SDL_WindowFlags window_flags = 0;
 #else
     Uint32 window_flags = 0;
@@ -4415,7 +4415,7 @@ int
 PG_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst,
                SDL_Rect *dstrect)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     /* SDL3 doesn't modify dstrect, so compat for that.
      * Below logic taken from SDL2 source with slight modifications */
     SDL_Rect r_src, r_dst;
@@ -4555,7 +4555,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             result = pygame_Blit(src, srcrect, dst, dstrect, 0);
         }
         else {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
             const SDL_PixelFormatDetails *fmt =
                 SDL_GetPixelFormatDetails(src->format);
             src = fmt ? SDL_ConvertSurface(src,

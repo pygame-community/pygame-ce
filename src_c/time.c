@@ -277,7 +277,7 @@ _pg_clear_event_timer_type(int ev_type)
 
 /* Timer callback function
  * TODO: This needs better error handling and a way to report to the user */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 static Uint32
 timer_callback(void *param, SDL_TimerID timerID, Uint32 interval)
 #else
@@ -323,7 +323,7 @@ accurate_delay(Sint64 ticks)
         return 0;
     }
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
         if (!PG_InitSubSystem(SDL_INIT_TIMER)) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
@@ -351,7 +351,7 @@ accurate_delay(Sint64 ticks)
 static PyObject *
 time_get_ticks(PyObject *self, PyObject *_null)
 {
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
         return PyLong_FromLong(0);
     }
@@ -387,7 +387,7 @@ time_wait(PyObject *self, PyObject *arg)
         return RAISE(PyExc_TypeError, "wait requires one integer argument");
     }
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
         if (!PG_InitSubSystem(SDL_INIT_TIMER)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
@@ -476,7 +476,7 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
         goto end;
     }
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
     /* just doublecheck that timer is initialized */
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
         if (!PG_InitSubSystem(SDL_INIT_TIMER)) {
@@ -546,7 +546,7 @@ clock_tick_base(pgClockObject *self, PyObject *arg, int use_accurate_delay)
         self->rawpassed = PG_GetTicks() - self->last_tick;
         delay = endtime - self->rawpassed;
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
         /*just doublecheck that timer is initialized*/
         if (!SDL_WasInit(SDL_INIT_TIMER)) {
             if (!PG_InitSubSystem(SDL_INIT_TIMER)) {
@@ -669,7 +669,7 @@ clock_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
         if (!PG_InitSubSystem(SDL_INIT_TIMER)) {
             return RAISE(pgExc_SDLError, SDL_GetError());

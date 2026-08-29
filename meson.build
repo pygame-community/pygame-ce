@@ -80,6 +80,11 @@ sdl_mixer = '@0@_mixer'.format(sdl)
 sdl_ttf = '@0@_ttf'.format(sdl)
 sdl_image = '@0@_image'.format(sdl)
 
+sdl_version = sdl_api == 3 ? '>= 3.4.0' : '>= 2.0.20'
+sdl_mixer_version = sdl_api == 3 ? '>= 3.2.2' : '>= 2.0.4'
+sdl_ttf_version = sdl_api == 3 ? '>= 3.2.2' : '>= 2.0.18'
+sdl_image_version = sdl_api == 3 ? '>= 3.4.0' : '>= 2.0.5'
+
 message('Building pygame-ce with SDL@0@'.format(sdl_api))
 
 if sdl_api == 3
@@ -398,7 +403,7 @@ else
 endif
 
 # TODO: add version constraints?
-sdl_dep = dependency(sdl, required: false)
+sdl_dep = dependency(sdl, version: sdl_version, required: false)
 if not sdl_dep.found()
     sdl_dep = declare_dependency(
         include_directories: pg_inc_dirs,
@@ -410,7 +415,7 @@ endif
 if get_option('image').disabled()
     sdl_image_dep = disabler()
 else
-    sdl_image_dep = dependency(sdl_image, required: false)
+    sdl_image_dep = dependency(sdl_image, version: sdl_image_version, required: false)
     if not sdl_image_dep.found()
         if get_option('image').enabled()
             sdl_image_lib = cc.find_library(sdl_image, dirs: pg_lib_dirs)
@@ -427,7 +432,7 @@ endif
 if get_option('mixer').disabled()
     sdl_mixer_dep = disabler()
 else
-    sdl_mixer_dep = dependency(sdl_mixer, required: false)
+    sdl_mixer_dep = dependency(sdl_mixer, version: sdl_mixer_version, required: false)
     if not sdl_mixer_dep.found()
         if get_option('mixer').enabled()
             sdl_mixer_lib = cc.find_library(sdl_mixer, dirs: pg_lib_dirs)
@@ -444,7 +449,7 @@ endif
 if get_option('font').disabled()
     sdl_ttf_dep = disabler()
 else
-    sdl_ttf_dep = dependency(sdl_ttf, required: false)
+    sdl_ttf_dep = dependency(sdl_ttf, version: sdl_ttf_version, required: false)
     if not sdl_ttf_dep.found()
         if get_option('font').enabled()
             sdl_ttf_lib = cc.find_library(sdl_ttf, dirs: pg_lib_dirs)

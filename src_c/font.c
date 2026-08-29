@@ -1222,7 +1222,7 @@ font_dealloc(PyFontObject *self)
         // TODO SDL3:
         // TTF docs say "A well-written program should call TTF_CloseFont()
         // on any open fonts before calling this function!"
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         if (self->ttf_init_generation == current_ttf_generation) {
             TTF_CloseFont(font);
         }
@@ -1331,7 +1331,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     }
 
     Py_BEGIN_ALLOW_THREADS;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     /* TODO: can consider supporting float in python API */
     font = TTF_OpenFontIO(rw, 1, (float)fontsize);
 #else
@@ -1375,7 +1375,7 @@ static PyObject *
 get_ttf_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int linked = 1; /* Default is linked version. */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     int version = SDL_TTF_VERSION;
 #else
     SDL_version version;
@@ -1389,7 +1389,7 @@ get_ttf_version(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (linked) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         version = TTF_Version();
 #else
         version = *TTF_Linked_Version();

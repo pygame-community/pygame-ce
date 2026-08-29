@@ -420,8 +420,29 @@ PG_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format,
     return surface;
 }
 
-#define PG_ConvertSurface SDL_ConvertSurface
-#define PG_ConvertSurfaceFormat SDL_ConvertSurface
+static inline SDL_Surface *
+PG_ConvertSurface(SDL_Surface *surface, SDL_PixelFormat format)
+{
+    SDL_Palette *palette = SDL_GetSurfacePalette(surface);
+    SDL_Surface *converted;
+
+    if (palette && surface->format == format &&
+        SDL_ISPIXELFORMAT_INDEXED(format)) {
+        converted = SDL_DuplicateSurface(surface);
+    }
+    else {
+        converted = SDL_ConvertSurface(surface, format);
+    }
+
+    if (converted && palette && SDL_ISPIXELFORMAT_INDEXED(format) &&
+        !SDL_SetSurfacePalette(converted, palette)) {
+        SDL_DestroySurface(converted);
+        return NULL;
+    }
+    return converted;
+}
+
+#define PG_ConvertSurfaceFormat PG_ConvertSurface
 
 #define PG_PixelFormatEnum SDL_PixelFormat
 

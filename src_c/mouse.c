@@ -66,7 +66,7 @@ mouse_set_pos(PyObject *self, PyObject *args)
 static PyObject *
 mouse_get_pos(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     /* SDL3 changed the mouse API to deal with float coordinates, for now we
      * still truncate the result to int before returning to python side.
      * This can be changed in a breaking release in the future if needed. */
@@ -99,7 +99,7 @@ mouse_get_pos(PyObject *self, PyObject *args, PyObject *kwargs)
                 SDL_RenderGetScale(sdlRenderer, &scalex, &scaley);
                 SDL_RenderGetViewport(sdlRenderer, &vprect);
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                 x = x / scalex;
                 y = y / scaley;
 #else
@@ -110,7 +110,7 @@ mouse_get_pos(PyObject *self, PyObject *args, PyObject *kwargs)
                 x -= vprect.x;
                 y -= vprect.y;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
                 if (x < 0) {
                     x = 0;
                 }
@@ -141,7 +141,7 @@ mouse_get_pos(PyObject *self, PyObject *args, PyObject *kwargs)
         }
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     return pg_tuple_couple_from_values_int((int)x, (int)y);
 #else
     return pg_tuple_couple_from_values_int(x, y);
@@ -151,7 +151,7 @@ mouse_get_pos(PyObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 mouse_get_rel(PyObject *self, PyObject *_null)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     /* SDL3 changed the mouse API to deal with float coordinates, for now we
      * still truncate the result to int before returning to python side.
      * This can be changed in a breaking release in the future if needed. */
@@ -176,7 +176,7 @@ mouse_get_rel(PyObject *self, PyObject *_null)
             y/=scaley;
         }
     */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     return pg_tuple_couple_from_values_int((int)x, (int)y);
 #else
     return pg_tuple_couple_from_values_int(x, y);
@@ -278,7 +278,7 @@ mouse_set_visible(PyObject *self, PyObject *args)
 
     win = pg_GetDefaultWindow();
     if (win) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         SDL_SetWindowRelativeMouseMode(win,
                                        SDL_GetWindowMouseGrab(win) && !toggle);
 #else
@@ -322,7 +322,7 @@ mouse_get_visible(PyObject *self, PyObject *_null)
 
     VIDEO_INIT_CHECK();
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     SDL_Window *win = pg_GetDefaultWindow();
 
     /* If win is NULL, SDL_GetWindowRelativeMouseMode returns false */
@@ -604,7 +604,7 @@ mouse_get_cursor(PyObject *self, PyObject *_null)
 static PyObject *
 mouse_get_relative_mode(PyObject *self)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     SDL_Window *win = pg_GetDefaultWindow();
     return PyBool_FromLong(win ? SDL_GetWindowRelativeMouseMode(win) : 0);
 #else
@@ -620,7 +620,7 @@ mouse_set_relative_mode(PyObject *self, PyObject *arg)
         return NULL;
     }
     SDL_Window *win = pg_GetDefaultWindow();
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     if (!win) {
         return RAISE(pgExc_SDLError,
                      "display.set_mode has not been called yet.");

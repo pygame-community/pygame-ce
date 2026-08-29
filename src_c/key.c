@@ -82,7 +82,7 @@ pg_scancodewrapper_subscript(pgScancodeWrapper *self, PyObject *item)
     if ((index = PyLong_AsLong(item)) == -1 && PyErr_Occurred()) {
         return NULL;
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     index = SDL_GetScancodeFromKey(index, NULL);
 #else
     index = SDL_GetScancodeFromKey(index);
@@ -169,7 +169,7 @@ static PyObject *
 key_get_pressed(PyObject *self, PyObject *_null)
 {
     int num_keys;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     const bool *key_state;
 #else
     const Uint8 *key_state;
@@ -387,7 +387,7 @@ static const struct {
     {1073742054, "right alt"},       /* K_RALT */
     {1073742055, "right meta"},      /* K_RGUI, K_RMETA, K_RSUPER */
     {1073742081, "alt gr"},          /* K_MODE */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     {1073742106, "AC Back"}, /* K_AC_BACK */
 #else
     {1073742094, "AC Back"}, /* K_AC_BACK */
@@ -511,7 +511,7 @@ key_get_focused(PyObject *self, PyObject *_null)
 static PyObject *
 key_start_text_input(PyObject *self, PyObject *_null)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     /* Can consider making this a method of the Window class, this function
      * just does backcompat */
     SDL_Window *win = pg_GetDefaultWindow();
@@ -532,7 +532,7 @@ key_start_text_input(PyObject *self, PyObject *_null)
 static PyObject *
 key_stop_text_input(PyObject *self, PyObject *_null)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     /* Can consider making this a method of the Window class, this function
      * just does backcompat */
     SDL_Window *win = pg_GetDefaultWindow();
@@ -579,7 +579,7 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
         rect2.w = (int)(rect->w * scalex);
         rect2.h = (int)(rect->h * scaley);
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         /* Should consider how to expose the cursor argument to the user, maybe
          * this should be new API in Window? */
         SDL_SetTextInputArea(sdlWindow, &rect2, 0);
@@ -589,7 +589,7 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
         Py_RETURN_NONE;
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     /* Should consider how to expose the cursor argument to the user, maybe
      * this should be new API in Window? */
     SDL_SetTextInputArea(sdlWindow, rect, 0);

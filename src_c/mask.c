@@ -1984,7 +1984,7 @@ extract_color(SDL_Surface *surf, PyObject *color_obj, Uint8 rgba_color[],
               Uint32 *color)
 {
     if (NULL == color_obj) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         *color = SDL_MapSurfaceRGBA(surf, rgba_color[0], rgba_color[1],
                                     rgba_color[2], rgba_color[3]);
 #else

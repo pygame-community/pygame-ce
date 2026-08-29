@@ -43,6 +43,10 @@ endif
 
 install_data(data_files, install_dir: pg_dir, install_tag: 'pg-tag')
 
-subdir('_sdl2')
+if sdl_api != 3
+    subdir('_sdl2')
+else
+    py.install_sources(files('_sdl2/__init__.py'), subdir: pg / '_sdl2')
+endif
 subdir('__pyinstaller')
 subdir('__briefcase')
