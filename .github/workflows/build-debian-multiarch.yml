@@ -8,7 +8,7 @@ name: Debian Multiarch
 # any other branch. Also, skip any non-source changes from running on CI
 on:
   push:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -22,7 +22,7 @@ on:
       - '!.github/workflows/build-debian-multiarch.yml'
 
   pull_request:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -39,9 +39,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-debian-multiarch
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  packages: write
+permissions: {}
 
 # this command is called in two places, so save it in an env first
 env:
@@ -58,6 +56,9 @@ jobs:
   build-multiarch:
     name: Debian (Bookworm - 12) [${{ matrix.arch }}]
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
 
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
@@ -78,7 +79,7 @@ jobs:
         persist-credentials: false
 
     - name: Build sources and run tests
-      uses: uraimo/run-on-arch-action@f9b26e3a1a408d5fd530d20c17b9f3f4428ff8d9 # v3.1.0
+      uses: uraimo/run-on-arch-action@460cb8e6d9f726a588fc9b5e681c8a6cab09ae41 # v3.2.0
       id: build
       with:
         arch: ${{ matrix.base_image && 'none' || matrix.arch }}
@@ -144,7 +145,7 @@ jobs:
         done
 
     - name: Test armv7 wheel on armv6
-      uses: uraimo/run-on-arch-action@f9b26e3a1a408d5fd530d20c17b9f3f4428ff8d9 # v3.1.0
+      uses: uraimo/run-on-arch-action@460cb8e6d9f726a588fc9b5e681c8a6cab09ae41 # v3.2.0
       with:
         arch: armv6
         distro: bookworm

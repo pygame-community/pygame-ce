@@ -4,7 +4,7 @@ name: Build WASM (Emscripten)
 # any other branch. Also, skip any non-source changes from running on CI
 on:
   push:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -18,7 +18,7 @@ on:
       - '!.github/workflows/build-emsdk.yml'
 
   pull_request:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -77,7 +77,7 @@ jobs:
       with:
         persist-credentials: false
 
-    - uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
+    - uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
       env:
         CIBW_PLATFORM: pyodide
 

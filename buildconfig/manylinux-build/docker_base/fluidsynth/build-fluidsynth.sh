@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-FSYNTH_VER="2.5.0"
+FSYNTH_VER="2.5.7"
 FSYNTH="fluidsynth-$FSYNTH_VER"
 
 curl -sL --retry 10 https://github.com/FluidSynth/fluidsynth/archive/v${FSYNTH_VER}.tar.gz > ${FSYNTH}.tar.gz
@@ -11,9 +11,6 @@ sha512sum -c fluidsynth.sha512
 tar xzf ${FSYNTH}.tar.gz
 
 cd $FSYNTH
-# Vendor in the fix from https://github.com/FluidSynth/fluidsynth/pull/1687
-# this can be removed when we bump fluidsynth next
-patch -p1 < ../pr-1687.patch
 mkdir build
 cd build
 

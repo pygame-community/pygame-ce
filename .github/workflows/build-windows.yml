@@ -4,10 +4,10 @@ name: Windows
 # to main.
 on:
   push:
-    branches: main
+    branches: [main, main-2.x]
 
   pull_request:
-    branches: main
+    branches: [main, main-2.x]
 
   # the github release drafter can call this workflow
   workflow_call:
@@ -41,12 +41,12 @@ jobs:
           persist-credentials: false
 
       # this lets us use the developer command prompt on windows
-      - uses: TheMrMilchmann/setup-msvc-dev@79dac248aac9d0059f86eae9d8b5bfab4e95e97c # v4.0.0
+      - uses: TheMrMilchmann/setup-msvc-dev@368ef7d1ee4d1171b31d4a7f67f4d954f903f5a9 # v4.1.0
         with:
           arch: ${{ matrix.msvc-dev-arch }}
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
+        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         with:
           extras: uv
 
@@ -153,7 +153,7 @@ jobs:
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
+        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         with:
           extras: uv
 
