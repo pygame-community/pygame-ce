@@ -1377,6 +1377,17 @@ window_repr(pgWindowObject *self)
 }
 
 static PyObject *
+window_get_sdl_window_pointer(pgWindowObject *self, PyObject *_null)
+{
+    (void)_null;
+    if (!self->_win) {
+        PyErr_SetString(PyExc_RuntimeError, "Window has been destroyed");
+        return NULL;
+    }
+    return PyLong_FromVoidPtr((void *)self->_win);
+}
+
+static PyObject *
 _window_internal_mod_init(PyObject *self, PyObject *_null)
 {
     if (!is_window_mod_init) {
@@ -1420,6 +1431,8 @@ static PyMethodDef window_methods[] = {
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_WINDOW_FROMDISPLAYMODULE},
     {"flash", (PyCFunction)window_flash, METH_O, DOC_WINDOW_FLASH},
+    {"_get_sdl_window_pointer", (PyCFunction)window_get_sdl_window_pointer,
+     METH_NOARGS, NULL},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef _window_getset[] = {

@@ -212,6 +212,12 @@ def get_wasm_cross_file(sdkroot: Path):
     sysroot_dir = bin_dir / "cache" / "sysroot"
     inc_dir = sysroot_dir / "include"
     lib_dir = sysroot_dir / "lib" / "wasm32-emscripten" / "pic"
+    sdl3_root = Path(
+        os.environ.get(
+            "PYGAME_EMSCRIPTEN_SDL_ROOT",
+            str(sdkroot / "devices" / "emsdk" / "usr"),
+        )
+    )
 
     c_args = [
         f"-I{x}"
@@ -219,6 +225,7 @@ def get_wasm_cross_file(sdkroot: Path):
             inc_dir / "SDL2",
             inc_dir / "freetype2",
             sdkroot / "devices" / "emsdk" / "usr" / "include" / "SDL2",
+            sdl3_root / "include",
         ]
     ]
     c_link_args = [f"-L{lib_dir}"]
@@ -238,6 +245,7 @@ exe_wrapper = {str(node_path)!r}
 
 [project options]
 emscripten_type = 'pygbag'
+emscripten_sdl_root = {str(sdl3_root)!r}
 
 [built-in options]
 c_args = {c_args!r}

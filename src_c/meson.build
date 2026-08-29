@@ -1,19 +1,23 @@
 if plat.startswith('emscripten')  # single build
 
 base_files = ['base.c', 'bitmask.c', 'rotozoom.c', 'SDL_gfx/SDL_gfxPrimitives.c']
-cython_files = [
-    'cython/pygame/_sdl2/audio.pyx',
-    'cython/pygame/_sdl2/mixer.pyx',
-    'cython/pygame/_sdl2/sdl2.pyx',
-    'cython/pygame/_sdl2/video.pyx',
-]
+cython_files = []
+if sdl_api != 3
+    cython_files = [
+        'cython/pygame/_sdl2/audio.pyx',
+        'cython/pygame/_sdl2/mixer.pyx',
+        'cython/pygame/_sdl2/sdl2.pyx',
+        'cython/pygame/_sdl2/video.pyx',
+    ]
+endif
 
 # make one big shared build on emscripten
 pygame = py.extension_module(
     'base',
-    base_files + cython_files,
+    base_files + cython_files + webgpu_sources,
     c_args: ['-DBUILD_STATIC=1'],
-    dependencies: pg_base_deps + [sdl_image_dep, sdl_mixer_dep, sdl_ttf_dep, freetype_dep],
+    dependencies: pg_base_deps + [sdl_image_dep, sdl_mixer_dep, sdl_ttf_dep,
+                                  freetype_dep, webgpu_dep],
     install: true,
     subdir: pg,
 )
@@ -326,6 +330,17 @@ _render = py.extension_module(
     install: true,
     subdir: pg,
 )
+
+if get_option('webgpu').enabled()
+    _sdl3webgpu = py.extension_module(
+        '_sdl3webgpu',
+        webgpu_sources,
+        c_args: warnings_error + webgpu_c_args,
+        dependencies: pg_base_deps + [webgpu_dep],
+        install: true,
+        subdir: pg,
+    )
+endif
 
 gfxdraw = py.extension_module(
     'gfxdraw',

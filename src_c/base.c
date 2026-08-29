@@ -2273,7 +2273,11 @@ error:
 
 #if defined(BUILD_STATIC)
 
+#ifdef PG_SDL3
+#include <SDL3_ttf/SDL_ttf.h>
+#else
 #include <SDL_ttf.h>
+#endif
 
 #undef WITH_THREAD
 
@@ -2422,11 +2426,19 @@ PyInit_image(void);
 PyMODINIT_FUNC
 PyInit_mask(void);
 
+#ifndef PG_SDL3
 PyMODINIT_FUNC
 PyInit_mixer_music(void);
 
 PyMODINIT_FUNC
 PyInit_pg_mixer(void);
+#else
+PyMODINIT_FUNC
+PyInit__base_audio(void);
+
+PyMODINIT_FUNC
+PyInit__sdl3_mixer_c(void);
+#endif
 
 PyMODINIT_FUNC
 PyInit_pg_math(void);
@@ -2460,6 +2472,11 @@ PyInit_window(void);
 
 PyMODINIT_FUNC
 PyInit__render(void);
+
+#if defined(PYGAME_SDL3WEBGPU)
+PyMODINIT_FUNC
+PyInit__sdl3webgpu(void);
+#endif
 
 // pygame _sdl2
 #if !defined(NO_SDL2)
@@ -2621,8 +2638,13 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_mask(), "mask");
     load_submodule("pygame", PyInit_mouse(), "mouse");
 
+#ifndef PG_SDL3
     load_submodule("pygame", PyInit_pg_mixer(), "mixer");
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
+#else
+    load_submodule("pygame", PyInit__base_audio(), "_base_audio");
+    load_submodule("pygame", PyInit__sdl3_mixer_c(), "_sdl3_mixer_c");
+#endif
 
     // base, color, rect, bufferproxy, surflock, surface
     load_submodule("pygame", PyInit_window(), "window");
@@ -2630,6 +2652,10 @@ PyInit_pygame_static()
     // base, color, rect, surflock, surface, window
     load_submodule("pygame", PyInit_display(), "display");
     load_submodule("pygame", PyInit__render(), "_render");
+
+#if defined(PYGAME_SDL3WEBGPU)
+    load_submodule("pygame", PyInit__sdl3webgpu(), "_sdl3webgpu");
+#endif
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
@@ -2736,9 +2762,13 @@ PyInit_pygame_static()
 
 #include "font.c"
 
+#ifndef PG_SDL3
 #include "mixer.c"
-
 #include "music.c"
+#else
+#include "_base_audio.c"
+#include "_sdl3_mixer_c.c"
+#endif
 
 #include "gfxdraw.c"
 
@@ -2749,11 +2779,13 @@ PyInit_pygame_static()
 #include "pixelcopy.c"
 #include "newbuffer.c"
 
+#ifndef PG_SDL3
 #include "_sdl2/controller.c"
 // #include "_sdl2/controller_old.c"
 // #include "_sdl2/mixer.c"
 #include "_sdl2/touch.c"
 // #include "_sdl2/sdl2.c"
+#endif
 
 #include "transform.c"
 // that remove some warnings

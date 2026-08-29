@@ -68,10 +68,13 @@ Important gaps are still present:
 - [x] Retire SDL3 selection from the legacy `buildconfig` path. `config.py`, `config_unix.py`, `config_darwin.py`, `config_win.py`, `config_msys2.py`, and `config_emsdk.py` reject SDL3 before SDL2 dependency discovery; the legacy path remains SDL2-only.
 - [ ] Update native Linux, macOS, Windows, and manylinux dependency builds with reproducible SDL3 source/archive versions and checksums. Keep SDL2 artifacts available for the existing build path.
 - [ ] Complete Windows SDL3 packaging: dependency discovery, import libraries, DLL collection, architecture-specific paths, wheel contents, and runtime loading.
-- [x] Document Emscripten/Pyodide as unsupported for SDL3 until SDL3 libraries and bindings are available. The SDL2-only WASM path rejects SDL3 selection rather than silently selecting SDL2.
-  - [ ] Clone and review and possibly integrate
-    https://github.com/eliemichel/sdl3webgpu
-    - [ ] Then add WebGL support to fallback to when WebGPU is not available?
+- [ ] Complete and test the SDL3 Emscripten/Pyodide dependency bundle. Meson now
+  accepts an explicit ``emscripten_sdl_root`` prefix and rejects missing SDL3
+  web dependencies rather than silently selecting SDL2.
+  - [x] Review and integrate the optional SDL3-to-WebGPU surface bridge from
+    https://github.com/eliemichel/sdl3webgpu, retaining its MIT notice.
+  - [x] Keep SDL3's standard 2D renderer as the WebGL fallback and baseline;
+    WebGPU is not a prerequisite.
 - [ ] Update `pyproject.toml`, cibuildwheel settings, development commands, and build documentation so the selected SDL API is visible in build logs and artifacts.
 - [x] Pin the SDL3 CI builds to known releases or commits instead of cloning moving default branches. The workflow uses explicit SDL, SDL_image, SDL_ttf, and SDL_mixer release tags.
 

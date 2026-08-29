@@ -47,3 +47,13 @@ option('sdl_api', type: 'integer', min: 2, max: 3, value: 2)
 
 # Specify the type of emscripten build being done.
 option('emscripten_type', type: 'combo', choices: ['pyodide', 'pygbag'])
+
+# Root containing SDL3 and companion-library headers and archives for a web
+# build. SDL2 continues to use the toolchain's built-in ports.
+option('emscripten_sdl_root', type: 'string', value: '')
+
+# Optional SDL3 WebGPU surface support. SDL's normal accelerated renderer is
+# the WebGL path and does not require this option.
+option('webgpu', type: 'feature', value: 'disabled')
+option('sdl3webgpu_root', type: 'string', value: '')
+option('webgpu_root', type: 'string', value: '')

@@ -5,7 +5,7 @@ from .sdl2 cimport *
 
 #https://wiki.libsdl.org/CategoryGameController
 
-cdef extern from "SDL.h" nogil:
+cdef extern from "pgsdl.h" nogil:
     ctypedef enum SDL_GameControllerAxis:
         SDL_CONTROLLER_AXIS_INVALID = -1,
         SDL_CONTROLLER_AXIS_LEFTX,

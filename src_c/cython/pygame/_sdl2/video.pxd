@@ -9,7 +9,7 @@ cdef extern from "pgcompat_rect.h" nogil:
         float w, h
 
 
-cdef extern from "SDL.h" nogil:
+cdef extern from "pgsdl.h" nogil:
     ctypedef struct SDL_Window
     ctypedef struct SDL_Texture
     ctypedef struct SDL_Renderer

@@ -8,19 +8,19 @@ cdef extern from "../pygame.h" nogil:
     void pg_RegisterQuit(object)
     void JOYSTICK_INIT_CHECK()
 
-cdef extern from "SDL.h" nogil:
+cdef extern from "pgsdl.h" nogil:
     void SDL_free(void *mem)
     int SDL_VERSION_ATLEAST(int major, int minor, int patch)
 
 import_pygame_joystick()
 
 def _gamecontroller_init_check():
-    if not SDL_WasInit(_SDL_INIT_GAMECONTROLLER):
+    if not PGSDL_WasInit(_PGSDL_INIT_GAMECONTROLLER):
         raise error("gamecontroller system not initialized")
 
 cdef bint _controller_autoinit():
-    if not SDL_WasInit(_SDL_INIT_GAMECONTROLLER):
-        if SDL_InitSubSystem(_SDL_INIT_GAMECONTROLLER):
+    if not PGSDL_WasInit(_PGSDL_INIT_GAMECONTROLLER):
+        if PGSDL_InitSubSystem(_PGSDL_INIT_GAMECONTROLLER):
             return False
         #pg_RegisterQuit(_controller_autoquit)
     return True
@@ -34,8 +34,8 @@ cdef void _controller_autoquit():
 
     Controller._controllers.clear()
 
-    if SDL_WasInit(_SDL_INIT_GAMECONTROLLER):
-        SDL_QuitSubSystem(_SDL_INIT_GAMECONTROLLER)
+    if PGSDL_WasInit(_PGSDL_INIT_GAMECONTROLLER):
+        PGSDL_QuitSubSystem(_PGSDL_INIT_GAMECONTROLLER)
 
 # not automatically initialize controller at this moment.
 
@@ -47,11 +47,11 @@ def init():
         raise error()
 
 def get_init():
-    return not SDL_WasInit(_SDL_INIT_GAMECONTROLLER) == 0
+    return not PGSDL_WasInit(_PGSDL_INIT_GAMECONTROLLER) == 0
 
 def quit():
-    if SDL_WasInit(_SDL_INIT_GAMECONTROLLER):
-        SDL_QuitSubSystem(_SDL_INIT_GAMECONTROLLER)
+    if PGSDL_WasInit(_PGSDL_INIT_GAMECONTROLLER):
+        PGSDL_QuitSubSystem(_PGSDL_INIT_GAMECONTROLLER)
 
 def set_eventstate(state):
     _gamecontroller_init_check()

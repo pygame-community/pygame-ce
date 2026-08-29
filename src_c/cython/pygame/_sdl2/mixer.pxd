@@ -7,7 +7,7 @@ from .sdl2 cimport *
 
 ctypedef void (*mixcallback)(void *udata, Uint8 *stream, int len) noexcept nogil
 
-cdef extern from "SDL_mixer.h" nogil:
+cdef extern from "pgsdl.h" nogil:
     ctypedef void (*mix_func)(void *udata, Uint8 *stream, int len)
     void Mix_SetPostMix(void (*mixcallback)(void *udata, Uint8 *stream, int len), void *arg)
 

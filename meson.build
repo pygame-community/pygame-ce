@@ -88,72 +88,160 @@ sdl_image_version = sdl_api == 3 ? '>= 3.4.0' : '>= 2.0.5'
 message('Building pygame-ce with SDL@0@'.format(sdl_api))
 
 if sdl_api == 3
-    add_global_arguments('-DPG_SDL3=1', '-DSDL_DISABLE_OLD_NAMES', language: 'c')
+    add_global_arguments('-DPG_SDL3=1', '-DSDL_DISABLE_OLD_NAMES', '-DNO_SDL2=1', language: 'c')
 endif
 
 pg_inc_dirs = []
 pg_lib_dirs = []
 
-if plat == 'emscripten-pygbag'
-    if sdl_api == 3
-        error('SDL3 is not available in the pygbag Emscripten SDK yet.')
+webgpu_dep = disabler()
+webgpu_sources = []
+webgpu_include_dirs = []
+if get_option('webgpu').enabled()
+    if sdl_api != 3
+        error('WebGPU support requires an SDL3 build.')
     endif
+    sdl3webgpu_root = get_option('sdl3webgpu_root')
+    if sdl3webgpu_root == ''
+        error('webgpu=enabled requires -Dsdl3webgpu_root=/path/to/sdl3webgpu.')
+    endif
+    sdl3webgpu_dir = meson.current_source_dir() / sdl3webgpu_root
+    sdl3webgpu_source = sdl3webgpu_dir / 'sdl3webgpu.c'
+    if not fs.is_file(sdl3webgpu_source)
+        error('Could not find sdl3webgpu.c in @0@.'.format(sdl3webgpu_dir))
+    endif
+
+    webgpu_root = get_option('webgpu_root')
+    webgpu_include_dirs = include_directories(sdl3webgpu_dir)
+    webgpu_link_args = []
+    webgpu_c_args = []
+    if plat.startswith('emscripten')
+        webgpu_link_args += '-sUSE_WEBGPU=1'
+    else
+        if webgpu_root == ''
+            error('Native webgpu=enabled requires -Dwebgpu_root=/path/to/webgpu.')
+        endif
+        webgpu_root_dir = meson.current_source_dir() / webgpu_root
+        webgpu_include_dirs += include_directories(webgpu_root_dir / 'include')
+        webgpu_lib = cc.find_library('webgpu', dirs: [webgpu_root_dir / 'lib'])
+        webgpu_dep = declare_dependency(
+            include_directories: webgpu_include_dirs,
+            dependencies: webgpu_lib,
+        )
+    endif
+    if host_machine.system() == 'darwin'
+        webgpu_c_args += ['-x', 'objective-c']
+        webgpu_link_args += ['-framework', 'CoreVideo', '-framework', 'IOKit',
+                             '-framework', 'QuartzCore', '-framework', 'Cocoa']
+    endif
+    if webgpu_dep.found()
+        webgpu_dep = declare_dependency(
+            include_directories: webgpu_include_dirs,
+            dependencies: webgpu_dep,
+            link_args: webgpu_link_args,
+        )
+    else
+        webgpu_dep = declare_dependency(
+            include_directories: webgpu_include_dirs,
+            link_args: webgpu_link_args,
+        )
+    endif
+    add_global_arguments('-DPYGAME_SDL3WEBGPU=1', language: 'c')
+    webgpu_sources = ['_sdl3webgpu.c', sdl3webgpu_source]
+endif
+
+if plat.startswith('emscripten') and sdl_api == 3
+    wasm_sdl_root = get_option('emscripten_sdl_root')
+    if wasm_sdl_root == ''
+        error('SDL3 Emscripten builds require -Demscripten_sdl_root=/path/to/SDL3.')
+    endif
+    wasm_sdl_dir = meson.current_source_dir() / wasm_sdl_root
+    wasm_sdl_include = include_directories(wasm_sdl_dir / 'include')
+    wasm_sdl_link = ['-L@0@'.format(wasm_sdl_dir / 'lib')]
+    webgl_flags = ['-sMIN_WEBGL_VERSION=1', '-sMAX_WEBGL_VERSION=2']
+    add_global_arguments(webgl_flags, language: 'c')
+    add_global_link_arguments(webgl_flags, language: 'c')
     sdl_dep = declare_dependency(
-        link_args: ['-lSDL2'],
+        include_directories: wasm_sdl_include,
+        link_args: wasm_sdl_link + ['-lSDL3', '-lhtml5'],
     )
     sdl_image_dep = declare_dependency(
-        link_args: ['-lSDL2_image'],
+        include_directories: wasm_sdl_include,
+        link_args: wasm_sdl_link + ['-lSDL3_image', '-ljpeg', '-lpng'],
     )
     sdl_mixer_dep = declare_dependency(
-        link_args: ['-lSDL2_mixer_ogg', '-logg', '-lvorbis'],
+        include_directories: wasm_sdl_include,
+        link_args: wasm_sdl_link + ['-lSDL3_mixer', '-lmpg123', '-logg', '-lvorbis'],
     )
     freetype_dep = declare_dependency(
-        link_args: ['-lfreetype', '-lharfbuzz']
+        include_directories: wasm_sdl_include,
+        link_args: wasm_sdl_link + ['-lfreetype', '-lharfbuzz']
     )
     sdl_ttf_dep = declare_dependency(
-        link_args: ['-lSDL2_ttf'],
+        include_directories: wasm_sdl_include,
+        link_args: wasm_sdl_link + ['-lSDL3_ttf'],
         dependencies: [freetype_dep]
     )
-elif plat == 'emscripten-pyodide'
-    if sdl_api == 3
-        error('SDL3 is not available in the Pyodide Emscripten SDK yet.')
+endif
+
+if plat == 'emscripten-pygbag'
+    if sdl_api != 3
+        sdl_dep = declare_dependency(
+            link_args: ['-lSDL2'],
+        )
+        sdl_image_dep = declare_dependency(
+            link_args: ['-lSDL2_image'],
+        )
+        sdl_mixer_dep = declare_dependency(
+            link_args: ['-lSDL2_mixer_ogg', '-logg', '-lvorbis'],
+        )
+        freetype_dep = declare_dependency(
+            link_args: ['-lfreetype', '-lharfbuzz']
+        )
+        sdl_ttf_dep = declare_dependency(
+            link_args: ['-lSDL2_ttf'],
+            dependencies: [freetype_dep]
+        )
     endif
+elif plat == 'emscripten-pyodide'
     # Check out before-build attribute in [tool.cibuildwheel.pyodide] section
     # of pyproject.toml to see how these dependencies were installed.
     wasm_exceptions = ['-fwasm-exceptions', '-sSUPPORT_LONGJMP=wasm', '-sRELOCATABLE=1']
     add_global_arguments(wasm_exceptions, language: 'c')
     add_global_link_arguments(wasm_exceptions, language: 'c')
 
-    sdl_flags = ['-sUSE_SDL=2']
-    freetype_flags = ['-sUSE_FREETYPE=1']
-    sdl_dep = declare_dependency(
-        compile_args: sdl_flags,
-        link_args: sdl_flags + ['-lSDL2', '-lhtml5'],
-    )
-    sdl_image_dep = declare_dependency(
-        link_args: [
-            '-lSDL2_image-bmp-gif-jpg-lbm-pcx-png-pnm-qoi-svg-tga-xcf-xpm-xv-wasm-sjlj',
-            '-ljpeg',
-            '-lpng-legacysjlj',
-        ],
-    )
-    sdl_mixer_dep = declare_dependency(
-        link_args: [
-            '-lSDL2_mixer-mid-mod-mp3-ogg',
-            '-lmodplug',
-            '-lmpg123',
-            '-logg',
-            '-lvorbis'
-        ],
-    )
-    freetype_dep = declare_dependency(
-        compile_args: freetype_flags,
-        link_args: freetype_flags + ['-lfreetype-legacysjlj', '-lharfbuzz']
-    )
-    sdl_ttf_dep = declare_dependency(
-        link_args: ['-lSDL2_ttf'],
-        dependencies: [freetype_dep]
-    )
+    if sdl_api != 3
+        sdl_flags = ['-sUSE_SDL=2']
+        freetype_flags = ['-sUSE_FREETYPE=1']
+        sdl_dep = declare_dependency(
+            compile_args: sdl_flags,
+            link_args: sdl_flags + ['-lSDL2', '-lhtml5'],
+        )
+        sdl_image_dep = declare_dependency(
+            link_args: [
+                '-lSDL2_image-bmp-gif-jpg-lbm-pcx-png-pnm-qoi-svg-tga-xcf-xpm-xv-wasm-sjlj',
+                '-ljpeg',
+                '-lpng-legacysjlj',
+            ],
+        )
+        sdl_mixer_dep = declare_dependency(
+            link_args: [
+                '-lSDL2_mixer-mid-mod-mp3-ogg',
+                '-lmodplug',
+                '-lmpg123',
+                '-logg',
+                '-lvorbis'
+            ],
+        )
+        freetype_dep = declare_dependency(
+            compile_args: freetype_flags,
+            link_args: freetype_flags + ['-lfreetype-legacysjlj', '-lharfbuzz']
+        )
+        sdl_ttf_dep = declare_dependency(
+            link_args: ['-lSDL2_ttf'],
+            dependencies: [freetype_dep]
+        )
+    endif
 else
 
 if plat == 'win'
@@ -403,6 +491,7 @@ else
 endif
 
 # TODO: add version constraints?
+if not plat.startswith('emscripten')
 sdl_dep = dependency(sdl, version: sdl_version, required: false)
 if not sdl_dep.found()
     sdl_dep = declare_dependency(
@@ -479,6 +568,8 @@ else
         endif
     endif
 endif
+
+endif # not emscripten
 
 endif # emscripten
 

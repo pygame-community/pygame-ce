@@ -2,8 +2,8 @@ SDL2 and SDL3 builds
 ====================
 
 pygame-ce can be built against SDL2 or SDL3. SDL2 is the default and remains
-the compatibility target for the legacy build configuration and WebAssembly
-builds. Native SDL3 builds are selected explicitly with::
+the compatibility target for the legacy build configuration. Native SDL3
+builds are selected explicitly with::
 
    python dev.py build --sdl3
 
@@ -22,10 +22,37 @@ available in SDL3 builds.
 
 
 SDL3 WebAssembly
-------------------
-Emscripten and Pyodide builds remain SDL2-only until SDL3 libraries and
-bindings are available for those platforms. Briefcase packaging is likewise
-limited to native desktop targets. PyInstaller packages the SDL runtime
+----------------
+SDL3 Emscripten builds are supported experimentally for both pygbag and
+Pyodide. They consume a dependency prefix containing SDL3 and its companion
+libraries instead of using Emscripten's SDL2 ports. The prefix must have this
+layout::
+
+   $PG_WASM_SDL_ROOT/
+       include/SDL3/
+       lib/libSDL3.a
+       lib/libSDL3_image.a
+       lib/libSDL3_ttf.a
+       lib/libSDL3_mixer.a
+
+For ``dev.py`` builds, set ``PYGAME_EMSCRIPTEN_SDL_ROOT`` to that prefix. The
+generated cross file passes it as ``emscripten_sdl_root``; a missing prefix is
+an error and does not silently select SDL2. The ordinary SDL3 renderer is the
+WebGL path, with WebGL 1 and 2 enabled by the Emscripten link settings.
+
+Optional WebGPU surface support can be enabled for SDL3 with::
+
+   meson setup build -Dsdl_api=3 -Dwebgpu=enabled \
+       -Dsdl3webgpu_root=/path/to/sdl3webgpu -Dwebgpu_root=/path/to/webgpu
+
+The bridge follows the ``SDL_GetWGPUSurface`` API from
+`sdl3webgpu <https://github.com/eliemichel/sdl3webgpu>`_. Its Emscripten
+implementation uses the browser canvas selector and is not required for the
+WebGL renderer. The copied reference files retain their MIT license notice.
+
+SDL2 WebAssembly builds continue to use the existing Emscripten ports. The
+legacy ``buildconfig`` path remains SDL2-only. Briefcase packaging is likewise
+limited to native desktop targets, and PyInstaller packages the SDL runtime
 libraries that match the SDL major used by the pygame build.
 
 
@@ -62,7 +89,8 @@ Define:
 
 The SDL documentation confirms that SDL3 itself can be built with Emscripten and linked as `libSDL3.a`. The uncertain part is the availability and behavior of the companion libraries. Build a minimal SDL3 application plus one minimal application for each companion library before porting pygame.
 
-The current documentation in sdl3.rst should remain unchanged until this gate passes.
+The SDL3 WebAssembly path remains experimental until a pinned dependency bundle
+has passed browser import, display, event, and rendering smoke and acceptance tests.
 
 **2. Create a reusable SDL binding layer**
 
@@ -219,7 +247,9 @@ The common adapter should preserve pygame semantics, but WebAssembly needs focus
 - lack of conventional process termination,
 - browser main-thread restrictions.
 
-Do not introduce WebGPU support as a prerequisite. SDL3’s 2D renderer running through WebGL is a smaller and more compatible first target. WebGPU can be a separate enhancement after the SDL3 Web build is stable.
+Keep WebGPU optional. SDL3’s 2D renderer running through WebGL is the default
+and more widely compatible target; the SDL3 WebGPU bridge is an opt-in surface
+integration for applications that already provide a WebGPU instance.
 
 **8. Add tests in layers**
 
