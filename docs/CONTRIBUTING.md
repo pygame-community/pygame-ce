@@ -7,7 +7,7 @@ where we have more detailed information available.
 ## How to Contribute
 
 ### 0. Using AI agents:
-If you're using AI at all in your workflow, ensure you read and follow the instructions in AI-POLICY.md. This is non-negotiable.
+If you're using AI at all in your workflow, ensure you read and follow the instructions in AI usage instructions at the bottom of this guide. This is non-negotiable.
 
 ### 1. Fork the repository:
 Click the "Fork" button in the top right corner of the GitHub page. Then you'll need to clone your fork to your local machine.
@@ -105,7 +105,7 @@ The pygame-ce project has the following requirements for AI usage:
 - All changes shall be manually tested by a human. Maintainers should never be the first real person to test your code.
 - Automated agents shall not open pull requests to resolve issues labeled `good first issue`. These issues are specifically
  intended for humans who want to start contributing.
-- Disclosure of AI usage is highly encouraged.
+- Disclosure of AI usage in any form is highly encouraged, disclosure of AI-generated code is required.
 - Pull requests driven by AI agents may be subject to stricter rules regarding response time to feedback or questions as opposed
  to a human contributor. The entire point of using an AI agent is to push out changes quickly, so they should respond quickly as well.
 
