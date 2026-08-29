@@ -361,7 +361,7 @@ renderer_to_surface(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *surfobj = Py_None, *rectobj = Py_None;
     SDL_Surface *surf;
-    pgSurfaceObject *surface;
+    pgSurfaceObject *surface = NULL;
     SDL_Rect viewport, *areaparam, temp, *rect = &temp;
 #ifndef PG_SDL3
     Uint32 format;
@@ -388,11 +388,11 @@ renderer_to_surface(pgRendererObject *self, PyObject *args, PyObject *kwargs)
             return RAISE(PyExc_TypeError, "surface must be None or a Surface");
         }
         surface = (pgSurfaceObject *)surfobj;
-        Py_INCREF(surface);
         surf = surface->surf;
         if (surf->w < rect->w || surf->h < rect->h) {
             return RAISE(PyExc_ValueError, "the surface is too small");
         }
+        Py_INCREF(surface);
 #ifndef PG_SDL3
         format = surf->format->format;
 #endif

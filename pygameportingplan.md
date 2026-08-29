@@ -54,7 +54,7 @@ Important gaps are still present:
 
 - [ ] Create an API inventory from SDL2 headers and the pygame source, grouped by subsystem: initialization, errors, events, display/window, input, surfaces/pixel formats, audio, timing, filesystem/RWops, OpenGL, SDL_image, SDL_ttf, SDL_mixer, joystick/controller, touch, and platform-specific code.
 - [ ] Classify each SDL2 call as unchanged, renamed, signature-changed, removed, behavior-changed, or requiring emulation.
-- [ ] Record the minimum supported versions for SDL3, SDL3_image, SDL3_ttf, and SDL3_mixer, and pin one tested dependency set for CI and wheels.
+- [x] Record the minimum supported versions for SDL3, SDL3_image, SDL3_ttf, and SDL3_mixer, and pin one tested dependency set for CI and wheels. The native CI matrix and Emscripten prefix builder use SDL 3.4.0, SDL3_image 3.4.0, SDL3_ttf 3.2.2, and SDL3_mixer 3.2.2 or newer compatible releases.
 - [ ] Define the support matrix: native Linux, Windows, macOS, Emscripten/Pyodide, Python versions, optional modules, headless mode, audio backends, and OpenGL.
 - [x] Decide whether `pygame._sdl2` remains the stable Python compatibility name when backed by SDL3, whether a new `_sdl3` namespace is needed, and which SDL2-only behavior is intentionally unavailable. `_sdl2` remains SDL2-only; SDL3 uses the native `_audio` and `_sdl3_mixer` modules.
 - [ ] Add a tracking checklist or issue links for every inventory item. No subsystem should be considered complete because it merely compiles.
@@ -71,11 +71,16 @@ Important gaps are still present:
 - [ ] Complete and test the SDL3 Emscripten/Pyodide dependency bundle. Meson now
   accepts an explicit ``emscripten_sdl_root`` prefix and rejects missing SDL3
   web dependencies rather than silently selecting SDL2.
+  - [x] Build and strictly verify the pinned SDL3 Emscripten prefix, including
+    SDL3, SDL3_image, SDL3_ttf, SDL3_mixer, WebP, PNG, zlib, FreeType,
+    HarfBuzz, and PlutoSVG/VG static archives.
+  - [ ] Build and run pygame from the SDL3 Emscripten/Pyodide prefix; the local
+    container has no wasm Python runtime, so this remains a CI validation item.
   - [x] Review and integrate the optional SDL3-to-WebGPU surface bridge from
     https://github.com/eliemichel/sdl3webgpu, retaining its MIT notice.
   - [x] Keep SDL3's standard 2D renderer as the WebGL fallback and baseline;
     WebGPU is not a prerequisite.
-- [ ] Update `pyproject.toml`, cibuildwheel settings, development commands, and build documentation so the selected SDL API is visible in build logs and artifacts.
+- [x] Update `pyproject.toml`, cibuildwheel settings, development commands, and build documentation so the selected SDL API is visible in build logs and artifacts.
 - [x] Pin the SDL3 CI builds to known releases or commits instead of cloning moving default branches. The workflow uses explicit SDL, SDL_image, SDL_ttf, and SDL_mixer release tags.
 
 **Gate:** A clean build succeeds for SDL2 and SDL3 on every supported native platform, and the resulting wheel contains the matching SDL runtime libraries without SDL2/SDL3 mixing.
@@ -127,14 +132,15 @@ For each module:
 
 ## Phase 5: Test and CI Completion
 
-- [ ] Turn `.github/workflows/build-sdl3.yml` into a real matrix covering Linux, Windows, and macOS, with pinned SDL3 companion-library versions and the same Python versions used for release builds.
-- [ ] Enable the complete pygame test command under SDL3, retaining only exclusions that are genuinely unavailable in the test environment and explaining each one. A fresh headless install runs 2276 tests with no behavioral failures; the only local error is `version_test.test_installed_version_and_dunder`, because a raw Meson destdir has no `pygame-ce` distribution metadata. The focused SDL3 slice passes 224 tests.
+- [x] Turn `.github/workflows/build-sdl3.yml` into a real matrix covering Linux, Windows, and macOS, with pinned SDL3 companion-library versions and the same Python versions used for release builds. Execution of the hosted matrix remains an external CI gate.
+- [x] Enable the complete pygame test command under SDL3, retaining only exclusions that are genuinely unavailable in the test environment and explaining each one. A clean SDL3 wheel install runs 2277 headless tests with no behavioral failures using the documented `opengl,music,timing` exclusions; the SDL3 audio and mixer tests also pass. The SDL3 package has no `mixer_test` module.
 - [x] Run the SDL2 and SDL3 suites from the same source revision to detect accidental regressions and behavior drift.
 - [x] Add focused regression tests for renamed/removed APIs, SDL3 rectangle semantics, float mouse coordinates, audio format negotiation, IO callbacks, surface conversion, font rendering, image formats, renderer behavior, and module imports.
 - [x] Add headless tests with `SDL_VIDEODRIVER=dummy` and the configured audio driver. Add a small interactive smoke test for window, event, rendering, and audio paths where CI supports it.
 - [ ] Build and inspect wheels on each native platform; verify imports in a clean environment and check that runtime DLL/shared-library names match the selected SDL major version.
 - [x] Verify no accidental old-name dependency remains: the SDL3 Meson configuration adds `SDL_DISABLE_OLD_NAMES`, and the SDL3 build completes successfully with that restriction.
-- [ ] Keep the repository's standard checks green: `python -m pytest`, `python -m ruff check .`, and the calculator simulator smoke test from `AGENTS.md`.
+- [x] Keep the repository's standard checks green: `python -m pytest` and `python -m ruff check .` pass locally.
+- [ ] Run the calculator simulator smoke test from `AGENTS.md`; no `AGENTS.md` or calculator simulator is present in this checkout, so the command cannot currently be identified.
 
 **Gate:** SDL3 CI is as meaningful as SDL2 CI, wheels install in clean environments, and failures identify a subsystem rather than being limited to an import smoke test.
 
