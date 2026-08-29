@@ -49,6 +49,323 @@
 
 #include "stdbool.h"
 
+#ifdef PG_SDL3
+typedef bool SDL_bool;
+typedef SDL_Mutex SDL_mutex;
+typedef SDL_IOStream SDL_RWops;
+
+#define SDL_TRUE true
+#define SDL_FALSE false
+#define SDL_USEREVENT SDL_EVENT_USER
+#define SDL_FIRSTEVENT SDL_EVENT_FIRST
+#define SDL_LASTEVENT SDL_EVENT_LAST
+#define SDL_NUM_SCANCODES SDL_SCANCODE_COUNT
+#define SDL_NUM_SYSTEM_CURSORS SDL_SYSTEM_CURSOR_COUNT
+#define SDL_AtomicLock SDL_LockSpinlock
+#define SDL_AtomicUnlock SDL_UnlockSpinlock
+#define SDL_FreeCursor SDL_DestroyCursor
+#define SDL_RenderGetScale SDL_GetRenderScale
+#define SDL_RenderGetViewport SDL_GetRenderViewport
+#define SDL_QUIT SDL_EVENT_QUIT
+#define KMOD_CAPS SDL_KMOD_CAPS
+#define KMOD_NONE SDL_KMOD_NONE
+#define KMOD_LSHIFT SDL_KMOD_LSHIFT
+#define KMOD_RSHIFT SDL_KMOD_RSHIFT
+#define KMOD_SHIFT SDL_KMOD_SHIFT
+#define KMOD_LCTRL SDL_KMOD_LCTRL
+#define KMOD_RCTRL SDL_KMOD_RCTRL
+#define KMOD_CTRL SDL_KMOD_CTRL
+#define KMOD_LALT SDL_KMOD_LALT
+#define KMOD_RALT SDL_KMOD_RALT
+#define KMOD_LGUI SDL_KMOD_LGUI
+#define KMOD_RGUI SDL_KMOD_RGUI
+#define KMOD_NUM SDL_KMOD_NUM
+#define KMOD_MODE SDL_KMOD_MODE
+#define KMOD_ALT SDL_KMOD_ALT
+#define KMOD_GUI SDL_KMOD_GUI
+#define SDLK_a SDLK_A
+#define SDLK_b SDLK_B
+#define SDLK_c SDLK_C
+#define SDLK_d SDLK_D
+#define SDLK_e SDLK_E
+#define SDLK_f SDLK_F
+#define SDLK_g SDLK_G
+#define SDLK_h SDLK_H
+#define SDLK_i SDLK_I
+#define SDLK_j SDLK_J
+#define SDLK_k SDLK_K
+#define SDLK_l SDLK_L
+#define SDLK_m SDLK_M
+#define SDLK_n SDLK_N
+#define SDLK_o SDLK_O
+#define SDLK_p SDLK_P
+#define SDLK_q SDLK_Q
+#define SDLK_r SDLK_R
+#define SDLK_s SDLK_S
+#define SDLK_t SDLK_T
+#define SDLK_u SDLK_U
+#define SDLK_v SDLK_V
+#define SDLK_w SDLK_W
+#define SDLK_x SDLK_X
+#define SDLK_y SDLK_Y
+#define SDLK_z SDLK_Z
+#define SDLK_BACKQUOTE SDLK_GRAVE
+#define SDLK_QUOTE SDLK_APOSTROPHE
+#define SDLK_QUOTEDBL SDLK_DBLAPOSTROPHE
+#define SDL_BUTTON(X) SDL_BUTTON_MASK(X)
+#define SDL_IntersectRect SDL_GetRectIntersection
+#define SDL_IntersectRectAndLine SDL_GetRectAndLineIntersection
+#define SDL_GL_DeleteContext SDL_GL_DestroyContext
+#define SDL_FreeSurface SDL_DestroySurface
+#define SDL_DelEventWatch SDL_RemoveEventWatch
+#define SDL_HasWindowSurface SDL_WindowHasSurface
+#define SDL_FillRect SDL_FillSurfaceRect
+#define SDL_SetColorKey SDL_SetSurfaceColorKey
+#define SDL_MasksToPixelFormatEnum SDL_GetPixelFormatForMasks
+#define SDL_AllocPalette SDL_CreatePalette
+#define SDL_FreePalette SDL_DestroyPalette
+#define SDL_HasColorKey SDL_SurfaceHasColorKey
+#define SDL_GetColorKey SDL_GetSurfaceColorKey
+#define SDL_LowerBlit SDL_BlitSurfaceUnchecked
+#define SDL_SetClipRect SDL_SetSurfaceClipRect
+#define SDL_GetClipRect SDL_GetSurfaceClipRect
+#define SDL_IsScreenSaverEnabled SDL_ScreenSaverEnabled
+#define SDL_PREALLOC 0
+#define SDL_WINDOW_ALLOW_HIGHDPI SDL_WINDOW_HIGH_PIXEL_DENSITY
+#define AUDIO_U8 SDL_AUDIO_U8
+#define AUDIO_S8 SDL_AUDIO_S8
+#define AUDIO_S16LSB SDL_AUDIO_S16LE
+#define AUDIO_S16MSB SDL_AUDIO_S16BE
+#define AUDIO_S16 SDL_AUDIO_S16
+#define AUDIO_S16SYS SDL_AUDIO_S16
+#define SDL_CONTROLLER_AXIS_INVALID SDL_GAMEPAD_AXIS_INVALID
+#define SDL_CONTROLLER_AXIS_LEFTX SDL_GAMEPAD_AXIS_LEFTX
+#define SDL_CONTROLLER_AXIS_LEFTY SDL_GAMEPAD_AXIS_LEFTY
+#define SDL_CONTROLLER_AXIS_RIGHTX SDL_GAMEPAD_AXIS_RIGHTX
+#define SDL_CONTROLLER_AXIS_RIGHTY SDL_GAMEPAD_AXIS_RIGHTY
+#define SDL_CONTROLLER_AXIS_TRIGGERLEFT SDL_GAMEPAD_AXIS_LEFT_TRIGGER
+#define SDL_CONTROLLER_AXIS_TRIGGERRIGHT SDL_GAMEPAD_AXIS_RIGHT_TRIGGER
+#define SDL_CONTROLLER_AXIS_MAX SDL_GAMEPAD_AXIS_COUNT
+#define SDL_CONTROLLER_BUTTON_INVALID SDL_GAMEPAD_BUTTON_INVALID
+#define SDL_CONTROLLER_BUTTON_A SDL_GAMEPAD_BUTTON_SOUTH
+#define SDL_CONTROLLER_BUTTON_B SDL_GAMEPAD_BUTTON_EAST
+#define SDL_CONTROLLER_BUTTON_X SDL_GAMEPAD_BUTTON_WEST
+#define SDL_CONTROLLER_BUTTON_Y SDL_GAMEPAD_BUTTON_NORTH
+#define SDL_CONTROLLER_BUTTON_BACK SDL_GAMEPAD_BUTTON_BACK
+#define SDL_CONTROLLER_BUTTON_GUIDE SDL_GAMEPAD_BUTTON_GUIDE
+#define SDL_CONTROLLER_BUTTON_START SDL_GAMEPAD_BUTTON_START
+#define SDL_CONTROLLER_BUTTON_LEFTSTICK SDL_GAMEPAD_BUTTON_LEFT_STICK
+#define SDL_CONTROLLER_BUTTON_RIGHTSTICK SDL_GAMEPAD_BUTTON_RIGHT_STICK
+#define SDL_CONTROLLER_BUTTON_LEFTSHOULDER SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+#define SDL_CONTROLLER_BUTTON_RIGHTSHOULDER SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+#define SDL_CONTROLLER_BUTTON_DPAD_UP SDL_GAMEPAD_BUTTON_DPAD_UP
+#define SDL_CONTROLLER_BUTTON_DPAD_DOWN SDL_GAMEPAD_BUTTON_DPAD_DOWN
+#define SDL_CONTROLLER_BUTTON_DPAD_LEFT SDL_GAMEPAD_BUTTON_DPAD_LEFT
+#define SDL_CONTROLLER_BUTTON_DPAD_RIGHT SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+#define SDL_CONTROLLER_BUTTON_MAX SDL_GAMEPAD_BUTTON_COUNT
+#define SDL_SYSTEM_CURSOR_ARROW SDL_SYSTEM_CURSOR_DEFAULT
+#define SDL_SYSTEM_CURSOR_IBEAM SDL_SYSTEM_CURSOR_TEXT
+#define SDL_SYSTEM_CURSOR_WAITARROW SDL_SYSTEM_CURSOR_WAIT
+#define SDL_SYSTEM_CURSOR_SIZENWSE SDL_SYSTEM_CURSOR_NWSE_RESIZE
+#define SDL_SYSTEM_CURSOR_SIZENESW SDL_SYSTEM_CURSOR_NESW_RESIZE
+#define SDL_SYSTEM_CURSOR_SIZEWE SDL_SYSTEM_CURSOR_EW_RESIZE
+#define SDL_SYSTEM_CURSOR_SIZENS SDL_SYSTEM_CURSOR_NS_RESIZE
+#define SDL_SYSTEM_CURSOR_SIZEALL SDL_SYSTEM_CURSOR_MOVE
+#define SDL_SYSTEM_CURSOR_NO SDL_SYSTEM_CURSOR_NOT_ALLOWED
+#define SDL_SYSTEM_CURSOR_HAND SDL_SYSTEM_CURSOR_POINTER
+#define SDL_JoystickGUID SDL_GUID
+#define SDL_JoystickOpen SDL_OpenJoystick
+#define SDL_JoystickClose SDL_CloseJoystick
+#define SDL_JoystickInstanceID SDL_GetJoystickID
+#define SDL_JoystickGetGUID SDL_GetJoystickGUID
+#define SDL_JoystickRumble SDL_RumbleJoystick
+#define SDL_JoystickName SDL_GetJoystickName
+#define SDL_JoystickNumAxes SDL_GetNumJoystickAxes
+#define SDL_JoystickGetAxis SDL_GetJoystickAxis
+#define SDL_JoystickNumButtons SDL_GetNumJoystickButtons
+#define SDL_JoystickGetButton SDL_GetJoystickButton
+#define SDL_JoystickNumBalls SDL_GetNumJoystickBalls
+#define SDL_JoystickGetBall SDL_GetJoystickBall
+#define SDL_JoystickNumHats SDL_GetNumJoystickHats
+#define SDL_JoystickGetHat SDL_GetJoystickHat
+
+static inline SDL_DisplayID
+PG_GetWindowDisplayIndex(SDL_Window *window)
+{
+    return SDL_GetDisplayForWindow(window);
+}
+
+#define SDL_GetWindowDisplayIndex PG_GetWindowDisplayIndex
+
+static inline bool
+PG_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture,
+              const SDL_Rect *srcrect, const SDL_Rect *dstrect)
+{
+    SDL_FRect src, dst;
+    const SDL_FRect *src_ptr = NULL;
+    const SDL_FRect *dst_ptr = NULL;
+
+    if (srcrect) {
+        src.x = (float)srcrect->x;
+        src.y = (float)srcrect->y;
+        src.w = (float)srcrect->w;
+        src.h = (float)srcrect->h;
+        src_ptr = &src;
+    }
+    if (dstrect) {
+        dst.x = (float)dstrect->x;
+        dst.y = (float)dstrect->y;
+        dst.w = (float)dstrect->w;
+        dst.h = (float)dstrect->h;
+        dst_ptr = &dst;
+    }
+    return SDL_RenderTexture(renderer, texture, src_ptr, dst_ptr);
+}
+
+#define SDL_RenderCopy PG_RenderCopy
+
+static inline bool
+PG_RenderGetLogicalSize(SDL_Renderer *renderer, int *w, int *h)
+{
+    return SDL_GetRenderLogicalPresentation(renderer, w, h, NULL);
+}
+
+#define SDL_RenderGetLogicalSize PG_RenderGetLogicalSize
+#define SDL_AllocFormat SDL_GetPixelFormatDetails
+#define SDL_LoadBMP_RW SDL_LoadBMP_IO
+#define SDL_APP_TERMINATING SDL_EVENT_TERMINATING
+#define SDL_APP_LOWMEMORY SDL_EVENT_LOW_MEMORY
+#define SDL_APP_WILLENTERBACKGROUND SDL_EVENT_WILL_ENTER_BACKGROUND
+#define SDL_APP_DIDENTERBACKGROUND SDL_EVENT_DID_ENTER_BACKGROUND
+#define SDL_APP_WILLENTERFOREGROUND SDL_EVENT_WILL_ENTER_FOREGROUND
+#define SDL_APP_DIDENTERFOREGROUND SDL_EVENT_DID_ENTER_FOREGROUND
+#define SDL_CLIPBOARDUPDATE SDL_EVENT_CLIPBOARD_UPDATE
+#define SDL_KEYDOWN SDL_EVENT_KEY_DOWN
+#define SDL_KEYUP SDL_EVENT_KEY_UP
+#define SDL_KEYMAPCHANGED SDL_EVENT_KEYMAP_CHANGED
+#define SDL_LOCALECHANGED SDL_EVENT_LOCALE_CHANGED
+#define SDL_MOUSEMOTION SDL_EVENT_MOUSE_MOTION
+#define SDL_MOUSEBUTTONDOWN SDL_EVENT_MOUSE_BUTTON_DOWN
+#define SDL_MOUSEBUTTONUP SDL_EVENT_MOUSE_BUTTON_UP
+#define SDL_MOUSEWHEEL SDL_EVENT_MOUSE_WHEEL
+#define SDL_JOYAXISMOTION SDL_EVENT_JOYSTICK_AXIS_MOTION
+#define SDL_JOYBALLMOTION SDL_EVENT_JOYSTICK_BALL_MOTION
+#define SDL_JOYHATMOTION SDL_EVENT_JOYSTICK_HAT_MOTION
+#define SDL_JOYBUTTONDOWN SDL_EVENT_JOYSTICK_BUTTON_DOWN
+#define SDL_JOYBUTTONUP SDL_EVENT_JOYSTICK_BUTTON_UP
+#define SDL_JOYDEVICEADDED SDL_EVENT_JOYSTICK_ADDED
+#define SDL_JOYDEVICEREMOVED SDL_EVENT_JOYSTICK_REMOVED
+#define SDL_FINGERDOWN SDL_EVENT_FINGER_DOWN
+#define SDL_FINGERUP SDL_EVENT_FINGER_UP
+#define SDL_FINGERMOTION SDL_EVENT_FINGER_MOTION
+#define SDL_TEXTINPUT SDL_EVENT_TEXT_INPUT
+#define SDL_TEXTEDITING SDL_EVENT_TEXT_EDITING
+#define SDL_DROPFILE SDL_EVENT_DROP_FILE
+#define SDL_DROPTEXT SDL_EVENT_DROP_TEXT
+#define SDL_DROPBEGIN SDL_EVENT_DROP_BEGIN
+#define SDL_DROPCOMPLETE SDL_EVENT_DROP_COMPLETE
+#define SDL_CONTROLLERAXISMOTION SDL_EVENT_GAMEPAD_AXIS_MOTION
+#define SDL_CONTROLLERBUTTONDOWN SDL_EVENT_GAMEPAD_BUTTON_DOWN
+#define SDL_CONTROLLERBUTTONUP SDL_EVENT_GAMEPAD_BUTTON_UP
+#define SDL_CONTROLLERDEVICEADDED SDL_EVENT_GAMEPAD_ADDED
+#define SDL_CONTROLLERDEVICEREMOVED SDL_EVENT_GAMEPAD_REMOVED
+#define SDL_CONTROLLERDEVICEREMAPPED SDL_EVENT_GAMEPAD_REMAPPED
+#define SDL_CONTROLLERTOUCHPADDOWN SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN
+#define SDL_CONTROLLERTOUCHPADMOTION SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION
+#define SDL_CONTROLLERTOUCHPADUP SDL_EVENT_GAMEPAD_TOUCHPAD_UP
+#define SDL_CONTROLLERSENSORUPDATE SDL_EVENT_GAMEPAD_SENSOR_UPDATE
+#define SDL_AUDIODEVICEADDED SDL_EVENT_AUDIO_DEVICE_ADDED
+#define SDL_AUDIODEVICEREMOVED SDL_EVENT_AUDIO_DEVICE_REMOVED
+#define SDL_RENDER_TARGETS_RESET SDL_EVENT_RENDER_TARGETS_RESET
+#define SDL_RENDER_DEVICE_RESET SDL_EVENT_RENDER_DEVICE_RESET
+#define SDL_WINDOWEVENT_SHOWN SDL_EVENT_WINDOW_SHOWN
+#define SDL_WINDOWEVENT_HIDDEN SDL_EVENT_WINDOW_HIDDEN
+#define SDL_WINDOWEVENT_EXPOSED SDL_EVENT_WINDOW_EXPOSED
+#define SDL_WINDOWEVENT_MOVED SDL_EVENT_WINDOW_MOVED
+#define SDL_WINDOWEVENT_RESIZED SDL_EVENT_WINDOW_RESIZED
+#define SDL_WINDOWEVENT_SIZE_CHANGED SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
+#define SDL_WINDOWEVENT_MINIMIZED SDL_EVENT_WINDOW_MINIMIZED
+#define SDL_WINDOWEVENT_MAXIMIZED SDL_EVENT_WINDOW_MAXIMIZED
+#define SDL_WINDOWEVENT_RESTORED SDL_EVENT_WINDOW_RESTORED
+#define SDL_WINDOWEVENT_ENTER SDL_EVENT_WINDOW_MOUSE_ENTER
+#define SDL_WINDOWEVENT_LEAVE SDL_EVENT_WINDOW_MOUSE_LEAVE
+#define SDL_WINDOWEVENT_FOCUS_GAINED SDL_EVENT_WINDOW_FOCUS_GAINED
+#define SDL_WINDOWEVENT_FOCUS_LOST SDL_EVENT_WINDOW_FOCUS_LOST
+#define SDL_WINDOWEVENT_CLOSE SDL_EVENT_WINDOW_CLOSE_REQUESTED
+#define SDL_WINDOWEVENT_HIT_TEST SDL_EVENT_WINDOW_HIT_TEST
+#define SDL_WINDOWEVENT_ICCPROF_CHANGED SDL_EVENT_WINDOW_ICCPROF_CHANGED
+#define SDL_WINDOWEVENT_DISPLAY_CHANGED SDL_EVENT_WINDOW_DISPLAY_CHANGED
+
+static inline SDL_RWops *
+SDL_RWFromFile(const char *file, const char *mode)
+{
+    return SDL_IOFromFile(file, mode);
+}
+
+static inline bool
+SDL_RWclose(SDL_RWops *context)
+{
+    return SDL_CloseIO(context);
+}
+
+static inline Sint64
+SDL_RWsize(SDL_RWops *context)
+{
+    return SDL_GetIOSize(context);
+}
+
+static inline Sint64
+SDL_RWseek(SDL_RWops *context, Sint64 offset, int whence)
+{
+    SDL_IOWhence io_whence;
+
+    switch (whence) {
+        case SEEK_SET:
+            io_whence = SDL_IO_SEEK_SET;
+            break;
+        case SEEK_CUR:
+            io_whence = SDL_IO_SEEK_CUR;
+            break;
+        case SEEK_END:
+            io_whence = SDL_IO_SEEK_END;
+            break;
+        default:
+            return -1;
+    }
+    return SDL_SeekIO(context, offset, io_whence);
+}
+
+static inline Sint64
+SDL_RWtell(SDL_RWops *context)
+{
+    return SDL_TellIO(context);
+}
+
+static inline size_t
+SDL_RWread(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
+{
+    size_t bytes_read;
+
+    if (size == 0) {
+        return 0;
+    }
+    bytes_read = SDL_ReadIO(context, ptr, size * maxnum);
+    return bytes_read / size;
+}
+
+static inline size_t
+SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size, size_t num)
+{
+    size_t bytes_written;
+
+    if (size == 0) {
+        return 0;
+    }
+    bytes_written = SDL_WriteIO(context, ptr, size * num);
+    return bytes_written / size;
+}
+#endif
+
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 
 #include "include/SDL_gesture.h"
@@ -75,8 +392,34 @@
 #define PG_AUDIO_ALLOW_CHANNELS_CHANGE 0
 #define PG_AUDIO_ALLOW_ANY_CHANGE 0
 
-#define PG_CreateSurface SDL_CreateSurface
-#define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
+static inline SDL_Surface *
+PG_CreateSurface(int width, int height, SDL_PixelFormat format)
+{
+    SDL_Surface *surface = SDL_CreateSurface(width, height, format);
+
+    if (surface && SDL_ISPIXELFORMAT_INDEXED(format) &&
+        !SDL_CreateSurfacePalette(surface)) {
+        SDL_DestroySurface(surface);
+        return NULL;
+    }
+    return surface;
+}
+
+static inline SDL_Surface *
+PG_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format,
+                     void *pixels, int pitch)
+{
+    SDL_Surface *surface =
+        SDL_CreateSurfaceFrom(width, height, format, pixels, pitch);
+
+    if (surface && SDL_ISPIXELFORMAT_INDEXED(format) &&
+        !SDL_CreateSurfacePalette(surface)) {
+        SDL_DestroySurface(surface);
+        return NULL;
+    }
+    return surface;
+}
+
 #define PG_ConvertSurface SDL_ConvertSurface
 #define PG_ConvertSurfaceFormat SDL_ConvertSurface
 

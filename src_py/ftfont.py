@@ -21,7 +21,6 @@ from pygame._freetype import (
     init,
     quit,
 )
-from pygame.sysfont import SysFont as _SysFont, get_fonts, match_font
 
 
 class Font(_Font):
@@ -226,7 +225,21 @@ def SysFont(name, size, bold=0, italic=0, constructor=None):
             font.set_italic(italic)
             return font
 
+    from pygame.sysfont import SysFont as _SysFont
+
     return _SysFont(name, size, bold, italic, constructor)
+
+
+def get_fonts():
+    from pygame.sysfont import get_fonts as _get_fonts
+
+    return _get_fonts()
+
+
+def match_font(name, bold=False, italic=False):
+    from pygame.sysfont import match_font as _match_font
+
+    return _match_font(name, bold, italic)
 
 
 del _Font, get_default_resolution, encode_file_path

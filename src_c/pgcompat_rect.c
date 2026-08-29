@@ -39,7 +39,11 @@ ComputeOutCodeF(const SDL_FRect *rect, float x, float y)
     return code;
 }
 
+#ifdef PG_SDL3
+bool
+#else
 SDL_bool
+#endif
 PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
                          float *Y2)
 {
@@ -55,7 +59,7 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
 
     /* Special case for empty rect */
     if ((!rect) || (rect->w <= 0) || (rect->h <= 0)) {
-        return SDL_FALSE;
+        return false;
     }
 
     x1 = *X1;
@@ -70,13 +74,13 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
     /* Check to see if entire line is inside rect */
     if (x1 >= rectx1 && x1 <= rectx2 && x2 >= rectx1 && x2 <= rectx2 &&
         y1 >= recty1 && y1 <= recty2 && y2 >= recty1 && y2 <= recty2) {
-        return SDL_TRUE;
+        return true;
     }
 
     /* Check to see if entire line is to one side of rect */
     if ((x1 < rectx1 && x2 < rectx1) || (x1 > rectx2 && x2 > rectx2) ||
         (y1 < recty1 && y2 < recty1) || (y1 > recty2 && y2 > recty2)) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (y1 == y2) {
@@ -93,7 +97,7 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
         else if (x2 > rectx2) {
             *X2 = rectx2;
         }
-        return SDL_TRUE;
+        return true;
     }
 
     if (x1 == x2) {
@@ -110,7 +114,7 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
         else if (y2 > recty2) {
             *Y2 = recty2;
         }
-        return SDL_TRUE;
+        return true;
     }
 
     /* More complicated Cohen-Sutherland algorithm */
@@ -118,7 +122,7 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
     outcode2 = ComputeOutCodeF(rect, x2, y2);
     while (outcode1 || outcode2) {
         if (outcode1 & outcode2) {
-            return SDL_FALSE;
+            return false;
         }
 
         if (outcode1) {
@@ -178,6 +182,6 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
     *Y1 = y1;
     *X2 = x2;
     *Y2 = y2;
-    return SDL_TRUE;
+    return true;
 }
 #endif /* !(SDL_VERSION_ATLEAST(2, 0, 22)) || SDL_VERSION_ATLEAST(3, 0, 0) */

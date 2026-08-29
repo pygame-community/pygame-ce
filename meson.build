@@ -81,7 +81,7 @@ sdl_ttf = '@0@_ttf'.format(sdl)
 sdl_image = '@0@_image'.format(sdl)
 
 if sdl_api == 3
-    add_global_arguments('-DPG_SDL3=1', '-DSDL_ENABLE_OLD_NAMES=1', language: 'c')
+    add_global_arguments('-DPG_SDL3=1', '-DSDL_DISABLE_OLD_NAMES', language: 'c')
 endif
 
 pg_inc_dirs = []
@@ -399,66 +399,91 @@ if not sdl_dep.found()
 endif
 
 # optional
-sdl_image_dep = dependency(sdl_image, required: false)
-if not sdl_image_dep.found()
-    sdl_image_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            sdl_image,
-            dirs: pg_lib_dirs,
-            required: get_option('image'),
-        ),
-    )
+if get_option('image').disabled()
+    sdl_image_dep = disabler()
+else
+    sdl_image_dep = dependency(sdl_image, required: false)
+    if not sdl_image_dep.found()
+        if get_option('image').enabled()
+            sdl_image_lib = cc.find_library(sdl_image, dirs: pg_lib_dirs)
+            sdl_image_dep = declare_dependency(
+                include_directories: pg_inc_dirs,
+                dependencies: sdl_image_lib,
+            )
+        else
+            sdl_image_dep = disabler()
+        endif
+    endif
 endif
 
-sdl_mixer_dep = dependency(sdl_mixer, required: false)
-if not sdl_mixer_dep.found()
-    sdl_mixer_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            sdl_mixer,
-            dirs: pg_lib_dirs,
-            required: get_option('mixer'),
-        ),
-    )
+if get_option('mixer').disabled()
+    sdl_mixer_dep = disabler()
+else
+    sdl_mixer_dep = dependency(sdl_mixer, required: false)
+    if not sdl_mixer_dep.found()
+        if get_option('mixer').enabled()
+            sdl_mixer_lib = cc.find_library(sdl_mixer, dirs: pg_lib_dirs)
+            sdl_mixer_dep = declare_dependency(
+                include_directories: pg_inc_dirs,
+                dependencies: sdl_mixer_lib,
+            )
+        else
+            sdl_mixer_dep = disabler()
+        endif
+    endif
 endif
 
-sdl_ttf_dep = dependency(sdl_ttf, required: false)
-if not sdl_ttf_dep.found()
-    sdl_ttf_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            sdl_ttf,
-            dirs: pg_lib_dirs,
-            required: get_option('font'),
-        ),
-    )
+if get_option('font').disabled()
+    sdl_ttf_dep = disabler()
+else
+    sdl_ttf_dep = dependency(sdl_ttf, required: false)
+    if not sdl_ttf_dep.found()
+        if get_option('font').enabled()
+            sdl_ttf_lib = cc.find_library(sdl_ttf, dirs: pg_lib_dirs)
+            sdl_ttf_dep = declare_dependency(
+                include_directories: pg_inc_dirs,
+                dependencies: sdl_ttf_lib,
+            )
+        else
+            sdl_ttf_dep = disabler()
+        endif
+    endif
 endif
 
-freetype_dep = dependency('freetype2', required: false)
-if not freetype_dep.found()
-    freetype_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            'freetype',
-            dirs: pg_lib_dirs,
-            required: get_option('freetype'),
-        ),
-    )
+if get_option('freetype').disabled()
+    freetype_dep = disabler()
+else
+    freetype_dep = dependency('freetype2', required: false)
+    if not freetype_dep.found()
+        if get_option('freetype').enabled()
+            freetype_lib = cc.find_library('freetype', dirs: pg_lib_dirs)
+            freetype_dep = declare_dependency(
+                include_directories: pg_inc_dirs,
+                dependencies: freetype_lib,
+            )
+        else
+            freetype_dep = disabler()
+        endif
+    endif
 endif
 
 endif # emscripten
 
-portmidi_dep = dependency('portmidi', required: false)
-if not portmidi_dep.found() and not plat.startswith('emscripten')
-    portmidi_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            'portmidi',
-            dirs: pg_lib_dirs,
-            required: get_option('midi'),
-        ),
-    )
+if get_option('midi').disabled()
+    portmidi_dep = disabler()
+else
+    portmidi_dep = dependency('portmidi', required: false)
+    if not portmidi_dep.found() and not plat.startswith('emscripten')
+        if get_option('midi').enabled()
+            portmidi_lib = cc.find_library('portmidi', dirs: pg_lib_dirs)
+            portmidi_dep = declare_dependency(
+                include_directories: pg_inc_dirs,
+                dependencies: portmidi_lib,
+            )
+        else
+            portmidi_dep = disabler()
+        endif
+    endif
 endif
 
 portmidi_deps = [portmidi_dep]

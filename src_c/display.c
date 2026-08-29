@@ -1199,7 +1199,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     /* display will get overwritten by ParseTupleAndKeywords only if display
        parameter is given. By default, put the new window on the same
        screen as the old one */
-    int display = _get_display(win);
+    int display = -1;
     char *title = state->title;
     const char *scale_env, *winid_env;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -1253,6 +1253,10 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         if (!pg_display_init(NULL, NULL)) {
             return NULL;
         }
+    }
+
+    if (display < 0) {
+        display = _get_display(win);
     }
 
     if ((vsync == -1) && ((flags & PGS_OPENGL) == 0)) {

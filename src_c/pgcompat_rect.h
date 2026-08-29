@@ -3,6 +3,7 @@
 
 #ifdef PG_SDL3
 #include <SDL3/SDL.h>
+#include <stdbool.h>
 #else
 #include <SDL.h>
 #endif
@@ -10,7 +11,11 @@
 /* SDL 2.0.22 provides some utility functions for FRects */
 #if !(SDL_VERSION_ATLEAST(2, 0, 22)) || SDL_VERSION_ATLEAST(3, 0, 0)
 
+#ifdef PG_SDL3
+bool
+#else
 SDL_bool
+#endif
 PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
                          float *Y2);
 #else

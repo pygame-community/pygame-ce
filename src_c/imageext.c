@@ -153,16 +153,31 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         Uint32 colorkey;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (SDL_GetSurfaceColorKey(surf, &colorkey))
+        bool has_colorkey = SDL_GetSurfaceColorKey(surf, &colorkey);
 #else
-        if (SDL_GetColorKey(surf, &colorkey) == 0)
+        bool has_colorkey = SDL_GetColorKey(surf, &colorkey) == 0;
 #endif
-        {
-            SDL_Palette *pal = PG_GetSurfacePalette(surf);
-            if (pal && colorkey < (Uint32)pal->ncolors) {
+        SDL_Palette *pal = PG_GetSurfacePalette(surf);
+        if (pal) {
+            if (!has_colorkey) {
+                int transparent_count = 0;
+                for (int i = 0; i < pal->ncolors; i++) {
+                    if (pal->colors[i].a == SDL_ALPHA_TRANSPARENT) {
+                        colorkey = (Uint32)i;
+                        transparent_count++;
+                    }
+                }
+                has_colorkey = transparent_count == 1;
+            }
+            if (has_colorkey && colorkey < (Uint32)pal->ncolors) {
                 SDL_Color c = pal->colors[colorkey];
                 c.a = SDL_ALPHA_OPAQUE;
                 SDL_SetPaletteColors(pal, &c, (int)colorkey, 1);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                if (!SDL_SurfaceHasColorKey(surf)) {
+                    SDL_SetSurfaceColorKey(surf, true, colorkey);
+                }
+#endif
             }
         }
     }

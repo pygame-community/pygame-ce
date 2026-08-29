@@ -39,6 +39,7 @@ test_files = files(
     'render_test.py',
     'rwobject_test.py',
     'scrap_test.py',
+    'sdl3_mixer_test.py',
     'sndarray_tags.py',
     'sndarray_test.py',
     'sprite_test.py',

@@ -3,7 +3,7 @@ import dataclasses
 from pygame import _audio as audio, _sdl3_mixer_c  # pylint: disable=no-name-in-module
 
 init = _sdl3_mixer_c.init
-# quit = _sdl3_mixer_c.quit
+quit = _sdl3_mixer_c.quit
 get_sdl_mixer_version = _sdl3_mixer_c.get_sdl_mixer_version
 
 

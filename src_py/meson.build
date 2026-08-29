@@ -25,7 +25,7 @@ py.install_sources(python_sources, subdir: pg)
 
 # if not building font, install use ftfont for font.py
 if not sdl_ttf_dep.found() and freetype_dep.found()
-    py.install_sources('ftfont.py', subdir: pg, rename: 'font.py')
+    install_data('ftfont.py', install_dir: pg_dir, rename: 'font.py')
 endif
 
 if sdl_api == 3

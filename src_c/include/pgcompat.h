@@ -38,7 +38,11 @@ typedef uint8_t Uint8;
 #define PG_PIXELFORMAT_RGBX32 SDL_PIXELFORMAT_RGBX8888
 #endif
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#define PG_GetTicks SDL_GetTicks
+#else
 #define PG_GetTicks SDL_GetTicks64
+#endif
 
 #endif /* defined(SDL_VERSION_ATLEAST) */
 
