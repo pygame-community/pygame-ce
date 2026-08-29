@@ -1217,11 +1217,9 @@ font_dealloc(PyFontObject *self)
 {
     TTF_Font *font = PyFont_AsFont(self);
     if (font && font_initialized) {
-        // In SDL3_ttf, it seems that closing a font after its library was
-        // destroyed segfaults. So only close if same generation.
-        // TODO SDL3:
-        // TTF docs say "A well-written program should call TTF_CloseFont()
-        // on any open fonts before calling this function!"
+        /* SDL3_ttf can crash when a font is closed after TTF_Quit(). The
+         * generation check intentionally leaves such fonts for SDL3_ttf to
+         * release during its shutdown. */
 #ifdef PG_SDL3
         if (self->ttf_init_generation == current_ttf_generation) {
             TTF_CloseFont(font);

@@ -36,6 +36,7 @@ Important gaps are still present:
 - Native Meson SDL selection now reports the selected API, uses matching SDL2/SDL3 Windows runtime names, and rejects unsupported SDL3 Emscripten/Pyodide builds instead of linking SDL2 silently.
 - The legacy `buildconfig` path now rejects an explicit SDL3 request; common SDL feature branches use `PG_SDL3`, and SDL surface-lock return values are normalized for core and SDL_gfx callers.
 - The private `_sdl2` namespace is explicitly retained as an SDL2-only compatibility API; SDL3 builds fail at import time with a clear error and use the SDL3-native `_audio` and `_sdl3_mixer` modules instead.
+- SDL3 display creation and renderer-backed resizing now translate public display indexes to opaque SDL3 display IDs and honor SDL3 boolean success returns; the focused display and font tests pass under both SDL majors.
 
 ## Migration Principles
 
@@ -122,7 +123,7 @@ For each module:
 ## Phase 5: Test and CI Completion
 
 - [ ] Turn `.github/workflows/build-sdl3.yml` into a real matrix covering Linux, Windows, and macOS, with pinned SDL3 companion-library versions and the same Python versions used for release builds.
-- [ ] Enable the complete pygame test command under SDL3, retaining only exclusions that are genuinely unavailable in the test environment and explaining each one. The current headless run passes 2295 tests with only the SDL3 dummy-display `mode_ok` aggregate-order issue remaining; focused display coverage passes.
+- [ ] Enable the complete pygame test command under SDL3, retaining only exclusions that are genuinely unavailable in the test environment and explaining each one. A staged headless run reaches 2272 tests with one raw-install metadata failure in `version_test`; the focused SDL3 slice passes 224 tests.
 - [x] Run the SDL2 and SDL3 suites from the same source revision to detect accidental regressions and behavior drift.
 - [x] Add focused regression tests for renamed/removed APIs, SDL3 rectangle semantics, float mouse coordinates, audio format negotiation, IO callbacks, surface conversion, font rendering, image formats, renderer behavior, and module imports.
 - [x] Add headless tests with `SDL_VIDEODRIVER=dummy` and the configured audio driver. Add a small interactive smoke test for window, event, rendering, and audio paths where CI supports it.

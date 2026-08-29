@@ -3612,8 +3612,9 @@ pg_display_resize_event(PyObject *self, PyObject *event)
         }
     }
     else if (pg_renderer != NULL) {
-        /* TODO: verify why this block exists and whether SDL3 port is
-         * equivalent */
+        /* Preserve the renderer's logical presentation while resizing the
+         * window. SDL2 and SDL3 provide equivalent APIs with different
+         * success return conventions. */
 #ifdef PG_SDL3
         SDL_RendererLogicalPresentation mode;
         SDL_GetRenderLogicalPresentation(pg_renderer, &w, &h, &mode);
@@ -3624,7 +3625,11 @@ pg_display_resize_event(PyObject *self, PyObject *event)
         SDL_SetWindowSize(win, (w > wnew) ? w : wnew, (h > hnew) ? h : hnew);
         result = SDL_RenderSetLogicalSize(pg_renderer, w, h);
 #endif
+#ifdef PG_SDL3
+        if (!result) {
+#else
         if (result != 0) {
+#endif
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
