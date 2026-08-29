@@ -403,8 +403,19 @@ _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
     PyObject *result;
     size_t retval;
 
+#ifdef PG_SDL3
+    if (status) {
+        *status = SDL_IO_STATUS_READY;
+    }
+#endif
+
     if (!helper->write) {
-        return -1;
+#ifdef PG_SDL3
+        if (status) {
+            *status = SDL_IO_STATUS_ERROR;
+        }
+#endif
+        return 0;
     }
 
     PyGILState_STATE state = PyGILState_Ensure();
@@ -413,7 +424,12 @@ _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
                                    (Py_ssize_t)size * num);
     if (!result) {
         PyErr_Print();
-        retval = -1;
+#ifdef PG_SDL3
+        if (status) {
+            *status = SDL_IO_STATUS_ERROR;
+        }
+#endif
+    retval = 0;
         goto end;
     }
 
@@ -611,8 +627,19 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
     PyObject *result;
     Py_ssize_t retval;
 
+#ifdef PG_SDL3
+    if (status) {
+        *status = SDL_IO_STATUS_READY;
+    }
+#endif
+
     if (!helper->read) {
-        return -1;
+#ifdef PG_SDL3
+        if (status) {
+            *status = SDL_IO_STATUS_ERROR;
+        }
+#endif
+        return 0;
     }
 
     PyGILState_STATE state = PyGILState_Ensure();
@@ -620,24 +647,49 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
                                    (unsigned long long)size * maxnum);
     if (!result) {
         PyErr_Print();
-        retval = -1;
+#ifdef PG_SDL3
+        if (status) {
+            *status = SDL_IO_STATUS_ERROR;
+        }
+#endif
+    retval = 0;
         goto end;
     }
 
     if (!PyBytes_Check(result)) {
         Py_DECREF(result);
         PyErr_Print();
-        retval = -1;
+#ifdef PG_SDL3
+        if (status) {
+            *status = SDL_IO_STATUS_ERROR;
+        }
+#endif
+    retval = 0;
         goto end;
     }
 
     retval = PyBytes_GET_SIZE(result);
-    if (retval) {
+    if ((size_t)retval > size * maxnum) {
+        Py_DECREF(result);
+#ifdef PG_SDL3
+        if (status) {
+            *status = SDL_IO_STATUS_ERROR;
+        }
+#endif
+    retval = 0;
+        goto end;
+    }
+    if (retval > 0) {
         memcpy(ptr, PyBytes_AsString(result), retval);
 #ifndef PG_SDL3
         retval /= size;
 #endif
     }
+#ifdef PG_SDL3
+    if ((size_t)retval < size * maxnum && status) {
+        *status = SDL_IO_STATUS_EOF;
+    }
+#endif
 
     Py_DECREF(result);
 

@@ -81,6 +81,16 @@ class ImageModuleTest(unittest.TestCase):
 
         os.remove(f_path)
 
+    def test_file_object_read_does_not_overrun_buffer(self):
+        class OverreadingFile(io.BytesIO):
+            def read(self, size=-1):
+                if size < 0:
+                    return b"x"
+                return b"x" * (size + 1)
+
+        with self.assertRaises(pygame.error):
+            pygame.image.load(OverreadingFile())
+
     def testLoadJPG(self):
         """to see if we can load a jpg."""
         f = example_path("data/alien1.jpg")
