@@ -59,7 +59,11 @@ mouse_set_pos(PyObject *self, PyObject *args)
         }
     }
 
-    SDL_WarpMouseInWindow(NULL, (Uint16)x, (Uint16)y);
+#ifdef PG_SDL3
+    SDL_WarpMouseInWindow(NULL, (float)x, (float)y);
+#else
+    SDL_WarpMouseInWindow(NULL, x, y);
+#endif
     Py_RETURN_NONE;
 }
 

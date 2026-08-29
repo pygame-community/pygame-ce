@@ -336,6 +336,13 @@ class MouseModuleTest(MouseTests):
             for value in desktop_pos:
                 self.assertIsInstance(value, int)
 
+    def test_set_pos_does_not_wrap_negative_coordinates(self):
+        pygame.display.set_mode((100, 100))
+        pygame.mouse.set_pos(-1, -1)
+        pygame.event.pump()
+
+        self.assertEqual(pygame.mouse.get_pos(), (0, 0))
+
     def test_set_pos__invalid_pos(self):
         """Ensures set_pos handles invalid positions correctly."""
         for invalid_pos in ((1,), [1, 2, 3], 1, "1", (1, "1"), []):

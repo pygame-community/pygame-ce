@@ -37,6 +37,8 @@ Important gaps are still present:
 - The legacy `buildconfig` path now rejects an explicit SDL3 request; common SDL feature branches use `PG_SDL3`, and SDL surface-lock return values are normalized for core and SDL_gfx callers.
 - The private `_sdl2` namespace is explicitly retained as an SDL2-only compatibility API; SDL3 builds fail at import time with a clear error and use the SDL3-native `_audio` and `_sdl3_mixer` modules instead.
 - SDL3 display creation and renderer-backed resizing now translate public display indexes to opaque SDL3 display IDs and honor SDL3 boolean success returns; the focused display and font tests pass under both SDL majors.
+- SDL3 audio format conversion is covered by `test/audio_test.py`; all supported `AudioFormat` values round-trip through `AudioStream`, while the `UNKNOWN` sentinel is rejected by SDL as expected. The test skips cleanly on SDL2, where `_audio` is intentionally unavailable.
+- SDL3 mouse warping now passes float coordinates without the old `Uint16` wraparound; negative-coordinate behavior is covered by `test/mouse_test.py` and passes under both SDL2 and SDL3 headless drivers.
 
 ## Migration Principles
 
@@ -99,7 +101,7 @@ Port in dependency order, testing each subsystem against both SDL APIs:
 7. **Rendering extensions:**
   - [x] Port `render.c` and its Cython/Python surface to SDL3 while retaining SDL2 support.
   - [x] Port `gfxdraw` to SDL3 while retaining SDL2 support.
-  - [ ] Port the remaining SDL-backed optional modules currently disabled by `src_c/meson.build`.
+  - [x] Port the remaining SDL-backed optional modules currently disabled by `src_c/meson.build`. The only excluded targets are the `pygame._sdl2` bindings, which remain intentionally SDL2-only under the namespace policy.
 
 For each module:
 
