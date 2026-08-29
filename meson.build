@@ -80,6 +80,8 @@ sdl_mixer = '@0@_mixer'.format(sdl)
 sdl_ttf = '@0@_ttf'.format(sdl)
 sdl_image = '@0@_image'.format(sdl)
 
+message('Building pygame-ce with SDL@0@'.format(sdl_api))
+
 if sdl_api == 3
     add_global_arguments('-DPG_SDL3=1', '-DSDL_DISABLE_OLD_NAMES', language: 'c')
 endif
@@ -88,6 +90,9 @@ pg_inc_dirs = []
 pg_lib_dirs = []
 
 if plat == 'emscripten-pygbag'
+    if sdl_api == 3
+        error('SDL3 is not available in the pygbag Emscripten SDK yet.')
+    endif
     sdl_dep = declare_dependency(
         link_args: ['-lSDL2'],
     )
@@ -105,6 +110,9 @@ if plat == 'emscripten-pygbag'
         dependencies: [freetype_dep]
     )
 elif plat == 'emscripten-pyodide'
+    if sdl_api == 3
+        error('SDL3 is not available in the Pyodide Emscripten SDK yet.')
+    endif
     # Check out before-build attribute in [tool.cibuildwheel.pyodide] section
     # of pyproject.toml to see how these dependencies were installed.
     wasm_exceptions = ['-fwasm-exceptions', '-sSUPPORT_LONGJMP=wasm', '-sRELOCATABLE=1']
@@ -161,10 +169,10 @@ if plat == 'win'
 
         # These are all the dlls that we need. There are no extra DLLs here.
         dlls += [
-            lib_dir / 'SDL2.dll',
-            lib_dir / 'SDL2_image.dll',
-            lib_dir / 'SDL2_mixer.dll',
-            lib_dir / 'SDL2_ttf.dll',
+            lib_dir / '@0@.dll'.format(sdl),
+            lib_dir / '@0@.dll'.format(sdl_image),
+            lib_dir / '@0@.dll'.format(sdl_mixer),
+            lib_dir / '@0@.dll'.format(sdl_ttf),
             lib_dir / 'libFLAC.dll',
             lib_dir / 'libbrotlicommon.dll',
             lib_dir / 'libbrotlidec.dll',
@@ -207,7 +215,7 @@ if plat == 'win'
         endif
 
         pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
-        pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include' / 'SDL2', base_dir)
+        pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include' / sdl, base_dir)
         pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include' / 'freetype2', base_dir)
         pg_lib_dirs += lib_dir
     elif host_machine.cpu_family().startswith('x86')
@@ -509,6 +517,7 @@ pg_base_deps = [sdl_dep, py_dep]
 
 summary(
     {
+        'SDL API': sdl_api,
         sdl: sdl_dep.found(),
         sdl_image: sdl_image_dep.found(),
         sdl_mixer: sdl_mixer_dep.found(),

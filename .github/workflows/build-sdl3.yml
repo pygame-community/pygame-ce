@@ -57,6 +57,10 @@ jobs:
       PIP_BREAK_SYSTEM_PACKAGES: 1
       # We are using dependencies installed from apt
       PG_DEPS_FROM_SYSTEM: 1
+      SDL_VERSION: 3.4.0
+      SDL_IMAGE_VERSION: 3.4.0
+      SDL_TTF_VERSION: 3.2.2
+      SDL_MIXER_VERSION: 3.2.2
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -92,7 +96,7 @@ jobs:
     - name: Install SDL3
       if: matrix.os != 'windows-latest'
       run: |
-        git clone https://github.com/libsdl-org/SDL
+        git clone --branch release-${SDL_VERSION} --depth 1 https://github.com/libsdl-org/SDL
         cd SDL
         mkdir build
         cd build
@@ -103,7 +107,7 @@ jobs:
     - name: Install SDL3_image
       if: matrix.os != 'windows-latest'
       run: |
-        git clone https://github.com/libsdl-org/SDL_image
+        git clone --branch release-${SDL_IMAGE_VERSION} --depth 1 https://github.com/libsdl-org/SDL_image
         cd SDL_image
         mkdir build
         cd build
@@ -114,7 +118,7 @@ jobs:
     - name: Install SDL3_ttf
       if: matrix.os != 'windows-latest'
       run: |
-        git clone https://github.com/libsdl-org/SDL_ttf
+        git clone --branch release-${SDL_TTF_VERSION} --depth 1 https://github.com/libsdl-org/SDL_ttf
         cd SDL_ttf
         mkdir build
         cd build
@@ -125,7 +129,7 @@ jobs:
     - name: Install SDL3_mixer
       if: matrix.os != 'windows-latest'
       run: |
-        git clone https://github.com/libsdl-org/SDL_mixer
+        git clone --branch release-${SDL_MIXER_VERSION} --depth 1 https://github.com/libsdl-org/SDL_mixer
         cd SDL_mixer
         mkdir build
         cd build

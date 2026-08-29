@@ -21,13 +21,16 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         libsdl2-mixer-dev \
         libsdl2-image-dev \
         libsdl2-ttf-dev \
+        libsdl2-gfx-dev \
         libportmidi-dev \
+        libxcb-xtest0-dev \
         libgl1 \
         libglib2.0-0 \
         libx11-6 \
         libxext6 \
         libxrender1 \
         libpulse0 \
+        openssh-client \
         build-essential \
         make \
         pkg-config \

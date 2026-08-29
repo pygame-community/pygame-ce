@@ -34,12 +34,13 @@
   ],
   "remoteUser": "vscode",
   "containerEnv": {
-    "PYTHONUNBUFFERED": "1"
+    "PYTHONUNBUFFERED": "1",
+    "VIRTUAL_ENV": "/workspaces/pygame-ce/.venv"
   },
   "remoteEnv": {
-    "PATH": "${containerEnv:PATH}:/home/vscode/.local/bin"
+    "PATH": "/workspaces/pygame-ce/.venv/bin:${containerEnv:PATH}:/home/vscode/.local/bin"
   },
-  "postCreateCommand": "python -m pip install --user --editable . && python -m pip install --user 'pytest>=8,<9' 'ruff>=0.6,<1'",
+  "postCreateCommand": "python -m venv .venv && .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install 'meson-python<=0.20.0' 'meson<=1.11.2' 'ninja<=1.13.0' 'cython<=3.2.9' 'sphinx<=8.2.3' 'astroid<4.0.0' 'sphinx-autoapi<=3.6.0' 'pyproject-metadata!=0.9.1' && .venv/bin/python -m pip install --no-build-isolation --editable . 'pytest>=8,<9' 'ruff>=0.6,<1'",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -47,6 +48,7 @@
         "charliermarsh.ruff"
       ],
       "settings": {
+        "python.defaultInterpreterPath": "/workspaces/pygame-ce/.venv/bin/python",
         "python.testing.pytestEnabled": true,
         "python.testing.pytestArgs": [
           "tests"
