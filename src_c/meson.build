@@ -318,8 +318,6 @@ window = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 _render = py.extension_module(
     '_render',
     'render.c',
@@ -328,7 +326,6 @@ _render = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 gfxdraw = py.extension_module(
     'gfxdraw',
