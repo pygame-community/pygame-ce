@@ -109,6 +109,20 @@ auto-configure, build, and install pygame.
 Much more information about installing and compiling is available
 on the `Compilation wiki page`_.
 
+The Meson build supports both SDL2 and SDL3. SDL2 is the default; to build
+the current SDL3 implementation locally, install SDL3 and its companion
+libraries, then run::
+
+   python dev.py build --sdl3
+
+For a headless SDL3 test run, use::
+
+   SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy python -m pytest -q test/render_test.py
+
+SDL3 is currently supported on native Linux, macOS, and Windows builds.
+The legacy ``buildconfig``/``Setup`` path and Emscripten/Pyodide builds remain
+SDL2-only and reject SDL3 selection rather than silently mixing SDL versions.
+
 
 Dependencies
 ------------
@@ -125,13 +139,21 @@ Dependency versions:
 +----------+------------------------+
 | CPython  | >= 3.10 (Or use PyPy3) |
 +----------+------------------------+
-| SDL      | >= 2.0.20              |
+| SDL2     | >= 2.0.20              |
++----------+------------------------+
+| SDL3     | >= 3.4.0               |
 +----------+------------------------+
 | SDL_mixer| >= 2.0.4               |
 +----------+------------------------+
 | SDL_image| >= 2.0.5               |
 +----------+------------------------+
 | SDL_ttf  | >= 2.0.18              |
++----------+------------------------+
+| SDL3_mixer| >= 3.2.2              |
++----------+------------------------+
+| SDL3_image| >= 3.4.0              |
++----------+------------------------+
+| SDL3_ttf  | >= 3.2.2              |
 +----------+------------------------+
 
 How to Contribute

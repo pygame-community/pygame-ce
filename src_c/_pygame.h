@@ -366,7 +366,7 @@ SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size, size_t num)
 }
 #endif
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 
 #include "include/SDL_gesture.h"
 
@@ -511,7 +511,11 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 #define PG_GetSurfaceAlphaMod SDL_GetSurfaceAlphaMod
 #define PG_SetSurfaceAlphaMod SDL_SetSurfaceAlphaMod
 #define PG_FillSurfaceRect SDL_FillSurfaceRect
-#define PG_LockSurface SDL_LockSurface
+static inline bool
+PG_LockSurface(SDL_Surface *surface)
+{
+    return SDL_LockSurface(surface);
+}
 
 #define PG_GetRGBA SDL_GetRGBA
 #define PG_GetRGB SDL_GetRGB
@@ -537,7 +541,7 @@ PG_GetSurfaceFormat(SDL_Surface *surf)
 
 #define PG_GL_SetSwapInterval SDL_GL_SetSwapInterval
 
-#else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
+#else /* !PG_SDL3 */
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
 #define PG_CursorVisible() SDL_ShowCursor(SDL_QUERY)
@@ -798,7 +802,7 @@ typedef enum {
     PGM_BUTTON_KEEP = 0x80
 } PygameMouseFlags;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 typedef enum {
     PGE_WINDOWSHOWN = SDL_EVENT_WINDOW_SHOWN,
     PGE_WINDOWHIDDEN = SDL_EVENT_WINDOW_HIDDEN,
@@ -839,7 +843,7 @@ typedef enum {
     SDL_ACTIVEEVENT = SDL_USEREVENT,
     SDL_VIDEORESIZE,
     SDL_VIDEOEXPOSE,
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     /* SDL_SYSWMEVENT removed in SDL3, define it here for compat */
     SDL_SYSWMEVENT,
 #endif
@@ -849,7 +853,7 @@ typedef enum {
 
 /* These PGE events are only needed on SDL2: SDL3 has dedicated events for
  * these */
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#ifndef PG_SDL3
     /* DO NOT CHANGE THE ORDER OF EVENTS HERE */
     PGE_WINDOWSHOWN,
     PGE_WINDOWHIDDEN,

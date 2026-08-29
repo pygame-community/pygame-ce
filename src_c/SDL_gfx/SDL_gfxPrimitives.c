@@ -179,7 +179,7 @@ fastPixelColor(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color)
      * Lock the surface
      */
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (GFX_LockSurface(dst) < 0) {
             return (-1);
         }
     }
@@ -511,7 +511,7 @@ pixelColor(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color)
      * Lock the surface
      */
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (GFX_LockSurface(dst) < 0) {
             return (-1);
         }
     }
@@ -829,7 +829,7 @@ filledRectAlpha(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
      * Lock the surface
      */
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (GFX_LockSurface(dst) < 0) {
             return (-1);
         }
     }
@@ -1082,7 +1082,7 @@ hlineColorStore(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
      * Lock the surface
      */
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (GFX_LockSurface(dst) < 0) {
             return (-1);
         }
     }
@@ -1273,7 +1273,7 @@ hlineColor(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
          * Lock the surface
          */
         if (SDL_MUSTLOCK(dst)) {
-            if (SDL_LockSurface(dst) < 0) {
+            if (GFX_LockSurface(dst) < 0) {
                 return (-1);
             }
         }
@@ -1468,7 +1468,7 @@ vlineColor(SDL_Surface *dst, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color)
          * Lock the surface
          */
         if (SDL_MUSTLOCK(dst)) {
-            if (SDL_LockSurface(dst) < 0) {
+            if (GFX_LockSurface(dst) < 0) {
                 return (-1);
             }
         }
@@ -2249,7 +2249,7 @@ boxColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
          * Lock the surface
          */
         if (SDL_MUSTLOCK(dst)) {
-            if (SDL_LockSurface(dst) < 0) {
+            if (GFX_LockSurface(dst) < 0) {
                 return (-1);
             }
         }
@@ -2426,7 +2426,7 @@ lineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
 
     /* Lock surface */
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (GFX_LockSurface(dst) < 0) {
             return (-1);
         }
     }
@@ -2753,7 +2753,7 @@ _aalineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
 
     /* Lock surface */
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (GFX_LockSurface(dst) < 0) {
             return (-1);
         }
     }
@@ -2984,7 +2984,7 @@ circleColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Uint32 color)
 
     /* Lock surface */
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (GFX_LockSurface(dst) < 0) {
             return (-1);
         }
     }
@@ -3379,7 +3379,7 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
 
     /* Lock surface */
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (GFX_LockSurface(dst) < 0) {
             return (-1);
         }
     }
@@ -3964,7 +3964,7 @@ ellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
 
     /* Lock surface */
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (GFX_LockSurface(dst) < 0) {
             return (-1);
         }
     }
@@ -4400,7 +4400,7 @@ aaellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
 
     /* Lock surface */
     if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+        if (GFX_LockSurface(dst) < 0) {
             return (-1);
         }
     }
@@ -6347,7 +6347,7 @@ int characterColor(SDL_Surface * dst, Sint16 x, Sint16 y, char c, Uint32 color)
 		gfxPrimitivesFontColor[ci] = color;
 
 		/* Lock font-surface */
-		if (SDL_LockSurface(gfxPrimitivesFont[ci]) != 0)
+        if (GFX_LockSurface(gfxPrimitivesFont[ci]) < 0)
 			return (-1);
 
 		/*

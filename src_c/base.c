@@ -51,7 +51,7 @@ int pg_env_blend_alpha_SDL2 = 0;
 int
 pg_CheckSDLVersions(void)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     int compiled = SDL_VERSION;
     int linked = SDL_GetVersion();
 #else
@@ -217,7 +217,7 @@ pg_init(PyObject *self, PyObject *_null)
         /* IMPPREFIX "_sdl2.controller", Is this required? Comment for now*/
         NULL};
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     // In SDL3, specify that signal handlers should not be enabled.
     // By default, unlike SDL2, these signal handlers convert into QUIT
     // events. However, if QUIT events / events aren't being handled,
@@ -271,7 +271,7 @@ PyObject *
 pg_get_sdl_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int linked = 1; /* Default is linked version. */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
     int version = SDL_VERSION;
 #else
     SDL_version version;
@@ -285,7 +285,7 @@ pg_get_sdl_version(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (linked) {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
         version = SDL_GetVersion();
 #else
         SDL_GetVersion(&version);

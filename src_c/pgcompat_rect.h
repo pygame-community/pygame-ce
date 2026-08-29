@@ -8,8 +8,8 @@
 #include <SDL.h>
 #endif
 
-/* SDL 2.0.22 provides some utility functions for FRects */
-#if !(SDL_VERSION_ATLEAST(2, 0, 22)) || SDL_VERSION_ATLEAST(3, 0, 0)
+/* SDL3 changed FRect edge semantics, so use pygame's compatibility version. */
+#if defined(PG_SDL3) || !SDL_VERSION_ATLEAST(2, 0, 22)
 
 #ifdef PG_SDL3
 bool
@@ -20,7 +20,7 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
                          float *Y2);
 #else
 #define PG_IntersectFRectAndLine SDL_IntersectFRectAndLine
-#endif /* !(SDL_VERSION_ATLEAST(2, 0, 22)) || SDL_VERSION_ATLEAST(3, 0, 0) */
+#endif /* defined(PG_SDL3) || !SDL_VERSION_ATLEAST(2, 0, 22) */
 
 #define pg_PyFloat_FromFloat(x) (PyFloat_FromDouble((double)x))
 

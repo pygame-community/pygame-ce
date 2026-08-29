@@ -33,7 +33,7 @@ extern "C" {
 
 /* ---- Compatibility */
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
+#ifdef PG_SDL3
 #define GFX_SURF_BitsPerPixel(surf) SDL_BITSPERPIXEL(surf->format)
 #define GFX_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define GFX_FORMAT_BitsPerPixel(format) format->bits_per_pixel
@@ -105,6 +105,16 @@ typedef SDL_PixelFormat GFX_PixelFormat;
 #define GFX_MapRGBFormat(format, palette, r, g, b) \
         SDL_MapRGB(format, r, g, b)
 #endif
+
+static inline int
+GFX_LockSurface(SDL_Surface *surface)
+{
+#ifdef PG_SDL3
+        return SDL_LockSurface(surface) ? 0 : -1;
+#else
+        return SDL_LockSurface(surface);
+#endif
+}
 
 /* ---- Function Prototypes */
 
