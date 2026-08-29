@@ -50,10 +50,10 @@ typedef struct {
 
 /* ----- Defines for pixel clipping tests */
 
-#define clip_xmin(surface) surface->clip_rect.x
-#define clip_xmax(surface) surface->clip_rect.x + surface->clip_rect.w - 1
-#define clip_ymin(surface) surface->clip_rect.y
-#define clip_ymax(surface) surface->clip_rect.y + surface->clip_rect.h - 1
+#define clip_xmin(surface) GFX_CLIP_RECT(surface).x
+#define clip_xmax(surface) GFX_CLIP_RECT(surface).x + GFX_CLIP_RECT(surface).w - 1
+#define clip_ymin(surface) GFX_CLIP_RECT(surface).y
+#define clip_ymax(surface) GFX_CLIP_RECT(surface).y + GFX_CLIP_RECT(surface).h - 1
 
 /*!
 \brief Internal pixel drawing - fast, no blending, no locking, clipping.
@@ -129,7 +129,7 @@ int fastPixelColorNolockNoclip(SDL_Surface * dst, Sint16 x, Sint16 y, Uint32 col
 	Uint8 *p;
 
 	/*
-	* Get destination format
+    * Get destination format
 	*/
 	bpp = GFX_SURF_BytesPerPixel(dst);
 	p = (Uint8 *) dst->pixels + y * dst->pitch + x * bpp;
@@ -217,7 +217,7 @@ int fastPixelRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8
 	/*
 	* Setup color
 	*/
-	color = SDL_MapRGBA(dst->format, r, g, b, a);
+    color = GFX_MapRGBA(dst, r, g, b, a);
 
 	/*
 	* Draw
@@ -245,7 +245,7 @@ int fastPixelRGBANolock(SDL_Surface * dst, Sint16 x, Sint16 y, Uint8 r, Uint8 g,
 	/*
 	* Setup color
 	*/
-	color = SDL_MapRGBA(dst->format, r, g, b, a);
+    color = GFX_MapRGBA(dst, r, g, b, a);
 
 	/*
 	* Draw
@@ -274,7 +274,7 @@ significant in the color value.
 int
 _putPixelAlpha(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color, Uint8 alpha)
 {
-    SDL_PixelFormat *format;
+    GFX_PixelFormat *format;
     Uint32 Rmask, Gmask, Bmask, Amask;
     Uint32 Rshift, Gshift, Bshift, Ashift;
     Uint32 R, G, B, A;
@@ -285,7 +285,7 @@ _putPixelAlpha(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color, Uint8 alpha)
 
     if (x >= clip_xmin(dst) && x <= clip_xmax(dst) && y >= clip_ymin(dst) &&
         y <= clip_ymax(dst)) {
-        format = dst->format;
+        format = GFX_SURF_FORMAT(dst);
 
         switch (GFX_FORMAT_BytesPerPixel(format)) {
             case 1: { /* Assuming 8-bpp */
@@ -298,14 +298,15 @@ _putPixelAlpha(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color, Uint8 alpha)
                     Uint8 *pixel = (Uint8 *)dst->pixels + y * dst->pitch + x;
                     Uint8 dR, dG, dB;
                     Uint8 sR, sG, sB;
-                    SDL_GetRGB(*pixel, format, &dR, &dG, &dB);
-                    SDL_GetRGB(color, format, &sR, &sG, &sB);
+                    GFX_GetRGB(*pixel, dst, &dR, &dG, &dB);
+                    GFX_GetRGB(color, dst, &sR, &sG, &sB);
 
                     dR = dR + ((sR - dR) * alpha >> 8);
                     dG = dG + ((sG - dG) * alpha >> 8);
                     dB = dB + ((sB - dB) * alpha >> 8);
 
-                    *pixel = SDL_MapRGB(format, dR, dG, dB);
+                    *pixel = GFX_MapRGBFormat(format, SDL_GetSurfacePalette(dst),
+                                              dR, dG, dB);
                 }
             } break;
 
@@ -348,7 +349,7 @@ _putPixelAlpha(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color, Uint8 alpha)
                 Uint8 *dR, *dG, *dB;
                 Uint8 sR, sG, sB;
 
-                SDL_GetRGB(color, format, &sR, &sG, &sB);
+                GFX_GetRGB(color, dst, &sR, &sG, &sB);
 
 #if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
                 dR = pixel + (format->Rshift >> 3);
@@ -519,7 +520,7 @@ pixelColor(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color)
      * Setup color
      */
     alpha = color & 0x000000ff;
-    mcolor = SDL_MapRGBA(dst->format, (color & 0xff000000) >> 24,
+    mcolor = GFX_MapRGBA(dst, (color & 0xff000000) >> 24,
                          (color & 0x00ff0000) >> 16, (color & 0x0000ff00) >> 8,
                          alpha);
 
@@ -559,7 +560,7 @@ pixelColorNolock(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color)
      * Setup color
      */
     alpha = color & 0x000000ff;
-    mcolor = SDL_MapRGBA(dst->format, (color & 0xff000000) >> 24,
+    mcolor = GFX_MapRGBA(dst, (color & 0xff000000) >> 24,
                          (color & 0x00ff0000) >> 16, (color & 0x0000ff00) >> 8,
                          alpha);
 
@@ -590,33 +591,34 @@ int
 _filledRectAlpha(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
                  Uint32 color, Uint8 alpha)
 {
-    SDL_PixelFormat *format;
+    GFX_PixelFormat *format;
     Uint32 Rmask, Bmask, Gmask, Amask;
     Uint32 Rshift, Bshift, Gshift, Ashift;
     Uint8 sR, sG, sB, sA;
     Uint32 R, G, B, A;
     Sint16 x, y;
 
-    format = dst->format;
+    format = GFX_SURF_FORMAT(dst);
     switch (GFX_FORMAT_BytesPerPixel(format)) {
         case 1: { /* Assuming 8-bpp */
             /* Patched on pygame-ce end to fix segfault when no palette */
             Uint8 *row, *pixel;
             Uint8 dR, dG, dB;
-            SDL_GetRGB(color, format, &sR, &sG, &sB);
+            GFX_GetRGB(color, dst, &sR, &sG, &sB);
 
             for (y = y1; y <= y2; y++) {
                 row = (Uint8 *)dst->pixels + y * dst->pitch;
                 for (x = x1; x <= x2; x++) {
                     pixel = row + x;
 
-                    SDL_GetRGB(*pixel, format, &dR, &dG, &dB);
+                    GFX_GetRGB(*pixel, dst, &dR, &dG, &dB);
 
                     dR = dR + ((sR - dR) * alpha >> 8);
                     dG = dG + ((sG - dG) * alpha >> 8);
                     dB = dB + ((sB - dB) * alpha >> 8);
 
-                    *pixel = SDL_MapRGB(format, dR, dG, dB);
+                    *pixel = GFX_MapRGBFormat(format, SDL_GetSurfacePalette(dst),
+                                              dR, dG, dB);
                 }
             }
         } break;
@@ -666,7 +668,7 @@ _filledRectAlpha(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
             Uint8 *dR, *dG, *dB;
             Uint8 sR, sG, sB;
 
-            SDL_GetRGB(color, format, &sR, &sG, &sB);
+            GFX_GetRGB(color, dst, &sR, &sG, &sB);
             for (y = y1; y <= y2; y++) {
                 row = (Uint8 *)dst->pixels + y * dst->pitch;
                 for (x = x1; x <= x2; x++) {
@@ -836,7 +838,7 @@ filledRectAlpha(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
      * Setup color
      */
     alpha = color & 0x000000ff;
-    mcolor = SDL_MapRGBA(dst->format, (color & 0xff000000) >> 24,
+    mcolor = GFX_MapRGBA(dst, (color & 0xff000000) >> 24,
                          (color & 0x00ff0000) >> 16, (color & 0x0000ff00) >> 8,
                          alpha);
 
@@ -982,7 +984,7 @@ pixelRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b,
         /*
          * Setup color
          */
-        color = SDL_MapRGBA(dst->format, r, g, b, a);
+        color = GFX_MapRGBA(dst, r, g, b, a);
         /*
          * Draw
          */
@@ -1030,7 +1032,7 @@ hlineColorStore(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -1047,16 +1049,16 @@ hlineColorStore(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
      * Get clipping boundary and
      * check visibility of hline
      */
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
-    top = dst->clip_rect.y;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    top = GFX_CLIP_RECT(dst).y;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if ((y < top) || (y > bottom)) {
         return (0);
     }
@@ -1200,7 +1202,7 @@ hlineColor(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -1217,16 +1219,16 @@ hlineColor(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
      * Get clipping boundary and
      * check visibility of hline
      */
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
-    top = dst->clip_rect.y;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    top = GFX_CLIP_RECT(dst).y;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if ((y < top) || (y > bottom)) {
         return (0);
     }
@@ -1259,11 +1261,11 @@ hlineColor(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
          */
         colorptr = (Uint8 *)&color;
         if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-            color = SDL_MapRGBA(dst->format, colorptr[0], colorptr[1],
+            color = GFX_MapRGBA(dst, colorptr[0], colorptr[1],
                                 colorptr[2], colorptr[3]);
         }
         else {
-            color = SDL_MapRGBA(dst->format, colorptr[3], colorptr[2],
+            color = GFX_MapRGBA(dst, colorptr[3], colorptr[2],
                                 colorptr[1], colorptr[0]);
         }
 
@@ -1395,7 +1397,7 @@ vlineColor(SDL_Surface *dst, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color)
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -1412,16 +1414,16 @@ vlineColor(SDL_Surface *dst, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color)
      * Get clipping boundary and
      * check visibility of vline
      */
-    left = dst->clip_rect.x;
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    left = GFX_CLIP_RECT(dst).x;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if ((x < left) || (x > right)) {
         return (0);
     }
-    top = dst->clip_rect.y;
+    top = GFX_CLIP_RECT(dst).y;
     if (y2 < top) {
         return (0);
     }
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if (y1 > bottom) {
         return (0);
     }
@@ -1454,11 +1456,11 @@ vlineColor(SDL_Surface *dst, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color)
          */
         colorptr = (Uint8 *)&color;
         if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-            color = SDL_MapRGBA(dst->format, colorptr[0], colorptr[1],
+            color = GFX_MapRGBA(dst, colorptr[0], colorptr[1],
                                 colorptr[2], colorptr[3]);
         }
         else {
-            color = SDL_MapRGBA(dst->format, colorptr[3], colorptr[2],
+            color = GFX_MapRGBA(dst, colorptr[3], colorptr[2],
                                 colorptr[1], colorptr[0]);
         }
 
@@ -1589,7 +1591,7 @@ rectangleColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return 0;
     }
 
@@ -1716,7 +1718,7 @@ int roundedRectangleColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Si
 	/*
 	* Check visibility of clipping rectangle
 	*/
-	if ((dst->clip_rect.w==0) || (dst->clip_rect.h==0)) {
+    if ((GFX_CLIP_RECT(dst).w==0) || (GFX_CLIP_RECT(dst).h==0)) {
 		return 0;
 	}
 
@@ -1868,7 +1870,7 @@ int roundedBoxColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y
 	/*
 	* Check visibility of clipping rectangle
 	*/
-	if ((dst->clip_rect.w==0) || (dst->clip_rect.h==0)) {
+    if ((GFX_CLIP_RECT(dst).w==0) || (GFX_CLIP_RECT(dst).h==0)) {
 		return 0;
 	}
 
@@ -2048,10 +2050,10 @@ _clipLine(SDL_Surface *dst, Sint16 *x1, Sint16 *y1, Sint16 *x2, Sint16 *y2)
     /*
      * Get clipping boundary
      */
-    left = dst->clip_rect.x;
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
-    top = dst->clip_rect.y;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    left = GFX_CLIP_RECT(dst).x;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
+    top = GFX_CLIP_RECT(dst).y;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
 
     while (1) {
         code1 = _clipEncode(*x1, *y1, left, top, right, bottom);
@@ -2135,7 +2137,7 @@ boxColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -2158,19 +2160,19 @@ boxColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
      * Get clipping boundary and
      * check visibility
      */
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
-    top = dst->clip_rect.y;
+    top = GFX_CLIP_RECT(dst).y;
     if (y2 < top) {
         return (0);
     }
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if (y1 > bottom) {
         return (0);
     }
@@ -2235,11 +2237,11 @@ boxColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
          */
         colorptr = (Uint8 *)&color;
         if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-            color = SDL_MapRGBA(dst->format, colorptr[0], colorptr[1],
+            color = GFX_MapRGBA(dst, colorptr[0], colorptr[1],
                                 colorptr[2], colorptr[3]);
         }
         else {
-            color = SDL_MapRGBA(dst->format, colorptr[3], colorptr[2],
+            color = GFX_MapRGBA(dst, colorptr[3], colorptr[2],
                                 colorptr[1], colorptr[0]);
         }
 
@@ -2442,11 +2444,11 @@ lineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
          */
         colorptr = (Uint8 *)&color;
         if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-            color = SDL_MapRGBA(dst->format, colorptr[0], colorptr[1],
+            color = GFX_MapRGBA(dst, colorptr[0], colorptr[1],
                                 colorptr[2], colorptr[3]);
         }
         else {
-            color = SDL_MapRGBA(dst->format, colorptr[3], colorptr[2],
+            color = GFX_MapRGBA(dst, colorptr[3], colorptr[2],
                                 colorptr[1], colorptr[0]);
         }
 
@@ -2639,7 +2641,7 @@ _aalineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -2932,7 +2934,7 @@ circleColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Uint32 color)
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -2955,22 +2957,22 @@ circleColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Uint32 color)
      * test if bounding box of circle is visible
      */
     x2 = x + rad;
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
     x1 = x - rad;
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
     y2 = y + rad;
-    top = dst->clip_rect.y;
+    top = GFX_CLIP_RECT(dst).y;
     if (y2 < top) {
         return (0);
     }
     y1 = y - rad;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if (y1 > bottom) {
         return (0);
     }
@@ -3000,11 +3002,11 @@ circleColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Uint32 color)
          */
         colorptr = (Uint8 *)&color;
         if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-            color = SDL_MapRGBA(dst->format, colorptr[0], colorptr[1],
+            color = GFX_MapRGBA(dst, colorptr[0], colorptr[1],
                                 colorptr[2], colorptr[3]);
         }
         else {
-            color = SDL_MapRGBA(dst->format, colorptr[3], colorptr[2],
+            color = GFX_MapRGBA(dst, colorptr[3], colorptr[2],
                                 colorptr[1], colorptr[0]);
         }
 
@@ -3194,7 +3196,7 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -3217,22 +3219,22 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
      * test if bounding box of circle is visible
      */
     x2 = x + rad;
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
     x1 = x - rad;
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
     y2 = y + rad;
-    top = dst->clip_rect.y;
+    top = GFX_CLIP_RECT(dst).y;
     if (y2 < top) {
         return (0);
     }
     y1 = y - rad;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if (y1 > bottom) {
         return (0);
     }
@@ -3400,11 +3402,11 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
          */
         colorptr = (Uint8 *)&color;
         if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-            color = SDL_MapRGBA(dst->format, colorptr[0], colorptr[1],
+            color = GFX_MapRGBA(dst, colorptr[0], colorptr[1],
                                 colorptr[2], colorptr[3]);
         }
         else {
-            color = SDL_MapRGBA(dst->format, colorptr[3], colorptr[2],
+            color = GFX_MapRGBA(dst, colorptr[3], colorptr[2],
                                 colorptr[1], colorptr[0]);
         }
 
@@ -3741,7 +3743,7 @@ filledCircleColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -3764,22 +3766,22 @@ filledCircleColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad,
      * test if bounding box of circle is visible
      */
     x2 = x + rad;
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
     x1 = x - rad;
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
     y2 = y + rad;
-    top = dst->clip_rect.y;
+    top = GFX_CLIP_RECT(dst).y;
     if (y2 < top) {
         return (0);
     }
     y1 = y - rad;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if (y1 > bottom) {
         return (0);
     }
@@ -3901,7 +3903,7 @@ ellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -3930,22 +3932,22 @@ ellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
      * test if bounding box of circle is visible
      */
     x2 = x + rx;
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
     x1 = x - rx;
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
     y2 = y + ry;
-    top = dst->clip_rect.y;
+    top = GFX_CLIP_RECT(dst).y;
     if (y2 < top) {
         return (0);
     }
     y1 = y - ry;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if (y1 > bottom) {
         return (0);
     }
@@ -3980,11 +3982,11 @@ ellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
          */
         colorptr = (Uint8 *)&color;
         if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-            color = SDL_MapRGBA(dst->format, colorptr[0], colorptr[1],
+            color = GFX_MapRGBA(dst, colorptr[0], colorptr[1],
                                 colorptr[2], colorptr[3]);
         }
         else {
-            color = SDL_MapRGBA(dst->format, colorptr[3], colorptr[2],
+            color = GFX_MapRGBA(dst, colorptr[3], colorptr[2],
                                 colorptr[1], colorptr[0]);
         }
 
@@ -4251,7 +4253,31 @@ lrint(double flt)
         }
     ;
     return intgr;
-}
+            bpp = GFX_SURF_BytesPerPixel(dst);
+            p = (Uint8 *)dst->pixels + y * dst->pitch + x * bpp;
+            switch (bpp) {
+                case 1:
+                    *p = color;
+                    break;
+                case 2:
+                    *(Uint16 *)p = color;
+                    break;
+                case 3:
+                    if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
+                        p[0] = (color >> 16) & 0xff;
+                        p[1] = (color >> 8) & 0xff;
+                        p[2] = color & 0xff;
+                    }
+                    else {
+                        p[0] = color & 0xff;
+                        p[1] = (color >> 8) & 0xff;
+                        p[2] = (color >> 16) & 0xff;
+                    }
+                    break;
+                case 4:
+                    *(Uint32 *)p = color;
+                    break;
+            } /* switch */
 #elif defined(_M_ARM)
 #include <armintr.h>
 #pragma warning(push)
@@ -4303,7 +4329,7 @@ aaellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -4332,22 +4358,22 @@ aaellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
      * test if bounding box of circle is visible
      */
     x2 = x + rx;
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
     x1 = x - rx;
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
     y2 = y + ry;
-    top = dst->clip_rect.y;
+    top = GFX_CLIP_RECT(dst).y;
     if (y2 < top) {
         return (0);
     }
     y1 = y - ry;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if (y1 > bottom) {
         return (0);
     }
@@ -4585,7 +4611,7 @@ filledEllipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -4614,22 +4640,22 @@ filledEllipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
      * test if bounding box of circle is visible
      */
     x2 = x + rx;
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
     x1 = x - rx;
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
     y2 = y + ry;
-    top = dst->clip_rect.y;
+    top = GFX_CLIP_RECT(dst).y;
     if (y2 < top) {
         return (0);
     }
     y1 = y - ry;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if (y1 > bottom) {
         return (0);
     }
@@ -4789,7 +4815,7 @@ _pieColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -4819,22 +4845,22 @@ _pieColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
      * test if bounding box of circle is visible
      */
     x2 = x + rad;
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
     x1 = x - rad;
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
     y2 = y + rad;
-    top = dst->clip_rect.y;
+    top = GFX_CLIP_RECT(dst).y;
     if (y2 < top) {
         return (0);
     }
     y1 = y - rad;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if (y1 > bottom) {
         return (0);
     }
@@ -5232,7 +5258,7 @@ polygonColor(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -5327,7 +5353,7 @@ aapolygonColor(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -5466,7 +5492,7 @@ filledPolygonColorMT(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -5732,7 +5758,7 @@ _HLineTextured(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -5749,16 +5775,16 @@ _HLineTextured(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y,
      * Get clipping boundary and
      * check visibility of hline
      */
-    left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
     if (x2 < left) {
         return (0);
     }
-    right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
     if (x1 > right) {
         return (0);
     }
-    top = dst->clip_rect.y;
-    bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    top = GFX_CLIP_RECT(dst).y;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
     if ((y < top) || (y > bottom)) {
         return (0);
     }
@@ -5880,7 +5906,7 @@ texturedPolygonMT(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
     /*
      * Check visibility of clipping rectangle
      */
-    if ((dst->clip_rect.w == 0) || (dst->clip_rect.h == 0)) {
+    if ((GFX_CLIP_RECT(dst).w == 0) || (GFX_CLIP_RECT(dst).h == 0)) {
         return (0);
     }
 
@@ -6238,7 +6264,7 @@ int characterColor(SDL_Surface * dst, Sint16 x, Sint16 y, char c, Uint32 color)
 	/*
 	* Check visibility of clipping rectangle
 	*/
-	if ((dst->clip_rect.w==0) || (dst->clip_rect.h==0)) {
+    if ((GFX_CLIP_RECT(dst).w==0) || (GFX_CLIP_RECT(dst).h==0)) {
 		return(0);
 	}
 
@@ -6247,22 +6273,22 @@ int characterColor(SDL_Surface * dst, Sint16 x, Sint16 y, char c, Uint32 color)
 	* test if bounding box of character is visible
 	*/
 
-	left = dst->clip_rect.x;
+    left = GFX_CLIP_RECT(dst).x;
 	x2 = x + charWidthLocal;
 	if (x2<left) {
 		return(0);
 	}
-	right = dst->clip_rect.x + dst->clip_rect.w - 1;
+    right = GFX_CLIP_RECT(dst).x + GFX_CLIP_RECT(dst).w - 1;
 	x1 = x;
 	if (x1>right) {
 		return(0);
 	}
-	top = dst->clip_rect.y;
+    top = GFX_CLIP_RECT(dst).y;
 	y2 = y + charHeightLocal;
 	if (y2<top) {
 		return(0);
 	}
-	bottom = dst->clip_rect.y + dst->clip_rect.h - 1;
+    bottom = GFX_CLIP_RECT(dst).y + GFX_CLIP_RECT(dst).h - 1;
 	y1 = y;
 	if (y1>bottom) {
 		return(0);

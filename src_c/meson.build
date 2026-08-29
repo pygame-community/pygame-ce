@@ -330,8 +330,6 @@ _render = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
 gfxdraw = py.extension_module(
     'gfxdraw',
     ['gfxdraw.c', 'SDL_gfx/SDL_gfxPrimitives.c'],
@@ -340,7 +338,6 @@ gfxdraw = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # pygame._sdl2
 # TODO: support SDL3

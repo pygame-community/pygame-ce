@@ -905,7 +905,7 @@ _gfx_texturedpolygon(PyObject *self, PyObject *args)
         return RAISE(PyExc_TypeError, "points must be a sequence");
     }
     if (PG_SURF_BytesPerPixel(s_surface) == 1 &&
-        (s_texture->format->Amask || s_texture->flags & SDL_SRCALPHA)) {
+        SDL_ISPIXELFORMAT_ALPHA(PG_SURF_FORMATENUM(s_texture))) {
         return RAISE(PyExc_ValueError,
                      "Per-byte alpha texture unsupported "
                      "for 8 bit surfaces");

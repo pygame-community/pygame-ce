@@ -34,15 +34,76 @@ extern "C" {
 /* ---- Compatibility */
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-#define GFX_SURF_BitsPerPixel(surf) surf->format->bits_per_pixel
-#define GFX_SURF_BytesPerPixel(surf) surf->format->bytes_per_pixel
+#define GFX_SURF_BitsPerPixel(surf) SDL_BITSPERPIXEL(surf->format)
+#define GFX_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define GFX_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define GFX_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
+typedef SDL_PixelFormatDetails GFX_PixelFormat;
+
+static inline GFX_PixelFormat *
+GFX_SURF_FORMAT(SDL_Surface *surface)
+{
+        return (GFX_PixelFormat *)SDL_GetPixelFormatDetails(surface->format);
+}
+
+static inline SDL_Rect
+GFX_CLIP_RECT(SDL_Surface *surface)
+{
+        SDL_Rect rect;
+        SDL_GetSurfaceClipRect(surface, &rect);
+        return rect;
+}
+
+static inline Uint32
+GFX_MapRGB(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
+{
+        return SDL_MapRGB(GFX_SURF_FORMAT(surface), SDL_GetSurfacePalette(surface),
+                                          r, g, b);
+}
+
+static inline Uint32
+GFX_MapRGBA(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+        return SDL_MapRGBA(GFX_SURF_FORMAT(surface),
+                                           SDL_GetSurfacePalette(surface), r, g, b, a);
+}
+
+static inline void
+GFX_GetRGB(Uint32 pixel, SDL_Surface *surface, Uint8 *r, Uint8 *g, Uint8 *b)
+{
+        SDL_GetRGB(pixel, GFX_SURF_FORMAT(surface), SDL_GetSurfacePalette(surface),
+                           r, g, b);
+}
+
+static inline void
+GFX_GetRGBFormat(Uint32 pixel, GFX_PixelFormat *format, SDL_Palette *palette,
+                                 Uint8 *r, Uint8 *g, Uint8 *b)
+{
+        SDL_GetRGB(pixel, format, palette, r, g, b);
+}
+
+static inline Uint32
+GFX_MapRGBFormat(GFX_PixelFormat *format, SDL_Palette *palette, Uint8 r,
+                                 Uint8 g, Uint8 b)
+{
+        return SDL_MapRGB(format, palette, r, g, b);
+}
 #else
 #define GFX_SURF_BitsPerPixel(surf) surf->format->BitsPerPixel
 #define GFX_SURF_BytesPerPixel(surf) surf->format->BytesPerPixel
 #define GFX_FORMAT_BitsPerPixel(format) format->BitsPerPixel
 #define GFX_FORMAT_BytesPerPixel(format) format->BytesPerPixel
+typedef SDL_PixelFormat GFX_PixelFormat;
+#define GFX_SURF_FORMAT(surface) surface->format
+#define GFX_CLIP_RECT(surface) surface->clip_rect
+#define GFX_MapRGB(surface, r, g, b) SDL_MapRGB(surface->format, r, g, b)
+#define GFX_MapRGBA(surface, r, g, b, a) SDL_MapRGBA(surface->format, r, g, b, a)
+#define GFX_GetRGB(pixel, surface, r, g, b) \
+        SDL_GetRGB(pixel, surface->format, r, g, b)
+#define GFX_GetRGBFormat(pixel, format, palette, r, g, b) \
+        SDL_GetRGB(pixel, format, r, g, b)
+#define GFX_MapRGBFormat(format, palette, r, g, b) \
+        SDL_MapRGB(format, r, g, b)
 #endif
 
 /* ---- Function Prototypes */
