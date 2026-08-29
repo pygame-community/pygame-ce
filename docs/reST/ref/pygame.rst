@@ -216,7 +216,7 @@ object instead of the module, which can be used to test for availability.
 
    .. versionadded:: 3.0.0
 
-   .. ## pygame.print_debug_info ##
+   .. ## pygame.get_debug_info ##
 
 .. function:: print_debug_info
 
