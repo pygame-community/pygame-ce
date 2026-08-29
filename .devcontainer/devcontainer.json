@@ -1,0 +1,58 @@
+{
+  "name": "pygame-ce devcontainer",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "runArgs": [
+    "--net=host",
+
+    "--gpus=all",
+    "--device", "/dev/dri:/dev/dri",
+
+    "-e", "DISPLAY",
+    //"-e", "SDL_AUDIODRIVER=dummy",
+
+    // Skip hardware OpenGL and do Software-only OpenGL
+    //"-e", "LIBGL_ALWAYS_SOFTWARE=1",
+
+    "-e", "NVIDIA_DRIVER_CAPABILITIES=compute,graphics,utility,video",
+
+    "-v",
+    "/tmp/.X11-unix:/tmp/.X11-unix:rw",
+    "-e",
+    "WAYLAND_DISPLAY=${env:WAYLAND_DISPLAY}",
+    "-e",
+    "XDG_RUNTIME_DIR",
+    "-v",
+    "${localEnv:XDG_RUNTIME_DIR}/${localEnv:WAYLAND_DISPLAY}:/run/user/1000/${env:WAYLAND_DISPLAY}",
+
+    "-e",
+    "XAUTHORITY=/home/vscode/.Xauthority",
+    "-v",
+    "${localEnv:XAUTHORITY}:/home/vscode/.Xauthority:ro"
+  ],
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "PYTHONUNBUFFERED": "1"
+  },
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/home/vscode/.local/bin"
+  },
+  "postCreateCommand": "python -m pip install --user --editable . && python -m pip install --user 'pytest>=8,<9' 'ruff>=0.6,<1'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff"
+      ],
+      "settings": {
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": [
+          "tests"
+        ],
+        "ruff.nativeServer": "on"
+      }
+    }
+  }
+}
