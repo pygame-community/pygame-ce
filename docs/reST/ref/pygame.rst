@@ -205,20 +205,25 @@ object instead of the module, which can be used to test for availability.
 
    .. ## pygame.encode_file_path ##
 
-.. function:: print_debug_info
+.. function:: get_debug_info
 
-   | :sl:`retrieves useful information for debugging and issue-reporting purposes`
-   | :sg:`print_debug_info(filename=None, fileobject=None) -> None`
+   | :sl:`Retrieves useful information for debugging and issue-reporting purposes`
+   | :sg:`get_debug_info() -> str`
 
    Constructs a string containing details on the system, the python interpreter,
    the pygame version, the linked and compiled versions of the libraries that
-   pygame wraps, and the display and mixer drivers. If both ``filename`` and
-   ``fileobject`` are ``None``, then the string is printed into the console.
-   Otherwise, the debug string is written to the specified file. If both
-   ``filename`` and ``fileobject`` are specified, then both will be honored.
+   pygame wraps, and the display and mixer drivers.
 
-   .. note:: ``fileobject`` is expected to have a method ``write`` with the same signature
-      as the ``io.TextIOBase.write`` `signature <https://docs.python.org/3/library/io.html#io.TextIOBase.write>`_.
+   .. versionadded:: 3.0.0
+
+   .. ## pygame.print_debug_info ##
+
+.. function:: print_debug_info
+
+   | :sl:`prints useful information for debugging and issue-reporting purposes`
+   | :sg:`print_debug_info() -> None`
+
+   Prints the output of :func:`pygame.get_debug_info` to console.
 
    .. note::
       If ``pygame.freetype`` has not been initialized with :func:`pygame.init` or :func:`pygame.freetype.init`,
@@ -241,7 +246,8 @@ object instead of the module, which can be used to test for availability.
 
    .. versionchanged:: 2.5.4 Added GIL status to the output.
 
-   .. versionchanged:: 2.5.8 Added ``fileobject`` parameter, and now a newline is appended to the end on file writes.
+   .. versionchanged:: 3.0.0
+      Deprecated ``filename`` argument, use the new :func:`pygame.get_debug_info` function if you need to write to file.
 
    .. ## pygame.print_debug_info ##
 

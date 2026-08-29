@@ -124,25 +124,11 @@ def append_driver_info(
     return debug_str
 
 
-class FileObject(Protocol):
-    def write(self, s: str, /) -> int: ...
+def get_debug_info() -> str:
+    """Gets debug information for reporting bugs.
 
-
-def print_debug_info(
-    filename: str | None = None, fileobject: FileObject | None = None
-) -> None:
-    """Gets debug information for reporting bugs. Prints to console
-    if both filename and fileobject are None, otherwise writes
-    to the specified file(s).
-    (note: if filename is not an empty file, it will overwrite whatever is
-    in there)
-    (note: if fileobject is not specified, it will call the write method as-is,
-    it will not try to seek to the end or anything)
-
-    Args:
-        filename: string name of the file to save
-        fileobject: object representing a file, duck typed to require a
-                    `write(self, s: str, /) -> int` method
+    Returns:
+        str: String containing all of the info for bug reports.
     """
     debug_str = ""
 
@@ -202,15 +188,20 @@ def print_debug_info(
 
     debug_str += "\n"
 
-    write_to_new_file = filename is not None
-    write_to_existing_file = fileobject is not None
+    return debug_str
 
-    if not write_to_new_file and not write_to_existing_file:
-        print(debug_str, end="")
 
-    if write_to_new_file:
-        with open(filename, "w", encoding="utf8") as debugfile:
-            debugfile.write(debug_str)
+def print_debug_info(filename: str | None = None) -> None:
+    """Prints debug information for reporting bugs.
 
-    if write_to_existing_file:
-        fileobject.write(debug_str)
+    Args:
+        filename [DEPRECATED]: string name of the file to save
+    """
+    import warnings
+
+    if filename is not None:
+        warnings.warn("filename parameter is deprecated, printing to console.")
+
+    debug_str = get_debug_info()
+
+    print(debug_str, end="")
