@@ -144,6 +144,24 @@ jobs:
     - name: Build with SDL3
       run: python3 dev.py build --sdl3
 
+    - name: Build and inspect SDL3 wheel
+      run: |
+        python3 dev.py build --sdl3 --wheel
+        python3 - <<'PY'
+        import glob
+        import zipfile
+
+        wheel_path = glob.glob("dist/*.whl")
+        if len(wheel_path) != 1:
+            raise SystemExit(f"expected one wheel, found {wheel_path}")
+        with zipfile.ZipFile(wheel_path[0]) as wheel:
+            names = wheel.namelist()
+        if any("SDL2" in name or "libSDL2" in name for name in names):
+            raise SystemExit("SDL2 runtime artifact found in SDL3 wheel")
+        print(f"inspected {wheel_path[0]}")
+        print("\n".join(name for name in names if "SDL3" in name or "pygame" in name))
+        PY
+
     - name: Run tests
       env:
         SDL_VIDEODRIVER: "dummy"

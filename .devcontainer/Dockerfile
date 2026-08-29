@@ -12,6 +12,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get upgrade --no-install-recommends -y \
     && apt-get install --no-install-recommends -y \
         ipython3 \
+        curl \
         git \
         ripgrep \
         less \
@@ -37,9 +38,16 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         cmake \
         clang \
         ninja-build \
+        lz4 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home --shell /bin/bash --uid 1000 vscode
+
+ENV SDK_VERSION=3.1.61.12bi \
+    SDK_ARCHIVE=python3.13-wasm-sdk-Ubuntu-22.04.tar.lz4 \
+    SDKROOT=/opt/python-wasm-sdk
+
+RUN mkdir -p "$SDKROOT" && chown vscode:vscode "$SDKROOT"
 
 WORKDIR /workspaces/pygame-ce
 
@@ -49,3 +57,11 @@ COPY pyproject.toml README.rst /tmp/pygame-ce/
 # RUN python -m pip install --no-cache-dir /tmp/pygame-ce
 
 USER vscode
+RUN cd "$HOME" && \
+    pip download -e . && \
+    git clone https://github.com/emscripten-core/emsdk && \
+    ./emsdk install latest && \
+    ./emsdk activate latest && \
+    curl -sL --retry 5 \
+        "https://github.com/pygame-web/python-wasm-sdk/releases/download/$SDK_VERSION/$SDK_ARCHIVE" \
+        | tar xvP --use-compress-program=lz4

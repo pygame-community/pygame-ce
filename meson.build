@@ -167,15 +167,18 @@ if plat.startswith('emscripten') and sdl_api == 3
     )
     sdl_image_dep = declare_dependency(
         include_directories: wasm_sdl_include,
-        link_args: wasm_sdl_link + ['-lSDL3_image', '-ljpeg', '-lpng'],
+        link_args: wasm_sdl_link + [
+            '-lSDL3_image', '-lwebp', '-lsharpyuv', '-lwebpdemux', '-lwebpmux',
+            '-lpng16', '-lzlibstatic',
+        ],
     )
     sdl_mixer_dep = declare_dependency(
         include_directories: wasm_sdl_include,
-        link_args: wasm_sdl_link + ['-lSDL3_mixer', '-lmpg123', '-logg', '-lvorbis'],
+        link_args: wasm_sdl_link + ['-lSDL3_mixer'],
     )
     freetype_dep = declare_dependency(
         include_directories: wasm_sdl_include,
-        link_args: wasm_sdl_link + ['-lfreetype', '-lharfbuzz']
+        link_args: wasm_sdl_link + ['-lfreetype', '-lharfbuzz', '-lplutosvg', '-lplutovg']
     )
     sdl_ttf_dep = declare_dependency(
         include_directories: wasm_sdl_include,

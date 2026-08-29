@@ -40,6 +40,19 @@ generated cross file passes it as ``emscripten_sdl_root``; a missing prefix is
 an error and does not silently select SDL2. The ordinary SDL3 renderer is the
 WebGL path, with WebGL 1 and 2 enabled by the Emscripten link settings.
 
+The repository includes a reproducible prefix builder. It checks out the
+release tags and their exact submodule commits, then builds static libraries
+with Emscripten::
+
+   python buildconfig/build_emscripten_sdl3.py \
+       --prefix /tmp/pygame-sdl3 \
+       --emsdk-root /path/to/emsdk
+
+The default web bundle enables PNG, JPEG, and WebP image loading, standard
+SDL_ttf font shaping, and SDL_mixer's self-contained WAV, Ogg Vorbis, FLAC,
+MP3, and MIDI decoders. Optional native codecs can be added by maintaining a
+larger prefix outside this builder.
+
 Optional WebGPU surface support can be enabled for SDL3 with::
 
    meson setup build -Dsdl_api=3 -Dwebgpu=enabled \
@@ -58,7 +71,10 @@ libraries that match the SDL major used by the pygame build.
 
 **Recommendation**
 
-Implement SDL3 for the standalone Emscripten/pygbag toolchain first, then add Pyodide using the same binding and dependency layers. SDL3 core now has documented Emscripten build support, but SDL3_image, SDL3_ttf, and SDL3_mixer will probably require separately built web libraries rather than existing `embuilder` ports.
+Implement SDL3 for the standalone Emscripten/pygbag toolchain first, then use
+Pyodide with the same binding and dependency layers. SDL3 core and the
+companion libraries are built into one pinned prefix; the existing SDL2
+`embuilder` ports remain unchanged.
 
 Keep the current SDL2 WebAssembly builds unchanged until SDL3 passes its own build and runtime gates.
 
@@ -180,8 +196,10 @@ $PG_WASM_SDL_ROOT/
 
 The provider can differ by toolchain:
 
-- pygbag: the pinned `python-wasm-sdk` archive supplies the libraries.
-- Pyodide: a `before-build` step builds or installs the same library set into a temporary prefix.
+- pygbag: the SDL3 CI job builds the pinned prefix next to the
+    `python-wasm-sdk` archive.
+- Pyodide: a `before-build` step builds the same library set into a temporary
+    prefix.
 - Meson consumes the prefix through one environment variable or cross-file option.
 
 This avoids duplicating library names and include paths in meson.build, dev.py, and CI.
@@ -195,7 +213,10 @@ Update dev.py so the generated Emscripten cross file:
 - Carries the selected SDL API into the Meson configuration.
 - Does not silently fall back to SDL2.
 
-Update the `python-wasm-sdk` or its pygame-specific distribution to contain the pinned SDL3 libraries. The artifact should include SDL3 companion libraries only when they are actually supported and tested.
+The SDL3 CI job currently builds the prefix from the pinned source tags. A
+future `python-wasm-sdk` or pygame-specific distribution may ship the same
+layout as a cache, but the artifact should include SDL3 companion libraries
+only when they are actually supported and tested.
 
 Keep the existing `-sUSE_SDL=2` path for SDL2. SDL3 should use the statically built SDL3 archives directly rather than relying on an SDL2-specific Emscripten setting.
 

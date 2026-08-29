@@ -103,17 +103,28 @@ setup-args = [
 
 [tool.cibuildwheel.pyodide]
 build = "cp313-*"  # build only for the latest python version.
+environment = { SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="disk", PYGAME_EMSCRIPTEN_SDL_ROOT="/tmp/pygame-sdl3-pyodide" }
 
 # EMSDK path is hardcoded here, and has to be manually kept updated with updates
 # to cibuildwheel and/or pyodide.
 before-build = """
 sed -i 's/var SUPPORT_LONGJMP *= *[^;]*;/var SUPPORT_LONGJMP = "wasm";/' \
   /home/runner/.cache/cibuildwheel/pyodide-build-0.39.0/0.29.4/emsdk/upstream/emscripten/src/settings.js &&
-embuilder --pic --force build \
-  sdl2 libhtml5 sdl2_ttf 'sdl2_mixer:formats=ogg,mp3,mod,mid' \
-  'sdl2_image:formats=bmp,gif,jpg,lbm,pcx,png,pnm,qoi,svg,tga,xcf,xpm,xv'
+python buildconfig/build_emscripten_sdl3.py \
+  --prefix /tmp/pygame-sdl3-pyodide \
+  --source-root /tmp/pygame-sdl3-pyodide-sources \
+  --build-root /tmp/pygame-sdl3-pyodide-build \
+  --emsdk-root /home/runner/.cache/cibuildwheel/pyodide-build-0.39.0/0.29.4/emsdk
 """
-test-command = ""  # TODO: figure out how to test
+test-command = "python -c 'import pygame; assert pygame.get_sdl_version()[0] == 3'"
+
+[tool.cibuildwheel.pyodide.config-settings]
+setup-args = [
+    "-Derror_on_warns=true",
+    "-Dvsenv=true",
+    "-Derror_docs_missing=true",
+    "-Dsdl_api=3",
+]
 
 # cibuildwheel 4.0 now uses delvewheel to try to fix up Windows wheels with DLLs, which fails
 # out of the box with our CI. And do we really want something messing with our DLLs?

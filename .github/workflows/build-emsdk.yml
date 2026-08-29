@@ -85,3 +85,49 @@ jobs:
       with:
         name: pyodide-wheels
         path: wheelhouse/*.whl
+
+  build-pygbag-sdl3:
+    name: SDL3 WebAssembly build
+    runs-on: ubuntu-22.04
+    env:
+      SDK_VERSION: 3.1.61.12bi
+      SDK_ARCHIVE: python3.13-wasm-sdk-Ubuntu-22.04.tar.lz4
+      SDKROOT: /opt/python-wasm-sdk
+      SDL3_PREFIX: ${{ runner.temp }}/pygame-sdl3
+      SDL3_SOURCE_ROOT: ${{ runner.temp }}/pygame-sdl3-sources
+      SDL3_BUILD_ROOT: ${{ runner.temp }}/pygame-sdl3-build
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    - name: Install python-wasm-sdk
+      run: |
+        sudo apt-get install lz4
+        curl -sL --retry 5 https://github.com/pygame-web/python-wasm-sdk/releases/download/$SDK_VERSION/$SDK_ARCHIVE | tar xvP --use-compress-program=lz4
+      working-directory: /opt
+
+    - name: Build SDL3 dependency prefix
+      run: |
+        python3 buildconfig/build_emscripten_sdl3.py \
+          --prefix "$SDL3_PREFIX" \
+          --source-root "$SDL3_SOURCE_ROOT" \
+          --build-root "$SDL3_BUILD_ROOT" \
+          --emsdk-root "$SDKROOT/emsdk"
+
+    - name: Build WASM with SDL3
+      env:
+        PYGAME_EMSCRIPTEN_SDL_ROOT: ${{ runner.temp }}/pygame-sdl3
+      run: ${SDKROOT}/python3-wasm dev.py build --sdl3 --wheel
+
+    - name: Inspect SDL3 wheel
+      run: |
+        unzip -l dist/*.whl | tee wheel-contents.txt
+        ! grep -E 'SDL2|libSDL2' wheel-contents.txt
+
+    - name: Upload SDL3 WASM dist
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: pygame-sdl3-wasm-dist
+        path: ./dist/*
