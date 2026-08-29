@@ -96,3 +96,41 @@ possible. Sometimes it's not possible to test things, but that's a minuscule min
 - **Join the [PGC Discord](https://pyga.me/discord):** Besides the role you can get in the server upon your first pull request being merged, regular contributors are active members of the discord server and are willing to give you a hand if crafting your pull request gets to be painful.
 
 Thank you for contributing!
+
+## AI Usage Guidelines
+
+The pygame-ce project has the following requirements for AI usage:
+
+- Any pull request or issue opened with the aid of AI shall be vetted by a human.
+- All changes shall be manually tested by a human. Maintainers should never be the first real person to test your code.
+- Automated agents shall not open pull requests to resolve issues labeled `good first issue`. These issues are specifically
+ intended for humans who want to start contributing.
+- Disclosure of AI usage is highly encouraged.
+- Pull requests driven by AI agents may be subject to stricter rules regarding response time to feedback or questions as opposed
+ to a human contributor. The entire point of using an AI agent is to push out changes quickly, so they should respond quickly as well.
+
+***The pygame-ce Steering Council reserves the right to make exceptions to these rules or enforce additional rules as deemed necessary***.
+
+# We are humans
+Keep in mind that pygame-ce is maintained by humans.
+
+Every issue, pull request, discord conversation, etc is read and reviewed by humans. Even when we use AI tools like CodeRabbit to
+aid in pull request review, there is still a human that must read it themselves. It is disrespectful to put in zero effort when
+you put in untested, unvetted work and try to get it into the project. The maintainers should not be the first people that test
+your code, because we have lives too. We are busy people. There ***shall*** be a human on the other end of every external interaction,
+because the onus is on the one who wants to make the change to ensure that it is a quality change.
+
+# AI is not unwelcome here
+Pygame-ce has some AI-written code in it by now, and many of our maintainers are starting to adopt using AI more regularly in their workflows.
+As a project, we will not outright ban AI usage, because it can be an extremely powerful tool.
+
+*Our reason for this policy is not an anti-AI stance*. Our reason for this policy is the number of unqualified people starting up
+automated agents to go create an endless torrent of slop pull requests. We have neither the time nor the energy to filter out
+the slop when no effort has been put in by the "author" to verify that the changes are actually reasonable. If you can't put in
+the effort to vet your changes, you aren't contributing anything of value. It's these people that are the problem, not the tool
+that is AI.
+
+This section is included to be transparent about how AI must be handled in this repository, and to explain that it's neither inherently
+anti-AI, nor is it inherently pro-AI. AI is a tool that can be very powerful used responsibly, but that "responsibly" is a very
+load-bearing word. This policy lists out the rules that users of AI must follow to contribute to this repository. When followed,
+these rules lend themselves to a far more responsible use of AI as an assistant, rather than a faulty replacement.
