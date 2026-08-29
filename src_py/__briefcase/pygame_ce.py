@@ -1,8 +1,16 @@
+"""Briefcase integration for native pygame-ce desktop applications.
+
+SDL3 builds use the native desktop wheel selected by the Meson build options.
+Emscripten, Pyodide, iOS, and Android deployments remain unsupported.
+"""
+
 from briefcase.bootstraps.base import BaseGuiBootstrap
 
 
 class PygameCEGuiBootstrap(BaseGuiBootstrap):
-    display_name_annotation = "does not support iOS/Android/Web deployment"
+    display_name_annotation = (
+        "native desktop only; does not support iOS/Android/Web deployment"
+    )
 
     def app_source(self):
         return """\

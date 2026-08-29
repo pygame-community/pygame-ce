@@ -424,7 +424,7 @@ if sdl_api == 3
     )
 endif
 
-# TODO: support SDL3
+# SDL3 uses its separate native mixer API; the legacy pygame mixer remains SDL2-only.
 if sdl_mixer_dep.found()
 if sdl_api != 3
     mixer = py.extension_module(

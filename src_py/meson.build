@@ -14,7 +14,6 @@ python_sources = files(
     'macosx.py',
     'midi.py',
     'pkgdata.py',
-    'sndarray.py',
     'sprite.py',
     'surfarray.py',
     'sysfont.py',
@@ -22,6 +21,10 @@ python_sources = files(
     'version.py',
 )
 py.install_sources(python_sources, subdir: pg)
+
+if sdl_api != 3
+    py.install_sources('sndarray.py', subdir: pg)
+endif
 
 # if not building font, install use ftfont for font.py
 if not sdl_ttf_dep.found() and freetype_dep.found()

@@ -147,7 +147,9 @@ def write_init_stub(init_file: pathlib.Path, excluded_modules: set[str] | None =
 # SDL3 does not currently provide the legacy pygame.mixer API.
 stub_dir = pathlib.Path(__file__).parent / "pygame"
 write_init_stub(stub_dir / "__init__.pyi")
-write_init_stub(stub_dir / "__init__sdl3.pyi", {"mixer", "mixer_music"})
+write_init_stub(
+    stub_dir / "__init__sdl3.pyi", {"mixer", "mixer_music", "sndarray"}
+)
 
 # write locals.pyi file
 locals_file = pathlib.Path(__file__).parent / "pygame" / "locals.pyi"

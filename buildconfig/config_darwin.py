@@ -1,5 +1,11 @@
 """Config on Darwin w/ frameworks"""
 
+import sys
+
+from buildconfig.legacy_sdl2 import reject_sdl3
+
+reject_sdl3(sys.argv)
+
 import os
 from distutils.sysconfig import get_python_inc
 from subprocess import check_output, CalledProcessError, DEVNULL
@@ -122,6 +128,7 @@ def find_freetype():
 
 
 def main(auto_config=False):
+    reject_sdl3(sys.argv)
 
     DEPS = [
         [DependencyProg('SDL', 'SDL_CONFIG', 'sdl2-config', '2.0', ['sdl'])],

@@ -37,9 +37,15 @@ if platform.system() == "Windows":
 
     pre_binaries = collect_dynamic_libs("pygame")
     binaries = []
+    sdl_major = pygame.get_sdl_version()[0]
 
     for b in pre_binaries:
         binary, location = b
+        binary_name = os.path.basename(binary).lower()
+        if binary_name.startswith(("sdl2", "libsdl2", "sdl3", "libsdl3")):
+            expected_prefix = f"sdl{sdl_major}"
+            if not binary_name.startswith((expected_prefix, f"lib{expected_prefix}")):
+                continue
         # settles all the DLLs into the top level folder, which prevents duplication
         # with the DLLs already being put there.
         binaries.append((binary, "."))

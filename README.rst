@@ -124,6 +124,10 @@ The legacy ``buildconfig``/``Setup`` path and Emscripten/Pyodide builds remain
 SDL2-only and reject SDL3 selection rather than silently mixing SDL versions.
 The private ``pygame._sdl2`` namespace is also SDL2-only; SDL3 builds expose
 the SDL3-native ``pygame._audio`` and ``_sdl3_mixer`` modules instead.
+The legacy ``pygame.mixer`` and ``pygame.mixer.music`` modules are unavailable
+in SDL3 builds; applications targeting both SDL majors should select the audio
+API at build time. PyInstaller collects only DLLs matching the selected SDL
+major, while Briefcase supports native desktop packaging only.
 
 
 Dependencies

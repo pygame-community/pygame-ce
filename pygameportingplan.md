@@ -62,10 +62,10 @@ Important gaps are still present:
 
 - [x] Make Meson the single source of truth for SDL selection. Ensure `sdl_api` controls the core SDL library and all companion libraries consistently.
 - [x] Add explicit SDL2 and SDL3 dependency branches where package names, include directories, link names, or transitive libraries differ. Do not rely on SDL3 old-name aliases to resolve build configuration issues.
-- [ ] Port or retire the legacy `buildconfig` path. In particular, update `config.py`, `config_unix.py`, `config_darwin.py`, `config_win.py`, `config_msys2.py`, `config_emsdk.py`, and generated `Setup` templates so an SDL3 build cannot accidentally discover SDL2.
+- [x] Retire SDL3 selection from the legacy `buildconfig` path. `config.py`, `config_unix.py`, `config_darwin.py`, `config_win.py`, `config_msys2.py`, and `config_emsdk.py` reject SDL3 before SDL2 dependency discovery; the legacy path remains SDL2-only.
 - [ ] Update native Linux, macOS, Windows, and manylinux dependency builds with reproducible SDL3 source/archive versions and checksums. Keep SDL2 artifacts available for the existing build path.
 - [ ] Complete Windows SDL3 packaging: dependency discovery, import libraries, DLL collection, architecture-specific paths, wheel contents, and runtime loading.
-- [ ] Add an SDL3 branch to Emscripten/Pyodide configuration, or document Emscripten as unsupported until SDL3 libraries and bindings are available. Do not label the port complete while the existing SDL2-only WASM path is silently selected.
+- [x] Document Emscripten/Pyodide as unsupported for SDL3 until SDL3 libraries and bindings are available. The SDL2-only WASM path rejects SDL3 selection rather than silently selecting SDL2.
   - [ ] Clone and review and possibly integrate
     https://github.com/eliemichel/sdl3webgpu
     - [ ] Then add WebGL support to fallback to when WebGPU is not available?
@@ -115,7 +115,7 @@ For each module:
 - [x] Decide whether the `_sdl2` Python namespace is retained as a compatibility namespace, supplemented by `_sdl3`, or split by build. `_sdl2` remains SDL2-only and raises an import-time error in SDL3 builds.
 - [x] Port `_sdl2.audio`, `_sdl2.video`, `_sdl2.mixer`, controller, and touch bindings to the chosen policy. These bindings remain available only for SDL2; SDL3 builds do not install them.
 - [x] Reconcile the existing SDL3-only `_audio.py` and `_sdl3_mixer.py` with the public pygame mixer/audio APIs and packaging rules.
-- [ ] Update generated stubs, type annotations, allow lists, PyInstaller hooks, Briefcase bootstrap behavior, and module documentation for the selected namespace policy.
+- [x] Update generated stubs, type annotations, allow lists, PyInstaller hooks, Briefcase bootstrap behavior, and module documentation for the selected namespace policy. SDL2 and SDL3 stubcheck both pass; SDL3 installs only the supported native modules and filters runtime packaging to the selected SDL major.
 
 **Gate:** Every supported SDL-facing Python import either works with tested semantics or fails early with a clear, documented exception.
 
@@ -134,9 +134,9 @@ For each module:
 
 ## Phase 6: Documentation and Release Transition
 
-- [ ] Update the README dependency table and build instructions for SDL2 and SDL3, including companion-library versions and platform limitations.
-- [ ] Document the SDL selection option and local commands, including `python dev.py build --sdl3` and the SDL3 test command.
-- [ ] Document public behavior differences, unavailable APIs, private namespace policy, and Emscripten status.
+- [x] Update the README dependency table and build instructions for SDL2 and SDL3, including companion-library versions and platform limitations.
+- [x] Document the SDL selection option and local commands, including `python dev.py build --sdl3` and the SDL3 test command.
+- [x] Document public behavior differences, unavailable APIs, private namespace policy, and Emscripten status.
 - [ ] Add SDL3 to release build artifacts only after native CI and wheel validation are complete. Keep SDL2 as the default until adoption and downstream compatibility are reviewed.
 - [ ] Decide the default transition policy: SDL2 default with supported SDL3 opt-in, SDL3 default with SDL2 fallback, or SDL3-only. Make this a release-note and deprecation decision, not an incidental build change.
 - [ ] Update version metadata, changelog/release notes, package classifiers if needed, and downstream migration guidance.

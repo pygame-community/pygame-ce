@@ -17,7 +17,6 @@ from . import (
     math as math,
     mask as mask,
     pixelcopy as pixelcopy,
-    sndarray as sndarray,
     sprite as sprite,
     surfarray as surfarray,
     transform as transform,

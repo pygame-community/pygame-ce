@@ -1,5 +1,11 @@
 """Config on Unix"""
 
+import sys
+
+from buildconfig.legacy_sdl2 import reject_sdl3
+
+reject_sdl3(sys.argv)
+
 import os
 from glob import glob
 import platform
@@ -135,6 +141,7 @@ class DependencyPython:
 sdl_lib_name = 'SDL'
 
 def main(auto_config=False):
+    reject_sdl3(sys.argv)
     global origincdirs, origlibdirs
 
     #these get prefixes with '/usr' and '/usr/local' or the $LOCALBASE

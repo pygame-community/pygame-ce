@@ -1,5 +1,11 @@
 """Config on MSYS2"""
 
+import sys
+
+from buildconfig.legacy_sdl2 import reject_sdl3
+
+reject_sdl3(sys.argv)
+
 # The search logic is adapted from config_win.
 # This assumes that the pygame-ce dependencies are resolved
 # by MSYS2 packages.
@@ -10,7 +16,6 @@ except ImportError:
     from buildconfig.setup_win_common import get_definitions
 
 import os
-import sys
 import re
 import logging
 import subprocess

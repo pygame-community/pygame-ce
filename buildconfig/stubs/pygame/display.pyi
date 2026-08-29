@@ -55,7 +55,6 @@ required).
 from collections.abc import Iterable
 from typing import Literal, overload
 
-from pygame._sdl2 import Window
 from pygame.constants import FULLSCREEN
 from pygame.surface import Surface
 from pygame.typing import (
@@ -65,6 +64,7 @@ from pygame.typing import (
     RectLike,
     SequenceLike,
 )
+from pygame.window import Window
 from typing_extensions import deprecated  # added in 3.13
 
 class _VidInfo:

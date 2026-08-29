@@ -1,8 +1,13 @@
 """Config on Emscripten SDK is almost like Unix"""
 
+import sys
+
+from buildconfig.legacy_sdl2 import reject_sdl3
+
+reject_sdl3(sys.argv)
+
 import logging
 import os
-import sys
 from glob import glob
 
 from distutils.sysconfig import get_python_inc

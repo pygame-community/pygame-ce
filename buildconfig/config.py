@@ -20,6 +20,7 @@ try:
 except ImportError:
     import buildconfig.msysio as msysio
 from buildconfig.make_docs import run as docs_run
+from buildconfig.legacy_sdl2 import reject_sdl3
 import sys, os, shutil, logging
 import sysconfig
 import re
@@ -161,11 +162,7 @@ def main(auto=False):
 
     if '-sdl2' in sys.argv:
         sys.argv.remove('-sdl2')
-    if '-sdl3' in sys.argv:
-        raise SystemExit(
-            'The legacy buildconfig path supports SDL2 only. '
-            'Use "python dev.py build --sdl3" for an SDL3 build.'
-        )
+    reject_sdl3(sys.argv)
     if '-sdl1' in sys.argv:
         raise SystemExit("""Building PyGame with SDL1.2 is no longer supported.
 Only SDL2 is supported now.""")

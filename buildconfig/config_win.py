@@ -1,5 +1,11 @@
 """Config on Windows"""
 
+import sys
+
+from buildconfig.legacy_sdl2 import reject_sdl3
+
+reject_sdl3(sys.argv)
+
 # **** The search part is broken. For instance, the png Visual Studio project
 # places to dll in a directory not checked by this module.
 
@@ -8,7 +14,7 @@ try:
 except ImportError:
     from buildconfig.setup_win_common import get_definitions
 
-import os, sys
+import os
 import re
 import logging
 from glob import glob

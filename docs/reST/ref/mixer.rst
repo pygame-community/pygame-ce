@@ -8,6 +8,11 @@
 
 | :sl:`pygame module for loading and playing sounds`
 
+.. note::
+
+   This legacy module is available in SDL2 builds only. SDL3 builds provide
+   the separate :mod:`pygame._audio` and :mod:`pygame._sdl3_mixer` APIs.
+
 This module contains classes for loading Sound objects and controlling
 playback.
 

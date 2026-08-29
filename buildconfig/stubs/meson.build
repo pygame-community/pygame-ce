@@ -4,6 +4,7 @@ pg_stub_exclude_directories = []
 if sdl_api != 3
     pg_stub_excludes += ['_audio.pyi', '_sdl3_mixer.pyi']
 else
+    pg_stub_excludes += ['mixer.pyi', 'mixer_music.pyi', 'sndarray.pyi']
     pg_stub_excludes += ['__init__.pyi']
     pg_stub_exclude_directories += ['_sdl2']
     install_data(

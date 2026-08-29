@@ -1281,15 +1281,22 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         }
     }
 
+#ifdef PG_SDL3
     if (display < 0) {
         display = _get_display(win);
+        if (!win) {
+            display = PG_GetDisplayID(display);
+        }
     }
-#ifdef PG_SDL3
     else {
         display = PG_GetDisplayID(display);
     }
     if (!display) {
         return RAISE(pgExc_SDLError, "Invalid display");
+    }
+#else
+    if (display < 0) {
+        display = _get_display(win);
     }
 #endif
 
@@ -2104,6 +2111,7 @@ pg_mode_ok(PyObject *self, PyObject *args, PyObject *kwds)
         else {
             return PyLong_FromLong((long)0);
         }
+    }
 #else
     if (!SDL_GetClosestDisplayMode(display_index, &desired, &closest)) {
         if (flags & PGS_FULLSCREEN) {
