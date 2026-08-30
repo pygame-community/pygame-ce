@@ -209,8 +209,10 @@ def get_theme() -> int:
     """Returns the current system theme.
 
     The returned system theme can be ``pygame.SYSTEM_THEME_DARK``,
-    ``pygame.SYSTEM_THEME_LIGHT`` or the sentinel ``0`` if the system
-    theme is unknown.
+    ``pygame.SYSTEM_THEME_LIGHT``, or ``pygame.SYSTEM_THEME_UNKNOWN``.
+
+    .. note:: Until ``pygame.init`` or ``pygame.display.init`` are called,
+        this function will always return ``pygame.SYSTEM_THEME_UNKNOWN``.
 
     .. versionadded:: 3.0.0
     """

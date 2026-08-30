@@ -123,7 +123,18 @@ class SystemModuleTest(unittest.TestCase):
     def test_get_theme(self):
         theme = pygame.system.get_theme()
         self.assertIsInstance(theme, int)
-        self.assertIn(theme, [0, pygame.SYSTEM_THEME_DARK, pygame.SYSTEM_THEME_LIGHT])
+        self.assertEqual(theme, pygame.SYSTEM_THEME_UNKNOWN)
+
+        pygame.init()
+        theme = pygame.system.get_theme()
+        self.assertIn(
+            theme,
+            [
+                pygame.SYSTEM_THEME_UNKNOWN,
+                pygame.SYSTEM_THEME_DARK,
+                pygame.SYSTEM_THEME_LIGHT,
+            ],
+        )
 
 
 if __name__ == "__main__":
