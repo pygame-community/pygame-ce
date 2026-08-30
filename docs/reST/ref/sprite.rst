@@ -657,7 +657,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
 .. function:: spritecollide
 
    | :sl:`Find sprites in a group that intersect another sprite.`
-   | :sg:`spritecollide(sprite, group, dokill, collided = None, exclude = None) -> Sprite_list`
+   | :sg:`spritecollide(sprite, group, dokill, collided = None, exclude = ()) -> Sprite_list`
 
    Return a list containing all Sprites in a Group that intersect with another
    Sprite. Intersection is determined by comparing the ``Sprite.rect``
@@ -841,8 +841,8 @@ Sprites are not thread safe. So lock them yourself if using threads.
 .. function:: spritecollideany
 
    | :sl:`Simple test if a sprite intersects anything in a group.`
-   | :sg:`spritecollideany(sprite, group, collided = None, exclude = None) -> Sprite` Collision with the returned sprite.
-   | :sg:`spritecollideany(sprite, group, collided = None, exclude = None) -> None` No collision
+   | :sg:`spritecollideany(sprite, group, collided = None, exclude = ()) -> Sprite` Collision with the returned sprite.
+   | :sg:`spritecollideany(sprite, group, collided = None, exclude = ()) -> None` No collision
 
    If the sprite collides with any single sprite in the group, a single
    sprite from the group is returned.  On no collision None is returned.
