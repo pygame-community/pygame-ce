@@ -76,6 +76,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
+        submodules: recursive
 
     - uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
       env:
@@ -93,14 +94,12 @@ jobs:
       SDK_VERSION: 3.1.61.12bi
       SDK_ARCHIVE: python3.13-wasm-sdk-Ubuntu-22.04.tar.lz4
       SDKROOT: /opt/python-wasm-sdk
-      SDL3_PREFIX: ${{ runner.temp }}/pygame-sdl3
-      SDL3_SOURCE_ROOT: ${{ runner.temp }}/pygame-sdl3-sources
-      SDL3_BUILD_ROOT: ${{ runner.temp }}/pygame-sdl3-build
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
+        submodules: recursive
 
     - name: Install python-wasm-sdk
       run: |
@@ -109,10 +108,13 @@ jobs:
       working-directory: /opt
 
     - name: Build SDL3 dependency prefix
+      env:
+        SDL3_PREFIX: ${{ runner.temp }}/pygame-sdl3
+        SDL3_BUILD_ROOT: ${{ runner.temp }}/pygame-sdl3-build
       run: |
         python3 buildconfig/build_emscripten_sdl3.py \
           --prefix "$SDL3_PREFIX" \
-          --source-root "$SDL3_SOURCE_ROOT" \
+          --source-root "$GITHUB_WORKSPACE/sdl" \
           --build-root "$SDL3_BUILD_ROOT" \
           --emsdk-root "$SDKROOT/emsdk"
 

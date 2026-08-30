@@ -112,7 +112,7 @@ sed -i 's/var SUPPORT_LONGJMP *= *[^;]*;/var SUPPORT_LONGJMP = "wasm";/' \
   /home/runner/.cache/cibuildwheel/pyodide-build-0.39.0/0.29.4/emsdk/upstream/emscripten/src/settings.js &&
 python buildconfig/build_emscripten_sdl3.py \
   --prefix /tmp/pygame-sdl3-pyodide \
-  --source-root /tmp/pygame-sdl3-pyodide-sources \
+  --source-root "$GITHUB_WORKSPACE/sdl" \
   --build-root /tmp/pygame-sdl3-pyodide-build \
   --emsdk-root /home/runner/.cache/cibuildwheel/pyodide-build-0.39.0/0.29.4/emsdk
 """
