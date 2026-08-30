@@ -455,11 +455,11 @@ class WindowTypeTest(unittest.TestCase):
             window.show_system_menu(0)
         with self.assertRaises(TypeError):
             window.show_system_menu("topleft")
+        with self.assertRaises(TypeError):
+            window.show_system_menu(10, 10)
 
-        result = window.show_system_menu(10, 10)
-        self.assertIsNone(result)
         result = window.show_system_menu((10, 10))
-        self.assertIsNone(result)
+        self.assertIsInstance(result, bool)
 
     def test_window_focused(self):
         window = pygame.Window()

@@ -1,5 +1,3 @@
-from typing import overload
-
 from pygame.locals import WINDOWPOS_UNDEFINED
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -513,18 +511,21 @@ class Window:
 
         .. versionadded:: 2.5.2
         """
+    def show_system_menu(self, pos: Point, /) -> bool:
+        """Show the system's default window menu at the given position in pixels.
 
-    @overload
-    def show_system_menu(self, x: int, y: int, /) -> None: ...
-    @overload
-    def show_system_menu(self, pos: Point, /) -> None: ...
-    def show_system_menu(self, *args) -> None:  # type: ignore
-        """Show the system's default window menu at the given position.
+        The system's window menu is a context menu provided and rendered by
+        the window manager. It lists available default operations that manage
+        the window like dragging, resizing, minimizing, maximizing, restoring,
+        and closing it.
 
-        The position is relative to the origin (top left) of the client area.
+        The position is relative to the origin (top left) of the client area,
+        which is the drawable area inside the system's window frame, title bar
+        and decoration. On borderless windows, it corresponds to the whole
+        window.
 
-        On platforms or desktops where this is unsupported, this method
-        does nothing.
+        Returns ``True`` if the operation succeeded and ``False`` if it's
+        not supported.
 
         .. versionadded:: 3.0.0
         """
