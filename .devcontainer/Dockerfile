@@ -6,8 +6,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DEFAULT_TIMEOUT=120 \
     PATH="/home/vscode/.local/bin:${PATH}"
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+RUN --mount=type=cache,id=var-cache-apt,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=var-lib-apt,target=/var/lib/apt,sharing=locked \
     apt-get update \
     && apt-get upgrade --no-install-recommends -y \
     && apt-get install --no-install-recommends -y \
@@ -51,15 +51,25 @@ RUN mkdir -p "$SDKROOT" && chown vscode:vscode "$SDKROOT"
 
 WORKDIR /workspaces/pygame-ce
 
-COPY pyproject.toml README.rst /tmp/pygame-ce/
 
 # COPY src /tmp/pygame-ce/src
 # RUN python -m pip install --no-cache-dir /tmp/pygame-ce
 
+ARG EMSDK_GITREV="main"
+
+USER root
+RUN --mount=type=cache,id=emsdk-downloads,target=/home/vscode/.cache/emsdk-downloads,sharing=locked \
+    chown -R vscode:vscode /home/vscode/.cache/emsdk-downloads
+
 USER vscode
-RUN cd "$HOME" && \
-    pip download -e . && \
-    git clone https://github.com/emscripten-core/emsdk && \
+RUN --mount=type=cache,id=emsdk-downloads,target=/home/vscode/.cache/emsdk-downloads,uid=1000,gid=1000,mode=0775,sharing=locked \
+    cd /home/vscode && \
+    (test -e ./emsdk/.git || (rm -rf ./emsdk && git clone https://github.com/emscripten-core/emsdk -b "${EMSDK_GITREV}" --depth=1)) && \
+    cd emsdk && \
+    rm -rf downloads && \
+    ln -s /home/vscode/.cache/emsdk-downloads downloads && \
+    chmod +x emsdk && \
+    git switch "${EMSDK_GITREV}" && \
     ./emsdk install latest && \
     ./emsdk activate latest && \
     curl -sL --retry 5 \
