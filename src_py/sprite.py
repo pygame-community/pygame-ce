@@ -1686,10 +1686,10 @@ def collide_mask(left, right):
     return leftmask.overlap(rightmask, (xoffset, yoffset))
 
 
-def spritecollide(sprite, group, dokill, collided=None, exclude=None):
+def spritecollide(sprite, group, dokill, collided=None, exclude=()):
     """find Sprites in a Group that intersect another Sprite
 
-    pygame.sprite.spritecollide(sprite, group, dokill, collided=None, exclude=None):
+    pygame.sprite.spritecollide(sprite, group, dokill, collided=None, exclude=()):
         return Sprite_list
 
     Return a list containing all Sprites in a Group that intersect with another
@@ -1709,8 +1709,6 @@ def spritecollide(sprite, group, dokill, collided=None, exclude=None):
     the sprites to exclude from the check (this also excludes them from dokill).
 
     """
-    exclude = exclude if exclude is not None else tuple()
-
     collided = (
         collided
         if collided is not None
@@ -1762,10 +1760,10 @@ def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
     return collided_sprites
 
 
-def spritecollideany(sprite, group, collided=None, exclude=None):
+def spritecollideany(sprite, group, collided=None, exclude=()):
     """finds any sprites in a group that collide with the given sprite
 
-    pygame.sprite.spritecollideany(sprite, group, collided=None, exclude=None): return sprite
+    pygame.sprite.spritecollideany(sprite, group, collided=None, exclude=()): return sprite
 
     Given a sprite and a group of sprites, this will return any single
     sprite that collides with the given sprite. If there are no
@@ -1784,8 +1782,6 @@ def spritecollideany(sprite, group, collided=None, exclude=None):
     the sprites to exclude from the check (this also excludes them from dokill).
 
     """
-    exclude = exclude if exclude is not None else set()
-
     collided = (
         collided
         if collided is not None
