@@ -191,7 +191,7 @@ def print_debug_info(filename: str | None = None) -> None:
     """Prints debug information for reporting bugs.
 
     Args:
-        filename [DEPRECATED]: string name of the file to save
+        filename: [DEPRECATED] string name of the file to save
     """
     import warnings
 

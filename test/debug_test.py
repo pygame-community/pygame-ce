@@ -11,7 +11,7 @@ class DebugTest(unittest.TestCase):
         pygame.print_debug_info()
         # Stripping stdout to ensure that we don't end up with a newline at the end messing
         # the compare up
-        self.assertEqual(mock_stdout.getvalue().strip(), expected_output)
+        self.assertEqual(mock_stdout.getvalue(), expected_output + "\n")
 
     def test_print_debug_info(self):
         self.maxDiff = None

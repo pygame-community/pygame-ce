@@ -50,7 +50,6 @@ from .math import Vector2 as Vector2, Vector3 as Vector3
 from .cursors import Cursor as Cursor
 from .bufferproxy import BufferProxy as BufferProxy
 from .mask import Mask as Mask
-from ._debug import print_debug_info as print_debug_info
 from .event import Event as Event
 from .font import Font as Font
 from .mixer import Sound as Sound, Channel as Channel
@@ -675,3 +674,6 @@ from .constants import (
     WINDOWSIZECHANGED as WINDOWSIZECHANGED,
     WINDOWTAKEFOCUS as WINDOWTAKEFOCUS,
 )
+
+def print_debug_info(filename: str | None = None) -> None: ...
+def get_debug_info() -> str: ...
