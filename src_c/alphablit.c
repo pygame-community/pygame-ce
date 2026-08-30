@@ -43,6 +43,8 @@ static void
 blit_blend_min(SDL_BlitInfo *info);
 static void
 blit_blend_max(SDL_BlitInfo *info);
+static void
+blit_blend_overlay(SDL_BlitInfo *info);
 
 static void
 blit_blend_rgba_add(SDL_BlitInfo *info);
@@ -383,6 +385,38 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 #endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
 #endif /* __EMSCRIPTEN__ */
                     blit_blend_max(&info);
+                    break;
+                }
+                case PYGAME_BLEND_OVERLAY: {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
+                        info.src->Rmask == info.dst->Rmask &&
+                        info.src->Gmask == info.dst->Gmask &&
+                        info.src->Bmask == info.dst->Bmask &&
+                        !(info.src->Amask != 0 && info.dst->Amask != 0 &&
+                          info.src->Amask != info.dst->Amask) &&
+                        pg_has_avx2() && (src != dst)) {
+                        blit_blend_rgb_overlay_avx2(&info);
+                        break;
+                    }
+#if PG_ENABLE_SSE_NEON
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
+                        info.src->Rmask == info.dst->Rmask &&
+                        info.src->Gmask == info.dst->Gmask &&
+                        info.src->Bmask == info.dst->Bmask &&
+                        !(info.src->Amask != 0 && info.dst->Amask != 0 &&
+                          info.src->Amask != info.dst->Amask) &&
+                        pg_HasSSE_NEON() && (src != dst)) {
+                        blit_blend_rgb_overlay_sse2(&info);
+                        break;
+                    }
+#endif /* PG_ENABLE_SSE_NEON */
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
+                    blit_blend_overlay(&info);
                     break;
                 }
 
@@ -1225,6 +1259,212 @@ blit_blend_max(SDL_BlitInfo *info)
             dst[dstoffsetB] = src[srcoffsetB];
         }
     });
+}
+
+static void
+blit_blend_overlay(SDL_BlitInfo *info)
+{
+    int n;
+    int width = info->width;
+    int height = info->height;
+    Uint8 *src = info->s_pixels;
+    int srcpxskip = info->s_pxskip;
+    int srcskip = info->s_skip;
+    Uint8 *dst = info->d_pixels;
+    int dstpxskip = info->d_pxskip;
+    int dstskip = info->d_skip;
+    PG_PixelFormat *srcfmt = info->src;
+    SDL_Palette *srcpal = info->src_palette;
+    PG_PixelFormat *dstfmt = info->dst;
+    SDL_Palette *dstpal = info->dst_palette;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
+    Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
+    Uint32 pixel;
+    int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask;
+    int dstppa = info->dst_blend != SDL_BLENDMODE_NONE && dstfmt->Amask;
+
+    if (srcbpp >= 3 && dstbpp >= 3 && info->src_blend == SDL_BLENDMODE_NONE) {
+        size_t srcoffsetR, srcoffsetG, srcoffsetB;
+        size_t dstoffsetR, dstoffsetG, dstoffsetB;
+        if (srcbpp == 3) {
+            SET_OFFSETS_24(srcoffsetR, srcoffsetG, srcoffsetB, srcfmt);
+        }
+        else {
+            SET_OFFSETS_32(srcoffsetR, srcoffsetG, srcoffsetB, srcfmt);
+        }
+        if (dstbpp == 3) {
+            SET_OFFSETS_24(dstoffsetR, dstoffsetG, dstoffsetB, dstfmt);
+        }
+        else {
+            SET_OFFSETS_32(dstoffsetR, dstoffsetG, dstoffsetB, dstfmt);
+        }
+        while (height--) {
+            LOOP_UNROLLED4(
+                {
+                    if (dst[dstoffsetR] < 127) {
+                        dst[dstoffsetR] =
+                            (dst[dstoffsetR] * src[srcoffsetR]) >> 7;
+                    }
+                    else {
+                        dst[dstoffsetR] = 255 - (((255 - dst[dstoffsetR]) *
+                                                  (255 - src[srcoffsetR])) >>
+                                                 7);
+                    }
+                    if (dst[dstoffsetG] < 127) {
+                        dst[dstoffsetG] =
+                            (dst[dstoffsetG] * src[srcoffsetG]) >> 7;
+                    }
+                    else {
+                        dst[dstoffsetG] = 255 - (((255 - dst[dstoffsetG]) *
+                                                  (255 - src[srcoffsetG])) >>
+                                                 7);
+                    }
+                    if (dst[dstoffsetB] < 127) {
+                        dst[dstoffsetB] =
+                            (dst[dstoffsetB] * src[srcoffsetB]) >> 7;
+                    }
+                    else {
+                        dst[dstoffsetB] = 255 - (((255 - dst[dstoffsetB]) *
+                                                  (255 - src[srcoffsetB])) >>
+                                                 7);
+                    }
+
+                    src += srcpxskip;
+                    dst += dstpxskip;
+                },
+                n, width);
+            src += srcskip;
+            dst += dstskip;
+        }
+        return;
+    }
+
+    if (srcbpp == 1) {
+        if (dstbpp == 1) {
+            while (height--) {
+                LOOP_UNROLLED4(
+                    {
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);
+                        GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);
+                        BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
+                        SET_PIXELVAL(dst, dstfmt, dstpal, dR, dG, dB, dA);
+                        src += srcpxskip;
+                        dst += dstpxskip;
+                    },
+                    n, width);
+                src += srcskip;
+                dst += dstskip;
+            }
+        }
+        else if (dstbpp == 3) {
+            size_t offsetR, offsetG, offsetB;
+            SET_OFFSETS_24(offsetR, offsetG, offsetB, dstfmt);
+            while (height--) {
+                LOOP_UNROLLED4(
+                    {
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);
+                        GET_PIXEL(pixel, dstbpp, dst);
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal,
+                                      dstppa);
+                        BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
+                        dst[offsetR] = dR;
+                        dst[offsetG] = dG;
+                        dst[offsetB] = dB;
+                        src += srcpxskip;
+                        dst += dstpxskip;
+                    },
+                    n, width);
+                src += srcskip;
+                dst += dstskip;
+            }
+        }
+        else /* even dstbpp */
+        {
+            while (height--) {
+                LOOP_UNROLLED4(
+                    {
+                        GET_PIXELVALS_1(sR, sG, sB, sA, src, srcpal);
+                        GET_PIXEL(pixel, dstbpp, dst);
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal,
+                                      dstppa);
+                        BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
+                        CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);
+                        src += srcpxskip;
+                        dst += dstpxskip;
+                    },
+                    n, width);
+                src += srcskip;
+                dst += dstskip;
+            }
+        }
+    }
+    else /* srcbpp > 1 */
+    {
+        if (dstbpp == 1) {
+            while (height--) {
+                LOOP_UNROLLED4(
+                    {
+                        GET_PIXEL(pixel, srcbpp, src);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal,
+                                      srcppa);
+                        GET_PIXELVALS_1(dR, dG, dB, dA, dst, dstpal);
+                        BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
+                        SET_PIXELVAL(dst, dstfmt, dstpal, dR, dG, dB, dA);
+                        src += srcpxskip;
+                        dst += dstpxskip;
+                    },
+                    n, width);
+                src += srcskip;
+                dst += dstskip;
+            }
+        }
+        else if (dstbpp == 3) {
+            size_t offsetR, offsetG, offsetB;
+            SET_OFFSETS_24(offsetR, offsetG, offsetB, dstfmt);
+            while (height--) {
+                LOOP_UNROLLED4(
+                    {
+                        GET_PIXEL(pixel, srcbpp, src);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal,
+                                      srcppa);
+                        GET_PIXEL(pixel, dstbpp, dst);
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal,
+                                      dstppa);
+                        BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
+                        dst[offsetR] = dR;
+                        dst[offsetG] = dG;
+                        dst[offsetB] = dB;
+                        src += srcpxskip;
+                        dst += dstpxskip;
+                    },
+                    n, width);
+                src += srcskip;
+                dst += dstskip;
+            }
+        }
+        else /* even dstbpp */
+        {
+            while (height--) {
+                LOOP_UNROLLED4(
+                    {
+                        GET_PIXEL(pixel, srcbpp, src);
+                        GET_PIXELVALS(sR, sG, sB, sA, pixel, srcfmt, srcpal,
+                                      srcppa);
+                        GET_PIXEL(pixel, dstbpp, dst);
+                        GET_PIXELVALS(dR, dG, dB, dA, pixel, dstfmt, dstpal,
+                                      dstppa);
+                        BLEND_OVERLAY(sR, sG, sB, sA, dR, dG, dB, dA);
+                        CREATE_PIXEL(dst, dR, dG, dB, dA, dstbpp, dstfmt);
+                        src += srcpxskip;
+                        dst += dstpxskip;
+                    },
+                    n, width);
+                src += srcskip;
+                dst += dstskip;
+            }
+        }
+    }
 }
 
 /* --------------------------------------------------------- */
