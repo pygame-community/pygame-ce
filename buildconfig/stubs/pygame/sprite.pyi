@@ -29,12 +29,12 @@ from pygame.typing import Point, RectLike
 # Some sprite functions only need objects with certain attributes, not always a sprite
 class _HasRect(Protocol):
     @property
-    def rect(self) -> FRect | Rect | None: ...
+    def rect(self) -> FRect | Rect: ...
 
 # image in addition to rect
 class _HasImageAndRect(_HasRect, Protocol):
     @property
-    def image(self) -> Surface | None: ...
+    def image(self) -> Surface: ...
 
 # mask in addition to rect
 class _HasMaskAndRect(_HasRect, Protocol):
@@ -42,14 +42,8 @@ class _HasMaskAndRect(_HasRect, Protocol):
     def mask(self) -> Mask: ...
 
 class Sprite(_HasImageAndRect):
-    @property
-    def image(self) -> Surface | None: ...
-    @image.setter
-    def image(self, value: Surface | None) -> None: ...
-    @property
-    def rect(self) -> FRect | Rect | None: ...
-    @rect.setter
-    def rect(self, value: FRect | Rect | None) -> None: ...
+    image: Surface  # Uses attribute annotation instead of property to satisfy stubtest
+    rect: FRect | Rect  # Same as image, see above
     @property
     def layer(self) -> int: ...
     @layer.setter
@@ -67,7 +61,7 @@ class Sprite(_HasImageAndRect):
 class DirtySprite(Sprite):
     dirty: int
     blendmode: int
-    source_rect: FRect | Rect
+    source_rect: FRect | Rect | None
     visible: int
     _layer: int
 
@@ -149,7 +143,7 @@ class LayeredDirty(LayeredUpdates[_DirtySpriteT]):
     def clear(self, surface: Surface, bgd: Surface) -> None: ...  # type: ignore[override]
     def repaint_rect(self, screen_rect: RectLike) -> None: ...
     def set_clip(self, screen_rect: RectLike | None = None) -> None: ...
-    def get_clip(self) -> FRect | Rect: ...
+    def get_clip(self) -> FRect | Rect | None: ...
     def set_timing_threshold(self, time_ms: SupportsFloat) -> None: ...
     @deprecated(
         "since 2.1.1. Use `pygame.sprite.LayeredDirty.set_timing_threshold` instead"
