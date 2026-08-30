@@ -615,6 +615,9 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     const char *name = NULL;
     if (index != -1) {
         name = SDL_GetRenderDriver(index);
+        if (name == NULL) {
+            RAISERETURN(pgExc_SDLError, SDL_GetError());
+        }
     }
     renderer = SDL_CreateRenderer(window->_win, name);
 #else
