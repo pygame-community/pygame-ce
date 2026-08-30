@@ -1,12 +1,10 @@
 """Debug functionality that allows for more useful issue reporting"""
 
 import importlib
-import io
 import platform
 import sys
 import traceback
 from os import environ
-from typing import Protocol
 
 from pygame.system import get_cpu_instruction_sets
 from pygame.version import ver
@@ -186,8 +184,6 @@ def get_debug_info() -> str:
         display_init, mixer_init, get_display_driver, get_mixer_driver, debug_str
     )
 
-    debug_str += "\n"
-
     return debug_str
 
 
@@ -209,6 +205,6 @@ def print_debug_info(filename: str | None = None) -> None:
 
     debug_str = get_debug_info()
 
-    print(debug_str, end="")
+    print(debug_str)
 
     del warnings
