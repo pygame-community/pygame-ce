@@ -14,7 +14,7 @@ import traceback
 # Mix_SetPostMix(noEffect, NULL);
 
 
-cdef void recording_cb(void* userdata, Uint8* stream, int len) nogil:
+cdef void recording_cb(void* userdata, Uint8* stream, int len) noexcept nogil:
     """ This is called in a thread made by SDL.
         So we need the python GIL to do python stuff.
     """
@@ -27,7 +27,6 @@ cdef void recording_cb(void* userdata, Uint8* stream, int len) nogil:
             (<object>userdata).callback(<object>userdata, a_memoryview)
         except:
             traceback.print_exc()
-            raise
 
 # ctypedef void (*cfptr)(int)
 # cdef cfptr myfunctionptr = &myfunc
