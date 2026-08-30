@@ -603,7 +603,6 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     int accelerated = -1;
     int vsync = 0;
     int target_texture = 0;
-    Uint32 flags = 0;
 
     char *keywords[] = {"window", "index",          "accelerated",
                         "vsync",  "target_texture", NULL};
@@ -619,6 +618,7 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     }
     renderer = SDL_CreateRenderer(window->_win, name);
 #else
+    Uint32 flags = 0;
     if (accelerated >= 0) {
         flags |=
             accelerated ? SDL_RENDERER_ACCELERATED : SDL_RENDERER_SOFTWARE;
@@ -631,16 +631,18 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     }
     renderer = SDL_CreateRenderer(window->_win, index, flags);
 #endif
-
     if (!renderer) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     if (vsync) {
-        SDL_SetRenderVSync(renderer, 1);
+        if (SDL_SetRenderVSync(renderer, 1) == SDL_FALSE) {
+            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        }
     }
+#if SDL_VERSION_ATLEAST(3, 4, 0)
     SDL_SetDefaultTextureScaleMode(renderer, SDL_SCALEMODE_NEAREST);
+#endif
 #endif
     self->renderer = renderer;
     self->window = window;
@@ -691,11 +693,18 @@ texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
             dstrect.h = (float)self->height;
         }
     }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (SDL_RenderTextureRotated(self->renderer->renderer, self->texture,
+                                 srcrectptr, dstrectptr, 0, NULL,
+                                 SDL_FLIP_NONE) == SDL_FALSE) {
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
+    }
+#else
     if (SDL_RenderCopyExF(self->renderer->renderer, self->texture, srcrectptr,
                           dstrectptr, 0, NULL, SDL_FLIP_NONE) < 0) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return 0;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
     }
+#endif
     return 1;
 }
 
@@ -1000,8 +1009,8 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     texture_format = (PG_PixelFormatEnum)SDL_GetNumberProperty(
         texture_props, SDL_PROP_TEXTURE_FORMAT_NUMBER, 0);
 #else
-    RENDERER_ERROR_CHECK(
-        SDL_QueryTexture(self->texture, &texture_format, NULL, NULL, NULL))
+    RENDERER_ERROR_CHECK(SDL_QueryTexture(
+        self->texture, (Uint32 *)(&texture_format), NULL, NULL, NULL))
 #endif
     if (texture_format != surf_format) {
         RENDERER_ERROR_CHECK(SDL_GetSurfaceBlendMode(surf, &blend))
@@ -1199,14 +1208,19 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     if (!self->texture) {
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1)
     }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* TODO: remove this and use SDL3 default behavior */
+    SDL_SetTextureBlendMode(self->texture, SDL_BLENDMODE_NONE);
+#if !SDL_VERSION_ATLEAST(3, 4, 0)
+    /* retain the default scale mode when
+       SDL_SetDefaultTextureScaleMode isn't available */
+    SDL_SetTextureScaleMode(self->texture, SDL_SCALEMODE_NEAREST);
+#endif
+#endif
     if (scale_quality != -1) {
         RENDERER_PROPERTY_ERROR_CHECK(
             SDL_SetTextureScaleMode(self->texture, scale_quality))
     }
-    /* TODO: remove this and use SDL3 default behavior */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    SDL_SetTextureBlendMode(self->texture, SDL_BLENDMODE_NONE);
-#endif
     self->width = width;
     self->height = height;
     return 0;
