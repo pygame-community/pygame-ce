@@ -7,7 +7,9 @@ where we have more detailed information available.
 ## How to Contribute
 
 ### 0. Using AI agents:
-If you're using AI at all in your workflow, ensure you read and follow the instructions in AI usage instructions at the bottom of this guide. This is non-negotiable.
+If you're using AI at all in your workflow, ensure you read and follow the instructions in AI usage instructions at the bottom of this guide.
+Those guidelines are highly recommended, particularly for new contributors. While not required, following those guidelines makes your pull
+request far more likely to be of high enough quality that it could potentially be merged.
 
 ### 1. Fork the repository:
 Click the "Fork" button in the top right corner of the GitHub page. Then you'll need to clone your fork to your local machine.
@@ -99,7 +101,7 @@ Thank you for contributing!
 
 ## AI Usage Guidelines
 
-The pygame-ce project has the following requirements for AI usage:
+The pygame-ce project has the following guidelines for AI usage:
 
 - Any pull request or issue opened with the aid of AI shall be vetted by a human.
 - All changes shall be manually tested by a human. Maintainers should never be the first real person to test your code.
@@ -109,7 +111,9 @@ The pygame-ce project has the following requirements for AI usage:
 - Pull requests driven by AI agents may be subject to stricter rules regarding response time to feedback or questions as opposed
  to a human contributor. The entire point of using an AI agent is to push out changes quickly, so they should respond quickly as well.
 
-***The pygame-ce Steering Council reserves the right to make exceptions to these rules or enforce additional rules as deemed necessary***.
+***pygame-ce members have demonstrated sufficient ability and earned an amount of trust that generally exempts them from following the letter
+of these guidelines, but they're still encouraged in sufficiently complex cases***
+***The pygame-ce Steering Council reserves the right to make exceptions to these guidelines or enforce additional guidelines as deemed necessary***.
 
 # We are humans
 Keep in mind that pygame-ce is maintained by humans.
