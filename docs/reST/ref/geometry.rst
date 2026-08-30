@@ -610,6 +610,67 @@
 
          .. ## Line.length ##
 
+   .. attribute:: center
+
+         | :sl:`the coordinates of the middle point of the line`
+         | :sg:`center -> (float, float)`
+
+         The center of the line. It's equivalent to `((ax + bx) / 2, (ay + by) / 2)`.
+         Reassigning it moves the `Line` to the new position with matching center.
+
+         .. versionadded:: 2.5.3
+
+         .. ## Line.center ##
+
+   .. attribute:: centerx
+
+         | :sl:`the x coordinate of the middle point of the line`
+         | :sg:`centerx -> float`
+
+         The `x` coordinate of the line's center, calculated as :math:`(ax + bx) / 2`.
+         Reassigning it moves the `Line` to the new position with matching centerx.
+
+         .. versionadded:: 2.5.3
+
+         .. ## Line.centerx ##
+
+   .. attribute:: centery
+
+         | :sl:`the y coordinate of the middle point of the line`
+         | :sg:`centery -> float`
+
+         The `y` coordinate of the line's center, calculated as :math:`(ay + by) / 2`.
+         Reassigning it moves the `Line` to the new position with matching centery.
+
+         .. versionadded:: 2.5.3
+
+         .. ## Line.centery ##
+
+   .. attribute:: angle
+
+         | :sl:`the angle of the line`
+         | :sg:`angle -> float`
+
+         The angle of the line, representing its orientation.
+         It's equivalent to :math:`atan2(by - ay, bx - ax)`. This attribute is read-only and
+         can be changed by modifying the `a` or `b` attributes.
+
+         .. versionadded:: 2.5.3
+
+         .. ## Line.angle ##
+
+   .. attribute:: slope
+
+         | :sl:`the slope of the line`
+         | :sg:`slope -> float`
+
+         The slope of the line. It's equivalent to :math:`(by - ay) / (bx - ax)`.
+         This attribute is read-only and can be changed by modifying the `a` or `b` attributes.
+
+         .. versionadded:: 2.5.3
+
+         .. ## Line.slope ##
+
    **Line Methods**
 
    ----

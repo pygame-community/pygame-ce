@@ -423,6 +423,115 @@ pg_line_getlength(pgLineObject *self, void *closure)
     return PyFloat_FromDouble(pgLine_Length(&self->line));
 }
 
+static PyObject *
+pg_line_get_center(pgLineObject *self, void *closure)
+{
+    return pg_tuple_couple_from_values_double(
+        (self->line.ax + self->line.bx) / 2,
+        (self->line.ay + self->line.by) / 2);
+}
+
+static int
+pg_line_set_center(pgLineObject *self, PyObject *value, void *closure)
+{
+    double m_x, m_y;
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+    if (!pg_TwoDoublesFromObj(value, &m_x, &m_y)) {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "Invalid center value, expected a sequence of 2 numbers");
+        return -1;
+    }
+
+    double dx = m_x - (self->line.ax + self->line.bx) / 2;
+    double dy = m_y - (self->line.ay + self->line.by) / 2;
+
+    self->line.ax += dx;
+    self->line.ay += dy;
+    self->line.bx += dx;
+    self->line.by += dy;
+
+    return 0;
+}
+
+static PyObject *
+pg_line_get_centerx(pgLineObject *self, void *closure)
+{
+    return PyFloat_FromDouble((self->line.ax + self->line.bx) / 2);
+}
+
+static int
+pg_line_set_centerx(pgLineObject *self, PyObject *value, void *closure)
+{
+    double m_x;
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+    if (!pg_DoubleFromObj(value, &m_x)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Invalid centerx value, expected a numeric value");
+        return -1;
+    }
+
+    double dx = m_x - (self->line.ax + self->line.bx) / 2;
+
+    self->line.ax += dx;
+    self->line.bx += dx;
+
+    return 0;
+}
+
+static PyObject *
+pg_line_get_centery(pgLineObject *self, void *closure)
+{
+    return PyFloat_FromDouble((self->line.ay + self->line.by) / 2);
+}
+
+static int
+pg_line_set_centery(pgLineObject *self, PyObject *value, void *closure)
+{
+    double m_y;
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+    if (!pg_DoubleFromObj(value, &m_y)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Invalid centery value, expected a numeric value");
+        return -1;
+    }
+
+    double dy = m_y - (self->line.ay + self->line.by) / 2;
+
+    self->line.ay += dy;
+    self->line.by += dy;
+
+    return 0;
+}
+
+static PyObject *
+pg_line_getangle(pgLineObject *self, void *closure)
+{
+    double dx = self->line.bx - self->line.ax;
+
+    if (dx == 0.0)
+        return (self->line.by > self->line.ay) ? PyFloat_FromDouble(-90.0)
+                                               : PyFloat_FromDouble(90.0);
+
+    double dy = self->line.by - self->line.ay;
+    double gradient = dy / dx;
+
+    return PyFloat_FromDouble(-RAD_TO_DEG(atan(gradient)));
+}
+
+static PyObject *
+pg_line_getslope(pgLineObject *self, void *closure)
+{
+    double dem = self->line.bx - self->line.ax;
+    if (dem == 0) {
+        return PyFloat_FromDouble(0);
+    }
+
+    double slope = (self->line.by - self->line.ay) / dem;
+
+    return PyFloat_FromDouble(slope);
+}
+
 static PyGetSetDef pg_line_getsets[] = {
     {"ax", (getter)pg_line_getax, (setter)pg_line_setax, DOC_LINE_AX, NULL},
     {"ay", (getter)pg_line_getay, (setter)pg_line_setay, DOC_LINE_AY, NULL},
@@ -431,6 +540,14 @@ static PyGetSetDef pg_line_getsets[] = {
     {"a", (getter)pg_line_geta, (setter)pg_line_seta, DOC_LINE_A, NULL},
     {"b", (getter)pg_line_getb, (setter)pg_line_setb, DOC_LINE_B, NULL},
     {"length", (getter)pg_line_getlength, NULL, DOC_LINE_LENGTH, NULL},
+    {"center", (getter)pg_line_get_center, (setter)pg_line_set_center,
+     DOC_LINE_CENTER, NULL},
+    {"centerx", (getter)pg_line_get_centerx, (setter)pg_line_set_centerx,
+     DOC_LINE_CENTERX, NULL},
+    {"centery", (getter)pg_line_get_centery, (setter)pg_line_set_centery,
+     DOC_LINE_CENTERY, NULL},
+    {"angle", (getter)pg_line_getangle, NULL, DOC_LINE_ANGLE, NULL},
+    {"slope", (getter)pg_line_getslope, NULL, DOC_LINE_SLOPE, NULL},
     {NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgLine_Type = {
