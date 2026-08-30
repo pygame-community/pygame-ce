@@ -69,14 +69,15 @@ limited to native desktop targets, and PyInstaller packages the SDL runtime
 libraries that match the SDL major used by the pygame build.
 
 
-**Recommendation**
+**Status**
 
-Implement SDL3 for the standalone Emscripten/pygbag toolchain first, then use
-Pyodide with the same binding and dependency layers. SDL3 core and the
-companion libraries are built into one pinned prefix; the existing SDL2
-`embuilder` ports remain unchanged.
+SDL3 WebAssembly support is experimental for both the standalone
+Emscripten/pygbag toolchain and Pyodide. SDL3 core and the companion libraries
+are built into one pinned prefix; the existing SDL2 `embuilder` ports remain
+available for the legacy SDL2 WebAssembly builds.
 
-Keep the current SDL2 WebAssembly builds unchanged until SDL3 passes its own build and runtime gates.
+The legacy SDL2 WebAssembly builds remain unchanged; the experimental SDL3
+WebAssembly builds are validated by separate build and runtime gates.
 
 ```mermaid
 flowchart TD

@@ -556,6 +556,12 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
     /* https://wiki.libsdl.org/SDL_SetTextInputRect */
     SDL_Rect *rect, temp;
     SDL_Window *sdlWindow = pg_GetDefaultWindow();
+#ifdef PG_SDL3
+    if (!sdlWindow) {
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+#endif
     SDL_Renderer *sdlRenderer = SDL_GetRenderer(sdlWindow);
 
     if (obj == Py_None) {
@@ -582,7 +588,9 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
 #ifdef PG_SDL3
         /* Should consider how to expose the cursor argument to the user, maybe
          * this should be new API in Window? */
-        SDL_SetTextInputArea(sdlWindow, &rect2, 0);
+        if (!SDL_SetTextInputArea(sdlWindow, &rect2, 0)) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
 #else
         SDL_SetTextInputRect(&rect2);
 #endif
@@ -592,7 +600,9 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
 #ifdef PG_SDL3
     /* Should consider how to expose the cursor argument to the user, maybe
      * this should be new API in Window? */
-    SDL_SetTextInputArea(sdlWindow, rect, 0);
+    if (!SDL_SetTextInputArea(sdlWindow, rect, 0)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 #else
     SDL_SetTextInputRect(rect);
 #endif

@@ -33,6 +33,7 @@ else:
     _append_to_datas("pygame_icon.bmp")
 
 if platform.system() == "Windows":
+    import pygame
     from PyInstaller.utils.hooks import collect_dynamic_libs
 
     pre_binaries = collect_dynamic_libs("pygame")

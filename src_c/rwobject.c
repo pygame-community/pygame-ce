@@ -658,6 +658,7 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
 
     if (!PyBytes_Check(result)) {
         Py_DECREF(result);
+        PyErr_SetString(PyExc_TypeError, "read() should return bytes");
         PyErr_Print();
 #ifdef PG_SDL3
         if (status) {
@@ -686,7 +687,7 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
 #endif
     }
 #ifdef PG_SDL3
-    if ((size_t)retval < size * maxnum && status) {
+    if (retval == 0 && status) {
         *status = SDL_IO_STATUS_EOF;
     }
 #endif

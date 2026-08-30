@@ -4253,31 +4253,6 @@ lrint(double flt)
         }
     ;
     return intgr;
-            bpp = GFX_SURF_BytesPerPixel(dst);
-            p = (Uint8 *)dst->pixels + y * dst->pitch + x * bpp;
-            switch (bpp) {
-                case 1:
-                    *p = color;
-                    break;
-                case 2:
-                    *(Uint16 *)p = color;
-                    break;
-                case 3:
-                    if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-                        p[0] = (color >> 16) & 0xff;
-                        p[1] = (color >> 8) & 0xff;
-                        p[2] = color & 0xff;
-                    }
-                    else {
-                        p[0] = color & 0xff;
-                        p[1] = (color >> 8) & 0xff;
-                        p[2] = (color >> 16) & 0xff;
-                    }
-                    break;
-                case 4:
-                    *(Uint32 *)p = color;
-                    break;
-            } /* switch */
 #elif defined(_M_ARM)
 #include <armintr.h>
 #pragma warning(push)
@@ -6783,7 +6758,7 @@ int _bresenhamIterate(SDL_gfxBresenhamIterator *b)
 \param y Y coordinate of point.
 \param d1 Direction square/diagonal.
 */
-void _murphyParaline(SDL_gfxMurphyIterator *m, Sint16 x, Sint16 y, int d1)
+int _murphyParaline(SDL_gfxMurphyIterator *m, Sint16 x, Sint16 y, int d1)
 {
 	int p;
 	d1 = -d1;
@@ -6791,9 +6766,11 @@ void _murphyParaline(SDL_gfxMurphyIterator *m, Sint16 x, Sint16 y, int d1)
 	/*
 	* Lock the surface
 	*/
-	if (SDL_MUSTLOCK(m->dst)) {
-                GFX_LockSurface(m->dst);
-	}
+    if (SDL_MUSTLOCK(m->dst)) {
+        if (GFX_LockSurface(m->dst) < 0) {
+            return (-1);
+        }
+    }
 
 	for (p = 0; p <= m->u; p++) {
 
@@ -6828,6 +6805,8 @@ void _murphyParaline(SDL_gfxMurphyIterator *m, Sint16 x, Sint16 y, int d1)
 
 	m->tempx = x;
 	m->tempy = y;
+
+    return (0);
 }
 
 /*!
@@ -6845,7 +6824,7 @@ void _murphyParaline(SDL_gfxMurphyIterator *m, Sint16 x, Sint16 y, int d1)
 \param ml2y Y coordinate of a point.
 
 */
-void _murphyIteration(SDL_gfxMurphyIterator *m, Uint8 miter,
+int _murphyIteration(SDL_gfxMurphyIterator *m, Uint8 miter,
 					  Uint16 ml1bx, Uint16 ml1by, Uint16 ml2bx, Uint16 ml2by,
 					  Uint16 ml1x, Uint16 ml1y, Uint16 ml2x, Uint16 ml2y)
 {
@@ -6910,9 +6889,11 @@ void _murphyIteration(SDL_gfxMurphyIterator *m, Uint8 miter,
 			/*
 			* Lock the surface
 			*/
-			if (SDL_MUSTLOCK(m->dst)) {
-                                GFX_LockSurface(m->dst);
-			}
+            if (SDL_MUSTLOCK(m->dst)) {
+                if (GFX_LockSurface(m->dst) < 0) {
+                    return (-1);
+                }
+            }
 
 			_bresenhamInitialize(&b, m2x, m2y, m1x, m1y);
 			do {
@@ -6959,6 +6940,8 @@ void _murphyIteration(SDL_gfxMurphyIterator *m, Uint8 miter,
 	m->first1y = ml1by;
 	m->first2x = ml2bx;
 	m->first2y = ml2by;
+
+    return (0);
 }
 
 #define HYPOT(x, y) sqrt((double)(x) * (double)(x) + (double)(y) * (double)(y))
@@ -6977,7 +6960,7 @@ Draws lines parallel to ideal line.
 \param miter Iteration count.
 
 */
-void _murphyWideline(SDL_gfxMurphyIterator *m, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 width, Uint8 miter)
+int _murphyWideline(SDL_gfxMurphyIterator *m, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 width, Uint8 miter)
 {
 	float offset = (float)width / 2.f;
 
@@ -7072,7 +7055,9 @@ void _murphyWideline(SDL_gfxMurphyIterator *m, Sint16 x1, Sint16 y1, Sint16 x2, 
 
 	for (q = 0; dd <= tk; q++) {	/* outer loop, stepping perpendicular to line */
 
-		_murphyParaline(m, ptx, pty, d1);	/* call to inner loop - right edge */
+        if (_murphyParaline(m, ptx, pty, d1) < 0) {
+            return (-1);
+        }	/* call to inner loop - right edge */
 		if (q == 0) {
 			ml1x = ptx;
 			ml1y = pty;
@@ -7126,10 +7111,14 @@ void _murphyWideline(SDL_gfxMurphyIterator *m, Sint16 x1, Sint16 y1, Sint16 x2, 
 				}
 				d1 += m->kd;
 				if (dd > tk) {
-					_murphyIteration(m, miter, ml1bx, ml1by, ml2bx, ml2by, ml1x, ml1y, ml2x, ml2y);
-					return;	/* breakout on the extra line */
+                    if (_murphyIteration(m, miter, ml1bx, ml1by, ml2bx, ml2by, ml1x, ml1y, ml2x, ml2y) < 0) {
+                        return (-1);
+                    }
+                    return (0);	/* breakout on the extra line */
 				}
-				_murphyParaline(m, ptx, pty, d1);
+                if (_murphyParaline(m, ptx, pty, d1) < 0) {
+                    return (-1);
+                }
 				if (m->oct2 == 0) {
 					if (m->quad4 == 0) {
 						pty++;
@@ -7146,7 +7135,11 @@ void _murphyWideline(SDL_gfxMurphyIterator *m, Sint16 x1, Sint16 y1, Sint16 x2, 
 		d0 += m->kv;
 	}
 
-	_murphyIteration(m, miter, ml1bx, ml1by, ml2bx, ml2by, ml1x, ml1y, ml2x, ml2y);
+    if (_murphyIteration(m, miter, ml1bx, ml1by, ml2bx, ml2by, ml1x, ml1y, ml2x, ml2y) < 0) {
+        return (-1);
+    }
+
+    return (0);
 }
 
 
@@ -7173,8 +7166,12 @@ int thickLineColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2
 	m.dst = dst;
 	m.color = color;
 
-	_murphyWideline(&m, x1, y1, x2, y2, width, 0);
-	_murphyWideline(&m, x1, y1, x2, y2, width, 1);
+    if (_murphyWideline(&m, x1, y1, x2, y2, width, 0) < 0) {
+        return (-1);
+    }
+    if (_murphyWideline(&m, x1, y1, x2, y2, width, 1) < 0) {
+        return (-1);
+    }
 
 	return(0);
 }

@@ -130,7 +130,7 @@ typedef SDL_IOStream SDL_RWops;
 #define SDL_SetClipRect SDL_SetSurfaceClipRect
 #define SDL_GetClipRect SDL_GetSurfaceClipRect
 #define SDL_IsScreenSaverEnabled SDL_ScreenSaverEnabled
-#define SDL_PREALLOC 0
+#define SDL_PREALLOC SDL_SURFACE_PREALLOCATED
 #define SDL_WINDOW_ALLOW_HIGHDPI SDL_WINDOW_HIGH_PIXEL_DENSITY
 #define AUDIO_U8 SDL_AUDIO_U8
 #define AUDIO_S8 SDL_AUDIO_S8

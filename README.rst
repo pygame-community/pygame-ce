@@ -119,9 +119,10 @@ For a headless SDL3 test run, use::
 
    SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy python -m pytest -q test/render_test.py
 
-SDL3 is currently supported on native Linux, macOS, and Windows builds.
-The legacy ``buildconfig``/``Setup`` path and Emscripten/Pyodide builds remain
-SDL2-only and reject SDL3 selection rather than silently mixing SDL versions.
+SDL3 is currently supported on native Linux, macOS, and Windows builds, with
+experimental support in the Meson-based Emscripten/Pyodide WebAssembly builds.
+The legacy ``buildconfig``/``Setup`` path remains SDL2-only and rejects SDL3
+selection rather than silently mixing SDL versions.
 The private ``pygame._sdl2`` namespace is also SDL2-only; SDL3 builds expose
 the SDL3-native ``pygame._audio`` and ``_sdl3_mixer`` modules instead.
 The legacy ``pygame.mixer`` and ``pygame.mixer.music`` modules are unavailable

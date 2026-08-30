@@ -1091,7 +1091,9 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                 }
                 else if (!strcmp(_key_str, "fullscreen")) {
 #ifdef PG_SDL3
-                    fullscreen_non_desktop = 1;
+                    if (_value_bool) {
+                        fullscreen_non_desktop = 1;
+                    }
 #endif
                     if (_value_bool) {
                         flags |= SDL_WINDOW_FULLSCREEN;

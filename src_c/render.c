@@ -876,7 +876,6 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         flip |= SDL_FLIP_VERTICAL;
     }
 #ifdef PG_SDL3
-    SDL_FRect adjusted_dstrect, *adjusted_dstrectptr = dstrectptr;
     SDL_FRect srcfrect, *srcfrectptr = NULL;
     if (srcrectptr != NULL) {
         srcfrect.x = (float)srcrectptr->x;
@@ -885,17 +884,9 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         srcfrect.h = (float)srcrectptr->h;
         srcfrectptr = &srcfrect;
     }
-    if (dstrectptr != NULL && originptr == NULL && angle != 0) {
-        adjusted_dstrect = *dstrectptr;
-        adjusted_dstrect.x -= 1.0f;
-        adjusted_dstrect.y -= 0.5f;
-        adjusted_dstrect.w += 2.0f;
-        adjusted_dstrect.h += 1.0f;
-        adjusted_dstrectptr = &adjusted_dstrect;
-    }
     RENDERER_ERROR_CHECK(SDL_RenderTextureRotated(
         self->renderer->renderer, self->texture, srcfrectptr,
-        adjusted_dstrectptr,
+        dstrectptr,
         angle, originptr, flip))
 #else
     RENDERER_ERROR_CHECK(SDL_RenderCopyExF(self->renderer->renderer,
