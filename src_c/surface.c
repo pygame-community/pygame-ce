@@ -413,15 +413,8 @@ surface_cleanup(pgSurfaceObject *self)
         PyMem_Free(self->subsurface);
         self->subsurface = NULL;
     }
-    if (self->dependency) {
-        Py_DECREF(self->dependency);
-        self->dependency = NULL;
-    }
-
-    if (self->locklist) {
-        Py_DECREF(self->locklist);
-        self->locklist = NULL;
-    }
+    Py_CLEAR(self->dependency);
+    Py_CLEAR(self->locklist);
     self->owner = 0;
 }
 
@@ -1032,22 +1025,14 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
             break;
         case 3:
             byte_buf = (Uint8 *)(pixels + y * surf->pitch) + x * 3;
-            // Shouldn't this be able to happen without awareness of shifts?
-            // mapped color -> pixel and all.
 #if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            *(byte_buf + (format->Rshift >> 3)) =
-                (Uint8)(color >> format->Rshift);
-            *(byte_buf + (format->Gshift >> 3)) =
-                (Uint8)(color >> format->Gshift);
-            *(byte_buf + (format->Bshift >> 3)) =
-                (Uint8)(color >> format->Bshift);
+            byte_buf[0] = (Uint8)(color);
+            byte_buf[1] = (Uint8)(color >> 8);
+            byte_buf[2] = (Uint8)(color >> 16);
 #else
-            *(byte_buf + 2 - (format->Rshift >> 3)) =
-                (Uint8)(color >> format->Rshift);
-            *(byte_buf + 2 - (format->Gshift >> 3)) =
-                (Uint8)(color >> format->Gshift);
-            *(byte_buf + 2 - (format->Bshift >> 3)) =
-                (Uint8)(color >> format->Bshift);
+            byte_buf[0] = (Uint8)(color >> 16);
+            byte_buf[1] = (Uint8)(color >> 8);
+            byte_buf[2] = (Uint8)(color);
 #endif
             break;
         default: /* case 4: */
@@ -4307,8 +4292,7 @@ _release_buffer(Py_buffer *view_p)
 
     Py_DECREF(consumer_ref);
     PyMem_Free(internal);
-    Py_DECREF(view_p->obj);
-    view_p->obj = 0;
+    Py_CLEAR(view_p->obj);
 }
 
 static int
@@ -4381,20 +4365,12 @@ static PyObject *
 surf_get_pixels_address(PyObject *self, PyObject *closure)
 {
     SDL_Surface *surface = pgSurface_AsSurface(self);
-    void *address;
 
     if (!surface) {
         Py_RETURN_NONE;
     }
-    if (!surface->pixels) {
-        return PyLong_FromLong(0L);
-    }
-    address = surface->pixels;
-#if SIZEOF_VOID_P > SIZEOF_LONG
-    return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)address);
-#else
-    return PyLong_FromUnsignedLong((unsigned long)address);
-#endif
+
+    return PyLong_FromVoidPtr(surface->pixels);
 }
 
 static int

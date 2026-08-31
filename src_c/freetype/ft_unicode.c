@@ -51,8 +51,7 @@ raise_unicode_error(const char *codec, PyObject *unistr, Py_ssize_t start,
         return;
     }
 
-    Py_INCREF(PyExc_UnicodeEncodeError);
-    PyErr_Restore(PyExc_UnicodeEncodeError, e, 0);
+    PyErr_Restore(Py_NewRef(PyExc_UnicodeEncodeError), e, 0);
 }
 
 /* Helper for _PGFT_EncodePyString to handle PyUnicode object */

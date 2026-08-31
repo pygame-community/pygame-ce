@@ -300,11 +300,6 @@ class FontTest(unittest.TestCase):
         if pygame_font.__name__ == "pygame.ftfont":
             return
 
-        if pygame.font.get_sdl_ttf_version() < (2, 0, 18):
-            # When the SDL_TTF version is too low, it just ignores the
-            # line wrap parameter and newlines
-            return
-
         f = pygame_font.Font(None, 20)
         one_line = f.render("hello", True, "black", "white", 200)
         two_lines = f.render("hello\nworld", True, "black", "white", 200)
@@ -446,10 +441,7 @@ class FontTypeTest(unittest.TestCase):
         bm = f.metrics(u)
 
         self.assertEqual(len(bm), 1)
-        if (
-            pygame.font.get_sdl_ttf_version() >= (2, 0, 18)
-            and pygame_font.__name__ != "pygame.ftfont"
-        ):
+        if pygame_font.__name__ != "pygame.ftfont":
             self.assertIsNotNone(bm[0])
         else:
             self.assertIsNone(bm[0])
@@ -640,15 +632,6 @@ class FontTypeTest(unittest.TestCase):
             os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
         )
         f = pygame_font.Font(pathlib.Path(font_path), 25)
-
-        ttf_version = pygame_font.get_sdl_ttf_version()
-        if ttf_version < (2, 0, 18):
-            with self.assertRaises(pygame.error):
-                f.point_size = 25
-            with self.assertRaises(pygame.error):
-                f.point_size
-            return
-
         self.assertEqual(25, f.point_size)
         f.point_size = 10
         self.assertEqual(10, f.point_size)
@@ -675,12 +658,6 @@ class FontTypeTest(unittest.TestCase):
             os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
         )
         f = pygame_font.Font(pathlib.Path(font_path), 25)
-
-        ttf_version = pygame_font.get_sdl_ttf_version()
-        if ttf_version < (2, 0, 18):
-            self.assertRaises(pygame.error, f.get_point_size)
-            self.assertRaises(pygame.error, f.set_point_size, 25)
-            return
 
         self.assertEqual(25, f.get_point_size())
         f = pygame_font.Font(None, 25)
@@ -958,17 +935,11 @@ class FontTypeTest(unittest.TestCase):
                 ("size", ("any text",)),
                 ("set_script", ("is it other text",)),
                 ("set_direction", ("is it text",)),
+                ("get_point_size", ()),
+                ("set_point_size", (34,)),
             ]
             skip_methods = set()
             version = pygame.font.get_sdl_ttf_version()
-
-            if version >= (2, 0, 18):
-                methods.append(("get_point_size", ()))
-                methods.append(("set_point_size", (34,)))
-            else:
-                skip_methods.add("get_point_size")
-                skip_methods.add("set_point_size")
-                skip_methods.add("point_size")
 
             if version >= (2, 24, 0):
                 methods.append(("set_linesize", (2,)))
@@ -1050,6 +1021,7 @@ class FontTypeTest(unittest.TestCase):
                 ("underline", True),
                 ("strikethrough", True),
                 ("outline", 1),
+                ("point_size", 1),
             ]
             skip_properties = set()
             version = pygame.font.get_sdl_ttf_version()
@@ -1057,10 +1029,6 @@ class FontTypeTest(unittest.TestCase):
                 properties.append(("align", 1))
             else:
                 skip_properties.add("align")
-            if version >= (2, 0, 18):
-                properties.append(("point_size", 1))
-            else:
-                skip_properties.add("point_size")
 
         font = pygame_font.Font(None, 10)
         actual_names = []

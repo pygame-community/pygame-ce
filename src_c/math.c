@@ -51,9 +51,6 @@
 
 #define TWO_PI (2. * M_PI)
 
-#define RAD_TO_DEG (180.0 / M_PI)
-#define DEG_TO_RAD (M_PI / 180.0)
-
 #ifndef M_PI_2
 #define M_PI_2 (M_PI / 2.0)
 #endif /* M_PI_2 */
@@ -96,8 +93,8 @@ static PyTypeObject pgVectorIter_Type;
 #define _vector_subtype_new(x) \
     ((pgVector *)(Py_TYPE(x)->tp_new(Py_TYPE(x), NULL, NULL)))
 
-#define DEG2RAD(angle) ((angle) * M_PI / 180.)
-#define RAD2DEG(angle) ((angle) * 180. / M_PI)
+#define DEG2RAD(angle) ((angle) * (M_PI / 180.))
+#define RAD2DEG(angle) ((angle) * (180. / M_PI))
 
 typedef struct {
     PyObject_HEAD double coords[VECTOR_MAX_SIZE]; /* Coordinates */
@@ -1360,9 +1357,8 @@ static PyObject *
 vector_get_angle(pgVector *self, void *closure)
 {
     double angle_rad = _pg_atan2(self->coords[1], self->coords[0]);
-    double angle_deg = angle_rad * RAD_TO_DEG;
 
-    return PyFloat_FromDouble(angle_deg);
+    return PyFloat_FromDouble(RAD2DEG(angle_rad));
 }
 
 static PyObject *
@@ -1968,7 +1964,7 @@ vector_str(pgVector *self)
     else {
         return RAISE(
             PyExc_NotImplementedError,
-            "repr() for Vectors of higher dimensions are not implemented yet");
+            "str() for Vectors of higher dimensions are not implemented yet");
     }
 
     if (!_vector_check_snprintf_success(tmp, STRING_BUF_SIZE_STR)) {
@@ -2630,11 +2626,7 @@ vector2_from_polar(pgVector *self, PyObject *args)
 
     Py_RETURN_NONE;
 }
-static PyObject *
-vector_getsafepickle(pgRectObject *self, void *_null)
-{
-    Py_RETURN_TRUE;
-}
+
 /* for pickling */
 static PyObject *
 vector2_reduce(PyObject *oself, PyObject *_null)
@@ -2705,8 +2697,6 @@ static PyMethodDef vector2_methods[] = {
      DOC_MATH_VECTOR2_CLAMPMAGNITUDE},
     {"clamp_magnitude_ip", (PyCFunction)vector_clamp_magnitude_ip,
      METH_FASTCALL, DOC_MATH_VECTOR2_CLAMPMAGNITUDEIP},
-    {"__safe_for_unpickling__", (PyCFunction)vector_getsafepickle, METH_NOARGS,
-     NULL},
     {"__reduce__", (PyCFunction)vector2_reduce, METH_NOARGS, NULL},
     {"__round__", (PyCFunction)vector___round__, METH_VARARGS, NULL},
 
@@ -3264,7 +3254,7 @@ vector3_rotate_y_ip_rad(pgVector *self, PyObject *angleObject)
             1) == -1) {
         return NULL;
     }
-    return vector3_rotate_x_rad_ip(self, angleObject);
+    return vector3_rotate_y_rad_ip(self, angleObject);
 }
 
 static PyObject *
@@ -3370,7 +3360,7 @@ vector3_rotate_z_ip_rad(pgVector *self, PyObject *angleObject)
             1) == -1) {
         return NULL;
     }
-    return vector3_rotate_x_rad_ip(self, angleObject);
+    return vector3_rotate_z_rad_ip(self, angleObject);
 }
 
 static PyObject *
@@ -3613,8 +3603,6 @@ static PyMethodDef vector3_methods[] = {
      DOC_MATH_VECTOR3_CLAMPMAGNITUDE},
     {"clamp_magnitude_ip", (PyCFunction)vector_clamp_magnitude_ip,
      METH_FASTCALL, DOC_MATH_VECTOR3_CLAMPMAGNITUDEIP},
-    {"__safe_for_unpickling__", (PyCFunction)vector_getsafepickle, METH_NOARGS,
-     NULL},
     {"__reduce__", (PyCFunction)vector3_reduce, METH_NOARGS, NULL},
     {"__round__", (PyCFunction)vector___round__, METH_VARARGS, NULL},
 
@@ -3680,8 +3668,7 @@ vectoriter_next(vectoriter *it)
         return PyFloat_FromDouble(item);
     }
 
-    Py_DECREF(it->vec);
-    it->vec = NULL;
+    Py_CLEAR(it->vec);
     return NULL;
 }
 
@@ -3729,8 +3716,7 @@ vector_iter(PyObject *vec)
         return NULL;
     }
     it->it_index = 0;
-    Py_INCREF(vec);
-    it->vec = (pgVector *)vec;
+    it->vec = (pgVector *)Py_NewRef(vec);
     return (PyObject *)it;
 }
 
@@ -4323,8 +4309,7 @@ vector_elementwise(pgVector *vec, PyObject *_null)
     if (proxy == NULL) {
         return NULL;
     }
-    Py_INCREF(vec);
-    proxy->vec = (pgVector *)vec;
+    proxy->vec = (pgVector *)Py_NewRef(vec);
 
     return (PyObject *)proxy;
 }

@@ -98,8 +98,7 @@ _get_buffer_from_dict(PyObject *dict, Py_buffer *view_p, int flags)
         }
         Py_DECREF(py_rval);
     }
-    Py_INCREF(dict);
-    dict_view_p->obj = dict;
+    dict_view_p->obj = Py_NewRef(dict);
     view_p->obj = obj;
     view_p->buf = dict_view_p->buf;
     view_p->len = dict_view_p->len;
@@ -134,8 +133,7 @@ _release_buffer_from_dict(Py_buffer *view_p)
     if (py_callback) {
         PyObject *py_rval;
 
-        Py_INCREF(py_callback);
-        py_rval = PyObject_CallOneArg(py_callback, obj);
+        py_rval = PyObject_CallOneArg(Py_NewRef(py_callback), obj);
         if (py_rval) {
             Py_DECREF(py_rval);
         }
@@ -321,8 +319,7 @@ proxy_get_parent(pgBufferProxyObject *self, PyObject *closure)
         return 0;
     }
     obj = view_p->obj ? view_p->obj : Py_None;
-    Py_INCREF(obj);
-    return obj;
+    return Py_NewRef(obj);
 }
 
 static PyObject *
@@ -334,8 +331,7 @@ proxy_get___dict__(pgBufferProxyObject *self, PyObject *closure)
             return 0;
         }
     }
-    Py_INCREF(self->dict);
-    return self->dict;
+    return Py_NewRef(self->dict);
 }
 
 static PyObject *
@@ -475,8 +471,7 @@ proxy_getbuffer(pgBufferProxyObject *self, Py_buffer *view_p, int flags)
         PyMem_Free(obj_view_p);
         return -1;
     }
-    Py_INCREF(self);
-    view_p->obj = (PyObject *)self;
+    view_p->obj = Py_NewRef(self);
     view_p->buf = obj_view_p->buf;
     view_p->len = obj_view_p->len;
     view_p->readonly = obj_view_p->readonly;

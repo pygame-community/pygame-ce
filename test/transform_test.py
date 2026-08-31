@@ -981,6 +981,35 @@ class TransformModuleTest(unittest.TestCase):
 
         self.assertEqual(result.get_at((0, 0)), diff_color)
 
+    def test_threshold_set_color_24bit(self):
+        """set_color channels must round-trip correctly on both RGB24 and BGR24 surfaces.
+
+        On little-endian systems, SDL_PIXELFORMAT_RGB24 has Rmask=0xFF (R at byte 0)
+        and SDL_PIXELFORMAT_BGR24 has Rmask=0xFF0000 (R at byte 2).  The old
+        _set_at_pixels code assumed the_color was always packed 0x00RRGGBB, which
+        happened to be correct for BGR24 but swapped R and B for RGB24.
+        """
+        masks_and_names = [
+            ((0xFF, 0xFF00, 0xFF0000, 0), "RGB24"),
+            ((0xFF0000, 0xFF00, 0xFF, 0), "BGR24"),
+        ]
+        set_color = (255, 0, 0)
+        for masks, name in masks_and_names:
+            with self.subTest(format=name):
+                surf = pygame.Surface((4, 4), depth=24, masks=masks)
+                surf.fill((0, 0, 0))
+                result = pygame.Surface((4, 4), depth=24, masks=masks)
+                pygame.transform.threshold(
+                    dest_surface=result,
+                    surface=surf,
+                    search_color=(0, 0, 0),
+                    threshold=(1, 1, 1),
+                    set_color=set_color,
+                    set_behavior=1,
+                    inverse_set=True,
+                )
+                self.assertEqual(result.get_at((0, 0))[:3], set_color)
+
     def test_threshold__uneven_colors(self):
         (w, h) = size = (16, 16)
 
@@ -1295,6 +1324,39 @@ class TransformModuleTest(unittest.TestCase):
             self.assertEqual(surf_2.get_at((31, 31)), (255, 0, 0, 255))
         finally:
             pygame.display.quit()
+
+    def test_laplacian__cross_format(self):
+        # Regression: laplacian used to map the filtered RGB with the source
+        # format and write the bytes directly into the destination, which
+        # swapped channels when the surfaces had the same bytes-per-pixel
+        # (so the size check passed) but different channel layouts.
+        SIZE = 32
+        # RGBA layout for the source (R at the low byte).
+        s1 = pygame.Surface(
+            (SIZE, SIZE),
+            0,
+            32,
+            masks=(0xFF, 0xFF00, 0xFF0000, 0xFF000000),
+        )
+        s1.fill((10, 10, 70))
+        pygame.draw.line(s1, (255, 0, 0), (3, 10), (20, 20))
+        pygame.draw.line(s1, (255, 0, 0), (0, 31), (31, 31))
+
+        # BGRA layout for the destination — different channel order.
+        s2 = pygame.Surface(
+            (SIZE, SIZE),
+            0,
+            32,
+            masks=(0xFF0000, 0xFF00, 0xFF, 0xFF000000),
+        )
+        pygame.transform.laplacian(s1, s2)
+
+        # Compare RGB only; the alpha channel is also laplacian-filtered
+        # and isn't relevant to the channel-order bug under test.
+        self.assertEqual(s2.get_at((0, 0))[:3], (0, 0, 0))
+        self.assertEqual(s2.get_at((3, 10))[:3], (255, 0, 0))
+        self.assertEqual(s2.get_at((0, 31))[:3], (255, 0, 0))
+        self.assertEqual(s2.get_at((31, 31))[:3], (255, 0, 0))
 
     def test_average_surfaces(self):
         """ """

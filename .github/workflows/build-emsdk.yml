@@ -4,7 +4,7 @@ name: Build WASM (Emscripten)
 # any other branch. Also, skip any non-source changes from running on CI
 on:
   push:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -18,7 +18,7 @@ on:
       - '!.github/workflows/build-emsdk.yml'
 
   pull_request:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -49,7 +49,7 @@ jobs:
       PYBUILD: 3.13
 
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
@@ -73,11 +73,11 @@ jobs:
     name: Pyodide build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
-    - uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
+    - uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
       env:
         CIBW_PLATFORM: pyodide
 
