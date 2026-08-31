@@ -29,6 +29,7 @@ if not sdl_ttf_dep.found() and freetype_dep.found()
 endif
 
 if sdl_api == 3
+    py.install_sources('_sdl3_mixer.py', subdir: pg)
     py.install_sources('_audio.py', subdir: pg)
 endif
 

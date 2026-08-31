@@ -378,8 +378,7 @@ buffer_get_obj(BufferObject *self, void *closure)
     if (!self->view_p->obj) {
         Py_RETURN_NONE;
     }
-    Py_INCREF(self->view_p->obj);
-    return self->view_p->obj;
+    return Py_NewRef(self->view_p->obj);
 }
 
 static int
@@ -397,8 +396,7 @@ buffer_set_obj(BufferObject *self, PyObject *value, void *closure)
     }
     tmp = self->view_p->obj;
     if (value != Py_None) {
-        Py_INCREF(value);
-        self->view_p->obj = value;
+        self->view_p->obj = Py_NewRef(value);
     }
     else {
         self->view_p->obj = 0;

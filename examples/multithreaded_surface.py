@@ -3,6 +3,7 @@ import sys
 import threading
 from time import perf_counter
 
+import numpy
 import pygame
 
 pygame.init()
@@ -38,9 +39,35 @@ def multithreaded_func(
         surf.set_at(target_pixel, new_color)
 
 
-pixels = [(col, row) for col in range(WIDTH) for row in range(HEIGHT)]
+if "--load" not in sys.argv:
+    pixels = [(col, row) for col in range(WIDTH) for row in range(HEIGHT)]
+    colors = [get_random_color() for _ in range(WIDTH * HEIGHT)]
+    with open("params.txt", "w") as param_file:
+        lines = []
+        for x in range(WIDTH):
+            for y in range(HEIGHT):
+                color = colors[y * WIDTH + x]
+                lines.append(f"{x};{y};{color.r};{color.g};{color.b};{color.a}\n")
+        param_file.writelines(lines)
+else:
+    with open("params.txt", "r") as param_file:
+        pixels = []
+        colors = []
+        lines = param_file.readlines()
+        for line in lines:
+            split_line = line.strip().split(";")
+            x = int(split_line[0])
+            y = int(split_line[1])
+            color = pygame.Color("white")
+            color.r = int(split_line[2])
+            color.g = int(split_line[3])
+            color.b = int(split_line[4])
+            color.a = int(split_line[5])
+            pixel = (x, y)
 
-colors = [get_random_color() for _ in range(WIDTH * HEIGHT)]
+            pixels.append(pixel)
+            colors.append(color)
+
 
 args = [(pixel, colors[i]) for i, pixel in enumerate(pixels)]
 batches = {
@@ -58,8 +85,8 @@ for batch in batches.values():
         new_thread.start()
         threads.append(new_thread)
 
-    while any([t.is_alive() for t in threads]):
-        continue
+    for t in threads:
+        t.join()
 end = perf_counter()
 
 pygame.image.save(pygame.transform.scale_by(surface, 10), "out.png")
@@ -69,8 +96,6 @@ print(f"time taken: {end - start}")
 for pixel, color in zip(pixels, colors):
     surface.set_at(pixel, color)
 pygame.image.save(pygame.transform.scale_by(surface, 10), "comparison.png")
-
-import numpy
 
 threaded_surf = pygame.image.load("out.png")
 compare_surf = pygame.image.load("comparison.png")

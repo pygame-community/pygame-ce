@@ -420,6 +420,9 @@ def threshold(
     .. versionaddedold:: 1.8
     .. versionchangedold:: 1.9.4
         Fixed a lot of bugs and added keyword arguments. Test your code.
+    .. versionchanged:: 2.5.8
+        Fixed ``set_color`` writing the wrong channels on 24-bit destination
+        surfaces whose byte layout did not match the platform default.
     """
 
 def hsl(

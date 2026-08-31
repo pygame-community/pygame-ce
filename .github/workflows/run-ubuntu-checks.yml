@@ -18,7 +18,7 @@ defaults:
 # from running on CI
 on:
   push:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -33,7 +33,7 @@ on:
 
 
   pull_request:
-    branches: main
+    branches: [main, main-2.x]
     paths-ignore:
       - 'docs/**'
       - 'src_c/doc/**'
@@ -74,7 +74,7 @@ jobs:
       PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
 
@@ -98,7 +98,7 @@ jobs:
 
     - name: Cache debug python build
       id: cache-python
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         key: ${{ matrix.python }}
         path: ~/.pyenv/versions/${{ matrix.python }}-debug/**
@@ -144,7 +144,7 @@ jobs:
     needs: debug_coverage
 
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 0  # fetch full history
         persist-credentials: false

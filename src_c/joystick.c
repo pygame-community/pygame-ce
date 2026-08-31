@@ -646,8 +646,7 @@ pgJoystick_New(int id)
     cur = joylist_head;
     while (cur) {
         if (cur->joy == joy) {
-            Py_INCREF(cur);
-            return (PyObject *)cur;
+            return Py_NewRef(cur);
         }
         cur = cur->next;
     }

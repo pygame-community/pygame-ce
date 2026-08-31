@@ -25,12 +25,6 @@ extern int
 SDL_RegisterApp(const char *, Uint32, void *);
 #endif
 
-#if defined(macintosh)
-#if (!defined(__MWERKS__) && !TARGET_API_MAC_CARBON)
-QDGlobals pg_qd;
-#endif
-#endif
-
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define PAI_MY_ENDIAN '<'
 #define PAI_OTHER_ENDIAN '>'

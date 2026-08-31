@@ -137,6 +137,10 @@
    .. versionaddedold: 1.9.4
       Methods :meth:`close`
 
+   .. versionchanged:: 2.5.8
+      Fixed incorrect color matching and writing on 24-bit surfaces whose
+      byte layout did not match the platform default.
+
    .. attribute:: surface
 
       | :sl:`Gets the Surface the PixelArray uses.`
@@ -223,6 +227,10 @@
       PixelArray.
 
       .. versionaddedold:: 1.8.1
+
+      .. versionchanged:: 2.5.8
+         Fixed incorrect color matching and writing on 24-bit surfaces whose
+         byte layout did not match the platform default.
 
       .. ## PixelArray.replace ##
 

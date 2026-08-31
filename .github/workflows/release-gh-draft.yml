@@ -10,6 +10,7 @@ concurrency:
 
 permissions:
   contents: read
+  packages: write  # zizmor: ignore[excessive-permissions] Required to upload artifacts to other jobs
 
 jobs:
   manylinux:
@@ -47,12 +48,12 @@ jobs:
         run: echo "VER=${GITHUB_REF_NAME#'release/'}" >> $GITHUB_OUTPUT
 
       - name: Generate release attestation
-        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: "pygame-wheels/*"
 
       - name: Draft a release
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # zizmor: ignore[superfluous-actions] v3.0.2
         with:
           draft: true
           prerelease: ${{ contains(steps.ver.outputs.VER, 'dev') }}

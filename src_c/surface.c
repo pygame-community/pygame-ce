@@ -103,12 +103,6 @@ surf_get_locked(PyObject *self, PyObject *args);
 static PyObject *
 surf_get_locks(PyObject *self, PyObject *args);
 static PyObject *
-surf_mutex_lock(PyObject *self, PyObject *args);
-static PyObject *
-surf_mutex_unlock(PyObject *self, PyObject *args);
-static PyObject *
-surf_mutex_is_locked(PyObject *self, PyObject *args);
-static PyObject *
 surf_get_palette(PyObject *self, PyObject *args);
 static PyObject *
 surf_get_palette_at(PyObject *self, PyObject *args);
@@ -259,10 +253,6 @@ static struct PyMethodDef surface_methods[] = {
     {"mustlock", surf_mustlock, METH_NOARGS, DOC_SURFACE_MUSTLOCK},
     {"get_locked", surf_get_locked, METH_NOARGS, DOC_SURFACE_GETLOCKED},
     {"get_locks", surf_get_locks, METH_NOARGS, DOC_SURFACE_GETLOCKS},
-
-    {"mutex_lock", surf_mutex_lock, METH_NOARGS, NULL},
-    {"mutex_unlock", surf_mutex_unlock, METH_NOARGS, NULL},
-    {"mutex_is_locked", surf_mutex_is_locked, METH_NOARGS, NULL},
 
     {"set_colorkey", (PyCFunction)surf_set_colorkey, METH_VARARGS,
      DOC_SURFACE_SETCOLORKEY},
@@ -423,15 +413,8 @@ surface_cleanup(pgSurfaceObject *self)
         PyMem_Free(self->subsurface);
         self->subsurface = NULL;
     }
-    if (self->dependency) {
-        Py_DECREF(self->dependency);
-        self->dependency = NULL;
-    }
-
-    if (self->locklist) {
-        Py_DECREF(self->locklist);
-        self->locklist = NULL;
-    }
+    Py_CLEAR(self->dependency);
+    Py_CLEAR(self->locklist);
     self->owner = 0;
 }
 
@@ -1042,22 +1025,14 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
             break;
         case 3:
             byte_buf = (Uint8 *)(pixels + y * surf->pitch) + x * 3;
-            // Shouldn't this be able to happen without awareness of shifts?
-            // mapped color -> pixel and all.
 #if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            *(byte_buf + (format->Rshift >> 3)) =
-                (Uint8)(color >> format->Rshift);
-            *(byte_buf + (format->Gshift >> 3)) =
-                (Uint8)(color >> format->Gshift);
-            *(byte_buf + (format->Bshift >> 3)) =
-                (Uint8)(color >> format->Bshift);
+            byte_buf[0] = (Uint8)(color);
+            byte_buf[1] = (Uint8)(color >> 8);
+            byte_buf[2] = (Uint8)(color >> 16);
 #else
-            *(byte_buf + 2 - (format->Rshift >> 3)) =
-                (Uint8)(color >> format->Rshift);
-            *(byte_buf + 2 - (format->Gshift >> 3)) =
-                (Uint8)(color >> format->Gshift);
-            *(byte_buf + 2 - (format->Bshift >> 3)) =
-                (Uint8)(color >> format->Bshift);
+            byte_buf[0] = (Uint8)(color >> 16);
+            byte_buf[1] = (Uint8)(color >> 8);
+            byte_buf[2] = (Uint8)(color);
 #endif
             break;
         default: /* case 4: */
@@ -1108,7 +1083,7 @@ surf_get_at_mapped(PyObject *self, PyObject *position)
         PRINT_AND_CLEAR_EXCEPTION
         UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
         PRINT_AND_CLEAR_EXCEPTION
-        return NULL;
+        return RAISE(pgExc_SDLError, "Failed to lock mutex");
     }
 
     pixels = (Uint8 *)surf->pixels;
@@ -1136,7 +1111,7 @@ surf_get_at_mapped(PyObject *self, PyObject *position)
         PRINT_AND_CLEAR_EXCEPTION
         UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
         PRINT_AND_CLEAR_EXCEPTION
-        return NULL;
+        return RAISE(pgExc_SDLError, "Failed to unlock mutex");
     }
 
     UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
@@ -1278,40 +1253,6 @@ surf_get_locks(PyObject *self, PyObject *_null)
         PyTuple_SetItem(tuple, i, tmp);
     }
     return tuple;
-}
-
-static PyObject *
-surf_mutex_lock(PyObject *self, PyObject *_null)
-{
-    SURF_INIT_CHECK(pgSurface_AsSurface(self));
-    if (IS_LOCKED((pgSurfaceObject *)self)) {
-        RAISE(pgExc_SDLError, "Cannot lock mutex that is already locked");
-    }
-
-    LOCK_pgSurfaceObject((pgSurfaceObject *)self);
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-surf_mutex_unlock(PyObject *self, PyObject *_null)
-{
-    SURF_INIT_CHECK(pgSurface_AsSurface(self));
-    if (!IS_LOCKED((pgSurfaceObject *)self)) {
-        RAISE(pgExc_SDLError, "Cannot unlock mutex that is not locked");
-    }
-
-    UNLOCK_pgSurfaceObject((pgSurfaceObject *)self);
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-surf_mutex_is_locked(PyObject *self, PyObject *_null)
-{
-    SURF_INIT_CHECK(pgSurface_AsSurface(self));
-    if (IS_LOCKED((pgSurfaceObject *)self)) {
-        Py_RETURN_TRUE;
-    }
-    Py_RETURN_FALSE;
 }
 
 static PyObject *
@@ -4351,8 +4292,7 @@ _release_buffer(Py_buffer *view_p)
 
     Py_DECREF(consumer_ref);
     PyMem_Free(internal);
-    Py_DECREF(view_p->obj);
-    view_p->obj = 0;
+    Py_CLEAR(view_p->obj);
 }
 
 static int
@@ -4425,20 +4365,12 @@ static PyObject *
 surf_get_pixels_address(PyObject *self, PyObject *closure)
 {
     SDL_Surface *surface = pgSurface_AsSurface(self);
-    void *address;
 
     if (!surface) {
         Py_RETURN_NONE;
     }
-    if (!surface->pixels) {
-        return PyLong_FromLong(0L);
-    }
-    address = surface->pixels;
-#if SIZEOF_VOID_P > SIZEOF_LONG
-    return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)address);
-#else
-    return PyLong_FromUnsignedLong((unsigned long)address);
-#endif
+
+    return PyLong_FromVoidPtr(surface->pixels);
 }
 
 static int

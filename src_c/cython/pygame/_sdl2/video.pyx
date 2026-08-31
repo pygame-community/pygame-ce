@@ -174,15 +174,8 @@ cdef class Texture:
         if not self._tex:
             raise error()
 
-        if not scale_quality is None:
-            if SDL_VERSION_ATLEAST(2,0,12):
-                SDL_SetTextureScaleMode(self._tex,scale_quality)
-            else:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,{
-                    0: b'nearest',
-                    1: b'linear',
-                    2: b'best'
-                }[scale_quality])
+        if scale_quality is not None:
+            SDL_SetTextureScaleMode(self._tex, scale_quality)
 
         self.width, self.height = width, height
 
@@ -373,8 +366,7 @@ cdef class Texture:
         :param p2_mod: The second vertex color modulation.
         :param p3_mod: The third vertex color modulation.
         """
-        if not SDL_VERSION_ATLEAST(2, 0, 18):
-            raise error("draw_triangle requires SDL 2.0.18 or newer")
+
 
         cdef Uint8 _r_mod, _g_mod, _b_mod, _a_mod
         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
@@ -423,8 +415,6 @@ cdef class Texture:
         :param p3_mod: The third vertex color modulation.
         :param p4_mod: The fourth vertex color modulation.
         """
-        if not SDL_VERSION_ATLEAST(2, 0, 18):
-            raise error("draw_quad requires SDL 2.0.18 or newer")
 
         cdef Uint8 _r_mod, _g_mod, _b_mod, _a_mod
         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
@@ -1048,8 +1038,6 @@ cdef class Renderer:
 
     def fill_triangle(self, p1, p2, p3):
         # https://wiki.libsdl.org/SDL_RenderGeometry
-        if not SDL_VERSION_ATLEAST(2, 0, 18):
-            raise error("fill_triangle requires SDL 2.0.18 or newer")
 
         cdef Uint8[4] rgba
 
@@ -1089,8 +1077,6 @@ cdef class Renderer:
 
     def fill_quad(self, p1, p2, p3, p4):
         # https://wiki.libsdl.org/SDL_RenderGeometry
-        if not SDL_VERSION_ATLEAST(2, 0, 18):
-            raise error("fill_quad requires SDL 2.0.18 or newer")
 
         cdef Uint8[4] rgba
 
