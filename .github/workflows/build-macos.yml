@@ -4,10 +4,10 @@ name: macOS
 # to main.
 on:
   push:
-    branches: main
+    branches: [main, main-2.x]
 
   pull_request:
-    branches: main
+    branches: [main, main-2.x]
 
   # the github release drafter can call this workflow
   workflow_call:
@@ -31,13 +31,13 @@ jobs:
           - { macarch: x86_64, os: macos-15 }
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           # The hash of all files in buildconfig manylinux-build and macdependencies is
@@ -93,26 +93,26 @@ jobs:
       CIBW_BEFORE_TEST: rm -rf ${{ github.workspace }}/pygame_mac_deps
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: pip cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/Library/Caches/pip  # This cache path is only right on mac
           key: pip-cache-${{ matrix.macarch }}-${{ matrix.os }}
 
       - name: Fetch Mac deps
         id: macdep-cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
           fail-on-cache-miss: true
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
+        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         with:
           extras: uv
 

@@ -47,17 +47,6 @@
 
 #include <ctype.h>
 
-static inline double
-pg_round(double d)
-{
-#if (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L) && \
-    !defined(round)
-    return (((d < 0) ? (ceil((d)-0.5)) : (floor((d) + 0.5))));
-#else
-    return round(d);
-#endif
-}
-
 typedef enum { TRISTATE_SUCCESS, TRISTATE_FAIL, TRISTATE_ERROR } tristate;
 
 static PyObject *_COLORDICT = NULL;
@@ -859,8 +848,7 @@ _color_lerp(pgColorObject *self, PyObject *args, PyObject *kw)
     }
 
     for (int i = 0; i < 4; i++) {
-        new_rgba[i] =
-            (Uint8)pg_round(self->data[i] * (1 - amt) + rgba[i] * amt);
+        new_rgba[i] = (Uint8)round(self->data[i] * (1 - amt) + rgba[i] * amt);
     }
 
     return (PyObject *)_color_new_internal(Py_TYPE(self), new_rgba);

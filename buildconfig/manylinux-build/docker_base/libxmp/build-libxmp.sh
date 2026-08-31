@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-XMP_VERSION=4.6.3
+XMP_VERSION=4.7.2
 XMP="libxmp-${XMP_VERSION}"
 
 
