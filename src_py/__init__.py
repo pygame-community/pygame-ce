@@ -25,7 +25,6 @@ Windows, macOS, OS X, BeOS, FreeBSD, IRIX, and Linux."""
 
 import os
 import sys
-import platform
 
 # Choose Windows display driver
 if os.name == "nt":
@@ -453,4 +452,4 @@ def __color_reduce(c):
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
 # cleanup namespace
-del pygame, os, sys, platform, MissingModule, copyreg, packager_imports
+del pygame, os, sys, MissingModule, copyreg, packager_imports
