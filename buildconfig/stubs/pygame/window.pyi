@@ -17,8 +17,8 @@ class Window:
     window class will continue to be developed, and we're excited to share
     the new functionality this class offers.
 
-    .. note:: You can only call window-related functions (e.g. setting title,
-        position, etc.) from the same thread that created the Window instance.
+    .. note:: Every window property, method and operation can only be
+        performed on the main thread the application started in.
 
     :param str title: The title of the window.
     :param (int, int) size: The size of the window, in screen coordinates.
