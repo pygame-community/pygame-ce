@@ -91,6 +91,13 @@ class SurfaceTypeTest(unittest.TestCase):
         surf_8 = pygame.Surface((70, 70), 0, 8)
         self.assertEqual(repr(surf_8), "<Surface(70x70x8)>")
 
+    def test_subclass_repr_uses_runtime_type_name(self):
+        class CustomSurface(pygame.Surface):
+            pass
+
+        surf = CustomSurface((70, 70), 0, 32)
+        self.assertEqual(repr(surf), "<CustomSurface(70x70x32)>")
+
     def test_keyword_arguments(self):
         surf = pygame.Surface((70, 70), flags=SRCALPHA, depth=32)
         self.assertEqual(surf.get_flags() & SRCALPHA, SRCALPHA)
