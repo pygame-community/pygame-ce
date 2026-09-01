@@ -19,7 +19,7 @@
 #define DOC_WINDOW_OPENGL "opengl -> bool\nGet if the window supports OpenGL."
 #define DOC_WINDOW_HANDLE "handle -> int\nGet the window handle provided by the window manager if supported otherwise 0"
 #define DOC_WINDOW_UTILITY "utility -> bool\nGet if the window is an utility window (**read-only**)."
-#define DOC_WINDOW_TRANSPARENT "transparent -> bool\nGet if the window has a per-pixel alpha buffer (**read-only**)."
+#define DOC_WINDOW_TRANSPARENT "transparent -> bool\nGet if the window requested a per-pixel alpha buffer (**read-only**)."
 #define DOC_WINDOW_FROMDISPLAYMODULE "from_display_module() -> Window\nCreate a Window object using window data from display module."
 #define DOC_WINDOW_GETSURFACE "get_surface() -> Surface\nGet the window surface."
 #define DOC_WINDOW_FLIP "flip() -> None\nUpdate the display surface to the window."
