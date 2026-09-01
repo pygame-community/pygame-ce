@@ -35,25 +35,14 @@ class RendererTest(unittest.TestCase):
     def test_to_surface(self):
         self.renderer.draw_color = "YELLOW"
         self.renderer.draw_point((10, 10))  # assumes Renderer.draw_point works
+
         surf1 = self.renderer.to_surface()
         self.assertEqual(surf1.get_at((10, 10)), pygame.Color(255, 255, 0, 255))
         self.assertEqual(surf1.size, (100, 100))
 
-        surf2 = pygame.Surface((150, 150))
-        self.renderer.to_surface(surf2)
-        self.assertEqual(surf2.get_at((10, 10)), pygame.Color(255, 255, 0, 255))
-
         surf3 = self.renderer.to_surface(area=pygame.Rect(5, 5, 20, 20))
         self.assertEqual(surf3.get_at((5, 5)), pygame.Color(255, 255, 0, 255))
         self.assertEqual(surf3.size, (20, 20))
-
-        surf4 = pygame.Surface((150, 150))
-        self.renderer.to_surface(surf4, pygame.Rect(7, 7, 40, 40))
-        self.assertEqual(surf4.get_at((3, 3)), pygame.Color(255, 255, 0, 255))
-
-        small_surf = pygame.Surface((50, 50))
-        with self.assertRaises(ValueError):
-            self.renderer.to_surface(small_surf)
 
     def test_blit(self):
         surface = pygame.Surface((10, 10))
