@@ -252,7 +252,7 @@ static PyObject *
 pg_system_get_theme(PyObject *self, PyObject *_null)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    return PyLong_FromLong((long)SDL_GetSystemTheme());
+    return PyLong_FromLong(SDL_GetSystemTheme());
 #else
     return RAISE(pgExc_SDLError,
                  "'pygame.system.get_theme' requires SDL 3.0.0+");

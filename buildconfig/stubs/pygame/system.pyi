@@ -3,7 +3,7 @@
 .. versionadded:: 2.2.0
 """
 
-from typing import Literal, TypedDict
+from typing import TypedDict
 
 from pygame._data_classes import PowerState
 
@@ -213,6 +213,8 @@ def get_theme() -> int:
 
     .. note:: Until ``pygame.init`` or ``pygame.display.init`` are called,
         this function will always return ``pygame.SYSTEM_THEME_UNKNOWN``.
+
+    .. note:: This function should only be called on the main thread.
 
     .. versionadded:: 3.0.0
     """
