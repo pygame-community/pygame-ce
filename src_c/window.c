@@ -986,13 +986,13 @@ static int
 window_set_progress_state(pgWindowObject *self, PyObject *arg, void *v)
 {
 #if SDL_VERSION_ATLEAST(3, 4, 0)
-    int progress_state = (int)PyLong_AsLong(arg);
+    int progress_state = PyLong_AsInt(arg);
     if (PyErr_Occurred()) {
         return -1;
     }
 
-    if (SDL_SetWindowProgressState(
-            self->_win, (SDL_ProgressState)progress_state) == SDL_FALSE) {
+    if (!SDL_SetWindowProgressState(self->_win,
+                                    (SDL_ProgressState)progress_state)) {
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
@@ -1028,7 +1028,7 @@ window_set_progress_value(pgWindowObject *self, PyObject *arg, void *v)
         return -1;
     }
 
-    if (SDL_SetWindowProgressValue(self->_win, progress_value) == SDL_FALSE) {
+    if (!SDL_SetWindowProgressValue(self->_win, progress_value)) {
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
