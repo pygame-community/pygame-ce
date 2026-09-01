@@ -42,7 +42,7 @@ from pygame._base_display import (
 
 
 class Orientation(IntEnum):
-    # Constants match _SDL_VER_DisplayOrientation
+    # Constants match SDL_DisplayOrientation
     UNKNOWN = 0
     LANDSCAPE = 1
     LANDSCAPE_FLIPPED = 2
