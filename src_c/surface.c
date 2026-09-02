@@ -485,7 +485,8 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
 #endif
 
     if (self->surf) {
-        PyErr_SetString(PyExc_RuntimeError, "Object of type Surface cannot be reinitialized");
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Object of type Surface cannot be reinitialized");
         return -1;
     }
 

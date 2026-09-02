@@ -574,7 +574,8 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     Uint32 flags = 0;
 
     if (self->renderer) {
-        PyErr_SetString(PyExc_RuntimeError, "Object of type Renderer cannot be reinitialized");
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Object of type Renderer cannot be reinitialized");
         return -1;
     }
 
@@ -1065,7 +1066,8 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     Uint32 format;
 
     if (self->texture) {
-        PyErr_SetString(PyExc_RuntimeError, "Object of type Texture cannot be reinitialized");
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Object of type Texture cannot be reinitialized");
         return -1;
     }
 
