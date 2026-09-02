@@ -31,9 +31,31 @@
 
 /* mouse module functions */
 static PyObject *
-mouse_set_pos(PyObject *self, PyObject *args)
+mouse_set_pos(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int x, y;
+    int force = 0;
+
+    Py_ssize_t nargs = PyTuple_Size(args);
+
+    if (nargs == 1) {
+        static char *kwids[] = {"pos", "force", NULL};
+        PyObject *pos = NULL;
+
+        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", kwids, &pos,
+                                         &force)) {
+            return NULL;
+        }
+    }
+    else {
+        static char *kwids[] = {"x", "y", "force", NULL};
+        PyObject *_x, *_y = NULL;
+
+        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|i", kwids, &_x, &_y,
+                                         &force)) {
+            return NULL;
+        }
+    }
 
     if (!pg_TwoIntsFromObj(args, &x, &y)) {
         return RAISE(PyExc_TypeError, "invalid position argument for set_pos");
@@ -41,25 +63,29 @@ mouse_set_pos(PyObject *self, PyObject *args)
 
     VIDEO_INIT_CHECK();
 
-    {
-        SDL_Window *sdlWindow = pg_GetDefaultWindow();
-        SDL_Renderer *sdlRenderer = SDL_GetRenderer(sdlWindow);
-        if (sdlRenderer != NULL) {
-            SDL_Rect vprect;
-            float scalex, scaley;
+    SDL_Window *sdlWindow = pg_GetDefaultWindow();
+    SDL_Renderer *sdlRenderer = SDL_GetRenderer(sdlWindow);
+    if (sdlRenderer != NULL) {
+        SDL_Rect vprect;
+        float scalex, scaley;
 
-            SDL_RenderGetScale(sdlRenderer, &scalex, &scaley);
-            SDL_RenderGetViewport(sdlRenderer, &vprect);
+        SDL_RenderGetScale(sdlRenderer, &scalex, &scaley);
+        SDL_RenderGetViewport(sdlRenderer, &vprect);
 
-            x += vprect.x;
-            y += vprect.y;
+        x += vprect.x;
+        y += vprect.y;
 
-            x = (int)(x * scalex);
-            y = (int)(y * scaley);
-        }
+        x = (int)(x * scalex);
+        y = (int)(y * scaley);
     }
 
-    SDL_WarpMouseInWindow(NULL, (Uint16)x, (Uint16)y);
+    if (force) {
+        SDL_WarpMouseInWindow(sdlWindow, (Uint16)x, (Uint16)y);
+    }
+    else {
+        SDL_WarpMouseInWindow(NULL, (Uint16)x, (Uint16)y);
+    }
+
     Py_RETURN_NONE;
 }
 
@@ -646,7 +672,8 @@ mouse_set_relative_mode(PyObject *self, PyObject *arg)
 }
 
 static PyMethodDef _mouse_methods[] = {
-    {"set_pos", mouse_set_pos, METH_VARARGS, DOC_MOUSE_SETPOS},
+    {"set_pos", (PyCFunction)mouse_set_pos, METH_VARARGS | METH_KEYWORDS,
+     DOC_MOUSE_SETPOS},
     {"get_pos", (PyCFunction)mouse_get_pos, METH_VARARGS | METH_KEYWORDS,
      DOC_MOUSE_GETPOS},
     {"get_rel", (PyCFunction)mouse_get_rel, METH_NOARGS, DOC_MOUSE_GETREL},

@@ -188,15 +188,18 @@ def get_rel() -> tuple[int, int]:
     """
 
 @overload
-def set_pos(pos: Point, /) -> None: ...
+def set_pos(pos: Point, force: bool = False) -> None: ...
 @overload
-def set_pos(x: float, y: float, /) -> None: ...
+def set_pos(x: float, y: float, force: bool = False) -> None: ...
 def set_pos(*args) -> None:  # type: ignore
     """Set the mouse cursor position.
 
     Set the current mouse position to arguments given. If the mouse cursor is
     visible it will jump to the new coordinates. Moving the mouse will generate
     a new ``pygame.MOUSEMOTION`` event.
+
+    If the ``force`` argument is ``True``, the mouse position will change even
+    if mouse cursor is outside window.
     """
 
 def set_visible(value: bool, /) -> int:
