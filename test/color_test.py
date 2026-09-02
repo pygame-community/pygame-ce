@@ -76,6 +76,33 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(len(c), 4)
         self.assertEqual(c, (100, 110, 120, 128))
 
+    def test_copy(self):
+        import copy
+
+        # test color.copy()
+        c = pygame.Color(10, 20, 30, 40)
+        c_copy = c.copy()
+        self.assertIs(type(c_copy), pygame.Color)
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+
+        # test color.__copy__()
+        c = pygame.Color(10, 20, 30, 40)
+        c_copy = c.__copy__()
+        self.assertIs(type(c_copy), pygame.Color)
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+
+        # test copy.copy()
+        c = pygame.Color(10, 20, 30, 40)
+        c_copy = copy.copy(c)
+        self.assertIs(type(c_copy), pygame.Color)
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+
     def test_invalid_html_hex_codes(self):
         # This was a problem with the way 2 digit hex numbers were
         # calculated. The test_hex_digits test is related to the fix.
@@ -1514,8 +1541,41 @@ class ColorTypeTest(unittest.TestCase):
 class SubclassTest(unittest.TestCase):
     class MyColor(pygame.Color):
         def __init__(self, *args, **kwds):
-            super(SubclassTest.MyColor, self).__init__(*args, **kwds)
+            super().__init__(*args, **kwds)
             self.an_attribute = True
+            self.copy_dunder_called = False
+
+        def __copy__(self):
+            self.copy_dunder_called = True
+            return super().__copy__()
+
+    def test_copy(self):
+        import copy
+
+        # test color.copy()
+        c = self.MyColor(10, 20, 30, 40)
+        c_copy = c.copy()
+        self.assertIs(type(c_copy), type(c))
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+
+        # test color.__copy__()
+        c = self.MyColor(10, 20, 30, 40)
+        c_copy = c.__copy__()
+        self.assertIs(type(c_copy), type(c))
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+
+        # test copy.copy()
+        c = self.MyColor(10, 20, 30, 40)
+        c_copy = copy.copy(c)
+        self.assertIs(type(c_copy), type(c))
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+        self.assertTrue(c.copy_dunder_called)
 
     def test_add(self):
         mc1 = self.MyColor(128, 128, 128, 255)
