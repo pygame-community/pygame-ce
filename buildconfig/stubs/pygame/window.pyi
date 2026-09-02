@@ -303,8 +303,8 @@ class Window:
         and smaller aspect ratios are narrower.
 
         The window won't be narrower than the set minimum. If it's the
-        the same as the maximum aspect ratio, the window will be locked
-        to that value.
+        same as the maximum aspect ratio, the window will be locked to
+        that value.
 
         A value of ``0.0``, which is the default, removes the minimum restriction.
 
