@@ -204,3 +204,17 @@ def get_power_state() -> PowerState | None:
 
     .. versionadded:: 2.4.0
     """
+
+def get_theme() -> int:
+    """Returns the current system theme.
+
+    The returned system theme can be ``pygame.SYSTEM_THEME_DARK``,
+    ``pygame.SYSTEM_THEME_LIGHT``, or ``pygame.SYSTEM_THEME_UNKNOWN``.
+
+    .. note:: Until ``pygame.init`` or ``pygame.display.init`` are called,
+        this function will always return ``pygame.SYSTEM_THEME_UNKNOWN``.
+
+    .. note:: This function should only be called on the main thread.
+
+    .. versionadded:: 3.0.0
+    """
