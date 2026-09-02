@@ -14,6 +14,8 @@
 #define DOC_WINDOW_SIZE "size -> tuple[int, int]\nGet or set the window size in pixels."
 #define DOC_WINDOW_MINIMUMSIZE "minimum_size -> tuple[int, int]\nGet or set the minimum size of the window's client area."
 #define DOC_WINDOW_MAXIMUMSIZE "maximum_size -> tuple[int, int]\nGet or set the maximum size of the window's client area."
+#define DOC_WINDOW_MINIMUMASPECTRATIO "minimum_aspect_ratio -> float\nGet or set the window's minimum aspect ratio."
+#define DOC_WINDOW_MAXIMUMASPECTRATIO "maximum_aspect_ratio -> float\nGet or set the window's maximum aspect ratio."
 #define DOC_WINDOW_POSITION "position -> tuple[int, int]\nGet or set the window position in screen coordinates."
 #define DOC_WINDOW_OPACITY "opacity -> float\nGet or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque)."
 #define DOC_WINDOW_OPENGL "opengl -> bool\nGet if the window supports OpenGL."
