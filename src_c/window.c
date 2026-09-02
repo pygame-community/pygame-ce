@@ -967,41 +967,88 @@ window_get_utility(pgWindowObject *self, void *v)
 }
 
 static PyObject *
-window_get_aspect_ratio(pgWindowObject *self, void *v)
+window_get_minimum_aspect_ratio(pgWindowObject *self, void *v)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    float min_aspect, max_aspect;
+    float minimum, maximum;
 
-    if (SDL_GetWindowAspectRatio(self->_win, &min_aspect, &max_aspect) ==
-        SDL_FALSE) {
+    if (!SDL_GetWindowAspectRatio(self->_win, &minimum, &maximum)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-    return pg_tuple_couple_from_values_double((double)min_aspect,
-                                              (double)max_aspect);
+    return PyFloat_FromDouble((double)minimum);
 #else
-    return RAISE(pgExc_SDLError, "Window.aspect_ratio requires SDL 3.0.0+");
+    return RAISE(pgExc_SDLError,
+                 "Window.minimum_aspect_ratio requires SDL 3.0.0+");
+#endif
+}
+
+static PyObject *
+window_get_maximum_aspect_ratio(pgWindowObject *self, void *v)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    float minimum, maximum;
+
+    if (!SDL_GetWindowAspectRatio(self->_win, &minimum, &maximum)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    return PyFloat_FromDouble((double)maximum);
+#else
+    return RAISE(pgExc_SDLError,
+                 "Window.maximum_aspect_ratio requires SDL 3.0.0+");
 #endif
 }
 
 static int
-window_set_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
+window_set_minimum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    float min_aspect, max_aspect;
+    float cur_minimum, cur_maximum, minimum;
 
-    if (!pg_TwoFloatsFromObj(arg, &min_aspect, &max_aspect)) {
-        RAISERETURN(PyExc_TypeError, "invalid aspect ratio argument", -1);
+    minimum = (float)PyFloat_AsDouble(arg);
+    if (PyErr_Occurred()) {
+        return -1;
     }
 
-    if (SDL_SetWindowAspectRatio(self->_win, min_aspect, max_aspect) ==
-        SDL_FALSE) {
+    if (!SDL_GetWindowAspectRatio(self->_win, &cur_minimum, &cur_maximum)) {
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+    }
+
+    if (!SDL_SetWindowAspectRatio(self->_win, minimum, cur_maximum)) {
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
     return 0;
 #else
-    RAISERETURN(pgExc_SDLError, "Window.aspect_ratio requires SDL 3.0.0+", -1);
+    RAISERETURN(pgExc_SDLError,
+                "Window.minimum_aspect_ratio requires SDL 3.0.0+", -1);
+#endif
+}
+
+static int
+window_set_maximum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    float cur_minimum, cur_maximum, maximum;
+
+    maximum = (float)PyFloat_AsDouble(arg);
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+
+    if (!SDL_GetWindowAspectRatio(self->_win, &cur_minimum, &cur_maximum)) {
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+    }
+
+    if (!SDL_SetWindowAspectRatio(self->_win, cur_minimum, maximum)) {
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+    }
+
+    return 0;
+#else
+    RAISERETURN(pgExc_SDLError,
+                "Window.maximum_aspect_ratio requires SDL 3.0.0+", -1);
 #endif
 }
 
@@ -1495,8 +1542,12 @@ static PyGetSetDef _window_getset[] = {
     {"opengl", (getter)window_get_opengl, NULL, DOC_WINDOW_OPENGL, NULL},
     {"handle", (getter)window_get_handle, NULL, DOC_WINDOW_HANDLE, NULL},
     {"utility", (getter)window_get_utility, NULL, DOC_WINDOW_UTILITY, NULL},
-    {"aspect_ratio", (getter)window_get_aspect_ratio,
-     (setter)window_set_aspect_ratio, DOC_WINDOW_ASPECTRATIO, NULL},
+    {"minimum_aspect_ratio", (getter)window_get_minimum_aspect_ratio,
+     (setter)window_set_minimum_aspect_ratio, DOC_WINDOW_MINIMUMASPECTRATIO,
+     NULL},
+    {"maximum_aspect_ratio", (getter)window_get_maximum_aspect_ratio,
+     (setter)window_set_maximum_aspect_ratio, DOC_WINDOW_MAXIMUMASPECTRATIO,
+     NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
