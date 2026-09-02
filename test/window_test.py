@@ -295,7 +295,7 @@ class WindowTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: Window(aaa=False))
 
     def test_reinit(self):
-        # Should raise RuntimeError if __init__ is called on
+        # should raise RuntimeError if __init__ is called on
         # an initialized Window
         with self.assertRaises(RuntimeError):
             self.win.__init__()

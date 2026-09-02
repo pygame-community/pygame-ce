@@ -28,6 +28,12 @@ class RendererTest(unittest.TestCase):
         self.renderer.clear()
         self.renderer.draw_color = init_draw_color
 
+    def test_reinit(self):
+        # should raise RuntimeError if __init__ is called on
+        # an initialized Renderer
+        with self.assertRaises(RuntimeError):
+            self.renderer.__init__(self.window)
+
     def test_to_surface(self):
         self.renderer.draw_color = "YELLOW"
         self.renderer.draw_point((10, 10))  # assumes Renderer.draw_point works
@@ -268,6 +274,12 @@ class TextureTest(unittest.TestCase):
             _render.Texture(
                 self.renderer, (100, 100), depth=32, static=True, streaming=True
             )
+
+    def test_reinit(self):
+        # should raise RuntimeError if __init__ is called on
+        # an initialized Texture
+        with self.assertRaises(RuntimeError):
+            self.texture.__init__(self.renderer, (80, 60))
 
     def test_alpha(self):
         self.assertEqual(255, self.texture.alpha)

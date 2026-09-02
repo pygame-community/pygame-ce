@@ -573,6 +573,11 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     int target_texture = 0;
     Uint32 flags = 0;
 
+    if (self->renderer) {
+        PyErr_SetString(PyExc_RuntimeError, "Object of type Renderer cannot be reinitialized");
+        return -1;
+    }
+
     char *keywords[] = {"window", "index",          "accelerated",
                         "vsync",  "target_texture", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|iipp", keywords,
@@ -1058,6 +1063,11 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     int access = SDL_TEXTUREACCESS_STATIC;
     Uint32 Rmask, Gmask, Bmask, Amask;
     Uint32 format;
+
+    if (self->texture) {
+        PyErr_SetString(PyExc_RuntimeError, "Object of type Texture cannot be reinitialized");
+        return -1;
+    }
 
     char *keywords[] = {"renderer",  "size",   "depth",         "static",
                         "streaming", "target", "scale_quality", NULL};
