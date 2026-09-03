@@ -149,7 +149,7 @@ only-binary = ["numpy"]
 
 # 1. skip all 32-bit manylinux (i686)
 # 2. skip all pypy+arm combinations
-# 3. skip pypy 3.11 manylinux and cpython 3.14 manylinux (numpy has newer manylinux
+# 3. skip pypy 3.11 manylinux and cpython 3.14+ manylinux (numpy has newer manylinux
 # wheels for this which is incompatible with our manylinux version)
 [[tool.cibuildwheel.overrides]]
 select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,{cp314,cp315}-manylinux_*}"
