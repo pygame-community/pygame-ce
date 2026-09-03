@@ -3074,6 +3074,35 @@ class FRectTypeTest(RectTypeTest):
 
             self.assertTupleEqual(clipped_line, expected_line)
 
+    def test_clipline__small_frect_issue_3704(self):
+        """Ensures FRect.clipline works with small float dimensions.
+
+        Regression test for issue #3704 - FRect.clipline was returning
+        empty tuple even when line intersects rect, due to incorrect
+        -1 offset on float rect boundaries.
+        """
+        rect = FRect((0.2, 0.2), (0.6, 0.6))
+
+        # Horizontal line crossing through the rect
+        clipped = rect.clipline(((0.0, 0.5), (1.0, 0.5)))
+        self.assertNotEqual(clipped, (), "horizontal line should intersect")
+
+        # Vertical line crossing through the rect
+        clipped = rect.clipline(((0.5, 0.0), (0.5, 1.0)))
+        self.assertNotEqual(clipped, (), "vertical line should intersect")
+
+        # Diagonal line crossing through the rect
+        clipped = rect.clipline(((0.0, 0.0), (1.0, 1.0)))
+        self.assertNotEqual(clipped, (), "diagonal line should intersect")
+
+        # Line with one endpoint inside the rect
+        clipped = rect.clipline(((0.5, 0.5), (1.0, 0.5)))
+        self.assertNotEqual(clipped, (), "line from inside should intersect")
+
+        # Lines entirely outside the rect
+        self.assertTupleEqual(rect.clipline(((0.0, 0.0), (0.1, 0.1))), ())
+        self.assertTupleEqual(rect.clipline(((0.9, 0.9), (1.0, 1.0))), ())
+
     def test_contains(self):
         r = FRect(1, 2, 3, 4)
 
