@@ -3433,9 +3433,7 @@ class Vector4TypeTest(unittest.TestCase):
         for comp, name in zip("xyzw", "xyzw"):
             with self.assertRaises(TypeError) as ctx:
                 delattr(Vector4(), comp)
-            self.assertEqual(
-                str(ctx.exception), f"Cannot delete the {name} attribute"
-            )
+            self.assertEqual(str(ctx.exception), f"Cannot delete the {name} attribute")
 
     def testSequenceLength(self):
         self.assertEqual(len(self.v1), 4)
@@ -3596,9 +3594,7 @@ class Vector4TypeTest(unittest.TestCase):
         self.assertAlmostEqual(v.magnitude(), 5)
         self.assertEqual(v.length_squared(), 25)
         self.assertEqual(v.magnitude_squared(), 25)
-        self.assertAlmostEqual(
-            self.v1.length_squared(), 1 + 6.25 + 12.25 + 16
-        )
+        self.assertAlmostEqual(self.v1.length_squared(), 1 + 6.25 + 12.25 + 16)
 
     def testNormalize(self):
         v = Vector4(0, 0, 0, 4)

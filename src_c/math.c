@@ -3873,8 +3873,7 @@ static PyMethodDef vector4_methods[] = {
     {"move_towards_ip", (PyCFunction)vector_move_towards_ip, METH_VARARGS,
      DOC_MATH_VECTOR4_MOVETOWARDSIP},
     {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_MATH_VECTOR4_LERP},
-    {"slerp", (PyCFunction)vector_slerp, METH_VARARGS,
-     DOC_MATH_VECTOR4_SLERP},
+    {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_MATH_VECTOR4_SLERP},
     {"smoothstep", (PyCFunction)vector_smoothstep, METH_VARARGS,
      DOC_MATH_VECTOR4_SMOOTHSTEP},
     {"normalize", (PyCFunction)vector_normalize, METH_NOARGS,
@@ -3909,16 +3908,14 @@ static PyMethodDef vector4_methods[] = {
      METH_FASTCALL, DOC_MATH_VECTOR4_CLAMPMAGNITUDEIP},
     {"__reduce__", (PyCFunction)vector4_reduce, METH_NOARGS, NULL},
     {"__round__", (PyCFunction)vector___round__, METH_VARARGS, NULL},
-    {NULL}
-};
+    {NULL}};
 
 static PyGetSetDef vector4_getsets[] = {
     {"x", (getter)vector_getx, (setter)vector_setx, NULL, NULL},
     {"y", (getter)vector_gety, (setter)vector_sety, NULL, NULL},
     {"z", (getter)vector_getz, (setter)vector_setz, NULL, NULL},
     {"w", (getter)vector_getw, (setter)vector_setw, NULL, NULL},
-    {NULL, 0, NULL, NULL, NULL}
-};
+    {NULL, 0, NULL, NULL, NULL}};
 
 /********************************
  * pgVector4 type definition
