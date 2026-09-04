@@ -4,7 +4,7 @@ import unittest
 from collections.abc import Collection, Sequence
 
 import pygame.math
-from pygame.math import Vector2, Vector3
+from pygame.math import Vector2, Vector3, Vector4
 
 try:
     import numpy
@@ -977,8 +977,8 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertEqual(type(self.v1.x), float)
         self.assertEqual(type(self.v1.xy), Vector2)
         self.assertEqual(type(self.v1.xyx), Vector3)
-        # but we don't have vector4 or above... so tuple.
-        self.assertEqual(type(self.v1.xyxy), tuple)
+        self.assertEqual(type(self.v1.xyxy), Vector4)
+        # but we don't have vector5 or above... so tuple.
         self.assertEqual(type(self.v1.xyxyx), tuple)
 
     def test_elementwise(self):
@@ -2583,8 +2583,8 @@ class Vector3TypeTest(unittest.TestCase):
         self.assertEqual(type(self.v1.x), float)
         self.assertEqual(type(self.v1.xy), Vector2)
         self.assertEqual(type(self.v1.xyz), Vector3)
-        # but we don't have vector4 or above... so tuple.
-        self.assertEqual(type(self.v1.xyxy), tuple)
+        self.assertEqual(type(self.v1.xyxy), Vector4)
+        # but we don't have vector5 or above... so tuple.
         self.assertEqual(type(self.v1.xyxyx), tuple)
 
     def test_dir_works(self):
@@ -3337,6 +3337,451 @@ class Vector3TypeTest(unittest.TestCase):
 
         exception = ctx.exception
         self.assertEqual(str(exception), "Cannot delete the z attribute")
+
+
+class Vector4TypeTest(unittest.TestCase):
+    def setUp(self):
+        self.zeroVec = Vector4()
+        self.v1 = Vector4(1, -2.5, 3.5, 4)
+        self.v2 = Vector4(4, 1.2, -3.5, -2)
+        self.t1 = (1, -2.5, 3.5, 4)
+        self.t2 = (4, 1.2, -3.5, -2)
+
+    def testConstructionDefault(self):
+        v = Vector4()
+        self.assertEqual(v.x, 0.0)
+        self.assertEqual(v.y, 0.0)
+        self.assertEqual(v.z, 0.0)
+        self.assertEqual(v.w, 0.0)
+
+    def testConstructionScalar(self):
+        v = Vector4(1)
+        self.assertEqual(v.x, 1.0)
+        self.assertEqual(v.y, 1.0)
+        self.assertEqual(v.z, 1.0)
+        self.assertEqual(v.w, 1.0)
+
+    def testConstructionScalarFloat(self):
+        v = Vector4(1.2)
+        self.assertEqual(v.x, 1.2)
+        self.assertEqual(v.y, 1.2)
+        self.assertEqual(v.z, 1.2)
+        self.assertEqual(v.w, 1.2)
+
+    def testConstructionXYZW(self):
+        v = Vector4(1.2, 3.4, 9.8, -2.3)
+        self.assertEqual(v.x, 1.2)
+        self.assertEqual(v.y, 3.4)
+        self.assertEqual(v.z, 9.8)
+        self.assertEqual(v.w, -2.3)
+
+    def testConstructionTuple(self):
+        v = Vector4((1.2, 3.4, 9.8, -2.3))
+        self.assertEqual(v.x, 1.2)
+        self.assertEqual(v.y, 3.4)
+        self.assertEqual(v.z, 9.8)
+        self.assertEqual(v.w, -2.3)
+
+    def testConstructionList(self):
+        v = Vector4([1.2, 3.4, -9.8, -2.3])
+        self.assertEqual(v.x, 1.2)
+        self.assertEqual(v.y, 3.4)
+        self.assertEqual(v.z, -9.8)
+        self.assertEqual(v.w, -2.3)
+
+    def testConstructionVector4(self):
+        v = Vector4(Vector4(1.2, 3.4, 9.8, -2.3))
+        self.assertEqual(v.x, 1.2)
+        self.assertEqual(v.y, 3.4)
+        self.assertEqual(v.z, 9.8)
+        self.assertEqual(v.w, -2.3)
+
+    def testConstructionString(self):
+        v = Vector4("Vector4(1, 2, 3, 4)")
+        self.assertEqual(v.x, 1.0)
+        self.assertEqual(v.y, 2.0)
+        self.assertEqual(v.z, 3.0)
+        self.assertEqual(v.w, 4.0)
+        self.assertEqual(Vector4(repr(self.v1)), self.v1)
+
+    def testConstructionInvalidLength(self):
+        for bad in [(1, 2, 3), (1, 2, 3, 4, 5), (1, 2), []]:
+            with self.assertRaises(ValueError):
+                Vector4(bad)
+
+    def testConstructionPartialComponents(self):
+        with self.assertRaises(ValueError):
+            Vector4(1, 2)
+        with self.assertRaises(ValueError):
+            Vector4(1, 2, 3)
+
+    def testConstructionFromVector3Rejected(self):
+        with self.assertRaises(ValueError):
+            Vector4(Vector3(1, 2, 3))
+
+    def testAttributeAccessAndMutation(self):
+        v = Vector4(1, 2, 3, 4)
+        v.x = 10
+        v.y = 20
+        v.z = 30
+        v.w = 40
+        self.assertEqual(tuple(v), (10, 20, 30, 40))
+        with self.assertRaises(TypeError):
+            v.x = "spam"
+
+    def testDelComponents(self):
+        for comp, name in zip("xyzw", "xyzw"):
+            with self.assertRaises(TypeError) as ctx:
+                delattr(Vector4(), comp)
+            self.assertEqual(
+                str(ctx.exception), f"Cannot delete the {name} attribute"
+            )
+
+    def testSequenceLength(self):
+        self.assertEqual(len(self.v1), 4)
+
+    def testSequenceIndexing(self):
+        self.assertEqual(self.v1[0], 1)
+        self.assertEqual(self.v1[1], -2.5)
+        self.assertEqual(self.v1[2], 3.5)
+        self.assertEqual(self.v1[3], 4)
+
+    def testSequenceNegativeIndexing(self):
+        self.assertEqual(self.v1[-1], 4)
+        self.assertEqual(self.v1[-2], 3.5)
+        self.assertEqual(self.v1[-3], -2.5)
+        self.assertEqual(self.v1[-4], 1)
+        with self.assertRaises(IndexError):
+            self.v1[-5]
+        with self.assertRaises(IndexError):
+            self.v1[4]
+
+    def testSequenceAssignment(self):
+        v = Vector4(0, 0, 0, 0)
+        v[3] = 10
+        self.assertEqual(v.w, 10)
+        v[-1] = 20
+        self.assertEqual(v.w, 20)
+
+    def testSequenceSlicing(self):
+        self.assertEqual(list(self.v1[:]), [1, -2.5, 3.5, 4])
+        self.assertEqual(list(self.v1[:2]), [1, -2.5])
+        self.assertEqual(list(self.v1[1:3]), [-2.5, 3.5])
+        self.assertEqual(list(self.v1[::-1]), [4, 3.5, -2.5, 1])
+
+    def testSequenceIteration(self):
+        self.assertEqual(tuple(self.v1), (1, -2.5, 3.5, 4))
+        self.assertEqual(list(self.v1), [1, -2.5, 3.5, 4])
+
+    def testContains(self):
+        v = Vector4(1, 2, 3, 4)
+        self.assertTrue(2 in v)
+        self.assertFalse(5 in v)
+
+    def testSwizzleGetTwo(self):
+        v = Vector4(1, 2, 3, 4)
+        self.assertIsInstance(v.xy, Vector2)
+        self.assertEqual(tuple(v.xy), (1, 2))
+        self.assertEqual(tuple(v.zw), (3, 4))
+        self.assertEqual(tuple(v.wx), (4, 1))
+        self.assertEqual(tuple(v.ww), (4, 4))
+
+    def testSwizzleGetThree(self):
+        v = Vector4(1, 2, 3, 4)
+        self.assertIsInstance(v.xyz, Vector3)
+        self.assertEqual(tuple(v.xyz), (1, 2, 3))
+        self.assertEqual(tuple(v.xyw), (1, 2, 4))
+        self.assertEqual(tuple(v.yzw), (2, 3, 4))
+        self.assertEqual(tuple(v.www), (4, 4, 4))
+
+    def testSwizzleGetFour(self):
+        v = Vector4(1, 2, 3, 4)
+        self.assertIsInstance(v.xyzw, Vector4)
+        self.assertEqual(tuple(v.xyzw), (1, 2, 3, 4))
+        self.assertEqual(tuple(v.wzyx), (4, 3, 2, 1))
+        self.assertEqual(tuple(v.xxxx), (1, 1, 1, 1))
+        self.assertEqual(tuple(v.zzww), (3, 3, 4, 4))
+
+    def testSwizzleGetLong(self):
+        v = Vector4(1, 2, 3, 4)
+        result = v.xyzwx
+        self.assertIsInstance(result, tuple)
+        self.assertEqual(result, (1, 2, 3, 4, 1))
+
+    def testSwizzleConstants(self):
+        v = Vector4(1, 2, 3, 4)
+        self.assertEqual(tuple(v.xy01), (1, 2, 0, 1))
+        self.assertEqual(tuple(v.x0y), (1, 0, 2))
+
+    def testSwizzleSet(self):
+        v = Vector4(0, 0, 0, 0)
+        v.xy = (1, 2)
+        self.assertEqual(tuple(v), (1, 2, 0, 0))
+        v.zw = (3, 4)
+        self.assertEqual(tuple(v), (1, 2, 3, 4))
+        v.xyz = (10, 20, 30)
+        self.assertEqual(tuple(v), (10, 20, 30, 4))
+        v.xyzw = (5, 6, 7, 8)
+        self.assertEqual(tuple(v), (5, 6, 7, 8))
+        v.wzyx = (1, 2, 3, 4)
+        self.assertEqual(tuple(v), (4, 3, 2, 1))
+
+    def testSwizzleSetDuplicateRejected(self):
+        v = Vector4(0, 0, 0, 0)
+        with self.assertRaises(AttributeError):
+            v.xx = (1, 2)
+        with self.assertRaises(AttributeError):
+            v.wwww = (1, 2, 3, 4)
+
+    def testAddSub(self):
+        self.assertEqual(self.v1 + self.v2, Vector4(5, -1.3, 0, 2))
+        self.assertEqual(self.v1 - self.v2, Vector4(-3, -3.7, 7, 6))
+        self.assertEqual(self.v1 + self.t2, Vector4(5, -1.3, 0, 2))
+
+    def testScalarMultiplication(self):
+        self.assertEqual(self.v1 * 2, Vector4(2, -5, 7, 8))
+        self.assertEqual(2 * self.v1, Vector4(2, -5, 7, 8))
+
+    def testVectorMultiplicationIsDot(self):
+        self.assertAlmostEqual(
+            self.v1 * self.v2,
+            1 * 4 + (-2.5) * 1.2 + 3.5 * (-3.5) + 4 * (-2),
+        )
+
+    def testScalarDivision(self):
+        v = Vector4(2, 4, 6, 8) / 2
+        self.assertEqual(v, Vector4(1, 2, 3, 4))
+
+    def testFloorDivision(self):
+        v = Vector4(3, 5, 7, 9) // 2
+        self.assertEqual(v, Vector4(1, 2, 3, 4))
+
+    def testInPlace(self):
+        v = Vector4(1, 2, 3, 4)
+        v += Vector4(1, 1, 1, 1)
+        self.assertEqual(v, Vector4(2, 3, 4, 5))
+        v -= Vector4(1, 1, 1, 1)
+        self.assertEqual(v, Vector4(1, 2, 3, 4))
+        v *= 2
+        self.assertEqual(v, Vector4(2, 4, 6, 8))
+        v /= 2
+        self.assertEqual(v, Vector4(1, 2, 3, 4))
+
+    def testUnary(self):
+        self.assertEqual(-Vector4(1, -2, 3, -4), Vector4(-1, 2, -3, 4))
+        self.assertEqual(+Vector4(1, 2, 3, 4), Vector4(1, 2, 3, 4))
+        self.assertTrue(bool(Vector4(0, 0, 0, 1)))
+        self.assertFalse(bool(Vector4()))
+
+    def testComparison(self):
+        self.assertTrue(Vector4(1, 2, 3, 4) == Vector4(1, 2, 3, 4))
+        self.assertTrue(Vector4(1, 2, 3, 4) != Vector4(1, 2, 3, 5))
+
+    def testEpsilon(self):
+        self.assertEqual(Vector4().epsilon, self.v1.epsilon)
+        v = Vector4()
+        v.epsilon = 1.0
+        self.assertEqual(v.epsilon, 1.0)
+
+    def testDot(self):
+        self.assertAlmostEqual(
+            self.v1.dot(self.v2),
+            1 * 4 + (-2.5) * 1.2 + 3.5 * (-3.5) + 4 * (-2),
+        )
+        self.assertAlmostEqual(self.v1.dot(self.t2), self.v1.dot(self.v2))
+
+    def testLengthAndMagnitude(self):
+        v = Vector4(0, 0, 3, 4)
+        self.assertAlmostEqual(v.length(), 5)
+        self.assertAlmostEqual(v.magnitude(), 5)
+        self.assertEqual(v.length_squared(), 25)
+        self.assertEqual(v.magnitude_squared(), 25)
+        self.assertAlmostEqual(
+            self.v1.length_squared(), 1 + 6.25 + 12.25 + 16
+        )
+
+    def testNormalize(self):
+        v = Vector4(0, 0, 0, 4)
+        n = v.normalize()
+        self.assertEqual(tuple(n), (0, 0, 0, 1))
+        self.assertTrue(n.is_normalized())
+        self.assertFalse(v.is_normalized())
+
+    def testNormalizeIP(self):
+        v = Vector4(0, 4, 0, 0)
+        v.normalize_ip()
+        self.assertEqual(tuple(v), (0, 1, 0, 0))
+
+    def testNormalizeZeroRaises(self):
+        with self.assertRaises(ValueError):
+            Vector4().normalize()
+
+    def testScaleToLength(self):
+        v = Vector4(1, 0, 0, 0)
+        v.scale_to_length(5)
+        self.assertAlmostEqual(v.length(), 5)
+        with self.assertRaises(ValueError):
+            Vector4().scale_to_length(1)
+
+    def testDistance(self):
+        a = Vector4(0, 0, 0, 0)
+        b = Vector4(0, 0, 3, 4)
+        self.assertAlmostEqual(a.distance_to(b), 5)
+        self.assertAlmostEqual(a.distance_squared_to(b), 25)
+
+    def testReflect(self):
+        v = Vector4(1, -1, 0, 0)
+        n = Vector4(0, 1, 0, 0)
+        r = v.reflect(n)
+        self.assertEqual(tuple(r), (1, 1, 0, 0))
+
+    def testReflectIP(self):
+        v = Vector4(1, -1, 0, 0)
+        v.reflect_ip(Vector4(0, 1, 0, 0))
+        self.assertEqual(tuple(v), (1, 1, 0, 0))
+
+    def testProject(self):
+        v = Vector4(2, 2, 0, 0)
+        onto = Vector4(1, 0, 0, 0)
+        self.assertEqual(tuple(v.project(onto)), (2, 0, 0, 0))
+        with self.assertRaises(ValueError):
+            v.project(Vector4())
+
+    def testLerp(self):
+        a = Vector4(0, 0, 0, 0)
+        b = Vector4(2, 4, 6, 8)
+        self.assertEqual(tuple(a.lerp(b, 0.5)), (1, 2, 3, 4))
+        with self.assertRaises(ValueError):
+            a.lerp(b, 2)
+
+    def testSmoothstep(self):
+        a = Vector4(0, 0, 0, 0)
+        b = Vector4(2, 4, 6, 8)
+        self.assertEqual(tuple(a.smoothstep(b, 0)), (0, 0, 0, 0))
+        self.assertEqual(tuple(a.smoothstep(b, 1)), (2, 4, 6, 8))
+
+    def testSlerp(self):
+        a = Vector4(1, 0, 0, 0)
+        b = Vector4(0, 1, 0, 0)
+        self.assertEqual(tuple(a.slerp(b, 0)), (1, 0, 0, 0))
+        r1 = a.slerp(b, 1)
+        for got, exp in zip(r1, (0, 1, 0, 0)):
+            self.assertAlmostEqual(got, exp)
+        mid = a.slerp(b, 0.5)
+        self.assertAlmostEqual(mid.length(), 1)
+        self.assertAlmostEqual(mid.dot(a), mid.dot(b))
+        c = Vector4(0, 0, 1, 0)
+        d = Vector4(0, 0, 0, 1)
+        midzw = c.slerp(d, 0.5)
+        self.assertAlmostEqual(midzw.length(), 1)
+        self.assertAlmostEqual(midzw.z, midzw.w)
+        self.assertAlmostEqual(midzw.z, math.sqrt(0.5))
+        with self.assertRaises(ValueError):
+            a.slerp(b, 2)
+        with self.assertRaises(ValueError):
+            Vector4(1, 0, 0, 0).slerp(Vector4(-1, 0, 0, 0), 0.5)
+        with self.assertRaises(ValueError):
+            Vector4().slerp(b, 0.5)
+
+    def testMoveTowards(self):
+        a = Vector4(0, 0, 0, 0)
+        b = Vector4(0, 0, 0, 10)
+        r = a.move_towards(b, 4)
+        self.assertAlmostEqual(r.w, 4)
+        r = a.move_towards(b, 100)
+        self.assertEqual(tuple(r), (0, 0, 0, 10))
+
+    def testMoveTowardsIP(self):
+        a = Vector4(0, 0, 0, 0)
+        a.move_towards_ip(Vector4(0, 0, 0, 10), 4)
+        self.assertAlmostEqual(a.w, 4)
+
+    def testAngleTo(self):
+        a = Vector4(1, 0, 0, 0)
+        b = Vector4(0, 1, 0, 0)
+        self.assertAlmostEqual(a.angle_to(b), 90)
+        with self.assertRaises(ValueError):
+            a.angle_to(Vector4())
+
+    def testClampMagnitude(self):
+        v = Vector4(0, 0, 0, 10)
+        self.assertAlmostEqual(v.clamp_magnitude(5).length(), 5)
+        self.assertAlmostEqual(v.clamp_magnitude(1, 5).length(), 5)
+        self.assertAlmostEqual(v.clamp_magnitude(20, 30).length(), 20)
+        with self.assertRaises(ValueError):
+            v.clamp_magnitude(5, 1)
+
+    def testClampMagnitudeIP(self):
+        v = Vector4(0, 0, 0, 10)
+        v.clamp_magnitude_ip(5)
+        self.assertAlmostEqual(v.length(), 5)
+
+    def testElementwise(self):
+        a = Vector4(1, 2, 3, 4)
+        b = Vector4(2, 2, 2, 2)
+        self.assertEqual(tuple(a.elementwise() * b), (2, 4, 6, 8))
+        self.assertEqual(tuple(a.elementwise() + b), (3, 4, 5, 6))
+        self.assertEqual(tuple(a.elementwise() / b), (0.5, 1, 1.5, 2))
+        self.assertEqual(tuple(a.elementwise() ** 2), (1, 4, 9, 16))
+
+    def testRound(self):
+        v = Vector4(1.234, 2.4, 3.0, -4.6)
+        self.assertEqual(tuple(round(v)), (1, 2, 3, -5))
+        self.assertEqual(tuple(round(v, 1)), (1.2, 2.4, 3.0, -4.6))
+
+    def testCopy(self):
+        import copy
+
+        v = Vector4(1, 2, 3, 4)
+        self.assertEqual(tuple(v.copy()), (1, 2, 3, 4))
+        self.assertEqual(tuple(copy.copy(v)), (1, 2, 3, 4))
+
+    def testPickle(self):
+        import pickle
+
+        v = Vector4(1, -2.5, 3.5, 4)
+        self.assertEqual(pickle.loads(pickle.dumps(v)), v)
+
+    def testReduce(self):
+        v = Vector4(1, 2, 3, 4)
+        cls, args = v.__reduce__()
+        self.assertIs(cls, Vector4)
+        self.assertEqual(args, (1, 2, 3, 4))
+
+    def testUpdate(self):
+        v = Vector4(1, 2, 3, 4)
+        v.update(5, 6, 7, 8)
+        self.assertEqual(tuple(v), (5, 6, 7, 8))
+        v.update((9, 10, 11, 12))
+        self.assertEqual(tuple(v), (9, 10, 11, 12))
+        v.update(2)
+        self.assertEqual(tuple(v), (2, 2, 2, 2))
+
+    def testRepr(self):
+        v = Vector4(1, 2, 3, 4)
+        self.assertEqual(repr(v), "Vector4(1, 2, 3, 4)")
+        self.assertEqual(v, Vector4(repr(v)))
+
+    def testStr(self):
+        v = Vector4(1, 2, 3, 4)
+        self.assertEqual(str(v), "[1, 2, 3, 4]")
+
+    def testExcludedMethods(self):
+        v = Vector4(1, 2, 3, 4)
+        for name in (
+            "cross",
+            "rotate",
+            "rotate_ip",
+            "rotate_rad",
+            "rotate_x",
+            "rotate_y",
+            "rotate_z",
+            "as_spherical",
+            "from_spherical",
+            "as_polar",
+            "from_polar",
+        ):
+            self.assertFalse(hasattr(v, name), name)
 
 
 if __name__ == "__main__":

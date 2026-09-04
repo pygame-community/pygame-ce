@@ -1130,4 +1130,322 @@
 
    .. ## pygame.math.Vector3 ##
 
+.. class:: Vector4
+
+   | :sl:`a 4-Dimensional Vector`
+   | :sg:`Vector4() -> Vector4(0, 0, 0, 0)`
+   | :sg:`Vector4(int) -> Vector4`
+   | :sg:`Vector4(float) -> Vector4`
+   | :sg:`Vector4(Vector4) -> Vector4`
+   | :sg:`Vector4(x, y, z, w) -> Vector4`
+   | :sg:`Vector4((x, y, z, w)) -> Vector4`
+
+   Vector4 is the four-dimensional counterpart to :class:`Vector2` and
+   :class:`Vector3`. It stores four numeric components named ``x``, ``y``,
+   ``z`` and ``w`` and provides the dimension-independent subset of the pygame
+   vector API. It is a natural Python representation of a shader ``float4``
+   value and of homogeneous coordinates for ``Matrix4x4`` multiplication.
+
+   Unlike :class:`Vector2` and :class:`Vector3`, ``Vector4`` does not provide
+   ``cross``, ``rotate``, ``slerp`` or coordinate-system conversions such as
+   ``as_spherical``/``as_polar``, because those operations are specific to two
+   and three dimensions.
+
+   Construction requires either zero arguments (the zero vector), a single
+   scalar (broadcast to all four components), a single sequence or ``Vector4``
+   of exactly four components, a string matching its representation, or four
+   explicit scalar components. A :class:`Vector3` is **not** implicitly
+   promoted to a ``Vector4``; supply the fourth component explicitly.
+
+   .. versionadded:: 3.0.0
+
+   .. method:: dot
+
+      | :sl:`calculates the dot- or scalar-product with the other vector`
+      | :sg:`dot(Vector4, /) -> float`
+
+      .. ## Vector4.dot ##
+
+   .. method:: magnitude
+
+      | :sl:`returns the Euclidean magnitude of the vector.`
+      | :sg:`magnitude() -> float`
+
+      calculates the magnitude of the vector which follows from the
+      theorem:
+      ``vec.magnitude() == math.sqrt(vec.x**2 + vec.y**2 + vec.z**2 + vec.w**2)``
+
+      .. ## Vector4.magnitude ##
+
+   .. method:: magnitude_squared
+
+      | :sl:`returns the squared Euclidean magnitude of the vector.`
+      | :sg:`magnitude_squared() -> float`
+
+      calculates the magnitude of the vector which follows from the
+      theorem:
+      ``vec.magnitude_squared() == vec.x**2 + vec.y**2 + vec.z**2 + vec.w**2``.
+      This is faster than ``vec.magnitude()`` because it avoids the
+      square root.
+
+      .. ## Vector4.magnitude_squared ##
+
+   .. method:: length
+
+      | :sl:`returns the Euclidean length of the vector.`
+      | :sg:`length() -> float`
+
+      calculates the Euclidean length of the vector which follows from the
+      theorem:
+      ``vec.length() == math.sqrt(vec.x**2 + vec.y**2 + vec.z**2 + vec.w**2)``
+
+      .. ## Vector4.length ##
+
+   .. method:: length_squared
+
+      | :sl:`returns the squared Euclidean length of the vector.`
+      | :sg:`length_squared() -> float`
+
+      calculates the Euclidean length of the vector which follows from the
+      theorem:
+      ``vec.length_squared() == vec.x**2 + vec.y**2 + vec.z**2 + vec.w**2``.
+      This is faster than ``vec.length()`` because it avoids the square root.
+
+      .. ## Vector4.length_squared ##
+
+   .. method:: normalize
+
+      | :sl:`returns a vector with the same direction but length 1.`
+      | :sg:`normalize() -> Vector4`
+
+      Returns a new vector that has ``length == 1`` and the same direction as
+      self.
+
+      .. ## Vector4.normalize ##
+
+   .. method:: normalize_ip
+
+      | :sl:`normalizes the vector in place so that its length is 1.`
+      | :sg:`normalize_ip() -> None`
+
+      Normalizes the vector so that it has ``length == 1``. The direction of
+      the vector is not changed.
+
+      .. ## Vector4.normalize_ip ##
+
+   .. method:: is_normalized
+
+      | :sl:`tests if the vector is normalized i.e. has length == 1.`
+      | :sg:`is_normalized() -> bool`
+
+      Returns True if the vector has ``length == 1``. Otherwise it returns
+      False.
+
+      .. ## Vector4.is_normalized ##
+
+   .. method:: scale_to_length
+
+      | :sl:`scales the vector to a given length.`
+      | :sg:`scale_to_length(float, /) -> None`
+
+      Scales the vector so that it has the given length. The direction of the
+      vector is not changed. You can also scale to length 0. If the vector is
+      the zero vector (i.e. has length 0 thus no direction) a ValueError is
+      raised.
+
+      .. ## Vector4.scale_to_length ##
+
+   .. method:: reflect
+
+      | :sl:`returns a vector reflected of a given normal.`
+      | :sg:`reflect(Vector4, /) -> Vector4`
+
+      Returns a new vector that points in the direction as if self would bounce
+      of a surface characterized by the given surface normal. The length of the
+      new vector is the same as self's.
+
+      .. ## Vector4.reflect ##
+
+   .. method:: reflect_ip
+
+      | :sl:`reflect the vector of a given normal in place.`
+      | :sg:`reflect_ip(Vector4, /) -> None`
+
+      Changes the direction of self as if it would have been reflected of a
+      surface with the given surface normal.
+
+      .. ## Vector4.reflect_ip ##
+
+   .. method:: distance_to
+
+      | :sl:`calculates the Euclidean distance to a given vector.`
+      | :sg:`distance_to(Vector4, /) -> float`
+
+      .. ## Vector4.distance_to ##
+
+   .. method:: distance_squared_to
+
+      | :sl:`calculates the squared Euclidean distance to a given vector.`
+      | :sg:`distance_squared_to(Vector4, /) -> float`
+
+      .. ## Vector4.distance_squared_to ##
+
+   .. method:: move_towards
+
+      | :sl:`returns a vector moved toward the target by a given distance.`
+      | :sg:`move_towards(Vector4, float, /) -> Vector4`
+
+      Returns a Vector which is moved towards the given Vector by a given
+      distance and does not overshoot past its target Vector. The first
+      parameter determines the target Vector, while the second parameter
+      determines the delta distance. If the distance is in the negatives, then
+      it will move away from the target Vector.
+
+      .. ## Vector4.move_towards ##
+
+   .. method:: move_towards_ip
+
+      | :sl:`moves the vector toward its target at a given distance.`
+      | :sg:`move_towards_ip(Vector4, float, /) -> None`
+
+      Moves itself toward the given Vector at a given distance and does not
+      overshoot past its target Vector. The first parameter determines the
+      target Vector, while the second parameter determines the delta distance.
+      If the distance is in the negatives, then it will move away from the
+      target Vector.
+
+      .. ## Vector4.move_towards_ip ##
+
+   .. method:: lerp
+
+      | :sl:`returns a linear interpolation to the given vector.`
+      | :sg:`lerp(Vector4, float, /) -> Vector4`
+
+      Returns a Vector which is a linear interpolation between self and the
+      given Vector. The second parameter determines how far between self and
+      other the result is going to be. It must be a value between 0 and 1,
+      where 0 means self and 1 means other will be returned.
+
+      .. ## Vector4.lerp ##
+
+   .. method:: slerp
+
+      | :sl:`returns a spherical interpolation to the given vector.`
+      | :sg:`slerp(Vector4, float, /) -> Vector4`
+
+      Calculates the spherical interpolation from self to the given Vector.
+      The second argument - often called t - must be in the range ``[-1, 1]``.
+      It parametrizes where to interpolate between the two vectors. If ``t`` is
+      negative the interpolation follows the long arc of the great circle
+      spanned by the two vectors. The magnitude is linearly interpolated
+      between the two input magnitudes. Interpolating between two exactly
+      opposite (antiparallel) vectors is undefined and raises a ``ValueError``.
+
+      .. ## Vector4.slerp ##
+
+   .. method:: smoothstep
+
+      | :sl:`returns a smooth interpolation to the given vector.`
+      | :sg:`smoothstep(Vector4, value, /) -> Vector4`
+
+      Returns a Vector which is a smooth interpolation between self and the
+      given Vector. This works like :meth:`lerp` but the interpolation is
+      smoother near the endpoints. The second parameter determines how far
+      between self and other the result is going to be. It must be a value
+      between 0 and 1.
+
+      .. ## Vector4.smoothstep ##
+
+   .. method:: elementwise
+
+      | :sl:`The next operation will be performed elementwise.`
+      | :sg:`elementwise() -> VectorElementwiseProxy`
+
+      Applies the following operation to each element of the vector.
+
+      .. ## Vector4.elementwise ##
+
+   .. method:: angle_to
+
+      | :sl:`calculates the angle to a given vector in degrees.`
+      | :sg:`angle_to(Vector4, /) -> float`
+
+      Returns the angle between self and the given vector in degrees.
+
+      .. ## Vector4.angle_to ##
+
+   .. method:: project
+
+      | :sl:`projects a vector onto another.`
+      | :sg:`project(Vector4, /) -> Vector4`
+
+      Returns the projection of self onto the passed vector ``v``, computed as
+      ``self.dot(v) / v.dot(v) * v``. Projecting onto a zero-length vector
+      raises a ValueError.
+
+      .. ## Vector4.project ##
+
+   .. method:: copy
+
+      | :sl:`Returns a copy of itself.`
+      | :sg:`copy() -> Vector4`
+
+      Returns a new Vector4 having the same dimensions and values as self.
+
+      .. ## Vector4.copy ##
+
+   .. method:: clamp_magnitude
+
+      | :sl:`Returns a copy of a vector with the magnitude clamped between max_length and min_length.`
+      | :sg:`clamp_magnitude(max_length, /) -> Vector4`
+      | :sg:`clamp_magnitude(min_length, max_length, /) -> Vector4`
+
+      Returns a new copy of a vector with the magnitude clamped between
+      ``max_length`` and ``min_length``. If only one argument is passed it is
+      taken to be the ``max_length``.
+
+      This function raises ``ValueError`` if ``min_length`` is greater than
+      ``max_length``, or if either of these values are negative.
+
+      .. ## Vector4.clamp_magnitude ##
+
+   .. method:: clamp_magnitude_ip
+
+      | :sl:`Clamps the vector's magnitude between max_length and min_length`
+      | :sg:`clamp_magnitude_ip(max_length, /) -> None`
+      | :sg:`clamp_magnitude_ip(min_length, max_length, /) -> None`
+
+      Clamps the vector's magnitude between ``max_length`` and ``min_length``
+      in place. If only one argument is passed it is taken to be the
+      ``max_length``.
+
+      This function raises ``ValueError`` if ``min_length`` is greater than
+      ``max_length``, or if either of these values are negative.
+
+      .. ## Vector4.clamp_magnitude_ip ##
+
+   .. method:: update
+
+      | :sl:`Sets the coordinates of the vector.`
+      | :sg:`update() -> None`
+      | :sg:`update(int) -> None`
+      | :sg:`update(float) -> None`
+      | :sg:`update(Vector4) -> None`
+      | :sg:`update(x, y, z, w) -> None`
+      | :sg:`update((x, y, z, w)) -> None`
+
+      Sets coordinates x, y, z, and w in place.
+
+      .. ## Vector4.update ##
+
+   .. attribute:: epsilon
+
+      | :sl:`Determines the tolerance of vector calculations.`
+
+      With lengths within this number, vectors are considered equal. For more information see :attr:`pygame.math.Vector2.epsilon`
+
+   .. ##  ##
+
+   .. ## pygame.math.Vector4 ##
+
 .. ## pygame.math ##
