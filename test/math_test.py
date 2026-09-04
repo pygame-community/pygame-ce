@@ -3415,6 +3415,17 @@ class Vector4TypeTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             Vector4(1, 2, 3)
 
+    def testConstructionKeywordPartialRejected(self):
+        with self.assertRaises(ValueError):
+            Vector4(y=2)
+        with self.assertRaises(ValueError):
+            Vector4(z=3)
+        with self.assertRaises(ValueError):
+            Vector4(w=4)
+        with self.assertRaises(ValueError):
+            Vector4(x=1, y=2)
+        self.assertEqual(tuple(Vector4(x=1, y=2, z=3, w=4)), (1, 2, 3, 4))
+
     def testConstructionFromVector3Rejected(self):
         with self.assertRaises(ValueError):
             Vector4(Vector3(1, 2, 3))
@@ -3752,6 +3763,10 @@ class Vector4TypeTest(unittest.TestCase):
         self.assertEqual(tuple(v), (9, 10, 11, 12))
         v.update(2)
         self.assertEqual(tuple(v), (2, 2, 2, 2))
+        v.update(x=1, y=2, z=3, w=4)
+        self.assertEqual(tuple(v), (1, 2, 3, 4))
+        with self.assertRaises(ValueError):
+            v.update(y=2)
 
     def testRepr(self):
         v = Vector4(1, 2, 3, 4)

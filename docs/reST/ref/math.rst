@@ -1147,7 +1147,7 @@
    value and of homogeneous coordinates for ``Matrix4x4`` multiplication.
 
    Unlike :class:`Vector2` and :class:`Vector3`, ``Vector4`` does not provide
-   ``cross``, ``rotate``, ``slerp`` or coordinate-system conversions such as
+   ``cross``, ``rotate`` or coordinate-system conversions such as
    ``as_spherical``/``as_polar``, because those operations are specific to two
    and three dimensions.
 
@@ -1219,7 +1219,8 @@
       | :sg:`normalize() -> Vector4`
 
       Returns a new vector that has ``length == 1`` and the same direction as
-      self.
+      self. If the vector is the zero vector (i.e. has length ``0`` thus no
+      direction) a ``ValueError`` is raised.
 
       .. ## Vector4.normalize ##
 
@@ -1229,7 +1230,8 @@
       | :sg:`normalize_ip() -> None`
 
       Normalizes the vector so that it has ``length == 1``. The direction of
-      the vector is not changed.
+      the vector is not changed. If the vector is the zero vector (i.e. has
+      length ``0`` thus no direction) a ``ValueError`` is raised.
 
       .. ## Vector4.normalize_ip ##
 

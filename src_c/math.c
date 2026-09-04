@@ -3749,6 +3749,9 @@ _vector4_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z,
         }
     }
     else {
+        if (y != NULL || z != NULL || w != NULL) {
+            goto error;
+        }
         self->coords[0] = 0.;
         self->coords[1] = 0.;
         self->coords[2] = 0.;
