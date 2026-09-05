@@ -40,9 +40,9 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
-          # The hash of all files in buildconfig manylinux-build and macdependencies is
+          # The hash of all files in deps is
           # the key to the cache. If anything changes here, the deps are built again
-          key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}-${{ matrix.os }}
+          key: macdep-${{ hashFiles('buildconfig/deps/**') }}-${{ matrix.macarch }}-${{ matrix.os }}
           lookup-only: true
 
       # build mac deps on cache miss
@@ -51,7 +51,7 @@ jobs:
         run: |
           export MAC_ARCH="${{ matrix.macarch }}"
           brew install coreutils
-          cd buildconfig/macdependencies
+          cd buildconfig/deps/mac
           bash ./build_mac_deps.sh
 
       # Uncomment when you want to manually verify the deps by downloading them
@@ -82,7 +82,7 @@ jobs:
 
       # Setup macOS dependencies
       CIBW_BEFORE_ALL: |
-        cd buildconfig/macdependencies
+        cd buildconfig/deps/mac
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
         bash ./install_mac_deps.sh
 
@@ -108,7 +108,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
-          key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
+          key: macdep-${{ hashFiles('buildconfig/deps/**') }}-${{ matrix.macarch }}
           fail-on-cache-miss: true
 
       - name: Build and test wheels
