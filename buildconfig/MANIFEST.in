@@ -5,8 +5,7 @@ recursive-include src_c *
 recursive-include examples *
 recursive-include test *
 
-recursive-exclude buildconfig/manylinux-build *
-recursive-exclude buildconfig/macdependencies *
+recursive-exclude buildconfig/deps *
 recursive-exclude buildconfig/stubs/.mypy_cache *
 
 include README.rst
