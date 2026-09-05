@@ -224,6 +224,37 @@ object instead of the module, which can be used to test for availability.
 
    .. ## pygame.print_debug_info ##
 
+.. attribute:: commit
+
+   | :sl:`The short commit hash of the last commit in the git history when pygame-ce was built`
+   | :sg:`pygame.commit -> str`
+
+   Returns the short commit hash of the last commit in the git repository's history when ``pygame-ce`` was built.
+   If ``git`` is not found on the system, then ``'Git Not Found'`` will be returned.
+   If ``git`` is found, but the source is not in a ``git`` repository, then ``'Git Commit Not Found'`` will be returned.
+
+   .. ## pygame.commit ##
+
+.. attribute:: branch
+
+   | :sl:`The branch name of the current branch on which pygame-ce was built`
+   | :sg:`pygame.branch -> str`
+
+   Returns the name of the branch on which ``pygame-ce`` was built.
+   If ``git`` is not found on the system, then ``'Git Not Found'`` will be returned.
+   If ``git`` is found, but the source is not in a ``git`` repository, then ``'Git Branch Not Found'`` will be returned.
+
+   .. ## pygame.commit ##
+
+.. attribute:: ci_build
+
+   | :sl:`Whether pygame-ce was built on CI or not`
+   | :sg:`pygame.ci_build -> bool`
+
+   Returns whether ``pygame-ce`` was built via CI or built locally. Uses the ``CI`` environment variable at build time
+   to make this determination.
+
+   .. ## pygame.commit ##
 
 :mod:`pygame.version`
 =====================
