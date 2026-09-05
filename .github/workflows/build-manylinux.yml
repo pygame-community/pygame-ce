@@ -47,21 +47,21 @@ jobs:
     - name: Inspect image, skip build if image exists
       id: inspect
       continue-on-error: true
-      run: docker manifest inspect ghcr.io/${{ github.repository }}_${{ matrix.arch }}:${{ hashFiles('buildconfig/manylinux-build/**') }}
+      run: docker manifest inspect ghcr.io/${{ github.repository }}_${{ matrix.arch }}:${{ hashFiles('buildconfig/deps/**') }}
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
       with:
         images: ghcr.io/${{ github.repository }}_${{ matrix.arch }}
-        tags: type=raw,value=${{ hashFiles('buildconfig/manylinux-build/**') }}
+        tags: type=raw,value=${{ hashFiles('buildconfig/deps/**') }}
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
       uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a
       with:
-        context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
-        file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
+        context: ${{ github.workspace }}/buildconfig/deps/base
+        file: ${{ github.workspace }}/buildconfig/deps/base/Dockerfile-${{ matrix.arch }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
