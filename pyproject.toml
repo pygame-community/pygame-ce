@@ -128,7 +128,6 @@ exclude = [
   "buildconfig/*.py",
   "buildconfig/stubs/pygame/typing.pyi",
   "docs/reST/",
-  "setup.py",
 ]
 
 [tool.ruff.lint]
@@ -168,3 +167,46 @@ test-requires = []
 [[tool.cibuildwheel.overrides]]
 select = "cp315-macosx_x86_64"
 build-frontend = "build"
+
+[tool.isort]
+include_trailing_comma = true
+known_first_party = "pygame"
+known_third_party = ["numpy", "distutils", "setuptools", "sphinx"]
+line_length = 88
+multi_line_output = 3
+src_paths = "src_py"
+
+[tool.pylint."MESSAGES CONTROL"]
+extension-pkg-whitelist = "pygame"
+enable = ["use-symbolic-message-instead"]
+disable = [
+  "attribute-defined-outside-init",
+  "broad-except",
+  "duplicate-code",
+  "empty-docstring",
+  "fixme",
+  "global-statement",
+  "global-variable-undefined",
+  "import-error",
+  "import-outside-toplevel",
+  "invalid-name",
+  "missing-docstring",
+  "no-member",
+  "protected-access",
+  "raise-missing-from",
+  "redefined-builtin",
+  "redefined-outer-name",
+  "super-with-arguments",
+  "too-few-public-methods",
+  "too-many-arguments",
+  "too-many-branches",
+  "too-many-instance-attributes",
+  "too-many-lines",
+  "too-many-locals",
+  "undefined-all-variable",
+  "undefined-variable",
+  "unused-import",
+  "useless-object-inheritance",
+  "wrong-import-order",
+  "wrong-import-position",
+]

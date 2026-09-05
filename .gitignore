@@ -1,7 +1,5 @@
-# pygame-ce build process: config.py setup.py
-/Setup
+# pygame-ce build process
 *.pyc
-/build/
 /.mesonpy-*
 
 # Windows prebuilt external libraries
