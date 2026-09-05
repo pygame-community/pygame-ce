@@ -81,14 +81,52 @@ def _get_platform_info():
     return ret
 
 
-def print_debug_info(filename=None):
-    """Gets debug information for reporting bugs. Prints to console
-    if filename is not specified, otherwise writes to that file
-    (note: if filename is not an empty file, it will overwrite whatever is
-    in there)
+def append_dep_version(dep_name, get_version, tab_count, input_str) -> str:
+    """
+    Internal helper to append SDL + Freetype versions to the debug string
+    """
+    debug_str = input_str
+    tabs = "\t" * tab_count
+    debug_str += (
+        f"{dep_name} versions:{tabs}Linked: {str_from_tuple(get_version())}\t"
+        f"Compiled: {str_from_tuple(get_version(linked=False))}\n"
+    )
 
-    Args:
-        filename: string name of the file to save
+    return debug_str
+
+
+def append_driver_info(
+    display_init, mixer_init, get_display_driver, get_mixer_driver, input_str
+):
+    """
+    Internal helper to append the Display and Mixer driver info to the debug string
+    """
+    debug_str = input_str
+    if display_init():
+        driver = get_display_driver()
+        if driver.upper() != "X11":
+            debug_str += f"Display Driver:\t\t{driver}\n"
+        else:
+            is_xwayland = (environ.get("XDG_SESSION_TYPE") == "wayland") or (
+                "WAYLAND_DISPLAY" in environ
+            )
+            debug_str += f"Display Driver:\t\t{driver} ( xwayland == {is_xwayland} )\n"
+    else:
+        debug_str += "Display Driver:\t\tDisplay Not Initialized\n"
+
+    if mixer_init():
+        debug_str += f"Mixer Driver:\t\t{get_mixer_driver()}"
+    else:
+        debug_str += "Mixer Driver:\t\tMixer Not Initialized"
+
+    return debug_str
+
+
+def get_debug_info() -> str:
+    """Gets debug information for reporting bugs.
+
+    Returns:
+        str: String containing all of the info for bug reports.
     """
     debug_str = ""
 
@@ -136,51 +174,37 @@ def print_debug_info(filename=None):
 
     debug_str += _get_platform_info()
 
-    debug_str += (
-        f"SDL versions:\t\tLinked: {str_from_tuple(get_sdl_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_version(linked=False))}\n"
+    debug_str = append_dep_version("SDL", get_sdl_version, 2, debug_str)
+    debug_str = append_dep_version("SDL Mixer", get_sdl_mixer_version, 1, debug_str)
+    debug_str = append_dep_version("SDL Font", get_sdl_ttf_version, 1, debug_str)
+    debug_str = append_dep_version("SDL Image", get_sdl_image_version, 1, debug_str)
+    debug_str = append_dep_version("Freetype", ft_version, 1, debug_str)
+
+    debug_str = append_driver_info(
+        display_init, mixer_init, get_display_driver, get_mixer_driver, debug_str
     )
 
-    debug_str += (
-        f"SDL Mixer versions:\tLinked: {str_from_tuple(get_sdl_mixer_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_mixer_version(linked=False))}\n"
-    )
+    return debug_str
 
-    debug_str += (
-        f"SDL Font versions:\tLinked: {str_from_tuple(get_sdl_ttf_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_ttf_version(linked=False))}\n"
-    )
 
-    debug_str += (
-        f"SDL Image versions:\tLinked: {str_from_tuple(get_sdl_image_version())}\t"
-        f"Compiled: {str_from_tuple(get_sdl_image_version(linked=False))}\n"
-    )
+def print_debug_info(filename: str | None = None) -> None:
+    """Prints debug information for reporting bugs.
 
-    debug_str += (
-        f"Freetype versions:\tLinked: {str_from_tuple(ft_version())}\t"
-        f"Compiled: {str_from_tuple(ft_version(linked=False))}\n\n"
-    )
+    Args:
+        filename: [DEPRECATED] string name of the file to save
+    """
+    import warnings
 
-    if display_init():
-        driver = get_display_driver()
-        if driver.upper() != "X11":
-            debug_str += f"Display Driver:\t\t{driver}\n"
-        else:
-            is_xwayland = (environ.get("XDG_SESSION_TYPE") == "wayland") or (
-                "WAYLAND_DISPLAY" in environ
-            )
-            debug_str += f"Display Driver:\t\t{driver} ( xwayland == {is_xwayland} )\n"
-    else:
-        debug_str += "Display Driver:\t\tDisplay Not Initialized\n"
+    if filename is not None:
+        warnings.warn(
+            "filename parameter is deprecated, printing to console. "
+            "To get the output into a file, use get_debug_info() to get the string.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
-    if mixer_init():
-        debug_str += f"Mixer Driver:\t\t{get_mixer_driver()}"
-    else:
-        debug_str += "Mixer Driver:\t\tMixer Not Initialized"
+    debug_str = get_debug_info()
 
-    if filename is None:
-        print(debug_str)
+    print(debug_str)
 
-    else:
-        with open(filename, "w", encoding="utf8") as debugfile:
-            debugfile.write(debug_str)
+    del warnings

@@ -205,22 +205,49 @@ object instead of the module, which can be used to test for availability.
 
    .. ## pygame.encode_file_path ##
 
-.. function:: print_debug_info
+.. function:: get_debug_info
 
-   | :sl:`retrieves useful information for debugging and issue-reporting purposes`
-   | :sg:`print_debug_info(filename=None) -> None`
+   | :sl:`Retrieves useful information for debugging and issue-reporting purposes`
+   | :sg:`get_debug_info() -> str`
 
    Constructs a string containing details on the system, the python interpreter,
-   the pygame version, and the linked and compiled versions of the libraries that
-   pygame wraps. If ``filename`` is ``None``, then the string is printed into the
-   console. Otherwise, the debug string is written to the specified file.
+   the pygame version, the linked and compiled versions of the libraries that
+   pygame wraps, and the display and mixer drivers.
+
+   .. versionadded:: 3.0.0
+
+   .. ## pygame.get_debug_info ##
+
+.. function:: print_debug_info
+
+   | :sl:`prints useful information for debugging and issue-reporting purposes`
+   | :sg:`print_debug_info() -> None`
+
+   Prints the output of :func:`pygame.get_debug_info` to console.
 
    .. note::
       If ``pygame.freetype`` has not been initialized with :func:`pygame.init` or :func:`pygame.freetype.init`,
       then the linked and compiled versions of FreeType will be "Unk" since this information is not
       available before initialization.
 
+   .. note::
+      If the display has never been initialized using :func:`pygame.init`, :func:`pygame.display.init`, or by
+      constructing a Window object, then the display driver will be "Display Not Initialized" because that
+      information is not yet available.
+
+   .. note::
+      If ``pygame.mixer`` has not been initialized with :func:`pygame.init` or :func:`pygame.mixer.init`,
+      then the mixer driver will be displayed as "Mixer Not Initialized" because that information is not
+      yet available.
+
    .. versionadded:: 2.1.4
+
+   .. versionchanged:: 2.5.0 Added display and mixer driver outputs.
+
+   .. versionchanged:: 2.5.4 Added GIL status to the output.
+
+   .. versionchanged:: 3.0.0
+      Deprecated ``filename`` argument, use the new :func:`pygame.get_debug_info` function if you need to write to file.
 
    .. ## pygame.print_debug_info ##
 

@@ -359,7 +359,7 @@ del LazyLoader, find_spec, lazy_import, module_from_spec, numpy_missing
 
 try:
     import pygame._debug
-    from pygame._debug import print_debug_info
+    from pygame._debug import print_debug_info, get_debug_info
 except (ImportError, OSError):
     debug = MissingModule("_debug", urgent=0)
 
