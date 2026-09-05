@@ -244,9 +244,7 @@ class Color(Collection[int]):
     def from_cmy(cls, object: tuple[float, float, float], /) -> Color: ...
     @overload
     @classmethod
-    def from_cmy(cls, c: float, m: float, y: float, /) -> Color: ...
-    @classmethod  # type: ignore
-    def from_cmy(cls, *args) -> Color:  # type: ignore
+    def from_cmy(cls, c: float, m: float, y: float, /) -> Color:
         """Returns a Color object from a CMY representation.
 
         Creates a Color object from the given CMY components. Refer to :attr:`Color.cmy`
@@ -260,9 +258,7 @@ class Color(Collection[int]):
     def from_hsva(cls, object: tuple[float, float, float, float], /) -> Color: ...
     @overload
     @classmethod
-    def from_hsva(cls, h: float, s: float, v: float, a: float, /) -> Color: ...
-    @classmethod  # type: ignore
-    def from_hsva(cls, *args) -> Color:  # type: ignore
+    def from_hsva(cls, h: float, s: float, v: float, a: float, /) -> Color:
         """Returns a Color object from an HSVA representation.
 
         Creates a Color object from the given HSVA components. Refer to :attr:`Color.hsva`
@@ -276,9 +272,7 @@ class Color(Collection[int]):
     def from_hsla(cls, object: tuple[float, float, float, float], /) -> Color: ...
     @overload
     @classmethod
-    def from_hsla(cls, h: float, s: float, l: float, a: float, /) -> Color: ...
-    @classmethod  # type: ignore
-    def from_hsla(cls, *args) -> Color:  # type: ignore
+    def from_hsla(cls, h: float, s: float, l: float, a: float, /) -> Color:
         """Returns a Color object from an HSLA representation.
 
         Creates a Color object from the given HSLA components. Refer to :attr:`Color.hsla`
@@ -292,9 +286,7 @@ class Color(Collection[int]):
     def from_i1i2i3(cls, object: tuple[float, float, float], /) -> Color: ...
     @overload
     @classmethod
-    def from_i1i2i3(cls, i1: float, i2: float, i3: float, /) -> Color: ...
-    @classmethod  # type: ignore
-    def from_i1i2i3(cls, *args) -> Color:  # type: ignore
+    def from_i1i2i3(cls, i1: float, i2: float, i3: float, /) -> Color:
         """Returns a Color object from a I1I2I3 representation.
 
         Creates a Color object from the given I1I2I3 components. Refer to :attr:`Color.i1i2i3`
@@ -308,9 +300,7 @@ class Color(Collection[int]):
     def from_normalized(cls, object: tuple[float, float, float, float], /) -> Color: ...
     @overload
     @classmethod
-    def from_normalized(cls, r: float, g: float, b: float, a: float, /) -> Color: ...
-    @classmethod  # type: ignore
-    def from_normalized(cls, *args) -> Color:  # type: ignore
+    def from_normalized(cls, r: float, g: float, b: float, a: float, /) -> Color:
         """Returns a Color object from a Normalized representation.
 
         Creates a Color object from the given Normalized components. Refer to :attr:`Color.normalized`
