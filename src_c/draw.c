@@ -1465,7 +1465,8 @@ get_antialiased_color(SDL_Surface *surf, SDL_Rect surf_clip_rect,
 
     Uint32 pixel = 0;
     int bpp = PG_SURF_BytesPerPixel(surf);
-    Uint8 *pixels = (Uint8 *)surf->pixels + y * surf->pitch + x * bpp;
+    // make y size_t for wider mult than "int" if system has larger objects
+    Uint8 *pixels = (Uint8 *)surf->pixels + (size_t)y * surf->pitch + x * bpp;
 
     switch (bpp) {
         case 1:
@@ -1579,19 +1580,20 @@ set_at(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x, int y, Uint32 color)
 
     switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
-            *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
+            *((Uint8 *)pixels + (size_t)y * surf->pitch + x) = (Uint8)color;
             break;
         case 2:
-            *((Uint16 *)(pixels + y * surf->pitch) + x) = (Uint16)color;
+            *((Uint16 *)(pixels + (size_t)y * surf->pitch) + x) =
+                (Uint16)color;
             break;
         case 4:
-            *((Uint32 *)(pixels + y * surf->pitch) + x) = color;
+            *((Uint32 *)(pixels + (size_t)y * surf->pitch) + x) = color;
             break;
         default: /*case 3:*/
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
             color <<= 8;
 #endif
-            memcpy((pixels + y * surf->pitch) + x * 3, &color,
+            memcpy((pixels + (size_t)y * surf->pitch) + x * 3, &color,
                    3 * sizeof(Uint8));
             break;
     }
@@ -2496,24 +2498,26 @@ draw_line(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x1, int y1, int x2,
 #define SURF_GET_AT_FORMAT(p_color, p_surf, p_x, p_y, p_pixels, p_pix)       \
     switch (PG_SURF_BytesPerPixel(p_surf)) {                                 \
         case 1:                                                              \
-            p_color = (Uint32) *                                             \
-                      ((Uint8 *)(p_pixels) + (p_y) * p_surf->pitch + (p_x)); \
+            p_color = (Uint32) * ((Uint8 *)(p_pixels) +                      \
+                                  (size_t)(p_y) * p_surf->pitch + (p_x));    \
             break;                                                           \
         case 2:                                                              \
             p_color =                                                        \
                 (Uint32) *                                                   \
-                ((Uint16 *)((p_pixels) + (p_y) * p_surf->pitch) + (p_x));    \
+                ((Uint16 *)((p_pixels) + (size_t)(p_y) * p_surf->pitch) +    \
+                 (p_x));                                                     \
             break;                                                           \
         case 3:                                                              \
-            p_pix =                                                          \
-                ((Uint8 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x) * 3);   \
+            p_pix = ((Uint8 *)(p_pixels + (size_t)(p_y) * p_surf->pitch) +   \
+                     (p_x) * 3);                                             \
             p_color = (SDL_BYTEORDER == SDL_LIL_ENDIAN)                      \
                           ? (p_pix[0]) + (p_pix[1] << 8) + (p_pix[2] << 16)  \
                           : (p_pix[2]) + (p_pix[1] << 8) + (p_pix[0] << 16); \
             break;                                                           \
         default: /* case 4: */                                               \
             p_color =                                                        \
-                *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x));     \
+                *((Uint32 *)(p_pixels + (size_t)(p_y) * p_surf->pitch) +     \
+                  (p_x));                                                    \
             break;                                                           \
     }
 
@@ -2711,21 +2715,23 @@ unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color)
 {
     Uint8 *pixels = (Uint8 *)surf->pixels;
 
+    // make y size_t for wider mult than "int" if system has larger objects
     switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
-            *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
+            *((Uint8 *)pixels + (size_t)y * surf->pitch + x) = (Uint8)color;
             break;
         case 2:
-            *((Uint16 *)(pixels + y * surf->pitch) + x) = (Uint16)color;
+            *((Uint16 *)(pixels + (size_t)y * surf->pitch) + x) =
+                (Uint16)color;
             break;
         case 4:
-            *((Uint32 *)(pixels + y * surf->pitch) + x) = color;
+            *((Uint32 *)(pixels + (size_t)y * surf->pitch) + x) = color;
             break;
         default: /*case 3:*/
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
             color <<= 8;
 #endif
-            memcpy((pixels + y * surf->pitch) + x * 3, &color,
+            memcpy((pixels + (size_t)y * surf->pitch) + x * 3, &color,
                    3 * sizeof(Uint8));
             break;
     }
