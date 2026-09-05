@@ -128,7 +128,6 @@ exclude = [
   "buildconfig/*.py",
   "buildconfig/stubs/pygame/typing.pyi",
   "docs/reST/",
-  "setup.py",
 ]
 
 [tool.ruff.lint]
@@ -149,11 +148,10 @@ only-binary = ["numpy"]
 
 # 1. skip all 32-bit manylinux (i686)
 # 2. skip all pypy+arm combinations
-# 3. skip pypy 3.11 manylinux and cpython 3.14 manylinux (numpy has newer manylinux
+# 3. skip pypy 3.11 manylinux and cpython 3.14+ manylinux (numpy has newer manylinux
 # wheels for this which is incompatible with our manylinux version)
-# 4. skip all 3.15 (numpy doesn't have release with wheels yet)
 [[tool.cibuildwheel.overrides]]
-select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp314-manylinux_*,cp315-*}"
+select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp3{14,15}-manylinux_*}"
 test-requires = []
 
 # On MacOS 3.15 x86_64 compilation running on an ARM64 runner, with
@@ -168,3 +166,48 @@ test-requires = []
 [[tool.cibuildwheel.overrides]]
 select = "cp315-macosx_x86_64"
 build-frontend = "build"
+
+[tool.isort]
+include_trailing_comma = true
+known_first_party = "pygame"
+known_third_party = ["numpy", "distutils", "setuptools", "sphinx"]
+line_length = 88
+multi_line_output = 3
+src_paths = "src_py"
+
+[tool.pylint.main]
+extension-pkg-whitelist = "pygame"
+
+[tool.pylint."MESSAGES CONTROL"]
+enable = ["use-symbolic-message-instead"]
+disable = [
+  "attribute-defined-outside-init",
+  "broad-except",
+  "duplicate-code",
+  "empty-docstring",
+  "fixme",
+  "global-statement",
+  "global-variable-undefined",
+  "import-error",
+  "import-outside-toplevel",
+  "invalid-name",
+  "missing-docstring",
+  "no-member",
+  "protected-access",
+  "raise-missing-from",
+  "redefined-builtin",
+  "redefined-outer-name",
+  "super-with-arguments",
+  "too-few-public-methods",
+  "too-many-arguments",
+  "too-many-branches",
+  "too-many-instance-attributes",
+  "too-many-lines",
+  "too-many-locals",
+  "undefined-all-variable",
+  "undefined-variable",
+  "unused-import",
+  "useless-object-inheritance",
+  "wrong-import-order",
+  "wrong-import-position",
+]

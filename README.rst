@@ -103,7 +103,7 @@ locally from its source code, rather than pip installing it.
 
 Installing from source is fairly automated. The most work will
 involve compiling and installing all the pygame dependencies.  Once
-that is done, run the ``setup.py`` script which will attempt to
+that is done, run the ``pip install .`` script which will attempt to
 auto-configure, build, and install pygame.
 
 Much more information about installing and compiling is available

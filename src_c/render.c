@@ -72,20 +72,25 @@ renderer_from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
     }
     pgRendererObject *self =
         (pgRendererObject *)(cls->tp_new(cls, NULL, NULL));
+    if (!self) {
+        return NULL;
+    }
     self->window = (pgWindowObject *)window;
     if (self->window->_is_borrowed) {
         self->_is_borrowed = SDL_TRUE;
     }
     else {
+        Py_DECREF(self);
         return RAISE(pgExc_SDLError,
                      "Window is not created from display module");
     }
     self->renderer = SDL_GetRenderer(self->window->_win);
     if (!self->renderer) {
+        Py_DECREF(self);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     self->target = NULL;
-    return Py_NewRef(self);
+    return (PyObject *)self;
 }
 
 static PyObject *

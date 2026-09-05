@@ -416,6 +416,9 @@ console that tells you which version of python,
 pygame & SDL you are using. Must be set before
 importing pygame.
 
+.. note::
+   Support prompt entirely removed in pygame-ce 3.0.0.
+
 |
 
 ::
