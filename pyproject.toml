@@ -176,8 +176,10 @@ line_length = 88
 multi_line_output = 3
 src_paths = "src_py"
 
-[tool.pylint."MESSAGES CONTROL"]
+[tool.pylint.main]
 extension-pkg-whitelist = "pygame"
+
+[tool.pylint."MESSAGES CONTROL"]
 enable = ["use-symbolic-message-instead"]
 disable = [
   "attribute-defined-outside-init",
