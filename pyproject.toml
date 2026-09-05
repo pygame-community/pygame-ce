@@ -6,6 +6,8 @@ readme = "README.rst" # for long description
 requires-python = ">=3.10"
 license = {text = "LGPL v2.1"}
 authors = [{name = "A community project"}]
+keywords = ["pygame", "game", "gamedev"]
+import-names = ["pygame"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
