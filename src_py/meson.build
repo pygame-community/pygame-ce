@@ -12,6 +12,7 @@ python_sources = files(
     'ftfont.py',
     'locals.py',
     'macosx.py',
+    'midi.py',
     'pkgdata.py',
     'sndarray.py',
     'sprite.py',
@@ -30,11 +31,6 @@ endif
 if sdl_api == 3
     py.install_sources('_sdl3_mixer.py', subdir: pg)
     py.install_sources('_audio.py', subdir: pg)
-endif
-
-# pygame.midi imports the pypm extension, so only install it when pypm is built
-if portmidi_dep.found()
-    py.install_sources('midi.py', subdir: pg)
 endif
 
 data_files = files(
