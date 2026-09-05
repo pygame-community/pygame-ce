@@ -449,16 +449,21 @@ endif
 
 endif # emscripten
 
-portmidi_dep = dependency('portmidi', required: false)
-if not portmidi_dep.found() and not plat.startswith('emscripten')
-    portmidi_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            'portmidi',
-            dirs: pg_lib_dirs,
-            required: get_option('midi'),
-        ),
-    )
+midi_opt = get_option('midi')
+# Start from a not-found dependency so pypm is only built when portmidi is
+# actually available and the midi option allows it.
+portmidi_dep = dependency('', required: false)
+if not midi_opt.disabled()
+    portmidi_dep = dependency('portmidi', required: false)
+    if not portmidi_dep.found() and not plat.startswith('emscripten')
+        portmidi_lib = cc.find_library('portmidi', dirs: pg_lib_dirs, required: midi_opt)
+        if portmidi_lib.found()
+            portmidi_dep = declare_dependency(
+                include_directories: pg_inc_dirs,
+                dependencies: portmidi_lib,
+            )
+        endif
+    endif
 endif
 
 portmidi_deps = [portmidi_dep]
