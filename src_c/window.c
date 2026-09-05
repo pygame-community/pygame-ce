@@ -1042,15 +1042,15 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     const char *_key_str;
     int _value_bool;
 
-    // ensure display is init at this point, display init automatically calls
-    // the window init in this module
-    if (!pg_mod_autoinit(IMPPREFIX "display")) {
-        return -1;
-    }
-
     if (self->_win) {
         PyErr_SetString(PyExc_RuntimeError,
                         "Object of type Window cannot be reinitialized");
+        return -1;
+    }
+
+    // ensure display is init at this point, display init automatically calls
+    // the window init in this module
+    if (!pg_mod_autoinit(IMPPREFIX "display")) {
         return -1;
     }
 
