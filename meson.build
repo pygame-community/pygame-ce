@@ -449,16 +449,22 @@ endif
 
 endif # emscripten
 
-portmidi_dep = dependency('portmidi', required: false)
+midi_opt = get_option('midi')
+# A disabled feature passed as `required` makes dependency() return not-found
+# without searching, so -Dmidi=disabled never picks up portmidi.
+portmidi_dep = dependency('portmidi', required: midi_opt.disabled() ? midi_opt : false)
 if not portmidi_dep.found() and not plat.startswith('emscripten')
-    portmidi_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            'portmidi',
-            dirs: pg_lib_dirs,
-            required: get_option('midi'),
-        ),
+    portmidi_lib = cc.find_library(
+        'portmidi',
+        dirs: pg_lib_dirs,
+        required: midi_opt,
     )
+    if portmidi_lib.found()
+        portmidi_dep = declare_dependency(
+            include_directories: pg_inc_dirs,
+            dependencies: portmidi_lib,
+        )
+    endif
 endif
 
 portmidi_deps = [portmidi_dep]
