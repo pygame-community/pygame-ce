@@ -183,6 +183,31 @@ class MixerModuleTest(unittest.TestCase):
             mixer.set_num_channels(i)
             self.assertEqual(mixer.get_num_channels(), i)
 
+        # Growing past the default reallocates the internal channel array.
+        mixer.set_num_channels(32)
+        self.assertEqual(mixer.get_num_channels(), 32)
+
+        # Shrinking stops any sound playing on a channel that goes away.
+        sound = get_fake_sound_duration(500)
+        mixer.Channel(20).play(sound)
+        self.assertEqual(sound.get_num_channels(), 1)
+        mixer.set_num_channels(8)
+        self.assertEqual(mixer.get_num_channels(), 8)
+        self.assertEqual(sound.get_num_channels(), 0)
+
+        # Zero is allowed.
+        mixer.set_num_channels(0)
+        self.assertEqual(mixer.get_num_channels(), 0)
+
+    def test_init__invalid_args(self):
+        """Ensure init rejects an unsupported size and channel count."""
+        # An unsupported sample size is rejected.
+        with self.assertRaises(ValueError):
+            mixer.init(44100, 24)
+        # With allowedchanges=0 the channel count must be 1, 2, 4, or 6.
+        with self.assertRaises(ValueError):
+            mixer.init(44100, -16, 3, allowedchanges=0)
+
     def test_set_soundfont(self):
         """Ensure soundfonts can be set, cleared, and retrieved"""
         mixer.init()
@@ -797,6 +822,8 @@ class ChannelTypeTest(unittest.TestCase):
         """Ensure exception for Channel() creation with an invalid id."""
         with self.assertRaises(IndexError):
             mixer.Channel(-1)
+        with self.assertRaises(IndexError):
+            mixer.Channel(mixer.get_num_channels())  # one past the last valid id
 
     def test_channel__before_init(self):
         """Ensure exception for Channel() creation with non-init mixer."""
@@ -876,6 +903,32 @@ class ChannelTypeTest(unittest.TestCase):
         finally:
             ch0.stop()
             ch1.stop()
+
+    def test_play__rejects_non_sound(self):
+        """Channel.play requires a Sound argument."""
+        ch = mixer.Channel(0)
+        with self.assertRaises(TypeError):
+            ch.play("not a sound")
+
+    def test_queue__rejects_non_sound(self):
+        """Channel.queue requires a Sound argument."""
+        ch = mixer.Channel(0)
+        with self.assertRaises(TypeError):
+            ch.queue(42)
+
+    def test_queue__nothing_playing(self):
+        """Queueing on an idle channel starts playback immediately."""
+        sound = get_fake_sound_duration(200)
+
+        ch = mixer.Channel(0)
+        self.assertIsNone(ch.get_sound())
+        try:
+            ch.queue(sound)
+            self.assertIs(ch.get_sound(), sound)
+            self.assertIsNone(ch.get_queue())
+            self.assertTrue(ch.get_busy())
+        finally:
+            ch.stop()
 
     def test_get_sound(self):
         """Test get sound initial and when playing"""
