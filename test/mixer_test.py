@@ -166,6 +166,11 @@ class MixerModuleTest(unittest.TestCase):
     def test_get_init__returns_None_if_mixer_not_initialized(self):
         self.assertIsNone(mixer.get_init())
 
+    def test_get_busy__returns_False_if_mixer_not_initialized(self):
+        # get_busy() is documented to return False (not raise) when the mixer
+        # has not been initialized.
+        self.assertFalse(mixer.get_busy())
+
     def test_get_num_channels__defaults_eight_after_init(self):
         mixer.init()
         self.assertEqual(mixer.get_num_channels(), 8)
@@ -540,19 +545,6 @@ class MixerModuleTest(unittest.TestCase):
         else:
             self.assertRaises(BufferError, Importer, snd, buftools.PyBUF_F_CONTIGUOUS)
 
-    def todo_test_fadeout(self):
-        # __doc__ (as of 2008-08-02) for pygame.mixer.fadeout:
-
-        # pygame.mixer.fadeout(time): return None
-        # fade out the volume on all sounds before stopping
-        #
-        # This will fade out the volume on all active channels over the time
-        # argument in milliseconds. After the sound is muted the playback will
-        # stop.
-        #
-
-        self.fail()
-
     def test_find_channel(self):
         # __doc__ (as of 2008-08-02) for pygame.mixer.find_channel:
 
@@ -591,31 +583,6 @@ class MixerModuleTest(unittest.TestCase):
             found_channel = mixer.find_channel()
             self.assertIsNotNone(found_channel)
 
-    def todo_test_get_busy(self):
-        # __doc__ (as of 2008-08-02) for pygame.mixer.get_busy:
-
-        # pygame.mixer.get_busy(): return bool
-        # test if any sound is being mixed
-        #
-        # Returns True if the mixer is busy mixing any channels. If the mixer
-        # is idle then this return False.
-        #
-
-        self.fail()
-
-    def todo_test_pause(self):
-        # __doc__ (as of 2008-08-02) for pygame.mixer.pause:
-
-        # pygame.mixer.pause(): return None
-        # temporarily stop playback of all sound channels
-        #
-        # This will temporarily stop all playback on the active mixer
-        # channels. The playback can later be resumed with
-        # pygame.mixer.unpause()
-        #
-
-        self.fail()
-
     def test_set_reserved(self):
         # __doc__ (as of 2008-08-02) for pygame.mixer.set_reserved:
 
@@ -641,26 +608,6 @@ class MixerModuleTest(unittest.TestCase):
         result = mixer.set_reserved(int(default_num_channels / 2))
         # should still be default
         self.assertEqual(result, int(default_num_channels / 2))
-
-    def todo_test_stop(self):
-        # __doc__ (as of 2008-08-02) for pygame.mixer.stop:
-
-        # pygame.mixer.stop(): return None
-        # stop playback of all sound channels
-        #
-        # This will stop all playback of all active mixer channels.
-
-        self.fail()
-
-    def todo_test_unpause(self):
-        # __doc__ (as of 2008-08-02) for pygame.mixer.unpause:
-
-        # pygame.mixer.unpause(): return None
-        # resume paused playback of sound channels
-        #
-        # This will resume all active sound channels after they have been paused.
-
-        self.fail()
 
     def test_get_sdl_mixer_version(self):
         """Ensures get_sdl_mixer_version works correctly with no args."""
@@ -722,6 +669,93 @@ class MixerModuleTest(unittest.TestCase):
         compiled_version = pygame.mixer.get_sdl_mixer_version(linked=False)
 
         self.assertTupleEqual(linked_version, compiled_version)
+
+
+########################### MODULE PLAYBACK TESTS ############################
+
+
+class MixerPlaybackTest(unittest.TestCase):
+    """Tests for the module-level controls that act on all channels at once:
+    stop(), pause(), unpause(), fadeout() and get_busy().
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        # Initializing the mixer is slow, so minimize the times it is called.
+        mixer.init()
+
+    @classmethod
+    def tearDownClass(cls):
+        mixer.quit()
+
+    def setUp(self):
+        # Make sure the mixer is initialized before each test (in case a
+        # previous test quit it).
+        if mixer.get_init() is None:
+            mixer.init()
+
+    def tearDown(self):
+        # Every test here drives global playback and pausing. Reset that state
+        # so nothing leaks into the next test, even if an assert failed early.
+        mixer.stop()
+        mixer.unpause()
+
+    def test_get_busy(self):
+        """get_busy() reflects whether any channel is mixing."""
+        self.assertFalse(mixer.get_busy())
+
+        sound = get_fake_sound_duration(200)
+        sound.play()
+        self.assertTrue(mixer.get_busy())
+
+        mixer.stop()
+        self.assertFalse(mixer.get_busy())
+
+    def test_stop(self):
+        """stop() halts playback on every channel."""
+        sound = get_fake_sound_duration(200)
+        sound.play()
+        sound.play()
+        self.assertEqual(sound.get_num_channels(), 2)
+
+        mixer.stop()
+        self.assertEqual(sound.get_num_channels(), 0)
+        self.assertFalse(mixer.get_busy())
+
+    def test_pause_unpause(self):
+        """pause() freezes all channels; unpause() resumes them."""
+        mixer.unpause()  # legal to call with nothing playing
+        mixer.pause()
+
+        sound = get_fake_sound_duration(10)
+
+        # Playback starts even if pause() was the last call.
+        sound.play()
+        self.assertTrue(mixer.get_busy())
+
+        mixer.pause()
+        pygame.time.wait(30)  # 3x the sound length
+        self.assertTrue(
+            mixer.get_busy(), "a paused channel stays busy past the sound length"
+        )
+
+        mixer.unpause()
+        start = pygame.time.get_ticks()
+        while mixer.get_busy() and pygame.time.get_ticks() - start < 200:
+            pygame.time.wait(1)
+        self.assertFalse(mixer.get_busy(), "unpaused playback should finish")
+
+    def test_fadeout(self):
+        """fadeout() fades and stops all channels within the fade time."""
+        sound = get_fake_sound_duration(500)
+        sound.play()
+        sound.play()
+
+        mixer.fadeout(50)
+        pygame.time.wait(1)
+        self.assertTrue(mixer.get_busy())  # still fading right after
+        pygame.time.wait(75)
+        self.assertFalse(mixer.get_busy())  # faded out and stopped
 
 
 ############################## CHANNEL CLASS TESTS #############################
