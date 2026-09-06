@@ -782,6 +782,35 @@ class MixerPlaybackTest(unittest.TestCase):
         pygame.time.wait(75)
         self.assertFalse(mixer.get_busy())  # faded out and stopped
 
+    def test_stop__discards_queue(self):
+        """stop() discards a queued Sound rather than advancing to it."""
+        queued = get_fake_sound_duration(300)
+        ch = mixer.Channel(0)
+        ch.play(get_fake_sound_duration(10), loops=-1)  # loop so it can't end
+        ch.queue(queued)
+
+        mixer.stop()
+        self.assertIsNone(
+            ch.get_sound(), "mixer.stop() should not advance to the queued sound"
+        )
+
+    def test_fadeout__keeps_queue(self):
+        """fadeout() lets the queued Sound play once the fade completes."""
+        queued = get_fake_sound_duration(300)
+        ch = mixer.Channel(0)
+        ch.play(get_fake_sound_duration(10), loops=-1)  # loop so it can't end
+        ch.queue(queued)
+
+        mixer.fadeout(10)
+        advanced = False
+        start = pygame.time.get_ticks()
+        while pygame.time.get_ticks() - start < 200:
+            pygame.time.wait(1)
+            if ch.get_sound() == queued:
+                advanced = True
+                break
+        self.assertTrue(advanced, "mixer.fadeout() should let the queued sound play")
+
 
 ############################## CHANNEL CLASS TESTS #############################
 
@@ -869,19 +898,11 @@ class ChannelTypeTest(unittest.TestCase):
         finally:
             ch.stop()
 
-    # I did not fully verify this, but in some older versions it would interact differently
-    # inside SDL_mixer with the callback that implements the queue, which causes this
-    # queue test to fail. See https://github.com/libsdl-org/SDL_mixer/pull/495?
-    @unittest.skipIf(
-        mixer.get_sdl_mixer_version() < (2, 8, 0),
-        "Issue on older SDL_mixer causes test to fail",
-    )
     def test_queue_and_get(self):
         """Test channel queue system."""
 
-        filename = example_path(os.path.join("data", "house_lo.wav"))
-        sound1 = mixer.Sound(filename)
-        sound2 = mixer.Sound(filename)
+        sound1 = get_fake_sound_duration(10)
+        sound2 = get_fake_sound_duration(300)
 
         ch0 = mixer.Channel(0)
         ch1 = mixer.Channel(1)
@@ -895,11 +916,42 @@ class ChannelTypeTest(unittest.TestCase):
 
             ch1.play(sound1, loops=-1)  # loop so can't end on its own
             ch1.queue(sound2)
-            ch1.stop()  # stop sound1, move to queued sound2
-            self.assertEqual(
-                ch1.get_sound(), sound2, "should have moved to second sound"
+            ch1.stop()  # stop() discards the queue
+            self.assertIsNone(
+                ch1.get_sound(), "stop should not advance to the queued sound"
             )
-            ch1.stop()  # stop sound 2
+            ch1.stop()  # Just in case
+
+            # fadeout() is not a hard stop: the queued sound still plays once
+            # the fade completes (this differs from stop()).
+            ch1.play(sound1, loops=-1)  # loop so can't end on its own
+            ch1.queue(sound2)
+            ch1.fadeout(10)
+            advanced_after_fadeout = False
+            start = pygame.time.get_ticks()
+            while pygame.time.get_ticks() - start < 200:
+                pygame.time.wait(1)
+                if ch1.get_sound() == sound2:
+                    advanced_after_fadeout = True
+                    break
+            self.assertTrue(
+                advanced_after_fadeout, "fadeout should let the queued sound play"
+            )
+            ch1.stop()  # Just in case
+
+            # If we play a 10 ms sound, and queue a 300 ms sound, we should
+            # see that it has advanced to the queued sound within 100 ms.
+            ch1.play(sound1)
+            ch1.queue(sound2)
+            advanced_to_sound2 = False
+            start = pygame.time.get_ticks()
+            while pygame.time.get_ticks() - start < 200:
+                pygame.time.wait(1)
+                if ch1.get_sound() is sound2:
+                    advanced_to_sound2 = True
+                    break
+            self.assertTrue(advanced_to_sound2)
+
         finally:
             ch0.stop()
             ch1.stop()
@@ -1441,6 +1493,48 @@ class SoundTypeTest(unittest.TestCase):
             self.assertEqual(sound.get_num_channels(), 0)
         finally:
             sound.stop()
+
+    def test_stop__discards_queue(self):
+        """Sound.stop() discards a queued Sound rather than advancing to it."""
+        playing = get_fake_sound_duration(10)
+        queued = get_fake_sound_duration(300)
+        ch = mixer.Channel(0)
+
+        try:
+            ch.play(playing, loops=-1)  # loop so it can't end on its own
+            ch.queue(queued)
+
+            playing.stop()
+            self.assertIsNone(
+                ch.get_sound(),
+                "Sound.stop() should not advance to the queued sound",
+            )
+        finally:
+            ch.stop()
+
+    def test_fadeout__keeps_queue(self):
+        """Sound.fadeout() lets the queued Sound play once the fade completes."""
+        playing = get_fake_sound_duration(10)
+        queued = get_fake_sound_duration(300)
+        ch = mixer.Channel(0)
+
+        try:
+            ch.play(playing, loops=-1)  # loop so it can't end on its own
+            ch.queue(queued)
+
+            playing.fadeout(10)
+            advanced = False
+            start = pygame.time.get_ticks()
+            while pygame.time.get_ticks() - start < 200:
+                pygame.time.wait(1)
+                if ch.get_sound() == queued:
+                    advanced = True
+                    break
+            self.assertTrue(
+                advanced, "Sound.fadeout() should let the queued sound play"
+            )
+        finally:
+            ch.stop()
 
     def test_get_raw(self):
         """Ensure get_raw returns the correct bytestring."""
