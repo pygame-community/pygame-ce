@@ -1,7 +1,7 @@
 """Pygame module for vector classes.
 
-The pygame math module currently provides Vector classes in two and three
-dimensions, ``Vector2`` and ``Vector3`` respectively.
+The pygame math module currently provides Vector classes in two, three and
+four dimensions, ``Vector2``, ``Vector3`` and ``Vector4`` respectively.
 
 They support the following numerical operations: ``vec + vec``, ``vec - vec``,
 ``vec * number``, ``number * vec``, ``vec / number``, ``vec // number``, ``vec += vec``,
@@ -39,11 +39,13 @@ Multiple coordinates can be set and retrieved using slices or swizzling.
    print(v.y)  # 2.0
    print(v.xy)  # Vector2(1, 2)
    print(v.yx)  # Vector2(2, 1)
-   print(v.xyyx)  # (1.0, 2.0, 2.0, 1.0)
+   print(v.xyyx)  # Vector4(1, 2, 2, 1)
+   print(v.xyxyx)  # (1.0, 2.0, 1.0, 2.0, 1.0)
 
 Note above, that swizzling with 2 components will return a Vector2 instance,
-swizzling with 3 components will return a Vector3 instance, and swizzles of 4
-or more components will result in a tuple. But since vectors support the
+swizzling with 3 components will return a Vector3 instance, swizzling with 4
+components will return a Vector4 instance, and swizzles of 5 or more components
+will result in a tuple. But since vectors support the
 iterator protocol, they can be unpacked, or converted to lists or tuples.
 
 ::
@@ -418,6 +420,367 @@ class Vector3(_GenericVector):
     ) -> None: ...
     @overload
     def update(self, x: float = 0, y: float = 0, z: float = 0) -> None: ...
+
+class Vector4(_GenericVector):
+    x: float
+    y: float
+    z: float
+    w: float
+    xx: Vector2
+    xy: Vector2
+    xz: Vector2
+    xw: Vector2
+    yx: Vector2
+    yy: Vector2
+    yz: Vector2
+    yw: Vector2
+    zx: Vector2
+    zy: Vector2
+    zz: Vector2
+    zw: Vector2
+    wx: Vector2
+    wy: Vector2
+    wz: Vector2
+    ww: Vector2
+    xxx: Vector3
+    xxy: Vector3
+    xxz: Vector3
+    xxw: Vector3
+    xyx: Vector3
+    xyy: Vector3
+    xyz: Vector3
+    xyw: Vector3
+    xzx: Vector3
+    xzy: Vector3
+    xzz: Vector3
+    xzw: Vector3
+    xwx: Vector3
+    xwy: Vector3
+    xwz: Vector3
+    xww: Vector3
+    yxx: Vector3
+    yxy: Vector3
+    yxz: Vector3
+    yxw: Vector3
+    yyx: Vector3
+    yyy: Vector3
+    yyz: Vector3
+    yyw: Vector3
+    yzx: Vector3
+    yzy: Vector3
+    yzz: Vector3
+    yzw: Vector3
+    ywx: Vector3
+    ywy: Vector3
+    ywz: Vector3
+    yww: Vector3
+    zxx: Vector3
+    zxy: Vector3
+    zxz: Vector3
+    zxw: Vector3
+    zyx: Vector3
+    zyy: Vector3
+    zyz: Vector3
+    zyw: Vector3
+    zzx: Vector3
+    zzy: Vector3
+    zzz: Vector3
+    zzw: Vector3
+    zwx: Vector3
+    zwy: Vector3
+    zwz: Vector3
+    zww: Vector3
+    wxx: Vector3
+    wxy: Vector3
+    wxz: Vector3
+    wxw: Vector3
+    wyx: Vector3
+    wyy: Vector3
+    wyz: Vector3
+    wyw: Vector3
+    wzx: Vector3
+    wzy: Vector3
+    wzz: Vector3
+    wzw: Vector3
+    wwx: Vector3
+    wwy: Vector3
+    wwz: Vector3
+    www: Vector3
+    xxxx: Vector4
+    xxxy: Vector4
+    xxxz: Vector4
+    xxxw: Vector4
+    xxyx: Vector4
+    xxyy: Vector4
+    xxyz: Vector4
+    xxyw: Vector4
+    xxzx: Vector4
+    xxzy: Vector4
+    xxzz: Vector4
+    xxzw: Vector4
+    xxwx: Vector4
+    xxwy: Vector4
+    xxwz: Vector4
+    xxww: Vector4
+    xyxx: Vector4
+    xyxy: Vector4
+    xyxz: Vector4
+    xyxw: Vector4
+    xyyx: Vector4
+    xyyy: Vector4
+    xyyz: Vector4
+    xyyw: Vector4
+    xyzx: Vector4
+    xyzy: Vector4
+    xyzz: Vector4
+    xyzw: Vector4
+    xywx: Vector4
+    xywy: Vector4
+    xywz: Vector4
+    xyww: Vector4
+    xzxx: Vector4
+    xzxy: Vector4
+    xzxz: Vector4
+    xzxw: Vector4
+    xzyx: Vector4
+    xzyy: Vector4
+    xzyz: Vector4
+    xzyw: Vector4
+    xzzx: Vector4
+    xzzy: Vector4
+    xzzz: Vector4
+    xzzw: Vector4
+    xzwx: Vector4
+    xzwy: Vector4
+    xzwz: Vector4
+    xzww: Vector4
+    xwxx: Vector4
+    xwxy: Vector4
+    xwxz: Vector4
+    xwxw: Vector4
+    xwyx: Vector4
+    xwyy: Vector4
+    xwyz: Vector4
+    xwyw: Vector4
+    xwzx: Vector4
+    xwzy: Vector4
+    xwzz: Vector4
+    xwzw: Vector4
+    xwwx: Vector4
+    xwwy: Vector4
+    xwwz: Vector4
+    xwww: Vector4
+    yxxx: Vector4
+    yxxy: Vector4
+    yxxz: Vector4
+    yxxw: Vector4
+    yxyx: Vector4
+    yxyy: Vector4
+    yxyz: Vector4
+    yxyw: Vector4
+    yxzx: Vector4
+    yxzy: Vector4
+    yxzz: Vector4
+    yxzw: Vector4
+    yxwx: Vector4
+    yxwy: Vector4
+    yxwz: Vector4
+    yxww: Vector4
+    yyxx: Vector4
+    yyxy: Vector4
+    yyxz: Vector4
+    yyxw: Vector4
+    yyyx: Vector4
+    yyyy: Vector4
+    yyyz: Vector4
+    yyyw: Vector4
+    yyzx: Vector4
+    yyzy: Vector4
+    yyzz: Vector4
+    yyzw: Vector4
+    yywx: Vector4
+    yywy: Vector4
+    yywz: Vector4
+    yyww: Vector4
+    yzxx: Vector4
+    yzxy: Vector4
+    yzxz: Vector4
+    yzxw: Vector4
+    yzyx: Vector4
+    yzyy: Vector4
+    yzyz: Vector4
+    yzyw: Vector4
+    yzzx: Vector4
+    yzzy: Vector4
+    yzzz: Vector4
+    yzzw: Vector4
+    yzwx: Vector4
+    yzwy: Vector4
+    yzwz: Vector4
+    yzww: Vector4
+    ywxx: Vector4
+    ywxy: Vector4
+    ywxz: Vector4
+    ywxw: Vector4
+    ywyx: Vector4
+    ywyy: Vector4
+    ywyz: Vector4
+    ywyw: Vector4
+    ywzx: Vector4
+    ywzy: Vector4
+    ywzz: Vector4
+    ywzw: Vector4
+    ywwx: Vector4
+    ywwy: Vector4
+    ywwz: Vector4
+    ywww: Vector4
+    zxxx: Vector4
+    zxxy: Vector4
+    zxxz: Vector4
+    zxxw: Vector4
+    zxyx: Vector4
+    zxyy: Vector4
+    zxyz: Vector4
+    zxyw: Vector4
+    zxzx: Vector4
+    zxzy: Vector4
+    zxzz: Vector4
+    zxzw: Vector4
+    zxwx: Vector4
+    zxwy: Vector4
+    zxwz: Vector4
+    zxww: Vector4
+    zyxx: Vector4
+    zyxy: Vector4
+    zyxz: Vector4
+    zyxw: Vector4
+    zyyx: Vector4
+    zyyy: Vector4
+    zyyz: Vector4
+    zyyw: Vector4
+    zyzx: Vector4
+    zyzy: Vector4
+    zyzz: Vector4
+    zyzw: Vector4
+    zywx: Vector4
+    zywy: Vector4
+    zywz: Vector4
+    zyww: Vector4
+    zzxx: Vector4
+    zzxy: Vector4
+    zzxz: Vector4
+    zzxw: Vector4
+    zzyx: Vector4
+    zzyy: Vector4
+    zzyz: Vector4
+    zzyw: Vector4
+    zzzx: Vector4
+    zzzy: Vector4
+    zzzz: Vector4
+    zzzw: Vector4
+    zzwx: Vector4
+    zzwy: Vector4
+    zzwz: Vector4
+    zzww: Vector4
+    zwxx: Vector4
+    zwxy: Vector4
+    zwxz: Vector4
+    zwxw: Vector4
+    zwyx: Vector4
+    zwyy: Vector4
+    zwyz: Vector4
+    zwyw: Vector4
+    zwzx: Vector4
+    zwzy: Vector4
+    zwzz: Vector4
+    zwzw: Vector4
+    zwwx: Vector4
+    zwwy: Vector4
+    zwwz: Vector4
+    zwww: Vector4
+    wxxx: Vector4
+    wxxy: Vector4
+    wxxz: Vector4
+    wxxw: Vector4
+    wxyx: Vector4
+    wxyy: Vector4
+    wxyz: Vector4
+    wxyw: Vector4
+    wxzx: Vector4
+    wxzy: Vector4
+    wxzz: Vector4
+    wxzw: Vector4
+    wxwx: Vector4
+    wxwy: Vector4
+    wxwz: Vector4
+    wxww: Vector4
+    wyxx: Vector4
+    wyxy: Vector4
+    wyxz: Vector4
+    wyxw: Vector4
+    wyyx: Vector4
+    wyyy: Vector4
+    wyyz: Vector4
+    wyyw: Vector4
+    wyzx: Vector4
+    wyzy: Vector4
+    wyzz: Vector4
+    wyzw: Vector4
+    wywx: Vector4
+    wywy: Vector4
+    wywz: Vector4
+    wyww: Vector4
+    wzxx: Vector4
+    wzxy: Vector4
+    wzxz: Vector4
+    wzxw: Vector4
+    wzyx: Vector4
+    wzyy: Vector4
+    wzyz: Vector4
+    wzyw: Vector4
+    wzzx: Vector4
+    wzzy: Vector4
+    wzzz: Vector4
+    wzzw: Vector4
+    wzwx: Vector4
+    wzwy: Vector4
+    wzwz: Vector4
+    wzww: Vector4
+    wwxx: Vector4
+    wwxy: Vector4
+    wwxz: Vector4
+    wwxw: Vector4
+    wwyx: Vector4
+    wwyy: Vector4
+    wwyz: Vector4
+    wwyw: Vector4
+    wwzx: Vector4
+    wwzy: Vector4
+    wwzz: Vector4
+    wwzw: Vector4
+    wwwx: Vector4
+    wwwy: Vector4
+    wwwz: Vector4
+    wwww: Vector4
+    @overload
+    def __init__(
+        self: _TVec,
+        x: str | float | SequenceLike[float] | _TVec = 0,
+    ) -> None: ...
+    @overload
+    def __init__(self, x: float, y: float, z: float, w: float) -> None: ...
+    def __reduce__(
+        self: _TVec,
+    ) -> tuple[type[_TVec], tuple[float, float, float, float]]: ...
+    @overload
+    def update(
+        self: _TVec,
+        x: str | float | SequenceLike[float] | _TVec = 0,
+    ) -> None: ...
+    @overload
+    def update(
+        self, x: float = 0, y: float = 0, z: float = 0, w: float = 0
+    ) -> None: ...
 
 def lerp(a: float, b: float, value: float, do_clamp: bool = True, /) -> float:
     """Returns value linearly interpolated between a and b.
