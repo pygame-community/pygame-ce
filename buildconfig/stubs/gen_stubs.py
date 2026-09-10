@@ -12,7 +12,7 @@ from typing import Any
 try:
     import pygame.constants
     import pygame.locals
-except ModuleNotFoundError as e:
+except ModuleNotFoundError:
     print("HINT: make sure pygame-ce is installed")
     raise
 
