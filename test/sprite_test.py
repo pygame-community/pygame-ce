@@ -545,9 +545,9 @@ class AbstractGroupTypeTest(unittest.TestCase):
         self.assertNotEqual(True, self.ag.has(self.s1, [self.s2, self.s3]))
 
         # test empty list processing
-        self.assertFalse(self.ag.has(*[]))
-        self.assertFalse(self.ag.has([]))
-        self.assertFalse(self.ag.has([[]]))
+        self.assertTrue(self.ag.has(*[]))
+        self.assertTrue(self.ag.has([]))
+        self.assertTrue(self.ag.has([[]]))
 
         # see if a second AbstractGroup works.
         self.assertEqual(True, self.ag2.has(self.s3))

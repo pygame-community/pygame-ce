@@ -519,9 +519,6 @@ class AbstractGroup:
         'in' operator, e.g. 'sprite in group', 'subgroup in group'.
 
         """
-        if not sprites:
-            return False  # return False if no sprites passed in
-
         for sprite in sprites:
             if isinstance(sprite, Sprite):
                 # Check for Sprite instance's membership in this group
