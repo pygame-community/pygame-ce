@@ -1304,12 +1304,6 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
                 }
                 goto error;
             }
-            /* Unlike when the default font is loaded with None, the fontsize
-             * is not scaled down here. This was probably unintended
-             * implementation detail,
-             * but this rewritten code aims to keep the exact behavior as the
-             * old one */
-
             rw = pgRWops_FromObject(obj, NULL);
         }
     }
