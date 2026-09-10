@@ -1624,10 +1624,8 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
         }
 
         obj = PyTuple_GET_ITEM(op, 0);
-        if (obj == Py_Ellipsis || obj == Py_None) {
-            /* Operator is the ellipsis or None
-             * array[...,XXX], array[None,XXX]
-             */
+        if (obj == Py_Ellipsis) {
+            /* Operator is the ellipsis: array[..., XXX] */
             xstart = 0;
             xstop = dim0;
             xstep = 1;
@@ -1639,10 +1637,8 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
 
         if (size == 2) {
             obj = PyTuple_GET_ITEM(op, 1);
-            if (obj == Py_Ellipsis || obj == Py_None) {
-                /* Operator is the ellipsis or None
-                 * array[XXX,...], array[XXX,None]
-                 */
+            if (obj == Py_Ellipsis) {
+                /* Operator is the ellipsis: array[XXX, ...] */
                 ystart = 0;
                 ystop = dim1;
                 ystep = 1;
@@ -1736,10 +1732,8 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
         }
 
         obj = PyTuple_GET_ITEM(op, 0);
-        if (obj == Py_Ellipsis || obj == Py_None) {
-            /* Operator is the ellipsis or None
-             * array[...,XXX], array[None,XXX]
-             */
+        if (obj == Py_Ellipsis) {
+            /* Operator is the ellipsis: array[..., XXX] */
             xstart = 0;
             xstop = dim0;
             xstep = 1;
@@ -1751,10 +1745,8 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
 
         if (size == 2) {
             obj = PyTuple_GET_ITEM(op, 1);
-            if (obj == Py_Ellipsis || obj == Py_None) {
-                /* Operator is the ellipsis or None
-                 * array[XXX,...], array[XXX,None]
-                 */
+            if (obj == Py_Ellipsis) {
+                /* Operator is the ellipsis: array[XXX, ...] */
                 ystart = 0;
                 ystop = dim1;
                 ystep = 1;
