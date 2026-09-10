@@ -37,16 +37,6 @@ static PyTypeObject pgLine_Type;
 
 /* Constants */
 
-/* PI */
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-/* 2PI */
-#ifndef M_TWOPI
-#define M_TWOPI 6.28318530717958647692
-#endif
-
 /* PI/180 */
 #ifndef M_PI_QUO_180
 #define M_PI_QUO_180 0.01745329251994329577

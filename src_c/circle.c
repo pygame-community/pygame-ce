@@ -761,7 +761,7 @@ pg_circle_setarea(pgCircleObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_circle_getcircumference(pgCircleObject *self, void *closure)
 {
-    return PyFloat_FromDouble(M_TWOPI * self->circle.r);
+    return PyFloat_FromDouble(TWO_PI * self->circle.r);
 }
 
 static int
@@ -784,7 +784,7 @@ pg_circle_setcircumference(pgCircleObject *self, PyObject *value,
         return -1;
     }
 
-    self->circle.r = circumference / M_TWOPI;
+    self->circle.r = circumference / TWO_PI;
 
     return 0;
 }

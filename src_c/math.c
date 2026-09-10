@@ -44,13 +44,6 @@
 #include <stddef.h>
 #include <string.h>
 
-/* on some windows platforms math.h doesn't define M_PI */
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-#define TWO_PI (2. * M_PI)
-
 #ifndef M_PI_2
 #define M_PI_2 (M_PI / 2.0)
 #endif /* M_PI_2 */
@@ -92,9 +85,6 @@ static PyTypeObject pgVectorIter_Type;
     (Py_TYPE(x) == &pgVectorElementwiseProxy_Type)
 #define _vector_subtype_new(x) \
     ((pgVector *)(Py_TYPE(x)->tp_new(Py_TYPE(x), NULL, NULL)))
-
-#define DEG2RAD(angle) ((angle) * (M_PI / 180.))
-#define RAD2DEG(angle) ((angle) * (180. / M_PI))
 
 typedef struct {
     PyObject_HEAD double coords[VECTOR_MAX_SIZE]; /* Coordinates */
@@ -1640,7 +1630,7 @@ vector_slerp(pgVector *self, PyObject *args)
 
     /* if t < 0 we take the long arch of the great circle to the destiny */
     if (t < 0) {
-        angle -= 2 * M_PI;
+        angle -= TWO_PI;
         t = -t;
     }
     if (self->coords[0] * other_coords[1] <
@@ -1654,7 +1644,7 @@ vector_slerp(pgVector *self, PyObject *args)
     }
     /* special case angle==0 and angle==360 */
     if ((fabs(angle) < self->epsilon) ||
-        (fabs(fabs(angle) - 2 * M_PI) < self->epsilon)) {
+        (fabs(fabs(angle) - TWO_PI) < self->epsilon)) {
         /* approximate with lerp, because slerp diverges with 1/sin(angle) */
         for (i = 0; i < self->dim; ++i) {
             ret->coords[i] = self->coords[i] * (1 - t) + other_coords[i] * t;
