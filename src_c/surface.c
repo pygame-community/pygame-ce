@@ -484,6 +484,12 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     default_format.palette = NULL;
 #endif
 
+    if (self->surf) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Object of type Surface cannot be reinitialized");
+        return -1;
+    }
+
     char *kwids[] = {"size", "flags", "depth", "masks", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|iOO", kwids, &size, &flags,
                                      &depth, &masks)) {
