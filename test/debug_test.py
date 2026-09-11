@@ -18,3 +18,9 @@ class DebugTest(unittest.TestCase):
 
         self.assertNotEqual(text, "")
         self.assert_stdout_equal(text)
+
+    def test_get_debug_info_includes_git_metadata(self):
+        output = pygame.get_debug_info()
+        self.assertIn("Commit Hash:", output)
+        self.assertIn("Branch Name:", output)
+        self.assertIn("Built on CI:", output)
