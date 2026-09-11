@@ -52,7 +52,7 @@ class Font(_Font):
         if isinstance(bfile, bytes) and bfile == self.__default_font:
             file = None
         if file is None:
-            resolution = int(self.__get_default_resolution() * 0.6875)
+            resolution = self.__get_default_resolution()
             if resolution == 0:
                 resolution = 1
         else:
