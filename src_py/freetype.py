@@ -1,24 +1,30 @@
 """Enhanced Pygame module for loading and rendering computer fonts"""
 
-from pygame._freetype import (
-    STYLE_DEFAULT,
-    STYLE_NORMAL,
-    STYLE_OBLIQUE,
-    STYLE_STRONG,
-    STYLE_UNDERLINE,
-    STYLE_WIDE,
-    Font,
-    get_cache_size,
-    get_default_font,
-    get_default_resolution,
-    get_error,
-    get_init,
-    get_version,
-    init,
-    quit,
-    set_default_resolution,
-    was_init,
-)
+try:
+    from pygame._freetype import (
+        STYLE_DEFAULT,
+        STYLE_NORMAL,
+        STYLE_OBLIQUE,
+        STYLE_STRONG,
+        STYLE_UNDERLINE,
+        STYLE_WIDE,
+        Font,
+        get_cache_size,
+        get_default_font,
+        get_default_resolution,
+        get_error,
+        get_init,
+        get_version,
+        init,
+        quit,
+        set_default_resolution,
+        was_init,
+    )
+except ImportError as e:
+    raise ImportError(
+        "pygame.freetype is not available because pygame was built without freetype "
+        "support (the freetype build option was disabled or freetype was not found)"
+    ) from e
 from pygame.sysfont import SysFont as _SysFont, get_fonts, match_font
 
 __all__ = [
