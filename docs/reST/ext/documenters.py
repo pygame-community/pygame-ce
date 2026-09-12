@@ -3,6 +3,9 @@ import autoapi.documenters
 from autoapi._objects import PythonClass
 import re
 
+def _enclosing_class_name(object):
+    parts = object.qual_name.split(".")[:-1]
+    return parts[-1] if parts else None
 
 def build_signatures(object):
     name = object.short_name
@@ -24,10 +27,14 @@ def build_signatures(object):
     if object is None or object.obj.get("args", None) is None:
         return
 
+    enclosing_class = _enclosing_class_name(object)
+
     sigs = [(object.obj["args"], object.obj["return_annotation"])]
     sigs.extend(object.obj["overloads"])
 
     for args, ret in sigs:
+        if enclosing_class is not None:
+            ret = re.sub(r"\bSelf\b", enclosing_class, ret)
         arg_string = ""
         for modifier, arg_name, _, default in args:
             modifier = modifier or ""
