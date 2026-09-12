@@ -202,22 +202,6 @@ static PyMethodDef _pxarray_methods[] = {
      DOC_PIXELARRAY_TRANSPOSE},
     {NULL, NULL, 0, NULL}};
 
-static void
-Text_ConcatAndDel(PyObject **string, PyObject *newpart)
-{
-    PyObject *result = 0;
-    if (*string && newpart) {
-        result = PyUnicode_Concat(*string, newpart);
-        Py_DECREF(*string);
-        Py_DECREF(newpart);
-    }
-    else {
-        Py_XDECREF(*string);
-        Py_XDECREF(newpart);
-    }
-    *string = result;
-}
-
 /**
  * Getters and setters for the pgPixelArrayObject.
  */
