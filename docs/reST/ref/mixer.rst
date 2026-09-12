@@ -384,11 +384,10 @@ The following file formats are supported
    .. method:: play
 
       | :sl:`begin sound playback`
-      | :sg:`play(loops=0, maxtime=0, fade_ms=0) -> Channel`
+      | :sg:`play(loops=0, maxtime=0, fade_ms=0) -> Channel | None`
 
       Begin playback of the Sound (i.e., on the computer's speakers) on an
-      available Channel. This will forcibly select a Channel, so playback may
-      cut off a currently playing sound if necessary.
+      available Channel.
 
       The loops argument controls how many times the sample will be repeated
       after being played the first time. A value of 5 means that the sound will
@@ -404,7 +403,10 @@ The following file formats are supported
       fade up to full volume over the time given. The sample may end before the
       fade-in is complete.
 
-      This returns the Channel object for the channel that was selected.
+      Returns the Channel object for the channel that was selected, or
+      ``None`` if no Channel was available to play the Sound (i.e. every
+      channel was already busy). Use :func:`pygame.mixer.find_channel` with
+      ``force=True`` first if you need a guaranteed Channel.
 
       .. ## Sound.play ##
 
