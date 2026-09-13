@@ -32,3 +32,8 @@ Removed the `filename` argument and added `get_debug_info` to get the raw string
 
 ### `__contains__` (`value in rect`)
 Removed the undocumented `__contains__` functionality to check if one rect is completely inside another rect. Use the `contains()` method instead. (The original behavior of checking if the value is a coordinate or dimension is preserved.)
+
+## `PixelArray`
+
+### Indexing
+Removed `None` as an (undocumented) accepted index value. Use the equivalent `Ellipsis` (`...`) instead.
