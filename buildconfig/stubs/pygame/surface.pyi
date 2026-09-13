@@ -125,7 +125,7 @@ class Surface:
         size: Point,
         flags: int = 0,
         depth: int = 0,
-        masks: ColorLike | None = None,
+        masks: SequenceLike[int] = ...,
     ) -> None: ...
     @overload
     def __init__(
@@ -287,7 +287,7 @@ class Surface:
     @overload
     def convert(self, depth: int, flags: int = 0, /) -> Surface: ...
     @overload
-    def convert(self, masks: ColorLike, flags: int = 0, /) -> Surface: ...
+    def convert(self, masks: SequenceLike[int], flags: int = 0, /) -> Surface: ...
     @overload
     def convert(self) -> Surface: ...
     def convert(self, *args):  # type: ignore
@@ -703,7 +703,7 @@ class Surface:
         A subsurface will have the same class as the parent Surface.
         """
 
-    def get_parent(self) -> Surface:
+    def get_parent(self) -> Surface | None:
         """Find the parent of a subsurface.
 
         Returns the parent Surface of a subsurface. If this is not a subsurface

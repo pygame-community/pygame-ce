@@ -8,7 +8,7 @@
 #define DOC_TRANSFORM_SCALE2X "scale2x(surface, dest_surface=None) -> Surface\nSpecialized image doubler."
 #define DOC_TRANSFORM_SMOOTHSCALE "smoothscale(surface, size, dest_surface=None) -> Surface\nScale a surface to an arbitrary size smoothly."
 #define DOC_TRANSFORM_SMOOTHSCALEBY "smoothscale_by(surface, factor, dest_surface=None) -> Surface\nResize to new resolution, using scalar(s)."
-#define DOC_TRANSFORM_GETSMOOTHSCALEBACKEND "get_smoothscale_backend() -> Literal['GENERIC', 'SSE2', 'NEON']\nReturn smoothscale filter version in use: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'."
+#define DOC_TRANSFORM_GETSMOOTHSCALEBACKEND "get_smoothscale_backend() -> _SmoothscaleBackend\nReturn smoothscale filter version in use: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'."
 #define DOC_TRANSFORM_SETSMOOTHSCALEBACKEND "set_smoothscale_backend(backend) -> None\nSet smoothscale filter version to one of: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'."
 #define DOC_TRANSFORM_CHOP "chop(surface, rect) -> Surface\nGets a copy of an image with an interior area removed."
 #define DOC_TRANSFORM_LAPLACIAN "laplacian(surface, dest_surface=None) -> Surface\nFind edges in a surface."
