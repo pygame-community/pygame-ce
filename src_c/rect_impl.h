@@ -1988,11 +1988,24 @@ RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 static int
 RectExport_containsSeq(RectObject *self, PyObject *arg)
 {
+    /* Use same primitive type if possible. */
+    if (PythonNumberCheck(arg)) {
+        PrimitiveType value = (PrimitiveType)PythonNumberAsPrimitiveType(arg);
+        if (PyErr_Occurred()) {
+            PyErr_Clear();
+            return 0;
+        }
+        return value == self->r.x || value == self->r.y ||
+               value == self->r.w || value == self->r.h;
+    }
+
+    /* Allow FRect to accept int and Rect to accept float. */
     float value;
     if (pg_FloatFromObj(arg, &value)) {
         return value == self->r.x || value == self->r.y ||
                value == self->r.w || value == self->r.h;
     }
+
     PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
                                      ">' requires number"
                                      " as left operand");

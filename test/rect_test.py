@@ -808,6 +808,10 @@ class RectTypeTest(unittest.TestCase):
         self.assertTrue(2.0 in Rect(0, 0, 1, 2), "r does not contain 2.0")
         self.assertFalse(1.5 in Rect(0, 0, 1, 2), "r contains 1.5")
 
+        rect = Rect(16777217, 0, 1, 1)
+        self.assertTrue(16777217 in rect, "r does not contain 16777217")
+        self.assertFalse(16777216 in rect, "r contains 16777216")
+
         self.assertRaises(TypeError, lambda: Rect(0, 0, 1, 2) in Rect(1, 2, 3, 4))
         self.assertRaises(TypeError, lambda: "string" in Rect(0, 0, 1, 2))
         self.assertRaises(TypeError, lambda: 4 + 3j in Rect(0, 0, 1, 2))
