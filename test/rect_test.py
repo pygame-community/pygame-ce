@@ -797,6 +797,10 @@ class RectTypeTest(unittest.TestCase):
         self.assertFalse(r.contains(Rect(4, 6, 1, 1)), "r contains Rect(4, 6, 1, 1)")
         self.assertFalse(r.contains(Rect(4, 6, 0, 0)), "r contains Rect(4, 6, 0, 0)")
 
+        self.assertRaises(TypeError, lambda: r.contains("string"))
+        self.assertRaises(TypeError, lambda: r.contains(None, None, None, None))
+        self.assertRaises(TypeError, lambda: r.contains(1, 2))
+
     def test_contains_seq(self) -> None:
         self.assertTrue(2 in Rect(0, 0, 1, 2), "r does not contain 2")
         self.assertFalse(3 in Rect(0, 0, 1, 2), "r contains 3")
@@ -3104,6 +3108,10 @@ class FRectTypeTest(RectTypeTest):
         self.assertFalse(r.contains(FRect(0, 0, 1, 2)), "r contains Rect(0, 0, 1, 2)")
         self.assertFalse(r.contains(FRect(4, 6, 1, 1)), "r contains Rect(4, 6, 1, 1)")
         self.assertFalse(r.contains(FRect(4, 6, 0, 0)), "r contains Rect(4, 6, 0, 0)")
+
+        self.assertRaises(TypeError, lambda: r.contains("string"))
+        self.assertRaises(TypeError, lambda: r.contains(None, None, None, None))
+        self.assertRaises(TypeError, lambda: r.contains(1, 2))
 
     def test_contains_seq(self):
         self.assertTrue(2 in FRect(0, 0, 1, 2), "r does not contain 2")

@@ -140,9 +140,6 @@
 #ifndef RectExport_Normalize
 #error RectExport_Normalize needs to be defined
 #endif
-#ifndef RectExport_contains_internal
-#error RectExport_contains_internal needs to be defined
-#endif
 #ifndef RectExport_contains
 #error RectExport_contains needs to be defined
 #endif
@@ -516,9 +513,6 @@ static PyObject *
 RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
 RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
-static int
-RectExport_contains_internal(RectObject *self, PyObject *const *args,
-                             Py_ssize_t nargs);
 static PyObject *
 RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static int
@@ -1975,29 +1969,19 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     return tup;
 }
 
-static int
-RectExport_contains_internal(RectObject *self, PyObject *const *args,
-                             Py_ssize_t nargs)
-{
-    InnerRect *argrect, temp_arg;
-    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp_arg))) {
-        return -1;
-    }
-
-    return (self->r.x <= argrect->x) && (self->r.y <= argrect->y) &&
-           (self->r.x + self->r.w >= argrect->x + argrect->w) &&
-           (self->r.y + self->r.h >= argrect->y + argrect->h) &&
-           (self->r.x + self->r.w > argrect->x) &&
-           (self->r.y + self->r.h > argrect->y);
-}
-
 static PyObject *
 RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    int result = RectExport_contains_internal(self, args, nargs);
-    if (result == -1) {
+    InnerRect *argrect, temp;
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
+
+    int result = (self->r.x <= argrect->x) && (self->r.y <= argrect->y) &&
+                 (self->r.x + self->r.w >= argrect->x + argrect->w) &&
+                 (self->r.y + self->r.h >= argrect->y + argrect->h) &&
+                 (self->r.x + self->r.w > argrect->x) &&
+                 (self->r.y + self->r.h > argrect->y);
     return PyBool_FromLong(result);
 }
 
@@ -2968,7 +2952,6 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_RectNew
 #undef RectExport_RectNew4
 #undef RectExport_Normalize
-#undef RectExport_contains_internal
 #undef RectExport_contains
 #undef RectExport_containsSeq
 #undef RectExport_clamp
