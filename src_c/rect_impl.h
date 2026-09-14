@@ -2004,19 +2004,15 @@ RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 static int
 RectExport_containsSeq(RectObject *self, PyObject *arg)
 {
-    if (PythonNumberCheck(arg)) {
-        PrimitiveType coord = (PrimitiveType)PythonNumberAsPrimitiveType(arg);
-        return coord == self->r.x || coord == self->r.y ||
-               coord == self->r.w || coord == self->r.h;
+    float value;
+    if (pg_FloatFromObj(arg, &value)) {
+        return value == self->r.x || value == self->r.y ||
+               value == self->r.w || value == self->r.h;
     }
-    int ret = RectExport_contains_internal(self, (PyObject *const *)&arg, 1);
-    if (ret < 0) {
-        PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
-                                         ">' requires rect style object"
-                                         " or " RectImport_PrimitiveTypeName
-                                         " as left operand");
-    }
-    return ret;
+    PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
+                                     ">' requires number"
+                                     " as left operand");
+    return -1;
 }
 
 static PyObject *
