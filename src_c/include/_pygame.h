@@ -570,6 +570,7 @@ typedef struct {
     SDL_bool flip_x;
     SDL_bool flip_y;
     SDL_BlendMode blend_mode;
+    PyObject *weakreflist;
 } pgImageObject;
 
 #ifndef PYGAMEAPI_RENDER_INTERNAL
