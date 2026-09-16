@@ -1129,6 +1129,10 @@ chan_play(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     Py_END_ALLOW_THREADS;
 
+    if (channelnum == -1) { /* playback failed, no channel to track */
+        Py_RETURN_NONE;
+    }
+
     Py_CLEAR(channeldata[channelnum].queue);
     Py_XSETREF(channeldata[channelnum].sound, Py_NewRef(sound));
     Py_RETURN_NONE;
