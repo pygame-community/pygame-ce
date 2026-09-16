@@ -208,6 +208,10 @@ jobs:
         shell: msys2 {0}
         run: python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax
 
+      - name: Install PyInstaller
+        shell: msys2 {0}
+        run: pip install pyinstaller
+
       - name: Run tests
         env:
           SDL_VIDEODRIVER: "dummy"
