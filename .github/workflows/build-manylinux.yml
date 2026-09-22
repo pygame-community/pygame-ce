@@ -58,7 +58,7 @@ jobs:
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
@@ -76,7 +76,7 @@ jobs:
         CIBW_MANYLINUX_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_aarch64:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
+      uses: pypa/cibuildwheel@e090b81e30c4d855ea63bf4b6e59204c09a101ae # v4.2.1
 
     # We upload the generated files under github actions assets
     - name: Upload dist
