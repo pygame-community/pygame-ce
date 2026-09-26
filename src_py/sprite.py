@@ -1742,13 +1742,32 @@ def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
 
     """
     collided_sprites = {}
-    # pull the collision function in as a local variable outside
-    # the loop as this makes the loop run faster
-    sprite_collide_func = spritecollide
-    for group_a_sprite in groupa:
-        collisions = sprite_collide_func(group_a_sprite, groupb, dokillb, collided)
-        if collisions:
-            collided_sprites[group_a_sprite] = collisions
+    if collided is None:
+        # snapshot groupb's rects once so that each groupa sprite is tested
+        # with a single collidelistall call instead of a python loop
+        group_b_sprites = list(groupb)
+        group_b_rects = [group_b_sprite.rect for group_b_sprite in group_b_sprites]
+        for group_a_sprite in groupa:
+            indices = group_a_sprite.rect.collidelistall(group_b_rects)
+            if indices:
+                collisions = [group_b_sprites[i] for i in indices]
+                collided_sprites[group_a_sprite] = collisions
+                if dokillb:
+                    for group_b_sprite in collisions:
+                        group_b_sprite.kill()
+                    # killed sprites must not collide with later groupa sprites
+                    group_b_sprites = list(groupb)
+                    group_b_rects = [
+                        group_b_sprite.rect for group_b_sprite in group_b_sprites
+                    ]
+    else:
+        # pull the collision function in as a local variable outside
+        # the loop as this makes the loop run faster
+        sprite_collide_func = spritecollide
+        for group_a_sprite in groupa:
+            collisions = sprite_collide_func(group_a_sprite, groupb, dokillb, collided)
+            if collisions:
+                collided_sprites[group_a_sprite] = collisions
     if dokilla:
         for group_a_sprite in collided_sprites:
             group_a_sprite.kill()

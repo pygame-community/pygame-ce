@@ -387,6 +387,19 @@ class SpriteCollideTest(unittest.TestCase):
 
         self.assertDictEqual(expected_dict, crashed)
 
+    def test_groupcollide__dokillb_skips_killed_sprites(self):
+        # A sprite killed by an earlier groupa sprite must not be reported
+        # as colliding with later groupa sprites.
+        s4 = sprite.Sprite(self.ag)
+        s4.image = pygame.Surface((50, 10), pygame.SRCALPHA, 32)
+        s4.rect = s4.image.get_rect()
+
+        crashed = pygame.sprite.groupcollide(self.ag, self.ag2, False, True)
+
+        self.assertDictEqual({self.s1: [self.s2]}, crashed)
+        self.assertNotIn(self.s2, self.ag2)
+        self.assertIn(self.s3, self.ag2)
+
     def test_groupcollide__with_collided_callback(self):
         collided_callback_true = lambda spr_a, spr_b: True
         collided_callback_false = lambda spr_a, spr_b: False
