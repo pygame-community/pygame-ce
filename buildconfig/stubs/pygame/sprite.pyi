@@ -1,6 +1,6 @@
 import sys
 import types
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Container, Iterable, Iterator
 from typing import (
     Any,
     Generic,
@@ -196,6 +196,7 @@ def spritecollide(
     group: AbstractGroup[_SpriteT],
     dokill: bool,
     collided: Callable[[_HasRectT, _SpriteT], bool] | None = None,
+    exclude: Container[_SpriteT] = (),
 ) -> list[_SpriteT]: ...
 def groupcollide(
     groupa: AbstractGroup[_SpriteT],
@@ -208,4 +209,5 @@ def spritecollideany(
     sprite: _HasRectT,
     group: AbstractGroup[_SpriteT],
     collided: Callable[[_HasRectT, _SpriteT], bool] | None = None,
+    exclude: Container[_SpriteT] = (),
 ) -> _SpriteT | None: ...
