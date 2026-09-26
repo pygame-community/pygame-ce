@@ -400,6 +400,22 @@ class SpriteCollideTest(unittest.TestCase):
         self.assertNotIn(self.s2, self.ag2)
         self.assertIn(self.s3, self.ag2)
 
+    def test_groupcollide__rect_without_collidelistall(self):
+        # A rect-like object that only supports colliderect should still work.
+        class ColliderectOnly:
+            def __init__(self, rect):
+                self._rect = rect
+
+            def colliderect(self, other):
+                return self._rect.colliderect(other)
+
+        self.s1.rect = ColliderectOnly(self.s1.rect)
+
+        crashed = pygame.sprite.groupcollide(self.ag, self.ag2, False, True)
+
+        self.assertDictEqual({self.s1: [self.s2]}, crashed)
+        self.assertNotIn(self.s2, self.ag2)
+
     def test_groupcollide__with_collided_callback(self):
         collided_callback_true = lambda spr_a, spr_b: True
         collided_callback_false = lambda spr_a, spr_b: False

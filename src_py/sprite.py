@@ -1748,9 +1748,18 @@ def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
         group_b_sprites = list(groupb)
         group_b_rects = [group_b_sprite.rect for group_b_sprite in group_b_sprites]
         for group_a_sprite in groupa:
-            indices = group_a_sprite.rect.collidelistall(group_b_rects)
-            if indices:
-                collisions = [group_b_sprites[i] for i in indices]
+            group_a_rect = group_a_sprite.rect
+            collidelistall = getattr(group_a_rect, "collidelistall", None)
+            if collidelistall is not None:
+                collisions = [group_b_sprites[i] for i in collidelistall(group_b_rects)]
+            else:
+                # rect-like objects only need to support colliderect
+                collisions = [
+                    group_b_sprite
+                    for group_b_sprite in group_b_sprites
+                    if group_a_rect.colliderect(group_b_sprite.rect)
+                ]
+            if collisions:
                 collided_sprites[group_a_sprite] = collisions
                 if dokillb:
                     for group_b_sprite in collisions:
