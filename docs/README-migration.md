@@ -27,3 +27,8 @@ build backend has been the only supported build system for some time.
 
 ### print_debug_info
 Removed the `filename` argument and added `get_debug_info` to get the raw string.
+
+## `Rect`
+
+### `__contains__` (`value in rect`)
+Removed the undocumented `__contains__` functionality to check if one rect is completely inside another rect. Use the `contains()` method instead. (The original behavior of checking if the value is a coordinate or dimension is preserved.)
