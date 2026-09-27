@@ -1,3 +1,4 @@
+import io
 import platform
 import sys
 import unittest
@@ -613,6 +614,31 @@ class BaseModuleTest(unittest.TestCase):
         pygame.quit()
 
         self.assertFalse(pygame.get_init())
+
+
+class VersionGitMetadataTest(unittest.TestCase):
+    def test_base_dunder_attrs_exist_and_typed(self):
+        self.assertIsInstance(pygame.base.__commit_hash__, str)
+        self.assertIsInstance(pygame.base.__branch_name__, str)
+        self.assertIsInstance(pygame.base.__built_on_ci__, bool)
+        # neither string should ever be empty -- meson always falls back to
+        # 'Git Not Found' / 'Git Commit Not Found' / 'Git Branch Not Found'
+        self.assertTrue(pygame.base.__commit_hash__)
+        self.assertTrue(pygame.base.__branch_name__)
+
+    def test_version_module_reexports(self):
+        self.assertIsInstance(pygame.version.commit, (str, type(None)))
+        self.assertIsInstance(pygame.version.branch, (str, type(None)))
+        self.assertIsInstance(pygame.version.ci_build, bool)
+
+    def test_version_all_updated(self):
+        for attr in ("commit", "branch", "ci_build"):
+            self.assertIn(attr, pygame.version.__all__)
+
+    def test_top_level_pygame_reexports(self):
+        for attr in ("commit", "branch", "ci_build"):
+            self.assertTrue(hasattr(pygame, attr))
+            self.assertEqual(getattr(pygame, attr), getattr(pygame.version, attr))
 
 
 if __name__ == "__main__":
