@@ -548,6 +548,11 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(f.get_strikethrough())
         f.set_strikethrough(False)
         self.assertFalse(f.get_strikethrough())
+        # a non-bool value is coerced to a bool
+        f.set_strikethrough(1)
+        self.assertIs(f.get_strikethrough(), True)
+        f.set_strikethrough(0)
+        self.assertIs(f.get_strikethrough(), False)
 
     def test_bold_attr(self):
         f = pygame_font.Font(None, 20)
@@ -580,6 +585,11 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(f.strikethrough)
         f.strikethrough = False
         self.assertFalse(f.strikethrough)
+        # a non-bool value is coerced to a bool
+        f.strikethrough = 4
+        self.assertIs(f.strikethrough, True)
+        f.strikethrough = 0
+        self.assertIs(f.strikethrough, False)
 
     def test_set_align_property(self):
         if pygame_font.__name__ == "pygame.ftfont":
