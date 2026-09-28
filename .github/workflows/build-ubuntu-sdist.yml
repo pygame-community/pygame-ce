@@ -62,6 +62,9 @@ jobs:
         python3 -m build --sdist --outdir dist .
         pip3 install dist/pygame_ce-*.tar.gz -vv
 
+    - name: Install PyInstaller
+      run: pip3 install pyinstaller
+
     - name: Run tests
       env:
         SDL_VIDEODRIVER: "dummy"
