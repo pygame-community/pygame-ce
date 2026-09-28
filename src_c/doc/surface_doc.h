@@ -1,5 +1,5 @@
 /* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
-#define DOC_SURFACE "Surface(size, flags=0, depth=0, masks=None) -> Surface\nSurface(size, flags=0, surface=...) -> Surface\nPygame object for representing images."
+#define DOC_SURFACE "Surface(size, flags=0, depth=0, masks=...) -> Surface\nSurface(size, flags=0, surface=...) -> Surface\nPygame object for representing images."
 #define DOC_SURFACE_BLIT "blit(source, dest=(0, 0), area=None, special_flags=0) -> Rect\nDraw another Surface onto this one."
 #define DOC_SURFACE_BLITS "blits(blit_sequence, doreturn=1) -> list[Rect] | None\nDraw many Surfaces onto this Surface at their corresponding location."
 #define DOC_SURFACE_FBLITS "fblits(blit_sequence, special_flags=0, /) -> None\nDraw many Surfaces onto this Surface at their corresponding location and with the same special_flags."
@@ -29,7 +29,7 @@
 #define DOC_SURFACE_SETCLIP "set_clip(rect, /) -> None\nSet the current clipping area of the Surface."
 #define DOC_SURFACE_GETCLIP "get_clip() -> Rect\nGet the current clipping area of the Surface."
 #define DOC_SURFACE_SUBSURFACE "subsurface(rect, /) -> Surface\nsubsurface(left_top, width_height, /) -> Surface\nsubsurface(left, top, width, height, /) -> Surface\nCreate a new Surface that references its parent."
-#define DOC_SURFACE_GETPARENT "get_parent() -> Surface\nFind the parent of a subsurface."
+#define DOC_SURFACE_GETPARENT "get_parent() -> Surface | None\nFind the parent of a subsurface."
 #define DOC_SURFACE_GETABSPARENT "get_abs_parent() -> Surface\nFind the top level parent of a subsurface."
 #define DOC_SURFACE_GETOFFSET "get_offset() -> tuple[int, int]\nFind the position of a child subsurface inside a parent."
 #define DOC_SURFACE_GETABSOFFSET "get_abs_offset() -> tuple[int, int]\nFind the absolute position of a child subsurface inside its top level parent."
