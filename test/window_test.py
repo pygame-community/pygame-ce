@@ -290,6 +290,12 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(win.utility)
         win.destroy()
 
+        if SDL >= (3, 0, 0):
+            # test transparent
+            win = Window(transparent=True)
+            self.assertTrue(win.transparent)
+            win.destroy()
+
         # should raise a TypeError if keyword is random
         self.assertRaises(TypeError, lambda: Window(aaa=True))
         self.assertRaises(TypeError, lambda: Window(aaa=False))
