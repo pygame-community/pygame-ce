@@ -2984,6 +2984,27 @@ class FRectTypeTest(RectTypeTest):
         global Rect
         Rect = FRect
 
+    def _assert_clipline_point(
+        self,
+        point,
+        rect,
+        *,
+        x=None,
+        y=None,
+        x_right=False,
+        y_bottom=False,
+    ):
+        px, py = point
+        if x_right:
+            self.assertAlmostEqual(px, rect.right, places=6)
+        else:
+            self.assertAlmostEqual(px, x, places=6)
+
+        if y_bottom:
+            self.assertAlmostEqual(py, rect.bottom, places=6)
+        else:
+            self.assertAlmostEqual(py, y, places=6)
+
     def test_convert_rect_frect(self):
         r = IRect(1, 2, 3, 4)
         fr = FRect(1.1, 2.2, 3.3, 4.4)
@@ -3039,40 +3060,253 @@ class FRectTypeTest(RectTypeTest):
 
             self.assertTupleEqual(clipped_line, expected_line)
 
+    def test_clipline__both_endpoints_outside(self):
+        """Ensures lines that overlap the rect are clipped."""
+        rect = FRect((0, 0), (20, 20))
+        big_rect = rect.inflate(2, 2)
+
+        cases = (
+            (
+                (big_rect.midleft, big_rect.midright),
+                {"x": rect.midleft[0], "y": rect.midleft[1]},
+                {"x_right": True, "y": rect.midright[1]},
+            ),
+            (
+                (big_rect.midtop, big_rect.midbottom),
+                {"x": rect.midtop[0], "y": rect.midtop[1]},
+                {"x": rect.midbottom[0], "y_bottom": True},
+            ),
+            (
+                (big_rect.topleft, big_rect.bottomright),
+                {"x": rect.topleft[0], "y": rect.topleft[1]},
+                {"x_right": True, "y_bottom": True},
+            ),
+            (
+                (
+                    (big_rect.topright[0] - 1, big_rect.topright[1]),
+                    (big_rect.bottomleft[0], big_rect.bottomleft[1] - 1),
+                ),
+                {"x": rect.topright[0] - 1, "y": rect.topright[1]},
+                {"x": rect.bottomleft[0], "y": rect.bottomleft[1] - 1},
+            ),
+        )
+
+        for line, start_expected, end_expected in cases:
+            clipped_line = rect.clipline(line)
+
+            self.assertEqual(len(clipped_line), 2)
+            self._assert_clipline_point(clipped_line[0], rect, **start_expected)
+            self._assert_clipline_point(clipped_line[1], rect, **end_expected)
+
+            clipped_line = rect.clipline((line[1], line[0]))
+
+            self.assertEqual(len(clipped_line), 2)
+            self._assert_clipline_point(clipped_line[0], rect, **end_expected)
+            self._assert_clipline_point(clipped_line[1], rect, **start_expected)
+
     def test_clipline__endpoints_inside_and_outside(self):
         """Ensures lines that overlap the rect are clipped.
 
         Testing lines with one endpoint outside the rect and the other
         inside the rect.
         """
-        rect = Rect((0, 0), (21, 21))
+        rect = FRect((0, 0), (21, 21))
         # Use a bigger rect to help create test lines.
         big_rect = rect.inflate(2, 2)
 
-        # Create a dict of lines and expected results.
-        line_dict = {
-            (big_rect.midleft, rect.center): (rect.midleft, rect.center),
-            (big_rect.midtop, rect.center): (rect.midtop, rect.center),
-            (big_rect.midright, rect.center): (
-                (rect.midright[0] - 1, rect.midright[1]),
-                rect.center,
+        cases = (
+            (
+                (big_rect.midleft, rect.center),
+                {"x": rect.midleft[0], "y": rect.midleft[1]},
+                {"x": rect.center[0], "y": rect.center[1]},
             ),
-            (big_rect.midbottom, rect.center): (
-                (rect.midbottom[0], rect.midbottom[1] - 1),
-                rect.center,
+            (
+                (big_rect.midtop, rect.center),
+                {"x": rect.midtop[0], "y": rect.midtop[1]},
+                {"x": rect.center[0], "y": rect.center[1]},
             ),
-        }
-        for line, expected_line in line_dict.items():
+            (
+                (big_rect.midright, rect.center),
+                {"x_right": True, "y": rect.midright[1]},
+                {"x": rect.center[0], "y": rect.center[1]},
+            ),
+            (
+                (big_rect.midbottom, rect.center),
+                {"x": rect.midbottom[0], "y_bottom": True},
+                {"x": rect.center[0], "y": rect.center[1]},
+            ),
+        )
+
+        for line, start_expected, end_expected in cases:
             clipped_line = rect.clipline(line)
 
-            self.assertTupleEqual(clipped_line, expected_line)
-
-            # Swap endpoints to test for symmetry.
-            expected_line = (expected_line[1], expected_line[0])
+            self.assertEqual(len(clipped_line), 2)
+            self._assert_clipline_point(clipped_line[0], rect, **start_expected)
+            self._assert_clipline_point(clipped_line[1], rect, **end_expected)
 
             clipped_line = rect.clipline((line[1], line[0]))
 
-            self.assertTupleEqual(clipped_line, expected_line)
+            self.assertEqual(len(clipped_line), 2)
+            self._assert_clipline_point(clipped_line[0], rect, **end_expected)
+            self._assert_clipline_point(clipped_line[1], rect, **start_expected)
+
+    def test_clipline__edges(self):
+        """Ensures clipline properly clips line that are along the rect edges."""
+        rect = FRect((10, 25), (15, 20))
+
+        left_edge = (rect.bottomleft, rect.topleft)
+        clipped_line = rect.clipline(left_edge)
+        self.assertEqual(len(clipped_line), 2)
+        self._assert_clipline_point(
+            clipped_line[0], rect, x=rect.bottomleft[0], y_bottom=True
+        )
+        self._assert_clipline_point(
+            clipped_line[1], rect, x=rect.topleft[0], y=rect.topleft[1]
+        )
+
+        clipped_line = rect.clipline((left_edge[1], left_edge[0]))
+        self.assertEqual(len(clipped_line), 2)
+        self._assert_clipline_point(
+            clipped_line[0], rect, x=rect.topleft[0], y=rect.topleft[1]
+        )
+        self._assert_clipline_point(
+            clipped_line[1], rect, x=rect.bottomleft[0], y_bottom=True
+        )
+
+        top_edge = (rect.topleft, rect.topright)
+        clipped_line = rect.clipline(top_edge)
+        self.assertEqual(len(clipped_line), 2)
+        self._assert_clipline_point(
+            clipped_line[0], rect, x=rect.topleft[0], y=rect.topleft[1]
+        )
+        self._assert_clipline_point(
+            clipped_line[1], rect, x_right=True, y=rect.topright[1]
+        )
+
+        clipped_line = rect.clipline((top_edge[1], top_edge[0]))
+        self.assertEqual(len(clipped_line), 2)
+        self._assert_clipline_point(
+            clipped_line[0], rect, x_right=True, y=rect.topright[1]
+        )
+        self._assert_clipline_point(
+            clipped_line[1], rect, x=rect.topleft[0], y=rect.topleft[1]
+        )
+
+        self.assertTupleEqual(
+            rect.clipline((rect.topright, rect.bottomright)),
+            (rect.topright, rect.bottomright),
+        )
+        self.assertTupleEqual(
+            rect.clipline((rect.bottomright, rect.topright)),
+            (rect.bottomright, rect.topright),
+        )
+        self.assertTupleEqual(
+            rect.clipline((rect.bottomright, rect.bottomleft)),
+            (rect.bottomright, rect.bottomleft),
+        )
+        self.assertTupleEqual(
+            rect.clipline((rect.bottomleft, rect.bottomright)),
+            (rect.bottomleft, rect.bottomright),
+        )
+
+    def test_clipline__negative_size_rect(self):
+        """Ensures clipline handles negative sized rects correctly."""
+        for size in ((-15, 20), (15, -20), (-15, -20)):
+            rect = FRect((10, 25), size)
+            norm_rect = rect.copy()
+            norm_rect.normalize()
+            big_rect = norm_rect.inflate(2, 2)
+
+            cases = (
+                (
+                    (big_rect.midleft, big_rect.midright),
+                    {"x": norm_rect.midleft[0], "y": norm_rect.midleft[1]},
+                    {"x_right": True, "y": norm_rect.midright[1]},
+                ),
+                (
+                    (big_rect.midtop, big_rect.midbottom),
+                    {"x": norm_rect.midtop[0], "y": norm_rect.midtop[1]},
+                    {"x": norm_rect.midbottom[0], "y_bottom": True},
+                ),
+                (
+                    (big_rect.midleft, norm_rect.center),
+                    {"x": norm_rect.midleft[0], "y": norm_rect.midleft[1]},
+                    {"x": norm_rect.center[0], "y": norm_rect.center[1]},
+                ),
+                (
+                    (big_rect.midtop, norm_rect.center),
+                    {"x": norm_rect.midtop[0], "y": norm_rect.midtop[1]},
+                    {"x": norm_rect.center[0], "y": norm_rect.center[1]},
+                ),
+                (
+                    (big_rect.midright, norm_rect.center),
+                    {"x_right": True, "y": norm_rect.midright[1]},
+                    {"x": norm_rect.center[0], "y": norm_rect.center[1]},
+                ),
+                (
+                    (big_rect.midbottom, norm_rect.center),
+                    {"x": norm_rect.midbottom[0], "y_bottom": True},
+                    {"x": norm_rect.center[0], "y": norm_rect.center[1]},
+                ),
+            )
+
+            for line, start_expected, end_expected in cases:
+                clipped_line = rect.clipline(line)
+
+                self.assertNotEqual(rect, norm_rect)
+                self.assertEqual(len(clipped_line), 2)
+                self._assert_clipline_point(
+                    clipped_line[0], norm_rect, **start_expected
+                )
+                self._assert_clipline_point(clipped_line[1], norm_rect, **end_expected)
+
+                clipped_line = rect.clipline((line[1], line[0]))
+
+                self.assertEqual(len(clipped_line), 2)
+                self._assert_clipline_point(clipped_line[0], norm_rect, **end_expected)
+                self._assert_clipline_point(
+                    clipped_line[1], norm_rect, **start_expected
+                )
+
+    def test_clipline__fractional_edges(self):
+        """Regression tests for clipping against each fractional edge."""
+        rect = FRect(100.25, 70.5, 50.5, 20.25)
+
+        cases = (
+            (
+                ((120.5, 95.0), (120.5, 80.0)),
+                {"x": 120.5, "y_bottom": True},
+                {"x": 120.5, "y": 80.0},
+            ),
+            (
+                ((120.5, 60.0), (120.5, 80.0)),
+                {"x": 120.5, "y": rect.top},
+                {"x": 120.5, "y": 80.0},
+            ),
+            (
+                ((180.0, 80.0), (120.5, 80.0)),
+                {"x_right": True, "y": 80.0},
+                {"x": 120.5, "y": 80.0},
+            ),
+            (
+                ((90.0, 80.0), (120.5, 80.0)),
+                {"x": rect.left, "y": 80.0},
+                {"x": 120.5, "y": 80.0},
+            ),
+        )
+
+        for line, start_expected, end_expected in cases:
+            clipped_line = rect.clipline(line)
+
+            self.assertEqual(len(clipped_line), 2)
+            self._assert_clipline_point(clipped_line[0], rect, **start_expected)
+            self._assert_clipline_point(clipped_line[1], rect, **end_expected)
+
+            clipped_line = rect.clipline((line[1], line[0]))
+
+            self.assertEqual(len(clipped_line), 2)
+            self._assert_clipline_point(clipped_line[0], rect, **end_expected)
+            self._assert_clipline_point(clipped_line[1], rect, **start_expected)
 
     def test_contains(self):
         r = FRect(1, 2, 3, 4)
