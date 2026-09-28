@@ -97,6 +97,28 @@ def rect(
         which had half the width spill outside the rect area.
     """
 
+def aarect(
+    surface: Surface,
+    color: ColorLike,
+    rect: RectLike,
+    width: int = 0,
+    border_radius: int = -1,
+    border_top_left_radius: int = -1,
+    border_top_right_radius: int = -1,
+    border_bottom_left_radius: int = -1,
+    border_bottom_right_radius: int = -1,
+) -> Rect:
+    """Draw an antialiased rectangle.
+
+    Draws an antialiased rectangle (with smooth edges, especially for
+        rounded corners) on the given surface.
+    This function behaves identically to :func:`pygame.draw.rect()`
+        in all parameter handling, with the addition of anti-aliasing
+        for curved and diagonal edges.
+
+    .. versionadded:: 2.5.7
+    """
+
 def polygon(
     surface: Surface,
     color: ColorLike,

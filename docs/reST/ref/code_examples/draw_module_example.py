@@ -63,6 +63,21 @@ while not done:
         border_bottom_right_radius=15,
     )
 
+    # Draw an antialiased rectangle with rounded corners
+    pygame.draw.aarect(screen, "blue", [250, 90, 70, 40], 10, border_radius=15)
+    pygame.draw.aarect(
+        screen,
+        "black",
+        [270, 150, 50, 30],
+        0,
+        border_radius=10,
+        border_top_left_radius=0,
+        border_bottom_right_radius=15,
+    )
+
+    # Draw an antialiased rectangle outline with rounded corners
+    pygame.draw.aarect(screen, "red", [75, 40, 50, 30], 1, border_radius=8)
+
     # Draw an ellipse outline, using a rectangle as the outside boundaries
     pygame.draw.ellipse(screen, "red", [225, 10, 50, 20], 2)
 
