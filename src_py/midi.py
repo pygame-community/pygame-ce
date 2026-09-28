@@ -27,7 +27,14 @@ import math
 
 import pygame
 import pygame.locals
-import pygame.pypm as _pypm
+
+try:
+    import pygame.pypm as _pypm
+except ImportError as e:
+    raise ImportError(
+        "pygame.midi is not available because pygame was built without portmidi "
+        "support (the midi build option was disabled or portmidi was not found)"
+    ) from e
 
 # For backward compatibility.
 MIDIIN = pygame.locals.MIDIIN

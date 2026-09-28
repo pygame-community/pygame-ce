@@ -260,7 +260,7 @@ if plat == 'win'
         dlls += sdl_lib_dir / '@0@.dll'.format(sdl)
 
         # SDL_image
-        if get_option('image').enabled()
+        if get_option('image').allowed()
             sdl_image_lib_dir = sdl_image_dir / 'lib' / arch_suffix
             pg_inc_dirs += fs.relative_to(sdl_image_dir / 'include', base_dir)
             pg_lib_dirs += sdl_image_lib_dir
@@ -281,7 +281,7 @@ if plat == 'win'
         endif
 
         # SDL_mixer
-        if get_option('mixer').enabled()
+        if get_option('mixer').allowed()
             sdl_mixer_lib_dir = sdl_mixer_dir / 'lib' / arch_suffix
             pg_inc_dirs += fs.relative_to(sdl_mixer_dir / 'include', base_dir)
             pg_lib_dirs += sdl_mixer_lib_dir
@@ -296,7 +296,7 @@ if plat == 'win'
         endif
 
         # SDL_ttf
-        if get_option('font').enabled()
+        if get_option('font').allowed()
             sdl_ttf_lib_dir = sdl_ttf_dir / 'lib' / arch_suffix
             pg_inc_dirs += fs.relative_to(sdl_ttf_dir / 'include', base_dir)
             pg_lib_dirs += sdl_ttf_lib_dir
@@ -304,10 +304,15 @@ if plat == 'win'
         endif
 
         # freetype, portmidi and porttime
-        if get_option('freetype').enabled() and get_option('midi').enabled()
+        if get_option('freetype').allowed()
             pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
             pg_lib_dirs += common_lib_dir
-            dlls += [common_lib_dir / 'freetype.dll', common_lib_dir / 'portmidi.dll']
+            dlls += common_lib_dir / 'freetype.dll'
+        endif
+        if get_option('midi').allowed()
+            pg_inc_dirs += fs.relative_to(prebuilt_dir / 'include', base_dir)
+            pg_lib_dirs += common_lib_dir
+            dlls += common_lib_dir / 'portmidi.dll'
         endif
 
         # clean unneeded file that causes build issues
@@ -398,68 +403,34 @@ if not sdl_dep.found()
     )
 endif
 
-# optional
-sdl_image_dep = dependency(sdl_image, required: false)
-if not sdl_image_dep.found()
-    sdl_image_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            sdl_image,
-            dirs: pg_lib_dirs,
-            required: get_option('image'),
-        ),
-    )
-endif
-
-sdl_mixer_dep = dependency(sdl_mixer, required: false)
-if not sdl_mixer_dep.found()
-    sdl_mixer_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            sdl_mixer,
-            dirs: pg_lib_dirs,
-            required: get_option('mixer'),
-        ),
-    )
-endif
-
-sdl_ttf_dep = dependency(sdl_ttf, required: false)
-if not sdl_ttf_dep.found()
-    sdl_ttf_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            sdl_ttf,
-            dirs: pg_lib_dirs,
-            required: get_option('font'),
-        ),
-    )
-endif
-
-freetype_dep = dependency('freetype2', required: false)
-if not freetype_dep.found()
-    freetype_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            'freetype',
-            dirs: pg_lib_dirs,
-            required: get_option('freetype'),
-        ),
-    )
-endif
-
 endif # emscripten
 
-portmidi_dep = dependency('portmidi', required: false)
-if not portmidi_dep.found() and not plat.startswith('emscripten')
-    portmidi_dep = declare_dependency(
-        include_directories: pg_inc_dirs,
-        dependencies: cc.find_library(
-            'portmidi',
-            dirs: pg_lib_dirs,
-            required: get_option('midi'),
-        ),
-    )
-endif
+# Optional dependencies: [pkg-config name, fallback library name, feature option].
+# The emscripten branches above declare their own SDL dependencies, so those are
+# skipped here. A disabled feature passed as `required` makes both lookups return
+# not-found without searching, and only a library that was actually found is
+# wrapped in declare_dependency(), which would otherwise always report found.
+optional_deps = {
+    'sdl_image': [sdl_image, sdl_image, 'image'],
+    'sdl_mixer': [sdl_mixer, sdl_mixer, 'mixer'],
+    'sdl_ttf': [sdl_ttf, sdl_ttf, 'font'],
+    'freetype': ['freetype2', 'freetype', 'freetype'],
+    'portmidi': ['portmidi', 'portmidi', 'midi'],
+}
+foreach name, spec : optional_deps
+    if is_variable(name + '_dep')
+        continue
+    endif
+    opt = get_option(spec[2])
+    dep = dependency(spec[0], required: opt.disabled() ? opt : false)
+    if not dep.found() and not plat.startswith('emscripten')
+        lib = cc.find_library(spec[1], dirs: pg_lib_dirs, required: opt)
+        if lib.found()
+            dep = declare_dependency(include_directories: pg_inc_dirs, dependencies: lib)
+        endif
+    endif
+    set_variable(name + '_dep', dep)
+endforeach
 
 portmidi_deps = [portmidi_dep]
 
