@@ -453,6 +453,27 @@ class WindowTypeTest(unittest.TestCase):
         window = pygame.Window()
         self.assertIsInstance(window.handle, int)
 
+    @unittest.skipIf(SDL < (3, 0, 0), "aspect_ratio requires SDL3")
+    def test_aspect_ratio(self):
+        self.win = Window()
+
+        self.assertIsInstance(self.win.aspect_ratio, tuple)
+        self.assertTupleEqual(self.win.aspect_ratio, (0.0, 0.0))
+
+        self.win.aspect_ratio = (1, 2)
+        self.assertTupleEqual(self.win.aspect_ratio, (1.0, 2.0))
+
+        self.win.aspect_ratio = (0, 0)
+        self.win.size = (200, 150)
+        self.assertTupleEqual(self.win.size, (200, 150))
+
+        with self.assertRaises(TypeError):
+            self.win.aspect_ratio = 1.6
+        with self.assertRaises(TypeError):
+            self.win.aspect_ratio = None
+        with self.assertRaises(TypeError):
+            self.win.aspect_ratio = "unlimited"
+
     def tearDown(self):
         self.win.destroy()
 

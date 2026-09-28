@@ -295,6 +295,60 @@ class Window:
     @maximum_size.setter
     def maximum_size(self, value: Point) -> None: ...
     @property
+    def minimum_aspect_ratio(self) -> float:
+        """Get or set the window's minimum aspect ratio.
+
+        The aspect ratio is the ratio of the width divided by the height
+        (1920x1080 -> 16:9 = 1.777...). Larger aspect ratios are wider
+        and smaller aspect ratios are narrower.
+
+        The window won't be narrower than the set minimum. If it's the
+        same as the maximum aspect ratio, the window will be locked to
+        that value.
+
+        A value of ``0.0``, which is the default, removes the minimum restriction.
+
+        .. seealso:: :attr:`maximum_aspect_ratio`.
+
+        .. note:: The aspect ratio is only a request, and the window manager
+            may deny it entirely or ignore it in certain restrictive
+            scenarios. Additionally, if it's requested when maximized or
+            fullscreen, the request is deferred until the window is resizable
+            again.
+
+        .. versionadded:: 3.0.0
+        """
+
+    @minimum_aspect_ratio.setter
+    def minimum_aspect_ratio(self, value: float) -> None: ...
+    @property
+    def maximum_aspect_ratio(self) -> float:
+        """Get or set the window's maximum aspect ratio.
+
+        The aspect ratio is the ratio of the width divided by the height
+        (1920x1080 -> 16:9 = 1.777...). Larger aspect ratios are wider
+        and smaller aspect ratios are narrower.
+
+        The window won't be wider than the set maximum. If it's the same
+        as the minimum aspect ratio, the window will be locked to that
+        value.
+
+        A value of ``0.0``, which is the default, removes the maximum restriction.
+
+        .. seealso:: :attr:`minimum_aspect_ratio`.
+
+        .. note:: The aspect ratio is only a request, and the window manager
+            may deny it entirely or ignore it in certain restrictive
+            scenarios. Additionally, if it's requested when maximized or
+            fullscreen, the request is deferred until the window is resizable
+            again.
+
+        .. versionadded:: 3.0.0
+        """
+
+    @maximum_aspect_ratio.setter
+    def maximum_aspect_ratio(self, value: float) -> None: ...
+    @property
     def position(self) -> tuple[int, int]:
         """Get or set the window position in screen coordinates.
 
