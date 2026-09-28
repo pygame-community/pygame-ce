@@ -1,3 +1,4 @@
+import gc
 import itertools
 import math
 import sys
@@ -7567,6 +7568,50 @@ class DrawModuleTest(unittest.TestCase):
                         self.assertAlmostEqual(x, y, delta=2)
                 else:
                     self.assertEqual(surf.get_at(pixel), pixel_colors_24_32[i])
+
+    @unittest.skipIf(
+        sys.maxsize <= 2**32, "System doesn't support objects large enough to test this"
+    )
+    @unittest.skipIf(
+        not pygame.system or pygame.system.get_total_ram() < 8000,
+        "No way of checking RAM or not enough RAM to safely do huge surf",
+    )
+    def test_draw_pixels_beyond_signed_32_bits(self):
+        """Ensure that at least some draw operations beyond 2**31 in
+        pixel space in a Surface do not segfault.
+        https://github.com/pygame-community/pygame-ce/issues/3943
+        https://github.com/pygame-community/pygame-ce/issues/2961
+
+        Be warned this test uses a 2+ GB allocation!
+        I initially had a fancy tempfile + mmap + frombuffer solution,
+        but it was 10x slower than this solution, so hopefully 2GB is fine.
+        """
+
+        try:
+            surf = pygame.Surface((32000, 18000), depth=32)
+        except pygame.error:
+            self.skipTest("OK this system can't seem to handle this large of a surface")
+
+        try:
+            self.assertGreater(surf.get_pitch() * 17000, 2**31)
+
+            pygame.draw.arc(surf, "red", [500, 17000, 100, 50], 0, 3.14)
+            pygame.draw.line(surf, "red", (10000, 17050), (10020, 17060))
+            pygame.draw.aaline(surf, "red", (11020, 17060), (11000, 17050))
+            pygame.draw.circle(surf, "red", (12000, 17320), 25)
+
+            # Mainly a segfault test, but lets also smoke test that the draw
+            # operations are landing in the right spot.
+            #
+            # AH, WE CANNOT. Surface.get_at has the same issue!
+            #
+            # self.assertEqual(surf.get_at((10000, 17050)), pygame.Color("red"))
+            # self.assertEqual(surf.get_at((11020, 17060)), pygame.Color("red"))
+        finally:
+            # Release the 2+ GB allocation right away so it can't stress
+            # later tests running in the same process.
+            del surf
+            gc.collect()
 
 
 ###############################################################################
