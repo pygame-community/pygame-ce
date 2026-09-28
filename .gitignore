@@ -42,7 +42,6 @@ subprojects/*
 envdev*
 .virtualenv*
 *venv*
-buildconfig/manylinux-build/wheelhouse/
 anenv
 dist
 .vagrant
