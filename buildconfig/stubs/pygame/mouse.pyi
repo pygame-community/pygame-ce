@@ -7,9 +7,10 @@ When the display mode is set, the event queue will start receiving mouse
 events. The mouse buttons generate ``pygame.MOUSEBUTTONDOWN`` and
 ``pygame.MOUSEBUTTONUP`` events when they are pressed and released. These
 events contain a button attribute representing which button was pressed. The
-mouse wheel will generate ``pygame.MOUSEBUTTONDOWN`` and
-``pygame.MOUSEBUTTONUP`` events when rolled. The button will be set to 4
-when the wheel is rolled up, and to button 5 when the wheel is rolled down.
+mouse wheel will generate ``pygame.MOUSEWHEEL`` events. These events support horizontal and vertical
+scroll movements, with integer values representing the amount scrolled
+(``x`` and ``y``), as well as ``flipped`` direction (the set positive and
+negative values for each axis is flipped).
 Whenever the mouse is moved it generates a ``pygame.MOUSEMOTION`` event. The
 mouse movement is broken into small and accurate motion events. As the mouse
 is moving many motion events will be placed on the queue. Mouse motion events
@@ -21,51 +22,6 @@ mouse will enter a virtual input mode, where the relative movements of the
 mouse will never be stopped by the borders of the screen. See the functions
 ``pygame.mouse.set_visible()`` and ``pygame.event.set_grab()`` to get this
 configured.
-
-**Mouse Wheel Behavior in pygame 2**
-
-There is proper functionality for mouse wheel behaviour with pygame 2 supporting
-``pygame.MOUSEWHEEL`` events.  The new events support horizontal and vertical
-scroll movements, with signed integer values representing the amount scrolled
-(``x`` and ``y``), as well as ``flipped`` direction (the set positive and
-negative values for each axis is flipped). Read more about SDL2
-input-related changes here `<https://wiki.libsdl.org/MigrationGuide#input>`_
-
-In pygame 2, the mouse wheel functionality can be used by listening for the
-``pygame.MOUSEWHEEL`` type of an event (Bear in mind they still emit
-``pygame.MOUSEBUTTONDOWN`` events like in pygame 1.x, as well).
-When this event is triggered, a developer can access the appropriate ``Event`` object
-with ``pygame.event.get()``. The object can be used to access data about the mouse
-scroll, such as ``which`` (it will tell you what exact mouse device trigger the event).
-
-.. code-block:: python
-   :caption: Code example of mouse scroll (tested on 2.0.0.dev7)
-   :name: test.py
-
-   # Taken from husano896's PR thread (slightly modified)
-   import pygame
-   from pygame.locals import *
-   pygame.init()
-   screen = pygame.display.set_mode((640, 480))
-   clock = pygame.time.Clock()
-
-   def main():
-       while True:
-           for event in pygame.event.get():
-               if event.type == QUIT:
-                   pygame.quit()
-                   return
-               elif event.type == MOUSEWHEEL:
-                   print(event)
-                   print(event.x, event.y)
-                   print(event.flipped)
-                   print(event.which)
-                   # can access properties with
-                   # proper notation(ex: event.y)
-           clock.tick(60)
-
-   # Execute game:
-   main()
 """
 
 from typing import Any, Literal, overload
