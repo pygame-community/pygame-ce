@@ -100,6 +100,13 @@ class RectTypeTest(unittest.TestCase):
         rect = Rect(12, 34, 56, 78)
         self.assertEqual(repr(rect), "Rect(12, 34, 56, 78)")
 
+    def test_subclass_repr_uses_runtime_type_name(self):
+        class CustomRect(IRect):
+            pass
+
+        rect = CustomRect(12, 34, 56, 78)
+        self.assertEqual(repr(rect), "CustomRect(12, 34, 56, 78)")
+
     def test_rect_iter(self):
         rect = Rect(50, 100, 150, 200)
 
@@ -3003,6 +3010,16 @@ class FRectTypeTest(RectTypeTest):
 
         # test that a large rect repr doesn't error
         self.assertIsInstance(repr(Rect(-2e38, -2e38, -2e38, -2e38)), str)
+
+    def test_subclass_repr_uses_runtime_type_name(self):
+        class CustomFRect(FRect):
+            pass
+
+        rect = CustomFRect(12.3456789, 34, 56, 78)
+        self.assertEqual(
+            repr(rect),
+            "CustomFRect(12.345679, 34.000000, 56.000000, 78.000000)",
+        )
 
     def test_clipline__equal_endpoints_no_overlap(self):
         """Ensures clipline handles lines with both endpoints the same.
