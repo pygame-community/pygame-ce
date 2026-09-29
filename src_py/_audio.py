@@ -372,6 +372,9 @@ class AudioStream:
     """
 
     def __init__(self, src_spec: AudioSpec, dst_spec: AudioSpec) -> None:
+        if getattr(self, "_state", None) is not None:
+            raise RuntimeError("Object of type AudioStream cannot be reinitialized")
+
         if not isinstance(src_spec, AudioSpec):
             raise TypeError(
                 f"AudioStream src_spec must be an AudioSpec, received {type(src_spec)}"
