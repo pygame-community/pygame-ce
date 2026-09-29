@@ -1085,11 +1085,146 @@ get_joy_device_index(int instance_id)
     return PyLong_FromLong(device_index);
 }
 
+static int
+_pg_window_from_event(SDL_Event *event, PyObject **out)
+{
+    SDL_Window *window;
+    switch (event->type) {
+        case PGE_WINDOWSHOWN:
+        case PGE_WINDOWHIDDEN:
+        case PGE_WINDOWEXPOSED:
+        case PGE_WINDOWMOVED:
+        case PGE_WINDOWRESIZED:
+        case PGE_WINDOWSIZECHANGED:
+        case PGE_WINDOWMINIMIZED:
+        case PGE_WINDOWMAXIMIZED:
+        case PGE_WINDOWRESTORED:
+        case PGE_WINDOWENTER:
+        case PGE_WINDOWLEAVE:
+        case PGE_WINDOWFOCUSGAINED:
+        case PGE_WINDOWFOCUSLOST:
+        case PGE_WINDOWCLOSE:
+        case PGE_WINDOWTAKEFOCUS:
+        case PGE_WINDOWHITTEST:
+        case PGE_WINDOWICCPROFCHANGED:
+        case PGE_WINDOWDISPLAYCHANGED: {
+            window = SDL_GetWindowFromID(event->window.windowID);
+            break;
+        }
+        case SDL_TEXTEDITING: {
+            window = SDL_GetWindowFromID(event->edit.windowID);
+            break;
+        }
+        case SDL_TEXTINPUT: {
+            window = SDL_GetWindowFromID(event->text.windowID);
+            break;
+        }
+        case SDL_DROPBEGIN:
+        case SDL_DROPCOMPLETE:
+        case SDL_DROPTEXT:
+        case SDL_DROPFILE: {
+            window = SDL_GetWindowFromID(event->drop.windowID);
+            break;
+        }
+        case SDL_KEYDOWN:
+        case SDL_KEYUP: {
+            window = SDL_GetWindowFromID(event->key.windowID);
+            break;
+        }
+        case SDL_MOUSEWHEEL: {
+            window = SDL_GetWindowFromID(event->wheel.windowID);
+            break;
+        }
+        case SDL_MOUSEMOTION: {
+            window = SDL_GetWindowFromID(event->motion.windowID);
+            break;
+        }
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP: {
+            window = SDL_GetWindowFromID(event->button.windowID);
+            break;
+        }
+        case SDL_FINGERMOTION:
+        case SDL_FINGERDOWN:
+        case SDL_FINGERUP: {
+            window = SDL_GetWindowFromID(event->tfinger.windowID);
+            break;
+        }
+        default: {
+            return 0;
+        }
+    }
+    PyObject *pgWindow;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!window ||
+        !(pgWindow = SDL_GetPointerProperty(SDL_GetWindowProperties(window),
+                                            "pg_window", NULL))) {
+#else
+    if (!window || !(pgWindow = SDL_GetWindowData(window, "pg_window"))) {
+#endif
+        pgWindow = Py_None;
+    }
+    *out = Py_NewRef(pgWindow);
+    return 1;
+}
+
+static PyObject *
+_pg_joyhat_value(int hat_value)
+{
+    int hx = 0, hy = 0;
+    if (hat_value & SDL_HAT_UP) {
+        hy = 1;
+    }
+    else if (hat_value & SDL_HAT_DOWN) {
+        hy = -1;
+    }
+    if (hat_value & SDL_HAT_RIGHT) {
+        hx = 1;
+    }
+    else if (hat_value & SDL_HAT_LEFT) {
+        hx = -1;
+    }
+    return pg_tuple_couple_from_values_int(hx, hy);
+}
+
+static void
+_pg_activeevent_gain_state(SDL_Event *event, long *gain, long *state)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    switch (event->window.data2) {
+#else
+    switch (event->window.event) {
+#endif
+        case SDL_WINDOWEVENT_ENTER:
+            *gain = 1;
+            *state = SDL_APPMOUSEFOCUS;
+            break;
+        case SDL_WINDOWEVENT_LEAVE:
+            *gain = 0;
+            *state = SDL_APPMOUSEFOCUS;
+            break;
+        case SDL_WINDOWEVENT_FOCUS_GAINED:
+            *gain = 1;
+            *state = SDL_APPINPUTFOCUS;
+            break;
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+            *gain = 0;
+            *state = SDL_APPINPUTFOCUS;
+            break;
+        case SDL_WINDOWEVENT_MINIMIZED:
+            *gain = 0;
+            *state = SDL_APPACTIVE;
+            break;
+        default:
+            *gain = 1;
+            *state = SDL_APPACTIVE;
+    }
+}
+
 static PyObject *
 dict_from_event(SDL_Event *event)
 {
-    PyObject *dict = NULL, *tuple, *obj;
-    int hx, hy;
+    PyObject *dict = NULL, *obj;
     long gain;
     long state;
 
@@ -1132,35 +1267,7 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "h", PyLong_FromLong(event->window.data2));
             break;
         case SDL_ACTIVEEVENT:
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-            switch (event->window.data2) {
-#else
-            switch (event->window.event) {
-#endif
-                case SDL_WINDOWEVENT_ENTER:
-                    gain = 1;
-                    state = SDL_APPMOUSEFOCUS;
-                    break;
-                case SDL_WINDOWEVENT_LEAVE:
-                    gain = 0;
-                    state = SDL_APPMOUSEFOCUS;
-                    break;
-                case SDL_WINDOWEVENT_FOCUS_GAINED:
-                    gain = 1;
-                    state = SDL_APPINPUTFOCUS;
-                    break;
-                case SDL_WINDOWEVENT_FOCUS_LOST:
-                    gain = 0;
-                    state = SDL_APPINPUTFOCUS;
-                    break;
-                case SDL_WINDOWEVENT_MINIMIZED:
-                    gain = 0;
-                    state = SDL_APPACTIVE;
-                    break;
-                default:
-                    gain = 1;
-                    state = SDL_APPACTIVE;
-            }
+            _pg_activeevent_gain_state(event, &gain, &state);
             _pg_insobj(dict, "gain", PyLong_FromLong(gain));
             _pg_insobj(dict, "state", PyLong_FromLong(state));
             break;
@@ -1188,18 +1295,11 @@ dict_from_event(SDL_Event *event)
             obj = pg_tuple_couple_from_values_int((int)event->motion.xrel,
                                                   (int)event->motion.yrel);
             _pg_insobj(dict, "rel", obj);
-            if ((tuple = PyTuple_New(3))) {
-                PyTuple_SET_ITEM(tuple, 0,
-                                 PyLong_FromLong((event->motion.state &
-                                                  SDL_BUTTON(1)) != 0));
-                PyTuple_SET_ITEM(tuple, 1,
-                                 PyLong_FromLong((event->motion.state &
-                                                  SDL_BUTTON(2)) != 0));
-                PyTuple_SET_ITEM(tuple, 2,
-                                 PyLong_FromLong((event->motion.state &
-                                                  SDL_BUTTON(3)) != 0));
-                _pg_insobj(dict, "buttons", tuple);
-            }
+            _pg_insobj(dict, "buttons",
+                       pg_tuple_triple_from_values_int(
+                           (event->motion.state & SDL_BUTTON(1)) != 0,
+                           (event->motion.state & SDL_BUTTON(2)) != 0,
+                           (event->motion.state & SDL_BUTTON(3)) != 0));
             _pg_insobj(
                 dict, "touch",
                 PyBool_FromLong((event->motion.which == SDL_TOUCH_MOUSEID)));
@@ -1238,20 +1338,7 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "instance_id",
                        PyLong_FromLong(event->jhat.which));
             _pg_insobj(dict, "hat", PyLong_FromLong(event->jhat.hat));
-            hx = hy = 0;
-            if (event->jhat.value & SDL_HAT_UP) {
-                hy = 1;
-            }
-            else if (event->jhat.value & SDL_HAT_DOWN) {
-                hy = -1;
-            }
-            if (event->jhat.value & SDL_HAT_RIGHT) {
-                hx = 1;
-            }
-            else if (event->jhat.value & SDL_HAT_LEFT) {
-                hx = -1;
-            }
-            _pg_insobj(dict, "value", pg_tuple_couple_from_values_int(hx, hy));
+            _pg_insobj(dict, "value", _pg_joyhat_value(event->jhat.value));
             break;
         case SDL_JOYBUTTONUP:
         case SDL_JOYBUTTONDOWN:
@@ -1308,7 +1395,7 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "dx", PyFloat_FromDouble(event->tfinger.dx));
             _pg_insobj(dict, "dy", PyFloat_FromDouble(event->tfinger.dy));
             _pg_insobj(dict, "pressure",
-                       PyFloat_FromDouble(event->tfinger.dy));
+                       PyFloat_FromDouble(event->tfinger.pressure));
             break;
         case SDL_MULTIGESTURE:
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -1373,7 +1460,7 @@ dict_from_event(SDL_Event *event)
             obj = pg_tuple_couple_from_values_int((int)event->wheel.mouseX,
                                                   (int)event->wheel.mouseY);
 #else
-        obj = Py_NewRef(Py_None);
+            obj = Py_NewRef(Py_None);
 
 #endif /* SDL_VERSION_ATLEAST(2, 26, 0) */
             _pg_insobj(dict, "pos", obj);
@@ -1527,86 +1614,68 @@ dict_from_event(SDL_Event *event)
 #endif /* (defined(unix) || ... */
 #endif /* !SDL_VERSION_ATLEAST(3, 0, 0) */
     } /* switch (event->type) */
-    /* Events that don't have any attributes are not handled in switch
-     * statement */
-    SDL_Window *window;
-    switch (event->type) {
-        case PGE_WINDOWSHOWN:
-        case PGE_WINDOWHIDDEN:
-        case PGE_WINDOWEXPOSED:
-        case PGE_WINDOWMOVED:
-        case PGE_WINDOWRESIZED:
-        case PGE_WINDOWSIZECHANGED:
-        case PGE_WINDOWMINIMIZED:
-        case PGE_WINDOWMAXIMIZED:
-        case PGE_WINDOWRESTORED:
-        case PGE_WINDOWENTER:
-        case PGE_WINDOWLEAVE:
-        case PGE_WINDOWFOCUSGAINED:
-        case PGE_WINDOWFOCUSLOST:
-        case PGE_WINDOWCLOSE:
-        case PGE_WINDOWTAKEFOCUS:
-        case PGE_WINDOWHITTEST:
-        case PGE_WINDOWICCPROFCHANGED:
-        case PGE_WINDOWDISPLAYCHANGED: {
-            window = SDL_GetWindowFromID(event->window.windowID);
-            break;
-        }
-        case SDL_TEXTEDITING: {
-            window = SDL_GetWindowFromID(event->edit.windowID);
-            break;
-        }
-        case SDL_TEXTINPUT: {
-            window = SDL_GetWindowFromID(event->text.windowID);
-            break;
-        }
-        case SDL_DROPBEGIN:
-        case SDL_DROPCOMPLETE:
-        case SDL_DROPTEXT:
-        case SDL_DROPFILE: {
-            window = SDL_GetWindowFromID(event->drop.windowID);
-            break;
-        }
-        case SDL_KEYDOWN:
-        case SDL_KEYUP: {
-            window = SDL_GetWindowFromID(event->key.windowID);
-            break;
-        }
-        case SDL_MOUSEWHEEL: {
-            window = SDL_GetWindowFromID(event->wheel.windowID);
-            break;
-        }
-        case SDL_MOUSEMOTION: {
-            window = SDL_GetWindowFromID(event->motion.windowID);
-            break;
-        }
-        case SDL_MOUSEBUTTONDOWN:
-        case SDL_MOUSEBUTTONUP: {
-            window = SDL_GetWindowFromID(event->button.windowID);
-            break;
-        }
-        case SDL_FINGERMOTION:
-        case SDL_FINGERDOWN:
-        case SDL_FINGERUP: {
-            window = SDL_GetWindowFromID(event->tfinger.windowID);
-            break;
-        }
-        default: {
-            return dict;
-        }
-    }
-    PyObject *pgWindow;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (!window ||
-        !(pgWindow = SDL_GetPointerProperty(SDL_GetWindowProperties(window),
-                                            "pg_window", NULL))) {
-#else
-    if (!window || !(pgWindow = SDL_GetWindowData(window, "pg_window"))) {
-#endif
-        pgWindow = Py_None;
-    }
-    _pg_insobj(dict, "window", Py_NewRef(pgWindow));
     return dict;
+}
+
+static bool
+_pg_event_is_lazy(SDL_Event *event)
+{
+    if (event->type >= PGPOST_EVENTBEGIN) {
+        return false;
+    }
+    switch (event->type) {
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+        case SDL_TEXTINPUT:
+        case SDL_TEXTEDITING:
+        case SDL_DROPFILE:
+        case SDL_DROPTEXT:
+        case SDL_SYSWMEVENT:
+        case SDL_JOYDEVICEADDED:
+        case SDL_CONTROLLERDEVICEADDED:
+            return false;
+        default:
+            return true;
+    }
+}
+
+static int
+pg_event_window(pgEventObject *self, PyObject **out)
+{
+    if (self->window != NULL) {
+        *out = Py_NewRef(self->window);
+        return 1;
+    }
+    PyObject *win;
+    if (!_pg_window_from_event(&self->event, &win)) {
+        return 0;
+    }
+    self->window = win;
+    *out = Py_NewRef(win);
+    return 1;
+}
+
+static PyObject *
+pg_event_ensure_dict(pgEventObject *self)
+{
+    if (self->dict == NULL) {
+        PyObject *dict = dict_from_event(&self->event);
+        if (dict == NULL) {
+            return NULL;
+        }
+        PyObject *win;
+        if (pg_event_window(self, &win)) {
+            _pg_insobj(dict, "window", win);
+        }
+        self->dict = dict;
+    }
+    return self->dict;
+}
+
+static PyObject *
+pgEvent_EnsureDict(PyObject *event)
+{
+    return pg_event_ensure_dict((pgEventObject *)event);
 }
 
 /* event object internals */
@@ -1616,6 +1685,7 @@ pg_event_dealloc(PyObject *self)
 {
     pgEventObject *e = (pgEventObject *)self;
     Py_XDECREF(e->dict);
+    Py_XDECREF(e->window);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -1624,6 +1694,9 @@ pg_event_dealloc(PyObject *self)
 PyObject *
 pg_EventGetAttr(PyObject *o, PyObject *attr_name)
 {
+    if (pg_event_ensure_dict((pgEventObject *)o) == NULL) {
+        return NULL;
+    }
     /* Try e->dict first, if not try the generic attribute. */
     PyObject *result = PyDict_GetItem(((pgEventObject *)o)->dict, attr_name);
     if (!result) {
@@ -1641,6 +1714,10 @@ pg_EventSetAttr(PyObject *o, PyObject *name, PyObject *value)
     */
     int dictResult;
     int setInDict = 0;
+
+    if (pg_event_ensure_dict((pgEventObject *)o) == NULL) {
+        return -1;
+    }
     PyObject *result = PyDict_GetItem(((pgEventObject *)o)->dict, name);
 
     if (result) {
@@ -1667,12 +1744,502 @@ pg_EventSetAttr(PyObject *o, PyObject *name, PyObject *value)
 }
 #endif
 
+static PyObject *
+pg_event_get_dict(PyObject *self, void *closure)
+{
+    PyObject *dict = pg_event_ensure_dict((pgEventObject *)self);
+    if (dict == NULL) {
+        return NULL;
+    }
+    return Py_NewRef(dict);
+}
+
+#ifndef PYPY_VERSION
+
+static int
+pg_event_try_decode_field(SDL_Event *event, PyObject *name, PyObject **out)
+{
+    const char *n = PyUnicode_AsUTF8(name);
+    if (n == NULL) {
+        PyErr_Clear();
+        return 0;
+    }
+
+    switch (event->type) {
+        case SDL_MOUSEMOTION:
+            if (strcmp(n, "pos") == 0) {
+                *out = pg_tuple_couple_from_values_int((int)event->motion.x,
+                                                       (int)event->motion.y);
+            }
+            else if (strcmp(n, "rel") == 0) {
+                *out = pg_tuple_couple_from_values_int(
+                    (int)event->motion.xrel, (int)event->motion.yrel);
+            }
+            else if (strcmp(n, "buttons") == 0) {
+                *out = pg_tuple_triple_from_values_int(
+                    (event->motion.state & SDL_BUTTON(1)) != 0,
+                    (event->motion.state & SDL_BUTTON(2)) != 0,
+                    (event->motion.state & SDL_BUTTON(3)) != 0);
+            }
+            else if (strcmp(n, "touch") == 0) {
+                *out = PyBool_FromLong(
+                    (event->motion.which == SDL_TOUCH_MOUSEID));
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+            if (strcmp(n, "pos") == 0) {
+                *out = pg_tuple_couple_from_values_int((int)event->button.x,
+                                                       (int)event->button.y);
+            }
+            else if (strcmp(n, "button") == 0) {
+                *out = PyLong_FromLong(event->button.button);
+            }
+            else if (strcmp(n, "clicks") == 0) {
+                *out = PyLong_FromLong(event->button.clicks);
+            }
+            else if (strcmp(n, "touch") == 0) {
+                *out = PyBool_FromLong(
+                    (event->button.which == SDL_TOUCH_MOUSEID));
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_MOUSEWHEEL:
+            if (strcmp(n, "flipped") == 0) {
+                *out = PyBool_FromLong(event->wheel.direction ==
+                                       SDL_MOUSEWHEEL_FLIPPED);
+            }
+            else if (strcmp(n, "x") == 0) {
+                *out = PyLong_FromLong((long)event->wheel.x);
+            }
+            else if (strcmp(n, "y") == 0) {
+                *out = PyLong_FromLong((long)event->wheel.y);
+            }
+            else if (strcmp(n, "precise_x") == 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                *out = PyFloat_FromDouble((double)event->wheel.x);
+#else
+                *out = PyFloat_FromDouble((double)event->wheel.preciseX);
+#endif
+            }
+            else if (strcmp(n, "precise_y") == 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                *out = PyFloat_FromDouble((double)event->wheel.y);
+#else
+                *out = PyFloat_FromDouble((double)event->wheel.preciseY);
+#endif
+            }
+            else if (strcmp(n, "touch") == 0) {
+                *out =
+                    PyBool_FromLong((event->wheel.which == SDL_TOUCH_MOUSEID));
+            }
+            else if (strcmp(n, "pos") == 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                *out = pg_tuple_couple_from_values_int(
+                    (int)event->wheel.mouse_x, (int)event->wheel.mouse_y);
+#elif SDL_VERSION_ATLEAST(2, 26, 0)
+                *out = pg_tuple_couple_from_values_int(
+                    (int)event->wheel.mouseX, (int)event->wheel.mouseY);
+#else
+                *out = Py_NewRef(Py_None);
+#endif
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_FINGERMOTION:
+        case SDL_FINGERDOWN:
+        case SDL_FINGERUP:
+            if (strcmp(n, "touch_id") == 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                *out = PyLong_FromLongLong(event->tfinger.touchID);
+#else
+                *out = PyLong_FromLongLong(event->tfinger.touchId);
+#endif
+            }
+            else if (strcmp(n, "finger_id") == 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                *out = PyLong_FromLongLong(event->tfinger.fingerID);
+#else
+                *out = PyLong_FromLongLong(event->tfinger.fingerId);
+#endif
+            }
+            else if (strcmp(n, "x") == 0) {
+                *out = PyFloat_FromDouble(event->tfinger.x);
+            }
+            else if (strcmp(n, "y") == 0) {
+                *out = PyFloat_FromDouble(event->tfinger.y);
+            }
+            else if (strcmp(n, "dx") == 0) {
+                *out = PyFloat_FromDouble(event->tfinger.dx);
+            }
+            else if (strcmp(n, "dy") == 0) {
+                *out = PyFloat_FromDouble(event->tfinger.dy);
+            }
+            else if (strcmp(n, "pressure") == 0) {
+                *out = PyFloat_FromDouble(event->tfinger.pressure);
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case PGE_WINDOWMOVED:
+        case PGE_WINDOWRESIZED:
+        case PGE_WINDOWSIZECHANGED:
+            if (strcmp(n, "x") == 0) {
+                *out = PyLong_FromLong(event->window.data1);
+            }
+            else if (strcmp(n, "y") == 0) {
+                *out = PyLong_FromLong(event->window.data2);
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case PGE_WINDOWDISPLAYCHANGED:
+            if (strcmp(n, "display_index") == 0) {
+                *out = PyLong_FromLong(event->window.data1);
+            }
+            else if (strcmp(n, "x") == 0) {
+                *out = PyLong_FromLong(event->window.data1);
+            }
+            else if (strcmp(n, "y") == 0) {
+                *out = PyLong_FromLong(event->window.data2);
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_JOYAXISMOTION:
+            if (strcmp(n, "joy") == 0) {
+                *out = get_joy_device_index(event->jaxis.which);
+            }
+            else if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(event->jaxis.which);
+            }
+            else if (strcmp(n, "axis") == 0) {
+                *out = PyLong_FromLong(event->jaxis.axis);
+            }
+            else if (strcmp(n, "value") == 0) {
+                *out = PyFloat_FromDouble(event->jaxis.value / 32768.0);
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_CONTROLLERAXISMOTION:
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(event->gaxis.which);
+            }
+            else if (strcmp(n, "axis") == 0) {
+                *out = PyLong_FromLong(event->gaxis.axis);
+            }
+            else if (strcmp(n, "value") == 0) {
+                *out = PyLong_FromLong(event->gaxis.value);
+            }
+#else
+            if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(event->caxis.which);
+            }
+            else if (strcmp(n, "axis") == 0) {
+                *out = PyLong_FromLong(event->caxis.axis);
+            }
+            else if (strcmp(n, "value") == 0) {
+                *out = PyLong_FromLong(event->caxis.value);
+            }
+#endif
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_CONTROLLERTOUCHPADDOWN:
+        case SDL_CONTROLLERTOUCHPADMOTION:
+        case SDL_CONTROLLERTOUCHPADUP: {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            SDL_GamepadTouchpadEvent *tp = &event->gtouchpad;
+#else
+            SDL_ControllerTouchpadEvent *tp = &event->ctouchpad;
+#endif
+            if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(tp->which);
+            }
+            else if (strcmp(n, "touch_id") == 0) {
+                *out = PyLong_FromLongLong(tp->touchpad);
+            }
+            else if (strcmp(n, "finger_id") == 0) {
+                *out = PyLong_FromLongLong(tp->finger);
+            }
+            else if (strcmp(n, "x") == 0) {
+                *out = PyFloat_FromDouble(tp->x);
+            }
+            else if (strcmp(n, "y") == 0) {
+                *out = PyFloat_FromDouble(tp->y);
+            }
+            else if (strcmp(n, "pressure") == 0) {
+                *out = PyFloat_FromDouble(tp->pressure);
+            }
+            else {
+                return 0;
+            }
+            break;
+        }
+
+        case SDL_MULTIGESTURE: {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            Gesture_MultiGestureEvent *mg = (Gesture_MultiGestureEvent *)event;
+            if (strcmp(n, "touch_id") == 0) {
+                *out = PyLong_FromLongLong(mg->touchID);
+            }
+#else
+            SDL_MultiGestureEvent *mg = &event->mgesture;
+            if (strcmp(n, "touch_id") == 0) {
+                *out = PyLong_FromLongLong(mg->touchId);
+            }
+#endif
+            else if (strcmp(n, "x") == 0) {
+                *out = PyFloat_FromDouble(mg->x);
+            }
+            else if (strcmp(n, "y") == 0) {
+                *out = PyFloat_FromDouble(mg->y);
+            }
+            else if (strcmp(n, "rotated") == 0) {
+                *out = PyFloat_FromDouble(mg->dTheta);
+            }
+            else if (strcmp(n, "pinched") == 0) {
+                *out = PyFloat_FromDouble(mg->dDist);
+            }
+            else if (strcmp(n, "num_fingers") == 0) {
+                *out = PyLong_FromLong(mg->numFingers);
+            }
+            else {
+                return 0;
+            }
+            break;
+        }
+
+        case SDL_JOYBALLMOTION:
+            if (strcmp(n, "joy") == 0) {
+                *out = get_joy_device_index(event->jaxis.which);
+            }
+            else if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(event->jball.which);
+            }
+            else if (strcmp(n, "ball") == 0) {
+                *out = PyLong_FromLong(event->jball.ball);
+            }
+            else if (strcmp(n, "rel") == 0) {
+                *out = pg_tuple_couple_from_values_int(event->jball.xrel,
+                                                       event->jball.yrel);
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_JOYHATMOTION:
+            if (strcmp(n, "joy") == 0) {
+                *out = get_joy_device_index(event->jaxis.which);
+            }
+            else if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(event->jhat.which);
+            }
+            else if (strcmp(n, "hat") == 0) {
+                *out = PyLong_FromLong(event->jhat.hat);
+            }
+            else if (strcmp(n, "value") == 0) {
+                *out = _pg_joyhat_value(event->jhat.value);
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_JOYBUTTONDOWN:
+        case SDL_JOYBUTTONUP:
+            if (strcmp(n, "joy") == 0) {
+                *out = get_joy_device_index(event->jaxis.which);
+            }
+            else if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(event->jbutton.which);
+            }
+            else if (strcmp(n, "button") == 0) {
+                *out = PyLong_FromLong(event->jbutton.button);
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_CONTROLLERBUTTONDOWN:
+        case SDL_CONTROLLERBUTTONUP:
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(event->gbutton.which);
+            }
+            else if (strcmp(n, "button") == 0) {
+                *out = PyLong_FromLong(event->gbutton.button);
+            }
+#else
+            if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(event->cbutton.which);
+            }
+            else if (strcmp(n, "button") == 0) {
+                *out = PyLong_FromLong(event->cbutton.button);
+            }
+#endif
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_CONTROLLERDEVICEREMOVED:
+        case SDL_CONTROLLERDEVICEREMAPPED:
+            if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(event->cdevice.which);
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_JOYDEVICEREMOVED:
+            if (strcmp(n, "instance_id") == 0) {
+                *out = PyLong_FromLong(event->jdevice.which);
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_AUDIODEVICEADDED:
+        case SDL_AUDIODEVICEREMOVED:
+            if (strcmp(n, "which") == 0) {
+                *out = PyLong_FromLong(event->adevice.which);
+            }
+            else if (strcmp(n, "iscapture") == 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                *out = PyLong_FromLong(event->adevice.recording);
+#else
+                *out = PyLong_FromLong(event->adevice.iscapture);
+#endif
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_VIDEORESIZE:
+            if (strcmp(n, "size") == 0) {
+                *out = pg_tuple_couple_from_values_int(event->window.data1,
+                                                       event->window.data2);
+            }
+            else if (strcmp(n, "w") == 0) {
+                *out = PyLong_FromLong(event->window.data1);
+            }
+            else if (strcmp(n, "h") == 0) {
+                *out = PyLong_FromLong(event->window.data2);
+            }
+            else {
+                return 0;
+            }
+            break;
+
+        case SDL_ACTIVEEVENT: {
+            long gain, state;
+            _pg_activeevent_gain_state(event, &gain, &state);
+            if (strcmp(n, "gain") == 0) {
+                *out = PyLong_FromLong(gain);
+            }
+            else if (strcmp(n, "state") == 0) {
+                *out = PyLong_FromLong(state);
+            }
+            else {
+                return 0;
+            }
+            break;
+        }
+
+        default:
+            return 0;
+    }
+
+    if (*out == NULL) {
+        return -1;
+    }
+    return 1;
+}
+
+static PyObject *
+pg_event_getattro(PyObject *obj, PyObject *name)
+{
+    pgEventObject *self = (pgEventObject *)obj;
+    if (self->has_raw && self->dict == NULL &&
+        PyUnicode_CompareWithASCIIString(name, "type") != 0) {
+        PyObject *val;
+        int r = pg_event_try_decode_field(&self->event, name, &val);
+        if (r == 1) {
+            return val;
+        }
+        if (r < 0) {
+            return NULL;
+        }
+        if (PyUnicode_CompareWithASCIIString(name, "window") == 0 &&
+            pg_event_window(self, &val) == 1) {
+            return val;
+        }
+        PyObject *res = PyObject_GenericGetAttr(obj, name);
+        if (res != NULL) {
+            return res;
+        }
+        if (!PyErr_ExceptionMatches(PyExc_AttributeError)) {
+            return NULL;
+        }
+        PyErr_Clear();
+        if (pg_event_ensure_dict(self) == NULL) {
+            return NULL;
+        }
+    }
+    return PyObject_GenericGetAttr(obj, name);
+}
+
+static int
+pg_event_setattro(PyObject *obj, PyObject *name, PyObject *value)
+{
+    pgEventObject *self = (pgEventObject *)obj;
+    if (self->has_raw && self->dict == NULL) {
+        if (pg_event_ensure_dict(self) == NULL) {
+            return -1;
+        }
+    }
+    return PyObject_GenericSetAttr(obj, name, value);
+}
+#endif /* !PYPY_VERSION */
+
 PyObject *
 pg_event_str(PyObject *self)
 {
     pgEventObject *e = (pgEventObject *)self;
+    PyObject *dict = pg_event_ensure_dict(e);
+    if (dict == NULL) {
+        return NULL;
+    }
     return PyUnicode_FromFormat("<Event(%d-%s %S)>", e->type,
-                                _pg_name_from_eventtype(e->type), e->dict);
+                                _pg_name_from_eventtype(e->type), dict);
 }
 
 static int
@@ -1690,9 +2257,11 @@ static PyTypeObject pgEvent_Type;
 #define OFF(x) offsetof(pgEventObject, x)
 
 static PyMemberDef pg_event_members[] = {
-    {"__dict__", T_OBJECT, OFF(dict), READONLY, DOC_EVENT_EVENT_DICT},
-    {"type", T_INT, OFF(type), READONLY, DOC_EVENT_EVENT_TYPE},
-    {"dict", T_OBJECT, OFF(dict), READONLY, DOC_EVENT_EVENT_DICT},
+    {"type", T_INT, OFF(type), READONLY, DOC_EVENT_EVENT_TYPE}, {NULL}};
+
+static PyGetSetDef pg_event_getsets[] = {
+    {"dict", pg_event_get_dict, NULL, DOC_EVENT_EVENT_DICT, NULL},
+    {"__dict__", pg_event_get_dict, NULL, DOC_EVENT_EVENT_DICT, NULL},
     {NULL} /* Sentinel */
 };
 
@@ -1706,26 +2275,32 @@ pg_event_richcompare(PyObject *o1, PyObject *o2, int opid)
     pgEventObject *e1, *e2;
 
     if (!pgEvent_Check(o1) || !pgEvent_Check(o2)) {
-        goto Unimplemented;
+        return Py_NewRef(Py_NotImplemented);
+    }
+    if (opid != Py_EQ && opid != Py_NE) {
+        return Py_NewRef(Py_NotImplemented);
     }
 
     e1 = (pgEventObject *)o1;
     e2 = (pgEventObject *)o2;
-    switch (opid) {
-        case Py_EQ:
-            return PyBool_FromLong(
-                e1->type == e2->type &&
-                PyObject_RichCompareBool(e1->dict, e2->dict, Py_EQ) == 1);
-        case Py_NE:
-            return PyBool_FromLong(
-                e1->type != e2->type ||
-                PyObject_RichCompareBool(e1->dict, e2->dict, Py_NE) == 1);
-        default:
-            break;
+
+    if (e1->type != e2->type) {
+        return PyBool_FromLong(opid == Py_NE);
     }
 
-Unimplemented:
-    return Py_NewRef(Py_NotImplemented);
+    PyObject *d1 = pg_event_ensure_dict(e1);
+    if (d1 == NULL) {
+        return NULL;
+    }
+    PyObject *d2 = pg_event_ensure_dict(e2);
+    if (d2 == NULL) {
+        return NULL;
+    }
+    int cmp = PyObject_RichCompareBool(d1, d2, opid);
+    if (cmp < 0) {
+        return NULL;
+    }
+    return PyBool_FromLong(cmp);
 }
 
 static int
@@ -1774,6 +2349,8 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
 
     self->type = _pg_pgevent_deproxify(type);
     self->dict = dict;
+    self->window = NULL;
+    self->has_raw = 0;
     return 0;
 }
 
@@ -1787,12 +2364,13 @@ static PyTypeObject pgEvent_Type = {
     .tp_getattro = pg_EventGetAttr,
     .tp_setattro = pg_EventSetAttr,
 #else
-    .tp_getattro = PyObject_GenericGetAttr,
-    .tp_setattro = PyObject_GenericSetAttr,
+    .tp_getattro = pg_event_getattro,
+    .tp_setattro = pg_event_setattro,
 #endif
     .tp_doc = DOC_EVENT_EVENT,
     .tp_richcompare = pg_event_richcompare,
     .tp_members = pg_event_members,
+    .tp_getset = pg_event_getsets,
     .tp_dictoffset = offsetof(pgEventObject, dict),
     .tp_init = (initproc)pg_event_init,
     .tp_new = PyType_GenericNew,
@@ -1807,18 +2385,32 @@ pgEvent_New(SDL_Event *event)
         return PyErr_NoMemory();
     }
 
+    e->dict = NULL;
+    e->window = NULL;
+    e->has_raw = 0;
+
     if (event) {
-        event->type = _pg_pgevent_type(event);
-        e->type = _pg_pgevent_deproxify(event->type);
-        e->dict = dict_from_event(event);
+        e->event = *event;
+        e->event.type = _pg_pgevent_type(&e->event);
+        e->type = _pg_pgevent_deproxify(e->event.type);
+
+        if (_pg_event_is_lazy(&e->event)) {
+            e->has_raw = 1;
+        }
+        else {
+            if (pg_event_ensure_dict(e) == NULL) {
+                Py_TYPE(e)->tp_free((PyObject *)e);
+                return NULL;
+            }
+        }
     }
     else {
         e->type = SDL_NOEVENT;
         e->dict = PyDict_New();
-    }
-    if (!e->dict) {
-        Py_TYPE(e)->tp_free(e);
-        return PyErr_NoMemory();
+        if (!e->dict) {
+            Py_TYPE(e)->tp_free((PyObject *)e);
+            return PyErr_NoMemory();
+        }
     }
     return (PyObject *)e;
 }
@@ -2434,7 +3026,11 @@ pg_event_post(PyObject *self, PyObject *obj)
     }
 
     pgEventObject *e = (pgEventObject *)obj;
-    switch (pg_post_event(e->type, e->dict)) {
+    PyObject *dict = pg_event_ensure_dict(e);
+    if (dict == NULL) {
+        return NULL;
+    }
+    switch (pg_post_event(e->type, dict)) {
         case 0:
             Py_RETURN_FALSE;
         case 1:
@@ -2641,7 +3237,7 @@ MODINIT_DEFINE(event)
     }
 
     /* export the c api */
-    assert(PYGAMEAPI_EVENT_NUMSLOTS == 10);
+    assert(PYGAMEAPI_EVENT_NUMSLOTS == 11);
     c_api[0] = &pgEvent_Type;
     c_api[1] = pgEvent_New;
     c_api[2] = pg_post_event;
@@ -2652,6 +3248,7 @@ MODINIT_DEFINE(event)
     c_api[7] = pgEvent_GetKeyUpInfo;
     c_api[8] = pgEvent_GetMouseButtonDownInfo;
     c_api[9] = pgEvent_GetMouseButtonUpInfo;
+    c_api[10] = pgEvent_EnsureDict;
 
     apiobj = encapsulate_api(c_api, "event");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {

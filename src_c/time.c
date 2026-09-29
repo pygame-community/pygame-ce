@@ -444,7 +444,10 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (pgEvent_Check(obj)) {
         e = (pgEventObject *)obj;
         ev_type = e->type;
-        ev_dict = e->dict;
+        ev_dict = pgEvent_EnsureDict((PyObject *)e);
+        if (ev_dict == NULL) {
+            return NULL;
+        }
     }
     else {
         return RAISE(PyExc_TypeError,

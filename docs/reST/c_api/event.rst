@@ -39,6 +39,18 @@ Header file: src_c/include/pygame.h
    If *event* is ``NULL`` then create an empty event object.
    On failure raise a Python exception and return ``NULL``.
 
+.. c:function:: PyObject* pgEvent_EnsureDict(PyObject *event)
+
+   Ensure the attribute dictionary of the pygame *event* object is materialized
+   and return a borrowed reference to it, or ``NULL`` with a Python exception
+   set on failure.
+
+   Events originating from SDL decode their attributes lazily and may not have
+   allocated their dictionary yet. Consumers that require the complete attribute
+   dictionary of a possibly-lazy event (rather than a single field) should call
+   this to force materialization. The caller must hold a reference to *event*
+   and the GIL.
+
 .. c:function:: char* pgEvent_GetKeyDownInfo(void)
 
    Return an array of bools (using char) of length SDL_NUM_SCANCODES
