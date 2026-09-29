@@ -58,7 +58,7 @@ class Sound:
         loops: int = 0,
         maxtime: int = 0,
         fade_ms: int = 0,
-    ) -> Channel: ...
+    ) -> Channel | None: ...
     # possibly going to be deprecated/removed soon, in which case these
     # typestubs must be removed too
     @property

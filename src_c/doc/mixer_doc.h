@@ -18,7 +18,7 @@
 #define DOC_MIXER_GETBUSY "get_busy() -> bool\ntest if any sound is being mixed"
 #define DOC_MIXER_GETSDLMIXERVERSION "get_sdl_mixer_version() -> (major, minor, patch)\nget_sdl_mixer_version(linked=True) -> (major, minor, patch)\nget the mixer's SDL version"
 #define DOC_MIXER_SOUND "Sound(filename) -> Sound\nSound(file=filename) -> Sound\nSound(file=pathlib_path) -> Sound\nSound(buffer) -> Sound\nSound(buffer=buffer) -> Sound\nSound(object) -> Sound\nSound(file=object) -> Sound\nSound(array=object) -> Sound\nCreate a new Sound object from a file or buffer object"
-#define DOC_MIXER_SOUND_PLAY "play(loops=0, maxtime=0, fade_ms=0) -> Channel\nbegin sound playback"
+#define DOC_MIXER_SOUND_PLAY "play(loops=0, maxtime=0, fade_ms=0) -> Channel | None\nbegin sound playback"
 #define DOC_MIXER_SOUND_STOP "stop() -> None\nstop sound playback"
 #define DOC_MIXER_SOUND_FADEOUT "fadeout(time, /) -> None\nstop sound playback after fading out"
 #define DOC_MIXER_SOUND_SETVOLUME "set_volume(value, /) -> None\nset the playback volume for this Sound"
