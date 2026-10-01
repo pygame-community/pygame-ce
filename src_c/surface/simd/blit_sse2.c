@@ -1,53 +1,9 @@
-#include "simd_blitters.h"
+#include "blit.h"
 
 #if PG_ENABLE_ARM_NEON
 // sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
 #include "include/sse2neon.h"
 #endif /* PG_ENABLE_ARM_NEON */
-
-/* See if we are compiled 64 bit on GCC or MSVC */
-#if _WIN32 || _WIN64
-#if _WIN64
-#define ENV64BIT
-#endif
-#endif
-
-// Check GCC
-#if __GNUC__
-#if __x86_64__ || __ppc64__ || __aarch64__
-#define ENV64BIT
-#endif
-#endif
-
-/* This returns 1 when sse2 is available at runtime but support for it isn't
- * compiled in, 0 in all other cases */
-int
-pg_sse2_at_runtime_but_uncompiled()
-{
-    if (SDL_HasSSE2()) {
-#ifdef __SSE2__
-        return 0;
-#else
-        return 1;
-#endif /* __SSE2__ */
-    }
-    return 0;
-}
-
-/* This returns 1 when neon is available at runtime but support for it isn't
- * compiled in, 0 in all other cases */
-int
-pg_neon_at_runtime_but_uncompiled()
-{
-    if (SDL_HasNEON()) {
-#if PG_ENABLE_ARM_NEON
-        return 0;
-#else
-        return 1;
-#endif /* PG_ENABLE_ARM_NEON */
-    }
-    return 0;
-}
 
 #if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
 /* See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=32869

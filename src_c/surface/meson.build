@@ -1,32 +1,32 @@
-simd_blitters_avx2 = static_library(
-    'simd_blitters_avx2',
-    'simd_blitters_avx2.c',
+blit_avx2 = static_library(
+    'blit_avx2',
+    'simd/blit_avx2.c',
     dependencies: pg_base_deps,
-    include_directories: '..',
+    include_directories: ['..', '.'],
     c_args: simd_avx2_flags + warnings_error,
 )
 
-simd_blitters_sse2 = static_library(
-    'simd_blitters_sse2',
-    'simd_blitters_sse2.c',
+blit_sse2 = static_library(
+    'blit_sse2',
+    'simd/blit_sse2.c',
     dependencies: pg_base_deps,
-    include_directories: '..',
+    include_directories: ['..', '.'],
     c_args: simd_sse2_neon_flags + warnings_error,
 )
 
-simd_surface_fill_avx2 = static_library(
-    'simd_surface_fill_avx2',
-    'simd_surface_fill_avx2.c',
+fill_avx2 = static_library(
+    'fill_avx2',
+    'simd/fill_avx2.c',
     dependencies: pg_base_deps,
-    include_directories: '..',
+    include_directories: ['..', '.'],
     c_args: simd_avx2_flags + warnings_error,
 )
 
-simd_surface_fill_sse2 = static_library(
-    'simd_surface_fill_sse2',
-    'simd_surface_fill_sse2.c',
+fill_sse2 = static_library(
+    'fill_sse2',
+    'simd/fill_sse2.c',
     dependencies: pg_base_deps,
-    include_directories: '..',
+    include_directories: ['..', '.'],
     c_args: simd_sse2_neon_flags + warnings_error,
 )
 
@@ -38,12 +38,13 @@ surface = py.extension_module(
         'surface_fill.c',
     ],
     c_args: warnings_error,
-    include_directories: '..',
+    include_directories: ['..', '.', 'simd'],
     link_with: [
-        simd_blitters_avx2,
-        simd_blitters_sse2,
-        simd_surface_fill_avx2,
-        simd_surface_fill_sse2,
+        blit_avx2,
+        blit_sse2,
+        fill_avx2,
+        fill_sse2,
+        pg_simd_cpu,
     ],
     dependencies: pg_base_deps,
     install: true,

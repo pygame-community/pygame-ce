@@ -1,5 +1,6 @@
 #define NO_PYGAME_C_API
-#include "_surface.h"
+#include "surface/surface.h"
+#include "simd/cpu/pg_simd_cpu.h"
 
 /**
  * MACRO borrowed from SSE2NEON - useful for making the shuffling family of
@@ -15,12 +16,6 @@
  */
 #define _PG_SIMD_SHUFFLE(fp3, fp2, fp1, fp0) \
     (((fp3) << 6) | ((fp2) << 4) | ((fp1) << 2) | ((fp0)))
-
-#if !defined(PG_ENABLE_ARM_NEON) && defined(__aarch64__)
-// arm64 has neon optimisations enabled by default, even when fpu=neon is not
-// passed
-#define PG_ENABLE_ARM_NEON 1
-#endif
 
 // SSE2 functions
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)

@@ -23,9 +23,9 @@
 */
 
 #define NO_PYGAME_C_API
-#include "_surface.h"
-#include "simd_shared.h"
-#include "simd_blitters.h"
+#include "surface/surface.h"
+#include "simd/cpu/pg_simd_cpu.h"
+#include "blit.h"
 
 static void
 alphablit_alpha(SDL_BlitInfo *info);

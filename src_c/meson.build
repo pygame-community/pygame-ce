@@ -13,7 +13,13 @@ pygame = py.extension_module(
     'base',
     base_files + cython_files,
     c_args: ['-DBUILD_STATIC=1'],
-    include_directories: ['surface', 'transform'],
+    include_directories: [
+        'surface',
+        'surface/simd',
+        'transform',
+        'transform/simd',
+        'transform/simd/legacy',
+    ],
     dependencies: pg_base_deps + [sdl_image_dep, sdl_mixer_dep, sdl_ttf_dep, freetype_dep],
     install: true,
     subdir: pg,
@@ -103,6 +109,8 @@ rwobject = py.extension_module(
     install: true,
     subdir: pg,
 )
+
+subdir('simd')
 
 subdir('surface')
 

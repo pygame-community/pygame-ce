@@ -1,14 +1,14 @@
-simd_transform_avx2 = static_library(
-    'simd_transform_avx2',
-    'simd_transform_avx2.c',
+transform_avx2 = static_library(
+    'transform_avx2',
+    'simd/transform_avx2.c',
     include_directories: '..',
     dependencies: pg_base_deps,
     c_args: simd_avx2_flags + warnings_error,
 )
 
-simd_transform_sse2 = static_library(
-    'simd_transform_sse2',
-    'simd_transform_sse2.c',
+transform_sse2 = static_library(
+    'transform_sse2',
+    'simd/transform_sse2.c',
     include_directories: '..',
     dependencies: pg_base_deps,
     c_args: simd_sse2_neon_flags + warnings_error,
@@ -27,15 +27,15 @@ if (
         transform_objs += '../../buildconfig/obj/win64/scale_mmx.obj'
     endif
 else
-    transform_sources += 'scale_mmx.c'
+    transform_sources += 'simd/legacy/scale_mmx.c'
 endif
 
 transform = py.extension_module(
     'transform',
     transform_sources,
     c_args: warnings_error,
-    include_directories: '..',
-    link_with: [simd_transform_avx2, simd_transform_sse2],
+    include_directories: ['..', 'simd', 'simd/legacy'],
+    link_with: [transform_avx2, transform_sse2, pg_simd_cpu],
     objects: transform_objs,
     dependencies: pg_base_deps,
     install: true,

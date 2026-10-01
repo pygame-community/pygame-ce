@@ -1,47 +1,4 @@
-#include "simd_blitters.h"
-
-#if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
-#include <immintrin.h>
-#endif /* defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H) */
-
-#define BAD_AVX2_FUNCTION_CALL                                               \
-    printf(                                                                  \
-        "Fatal Error: Attempted calling an AVX2 function when both compile " \
-        "time and runtime support is missing. If you are seeing this "       \
-        "message, you have stumbled across a pygame bug, please report it "  \
-        "to the devs!");                                                     \
-    PG_EXIT(1)
-
-/* helper function that does a runtime check for AVX2. It has the added
- * functionality of also returning 0 if compile time support is missing */
-int
-pg_has_avx2()
-{
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
-    return SDL_HasAVX2();
-#else
-    return 0;
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
-}
-
-/* This returns 1 when avx2 is available at runtime but support for it isn't
- * compiled in, 0 in all other cases */
-int
-pg_avx2_at_runtime_but_uncompiled()
-{
-    if (SDL_HasAVX2()) {
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
-        return 0;
-#else
-        return 1;
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
-    }
-    return 0;
-}
+#include "blit.h"
 
 /* just prints the first/lower 128 bits, in two chunks */
 // static void
@@ -190,8 +147,7 @@ pg_avx2_at_runtime_but_uncompiled()
     _mm256_srli_epi16(             \
         _mm256_mulhi_epu16(MM256I, _mm256_set1_epi16((short)0x8081)), 7);
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 {
@@ -264,11 +220,9 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
 {
@@ -330,11 +284,9 @@ alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 alphablit_alpha_avx2_argb_surf_alpha(SDL_BlitInfo *info)
 {
@@ -412,11 +364,9 @@ alphablit_alpha_avx2_argb_surf_alpha(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_rgba_mul_avx2(SDL_BlitInfo *info)
 {
@@ -530,11 +480,9 @@ blit_blend_rgba_mul_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_rgb_mul_avx2(SDL_BlitInfo *info)
 {
@@ -659,11 +607,9 @@ blit_blend_rgb_mul_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_rgba_add_avx2(SDL_BlitInfo *info)
 {
@@ -731,11 +677,9 @@ blit_blend_rgba_add_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_rgb_add_avx2(SDL_BlitInfo *info)
 {
@@ -811,11 +755,9 @@ blit_blend_rgb_add_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_rgba_sub_avx2(SDL_BlitInfo *info)
 {
@@ -883,11 +825,9 @@ blit_blend_rgba_sub_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_rgb_sub_avx2(SDL_BlitInfo *info)
 {
@@ -963,11 +903,9 @@ blit_blend_rgb_sub_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_rgba_max_avx2(SDL_BlitInfo *info)
 {
@@ -1035,11 +973,9 @@ blit_blend_rgba_max_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_rgb_max_avx2(SDL_BlitInfo *info)
 {
@@ -1115,11 +1051,9 @@ blit_blend_rgb_max_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_rgba_min_avx2(SDL_BlitInfo *info)
 {
@@ -1187,11 +1121,9 @@ blit_blend_rgba_min_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_rgb_min_avx2(SDL_BlitInfo *info)
 {
@@ -1267,11 +1199,9 @@ blit_blend_rgb_min_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
 {
@@ -1527,8 +1457,7 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
 
 #define PREMUL_ALPHA_CODE                                   \
     /* extract the alpha */                                 \
@@ -1558,8 +1487,7 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
     /*add the original alpha back in*/                      \
     mm_dst = _mm256_or_si256(mm_dst, mm_alpha_in);
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 void
 premul_surf_color_by_alpha_avx2(SDL_Surface *src, PG_PixelFormat *src_format,
                                 SDL_Surface *dst)
@@ -1643,5 +1571,4 @@ premul_surf_color_by_alpha_avx2(SDL_Surface *src, PG_PixelFormat *src_format,
 {
     BAD_AVX2_FUNCTION_CALL;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-!defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */

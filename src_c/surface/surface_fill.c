@@ -19,7 +19,7 @@
 
 #define NO_PYGAME_C_API
 
-#include "simd_fill.h"
+#include "fill.h"
 
 /*
  * Changes SDL_Rect to respect any clipping rect defined on the surface.
@@ -914,13 +914,13 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (PG_SURF_BytesPerPixel(surface) == 4) {
-                if (_pg_has_avx2()) {
+                if (pg_has_avx2()) {
                     result =
                         surface_fill_blend_add_avx2(surface, fmt, rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
-                if (_pg_HasSSE_NEON()) {
+                if (pg_HasSSE_NEON()) {
                     result =
                         surface_fill_blend_add_sse2(surface, fmt, rect, color);
                     break;
@@ -937,13 +937,13 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (PG_SURF_BytesPerPixel(surface) == 4) {
-                if (_pg_has_avx2()) {
+                if (pg_has_avx2()) {
                     result =
                         surface_fill_blend_sub_avx2(surface, fmt, rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
-                if (_pg_HasSSE_NEON()) {
+                if (pg_HasSSE_NEON()) {
                     result =
                         surface_fill_blend_sub_sse2(surface, fmt, rect, color);
                     break;
@@ -960,13 +960,13 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (PG_SURF_BytesPerPixel(surface) == 4) {
-                if (_pg_has_avx2()) {
+                if (pg_has_avx2()) {
                     result = surface_fill_blend_mult_avx2(surface, fmt, rect,
                                                           color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
-                if (_pg_HasSSE_NEON()) {
+                if (pg_HasSSE_NEON()) {
                     result = surface_fill_blend_mult_sse2(surface, fmt, rect,
                                                           color);
                     break;
@@ -983,13 +983,13 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (PG_SURF_BytesPerPixel(surface) == 4) {
-                if (_pg_has_avx2()) {
+                if (pg_has_avx2()) {
                     result =
                         surface_fill_blend_min_avx2(surface, fmt, rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
-                if (_pg_HasSSE_NEON()) {
+                if (pg_HasSSE_NEON()) {
                     result =
                         surface_fill_blend_min_sse2(surface, fmt, rect, color);
                     break;
@@ -1006,13 +1006,13 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (PG_SURF_BytesPerPixel(surface) == 4) {
-                if (_pg_has_avx2()) {
+                if (pg_has_avx2()) {
                     result =
                         surface_fill_blend_max_avx2(surface, fmt, rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
-                if (_pg_HasSSE_NEON()) {
+                if (pg_HasSSE_NEON()) {
                     result =
                         surface_fill_blend_max_sse2(surface, fmt, rect, color);
                     break;
@@ -1030,13 +1030,13 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (PG_SURF_BytesPerPixel(surface) == 4) {
-                if (_pg_has_avx2()) {
+                if (pg_has_avx2()) {
                     result = surface_fill_blend_rgba_add_avx2(surface, fmt,
                                                               rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
-                if (_pg_HasSSE_NEON()) {
+                if (pg_HasSSE_NEON()) {
                     result = surface_fill_blend_rgba_add_sse2(surface, fmt,
                                                               rect, color);
                     break;
@@ -1053,13 +1053,13 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (PG_SURF_BytesPerPixel(surface) == 4) {
-                if (_pg_has_avx2()) {
+                if (pg_has_avx2()) {
                     result = surface_fill_blend_rgba_sub_avx2(surface, fmt,
                                                               rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
-                if (_pg_HasSSE_NEON()) {
+                if (pg_HasSSE_NEON()) {
                     result = surface_fill_blend_rgba_sub_sse2(surface, fmt,
                                                               rect, color);
                     break;
@@ -1076,13 +1076,13 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (PG_SURF_BytesPerPixel(surface) == 4) {
-                if (_pg_has_avx2()) {
+                if (pg_has_avx2()) {
                     result = surface_fill_blend_rgba_mult_avx2(surface, fmt,
                                                                rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
-                if (_pg_HasSSE_NEON()) {
+                if (pg_HasSSE_NEON()) {
                     result = surface_fill_blend_rgba_mult_sse2(surface, fmt,
                                                                rect, color);
                     break;
@@ -1099,13 +1099,13 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (PG_SURF_BytesPerPixel(surface) == 4) {
-                if (_pg_has_avx2()) {
+                if (pg_has_avx2()) {
                     result = surface_fill_blend_rgba_min_avx2(surface, fmt,
                                                               rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
-                if (_pg_HasSSE_NEON()) {
+                if (pg_HasSSE_NEON()) {
                     result = surface_fill_blend_rgba_min_sse2(surface, fmt,
                                                               rect, color);
                     break;
@@ -1122,13 +1122,13 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (PG_SURF_BytesPerPixel(surface) == 4) {
-                if (_pg_has_avx2()) {
+                if (pg_has_avx2()) {
                     result = surface_fill_blend_rgba_max_avx2(surface, fmt,
                                                               rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
-                if (_pg_HasSSE_NEON()) {
+                if (pg_HasSSE_NEON()) {
                     result = surface_fill_blend_rgba_max_sse2(surface, fmt,
                                                               rect, color);
                     break;

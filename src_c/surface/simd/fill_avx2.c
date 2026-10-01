@@ -1,30 +1,4 @@
-#include "simd_fill.h"
-
-#if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
-#include <immintrin.h>
-#endif /* defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H) */
-
-#define BAD_AVX2_FUNCTION_CALL                                               \
-    printf(                                                                  \
-        "Fatal Error: Attempted calling an AVX2 function when both compile " \
-        "time and runtime support is missing. If you are seeing this "       \
-        "message, you have stumbled across a pygame bug, please report it "  \
-        "to the devs!");                                                     \
-    PG_EXIT(1)
-
-/* helper function that does a runtime check for AVX2. It has the added
- * functionality of also returning 0 if compile time support is missing */
-int
-_pg_has_avx2()
-{
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
-    return SDL_HasAVX2();
-#else
-    return 0;
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
-}
+#include "fill.h"
 
 #define SETUP_AVX2_FILLER(COLOR_PROCESS_CODE)                                 \
     /* initialize surface data */                                             \
@@ -170,8 +144,7 @@ _pg_has_avx2()
         shuff_dst = _mm256_srli_epi16(shuff_dst, 8);                      \
     }
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
+#if PG_COMPILE_AVX2
 FILLERS(add, color &= ~amask;, ADD_CODE)
 FILLERS(sub, color &= ~amask;, SUB_CODE)
 FILLERS(min, color |= amask;, MIN_CODE)
@@ -183,5 +156,4 @@ INVALID_DEFS(sub)
 INVALID_DEFS(min)
 INVALID_DEFS(max)
 INVALID_DEFS(mult)
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
- !defined(SDL_DISABLE_IMMINTRIN_H) */
+#endif /* PG_COMPILE_AVX2 */
