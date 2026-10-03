@@ -52,6 +52,13 @@ static PyTypeObject pgLine_Type;
 #define M_PI_QUO_180 0.01745329251994329577
 #endif
 
+/* Converts radians to degrees */
+static inline double
+RAD_TO_DEG(double rad)
+{
+    return rad / M_PI_QUO_180;
+}
+
 /* Converts degrees to radians */
 static inline double
 DEG_TO_RAD(double deg)
