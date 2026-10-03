@@ -1071,11 +1071,11 @@ class BaseLineMixin:
         # Create some surfaces with different sizes, depths, and flags.
         surfaces = []
         for size in ((49, 49), (50, 50)):
+            surface = pygame.Surface(size, SRCALPHA)
+            surfaces.append(surface)
             for depth in (8, 16, 24, 32):
-                for flags in (0, SRCALPHA):
-                    surface = pygame.display.set_mode(size, flags)
-                    surfaces.append(surface)
-                    surfaces.append(surface.convert_alpha())
+                surface = pygame.Surface(size, depth=depth)
+                surfaces.append(surface)
         return surfaces
 
     @staticmethod
