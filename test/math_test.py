@@ -789,7 +789,8 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertEqual(self.v1.y, self.l1[1])
         # v2 is parallel to v1
         self.assertAlmostEqual(self.v1.x * v.y - self.v1.y * v.x, 0.0)
-        self.assertRaises(ValueError, lambda: self.zeroVec.normalize())
+        # 0 vector
+        self.assertEqual(self.zeroVec.normalize(), Vector2())
 
     def test_normalize_ip(self):
         v = +self.v1
@@ -797,11 +798,11 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertNotEqual(v.x * v.x + v.y * v.y, 1.0)
         # inplace operations should return None
         self.assertEqual(v.normalize_ip(), None)
+        self.assertEqual(self.zeroVec.normalize_ip(), None)
         # length is 1
         self.assertAlmostEqual(v.x * v.x + v.y * v.y, 1.0)
         # v2 is parallel to v1
         self.assertAlmostEqual(self.v1.x * v.y - self.v1.y * v.x, 0.0)
-        self.assertRaises(ValueError, lambda: self.zeroVec.normalize_ip())
 
     def test_is_normalized(self):
         self.assertEqual(self.v1.is_normalized(), False)
