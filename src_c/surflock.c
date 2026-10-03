@@ -103,6 +103,7 @@ pgSurface_LockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
         PyErr_SetString(PyExc_RuntimeError, "error locking surface");
         return 0;
     }
+
     return 1;
 }
 
