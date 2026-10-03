@@ -89,7 +89,8 @@ from warnings import warn
 
 import pygame
 from pygame.mask import from_surface
-from pygame.rect import Rect
+from pygame.rect import FRect, Rect
+from pygame.surface import Surface
 from pygame.time import get_ticks
 
 
@@ -108,28 +109,13 @@ class Sprite:
 
     """
 
+    image: Surface
+    rect: Rect | FRect
+
     def __init__(self, *groups):
         self.__g = {}  # The groups the sprite is in
-        self.__image: pygame.surface.Surface | None = None
-        self.__rect: pygame.rect.Rect | None = None
         if groups:
             self.add(*groups)
-
-    @property
-    def image(self):
-        return self.__image
-
-    @image.setter
-    def image(self, value: pygame.surface.Surface | None):
-        self.__image = value
-
-    @property
-    def rect(self):
-        return self.__rect
-
-    @rect.setter
-    def rect(self, value: pygame.rect.Rect | None):
-        self.__rect = value
 
     def add(self, *groups):
         """add the sprite to groups
@@ -1336,7 +1322,7 @@ class LayeredDirty(LayeredUpdates):
     def get_clip(self):
         """get the area where drawing will occur
 
-        LayeredDirty.get_clip(): return Rect
+        LayeredDirty.get_clip(): return Rect or None
 
         """
         return self._clip
