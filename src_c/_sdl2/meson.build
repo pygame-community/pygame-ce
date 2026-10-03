@@ -1,5 +1,6 @@
 cython_base = '../cython/pygame/_sdl2'
 
+if sdl_api != 3
 _sdl2_audio = py.extension_module(
     'audio',
     fs.is_file('audio.c') ? 'audio.c' : cython_base / 'audio.pyx',
@@ -37,6 +38,7 @@ if sdl_mixer_dep.found()
         subdir: pg / '_sdl2',
     )
 endif
+endif
 
 _sdl2_sdl2 = py.extension_module(
     'sdl2',
@@ -47,7 +49,7 @@ _sdl2_sdl2 = py.extension_module(
     subdir: pg / '_sdl2',
 )
 
-# This is not a cython file
+# These are not cython files
 _sdl2_touch = py.extension_module(
     'touch',
     'touch.c',
