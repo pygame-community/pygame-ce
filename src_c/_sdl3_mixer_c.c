@@ -1206,8 +1206,9 @@ pg_track_obj_set_filestream(PGTrackObject *self, PyObject *args,
         return NULL;
     }
 
+    // Given closeio=true, SDL_mixer is responsible for closing the iostream
+    // on error.
     if (!MIX_SetTrackIOStream(self->track, io, true)) {
-        SDL_CloseIO(io);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
