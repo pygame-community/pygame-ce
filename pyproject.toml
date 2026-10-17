@@ -82,7 +82,7 @@ build-frontend = "build[uv]"
 # here we build wheels for all supported python versions. We do not support musllinux
 # and free threaded builds as of now. We also skip Python 3.10 build on ARM Windows
 # because it is very very unlikely to be used (numpy does it too).
-build = "cp3{10,11,12,13,14,15}-* pp311-*"
+build = "cp3{10,11,12,13,14,15}-* pp311-* pp312-*"
 skip = ["*-musllinux_*", "cp31?t-*", "cp310-win_arm64"]
 # build[uv] is verbose by default, so below flag is not needed here
 # build-verbosity = 3
@@ -152,8 +152,10 @@ only-binary = ["numpy"]
 # 2. skip all pypy+arm combinations
 # 3. skip pypy 3.11 manylinux and cpython 3.14+ manylinux (numpy has newer manylinux
 # wheels for this which is incompatible with our manylinux version)
+# 4. skip pypy overall because numpy doesn't have support for the pypy 8.0 right now
+# (temp)
 [[tool.cibuildwheel.overrides]]
-select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp3{14,15}-manylinux_*}"
+select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp3{14,15}-manylinux_*,pp*}"
 test-requires = []
 
 # On MacOS 3.15 x86_64 compilation running on an ARM64 runner, with
