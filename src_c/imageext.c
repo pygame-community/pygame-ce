@@ -177,7 +177,6 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
 static PyObject *
 imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
 {
-#if SDL_IMAGE_VERSION_ATLEAST(2, 6, 0)
     PyObject *obj, *size, *final;
     SDL_Surface *surf;
     SDL_RWops *rw = NULL;
@@ -218,17 +217,11 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
         SDL_FreeSurface(surf);
     }
     return final;
-#else  /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
-    return RAISE(
-        pgExc_SDLError,
-        "pygame must be compiled with SDL_image 2.6.0+ to use this function");
-#endif /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
 }
 
 static PyObject *
 imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwargs)
 {
-#if SDL_IMAGE_VERSION_ATLEAST(2, 6, 0)
     PyObject *obj, *ret = NULL;
     char *name = NULL, *ext = NULL, *type = NULL;
     IMG_Animation *surfs = NULL;
@@ -297,11 +290,6 @@ error:
     Py_XDECREF(ret);
     IMG_FreeAnimation(surfs);
     return NULL;
-#else  /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
-    return RAISE(
-        pgExc_SDLError,
-        "pygame must be compiled with SDL_image 2.6.0+ to use this function");
-#endif /* ~SDL_IMAGE_VERSION_ATLEAST(2, 6, 0) */
 }
 
 static PyObject *

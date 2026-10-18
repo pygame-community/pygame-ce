@@ -540,12 +540,10 @@ music_get_metadata(PyObject *self, PyObject *args, PyObject *keywds)
     const char *artist = "";
     const char *copyright = "";
 
-#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
     title = Mix_GetMusicTitleTag(music);
     album = Mix_GetMusicAlbumTag(music);
     artist = Mix_GetMusicArtistTag(music);
     copyright = Mix_GetMusicCopyrightTag(music);
-#endif
 
     if (!music) {
         return RAISE(pgExc_SDLError, "music not loaded");
