@@ -70,7 +70,11 @@ jobs:
         persist-credentials: false
 
     - name: Make sdist and install it
+      # the workspace is owned by a different user than the container's root,
+      # so git refuses to work in it unless it's marked as safe (meson dist
+      # needs git)
       run: |
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
         python3 -m build --sdist --outdir dist .
         pip3 install dist/pygame_ce-*.tar.gz -vv
 
