@@ -1369,13 +1369,10 @@ dict_from_event(SDL_Event *event)
 #if SDL_VERSION_ATLEAST(3, 0, 0)
             obj = pg_tuple_couple_from_values_int((int)event->wheel.mouse_x,
                                                   (int)event->wheel.mouse_y);
-#elif SDL_VERSION_ATLEAST(2, 26, 0)
+#else
             obj = pg_tuple_couple_from_values_int((int)event->wheel.mouseX,
                                                   (int)event->wheel.mouseY);
-#else
-        obj = Py_NewRef(Py_None);
-
-#endif /* SDL_VERSION_ATLEAST(2, 26, 0) */
+#endif
             _pg_insobj(dict, "pos", obj);
 
             break;

@@ -5,6 +5,7 @@ from typing import (
     Any,
     Generic,
     Protocol,
+    Self,
     SupportsFloat,
     TypeAlias,
     TypeVar,
@@ -15,11 +16,6 @@ if sys.version_info >= (3, 13):
     from warnings import deprecated
 else:
     from typing_extensions import deprecated
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
 
 from pygame.mask import Mask
 from pygame.rect import FRect, Rect

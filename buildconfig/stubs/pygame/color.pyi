@@ -1,14 +1,9 @@
 import sys
 from collections.abc import Collection, Iterator
-from typing import Any, ClassVar, SupportsIndex, overload
+from typing import Any, ClassVar, Self, SupportsIndex, overload
 
 from pygame.typing import ColorLike
 from typing_extensions import deprecated  # added in 3.13
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
 
 THECOLORS: dict[str, tuple[int, int, int, int]]
 
