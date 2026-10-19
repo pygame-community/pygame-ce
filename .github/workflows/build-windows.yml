@@ -140,6 +140,14 @@ jobs:
         with:
           persist-credentials: false
 
+      # Pin the MSVC toolset to 14.44 because 14.51 (cl 19.51.36260) fails to
+      # compile our code on ARM64. 14.44 ships side-by-side on the VS 2026 images.
+      - uses: TheMrMilchmann/setup-msvc-dev@368ef7d1ee4d1171b31d4a7f67f4d954f903f5a9 # v4.1.0
+        if: matrix.winarch == 'aarch64'
+        with:
+          arch: arm64
+          toolset: "14.44"
+
       - name: Force 32-bit MSVC
         if: matrix.winarch == 'x86'
         uses: egor-tensin/vs-shell@54e4148eac794e4580591c2e0b7750f14b7891fc # v2.2
