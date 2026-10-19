@@ -91,7 +91,8 @@ pg_circle_repr(pgCircleObject *self)
         return NULL;
     }
 
-    PyObject *result = PyUnicode_FromFormat("Circle((%R, %R), %R)", x, y, r);
+    PyObject *result = PyUnicode_FromFormat(
+        "%s((%R, %R), %R)", pgObject_TypeName((PyObject *)self), x, y, r);
 
     Py_DECREF(x);
     Py_DECREF(y);

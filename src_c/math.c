@@ -1922,13 +1922,12 @@ vector_repr(pgVector *self)
     int tmp;
 
     if (self->dim == 2) {
-        tmp = PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR, "Vector2(%g, %g)",
+        tmp = PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR, "(%g, %g)",
                             self->coords[0], self->coords[1]);
     }
     else if (self->dim == 3) {
-        tmp =
-            PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR, "Vector3(%g, %g, %g)",
-                          self->coords[0], self->coords[1], self->coords[2]);
+        tmp = PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR, "(%g, %g, %g)",
+                            self->coords[0], self->coords[1], self->coords[2]);
     }
     else {
         return RAISE(
@@ -1940,7 +1939,8 @@ vector_repr(pgVector *self)
         return NULL;
     }
 
-    return PyUnicode_FromString(buffer);
+    return PyUnicode_FromFormat("%s%s", pgObject_TypeName((PyObject *)self),
+                                buffer);
 }
 
 static PyObject *

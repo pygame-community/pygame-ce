@@ -615,8 +615,9 @@ static PyNumberMethods pg_frect_as_number = {
 static PyObject *
 pg_rect_repr(pgRectObject *self)
 {
-    return PyUnicode_FromFormat("Rect(%d, %d, %d, %d)", self->r.x, self->r.y,
-                                self->r.w, self->r.h);
+    return PyUnicode_FromFormat("%s(%d, %d, %d, %d)",
+                                pgObject_TypeName((PyObject *)self), self->r.x,
+                                self->r.y, self->r.w, self->r.h);
 }
 
 static PyObject *
@@ -624,14 +625,15 @@ pg_frect_repr(pgFRectObject *self)
 {
     char str[256];
 
-    int ret = PyOS_snprintf(str, 256, "FRect(%f, %f, %f, %f)", self->r.x,
-                            self->r.y, self->r.w, self->r.h);
+    int ret = PyOS_snprintf(str, 256, "(%f, %f, %f, %f)", self->r.x, self->r.y,
+                            self->r.w, self->r.h);
     if (ret < 0 || ret >= 256) {
         return RAISE(PyExc_RuntimeError,
                      "Internal PyOS_snprintf call failed!");
     }
 
-    return PyUnicode_FromString(str);
+    return PyUnicode_FromFormat("%s%s", pgObject_TypeName((PyObject *)self),
+                                str);
 }
 
 static PyObject *
