@@ -3284,23 +3284,23 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
         if (oct == startoct) {
             // need to compute stopval_start for this octant.  Look at picture
             // above if this is unclear
-            dstart = (double)start;
+            dstart = DEG2RAD((double)start);
             switch (oct) {
                 case 0:
                 case 3:
-                    temp = sin(dstart * M_PI / 180.);
+                    temp = sin(dstart);
                     break;
                 case 1:
                 case 6:
-                    temp = cos(dstart * M_PI / 180.);
+                    temp = cos(dstart);
                     break;
                 case 2:
                 case 5:
-                    temp = -cos(dstart * M_PI / 180.);
+                    temp = -cos(dstart);
                     break;
                 case 4:
                 case 7:
-                    temp = -sin(dstart * M_PI / 180.);
+                    temp = -sin(dstart);
                     break;
             }
             temp *= rad;
@@ -3323,23 +3323,23 @@ arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
         }
         if (oct == endoct) {
             // need to compute stopval_end for this octant
-            dend = (double)end;
+            dend = DEG2RAD((double)end);
             switch (oct) {
                 case 0:
                 case 3:
-                    temp = sin(dend * M_PI / 180);
+                    temp = sin(dend);
                     break;
                 case 1:
                 case 6:
-                    temp = cos(dend * M_PI / 180);
+                    temp = cos(dend);
                     break;
                 case 2:
                 case 5:
-                    temp = -cos(dend * M_PI / 180);
+                    temp = -cos(dend);
                     break;
                 case 4:
                 case 7:
-                    temp = -sin(dend * M_PI / 180);
+                    temp = -sin(dend);
                     break;
             }
             temp *= rad;
@@ -4844,10 +4844,10 @@ _pieColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
      */
     dr = (double)rad;
     deltaAngle = 3.0 / dr;
-    start_angle = (double)start * (2.0 * M_PI / 360.0);
-    end_angle = (double)end * (2.0 * M_PI / 360.0);
+    start_angle = (double)start * (M_PI / 180.0);
+    end_angle = (double)end * (M_PI / 180.0);
     if (start > end) {
-        end_angle += (2.0 * M_PI);
+        end_angle += (TWO_PI);
     }
 
     /* We will always have at least 2 points */
