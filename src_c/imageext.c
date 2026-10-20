@@ -331,7 +331,7 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         result = -2;
     }
     else if (oencoded == Py_None) {
-        rw = pgRWops_FromFileObject(obj);
+        rw = pgRWops_FromFileObjectNoClose(obj);
         if (rw == NULL) {
             PyErr_Format(PyExc_TypeError,
                          "Expected a string or file object for the file "
@@ -383,6 +383,11 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
             }
             /*Py_END_ALLOW_THREADS; */
         }
+    }
+
+    if (rw != NULL) {
+        /* release the references to obj, this does not close obj */
+        SDL_RWclose(rw);
     }
 
     pgSurface_Unprep(surfobj);
