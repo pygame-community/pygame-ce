@@ -1308,7 +1308,7 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "dx", PyFloat_FromDouble(event->tfinger.dx));
             _pg_insobj(dict, "dy", PyFloat_FromDouble(event->tfinger.dy));
             _pg_insobj(dict, "pressure",
-                       PyFloat_FromDouble(event->tfinger.dy));
+                       PyFloat_FromDouble(event->tfinger.pressure));
             break;
         case SDL_MULTIGESTURE:
 #if SDL_VERSION_ATLEAST(3, 0, 0)
