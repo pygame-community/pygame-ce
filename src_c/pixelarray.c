@@ -1598,8 +1598,8 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
         Py_ssize_t ystart, ystop, ystep;
 
         if (size == 0) {
-            /* array[,], array[()] ... */
-            return Py_NewRef(array);
+            /* array[,], array[()] ...: a new view, like array[:, :] */
+            return _pxarray_subscript_internal(array, 0, dim0, 1, 0, dim1, 1);
         }
         if (size > 2 || (size == 2 && !dim1)) {
             return RAISE(PyExc_IndexError, "too many indices for the array");
@@ -1649,7 +1649,8 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
                                            ystop, ystep);
     }
     else if (op == Py_Ellipsis) {
-        return Py_NewRef(array);
+        /* array[...]: a new view, like array[:, :] */
+        return _pxarray_subscript_internal(array, 0, dim0, 1, 0, dim1, 1);
     }
     else if (PySlice_Check(op)) {
         /* A slice */
