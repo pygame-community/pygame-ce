@@ -93,6 +93,23 @@ class Texture:
     @blend_mode.setter
     def blend_mode(self, value: int) -> None: ...
     @property
+    def scale_mode(self) -> int:
+        """Get or set the scale mode for texture drawing operations
+
+        Valid scale modes are:
+           * ``pygame.SCALEMODE_NEAREST`` (default): Nearest pixel sampling (also
+             known as nearest neighbor), preserving the texture's pixels when scaled.
+           * ``pygame.SCALEMODE_LINEAR``: Linear filtering, smoothing the texture
+             when scaled.
+           * ``pygame.SCALEMODE_PIXELART``: Nearest pixel sampling with improved
+             scaling for pixel art. Falls back to ``pygame.SCALEMODE_NEAREST`` if
+             pygame is built with SDL2.
+
+        .. versionadded:: 2.5.8
+        """
+    @scale_mode.setter
+    def scale_mode(self, value: int) -> None: ...
+    @property
     def color(self) -> Color: ...
     @color.setter
     def color(self, value: ColorLike) -> None: ...
