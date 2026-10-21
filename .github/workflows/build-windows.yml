@@ -80,9 +80,9 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
-          # The hash of all files in buildconfig manylinux-build and windependencies is
+          # The hash of all files in deps
           # the key to the cache. If anything changes here, the deps are built again
-          key: windep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/windependencies/*') }}-${{ matrix.winarch }}
+          key: windep-${{ hashFiles('buildconfig/deps/**') }}-${{ matrix.winarch }}
 
       # Setup msys environment
       - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
@@ -109,7 +109,7 @@ jobs:
         shell: msys2 {0}
         run: |
           export WIN_ARCH="${{ matrix.winarch }}"
-          cd buildconfig/windependencies
+          cd buildconfig/deps/win
           bash ./build_win_deps.sh
 
       - name: Upload win deps
