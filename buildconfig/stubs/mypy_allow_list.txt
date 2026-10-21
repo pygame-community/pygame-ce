@@ -30,3 +30,4 @@ pygame\.docs.*
 
 # Remove me when we're checking stubs for SDL3!
 pygame\._audio
+pygame\._sdl3_mixer

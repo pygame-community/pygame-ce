@@ -155,8 +155,7 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
             }
         }
         else {
-            Py_INCREF(Py_None);
-            val = Py_None;
+            val = Py_NewRef(Py_None);
         }
         if (PyDict_SetItemString(dict, "country", val)) {
             goto error;
@@ -199,16 +198,14 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
     }
 
     if (sec == -1) {
-        sec_py = Py_None;
-        Py_INCREF(Py_None);
+        sec_py = Py_NewRef(Py_None);
     }
     else {
         sec_py = PyLong_FromLong(sec);
     }
 
     if (pct == -1) {
-        pct_py = Py_None;
-        Py_INCREF(Py_None);
+        pct_py = Py_NewRef(Py_None);
     }
     else {
         pct_py = PyLong_FromLong(pct);
@@ -251,6 +248,17 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
     return PyObject_Call(PowerState_class, return_args, return_kwargs);
 }
 
+static PyObject *
+pg_system_get_theme(PyObject *self, PyObject *_null)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    return PyLong_FromLong(SDL_GetSystemTheme());
+#else
+    return RAISE(pgExc_SDLError,
+                 "'pygame.system.get_theme' requires SDL 3.0.0+");
+#endif
+}
+
 static PyMethodDef _system_methods[] = {
     {"get_cpu_instruction_sets", pg_system_get_cpu_instruction_sets,
      METH_NOARGS, DOC_SYSTEM_GETCPUINSTRUCTIONSETS},
@@ -262,6 +270,7 @@ static PyMethodDef _system_methods[] = {
      DOC_SYSTEM_GETPREFLOCALES},
     {"get_power_state", pg_system_get_power_state, METH_NOARGS,
      DOC_SYSTEM_GETPOWERSTATE},
+    {"get_theme", pg_system_get_theme, METH_NOARGS, DOC_SYSTEM_GETTHEME},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(system)

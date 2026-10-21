@@ -1,11 +1,13 @@
 [project]
 name = "pygame-ce"
-version = "2.5.8.dev1"
+version = "3.0.0.dev1"
 description = "Python Game Development"
 readme = "README.rst" # for long description
 requires-python = ">=3.10"
 license = {text = "LGPL v2.1"}
 authors = [{name = "A community project"}]
+keywords = ["pygame", "game", "gamedev", "game-development", "multimedia", "sdl"]
+import-names = ["pygame"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
@@ -19,6 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Games/Entertainment",
@@ -53,10 +56,10 @@ pygame_ce = 'pygame.__briefcase.pygame_ce:PygameCEGuiBootstrap'
 
 [build-system]
 requires = [
-  "meson-python<=0.18.0",
-  "meson<=1.10.0",
+  "meson-python<=0.20.0",
+  "meson<=1.11.2",
   "ninja<=1.13.0",
-  "cython<=3.2.4",
+  "cython<=3.2.9",
   "sphinx<=8.2.3",
   "astroid<4.0.0",
   "sphinx-autoapi<=3.6.0",
@@ -79,7 +82,7 @@ build-frontend = "build[uv]"
 # here we build wheels for all supported python versions. We do not support musllinux
 # and free threaded builds as of now. We also skip Python 3.10 build on ARM Windows
 # because it is very very unlikely to be used (numpy does it too).
-build = "cp3{10,11,12,13,14}-* pp311-*"
+build = "cp3{10,11,12,13,14,15}-* pp311-*"
 skip = ["*-musllinux_*", "cp31?t-*", "cp310-win_arm64"]
 # build[uv] is verbose by default, so below flag is not needed here
 # build-verbosity = 3
@@ -107,20 +110,26 @@ build = "cp313-*"  # build only for the latest python version.
 # to cibuildwheel and/or pyodide.
 before-build = """
 sed -i 's/var SUPPORT_LONGJMP *= *[^;]*;/var SUPPORT_LONGJMP = "wasm";/' \
-  /home/runner/.cache/cibuildwheel/emsdk-4.0.9/emsdk-4.0.9/upstream/emscripten/src/settings.js &&
+  /home/runner/.cache/cibuildwheel/pyodide-build-0.39.0/0.29.4/emsdk/upstream/emscripten/src/settings.js &&
 embuilder --pic --force build \
   sdl2 libhtml5 sdl2_ttf 'sdl2_mixer:formats=ogg,mp3,mod,mid' \
   'sdl2_image:formats=bmp,gif,jpg,lbm,pcx,png,pnm,qoi,svg,tga,xcf,xpm,xv'
 """
 test-command = ""  # TODO: figure out how to test
 
+# cibuildwheel 4.0 now uses delvewheel to try to fix up Windows wheels with DLLs, which fails
+# out of the box with our CI. And do we really want something messing with our DLLs?
+# The status quo is that we add our resources to the build explicitly, that should be okay to
+# continue, so lets just turn this off for now.
+# Maybe it can be reinvestigated in the future.
+[tool.cibuildwheel.windows]
+repair-wheel-command = ""
 
 [tool.ruff]
 exclude = [
   "buildconfig/*.py",
   "buildconfig/stubs/pygame/typing.pyi",
   "docs/reST/",
-  "setup.py",
 ]
 
 [tool.ruff.lint]
@@ -141,8 +150,66 @@ only-binary = ["numpy"]
 
 # 1. skip all 32-bit manylinux (i686)
 # 2. skip all pypy+arm combinations
-# 3. skip pypy 3.11 manylinux and cpython 3.14 manylinux (numpy has newer manylinux
+# 3. skip pypy 3.11 manylinux and cpython 3.14+ manylinux (numpy has newer manylinux
 # wheels for this which is incompatible with our manylinux version)
 [[tool.cibuildwheel.overrides]]
-select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp314-manylinux_*}"
+select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp311-manylinux_x86_64,cp3{14,15}-manylinux_*}"
 test-requires = []
+
+# On MacOS 3.15 x86_64 compilation running on an ARM64 runner, with
+# build-frontend="build[uv]", I get the error:
+#
+# The built wheel `markupsafe-3.0.3-cp315-cp315-macosx_10_15_x86_64.whl`
+#    <       is not compatible with the current Python 3.15 on macOS aarch64
+#
+# In the uv source, it says "this should never happen". But I'm not sure if
+# it's a bug in CIBW, UV, build, or something else.
+# ANYWAYS, it seems to work with build based on pip, so lets do that.
+[[tool.cibuildwheel.overrides]]
+select = "cp315-macosx_x86_64"
+build-frontend = "build"
+
+[tool.isort]
+include_trailing_comma = true
+known_first_party = "pygame"
+known_third_party = ["numpy", "distutils", "setuptools", "sphinx"]
+line_length = 88
+multi_line_output = 3
+src_paths = "src_py"
+
+[tool.pylint.main]
+extension-pkg-whitelist = "pygame"
+
+[tool.pylint."MESSAGES CONTROL"]
+enable = ["use-symbolic-message-instead"]
+disable = [
+  "attribute-defined-outside-init",
+  "broad-except",
+  "duplicate-code",
+  "empty-docstring",
+  "fixme",
+  "global-statement",
+  "global-variable-undefined",
+  "import-error",
+  "import-outside-toplevel",
+  "invalid-name",
+  "missing-docstring",
+  "no-member",
+  "protected-access",
+  "raise-missing-from",
+  "redefined-builtin",
+  "redefined-outer-name",
+  "super-with-arguments",
+  "too-few-public-methods",
+  "too-many-arguments",
+  "too-many-branches",
+  "too-many-instance-attributes",
+  "too-many-lines",
+  "too-many-locals",
+  "undefined-all-variable",
+  "undefined-variable",
+  "unused-import",
+  "useless-object-inheritance",
+  "wrong-import-order",
+  "wrong-import-position",
+]

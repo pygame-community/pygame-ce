@@ -216,7 +216,7 @@ typedef struct fontinternals_ {
 
 typedef struct PGFT_String_ {
     Py_ssize_t length;
-    PGFT_char data[1];
+    PGFT_char data[];
 } PGFT_String;
 
 #if defined(PGFT_DEBUG_CACHE)

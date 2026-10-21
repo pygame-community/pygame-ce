@@ -11,8 +11,6 @@ Steps:
 
 - Fork the pygame-ce repository, download and navigate to it in the terminal
 - Run `python dev.py docs`
-- If you are using the legacy `python setup.py docs` (which is now deprecated):
-  - (Run `python -m pip install -U pip setuptools` first if `ModuleNotFoundError: No module named setuptools` occurs)
 
 This will create a new folder under the `docs` folder.
 In `docs/generated`, you will find a local copy of the pygame documentation.

@@ -41,7 +41,7 @@ formats.
 
     * ``XCF``
 
-.. versionaddedold:: 2.0 Loading SVG, WebP, PNM
+.. versionaddedold:: 2.0.0 Loading SVG, WebP, PNM
 
 .. versionadded:: 2.4.0 Loading QOI (Relies on SDL_Image 2.6.0+)
 
@@ -57,7 +57,7 @@ following formats.
     * ``TGA``
 
 
-``JPEG`` and ``JPG``, as well as ``TIF`` and ``TIFF`` refer to the same file format
+``JPEG`` and ``JPG``, as well as ``TIF`` and ``TIFF`` refer to the same file format.
 
 .. versionaddedold:: 1.8 Saving PNG and JPEG files.
 """
@@ -111,7 +111,7 @@ def load(file: FileLike, namehint: str = "") -> Surface:
 
     ::
 
-        eg. asurf = pygame.image.load(os.path.join('data', 'bla.png'))
+        surf = pygame.image.load(os.path.join('data', 'bla.png'))
 
     .. versionchanged:: 2.2.0 Now supports keyword arguments.
     """
@@ -229,7 +229,7 @@ def tobytes(
 ) -> bytes:
     """Transfer image to byte buffer.
 
-    Creates a string of bytes that can be transferred with the ``fromstring``
+    Creates a bytes object that can be transferred with the ``fromstring``
     or ``frombytes`` methods in other Python imaging packages. Some Python
     image packages prefer their images in bottom-to-top format (PyOpenGL for
     example). If you pass ``True`` for the flipped argument, the byte buffer
@@ -307,7 +307,25 @@ def frombytes(
     The bytes and format passed must compute to the exact size of image
     specified. Otherwise a ``ValueError`` will be raised.
 
-    The 'pitch' argument can be used specify the pitch/stride per horizontal line
+    The format argument is a string of one of the following values. Note that
+    only 8-bit Surfaces can use the "P" format. The other formats will work for
+    any Surface.
+
+        * ``P``, 8-bit palettized Surfaces
+
+        * ``RGB``, 24-bit image
+
+        * ``RGBX``, 32-bit image with unused space
+
+        * ``RGBA``, 32-bit image with an alpha channel
+
+        * ``ARGB``, 32-bit image with alpha channel first
+
+        * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped
+
+        * ``ABGR``, 32-bit image with alpha channel, reverse order
+
+    The 'pitch' argument can be used to specify the pitch/stride per horizontal line
     of the image bytes in bytes. It must be equal to or greater than how many bytes
     the pixel data of each horizontal line in the image bytes occupies without any
     extra padding. By default, it is ``-1``, which means that the pitch/stride is
@@ -335,10 +353,10 @@ def frombuffer(
     Create a new Surface that shares pixel data directly from a buffer. This
     buffer can be bytes, a bytearray, a memoryview, a
     :class:`pygame.BufferProxy`, or any object that supports the buffer protocol.
-    This method takes similar arguments to :func:`pygame.image.fromstring()`, but
+    This method takes similar arguments to :func:`pygame.image.frombytes()`, but
     is unable to vertically flip the source data.
 
-    This will run much faster than :func:`pygame.image.fromstring`, since no
+    This will run much faster than :func:`pygame.image.frombytes`, since no
     pixel data must be allocated and copied.
 
     It accepts the following 'format' arguments:
@@ -357,7 +375,7 @@ def frombuffer(
 
         * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped
 
-    The 'pitch' argument can be used specify the pitch/stride per horizontal line
+    The 'pitch' argument can be used to specify the pitch/stride per horizontal line
     of the image buffer in bytes. It must be equal to or greater than how many bytes
     the pixel data of each horizontal line in the image buffer occupies without any
     extra padding. By default, it is ``-1``, which means that the pitch/stride is
@@ -381,8 +399,8 @@ def load_extended(file: FileLike, namehint: str = "") -> Surface:
     """Load an image from a file (or file-like object).
 
     This function is similar to :func:`pygame.image.load()`, except that this
-    function can only be used if pygame was built with extended image format
-    support.
+    function will raise a ``NotImplementedError`` if pygame was built without
+    extended image format support.
 
     .. versionchangedold:: 2.0.1 This function is always available, but raises an
         ``NotImplementedError`` if extended image formats are not supported.

@@ -33,9 +33,11 @@ typedef struct keyfields_ {
     FT_Fixed strength;
 } KeyFields;
 
+#define NUM_DWORDS ((sizeof(KeyFields) + 3) / 4)
+
 typedef union cachenodekey_ {
     KeyFields fields;
-    FT_UInt32 dwords[(sizeof(KeyFields) + 3) / 4];
+    FT_UInt32 dwords[NUM_DWORDS];
 } NodeKey;
 
 typedef struct cachenode_ {
@@ -82,7 +84,7 @@ equal_node_keys(const NodeKey *a, const NodeKey *b)
 {
     size_t i;
 
-    for (i = 0; i < sizeof(a->dwords) / sizeof(a->dwords[0]); ++i) {
+    for (i = 0; i < NUM_DWORDS; ++i) {
         if (a->dwords[i] != b->dwords[i]) {
             return 0;
         }
@@ -103,12 +105,9 @@ get_hash(const NodeKey *key)
     FT_UInt32 c2 = 0x1B873593;
 
     FT_UInt32 k1;
-    const FT_UInt32 *blocks = key->dwords - 1;
 
-    int i;
-
-    for (i = (sizeof(key->dwords) / 4); i; --i) {
-        k1 = blocks[i];
+    for (int i = (NUM_DWORDS - 1); i >= 0; --i) {
+        k1 = key->dwords[i];
 
         k1 *= c1;
         k1 = (k1 << 15) | (k1 >> 17);

@@ -41,7 +41,7 @@ reviews:
     ignore_title_keywords: []
     labels: []
     drafts: false
-    base_branches: []
+    base_branches: ["main", "main-2.x"]
   finishing_touches:
     docstrings:
       enabled: true

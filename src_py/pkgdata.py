@@ -20,36 +20,7 @@ object (such as StringIO).
 __all__ = ["getResource"]
 import os
 import sys
-
-try:
-    from importlib.resources import files
-
-    def resource_exists(_package_or_requirement, _resource_name):
-        _package_or_requirement = _package_or_requirement.split(".")[0]
-        return files(_package_or_requirement).joinpath(_resource_name).is_file()
-
-    def resource_stream(_package_or_requirement, _resource_name):
-        _package_or_requirement = _package_or_requirement.split(".")[0]
-        ref = files(_package_or_requirement).joinpath(_resource_name)
-        return ref.open("rb")
-
-except ImportError:
-
-    def resource_exists(_package_or_requirement, _resource_name):
-        """
-        A stub for when we fail to import this function.
-
-        :return: Always returns False
-        """
-        return False
-
-    def resource_stream(_package_or_requirement, _resource_name):
-        """
-        A stub for when we fail to import this function.
-
-        Always raises a NotImplementedError when called.
-        """
-        raise NotImplementedError
+from importlib.resources import files
 
 
 def getResource(identifier, pkgname=__name__):
@@ -69,13 +40,9 @@ def getResource(identifier, pkgname=__name__):
     be handing data off to a C API.
     """
 
-    # When pyinstaller (or similar tools) are used, resource_exists may raise
-    # NotImplemented error
-    try:
-        if resource_exists(pkgname, identifier):
-            return resource_stream(pkgname, identifier)
-    except NotImplementedError:
-        pass
+    ref = files(pkgname.split(".")[0]).joinpath(identifier)
+    if ref.is_file():
+        return ref.open("rb")
 
     mod = sys.modules[pkgname]
     path_to_file = getattr(mod, "__file__", None)

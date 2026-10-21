@@ -239,7 +239,7 @@ transform = py.extension_module(
 mask = py.extension_module(
     'mask',
     ['mask.c', 'bitmask.c'],
-    c_args: warnings_error + warnings_temp_mask,
+    c_args: warnings_error,
     dependencies: pg_base_deps,
     install: true,
     subdir: pg,
@@ -452,8 +452,16 @@ if sdl_api != 3
         install: true,
         subdir: pg,
     )
+else
+    _mixer = py.extension_module(
+        '_sdl3_mixer_c',
+        '_sdl3_mixer_c.c',
+        c_args: warnings_error,
+        dependencies: pg_base_deps + sdl_mixer_dep,
+        install: true,
+        subdir: pg,
+    )
 endif
-
 endif
 
 if freetype_dep.found()
@@ -468,7 +476,7 @@ if freetype_dep.found()
             'freetype/ft_unicode.c',
             '_freetype.c',
         ],
-        c_args: warnings_error + warnings_temp_freetype,
+        c_args: warnings_error,
         dependencies: pg_base_deps + freetype_dep,
         install: true,
         subdir: pg,

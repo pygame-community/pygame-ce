@@ -83,10 +83,7 @@ _display_state_cleanup(_DisplayState *state)
         free(state->title);
         state->title = NULL;
     }
-    if (state->icon) {
-        Py_XDECREF(state->icon);
-        state->icon = NULL;
-    }
+    Py_CLEAR(state->icon);
     if (state->gl_context) {
         SDL_GL_DeleteContext(state->gl_context);
         state->gl_context = NULL;
@@ -769,8 +766,7 @@ pg_get_surface(PyObject *self, PyObject *_null)
         if (!surface) {
             Py_RETURN_NONE;
         }
-        Py_INCREF(surface);
-        return (PyObject *)surface;
+        return Py_NewRef(surface);
     }
     else if (win == NULL) {
         Py_RETURN_NONE;
@@ -785,11 +781,9 @@ pg_get_surface(PyObject *self, PyObject *_null)
                 return NULL;
             }
             pg_SetDefaultWindowSurface(new_surface);
-            Py_INCREF((PyObject *)new_surface);
-            return (PyObject *)new_surface;
+            return Py_NewRef(new_surface);
         }
-        Py_INCREF(old_surface);
-        return (PyObject *)old_surface;
+        return Py_NewRef(old_surface);
     }
     return NULL;
 }
@@ -1877,8 +1871,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     }
 
     /*return the window's surface (screen)*/
-    Py_INCREF(surface);
-    return (PyObject *)surface;
+    return Py_NewRef(surface);
 
 DESTROY_WINDOW:
 
@@ -2406,8 +2399,7 @@ pg_set_palette(PyObject *self, PyObject *args)
         return RAISE(pgExc_SDLError, "No display mode is set");
     }
 
-    Py_INCREF(surface);
-    surf = pgSurface_AsSurface(surface);
+    surf = pgSurface_AsSurface(Py_NewRef(surface));
     pal = PG_GetSurfacePalette(surf);
     if (PG_SURF_BytesPerPixel(surf) != 1 || !pal) {
         Py_DECREF(surface);
@@ -2708,9 +2700,7 @@ pg_set_icon(PyObject *self, PyObject *surface)
             return NULL;
         }
     }
-    Py_INCREF(surface);
-    Py_XDECREF(state->icon);
-    state->icon = surface;
+    Py_XSETREF(state->icon, Py_NewRef(surface));
     if (win) {
         SDL_SetWindowIcon(win, pgSurface_AsSurface(surface));
     }

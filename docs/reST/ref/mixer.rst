@@ -157,7 +157,7 @@ The following file formats are supported
 .. function:: get_init
 
    | :sl:`test if the mixer is initialized`
-   | :sg:`get_init() -> (frequency, format, channels)`
+   | :sg:`get_init() -> (frequency, format, channels) | None`
 
    If the mixer is initialized, this returns the playback arguments it is
    using. If the mixer has not been initialized this returns ``None``.
@@ -256,7 +256,7 @@ The following file formats are supported
 .. function:: find_channel
 
    | :sl:`find an unused channel`
-   | :sg:`find_channel(force=False) -> Channel`
+   | :sg:`find_channel(force=False) -> Channel | None`
 
    This will find and return an inactive Channel object. If there are no
    inactive Channels this function will return ``None``. If there are no
@@ -308,7 +308,7 @@ The following file formats are supported
    | :sg:`get_busy() -> bool`
 
    Returns ``True`` if the mixer is busy mixing any channels. If the mixer is
-   idle then this return ``False``.
+   idle or uninitialized then this returns ``False``.
 
    .. ## pygame.mixer.get_busy ##
 
@@ -659,8 +659,7 @@ The following file formats are supported
       If one argument is passed, it will be the volume of both speakers. If two
       arguments are passed and the mixer is in stereo mode, the first argument
       will be the volume of the left speaker and the second will be the volume
-      of the right speaker. (If the second argument is ``None``, the first
-      argument will be the volume of both speakers.)
+      of the right speaker.
 
       If the channel is playing a Sound on which ``set_volume()`` has also been
       called, both calls are taken into account. For example:
@@ -707,7 +706,7 @@ The following file formats are supported
    .. method:: get_sound
 
       | :sl:`get the currently playing Sound`
-      | :sg:`get_sound() -> Sound`
+      | :sg:`get_sound() -> Sound | None`
 
       Return the actual Sound object currently playing on this channel. If the
       channel is idle ``None`` is returned.
@@ -733,7 +732,7 @@ The following file formats are supported
    .. method:: get_queue
 
       | :sl:`return any Sound that is queued`
-      | :sg:`get_queue() -> Sound`
+      | :sg:`get_queue() -> Sound | None`
 
       If a Sound is already queued on this channel it will be returned. Once
       the queued sound begins playback it will no longer be on the queue.

@@ -5,6 +5,11 @@ from typing import Any, ClassVar, SupportsIndex, overload
 from pygame.typing import ColorLike
 from typing_extensions import deprecated  # added in 3.13
 
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
 THECOLORS: dict[str, tuple[int, int, int, int]]
 
 # Color confirms to the Collection ABC, since it also confirms to
@@ -225,6 +230,7 @@ class Color(Collection[int]):
     def __getitem__(self, s: slice) -> tuple[int, ...]: ...
     def __setitem__(self, key: int, value: int) -> None: ...
     def __iter__(self) -> Iterator[int]: ...
+    def __copy__(self) -> Self: ...
     def __add__(self, other: Color) -> Color: ...
     def __sub__(self, other: Color) -> Color: ...
     def __mul__(self, other: Color) -> Color: ...
@@ -408,4 +414,13 @@ class Color(Collection[int]):
         parameters of this function. If the alpha value was not set it will not change.
 
         .. versionaddedold:: 2.0.1
+        """
+
+    def copy(self) -> Self:
+        """Returns a copy of the Color.
+
+        Returns a new Color object with the same color values and length as the original.
+
+        .. note:: For subclasses of color, copying will not preserve arbitrary additional data, just the core color data (rgba and length).
+        .. versionadded:: 3.0.0
         """

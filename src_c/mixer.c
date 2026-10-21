@@ -299,8 +299,7 @@ endsound_callback(int channel)
             PyGILState_STATE gstate = PyGILState_Ensure();
             int channelnum;
             Mix_Chunk *sound = pgSound_AsChunk(channeldata[channel].queue);
-            Py_XDECREF(channeldata[channel].sound);
-            channeldata[channel].sound = channeldata[channel].queue;
+            Py_XSETREF(channeldata[channel].sound, channeldata[channel].queue);
             channeldata[channel].queue = NULL;
             PyGILState_Release(gstate);
             channelnum = Mix_PlayChannelTimed(channel, sound, 0, -1);
@@ -310,8 +309,7 @@ endsound_callback(int channel)
         }
         else {
             PyGILState_STATE gstate = PyGILState_Ensure();
-            Py_XDECREF(channeldata[channel].sound);
-            channeldata[channel].sound = NULL;
+            Py_CLEAR(channeldata[channel].sound);
             PyGILState_Release(gstate);
             Mix_GroupChannel(channel, -1);
         }
@@ -673,11 +671,8 @@ pgSound_Play(PyObject *self, PyObject *args, PyObject *kwargs)
         Py_RETURN_NONE;
     }
 
-    Py_XDECREF(channeldata[channelnum].sound);
-    Py_XDECREF(channeldata[channelnum].queue);
-    channeldata[channelnum].queue = NULL;
-    channeldata[channelnum].sound = self;
-    Py_INCREF(self);
+    Py_CLEAR(channeldata[channelnum].queue);
+    Py_XSETREF(channeldata[channelnum].sound, Py_NewRef(self));
 
     // make sure volume on this arbitrary channel is set to full
     Mix_Volume(channelnum, 128);
@@ -902,11 +897,7 @@ snd_get_samples_address(PyObject *self, PyObject *closure)
 
     MIXER_INIT_CHECK();
 
-#if SIZEOF_VOID_P > SIZEOF_LONG
-    return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)chunk->abuf);
-#else
-    return PyLong_FromUnsignedLong((unsigned long)chunk->abuf);
-#endif
+    return PyLong_FromVoidPtr(chunk->abuf);
 }
 
 PyMethodDef sound_methods[] = {
@@ -1049,8 +1040,7 @@ snd_getbuffer(PyObject *obj, Py_buffer *view, int flags)
             strides[ndim - 1] = itemsize;
         }
     }
-    Py_INCREF(obj);
-    view->obj = obj;
+    view->obj = Py_NewRef(obj);
     view->buf = chunk->abuf;
     view->len = (Py_ssize_t)chunk->alen;
     view->readonly = 0;
@@ -1139,11 +1129,8 @@ chan_play(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     Py_END_ALLOW_THREADS;
 
-    Py_XDECREF(channeldata[channelnum].sound);
-    Py_XDECREF(channeldata[channelnum].queue);
-    channeldata[channelnum].sound = sound;
-    channeldata[channelnum].queue = NULL;
-    Py_INCREF(sound);
+    Py_CLEAR(channeldata[channelnum].queue);
+    Py_XSETREF(channeldata[channelnum].sound, Py_NewRef(sound));
     Py_RETURN_NONE;
 }
 
@@ -1178,14 +1165,10 @@ chan_queue(PyObject *self, PyObject *sound)
             Mix_GroupChannel(channelnum, (int)(intptr_t)chunk);
         }
         Py_END_ALLOW_THREADS;
-
-        channeldata[channelnum].sound = sound;
-        Py_INCREF(sound);
+        channeldata[channelnum].sound = Py_NewRef(sound);
     }
     else {
-        Py_XDECREF(channeldata[channelnum].queue);
-        channeldata[channelnum].queue = sound;
-        Py_INCREF(sound);
+        Py_XSETREF(channeldata[channelnum].queue, Py_NewRef(sound));
     }
     Py_RETURN_NONE;
 }
@@ -1358,8 +1341,7 @@ chan_get_sound(PyObject *self, PyObject *_null)
         Py_RETURN_NONE;
     }
 
-    Py_INCREF(sound);
-    return sound;
+    return Py_NewRef(sound);
 }
 
 static PyObject *
@@ -1373,8 +1355,7 @@ chan_get_queue(PyObject *self, PyObject *_null)
         Py_RETURN_NONE;
     }
 
-    Py_INCREF(sound);
-    return sound;
+    return Py_NewRef(sound);
 }
 
 static PyObject *

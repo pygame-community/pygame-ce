@@ -3,7 +3,9 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-JPEG_VERSION=3.1.2
+# 3.2.0 fails to link on Linux, https://github.com/libjpeg-turbo/libjpeg-turbo/issues/904
+# Fix is in, lets wait for the next full release.
+JPEG_VERSION=3.1.4.1
 JPEG="libjpeg-turbo-${JPEG_VERSION}"
 
 curl -sL --retry 10 https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${JPEG_VERSION}/${JPEG}.tar.gz > ${JPEG}.tar.gz

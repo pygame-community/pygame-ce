@@ -1,12 +1,13 @@
 #include "pygame.h"
 #include "pgcompat.h"
 #include "structmember.h"
+#include "_base_audio.h"
 
 // Useful heap type example @
 // https://github.com/python/cpython/blob/main/Modules/xxlimited.c
 
 // ***************************************************************************
-// OVERALL DEFINITIONS
+// OVERALL DEFINITIONS (Also see header file)
 // ***************************************************************************
 
 typedef struct {
@@ -16,14 +17,6 @@ typedef struct {
 } audio_state;
 
 #define GET_STATE(x) (audio_state *)PyModule_GetState(x)
-
-typedef struct {
-    PyObject_HEAD SDL_AudioDeviceID devid;
-} PGAudioDeviceStateObject;
-
-typedef struct {
-    PyObject_HEAD SDL_AudioStream *stream;
-} PGAudioStreamStateObject;
 
 #define AUDIO_INIT_CHECK(module)                               \
     if (!(GET_STATE(module))->audio_initialized) {             \
@@ -134,7 +127,6 @@ pg_audio_get_audio_device_channel_map(PyObject *module, PyObject *arg)
         }
         if (PyList_SetItem(channel_map_list, i, item) < 0) {
             SDL_free(channel_map);
-            Py_DECREF(item);
             Py_DECREF(channel_map_list);
             return NULL;
         }
@@ -463,6 +455,12 @@ pg_audio_get_audio_stream_data(PyObject *module, PyObject *const *args,
     if (size == 0) {
         return PyBytes_FromStringAndSize("", 0);
     }
+
+    // Allocates working space, then SDL copies into it, then we copy into a
+    // bytes object.
+    // It would be more efficient to create the bytes object and then write
+    // into it directly, but I didn't want to use _PyBytes_Resize (soft
+    // deprecated, not stable ABI). In the future this could use PyBytesWriter?
 
     void *buf = malloc(size);
     if (buf == NULL) {
@@ -799,7 +797,6 @@ pg_audio_get_drivers(PyObject *module, PyObject *_null)
             return NULL;
         }
         if (PyList_SetItem(driver_list, i, item) < 0) {
-            Py_DECREF(item);
             Py_DECREF(driver_list);
             return NULL;
         }
@@ -831,7 +828,6 @@ _pg_audio_device_array_to_pylist(SDL_AudioDeviceID *devices, int num_devices,
         }
         device->devid = devices[i];
         if (PyList_SetItem(device_list, i, (PyObject *)device) < 0) {
-            Py_DECREF(device);
             Py_DECREF(device_list);
             return NULL;
         }

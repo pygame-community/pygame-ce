@@ -50,7 +50,6 @@ from .math import Vector2 as Vector2, Vector3 as Vector3
 from .cursors import Cursor as Cursor
 from .bufferproxy import BufferProxy as BufferProxy
 from .mask import Mask as Mask
-from ._debug import print_debug_info as print_debug_info
 from .event import Event as Event
 from .font import Font as Font
 from .mixer import Sound as Sound, Channel as Channel
@@ -643,6 +642,9 @@ from .constants import (
     SYSTEM_CURSOR_SIZEWE as SYSTEM_CURSOR_SIZEWE,
     SYSTEM_CURSOR_WAIT as SYSTEM_CURSOR_WAIT,
     SYSTEM_CURSOR_WAITARROW as SYSTEM_CURSOR_WAITARROW,
+    SYSTEM_THEME_DARK as SYSTEM_THEME_DARK,
+    SYSTEM_THEME_LIGHT as SYSTEM_THEME_LIGHT,
+    SYSTEM_THEME_UNKNOWN as SYSTEM_THEME_UNKNOWN,
     SYSWMEVENT as SYSWMEVENT,
     TEXTEDITING as TEXTEDITING,
     TEXTINPUT as TEXTINPUT,
@@ -675,3 +677,6 @@ from .constants import (
     WINDOWSIZECHANGED as WINDOWSIZECHANGED,
     WINDOWTAKEFOCUS as WINDOWTAKEFOCUS,
 )
+
+def print_debug_info() -> None: ...
+def get_debug_info() -> str: ...

@@ -48,6 +48,8 @@ The following variables can be passed to ``pygame.mouse.set_cursor`` function:
 
    * ``pygame.cursors.tri_right``
 
+   * ``pygame.cursors.ball``
+
 This module also contains a few cursors as formatted strings. You'll need to
 pass these to ``pygame.cursors.compile()`` function before you can use them.
 The example call would look like this:
@@ -68,7 +70,7 @@ The following strings can be converted into cursor bitmaps with
 
    * ``pygame.cursors.sizer_xy_strings``
 
-   * ``pygame.cursor.textmarker_strings``
+   * ``pygame.cursors.textmarker_strings``
 """
 
 import pygame
@@ -921,7 +923,7 @@ def load_xbm(curs, mask):
     ``XBM`` files. You can pass a second maskfile argument to load the two
     images into a single cursor.
 
-    The cursorfile and maskfile arguments can either be filenames or file-like
+    The curs and mask arguments can either be filenames or file-like
     object with the readlines method.
 
     The return value cursor_args can be passed directly to the

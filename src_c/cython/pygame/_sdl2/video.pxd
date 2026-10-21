@@ -46,43 +46,9 @@ cdef extern from "SDL.h" nogil:
 
     cdef extern from *:
         """
-        #if SDL_VERSION_ATLEAST(2, 0, 18)
-            typedef SDL_FPoint _pgsdlFPoint;
-            typedef SDL_Vertex _pgsdlVertex;
-        #else
-            typedef struct {
-                float x;
-                float y;
-            } _pgsdlFPoint;
-
-            typedef struct {
-                _pgsdlFPoint position;
-                SDL_Color color;
-                _pgsdlFPoint tex_coord;
-            } _pgsdlVertex;
-
-            int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
-                  const _pgsdlVertex *vertices, int num_vertices,
-                  const int *indices, int num_indices)
-            {
-                SDL_SetError("Needs SDL 2.0.18");
-                return -1;
-            }
-        #endif
-
-        #if SDL_VERSION_ATLEAST(2,0,12)
-            typedef SDL_ScaleMode _pgsdlScaleMode;
-        #else
-            typedef enum {
-                SDL_ScaleModeNearest,
-                SDL_ScaleModeLinear,
-                SDL_ScaleModeBest,
-            } _pgsdlScaleMode;
-
-            int SDL_SetTextureScaleMode(SDL_Texture * texture, _pgsdlScaleMode scaleMode){
-                return 0;
-            }
-        #endif
+        typedef SDL_FPoint _pgsdlFPoint;
+        typedef SDL_Vertex _pgsdlVertex;
+        typedef SDL_ScaleMode _pgsdlScaleMode;
         """
     ctypedef struct SDL_FPoint "_pgsdlFPoint":
         float x, y
@@ -373,6 +339,7 @@ cdef extern from "SDL.h" nogil:
                                    int wy,
                                    float *lx,
                                    float *ly);
+
 
     int SDL_VERSION_ATLEAST(int major, int minor, int patch)
 

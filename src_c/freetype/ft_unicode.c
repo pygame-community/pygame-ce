@@ -30,7 +30,7 @@
 #include "ft_wrap.h"
 
 #define SIZEOF_PGFT_STRING(len) \
-    (sizeof(PGFT_String) + (Py_ssize_t)(len) * sizeof(PGFT_char))
+    (sizeof(PGFT_String) + (Py_ssize_t)((len) + 1) * sizeof(PGFT_char))
 
 static const PGFT_char UNICODE_HSA_START = 0xD800;
 static const PGFT_char UNICODE_HSA_END = 0xDBFF;
@@ -51,8 +51,7 @@ raise_unicode_error(const char *codec, PyObject *unistr, Py_ssize_t start,
         return;
     }
 
-    Py_INCREF(PyExc_UnicodeEncodeError);
-    PyErr_Restore(PyExc_UnicodeEncodeError, e, 0);
+    PyErr_Restore(Py_NewRef(PyExc_UnicodeEncodeError), e, 0);
 }
 
 /* Helper for _PGFT_EncodePyString to handle PyUnicode object */
