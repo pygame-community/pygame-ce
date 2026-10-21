@@ -445,6 +445,22 @@ class WindowTypeTest(unittest.TestCase):
             except pygame.error:
                 pass
 
+    @unittest.skipIf(SDL < (3, 0, 0), "show_system_menu requires SDL3")
+    def test_window_show_system_menu(self):
+        window = pygame.Window()
+
+        with self.assertRaises(TypeError):
+            window.show_system_menu()
+        with self.assertRaises(TypeError):
+            window.show_system_menu(0)
+        with self.assertRaises(TypeError):
+            window.show_system_menu("topleft")
+        with self.assertRaises(TypeError):
+            window.show_system_menu(10, 10)
+
+        result = window.show_system_menu((10, 10))
+        self.assertIsInstance(result, bool)
+
     def test_window_focused(self):
         window = pygame.Window()
         self.assertIsInstance(window.focused, bool)
