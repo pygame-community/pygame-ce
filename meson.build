@@ -72,6 +72,56 @@ if get_option('coverage')
     endif
 endif
 
+git = find_program('git', required: false)
+
+_py = find_program('python3', 'python')
+
+if git.found()
+    git_hash_cmd = run_command(git, 'rev-parse', '--short', 'HEAD', check: false)
+    commit_hash = git_hash_cmd.returncode() == 0 ? git_hash_cmd.stdout().strip() : ''
+
+    # --show-current is empty on detached HEAD (common in CI checkouts);
+    # fall back to GITHUB_HEAD_REF (PR branch) then GITHUB_REF_NAME (push branch)
+    git_branch_cmd = run_command(git, 'branch', '--show-current', check: false)
+    branch_name = git_branch_cmd.returncode() == 0 ? git_branch_cmd.stdout().strip() : ''
+    if branch_name == ''
+        branch_name = run_command(
+            [_py, '-c',
+             'import os, sys; sys.stdout.write(os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME", ""))'],
+            check: false,
+        ).stdout().strip()
+    endif
+else
+    commit_hash = 'Git Not Found'
+    branch_name = 'Git Not Found'
+endif
+
+if commit_hash == ''
+    commit_hash = 'Git Commit Not Found'
+endif
+
+if branch_name == ''
+    branch_name = 'Git Branch Not Found'
+endif
+
+# GitHub Actions (and most CI systems) set CI=true in the environment
+_ci_env = run_command(
+    [find_program('python3', 'python'), '-c',
+     'import os, sys; sys.stdout.write(os.environ.get("CI", "false"))'],
+    check: false,
+).stdout().strip()
+
+# Handle both true and 1 cases, just because some people do be like that
+if _ci_env != '1' and _ci_env != '0'
+    _ci_build_arg = _ci_env == 'true' ? 1 : 0
+else
+    _ci_build_arg = _ci_env.to_int()
+endif
+
+add_global_arguments('-DGIT_COMMIT_HASH_SHORT=@0@'.format(commit_hash), language: 'c')
+add_global_arguments('-DGIT_BRANCH=@0@'.format(branch_name), language: 'c')
+add_global_arguments('-DCI_BUILD=@0@'.format(_ci_build_arg), language: 'c')
+
 pg_dir = py.get_install_dir() / pg
 
 sdl_api = get_option('sdl_api')
