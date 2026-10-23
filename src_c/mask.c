@@ -673,8 +673,7 @@ mask_convolve(PyObject *aobj, PyObject *args, PyObject *kwargs)
         /* Use this mask for the output. */
         /* This will prevent accepting any value. */
         if (!PyObject_TypeCheck(oobj, &pgMask_Type)) {
-        return RAISE(PyExc_TypeError,
-                     "output must be of type Mask");
+            return RAISE(PyExc_TypeError, "output must be of type Mask");
         }
         Py_INCREF(oobj);
     }
