@@ -5851,6 +5851,13 @@ class MaskTypeTest(unittest.TestCase):
                     self.assertIs(mask, output_mask, msg)
                     self.assertEqual(mask.get_size(), output_size, msg)
 
+    def test_convolve__invalid_output(self):
+        mask = pygame.Mask((2, 2), fill=True)
+
+        with self.assertRaisesRegex(TypeError, "output must be of type Mask"):
+            """Ensures output is always a Mask"""
+            mask.convolve(mask, output=1)
+
     def test_zero_mask_connected_component(self):
         """Ensures connected_component correctly handles zero sized masks."""
         expected_count = 0
