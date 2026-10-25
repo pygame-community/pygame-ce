@@ -669,10 +669,15 @@ mask_convolve(PyObject *aobj, PyObject *args, PyObject *kwargs)
     a = pgMask_AsBitmap(aobj);
     b = pgMask_AsBitmap(bobj);
 
-    if (oobj != Py_None) {
-        /* Use this mask for the output. */
-        Py_INCREF(oobj);
+   if (oobj != Py_None) {
+    if (!PyObject_TypeCheck(oobj, &pgMask_Type)) {
+        return RAISE(PyExc_TypeError,
+                     "output must be a Mask or None");
     }
+
+    /* Use this mask for the output. */
+    Py_INCREF(oobj);
+}
     else {
         pgMaskObject *maskobj = CREATE_MASK_OBJ(MAX(0, a->w + b->w - 1),
                                                 MAX(0, a->h + b->h - 1), 0);
