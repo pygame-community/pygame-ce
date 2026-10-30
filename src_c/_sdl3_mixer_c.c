@@ -32,6 +32,7 @@ typedef struct {
     PyObject_HEAD MIX_Track *track;
     PyObject *mixer_obj;
     PyObject *source_obj;
+    PyObject *stopped_callback_obj;
 } PGTrackObject;
 
 typedef struct {
@@ -994,14 +995,23 @@ pg_track_obj_init(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 static void
 pg_track_obj_dealloc(PGTrackObject *self)
 {
+    PyObject_GC_UnTrack(self);
+
+    // Must happen before the GIL is released below. A stopped callback in
+    // flight on another thread checks this with the GIL held, and bails out
+    // instead of touching a Track whose refcount is already 0.
+    Py_CLEAR(self->stopped_callback_obj);
+
     // self->track may already be NULL if _destroy() was called explicitly
     // (e.g. by the Python layer, before quitting the mixer subsystem, or
     // before its owning Mixer is destroyed).
-    if (self->track != NULL) {
-        MIX_DestroyTrack(self->track);
-        self->track = NULL;
+    MIX_Track *track = self->track;
+    self->track = NULL;
+    if (track != NULL) {
+        // Waits on the mixer lock for any in-flight stopped callback to
+        // return, so self stays valid for it.
+        PG_NOGIL(MIX_DestroyTrack(track));
     }
-    PyObject_GC_UnTrack(self);
     Py_CLEAR(self->mixer_obj);
     Py_CLEAR(self->source_obj);
     PyTypeObject *tp = Py_TYPE(self);
@@ -1021,9 +1031,10 @@ pg_track_obj_destroy(PGTrackObject *self, PyObject *_null)
     // Unlike dealloc, this does NOT clear mixer_obj/source_obj, since the
     // Python Track object itself is still alive and those references are
     // otherwise still meaningful (e.g. .mixer stays queryable).
-    if (self->track != NULL) {
-        MIX_DestroyTrack(self->track);
-        self->track = NULL;
+    MIX_Track *track = self->track;
+    self->track = NULL;
+    if (track != NULL) {
+        PG_NOGIL(MIX_DestroyTrack(track));
     }
     Py_RETURN_NONE;
 }
@@ -1613,6 +1624,76 @@ pg_track_obj_get_3d_position(PGTrackObject *self, PyObject *null)
     return Py_BuildValue("fff", point.x, point.y, point.z);
 }
 
+static void SDLCALL
+pg_track_internal_stopped_callback(void *userdata, MIX_Track *track)
+{
+    // Called with SDL_mixer's track lock (and often the mixer lock) held,
+    // possibly on the audio thread. Taking the GIL here is safe because no
+    // thread holding the GIL ever waits on those locks, see PG_NOGIL.
+    PGTrackObject *track_obj = (PGTrackObject *)userdata;
+    PyGILState_STATE state = PyGILState_Ensure();
+
+    // NULL if the Track is being deallocated (or was GC cleared). In the
+    // dealloc case track_obj's memory is still valid here, because dealloc
+    // is blocked in MIX_DestroyTrack until this callback returns.
+    PyObject *callback = track_obj->stopped_callback_obj;
+    if (callback != NULL) {
+        // The callback may drop the last outside references to either.
+        Py_INCREF(track_obj);
+        Py_INCREF(callback);
+        PyObject *result =
+            PyObject_CallOneArg(callback, (PyObject *)track_obj);
+        if (result == NULL) {
+            PyErr_WriteUnraisable(callback);
+        }
+        Py_XDECREF(result);
+        Py_DECREF(callback);
+        Py_DECREF(track_obj);
+    }
+
+    PyGILState_Release(state);
+}
+
+static PyObject *
+pg_track_obj_set_stopped_callback(PGTrackObject *self, PyObject *args,
+                                  PyObject *kwargs)
+{
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
+    PyObject *callback_or_none_obj = NULL;
+    char *keywords[] = {"callback", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords,
+                                     &callback_or_none_obj)) {
+        return NULL;
+    }
+
+    MIX_TrackStoppedCallback cb = NULL;
+    void *userdata = NULL;
+    PyObject *new_callback = NULL;
+    if (callback_or_none_obj != Py_None) {
+        if (!PyCallable_Check(callback_or_none_obj)) {
+            return RAISE(PyExc_TypeError, "callback must be callable or None");
+        }
+        cb = pg_track_internal_stopped_callback;
+        userdata = self;
+        new_callback = Py_NewRef(callback_or_none_obj);
+    }
+
+    // Change SDL's side first, so a failure leaves the old callback intact.
+    // A stop in between sees either the old Python callback or NULL, both
+    // of which the internal callback handles.
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackStoppedCallback(self->track, cb, userdata));
+    if (!success) {
+        Py_XDECREF(new_callback);
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    Py_XSETREF(self->stopped_callback_obj, new_callback);
+    Py_RETURN_NONE;
+}
+
 // traverse: Visit all references from an object, including its type
 static int
 pg_track_obj_traverse(PyObject *op, visitproc visit, void *arg)
@@ -1623,6 +1704,7 @@ pg_track_obj_traverse(PyObject *op, visitproc visit, void *arg)
     PGTrackObject *self = (PGTrackObject *)op;
     Py_VISIT(self->mixer_obj);
     Py_VISIT(self->source_obj);
+    Py_VISIT(self->stopped_callback_obj);
     return 0;
 }
 
@@ -1632,6 +1714,7 @@ pg_track_obj_clear(PyObject *op)
     PGTrackObject *self = (PGTrackObject *)op;
     Py_CLEAR(self->mixer_obj);
     Py_CLEAR(self->source_obj);
+    Py_CLEAR(self->stopped_callback_obj);
     return 0;
 }
 
@@ -1684,6 +1767,8 @@ static PyMethodDef track_obj_methods[] = {
      METH_VARARGS | METH_KEYWORDS, "TODO"},
     {"get_3d_position", (PyCFunction)pg_track_obj_get_3d_position, METH_NOARGS,
      "TODO"},
+    {"set_stopped_callback", (PyCFunction)pg_track_obj_set_stopped_callback,
+     METH_VARARGS | METH_KEYWORDS, "TODO"},
     {NULL, NULL, 0, NULL}};
 
 static PyType_Slot track_slots[] = {{Py_tp_init, pg_track_obj_init},
