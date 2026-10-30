@@ -962,7 +962,7 @@ static PyType_Spec audio_spec = {
 static int
 pg_track_obj_init(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 {
-    if (self->track != NULL) {
+    if (self->track != NULL || self->mixer_obj != NULL) {
         PyErr_SetString(PyExc_RuntimeError,
                         "Object of type Track cannot be reinitialized");
         return -1;
@@ -1712,7 +1712,8 @@ static int
 pg_track_obj_clear(PyObject *op)
 {
     PGTrackObject *self = (PGTrackObject *)op;
-    Py_CLEAR(self->mixer_obj);
+    // Do not clear mixer_obj here, we need it to be alive though
+    // the lifespan of the MIX_Track.
     Py_CLEAR(self->source_obj);
     Py_CLEAR(self->stopped_callback_obj);
     return 0;

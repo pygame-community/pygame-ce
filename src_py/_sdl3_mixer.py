@@ -101,6 +101,13 @@ class Mixer(_sdl3_mixer_c.Mixer):
         if self._valid:
             raise RuntimeError("Object of type Mixer cannot be reinitialized")
 
+        if not isinstance(device, audio.AudioDevice):
+            raise TypeError(
+                "Mixer init 'device' argument must be an AudioDevice, "
+                f"received {type(device)}"
+            )
+        device._check_valid()
+
         if spec is None:
             _sdl3_mixer_c.Mixer.__init__(self, device._state, None)
         elif isinstance(spec, audio.AudioSpec):
@@ -204,8 +211,11 @@ class Track(_sdl3_mixer_c.Track):
         if not self._valid:
             raise pygame.error("Dead Track, the track was destroyed")
 
-        if isinstance(audiostream, audio.AudioStream) or audiostream is None:
+        if isinstance(audiostream, audio.AudioStream):
+            audiostream._check_valid()
             _sdl3_mixer_c.Track.set_audiostream(self, audiostream)
+        elif audiostream is None:
+            _sdl3_mixer_c.Track.set_audiostream(self, None)
         else:
             raise TypeError(
                 "audiostream argument must be an AudioStream or None, "
