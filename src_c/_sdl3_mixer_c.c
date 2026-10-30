@@ -82,6 +82,18 @@ typedef struct {
         return ret;                                                 \
     }
 
+// The audio thread holds SDL_mixer's locks (the mixer's, the track's, and
+// the device's) while it runs callbacks that need the GIL: the track stopped
+// callback, and the reads of Python-backed IOStreams from rwobject. So the
+// lock order is always SDL lock -> GIL, and we must never wait on an SDL_mixer
+// lock while holding the GIL. Any MIX_ call taking a MIX_Mixer* or MIX_Track*
+// goes through this.
+#define PG_NOGIL(stmt)               \
+    do {                             \
+        Py_BEGIN_ALLOW_THREADS stmt; \
+        Py_END_ALLOW_THREADS         \
+    } while (0)
+
 static bool
 pg_populate_play_props(SDL_PropertiesID options, int64_t loops,
                        int64_t max_frame, int64_t max_ms, int64_t start_frame,
@@ -149,7 +161,9 @@ pg_mixer_obj_play_audio(PGMixerObject *self, PyObject *args, PyObject *kwargs)
     }
     Py_DECREF(audio_type);
 
-    if (!MIX_PlayAudio(self->mixer, audio->audio)) {
+    bool success;
+    PG_NOGIL(success = MIX_PlayAudio(self->mixer, audio->audio));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -192,7 +206,11 @@ pg_mixer_obj_play_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
                                           start_ms, 0, loop_start_ms, 0,
                                           fadein_ms, 0, append_silence_ms);
 
-    if (!success || !MIX_PlayTag(self->mixer, tag, options)) {
+    if (success) {
+        PG_NOGIL(success = MIX_PlayTag(self->mixer, tag, options));
+    }
+
+    if (!success) {
         SDL_DestroyProperties(options);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -215,7 +233,9 @@ pg_mixer_obj_stop_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (!MIX_StopTag(self->mixer, tag, fade_out_ms)) {
+    bool success;
+    PG_NOGIL(success = MIX_StopTag(self->mixer, tag, fade_out_ms));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -234,7 +254,9 @@ pg_mixer_obj_pause_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (!MIX_PauseTag(self->mixer, tag)) {
+    bool success;
+    PG_NOGIL(success = MIX_PauseTag(self->mixer, tag));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -253,7 +275,9 @@ pg_mixer_obj_resume_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (!MIX_ResumeTag(self->mixer, tag)) {
+    bool success;
+    PG_NOGIL(success = MIX_ResumeTag(self->mixer, tag));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -275,7 +299,9 @@ pg_mixer_obj_set_tag_gain(PGMixerObject *self, PyObject *args,
         return NULL;
     }
 
-    if (!MIX_SetTagGain(self->mixer, tag, gain)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTagGain(self->mixer, tag, gain));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -296,7 +322,9 @@ pg_mixer_obj_stop_all_tracks(PGMixerObject *self, PyObject *args,
         return NULL;
     }
 
-    if (!MIX_StopAllTracks(self->mixer, fade_out_ms)) {
+    bool success;
+    PG_NOGIL(success = MIX_StopAllTracks(self->mixer, fade_out_ms));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -308,7 +336,9 @@ pg_mixer_obj_pause_all_tracks(PGMixerObject *self, PyObject *_null)
 {
     CHECK_MIXER_OBJ_VALID(self, NULL);
 
-    if (!MIX_PauseAllTracks(self->mixer)) {
+    bool success;
+    PG_NOGIL(success = MIX_PauseAllTracks(self->mixer));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -319,7 +349,9 @@ pg_mixer_obj_resume_all_tracks(PGMixerObject *self, PyObject *_null)
 {
     CHECK_MIXER_OBJ_VALID(self, NULL);
 
-    if (!MIX_ResumeAllTracks(self->mixer)) {
+    bool success;
+    PG_NOGIL(success = MIX_ResumeAllTracks(self->mixer));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -331,7 +363,9 @@ pg_mixer_obj_get_spec(PGMixerObject *self, PyObject *_null)
     CHECK_MIXER_OBJ_VALID(self, NULL);
 
     SDL_AudioSpec spec;
-    if (!MIX_GetMixerFormat(self->mixer, &spec)) {
+    bool success;
+    PG_NOGIL(success = MIX_GetMixerFormat(self->mixer, &spec));
+    if (!success) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return NULL;
     }
@@ -376,12 +410,14 @@ pg_mixer_obj_init(PGMixerObject *self, PyObject *args, PyObject *kwargs)
         spec_p = &spec;
     }
 
-    self->mixer = MIX_CreateMixerDevice(
-        ((PGAudioDeviceStateObject *)device_obj)->devid, spec_p);
-    if (self->mixer == NULL) {
+    SDL_AudioDeviceID devid = ((PGAudioDeviceStateObject *)device_obj)->devid;
+    MIX_Mixer *mixer;
+    PG_NOGIL(mixer = MIX_CreateMixerDevice(devid, spec_p));
+    if (mixer == NULL) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
+    self->mixer = mixer;
 
     return 0;
 }
@@ -389,13 +425,15 @@ pg_mixer_obj_init(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 static void
 pg_mixer_obj_dealloc(PGMixerObject *self)
 {
+    PyObject_GC_UnTrack(self);
+
     // self->mixer may already be NULL if _destroy() was called explicitly
     // (e.g. by the Python layer, before quitting the mixer subsystem).
-    if (self->mixer != NULL) {
-        MIX_DestroyMixer(self->mixer);
-        self->mixer = NULL;
+    MIX_Mixer *mixer = self->mixer;
+    self->mixer = NULL;
+    if (mixer != NULL) {
+        PG_NOGIL(MIX_DestroyMixer(mixer));
     }
-    PyObject_GC_UnTrack(self);
     PyTypeObject *tp = Py_TYPE(self);
     freefunc free = PyType_GetSlot(tp, Py_tp_free);
     free(self);
@@ -409,9 +447,10 @@ pg_mixer_obj_destroy(PGMixerObject *self, PyObject *_null)
     // resources before the mixer subsystem is quit. Otherwise the
     // destructor can run after the underlying MIX_Mixer has already been
     // freed by MIX_Quit(), causing a double free.
-    if (self->mixer != NULL) {
-        MIX_DestroyMixer(self->mixer);
-        self->mixer = NULL;
+    MIX_Mixer *mixer = self->mixer;
+    self->mixer = NULL;
+    if (mixer != NULL) {
+        PG_NOGIL(MIX_DestroyMixer(mixer));
     }
     Py_RETURN_NONE;
 }
@@ -429,7 +468,9 @@ static PyObject *
 pg_mixer_obj_get_gain(PGMixerObject *self, void *_null)
 {
     CHECK_MIXER_OBJ_VALID(self, NULL);
-    return PyFloat_FromDouble(MIX_GetMixerGain(self->mixer));
+    float gain;
+    PG_NOGIL(gain = MIX_GetMixerGain(self->mixer));
+    return PyFloat_FromDouble(gain);
 }
 
 static int
@@ -441,7 +482,9 @@ pg_mixer_obj_set_gain(PGMixerObject *self, PyObject *value, void *_null)
     if (gain == -1.0 && PyErr_Occurred()) {
         return -1;
     }
-    if (!MIX_SetMixerGain(self->mixer, (float)gain)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetMixerGain(self->mixer, (float)gain));
+    if (!success) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
@@ -694,7 +737,8 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
 
     // LoadRawAudio does a copy (unlike LoadRawAudioNoCopy), so it is not
     // necessary to keep any references to the buffer.
-    MIX_Audio *raw_audio = MIX_LoadRawAudio(mixer, buf, (size_t)len, &spec);
+    MIX_Audio *raw_audio;
+    PG_NOGIL(raw_audio = MIX_LoadRawAudio(mixer, buf, (size_t)len, &spec));
     if (raw_audio == NULL) {
         Py_DECREF(bytes);
         Py_DECREF(self);
@@ -741,8 +785,9 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
         return NULL;
     }
 
-    MIX_Audio *sine_wave_audio =
-        MIX_CreateSineWaveAudio(mixer, hz, amplitude, ms);
+    MIX_Audio *sine_wave_audio;
+    PG_NOGIL(sine_wave_audio =
+                 MIX_CreateSineWaveAudio(mixer, hz, amplitude, ms));
     if (sine_wave_audio == NULL) {
         Py_DECREF(self);
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -930,11 +975,13 @@ pg_track_obj_init(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
 
-    self->track = MIX_CreateTrack(mixer->mixer);
-    if (self->track == NULL) {
+    MIX_Track *track;
+    PG_NOGIL(track = MIX_CreateTrack(mixer->mixer));
+    if (track == NULL) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
+    self->track = track;
 
     // Mixers own Tracks. When the Mixer is deallocated, the tracks become
     // invalid. So we need to hold a reference to prevent Mixer deallocating
@@ -1000,28 +1047,36 @@ static PyObject *
 pg_track_obj_get_playing(PGTrackObject *self, PyObject *_null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
-    return PyBool_FromLong(MIX_TrackPlaying(self->track));
+    bool playing;
+    PG_NOGIL(playing = MIX_TrackPlaying(self->track));
+    return PyBool_FromLong(playing);
 }
 
 static PyObject *
 pg_track_obj_get_paused(PGTrackObject *self, PyObject *_null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
-    return PyBool_FromLong(MIX_TrackPaused(self->track));
+    bool paused;
+    PG_NOGIL(paused = MIX_TrackPaused(self->track));
+    return PyBool_FromLong(paused);
 }
 
 static PyObject *
 pg_track_obj_get_loops(PGTrackObject *self, PyObject *_null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
-    return PyLong_FromLong(MIX_GetTrackLoops(self->track));
+    int loops;
+    PG_NOGIL(loops = MIX_GetTrackLoops(self->track));
+    return PyLong_FromLong(loops);
 }
 
 static PyObject *
 pg_track_obj_get_gain(PGTrackObject *self, PyObject *_null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
-    return PyFloat_FromDouble(MIX_GetTrackGain(self->track));
+    float gain;
+    PG_NOGIL(gain = MIX_GetTrackGain(self->track));
+    return PyFloat_FromDouble(gain);
 }
 
 static int
@@ -1033,7 +1088,9 @@ pg_track_obj_set_gain(PGTrackObject *self, PyObject *value, void *_null)
     if (gain == -1.0 && PyErr_Occurred()) {
         return -1;
     }
-    if (!MIX_SetTrackGain(self->track, (float)gain)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackGain(self->track, (float)gain));
+    if (!success) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
@@ -1045,7 +1102,8 @@ pg_track_obj_get_freq_ratio(PGTrackObject *self, PyObject *_null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
 
-    float ratio = MIX_GetTrackFrequencyRatio(self->track);
+    float ratio;
+    PG_NOGIL(ratio = MIX_GetTrackFrequencyRatio(self->track));
     if (ratio == 0.0f) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -1061,7 +1119,9 @@ pg_track_obj_set_freq_ratio(PGTrackObject *self, PyObject *value, void *_null)
     if (ratio == -1.0 && PyErr_Occurred()) {
         return -1;
     }
-    if (!MIX_SetTrackFrequencyRatio(self->track, (float)ratio)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackFrequencyRatio(self->track, (float)ratio));
+    if (!success) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
@@ -1097,7 +1157,9 @@ pg_track_obj_set_audio(PGTrackObject *self, PyObject *args, PyObject *kwargs)
     }
     Py_DECREF(audio_type);
 
-    if (!MIX_SetTrackAudio(self->track, audio)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackAudio(self->track, audio));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1118,7 +1180,9 @@ pg_track_obj_get_audio(PGTrackObject *self, PyObject *_null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
 
-    if (MIX_GetTrackAudio(self->track) != NULL) {
+    MIX_Audio *audio;
+    PG_NOGIL(audio = MIX_GetTrackAudio(self->track));
+    if (audio != NULL) {
         // This track object owns an audio, therefore our source object must
         // be non-null, and an audio object.
         return Py_NewRef(self->source_obj);
@@ -1158,7 +1222,9 @@ pg_track_obj_set_audiostream(PGTrackObject *self, PyObject *args,
         Py_DECREF(as_state);  // PyObject_GetAttrString gives new ref
     }
 
-    if (!MIX_SetTrackAudioStream(self->track, stream)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackAudioStream(self->track, stream));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1179,7 +1245,9 @@ pg_track_obj_get_audiostream(PGTrackObject *self, PyObject *_null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
 
-    if (MIX_GetTrackAudioStream(self->track) != NULL) {
+    SDL_AudioStream *stream;
+    PG_NOGIL(stream = MIX_GetTrackAudioStream(self->track));
+    if (stream != NULL) {
         // This track object owns an audio, therefore our source object must
         // be non-null, and an audio object.
         return Py_NewRef(self->source_obj);
@@ -1208,7 +1276,9 @@ pg_track_obj_set_filestream(PGTrackObject *self, PyObject *args,
 
     // Given closeio=true, SDL_mixer is responsible for closing the iostream
     // on error.
-    if (!MIX_SetTrackIOStream(self->track, io, true)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackIOStream(self->track, io, true));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1267,7 +1337,11 @@ pg_track_obj_play(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         loop_start_frame, loop_start_ms, fadein_frames, fadein_ms,
         append_silence_frames, append_silence_ms);
 
-    if (!success || !MIX_PlayTrack(self->track, options)) {
+    if (success) {
+        PG_NOGIL(success = MIX_PlayTrack(self->track, options));
+    }
+
+    if (!success) {
         SDL_DestroyProperties(options);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -1288,7 +1362,9 @@ pg_track_obj_add_tag(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (!MIX_TagTrack(self->track, tag)) {
+    bool success;
+    PG_NOGIL(success = MIX_TagTrack(self->track, tag));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -1306,7 +1382,7 @@ pg_track_obj_remove_tag(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    MIX_UntagTrack(self->track, tag);  // no error return!
+    PG_NOGIL(MIX_UntagTrack(self->track, tag));  // no error return!
     Py_RETURN_NONE;
 }
 
@@ -1324,7 +1400,10 @@ pg_track_obj_set_playback_position(PGTrackObject *self, PyObject *args,
         return NULL;
     }
 
-    if (!MIX_SetTrackPlaybackPosition(self->track, frame_position)) {
+    bool success;
+    PG_NOGIL(success =
+                 MIX_SetTrackPlaybackPosition(self->track, frame_position));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1336,7 +1415,8 @@ pg_track_obj_get_playback_position(PGTrackObject *self, PyObject *null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
 
-    int64_t frame_position = MIX_GetTrackPlaybackPosition(self->track);
+    int64_t frame_position;
+    PG_NOGIL(frame_position = MIX_GetTrackPlaybackPosition(self->track));
     if (frame_position == -1) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -1349,7 +1429,8 @@ pg_track_obj_get_remaining_frames(PGTrackObject *self, PyObject *null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
 
-    int64_t remaining = MIX_GetTrackRemaining(self->track);
+    int64_t remaining;
+    PG_NOGIL(remaining = MIX_GetTrackRemaining(self->track));
 
     // If unknown, return None
     if (remaining == -1) {
@@ -1372,7 +1453,8 @@ pg_track_obj_ms_to_frames(PGTrackObject *self, PyObject *args,
         return NULL;
     }
 
-    int64_t frames = MIX_TrackMSToFrames(self->track, ms);
+    int64_t frames;
+    PG_NOGIL(frames = MIX_TrackMSToFrames(self->track, ms));
     if (frames == -1 && ms >= 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -1393,7 +1475,8 @@ pg_track_obj_frames_to_ms(PGTrackObject *self, PyObject *args,
         return NULL;
     }
 
-    int64_t ms = MIX_TrackFramesToMS(self->track, frames);
+    int64_t ms;
+    PG_NOGIL(ms = MIX_TrackFramesToMS(self->track, frames));
     if (ms == -1 && frames >= 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -1414,7 +1497,9 @@ pg_track_obj_stop(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (!MIX_StopTrack(self->track, fade_out_frames)) {
+    bool success;
+    PG_NOGIL(success = MIX_StopTrack(self->track, fade_out_frames));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -1425,7 +1510,9 @@ pg_track_obj_pause(PGTrackObject *self, PyObject *null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
 
-    if (!MIX_PauseTrack(self->track)) {
+    bool success;
+    PG_NOGIL(success = MIX_PauseTrack(self->track));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -1436,7 +1523,9 @@ pg_track_obj_resume(PGTrackObject *self, PyObject *null)
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
 
-    if (!MIX_ResumeTrack(self->track)) {
+    bool success;
+    PG_NOGIL(success = MIX_ResumeTrack(self->track));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -1466,7 +1555,9 @@ pg_track_obj_set_stereo(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         gains_p = &gains;
     }
 
-    if (!MIX_SetTrackStereo(self->track, gains_p)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackStereo(self->track, gains_p));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1498,7 +1589,9 @@ pg_track_obj_set_3d_position(PGTrackObject *self, PyObject *args,
         point_p = &point;
     }
 
-    if (!MIX_SetTrack3DPosition(self->track, point_p)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrack3DPosition(self->track, point_p));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1511,8 +1604,9 @@ pg_track_obj_get_3d_position(PGTrackObject *self, PyObject *null)
     CHECK_TRACK_OBJ_VALID(self, NULL);
 
     MIX_Point3D point;
-
-    if (!MIX_GetTrack3DPosition(self->track, &point)) {
+    bool success;
+    PG_NOGIL(success = MIX_GetTrack3DPosition(self->track, &point));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
