@@ -1,6 +1,6 @@
 import dataclasses
 from collections.abc import Callable
-from typing import Any, Type, TypedDict, TypeVar
+from typing import Any
 
 from pygame import _audio as audio
 from pygame.typing import FileLike
@@ -14,11 +14,10 @@ def ms_to_frames(sample_rate: int, ms: int) -> int: ...
 def frames_to_ms(sample_rate: int, frames: int) -> int: ...
 def get_decoders() -> list[str]: ...
 
-# T = TypeVar("T")
-# track_stopped_callback = Callable[[T, Track], None]
-# track_mix_callback = Callable[[T, Track, audio.AudioSpec, Buffer], None]
-# group_mix_callback = Callable[[T, Group, audio.AudioSpec, Buffer], None]
-# post_mix_callback = Callable[[T, Mixer, audio.AudioSpec, Buffer], None]
+track_stopped_callback = Callable[[Track], Any]
+# track_mix_callback = Callable[[Track, audio.AudioSpec, Buffer], Any]
+# group_mix_callback = Callable[[Group, audio.AudioSpec, Buffer], Any]
+# post_mix_callback = Callable[[Mixer, audio.AudioSpec, Buffer], Any]
 
 class Mixer:
     def __init__(
@@ -160,9 +159,7 @@ class Track:
     def set_stereo(self, gains: tuple[float, float] | None) -> None: ...
     def set_3d_position(self, position: tuple[float, float, float] | None) -> None: ...
     def get_3d_position(self) -> tuple[float, float, float]: ...
-    # def set_stopped_callback(
-    #    self, callback: track_stopped_callback | None, userdata: T
-    # ) -> None: ...
+    def set_stopped_callback(self, callback: track_stopped_callback | None) -> None: ...
     # def set_raw_callback(
     #    self, callback: track_mix_callback | None, userdata: T
     # ) -> None: ...
