@@ -407,7 +407,7 @@ class AudioStream:
 
     def _check_valid(self) -> None:
         if self._state is None:
-            raise pygame.error("Dead Audiostream, audio subsystem was quit.")
+            raise pygame.error("Dead AudioStream, audio subsystem was quit.")
 
     def bind(self, device: LogicalAudioDevice) -> None:
         """Connect a stream to a LogicalAudioDevice for recording/playback.
@@ -841,7 +841,7 @@ def init() -> None:
 
 
 def quit() -> None:
-    """Quit the audio subsystem. This invalidates all audio objects"""
+    """Quit the audio subsystem. This invalidates all audio objects."""
 
     _internals.destroy_all_dynamic_objects()
     _base_audio.quit()
