@@ -49,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-24.04, windows-latest, macos-14]
+        os: [ubuntu-24.04, windows-latest, macos-15]
 
     env:
       # Pip now forces us to either make a venv or set this flag, so we will do
@@ -73,7 +73,7 @@ jobs:
         sudo apt-get install libfreetype6-dev libportmidi-dev python3-dev
 
     - name: Install pygame deps (mac)
-      if: matrix.os == 'macos-14'
+      if: matrix.os == 'macos-15'
       run: brew install freetype portmidi
 
     # taken from https://wiki.libsdl.org/SDL3/README-linux#build-dependencies
