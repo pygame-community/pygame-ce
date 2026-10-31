@@ -53,6 +53,22 @@ class MouseModuleInteractiveTest(MouseTests):
 
             self.assertEqual(found_pos, (x, y))
 
+    def test_set_pos_api(self):
+        pygame.mouse.set_pos(10, 10)
+        pygame.mouse.set_pos(10, 10, force=True)
+        pygame.mouse.set_pos(9.9, 9.9)
+        pygame.mouse.set_pos(9.9, 9.9, force=True)
+
+        pygame.mouse.set_pos((10, 10))
+        pygame.mouse.set_pos((10, 10), force=True)
+        pygame.mouse.set_pos((9.9, 9.9))
+        pygame.mouse.set_pos((9.9, 9.9), force=True)
+
+        pygame.mouse.set_pos([10, 10])
+        pygame.mouse.set_pos([10, 10], force=True)
+        pygame.mouse.set_pos([9.9, 9.9])
+        pygame.mouse.set_pos([9.9, 9.9], force=True)
+
 
 class MouseModuleTest(MouseTests):
     @unittest.skipIf(
