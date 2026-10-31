@@ -281,13 +281,13 @@ midi events to pygame events.
       Writes a timestamped system-exclusive midi message.
 
       :param msg: midi message
-      :type msg: list[int] or str
+      :type msg: list[int] or bytes
       :param when: timestamp in milliseconds
 
       Example:
       ::
 
-         midi_output.write_sys_ex(0, '\xF0\x7D\x10\x11\x12\x13\xF7')
+         midi_output.write_sys_ex(0, b'\xF0\x7D\x10\x11\x12\x13\xF7')
 
          # is equivalent to
 
@@ -394,8 +394,8 @@ midi events to pygame events.
    :returns: if the id is out of range ``None`` is returned, otherwise
       a tuple of (interf, name, input, output, opened) is returned.
 
-         - interf: string describing the device interface (e.g. 'ALSA')
-         - name: string name of the device (e.g. 'Midi Through Port-0')
+         - interf: byte string describing the device interface (e.g. b'ALSA')
+         - name: byte string name of the device (e.g. b'Midi Through Port-0')
          - input: 1 if the device is an input device, otherwise 0
          - output: 1 if the device is an output device, otherwise 0
          - opened: 1 if the device is opened, otherwise 0
