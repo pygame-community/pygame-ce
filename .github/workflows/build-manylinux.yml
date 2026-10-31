@@ -38,7 +38,7 @@ jobs:
         persist-credentials: false
 
     - name: Log in to the Container registry
-      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+      uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -80,7 +80,7 @@ jobs:
 
     # We upload the generated files under github actions assets
     - name: Upload dist
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: pygame-wheels-manylinux-${{ matrix.arch }}
         path: ./wheelhouse/*.whl
