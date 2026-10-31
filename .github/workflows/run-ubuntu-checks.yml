@@ -113,6 +113,12 @@ jobs:
       run: |
         pyenv global ${{ matrix.python }}-debug
         python dev.py build --lax --coverage --ctest --sanitize undefined
+
+    - name: Install PyInstaller
+      run: |
+        pyenv global ${{ matrix.python }}-debug
+        pip install pyinstaller
+
     - name: Run tests
       env:
         SDL_VIDEODRIVER: "dummy"
