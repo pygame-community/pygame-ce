@@ -1,12 +1,9 @@
 #include "pgcompat_rect.h"
-
-/* SDL 2.0.22 provides some utility functions for FRects */
-/* SDL3 changed how the edges are handled. Previously right/bottom edges were
- * considered excluded from the FRect but now they aren't.
- * For now do SDL2 compat, but consider changing this in the future.
- * See: https://github.com/pygame-community/pygame-ce/issues/3571 */
-#if !(SDL_VERSION_ATLEAST(2, 0, 22)) || SDL_VERSION_ATLEAST(3, 0, 0)
-
+/* SDL2's SDL_IntersectFRectAndLine excludes right/bottom edges (integer
+ * pixel behavior), which causes incorrect results for float rects with
+ * sub-pixel dimensions (< 1.0). SDL3 changed this behavior.
+ * For now we maintain SDL2 compat; see issue #3571 for future changes. */
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
 #ifndef CODE_BOTTOM
 #define CODE_BOTTOM 1
 #endif
@@ -24,16 +21,18 @@ static int
 ComputeOutCodeF(const SDL_FRect *rect, float x, float y)
 {
     int code = 0;
+    const float max_x = rect->x + rect->w;
+    const float max_y = rect->y + rect->h;
     if (y < rect->y) {
         code |= CODE_TOP;
     }
-    else if (y >= rect->y + rect->h) {
+    else if ((rect->h >= 1.0f) ? (y >= max_y) : (y > max_y)) {
         code |= CODE_BOTTOM;
     }
     if (x < rect->x) {
         code |= CODE_LEFT;
     }
-    else if (x >= rect->x + rect->w) {
+    else if ((rect->w >= 1.0f) ? (x >= max_x) : (x > max_x)) {
         code |= CODE_RIGHT;
     }
     return code;
@@ -64,8 +63,8 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
     y2 = *Y2;
     rectx1 = rect->x;
     recty1 = rect->y;
-    rectx2 = rect->x + rect->w - 1;
-    recty2 = rect->y + rect->h - 1;
+    rectx2 = rect->x + rect->w - (rect->w >= 1.0f ? 1.0f : 0.0f);
+    recty2 = rect->y + rect->h - (rect->h >= 1.0f ? 1.0f : 0.0f);
 
     /* Check to see if entire line is inside rect */
     if (x1 >= rectx1 && x1 <= rectx2 && x2 >= rectx1 && x2 <= rectx2 &&
@@ -180,4 +179,5 @@ PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
     *Y2 = y2;
     return SDL_TRUE;
 }
-#endif /* !(SDL_VERSION_ATLEAST(2, 0, 22)) || SDL_VERSION_ATLEAST(3, 0, 0) */
+
+#endif /* !SDL_VERSION_ATLEAST(3, 0, 0) */
