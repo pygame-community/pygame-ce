@@ -346,6 +346,44 @@ class Window:
         .. versionadded:: 2.5.3
         """
 
+    @property
+    def progress_state(self) -> int:
+        """Get or set the state of the progress bar for the window's taskbar icon.
+
+        The following are valid values for the progress state:
+         * ``pygame.PROGRESS_STATE_NONE``: No progress bar is displayed.
+         * ``pygame.PROGRESS_STATE_INDETERMINATE``: The progress bar is displayed in an
+           indeterminate state.
+         * ``pygame.PROGRESS_STATE_NORMAL``: A normal progress bar is displayed.
+         * ``pygame.PROGRESS_STATE_PAUSED``: The progress bar is displayed in a paused state.
+         * ``pygame.PROGRESS_STATE_ERROR``: The progress bar displays that the application
+           had an error.
+
+        .. seealso:: :attr:`progress_value`
+
+        .. versionadded:: 3.0.0
+        """
+
+    @progress_state.setter
+    def progress_state(self, value: int) -> None: ...
+    @property
+    def progress_value(self) -> float:
+        """Get or set the value of the progress bar for the window's taskbar icon.
+
+        The value is expected to be in the range of [0.0, 1.0]. Values outside of
+        this range will be clamped.
+
+        Getting or setting this value will succeed even if no progress bar is being
+        displayed and setting a new value will be remembered for the next time
+        a progress bar is displayed.
+
+        .. seealso:: :attr:`progress_state`
+
+        .. versionadded:: 3.0.0
+        """
+
+    @progress_value.setter
+    def progress_value(self, value: float) -> None: ...
     @classmethod
     @deprecated(
         "since 2.4.0. Use either the display module or the Window class with get_surface and flip. Try not to mix display and Window"
