@@ -25,7 +25,7 @@
 #define _SURFACE_H
 
 #include "_pygame.h"
-#include "surface.h"
+#include "surface/surface.h"
 
 // Some simd compat stuff going here for now.
 #if PG_SDL3

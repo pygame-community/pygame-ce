@@ -28,7 +28,7 @@
 
 #include "pgcompat.h"
 
-#include "doc/transform_doc.h"
+#include "transform_doc.h"
 
 #include <math.h>
 #include <string.h>
