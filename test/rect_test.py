@@ -786,29 +786,33 @@ class RectTypeTest(unittest.TestCase):
         self.assertTrue(
             r.contains(Rect(2, 3, 1, 1)), "r does not contain Rect(2, 3, 1, 1)"
         )
-        self.assertTrue(Rect(2, 3, 1, 1) in r, "r does not contain Rect(2, 3, 1, 1) 2")
         self.assertTrue(
             r.contains(Rect(r)), "r does not contain the same rect as itself"
         )
-        self.assertTrue(r in Rect(r), "r does not contain the same rect as itself")
         self.assertTrue(
             r.contains(Rect(2, 3, 0, 0)),
-            "r does not contain an empty rect within its bounds",
-        )
-        self.assertTrue(
-            Rect(2, 3, 0, 0) in r,
             "r does not contain an empty rect within its bounds",
         )
         self.assertFalse(r.contains(Rect(0, 0, 1, 2)), "r contains Rect(0, 0, 1, 2)")
         self.assertFalse(r.contains(Rect(4, 6, 1, 1)), "r contains Rect(4, 6, 1, 1)")
         self.assertFalse(r.contains(Rect(4, 6, 0, 0)), "r contains Rect(4, 6, 0, 0)")
-        self.assertFalse(Rect(0, 0, 1, 2) in r, "r contains Rect(0, 0, 1, 2)")
-        self.assertFalse(Rect(4, 6, 1, 1) in r, "r contains Rect(4, 6, 1, 1)")
-        self.assertFalse(Rect(4, 6, 0, 0) in r, "r contains Rect(4, 6, 0, 0)")
+
+        self.assertRaises(TypeError, lambda: r.contains("string"))
+        self.assertRaises(TypeError, lambda: r.contains(None, None, None, None))
+        self.assertRaises(TypeError, lambda: r.contains(1, 2))
+
+    def test_contains_seq(self) -> None:
         self.assertTrue(2 in Rect(0, 0, 1, 2), "r does not contain 2")
         self.assertFalse(3 in Rect(0, 0, 1, 2), "r contains 3")
 
-        self.assertRaises(TypeError, lambda: 1.0 in Rect(0, 0, 1, 2))
+        self.assertTrue(2.0 in Rect(0, 0, 1, 2), "r does not contain 2.0")
+        self.assertFalse(1.5 in Rect(0, 0, 1, 2), "r contains 1.5")
+
+        rect = Rect(16777217, 0, 1, 1)
+        self.assertTrue(16777217 in rect, "r does not contain 16777217")
+        self.assertFalse(16777216 in rect, "r contains 16777216")
+
+        self.assertRaises(TypeError, lambda: Rect(0, 0, 1, 2) in Rect(1, 2, 3, 4))
         self.assertRaises(TypeError, lambda: "string" in Rect(0, 0, 1, 2))
         self.assertRaises(TypeError, lambda: 4 + 3j in Rect(0, 0, 1, 2))
 
@@ -1852,7 +1856,12 @@ class RectTypeTest(unittest.TestCase):
 
         # Dict to check collisions with values.
         rect_values = dict(
-            (collide_item1, collide_item2, no_collide_item1, no_collide_item2)
+            (
+                collide_item1,
+                collide_item2,
+                no_collide_item1,
+                no_collide_item2,
+            )
         )
         value_collide_items = (collide_item1, collide_item2)
 
@@ -1907,7 +1916,11 @@ class RectTypeTest(unittest.TestCase):
 
         # Dict to check collisions with values.
         no_collide_rect_values = dict(
-            (no_collide_item1, no_collide_item2, no_collide_item3)
+            (
+                no_collide_item1,
+                no_collide_item2,
+                no_collide_item3,
+            )
         )
 
         # Dict to check collisions with keys.
@@ -2113,7 +2126,12 @@ class RectTypeTest(unittest.TestCase):
 
         # Dict to check collisions with values.
         rect_values = dict(
-            (collide_item1, collide_item2, no_collide_item1, no_collide_item2)
+            (
+                collide_item1,
+                collide_item2,
+                no_collide_item1,
+                no_collide_item2,
+            )
         )
         value_collide_items = [collide_item1, collide_item2]
 
@@ -2169,7 +2187,11 @@ class RectTypeTest(unittest.TestCase):
 
         # Dict to check collisions with values.
         no_collide_rect_values = dict(
-            (no_collide_item1, no_collide_item2, no_collide_item3)
+            (
+                no_collide_item1,
+                no_collide_item2,
+                no_collide_item3,
+            )
         )
 
         # Dict to check collisions with keys.
@@ -3080,32 +3102,29 @@ class FRectTypeTest(RectTypeTest):
         self.assertTrue(
             r.contains(FRect(2, 3, 1, 1)), "r does not contain Rect(2, 3, 1, 1)"
         )
-        self.assertTrue(FRect(2, 3, 1, 1) in r, "r does not contain Rect(2, 3, 1, 1) 2")
         self.assertTrue(
             r.contains(FRect(r)), "r does not contain the same rect as itself"
         )
-        self.assertTrue(r in FRect(r), "r does not contain the same rect as itself")
         self.assertTrue(
             r.contains(FRect(2, 3, 0, 0)),
-            "r does not contain an empty rect within its bounds",
-        )
-        self.assertTrue(
-            FRect(2, 3, 0, 0) in r,
             "r does not contain an empty rect within its bounds",
         )
         self.assertFalse(r.contains(FRect(0, 0, 1, 2)), "r contains Rect(0, 0, 1, 2)")
         self.assertFalse(r.contains(FRect(4, 6, 1, 1)), "r contains Rect(4, 6, 1, 1)")
         self.assertFalse(r.contains(FRect(4, 6, 0, 0)), "r contains Rect(4, 6, 0, 0)")
-        self.assertFalse(FRect(0, 0, 1, 2) in r, "r contains Rect(0, 0, 1, 2)")
-        self.assertFalse(FRect(4, 6, 1, 1) in r, "r contains Rect(4, 6, 1, 1)")
-        self.assertFalse(FRect(4, 6, 0, 0) in r, "r contains Rect(4, 6, 0, 0)")
 
-        # TO BE IMPLEMENTED
+        self.assertRaises(TypeError, lambda: r.contains("string"))
+        self.assertRaises(TypeError, lambda: r.contains(None, None, None, None))
+        self.assertRaises(TypeError, lambda: r.contains(1, 2))
 
-        # self.assertTrue(2 in FRect(0, 0, 1, 2), "r does not contain 2")
-        # self.assertFalse(3 in FRect(0, 0, 1, 2), "r contains 3")
+    def test_contains_seq(self):
+        self.assertTrue(2 in FRect(0, 0, 1, 2), "r does not contain 2")
+        self.assertFalse(3 in FRect(0, 0, 1, 2), "r contains 3")
 
-        self.assertRaises(TypeError, lambda: 1 in FRect(0, 0, 1, 2))
+        self.assertTrue(2.0 in FRect(0, 0, 1, 2), "r does not contain 2.0")
+        self.assertFalse(1.5 in FRect(0, 0, 1, 2), "r contains 1.5")
+
+        self.assertRaises(TypeError, lambda: FRect(0, 0, 1, 2) in FRect(1, 2, 3, 4))
         self.assertRaises(TypeError, lambda: "string" in FRect(0, 0, 1, 2))
         self.assertRaises(TypeError, lambda: 4 + 3j in FRect(0, 0, 1, 2))
 
