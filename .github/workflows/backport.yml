@@ -1,0 +1,39 @@
+# https://github.com/korthout/backport-action
+name: Backport merged pull request
+on: # zizmor: ignore[dangerous-triggers]
+  pull_request_target:
+    types:
+      - closed
+      - labeled
+
+permissions:
+  contents: write # so it can comment
+  pull-requests: write # so it can create pull requests
+
+jobs:
+  backport:
+    name: Backport pull request
+    runs-on: ubuntu-latest
+    # Run when a merged PR has needs-backport, either:
+    # - when the PR is merged, or
+    # - when needs-backport is added after merging
+    if: >
+      github.event.pull_request.merged && (
+        (
+          github.event.action == 'closed' &&
+          contains(github.event.pull_request.labels.*.name, 'needs-backport')
+        ) || (
+          github.event.action == 'labeled' &&
+          github.event.label.name == 'needs-backport'
+        )
+      )
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Create backport pull requests
+        uses: korthout/backport-action@2e830a1d0b8269505846ddd407a70876913ad1f8 # v4.6.0
+        with:
+          target_branches: 'main-2.x'
+          label_pattern: '^needs\-backport$'
