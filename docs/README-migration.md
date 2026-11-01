@@ -27,3 +27,8 @@ build backend has been the only supported build system for some time.
 
 ### print_debug_info
 Removed the `filename` argument and added `get_debug_info` to get the raw string.
+
+## `PixelArray`
+
+### Indexing
+Removed `None` as an (undocumented) accepted index value. Use the equivalent `Ellipsis` (`...`) instead.
