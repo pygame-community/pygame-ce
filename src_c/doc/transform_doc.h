@@ -14,6 +14,7 @@
 #define DOC_TRANSFORM_LAPLACIAN "laplacian(surface, dest_surface=None) -> Surface\nFind edges in a surface."
 #define DOC_TRANSFORM_BOXBLUR "box_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface\nBlur a surface using box blur."
 #define DOC_TRANSFORM_GAUSSIANBLUR "gaussian_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface\nBlur a surface using gaussian blur."
+#define DOC_TRANSFORM_BLOOM "bloom(surface, blur_radius, intensity, luminance_threshold=0.5, blur_type='gaussian', dest_surface=None) -> Surface\nApply the bloom effect to a Surface"
 #define DOC_TRANSFORM_AVERAGESURFACES "average_surfaces(surfaces, dest_surface=None, palette_colors=1) -> Surface\nFind the average surface from many surfaces."
 #define DOC_TRANSFORM_AVERAGECOLOR "average_color(surface, rect=None, consider_alpha=False) -> tuple[int, int, int, int]\nFinds the average color of a surface."
 #define DOC_TRANSFORM_INVERT "invert(surface, dest_surface=None) -> Surface\nInverts the RGB elements of a surface."
