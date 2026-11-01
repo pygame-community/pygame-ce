@@ -68,6 +68,10 @@ jobs:
           - { winarch: x86_64, march: x86_64, msystem: MINGW64, os: windows-2022 }
           - { winarch: x86, march: i686, msystem: MINGW32, os: windows-2022 }
           - { winarch: aarch64, march: clang-aarch64, msystem: CLANGARM64, os: windows-11-arm }
+          # mingw64 is being deprecated, we should switch to UCRT64
+          # https://www.msys2.org/news/#2026-10-24-mingw64-deprecation-update
+          # Question is what do we do about mingw32? We need it for x86 wheels
+          # if we want to have a unified deps build system. Do we drop 32 bit?
 
     steps:
       - run: git config --global core.autocrlf input  # do not introduce carriage returns
@@ -82,7 +86,7 @@ jobs:
           path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
           # The hash of all files in deps
           # the key to the cache. If anything changes here, the deps are built again
-          key: windep-${{ hashFiles('buildconfig/deps/**') }}-${{ matrix.winarch }}
+          key: windep-${{ hashFiles('buildconfig/deps/**') }}-${{ matrix.winarch }}-${{ matrix.msystem }}
 
       # Setup msys environment
       - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
@@ -95,7 +99,6 @@ jobs:
             patch
             mingw-w64-${{ matrix.march }}-gcc
             mingw-w64-${{ matrix.march }}-binutils
-            mingw-w64-${{ matrix.march }}-tools
             mingw-w64-${{ matrix.march }}-autotools
             mingw-w64-${{ matrix.march }}-cmake
             mingw-w64-${{ matrix.march }}-meson
