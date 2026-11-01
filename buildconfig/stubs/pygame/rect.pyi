@@ -1,8 +1,9 @@
-import sys
 from collections.abc import Callable, Collection, Iterator
+from types import EllipsisType
 from typing import (
     ClassVar,
     Literal,
+    Self,
     SupportsIndex,
     TypeVar,
     overload,
@@ -10,13 +11,6 @@ from typing import (
 
 from pygame.typing import Point, RectLike, SequenceLike
 from typing_extensions import deprecated  # added in 3.13
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
-
-from types import EllipsisType
 
 _N = TypeVar("_N", int, float)
 _K = TypeVar("_K")

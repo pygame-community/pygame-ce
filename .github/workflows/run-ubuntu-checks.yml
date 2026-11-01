@@ -62,8 +62,8 @@ jobs:
         os: [ ubuntu-24.04 ]
         # check our min python (minor) version and our max python (minor) version
         python: [
-          3.10.17,
-          3.14.0,
+          3.11.17,
+          3.15.0,
         ]
 
     env:
