@@ -19,6 +19,9 @@ SDL: SDLVersion
 ver: str
 vernum: PygameVersion
 rev: str
+commit: str | None
+branch: str | None
+ci_build: bool
 
 # keep in sync with version.py
-__all__ = ["SDL", "ver", "vernum", "rev"]
+__all__ = ["SDL", "ver", "vernum", "rev", "commit", "branch", "ci_build"]

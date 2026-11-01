@@ -7,7 +7,7 @@ import traceback
 from os import environ
 
 from pygame.system import get_cpu_instruction_sets
-from pygame.version import ver
+from pygame.version import branch, ci_build, commit, ver
 
 
 def str_from_tuple(version_tuple):
@@ -68,8 +68,12 @@ def _get_platform_info():
     ret += f"Processor:\t\t{platform.processor()}\tSSE2: {sse2}\tAVX2: {avx2}\tNEON: {neon}\n"
     ret += (
         f"Architecture:\t\tBits: {platform.architecture()[0]}\t"
-        f"Linkage: {platform.architecture()[1]}\n\n"
+        f"Linkage: {platform.architecture()[1]}\n"
     )
+
+    ret += f"Commit Hash:\t\t{commit if commit else 'Unavailable'}\n"
+    ret += f"Branch Name:\t\t{branch if branch else 'Unavailable'}\n"
+    ret += f"Built on CI:\t\t{ci_build}\n\n"
 
     ret += f"Python:\t\t\t{platform.python_implementation()} {sys.version}\n"
     ret += (
@@ -78,6 +82,7 @@ def _get_platform_info():
         else "GIL Enabled:\t\tTrue\n"
     )
     ret += f"pygame version:\t\t{ver}\n"
+
     return ret
 
 
