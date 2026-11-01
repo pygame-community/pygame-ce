@@ -1315,6 +1315,13 @@ class GeneralSurfaceTests(unittest.TestCase):
         finally:
             pygame.display.quit()
 
+    def test_reinit(self):
+        # should raise RuntimeError if __init__ is called on
+        # an initialized Surface
+        surf = pygame.Surface((1, 1))
+        with self.assertRaises(RuntimeError):
+            surf.__init__((1, 1))
+
     def test_convert_alpha_SRCALPHA(self):
         """Ensure that the surface returned by surf.convert_alpha()
         has alpha blending enabled"""
