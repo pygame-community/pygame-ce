@@ -8,6 +8,7 @@ python_sources = files(
     'camera.py',
     'colordict.py',
     'cursors.py',
+    'display.py',
     'freetype.py',
     'ftfont.py',
     'locals.py',
