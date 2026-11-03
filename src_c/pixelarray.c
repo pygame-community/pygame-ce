@@ -1641,6 +1641,13 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
             ystep = 1;
         }
 
+        /* The index protocol can execute Python code, which may close the
+         * PixelArray while the tuple indices are being parsed.
+         */
+        if (array->surface == NULL) {
+            return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
+        }
+
         /* Null value? */
         if (xstart == xstop || ystart == ystop) {
             Py_RETURN_NONE;
@@ -1747,6 +1754,14 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
             ystart = 0;
             ystop = dim1;
             ystep = 1;
+        }
+
+        /* The index protocol can execute Python code, which may close the
+         * PixelArray while the tuple indices are being parsed.
+         */
+        if (array->surface == NULL) {
+            PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
+            return -1;
         }
 
         /* Null value? Do nothing then. */

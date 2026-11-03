@@ -716,6 +716,18 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                     ar[invalid_index, 0]
                 with self.assertRaises(TypeError):
                     ar[0, invalid_index]
+            
+            class ClosingIndex:
+                def __init__(self, array):
+                    self.array = array
+
+                def __index__(self):
+                    self.array.close()
+                    return 0
+
+            closing_array = pygame.PixelArray(pygame.Surface((2, 2)))
+            with self.assertRaises(ValueError):
+                closing_array[0:0, ClosingIndex(closing_array)]
 
             # Test simple slicing
             self.assertEqual(len(ar[:, :]), 6)
@@ -904,6 +916,18 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                     ar[invalid_index, 0] = (255, 0, 0)
                 with self.assertRaises(TypeError):
                     ar[0, invalid_index] = (255, 0, 0)
+            
+            class ClosingIndex:
+                def __init__(self, array):
+                    self.array = array
+
+                def __index__(self):
+                    self.array.close()
+                    return 0
+
+            closing_array = pygame.PixelArray(pygame.Surface((2, 2)))
+            with self.assertRaises(ValueError):
+                closing_array[0:0, ClosingIndex(closing_array)] = (255, 0, 0)
 
             # Ensure x and y are freed for array[x, y] = p
             # Bug fix: reference counting
