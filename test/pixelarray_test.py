@@ -928,6 +928,22 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             ]
             self.assertEqual(pixels_after, pixels_before)
 
+            # Index conversion can execute Python code and close the value
+            # PixelArray before the assignment helper uses its surface.
+            value_surface = pygame.Surface((1, 1), 0, bpp)
+            value_array = pygame.PixelArray(value_surface)
+            target_surface = pygame.Surface((2, 2), 0, bpp)
+            target_array = pygame.PixelArray(target_surface)
+
+            class ClosingValueIndex:
+                def __index__(self):
+                    value_array.close()
+                    return 0
+
+            with self.assertRaises(ValueError):
+                target_array[0, ClosingValueIndex()] = value_array
+            target_array.close()
+
             class ClosingIndex:
                 def __init__(self, array):
                     self.array = array

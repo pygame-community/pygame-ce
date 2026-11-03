@@ -926,6 +926,10 @@ _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
         PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
         return -1;
     }
+    if (val->surface == NULL) {
+        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
+        return -1;
+    }
 
     surf = pgSurface_AsSurface(array->surface);
     val_surf = pgSurface_AsSurface(val->surface);
