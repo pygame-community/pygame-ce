@@ -669,6 +669,10 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                 self.assertEqual(refcnts_after, refcnts_before)
 
     def test_subscript(self):
+        """Tests PixelArray reads with tuple, slice, ellipsis, and index-protocol subscripts.
+
+        Includes valid and invalid index components.
+        """
         # By default, we do not need to work with any special __***__
         # methods as map subscripts are the first looked up by the
         # object system.

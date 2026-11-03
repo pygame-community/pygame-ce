@@ -895,6 +895,12 @@ _pxarray_item(pgPixelArrayObject *array, Py_ssize_t index)
                                        1);
 }
 
+/**
+ * Assigns a PixelArray to a range along another array's first dimension.
+ *
+ * Single-element source dimensions are broadcast to matching destination
+ * dimensions. Raises ValueError if either PixelArray has been closed.
+ */
 static int
 _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
                     pgPixelArrayObject *val)
@@ -1701,6 +1707,12 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
                  "index must be an integer, sequence or slice");
 }
 
+/**
+ * Handles assignments through PixelArray mapping subscripts.
+ *
+ * Dispatches tuple, ellipsis, slice, and integer index assignments to the
+ * corresponding PixelArray assignment helpers.
+ */
 static int
 _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
                        PyObject *value)
