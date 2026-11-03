@@ -694,6 +694,22 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(len(ar[1, ...]), 8)
             self.assertEqual(len(ar[..., 3]), 6)
 
+            class CustomIndex:
+                def __init__(self, value):
+                    self.value = value
+
+                def __index__(self):
+                    return self.value
+
+            # Tuple indices accept the same __index__ implementations as
+            # singular indices.
+            self.assertEqual(ar[CustomIndex(1), 0], ar[1, 0])
+            self.assertEqual(ar[0, CustomIndex(3)], ar[0, 3])
+            with self.assertRaises(IndexError):
+                ar[CustomIndex(ar.shape[0]), 0]
+            with self.assertRaises(IndexError):
+                ar[0, CustomIndex(ar.shape[1])]
+
             # Invalid tuple indices must behave like invalid singular indices.
             for invalid_index in (None, object()):
                 with self.assertRaises(TypeError):
@@ -865,6 +881,22 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(ar[0, 0], sf.map_rgb((0, 255, 0)))
             self.assertEqual(ar[1, 0], sf.map_rgb((0, 255, 0)))
             self.assertEqual(ar[-1, -1], sf.map_rgb((0, 255, 0)))
+
+            class CustomIndex:
+                def __init__(self, value):
+                    self.value = value
+
+                def __index__(self):
+                    return self.value
+
+            ar[CustomIndex(0), 0] = (255, 0, 0)
+            ar[0, CustomIndex(1)] = (0, 0, 255)
+            self.assertEqual(ar[0, 0], sf.map_rgb((255, 0, 0)))
+            self.assertEqual(ar[0, 1], sf.map_rgb((0, 0, 255)))
+            with self.assertRaises(IndexError):
+                ar[CustomIndex(ar.shape[0]), 0] = (255, 0, 0)
+            with self.assertRaises(IndexError):
+                ar[0, CustomIndex(ar.shape[1])] = (255, 0, 0)
 
             # Invalid tuple indices must not silently skip assignments.
             for invalid_index in (None, object()):
