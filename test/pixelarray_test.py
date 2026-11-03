@@ -716,7 +716,7 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                     ar[invalid_index, 0]
                 with self.assertRaises(TypeError):
                     ar[0, invalid_index]
-            
+
             class ClosingIndex:
                 def __init__(self, array):
                     self.array = array
@@ -911,12 +911,23 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                 ar[0, CustomIndex(ar.shape[1])] = (255, 0, 0)
 
             # Invalid tuple indices must not silently skip assignments.
+            pixels_before = [
+                ar[x, y]
+                for x in range(ar.shape[0])
+                for y in range(ar.shape[1])
+            ]
             for invalid_index in (None, object()):
                 with self.assertRaises(TypeError):
                     ar[invalid_index, 0] = (255, 0, 0)
                 with self.assertRaises(TypeError):
                     ar[0, invalid_index] = (255, 0, 0)
-            
+            pixels_after = [
+                ar[x, y]
+                for x in range(ar.shape[0])
+                for y in range(ar.shape[1])
+            ]
+            self.assertEqual(pixels_after, pixels_before)
+
             class ClosingIndex:
                 def __init__(self, array):
                     self.array = array
