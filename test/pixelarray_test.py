@@ -694,6 +694,13 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(len(ar[1, ...]), 8)
             self.assertEqual(len(ar[..., 3]), 6)
 
+            # Invalid tuple indices must behave like invalid singular indices.
+            for invalid_index in (None, object()):
+                with self.assertRaises(TypeError):
+                    ar[invalid_index, 0]
+                with self.assertRaises(TypeError):
+                    ar[0, invalid_index]
+
             # Test simple slicing
             self.assertEqual(len(ar[:, :]), 6)
             self.assertEqual(
@@ -858,6 +865,13 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(ar[0, 0], sf.map_rgb((0, 255, 0)))
             self.assertEqual(ar[1, 0], sf.map_rgb((0, 255, 0)))
             self.assertEqual(ar[-1, -1], sf.map_rgb((0, 255, 0)))
+
+            # Invalid tuple indices must not silently skip assignments.
+            for invalid_index in (None, object()):
+                with self.assertRaises(TypeError):
+                    ar[invalid_index, 0] = (255, 0, 0)
+                with self.assertRaises(TypeError):
+                    ar[0, invalid_index] = (255, 0, 0)
 
             # Ensure x and y are freed for array[x, y] = p
             # Bug fix: reference counting
