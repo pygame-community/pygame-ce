@@ -8,7 +8,9 @@
 #include "doc/sdl2_video_doc.h"
 #include "doc/window_doc.h"
 
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#include <math.h>
+#else
 #include <SDL_syswm.h>
 #endif
 
@@ -1011,8 +1013,20 @@ window_set_minimum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
         return -1;
     }
 
+    if (!isfinate(minimum)) {
+        RAISERETURN(
+            PyExc_ValueError,
+            "Window.minimum_aspect_ratio cannot be set to NaN or infinity");
+    }
+
     if (!SDL_GetWindowAspectRatio(self->_win, &cur_minimum, &cur_maximum)) {
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+    }
+
+    if (minimum > cur_maximum) {
+        RAISERETURN(PyExc_ValueError,
+                    "Window.minimum_aspect_ratio cannot be set to a value "
+                    "greater than Window.maximum_aspect_ratio");
     }
 
     if (!SDL_SetWindowAspectRatio(self->_win, minimum, cur_maximum)) {
@@ -1037,8 +1051,20 @@ window_set_maximum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
         return -1;
     }
 
+    if (!isfinate(maximum)) {
+        RAISERETURN(
+            PyExc_ValueError,
+            "Window.maximum_aspect_ratio cannot be set to NaN or infinity");
+    }
+
     if (!SDL_GetWindowAspectRatio(self->_win, &cur_minimum, &cur_maximum)) {
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+    }
+
+    if (maximum < cur_minimum) {
+        RAISERETURN(PyExc_ValueError,
+                    "Window.maximum_aspect_ratio cannot be set to a value "
+                    "smaller than Window.minimum_aspect_ratio");
     }
 
     if (!SDL_SetWindowAspectRatio(self->_win, cur_minimum, maximum)) {

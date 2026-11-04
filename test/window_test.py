@@ -453,26 +453,41 @@ class WindowTypeTest(unittest.TestCase):
         window = pygame.Window()
         self.assertIsInstance(window.handle, int)
 
-    @unittest.skipIf(SDL < (3, 0, 0), "aspect_ratio requires SDL3")
+    @unittest.skipIf(SDL < (3, 0, 0), "(minimum|maximum)_aspect_ratio requires SDL3")
     def test_aspect_ratio(self):
         self.win = Window()
 
-        self.assertIsInstance(self.win.aspect_ratio, tuple)
-        self.assertTupleEqual(self.win.aspect_ratio, (0.0, 0.0))
+        self.assertIsInstance(self.win.minimum_aspect_ratio, float)
+        self.assertIsInstance(self.win.maximum_aspect_ratio, float)
 
-        self.win.aspect_ratio = (1, 2)
-        self.assertTupleEqual(self.win.aspect_ratio, (1.0, 2.0))
+        self.assertEqual(self.win.minimum_aspect_ratio, 0.0)
+        self.assertEqual(self.win.maximum_aspect_ratio, 0.0)
 
-        self.win.aspect_ratio = (0, 0)
-        self.win.size = (200, 150)
-        self.assertTupleEqual(self.win.size, (200, 150))
+        self.win.minimum_aspect_ratio = 1
+        self.win.maximum_aspect_ratio = 2.5
+        self.assertEqual(self.win.minimum_aspect_ratio, 1.0)
+        self.assertEqual(self.win.maximum_aspect_ratio, 2.5)
 
-        with self.assertRaises(TypeError):
-            self.win.aspect_ratio = 1.6
-        with self.assertRaises(TypeError):
-            self.win.aspect_ratio = None
-        with self.assertRaises(TypeError):
-            self.win.aspect_ratio = "unlimited"
+        for kind in ("minimum", "maximum"):
+            attr_name = f"{kind}_aspect_ratio"
+            with self.assertRaises(TypeError):
+                setattr(self.win, attr_name, None)
+            with self.assertRaises(TypeError):
+                setattr(self.win, attr_name, "unlimited")
+            with self.assertRaises(ValueError):
+                setattr(self.win, attr_name, float("nan"))
+            with self.assertRaises(ValueError):
+                setattr(self.win, attr_name, float("inf"))
+            with self.assertRaises(ValueError):
+                setattr(self.win, attr_name, float("-inf"))
+
+        self.win.minimum_aspect_ratio = 1
+        with self.assertRaises(ValueError):
+            self.win.maximum_aspect_ratio = 0.5
+
+        self.win.maximum_aspect_ratio = 2
+        with self.assertRaises(ValueError):
+            self.win.minimum_aspect_ratio = 2.5
 
     def tearDown(self):
         self.win.destroy()
