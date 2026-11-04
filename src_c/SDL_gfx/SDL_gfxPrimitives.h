@@ -10,9 +10,6 @@ LGPL (c) A. Schiffler
 #define _SDL_gfxPrimitives_h
 
 #include <math.h>
-#ifndef M_PI
-#define M_PI 3.1415926535897932384626433832795
-#endif
 
 #ifdef PG_SDL3
 #include <SDL3/SDL.h>
@@ -24,6 +21,8 @@ LGPL (c) A. Schiffler
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "_pygame.h"
 
 /* ----- Versioning */
 

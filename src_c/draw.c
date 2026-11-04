@@ -34,10 +34,6 @@
 
 #include <float.h>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 /* Declaration of drawing algorithms */
 static void
 draw_line_width(SDL_Surface *surf, SDL_Rect surf_clip_rect, Uint32 color,
@@ -700,7 +696,7 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (angle_stop < angle_start) {
         // Angle is in radians
-        angle_stop += 2 * M_PI;
+        angle_stop += TWO_PI;
     }
 
     if (!pgSurface_Lock(surfobj)) {
@@ -2895,7 +2891,7 @@ draw_arc(SDL_Surface *surf, SDL_Rect surf_clip_rect, int x_center,
         return;
     }
     if (angle_stop < angle_start) {
-        angle_stop += 2 * M_PI;
+        angle_stop += TWO_PI;
     }
     // if angles are equal then don't draw anything either
     if (angle_stop <= angle_start) {
