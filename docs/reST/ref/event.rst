@@ -186,10 +186,13 @@ All window events have a ``window`` attribute corresponding to the
    WINDOWRESTORED         Window was restored
    WINDOWENTER            Mouse entered the window
    WINDOWLEAVE            Mouse left the window
-   WINDOWFOCUSGAINED      Window gained focus
-   WINDOWFOCUSLOST        Window lost focus
+   WINDOWFOCUSGAINED      Window gained keyboard focus
+   WINDOWFOCUSLOST        Window lost keyboard focus
    WINDOWCLOSE            Window was closed
-   WINDOWTAKEFOCUS        Window was offered focus
+   WINDOWTAKEFOCUS        Window manager is offering focus to the window
+                           (mainly on X11). The window does not have focus
+                           yet; WINDOWFOCUSGAINED is sent if it gets it.
+                           Never sent when built with SDL3.
    WINDOWHITTEST          Window has a special hit test
    WINDOWICCPROFCHANGED   Window ICC profile changed
                            (SDL backend >= 2.0.18)
