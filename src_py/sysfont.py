@@ -27,7 +27,6 @@ import warnings
 from os.path import basename, dirname, exists, join, splitext
 
 from pygame import __file__ as pygame_main_file
-from pygame.font import Font
 
 OpenType_extensions = frozenset((".ttf", ".ttc", ".otf"))
 Sysfonts = {}
@@ -386,6 +385,8 @@ def font_constructor(fontpath, size, bold, italic):
 
     :return: A font.Font object.
     """
+    # imported here so the freetype based modules work without pygame.font
+    from pygame.font import Font
 
     font = Font(fontpath, size)
     if bold:
