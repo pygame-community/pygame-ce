@@ -966,6 +966,18 @@ window_get_utility(pgWindowObject *self, void *v)
                            SDL_WINDOW_UTILITY);
 }
 
+static PyObject *
+window_get_transparent(pgWindowObject *self, void *v)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
+                           SDL_WINDOW_TRANSPARENT);
+#else
+    return RAISE(pgExc_SDLError,
+                 "'pygame.Window.transparent' requires SDL 3.0.0+");
+#endif
+}
+
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
@@ -1196,6 +1208,13 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 #endif
                     }
                 }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                else if (!strcmp(_key_str, "transparent")) {
+                    if (_value_bool) {
+                        flags |= SDL_WINDOW_TRANSPARENT;
+                    }
+                }
+#endif
                 else {
                     PyErr_Format(PyExc_TypeError,
                                  "__init__ got an unexpected flag \'%s\'",
@@ -1456,6 +1475,8 @@ static PyGetSetDef _window_getset[] = {
     {"opengl", (getter)window_get_opengl, NULL, DOC_WINDOW_OPENGL, NULL},
     {"handle", (getter)window_get_handle, NULL, DOC_WINDOW_HANDLE, NULL},
     {"utility", (getter)window_get_utility, NULL, DOC_WINDOW_UTILITY, NULL},
+    {"transparent", (getter)window_get_transparent, NULL,
+     DOC_WINDOW_TRANSPARENT, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 

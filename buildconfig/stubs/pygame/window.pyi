@@ -45,6 +45,17 @@ class Window:
     :param bool always_on_top: Create a window that is always presented above
                                 others.
     :param bool utility: Create a window that doesn't appear in the task bar.
+    :param bool transparent: Create a window that requests a per-pixel alpha buffer,
+                              making the window see-through in areas where the
+                              pixels' alpha value is less than 255. Note that
+                              every operating system and rendering strategy
+                              will expect the colors to be already pre-multiplied
+                              by the intended alpha value, operation that is
+                              not performed automatically. If either the window
+                              manager or rendering backend ignore or can't fulfill
+                              the transparency request, it's not guaranteed that
+                              an error will be raised and the window could be treated
+                              as transparent even if it is not.
 
     Event behavior if one Window is created: When the close button is pressed,
     the ``QUIT`` event will be sent to the event queue.
@@ -88,6 +99,7 @@ class Window:
     .. versionadded:: 2.4.0
     .. versionchanged:: 2.5.0 when ``opengl`` is ``True``, the ``Window`` has an OpenGL context created by pygame
     .. versionchanged:: 2.5.1 Window is now a base class, allowing subclassing
+    .. versionchanged:: 3.0.0 added the ``transparent`` parameter to the constructor
     """
 
     def __init__(
@@ -113,6 +125,7 @@ class Window:
         mouse_capture: bool = ...,
         always_on_top: bool = ...,
         utility: bool = ...,
+        transparent: bool = ...,
     ) -> None: ...
 
     grab_mouse: bool
@@ -344,6 +357,21 @@ class Window:
         This only works for X11 and Windows, for other platforms, creating ``Window(utility=True)`` won't change anything.
 
         .. versionadded:: 2.5.3
+        """
+
+    @property
+    def transparent(self) -> bool:
+        """Get if the window requested a per-pixel alpha buffer (**read-only**).
+
+        Refer to the ``transparent`` parameter of the constructor for more information
+        about window transparency.
+
+        .. note:: This property only indicates if the window requested transparency at
+            creation time. If the window manager ignores or can't fulfill the request,
+            and no error was raised, this property will still return ``True`` even if
+            the window is not actually transparent.
+
+        .. versionadded:: 3.0.0
         """
 
     @classmethod
