@@ -295,8 +295,11 @@ endsound_callback(int channel)
             _pg_push_mixer_event(channeldata[channel].endevent, channel);
         }
 
+        // Acquire the GIL here, both branches need it, conditional needs it
+        // to read channeldata queue data.
+        // Both branches release it again before doing non_GIL things.
+        PyGILState_STATE gstate = PyGILState_Ensure();
         if (channeldata[channel].queue) {
-            PyGILState_STATE gstate = PyGILState_Ensure();
             int channelnum;
             Mix_Chunk *sound = pgSound_AsChunk(channeldata[channel].queue);
             Py_XSETREF(channeldata[channel].sound, channeldata[channel].queue);
@@ -308,7 +311,6 @@ endsound_callback(int channel)
             }
         }
         else {
-            PyGILState_STATE gstate = PyGILState_Ensure();
             Py_CLEAR(channeldata[channel].sound);
             PyGILState_Release(gstate);
             Mix_GroupChannel(channel, -1);
@@ -723,6 +725,14 @@ snd_stop(PyObject *self, PyObject *_null)
     CHECK_CHUNK_VALID(chunk, NULL);
 
     MIXER_INIT_CHECK();
+
+    // Queue should only trigger on natural termination
+    for (int i = 0; i < numchanneldata; i++) {
+        if (channeldata[i].sound == self) {
+            Py_CLEAR(channeldata[i].queue);
+        }
+    }
+
     Py_BEGIN_ALLOW_THREADS;
     Mix_HaltGroup((int)(intptr_t)chunk);
     Py_END_ALLOW_THREADS;
@@ -1205,6 +1215,9 @@ chan_stop(PyObject *self, PyObject *_null)
     int channelnum = pgChannel_AsInt(self);
     MIXER_INIT_CHECK();
 
+    // Queue should only trigger on natural termination
+    Py_CLEAR(channeldata[channelnum].queue);
+
     Py_BEGIN_ALLOW_THREADS;
     Mix_HaltChannel(channelnum);
     Py_END_ALLOW_THREADS;
@@ -1618,6 +1631,11 @@ static PyObject *
 mixer_stop(PyObject *self, PyObject *_null)
 {
     MIXER_INIT_CHECK();
+
+    // Queue should only trigger on natural termination
+    for (int i = 0; i < numchanneldata; i++) {
+        Py_CLEAR(channeldata[i].queue);
+    }
 
     Py_BEGIN_ALLOW_THREADS;
     Mix_HaltChannel(-1);
