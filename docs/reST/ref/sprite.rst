@@ -657,7 +657,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
 .. function:: spritecollide
 
    | :sl:`Find sprites in a group that intersect another sprite.`
-   | :sg:`spritecollide(sprite, group, dokill, collided = None) -> Sprite_list`
+   | :sg:`spritecollide(sprite, group, dokill, collided = None, exclude = ()) -> Sprite_list`
 
    Return a list containing all Sprites in a Group that intersect with another
    Sprite. Intersection is determined by comparing the ``Sprite.rect``
@@ -671,6 +671,9 @@ Sprites are not thread safe. So lock them yourself if using threads.
    bool value indicating if they are colliding. If collided is not passed, all
    sprites must have a "rect" value, which is a rectangle of the sprite area,
    which will be used to calculate the collision.
+
+   The exclude argument is an object supporting ``__contains__`` containing all of
+   the sprites to exclude from the check (this also excludes them from dokill).
 
    collided callables:
 
@@ -838,8 +841,8 @@ Sprites are not thread safe. So lock them yourself if using threads.
 .. function:: spritecollideany
 
    | :sl:`Simple test if a sprite intersects anything in a group.`
-   | :sg:`spritecollideany(sprite, group, collided = None) -> Sprite` Collision with the returned sprite.
-   | :sg:`spritecollideany(sprite, group, collided = None) -> None` No collision
+   | :sg:`spritecollideany(sprite, group, collided = None, exclude = ()) -> Sprite` Collision with the returned sprite.
+   | :sg:`spritecollideany(sprite, group, collided = None, exclude = ()) -> None` No collision
 
    If the sprite collides with any single sprite in the group, a single
    sprite from the group is returned.  On no collision None is returned.
@@ -852,6 +855,9 @@ Sprites are not thread safe. So lock them yourself if using threads.
    indicating if they are colliding. If collided is not passed, then all
    sprites must have a "rect" value, which is a rectangle of the sprite area,
    which will be used to calculate the collision.
+
+   The exclude argument is an object supporting ``__contains__`` containing all of
+   the sprites to exclude from the check (this also excludes them from dokill).
 
    .. ## pygame.sprite.spritecollideany ##
 
