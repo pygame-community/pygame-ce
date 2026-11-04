@@ -1016,7 +1016,14 @@ window_set_minimum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
     if (!isfinate(minimum)) {
         RAISERETURN(
             PyExc_ValueError,
-            "Window.minimum_aspect_ratio cannot be set to NaN or infinity");
+            "Window.minimum_aspect_ratio cannot be set to NaN or infinity",
+            -1);
+    }
+    else if (minimum < 0.0f) {
+        RAISERETURN(
+            PyExc_ValueError,
+            "Window.minimum_aspect_ratio cannot be set to a negative number",
+            -1);
     }
 
     if (!SDL_GetWindowAspectRatio(self->_win, &cur_minimum, &cur_maximum)) {
@@ -1026,7 +1033,8 @@ window_set_minimum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
     if (minimum > cur_maximum) {
         RAISERETURN(PyExc_ValueError,
                     "Window.minimum_aspect_ratio cannot be set to a value "
-                    "greater than Window.maximum_aspect_ratio");
+                    "greater than Window.maximum_aspect_ratio",
+                    -1);
     }
 
     if (!SDL_SetWindowAspectRatio(self->_win, minimum, cur_maximum)) {
@@ -1054,7 +1062,14 @@ window_set_maximum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
     if (!isfinate(maximum)) {
         RAISERETURN(
             PyExc_ValueError,
-            "Window.maximum_aspect_ratio cannot be set to NaN or infinity");
+            "Window.maximum_aspect_ratio cannot be set to NaN or infinity",
+            -1);
+    }
+    else if (maximum < 0.0f) {
+        RAISERETURN(
+            PyExc_ValueError,
+            "Window.maximum_aspect_ratio cannot be set to a negative number",
+            -1);
     }
 
     if (!SDL_GetWindowAspectRatio(self->_win, &cur_minimum, &cur_maximum)) {
@@ -1064,7 +1079,8 @@ window_set_maximum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
     if (maximum < cur_minimum) {
         RAISERETURN(PyExc_ValueError,
                     "Window.maximum_aspect_ratio cannot be set to a value "
-                    "smaller than Window.minimum_aspect_ratio");
+                    "smaller than Window.minimum_aspect_ratio",
+                    -1);
     }
 
     if (!SDL_SetWindowAspectRatio(self->_win, cur_minimum, maximum)) {

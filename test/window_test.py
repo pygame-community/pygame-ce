@@ -475,6 +475,8 @@ class WindowTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 setattr(self.win, attr_name, "unlimited")
             with self.assertRaises(ValueError):
+                setattr(self.win, attr_name, -1)
+            with self.assertRaises(ValueError):
                 setattr(self.win, attr_name, float("nan"))
             with self.assertRaises(ValueError):
                 setattr(self.win, attr_name, float("inf"))
