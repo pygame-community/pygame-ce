@@ -82,7 +82,6 @@ class Texture:
         static: bool = False,
         streaming: bool = False,
         target: bool = False,
-        scale_quality: int | None = None,
     ) -> None: ...
     @property
     def alpha(self) -> int: ...
