@@ -5,7 +5,7 @@
 #define DOC_MOUSE_GETJUSTRELEASED "get_just_released() -> tuple\nGet the most recently released buttons."
 #define DOC_MOUSE_GETPOS "get_pos(desktop=False) -> tuple[int, int]\nGet the mouse cursor position."
 #define DOC_MOUSE_GETREL "get_rel() -> tuple[int, int]\nGet the amount of mouse movement."
-#define DOC_MOUSE_SETPOS "set_pos(pos, /) -> None\nset_pos(x, y, /) -> None\nSet the mouse cursor position."
+#define DOC_MOUSE_SETPOS "set_pos(pos, force=False) -> None\nset_pos(x, y, force=False) -> None\nSet the mouse cursor position."
 #define DOC_MOUSE_SETVISIBLE "set_visible(value, /) -> int\nHide or show the mouse cursor."
 #define DOC_MOUSE_GETVISIBLE "get_visible() -> bool\nGet the current visibility state of the mouse cursor."
 #define DOC_MOUSE_GETFOCUSED "get_focused() -> bool\nCheck if the display is receiving mouse input."
