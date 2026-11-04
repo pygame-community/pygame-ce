@@ -1030,10 +1030,11 @@ window_set_minimum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
-    if (minimum > cur_maximum) {
+    if (minimum != 0.0f && cur_maximum != 0.0f && minimum > cur_maximum) {
         RAISERETURN(PyExc_ValueError,
                     "Window.minimum_aspect_ratio cannot be set to a value "
-                    "greater than Window.maximum_aspect_ratio",
+                    "greater than Window.maximum_aspect_ratio when both "
+                    "restrictions are enabled",
                     -1);
     }
 
@@ -1076,10 +1077,11 @@ window_set_maximum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
 
-    if (maximum < cur_minimum) {
+    if (maximum != 0.0f && cur_minimum != 0.0f && maximum < cur_minimum) {
         RAISERETURN(PyExc_ValueError,
                     "Window.maximum_aspect_ratio cannot be set to a value "
-                    "smaller than Window.minimum_aspect_ratio",
+                    "smaller than Window.minimum_aspect_ratio when both "
+                    "restrictions are enabled",
                     -1);
     }
 
