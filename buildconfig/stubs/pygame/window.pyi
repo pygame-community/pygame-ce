@@ -308,6 +308,10 @@ class Window:
 
         A value of ``0.0``, which is the default, removes the minimum restriction.
 
+        Setting the minimum aspect ratio to a negative number, NaN, infinity,
+        or a value greater than the maximum aspect ratio (when both are enabled)
+        will raise a ``ValueError``.
+
         .. seealso:: :attr:`maximum_aspect_ratio`.
 
         .. note:: The aspect ratio is only a request, and the window manager
@@ -334,6 +338,10 @@ class Window:
         value.
 
         A value of ``0.0``, which is the default, removes the maximum restriction.
+
+        Setting the maximum aspect ratio to a negative number, NaN, infinity,
+        or a value smaller than the minimum aspect ratio (when both are enabled)
+        will raise a ``ValueError``.
 
         .. seealso:: :attr:`minimum_aspect_ratio`.
 

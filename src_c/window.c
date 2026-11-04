@@ -1013,7 +1013,7 @@ window_set_minimum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
         return -1;
     }
 
-    if (!isfinate(minimum)) {
+    if (!isfinite(minimum)) {
         RAISERETURN(
             PyExc_ValueError,
             "Window.minimum_aspect_ratio cannot be set to NaN or infinity",
@@ -1060,7 +1060,7 @@ window_set_maximum_aspect_ratio(pgWindowObject *self, PyObject *arg, void *v)
         return -1;
     }
 
-    if (!isfinate(maximum)) {
+    if (!isfinite(maximum)) {
         RAISERETURN(
             PyExc_ValueError,
             "Window.maximum_aspect_ratio cannot be set to NaN or infinity",
