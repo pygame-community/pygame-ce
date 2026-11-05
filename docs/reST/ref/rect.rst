@@ -23,7 +23,7 @@
       truncation error while being interchangeable with standard Rects.
 
    Pygame uses Rect objects to store and manipulate rectangular areas. A Rect
-   can be created from a combination of left, top, width, and height values 
+   can be created from a combination of left, top, width, and height values
    (all positional, due to performance concerns).
    Rects can also be created from python objects that are already a Rect or
    have an attribute named "rect".

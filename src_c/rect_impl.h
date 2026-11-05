@@ -886,7 +886,8 @@ static int
 RectExport_init(RectObject *self, PyObject *args, PyObject *kwds)
 {
     if (kwds != NULL && PyDict_Size(kwds) > 0) {
-        PyErr_SetString(PyExc_TypeError, "Rect init does not accept keyword arguments");
+        PyErr_SetString(PyExc_TypeError,
+                        "Rect init does not accept keyword arguments");
         return -1;
     }
 
