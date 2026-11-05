@@ -910,13 +910,13 @@ _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
     Py_ssize_t dim1 = array->shape[1];
     Py_ssize_t stride0 = high >= low ? array->strides[0] : -array->strides[0];
     Py_ssize_t stride1 = array->strides[1];
-    Uint8 *pixels = array->pixels + low * array->strides[0];
+    Uint8 *pixels;
     int bpp;
     Py_ssize_t val_dim0 = val->shape[0];
     Py_ssize_t val_dim1 = val->shape[1];
     Py_ssize_t val_stride0 = val->strides[0];
     Py_ssize_t val_stride1 = val->strides[1];
-    Uint8 *val_pixels = val->pixels;
+    Uint8 *val_pixels;
     SDL_Surface *val_surf;
     int val_bpp;
     Uint8 *pixelrow;
@@ -936,6 +936,10 @@ _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
         PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
         return -1;
     }
+
+    /* Closing either array can release the backing Surface and its pixels. */
+    pixels = array->pixels + low * array->strides[0];
+    val_pixels = val->pixels;
 
     surf = pgSurface_AsSurface(array->surface);
     val_surf = pgSurface_AsSurface(val->surface);

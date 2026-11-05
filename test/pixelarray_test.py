@@ -698,6 +698,8 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             sf.set_at((1, 3), (0, 255, 0))
             sf.set_at((0, 0), (0, 255, 0))
             sf.set_at((4, 4), (0, 255, 0))
+            sf.set_at((1, 0), (255, 0, 0))
+            sf.set_at((0, 3), (0, 0, 255))
             val = sf.map_rgb((0, 255, 0))
 
             ar = pygame.PixelArray(sf)
@@ -717,8 +719,12 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
 
             # Tuple indices accept the same __index__ implementations as
             # singular indices.
-            self.assertEqual(ar[_CustomIndex(1), 0], ar[1, 0])
-            self.assertEqual(ar[0, _CustomIndex(3)], ar[0, 3])
+            self.assertEqual(
+                ar[_CustomIndex(1), 0], sf.map_rgb((255, 0, 0))
+            )
+            self.assertEqual(
+                ar[0, _CustomIndex(3)], sf.map_rgb((0, 0, 255))
+            )
             with self.assertRaises(IndexError):
                 ar[_CustomIndex(ar.shape[0]), 0]
             with self.assertRaises(IndexError):
@@ -929,8 +935,8 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
 
             # Index conversion can execute Python code and close the value
             # PixelArray before the assignment helper uses its surface.
-            value_surface = pygame.Surface((1, 1), 0, bpp)
-            value_array = pygame.PixelArray(value_surface)
+            # Keep no separate Surface reference so close() can release it.
+            value_array = pygame.PixelArray(pygame.Surface((1, 1), 0, bpp))
             target_surface = pygame.Surface((2, 2), 0, bpp)
             target_array = pygame.PixelArray(target_surface)
 
