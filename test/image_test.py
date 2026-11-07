@@ -1,12 +1,16 @@
 import array
 import binascii
+import contextlib
+import gc
 import glob
 import io
 import os
 import pathlib
 import random
+import sys
 import tempfile
 import unittest
+import weakref
 from concurrent.futures import ThreadPoolExecutor
 
 import pygame
@@ -489,6 +493,62 @@ class ImageModuleTest(unittest.TestCase):
                 s2 = pygame.image.load(handle, tmp_filename)
                 self.assertEqual(s2.get_at((0, 0)), s.get_at((0, 0)))
             os.remove(tmp_filename)
+
+    def test_save_to_fileobject_releases_reference(self):
+        """Ensure image.save does not keep file objects alive (#4006)."""
+        s = pygame.Surface((10, 10))
+        s.fill((23, 23, 23))
+
+        formats = ["bmp", "tga"]
+        if pygame.image.get_extended():
+            formats += ["png", "jpg"]
+
+        for fmt in formats:
+            with self.subTest(fmt=fmt):
+                buffer = io.BytesIO()
+                pygame.image.save(s, buffer, f"test.{fmt}")
+
+                # the caller's file object must not be closed by save
+                self.assertFalse(buffer.closed)
+                self.assertGreater(len(buffer.getvalue()), 0)
+
+                buffer_ref = weakref.ref(buffer)
+                del buffer
+                gc.collect()
+                self.assertIsNone(buffer_ref())
+
+    def test_save_to_fileobject_releases_reference_on_error(self):
+        """Ensure image.save releases file objects when writing fails (#4006)."""
+
+        class FailingWriter(io.BytesIO):
+            def write(self, data):
+                raise OSError("write failed")
+
+        s = pygame.Surface((10, 10))
+        s.fill((23, 23, 23))
+
+        formats = ["bmp", "tga"]
+        if pygame.image.get_extended():
+            formats += ["png", "jpg"]
+
+        for fmt in formats:
+            with self.subTest(fmt=fmt):
+                buffer = FailingWriter()
+                # the write error is printed by pygame, keep test output clean.
+                # Not every format reports write errors, so don't require one.
+                with contextlib.redirect_stderr(io.StringIO()):
+                    with contextlib.suppress(pygame.error):
+                        pygame.image.save(s, buffer, f"test.{fmt}")
+
+                # printing the write error stores its traceback, which
+                # references the file object, so clear it
+                sys.last_exc = sys.last_type = None
+                sys.last_value = sys.last_traceback = None
+
+                buffer_ref = weakref.ref(buffer)
+                del buffer
+                gc.collect()
+                self.assertIsNone(buffer_ref())
 
     def test_save_colorkey(self):
         """make sure the color key is not changed when saving."""

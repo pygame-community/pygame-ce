@@ -36,10 +36,17 @@ Header file: src_c/include/pygame.h
    If threads are available, the Python GIL is acquired before calling any of the *obj* methods.
    On error raise a Python exception and return ``NULL``.
 
+.. c:function:: SDL_RWops* pgRWops_FromFileObjectNoClose(PyObject *obj)
+
+   Like :c:func:`pgRWops_FromFileObject`, but the ``close`` method of *obj* is
+   not used, so closing the returned SDL_RWops leaves *obj* open. The SDL_RWops
+   must still be closed to release its references to *obj*.
+   On error raise a Python exception and return ``NULL``.
+
 .. c:function:: int pgRWops_IsFileObject(SDL_RWops *rw)
 
-   Return true if *rw* is a Python file-like object wrapper returned by :c:func:`pgRWops_FromObject`
-   or :c:func:`pgRWops_FromFileObject`.
+   Return true if *rw* is a Python file-like object wrapper returned by :c:func:`pgRWops_FromObject`,
+   :c:func:`pgRWops_FromFileObject` or :c:func:`pgRWops_FromFileObjectNoClose`.
 
 .. c:function:: PyObject* pg_EncodeFilePath(PyObject *obj, PyObject *eclass)
 
