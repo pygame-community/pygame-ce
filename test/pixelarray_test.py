@@ -46,6 +46,23 @@ class TestMixin:
         surface.unlock()
 
 
+class _CustomIndex:
+    def __init__(self, value):
+        self.value = value
+
+    def __index__(self):
+        return self.value
+
+
+class _ClosingIndex:
+    def __init__(self, array):
+        self.array = array
+
+    def __index__(self):
+        self.array.close()
+        return 0
+
+
 @unittest.skipIf(IS_PYPY, "pypy having issues")
 class PixelArrayTypeTest(unittest.TestCase, TestMixin):
     def test_compare(self):
@@ -669,6 +686,10 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                 self.assertEqual(refcnts_after, refcnts_before)
 
     def test_subscript(self):
+        """Tests PixelArray reads with tuple, slice, ellipsis, and index-protocol subscripts.
+
+        Includes valid and invalid index components.
+        """
         # By default, we do not need to work with any special __***__
         # methods as map subscripts are the first looked up by the
         # object system.
@@ -677,6 +698,8 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             sf.set_at((1, 3), (0, 255, 0))
             sf.set_at((0, 0), (0, 255, 0))
             sf.set_at((4, 4), (0, 255, 0))
+            sf.set_at((1, 0), (255, 0, 0))
+            sf.set_at((0, 3), (0, 0, 255))
             val = sf.map_rgb((0, 255, 0))
 
             ar = pygame.PixelArray(sf)
@@ -693,6 +716,30 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(len(ar[..., ...]), 6)
             self.assertEqual(len(ar[1, ...]), 8)
             self.assertEqual(len(ar[..., 3]), 6)
+
+            # Tuple indices accept the same __index__ implementations as
+            # singular indices.
+            self.assertEqual(
+                ar[_CustomIndex(1), 0], sf.map_rgb((255, 0, 0))
+            )
+            self.assertEqual(
+                ar[0, _CustomIndex(3)], sf.map_rgb((0, 0, 255))
+            )
+            with self.assertRaises(IndexError):
+                ar[_CustomIndex(ar.shape[0]), 0]
+            with self.assertRaises(IndexError):
+                ar[0, _CustomIndex(ar.shape[1])]
+
+            # Invalid tuple indices must behave like invalid singular indices.
+            for invalid_index in (None, object()):
+                with self.assertRaises(TypeError):
+                    ar[invalid_index, 0]
+                with self.assertRaises(TypeError):
+                    ar[0, invalid_index]
+
+            closing_array = pygame.PixelArray(pygame.Surface((2, 2)))
+            with self.assertRaises(ValueError):
+                closing_array[0:0, _ClosingIndex(closing_array)]
 
             # Test simple slicing
             self.assertEqual(len(ar[:, :]), 6)
@@ -858,6 +905,53 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(ar[0, 0], sf.map_rgb((0, 255, 0)))
             self.assertEqual(ar[1, 0], sf.map_rgb((0, 255, 0)))
             self.assertEqual(ar[-1, -1], sf.map_rgb((0, 255, 0)))
+
+            ar[_CustomIndex(0), 0] = (255, 0, 0)
+            ar[0, _CustomIndex(1)] = (0, 0, 255)
+            self.assertEqual(ar[0, 0], sf.map_rgb((255, 0, 0)))
+            self.assertEqual(ar[0, 1], sf.map_rgb((0, 0, 255)))
+            with self.assertRaises(IndexError):
+                ar[_CustomIndex(ar.shape[0]), 0] = (255, 0, 0)
+            with self.assertRaises(IndexError):
+                ar[0, _CustomIndex(ar.shape[1])] = (255, 0, 0)
+
+            # Invalid tuple indices must not silently skip assignments.
+            pixels_before = [
+                ar[x, y]
+                for x in range(ar.shape[0])
+                for y in range(ar.shape[1])
+            ]
+            for invalid_index in (None, object()):
+                with self.assertRaises(TypeError):
+                    ar[invalid_index, 0] = (255, 0, 0)
+                with self.assertRaises(TypeError):
+                    ar[0, invalid_index] = (255, 0, 0)
+            pixels_after = [
+                ar[x, y]
+                for x in range(ar.shape[0])
+                for y in range(ar.shape[1])
+            ]
+            self.assertEqual(pixels_after, pixels_before)
+
+            # Index conversion can execute Python code and close the value
+            # PixelArray before the assignment helper uses its surface.
+            # Keep no separate Surface reference so close() can release it.
+            value_array = pygame.PixelArray(pygame.Surface((1, 1), 0, bpp))
+            target_surface = pygame.Surface((2, 2), 0, bpp)
+            target_array = pygame.PixelArray(target_surface)
+
+            with self.assertRaises(ValueError):
+                target_array[0, _ClosingIndex(value_array)] = value_array
+            with self.assertRaises(ValueError):
+                value_array[0, 0]
+            self.assertEqual(
+                target_array[0, 0], target_surface.map_rgb((0, 0, 0))
+            )
+            target_array.close()
+
+            closing_array = pygame.PixelArray(pygame.Surface((2, 2)))
+            with self.assertRaises(ValueError):
+                closing_array[0:0, _ClosingIndex(closing_array)] = (255, 0, 0)
 
             # Ensure x and y are freed for array[x, y] = p
             # Bug fix: reference counting
