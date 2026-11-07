@@ -84,7 +84,6 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_RectNew pgRect_New
 #define RectExport_RectNew4 pgRect_New4
 #define RectExport_Normalize pgRect_Normalize
-#define RectExport_contains_internal _pg_rect_contains
 #define RectExport_contains pg_rect_contains
 #define RectExport_containsSeq pg_rect_contains_seq
 #define RectExport_clamp pg_rect_clamp
@@ -204,7 +203,6 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_RectNew pgFRect_New
 #define RectExport_RectNew4 pgFRect_New4
 #define RectExport_Normalize pgFRect_Normalize
-#define RectExport_contains_internal _pg_frect_contains
 #define RectExport_contains pg_frect_contains
 #define RectExport_containsSeq pg_frect_contains_seq
 #define RectExport_clamp pg_frect_clamp
