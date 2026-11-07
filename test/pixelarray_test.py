@@ -813,10 +813,6 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             ar2 = pygame.PixelArray(sf2)
             self.assertEqual(ar2.shape, sf2.get_size())
 
-            # Array has a single ellipsis subscript: the identity operator
-            ar2 = ar[...]
-            self.assertTrue(ar2 is ar)
-
             # Ensure x and y are freed for p = array[x, y]
             # Bug fix: reference counting
             if hasattr(sys, "getrefcount"):
@@ -834,6 +830,31 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                 rx_after, ry_after = sys.getrefcount(x), sys.getrefcount(y)
                 self.assertEqual(rx_after, rx_before)
                 self.assertEqual(ry_after, ry_before)
+
+    def test_subscript_full_view(self):
+        """array[...] and array[()] give a new view, like array[:, :]."""
+        sf = pygame.Surface((6, 8), 0, 32)
+        color = sf.map_rgb((1, 2, 3))
+        ar = pygame.PixelArray(sf)
+        for array, index, pos, full in (
+            (ar, (0, 0), (0, 0), (slice(None), slice(None))),
+            (ar[:, 1], 0, (0, 1), slice(None)),
+        ):
+            for key in (Ellipsis, (), full):
+                view = array[key]
+                self.assertIsNot(view, array)
+                self.assertEqual(view.shape, array.shape)
+
+                # The view shares the pixels but is closed on its own.
+                view[index] = color
+                self.assertEqual(sf.get_at_mapped(pos), color)
+                view.close()
+                array[index] = 0
+                self.assertEqual(sf.get_at_mapped(pos), 0)
+
+        ar.close()
+        self.assertRaises(ValueError, ar.__getitem__, Ellipsis)
+        self.assertRaises(ValueError, ar.__getitem__, ())
 
     def test_ass_subscript(self):
         for bpp in (8, 16, 24, 32):
