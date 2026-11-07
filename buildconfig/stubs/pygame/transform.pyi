@@ -381,6 +381,13 @@ def threshold(
     'surf' that is within the 'threshold' of the pixel at the same coordinates
     of the 'search_surf'.
 
+    .. note::
+        Only the red, green and blue channels are compared. The alpha channel of
+        'search_color', 'search_surf' and 'threshold' is ignored, so pixels that
+        differ only in alpha are treated as matching. To replace one exact RGBA
+        color with another, :meth:`pygame.PixelArray.replace` with the default
+        distance of 0 can be used instead.
+
     :param dest_surf: Surface we are changing. See 'set_behavior'.
         Should be None if counting (set_behavior is 0).
     :type dest_surf: pygame.Surface or None
