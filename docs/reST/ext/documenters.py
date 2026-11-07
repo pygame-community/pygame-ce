@@ -1,6 +1,7 @@
 import autoapi
 import autoapi.documenters
 from autoapi._objects import PythonClass
+from autoapi._mapper import PythonModule
 import re
 
 
@@ -154,3 +155,5 @@ def setup(app):
                 {"objtype": f"pg{name}"},
             )
         )
+
+    PythonModule._should_skip = lambda *args, **kwargs: False
