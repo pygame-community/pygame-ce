@@ -30,6 +30,10 @@
 
 #include "doc/image_doc.h"
 
+#ifdef PG_IMG_USE_SDL_IMAGE_TGA
+#include <SDL3_image/SDL_image.h>
+#endif
+
 #if PG_COMPILE_SSE4_2
 #include <emmintrin.h>
 /* SSSE 3 */
@@ -1623,6 +1627,7 @@ enum tga_type {
 #endif
 
 #define TGA_RLE_MAX 128 /* max length of a TGA RLE chunk */
+#ifndef PG_IMG_USE_SDL_IMAGE_TGA
 /* return the number of bytes in the resulting buffer after RLE-encoding
    a line of TGA data */
 static int
@@ -1667,6 +1672,7 @@ rle_line(Uint8 *src, Uint8 *dst, int w, int bpp)
     }
     return out;
 }
+#endif /* !defined(PG_IMG_USE_SDL_IMAGE_TGA) */
 
 /*
  * Save a surface to an output stream in TGA format.
@@ -1682,6 +1688,12 @@ rle_line(Uint8 *src, Uint8 *dst, int w, int bpp)
 static int
 SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
 {
+#ifdef PG_IMG_USE_SDL_IMAGE_TGA
+    /* SDL_image 3.4.0+ ships a TGA writer, use it instead of our own
+     * implementation. The SDL2 build keeps the implementation below. */
+    (void)rle;
+    return IMG_SaveTGA_IO(surface, out, SDL_FALSE) ? 0 : -1;
+#else
     SDL_Surface *linebuf = NULL;
     int alpha = 0;
     struct TGAheader h;
@@ -1853,6 +1865,7 @@ error:
     free(rlebuf);
     SDL_FreeSurface(linebuf);
     return -1;
+#endif /* !defined(PG_IMG_USE_SDL_IMAGE_TGA) */
 }
 
 static int
