@@ -12,6 +12,7 @@ import re
 import subprocess
 import sys
 import sysconfig
+import tomllib
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -125,29 +126,13 @@ def pip_install(py: Path, args: list[str]):
 
 
 def get_pyproject_list_param(section: str, key: str) -> list[str]:
-    with open(pyproject_path, "r", encoding="utf-8") as f:
-        content = f.read()
-        if sys.version_info >= (3, 11):
-            import tomllib
+    with open(pyproject_path, "rb") as f:
+        cur = tomllib.load(f)
 
-            cur = tomllib.loads(content)
-            for i in section.split("."):
-                cur = cur[i]
+    for i in section.split("."):
+        cur = cur[i]
 
-            return cur[key]
-
-        # hacky solution, because we don't have tomllib in stdlib on older
-        # python versions
-        import ast
-        import re
-
-        # this regex only works to extract a list, nothing else
-        pattern = rf"\[{section}\].*\n\s*{key}\s*=\s*(\[.*?\])"
-        match = re.search(pattern, content, re.DOTALL)
-        if not match:
-            return []
-
-        return ast.literal_eval(match.group(1).strip())
+    return cur[key]
 
 
 def get_build_deps():

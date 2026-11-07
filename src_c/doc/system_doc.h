@@ -5,3 +5,4 @@
 #define DOC_SYSTEM_GETPREFPATH "get_pref_path(org, app) -> str\nGet a writeable folder for your app."
 #define DOC_SYSTEM_GETPREFLOCALES "get_pref_locales() -> list[_Locale]\nGet preferred locales set on the system."
 #define DOC_SYSTEM_GETPOWERSTATE "get_power_state() -> PowerState | None\nGet the current power supply state."
+#define DOC_SYSTEM_GETTHEME "get_theme() -> int\nReturns the current system theme."

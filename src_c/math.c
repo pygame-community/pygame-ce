@@ -2069,9 +2069,6 @@ vector_getAttr_swizzle(pgVector *self, PyObject *attr_name)
             case 'y':
             case 'z':
                 idx = attr[i] - 'x';
-                goto swizzle_idx;
-
-            swizzle_idx:
                 if (idx >= self->dim) {
                     goto swizzle_failed;
                 };
@@ -2581,12 +2578,6 @@ vector2_cross(pgVector *self, PyObject *other)
 }
 
 static PyObject *
-vector2_project(pgVector *self, PyObject *other)
-{
-    return (PyObject *)vector_project_onto(self, other);
-}
-
-static PyObject *
 vector2_angle_to(pgVector *self, PyObject *other)
 {
     double angle;
@@ -2689,7 +2680,7 @@ static PyMethodDef vector2_methods[] = {
      DOC_MATH_VECTOR2_ASPOLAR},
     {"from_polar", (PyCFunction)vector2_from_polar, METH_VARARGS,
      DOC_MATH_VECTOR2_FROMPOLAR},
-    {"project", (PyCFunction)vector2_project, METH_O,
+    {"project", (PyCFunction)vector_project_onto, METH_O,
      DOC_MATH_VECTOR2_PROJECT},
     {"copy", (PyCFunction)vector_copy, METH_NOARGS, DOC_MATH_VECTOR2_COPY},
     {"__copy__", (PyCFunction)vector_copy, METH_NOARGS, NULL},
@@ -3496,12 +3487,6 @@ vector3_from_spherical(pgVector *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-static PyObject *
-vector3_project(pgVector *self, PyObject *other)
-{
-    return (PyObject *)vector_project_onto(self, other);
-}
-
 /* For pickling. */
 static PyObject *
 vector3_reduce(PyObject *oself, PyObject *_null)
@@ -3595,7 +3580,7 @@ static PyMethodDef vector3_methods[] = {
      DOC_MATH_VECTOR3_ASSPHERICAL},
     {"from_spherical", (PyCFunction)vector3_from_spherical, METH_VARARGS,
      DOC_MATH_VECTOR3_FROMSPHERICAL},
-    {"project", (PyCFunction)vector3_project, METH_O,
+    {"project", (PyCFunction)vector_project_onto, METH_O,
      DOC_MATH_VECTOR3_PROJECT},
     {"copy", (PyCFunction)vector_copy, METH_NOARGS, DOC_MATH_VECTOR3_COPY},
     {"__copy__", (PyCFunction)vector_copy, METH_NOARGS, NULL},
@@ -3736,7 +3721,7 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
 {
     Py_ssize_t i, dim;
     int ret = 1;
-    double diff, value;
+    double diff;
     pgVector *vec;
     PyObject *other;
 
@@ -3767,127 +3752,81 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
     dim = vec->dim;
 
     double other_coords[VECTOR_MAX_SIZE];
-    if (pg_VectorCoordsFromObj(other, dim, other_coords)) {
-        /* use diff == diff to check for NaN */
-        /* TODO: how should NaN be handled with LT/LE/GT/GE? */
-        switch (op) {
-            case Py_EQ:
-                for (i = 0; i < dim; i++) {
-                    diff = vec->coords[i] - other_coords[i];
-                    if ((diff != diff) || (fabs(diff) >= vec->epsilon)) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            case Py_NE:
-                for (i = 0; i < dim; i++) {
-                    diff = vec->coords[i] - other_coords[i];
-                    if ((diff == diff) && (fabs(diff) < vec->epsilon)) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            case Py_LT:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] >= other_coords[i]) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            case Py_LE:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] > other_coords[i]) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            case Py_GT:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] <= other_coords[i]) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            case Py_GE:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] < other_coords[i]) {
-                        ret = 0;
-                        break;
-                    }
-                }
-                break;
-            default:
-                PyErr_BadInternalCall();
-                return NULL;
+
+    // First, try to interpret the other object as a vector.
+    if (!pg_VectorCoordsFromObj(other, dim, other_coords)) {
+        // If that doesn't work, interpret it as a float.
+        double value = PyFloat_AsDouble(other);
+
+        // If interpreting as a float fails, this object must be unsupported
+        // for this operation. Return Py_NotImplemented.
+        if (value == -1.0 && PyErr_Occurred()) {
+            PyErr_Clear();
+            return Py_NewRef(Py_NotImplemented);
+        }
+
+        // Broadcast into other_coords for unified vector/scalar path below.
+        for (i = 0; i < dim; i++) {
+            other_coords[i] = value;
         }
     }
-    else if (RealNumber_Check(other)) {
-        /* the following PyFloat_AsDouble call should never fail because
-           then RealNumber_Check should have returned false */
-        value = PyFloat_AsDouble(other);
-        switch (op) {
-            case Py_EQ:
-                for (i = 0; i < dim; i++) {
-                    diff = vec->coords[i] - value;
-                    if (diff != diff || fabs(diff) >= vec->epsilon) {
-                        ret = 0;
-                        break;
-                    }
+
+    /* use diff == diff to check for NaN */
+    /* TODO: how should NaN be handled with LT/LE/GT/GE? */
+    switch (op) {
+        case Py_EQ:
+            for (i = 0; i < dim; i++) {
+                diff = vec->coords[i] - other_coords[i];
+                if ((diff != diff) || (fabs(diff) >= vec->epsilon)) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            case Py_NE:
-                for (i = 0; i < dim; i++) {
-                    diff = vec->coords[i] - value;
-                    if (diff == diff && fabs(diff) < vec->epsilon) {
-                        ret = 0;
-                        break;
-                    }
+            }
+            break;
+        case Py_NE:
+            for (i = 0; i < dim; i++) {
+                diff = vec->coords[i] - other_coords[i];
+                if ((diff == diff) && (fabs(diff) < vec->epsilon)) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            case Py_LT:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] >= value) {
-                        ret = 0;
-                        break;
-                    }
+            }
+            break;
+        case Py_LT:
+            for (i = 0; i < dim; i++) {
+                if (vec->coords[i] >= other_coords[i]) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            case Py_LE:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] > value) {
-                        ret = 0;
-                        break;
-                    }
+            }
+            break;
+        case Py_LE:
+            for (i = 0; i < dim; i++) {
+                if (vec->coords[i] > other_coords[i]) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            case Py_GT:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] <= value) {
-                        ret = 0;
-                        break;
-                    }
+            }
+            break;
+        case Py_GT:
+            for (i = 0; i < dim; i++) {
+                if (vec->coords[i] <= other_coords[i]) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            case Py_GE:
-                for (i = 0; i < dim; i++) {
-                    if (vec->coords[i] < value) {
-                        ret = 0;
-                        break;
-                    }
+            }
+            break;
+        case Py_GE:
+            for (i = 0; i < dim; i++) {
+                if (vec->coords[i] < other_coords[i]) {
+                    ret = 0;
+                    break;
                 }
-                break;
-            default:
-                PyErr_BadInternalCall();
-                return NULL;
-        }
-    }
-    else {
-        return Py_NewRef(Py_NotImplemented);
+            }
+            break;
+        default:
+            PyErr_BadInternalCall();
+            return NULL;
     }
 
     return PyBool_FromLong(ret);
@@ -4388,12 +4327,6 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     double t = PyFloat_AsDouble(args[2]);
     RAISE_ARG_TYPE_ERROR("value")
 
-    if (PyErr_Occurred()) {
-        return RAISE(PyExc_ValueError,
-                     "invalid argument values passed to invlerp, numbers "
-                     "might be too small or too big");
-    }
-
     if (b - a == 0) {
         return RAISE(PyExc_ValueError,
                      "the result of b - a needs to be different from zero");
@@ -4401,8 +4334,6 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     return PyFloat_FromDouble(invlerp(a, b, t));
 }
-
-#
 
 static PyObject *
 math_remap(PyObject *self, PyObject *const *args, Py_ssize_t nargs)

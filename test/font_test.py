@@ -587,11 +587,6 @@ class FontTypeTest(unittest.TestCase):
 
         f = pygame_font.Font(None, 20)
 
-        if pygame.font.get_sdl_ttf_version() < (2, 20, 0):
-            with self.assertRaises(pygame.error):
-                f.align = pygame.FONT_CENTER
-            return
-
         self.assertEqual(f.align, pygame.FONT_LEFT)
         f.align = pygame.FONT_CENTER
         self.assertEqual(f.align, pygame.FONT_CENTER)
@@ -835,21 +830,17 @@ class FontTypeTest(unittest.TestCase):
 
         font = pygame_font.Font(None, 16)
 
-        ttf_version = pygame_font.get_sdl_ttf_version()
-        if ttf_version >= (2, 20, 0):
-            self.assertRaises(TypeError, pygame.font.Font.set_script)
-            self.assertRaises(TypeError, pygame.font.Font.set_script, font)
-            self.assertRaises(TypeError, pygame.font.Font.set_script, "hey", "Deva")
-            self.assertRaises(TypeError, font.set_script, 1)
-            self.assertRaises(TypeError, font.set_script, ["D", "e", "v", "a"])
+        self.assertRaises(TypeError, pygame.font.Font.set_script)
+        self.assertRaises(TypeError, pygame.font.Font.set_script, font)
+        self.assertRaises(TypeError, pygame.font.Font.set_script, "hey", "Deva")
+        self.assertRaises(TypeError, font.set_script, 1)
+        self.assertRaises(TypeError, font.set_script, ["D", "e", "v", "a"])
 
-            self.assertRaises(ValueError, font.set_script, "too long by far")
-            self.assertRaises(ValueError, font.set_script, "")
-            self.assertRaises(ValueError, font.set_script, "a")
+        self.assertRaises(ValueError, font.set_script, "too long by far")
+        self.assertRaises(ValueError, font.set_script, "")
+        self.assertRaises(ValueError, font.set_script, "a")
 
-            font.set_script("Deva")
-        else:
-            self.assertRaises(pygame.error, font.set_script, "Deva")
+        font.set_script("Deva")
 
     def test_font_set_direction(self):
         if pygame_font.__name__ == "pygame.ftfont":
@@ -857,21 +848,16 @@ class FontTypeTest(unittest.TestCase):
 
         font = pygame_font.Font(None, 16)
 
-        ttf_version = pygame.font.get_sdl_ttf_version()
-        if ttf_version >= (2, 20, 0):
-            self.assertRaises(TypeError, pygame.font.Font.set_direction)
-            self.assertRaises(TypeError, pygame.font.Font.set_direction, font)
-            self.assertRaises(TypeError, pygame.font.Font.set_direction, "font")
-            self.assertRaises(TypeError, font.set_direction, [1, 1])
-            self.assertRaises(TypeError, font.set_direction, "string1", "string2")
+        self.assertRaises(TypeError, pygame.font.Font.set_direction)
+        self.assertRaises(TypeError, pygame.font.Font.set_direction, font)
+        self.assertRaises(TypeError, pygame.font.Font.set_direction, "font")
+        self.assertRaises(TypeError, font.set_direction, [1, 1])
+        self.assertRaises(TypeError, font.set_direction, "string1", "string2")
 
-            self.assertRaises(ValueError, font.set_direction, -1)
-            self.assertRaises(ValueError, font.set_direction, 4)
+        self.assertRaises(ValueError, font.set_direction, -1)
+        self.assertRaises(ValueError, font.set_direction, 4)
 
-            font.set_direction(pygame.DIRECTION_RTL)
-
-        else:
-            self.assertRaises(pygame.error, font.set_direction, pygame.DIRECTION_RTL)
+        font.set_direction(pygame.DIRECTION_RTL)
 
     def test_font_method_should_raise_exception_after_quit(self):
         # arrange
@@ -946,9 +932,6 @@ class FontTypeTest(unittest.TestCase):
             else:
                 skip_methods.add("set_linesize")
 
-            if version < (2, 20, 0):
-                skip_methods.add("align")
-
         font = pygame_font.Font(None, 10)
         actual_names = []
         for n in sorted(dir(font)):
@@ -1022,13 +1005,9 @@ class FontTypeTest(unittest.TestCase):
                 ("strikethrough", True),
                 ("outline", 1),
                 ("point_size", 1),
+                ("align", 1),
             ]
             skip_properties = set()
-            version = pygame.font.get_sdl_ttf_version()
-            if version >= (2, 20, 0):
-                properties.append(("align", 1))
-            else:
-                skip_properties.add("align")
 
         font = pygame_font.Font(None, 10)
         actual_names = []

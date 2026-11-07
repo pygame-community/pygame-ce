@@ -23,3 +23,4 @@
 #define DOC_COLOR_LERP "lerp(color, amount) -> Color\nReturns a linear interpolation to the given Color."
 #define DOC_COLOR_PREMULALPHA "premul_alpha() -> Color\nReturns a Color where the r,g,b components have been multiplied by the alpha."
 #define DOC_COLOR_UPDATE "update(r, g, b, a=255, /) -> None\nupdate(rgbvalue, /) -> None\nSets the elements of the color."
+#define DOC_COLOR_COPY "copy() -> Self\nReturns a copy of the Color."

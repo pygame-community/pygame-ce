@@ -91,6 +91,8 @@ static PyObject *
 _premul_alpha(pgColorObject *, PyObject *);
 static PyObject *
 _color_update(pgColorObject *self, PyObject *const *args, Py_ssize_t nargs);
+static PyObject *
+_color_copy(pgColorObject *self, PyObject *_null);
 
 /* Generic functions */
 static PyObject *
@@ -248,6 +250,8 @@ static PyMethodDef _color_methods[] = {
     {"premul_alpha", (PyCFunction)_premul_alpha, METH_NOARGS,
      DOC_COLOR_PREMULALPHA},
     {"update", (PyCFunction)_color_update, METH_FASTCALL, DOC_COLOR_UPDATE},
+    {"copy", (PyCFunction)_color_copy, METH_NOARGS, DOC_COLOR_COPY},
+    {"__copy__", (PyCFunction)_color_copy, METH_NOARGS, NULL},
 
     /**
      * While object.__bytes__(self) is listed in the Data Model reference (see:
@@ -896,6 +900,13 @@ _color_update(pgColorObject *self, PyObject *const *args, Py_ssize_t nargs)
                      "update can take only 1, 3 or 4 arguments");
     }
     Py_RETURN_NONE;
+}
+
+static PyObject *
+_color_copy(pgColorObject *self, PyObject *_null)
+{
+    return (PyObject *)_color_new_internal_length(Py_TYPE(self), self->data,
+                                                  self->len);
 }
 
 /**
