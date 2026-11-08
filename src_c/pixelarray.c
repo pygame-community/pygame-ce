@@ -895,6 +895,12 @@ _pxarray_item(pgPixelArrayObject *array, Py_ssize_t index)
                                        1);
 }
 
+/**
+ * Assigns a PixelArray to a range along another array's first dimension.
+ *
+ * Single-element source dimensions are broadcast to matching destination
+ * dimensions. Raises ValueError if either PixelArray has been closed.
+ */
 static int
 _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
                     pgPixelArrayObject *val)
@@ -904,13 +910,13 @@ _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
     Py_ssize_t dim1 = array->shape[1];
     Py_ssize_t stride0 = high >= low ? array->strides[0] : -array->strides[0];
     Py_ssize_t stride1 = array->strides[1];
-    Uint8 *pixels = array->pixels + low * array->strides[0];
+    Uint8 *pixels;
     int bpp;
     Py_ssize_t val_dim0 = val->shape[0];
     Py_ssize_t val_dim1 = val->shape[1];
     Py_ssize_t val_stride0 = val->strides[0];
     Py_ssize_t val_stride1 = val->strides[1];
-    Uint8 *val_pixels = val->pixels;
+    Uint8 *val_pixels;
     SDL_Surface *val_surf;
     int val_bpp;
     Uint8 *pixelrow;
@@ -926,6 +932,14 @@ _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
         PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
         return -1;
     }
+    if (val->surface == NULL) {
+        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
+        return -1;
+    }
+
+    /* Closing either array can release the backing Surface and its pixels. */
+    pixels = array->pixels + low * array->strides[0];
+    val_pixels = val->pixels;
 
     surf = pgSurface_AsSurface(array->surface);
     val_surf = pgSurface_AsSurface(val->surface);
@@ -1557,9 +1571,9 @@ _get_subslice(PyObject *op, Py_ssize_t length, Py_ssize_t *start,
             return -1;
         }
     }
-    else if (PyLong_Check(op)) {
+    else if (PyIndex_Check(op)) {
         /* Plain index: array[x, */
-        *start = PyLong_AsSsize_t(op);
+        *start = PyNumber_AsSsize_t(op, PyExc_IndexError);
         if (*start < 0) {
             if (*start == -1 && PyErr_Occurred()) {
                 return -1;
@@ -1573,7 +1587,12 @@ _get_subslice(PyObject *op, Py_ssize_t length, Py_ssize_t *start,
         *stop = (*start) + 1;
         *step = 0;
     }
-    /* No errors. */
+    else {
+        PyErr_SetString(PyExc_TypeError,
+                        "index must be an integer, slice, or ellipsis");
+        return -1;
+    }
+
     return 0;
 }
 
@@ -1606,10 +1625,8 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
         }
 
         obj = PyTuple_GET_ITEM(op, 0);
-        if (obj == Py_Ellipsis || obj == Py_None) {
-            /* Operator is the ellipsis or None
-             * array[...,XXX], array[None,XXX]
-             */
+        if (obj == Py_Ellipsis) {
+            /* Operator is the ellipsis: array[..., XXX] */
             xstart = 0;
             xstop = dim0;
             xstep = 1;
@@ -1621,10 +1638,8 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
 
         if (size == 2) {
             obj = PyTuple_GET_ITEM(op, 1);
-            if (obj == Py_Ellipsis || obj == Py_None) {
-                /* Operator is the ellipsis or None
-                 * array[XXX,...], array[XXX,None]
-                 */
+            if (obj == Py_Ellipsis) {
+                /* Operator is the ellipsis: array[XXX, ...] */
                 ystart = 0;
                 ystop = dim1;
                 ystep = 1;
@@ -1642,6 +1657,13 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
 
         /* Null value? */
         if (xstart == xstop || ystart == ystop) {
+            /* The index protocol can execute Python code, which may close the
+             * PixelArray while the tuple indices are being parsed.
+             */
+            if (array->surface == NULL) {
+                return RAISE(PyExc_ValueError,
+                             "Operation on closed PixelArray.");
+            }
             Py_RETURN_NONE;
         }
 
@@ -1689,6 +1711,12 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
                  "index must be an integer, sequence or slice");
 }
 
+/**
+ * Handles assignments through PixelArray mapping subscripts.
+ *
+ * Dispatches tuple, ellipsis, slice, and integer index assignments to the
+ * corresponding PixelArray assignment helpers.
+ */
 static int
 _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
                        PyObject *value)
@@ -1718,10 +1746,8 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
         }
 
         obj = PyTuple_GET_ITEM(op, 0);
-        if (obj == Py_Ellipsis || obj == Py_None) {
-            /* Operator is the ellipsis or None
-             * array[...,XXX], array[None,XXX]
-             */
+        if (obj == Py_Ellipsis) {
+            /* Operator is the ellipsis: array[..., XXX] */
             xstart = 0;
             xstop = dim0;
             xstep = 1;
@@ -1733,10 +1759,8 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
 
         if (size == 2) {
             obj = PyTuple_GET_ITEM(op, 1);
-            if (obj == Py_Ellipsis || obj == Py_None) {
-                /* Operator is the ellipsis or None
-                 * array[XXX,...], array[XXX,None]
-                 */
+            if (obj == Py_Ellipsis) {
+                /* Operator is the ellipsis: array[XXX, ...] */
                 ystart = 0;
                 ystop = dim1;
                 ystep = 1;
@@ -1754,6 +1778,14 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
 
         /* Null value? Do nothing then. */
         if (xstart == xstop || ystart == ystop) {
+            /* The index protocol can execute Python code, which may close the
+             * PixelArray while the tuple indices are being parsed.
+             */
+            if (array->surface == NULL) {
+                PyErr_SetString(PyExc_ValueError,
+                                "Operation on closed PixelArray.");
+                return -1;
+            }
             return 0;
         }
 
