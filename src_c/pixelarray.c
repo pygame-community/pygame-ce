@@ -1574,10 +1574,10 @@ _get_subslice(PyObject *op, Py_ssize_t length, Py_ssize_t *start,
     else if (PyIndex_Check(op)) {
         /* Plain index: array[x, */
         *start = PyNumber_AsSsize_t(op, PyExc_IndexError);
-        if (*start == -1 && PyErr_Occurred()) {
-            return -1;
-        }
         if (*start < 0) {
+            if (*start == -1 && PyErr_Occurred()) {
+                return -1;
+            }
             *start += length;
         }
         if (*start >= length || *start < 0) {
