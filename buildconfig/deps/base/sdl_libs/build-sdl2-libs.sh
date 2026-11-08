@@ -5,8 +5,8 @@ cd $(dirname `readlink -f "$0"`)
 
 SDL2_VER="2.32.10"
 SDL2="SDL2-$SDL2_VER"
-IMG2_VER="2.8.12"
-IMG2="SDL2_image-$IMG2_VER"
+IMG2_VER="2.8.13-pgce"
+IMG2="SDL_image-$IMG2_VER"
 TTF2_VER="2.24.0"
 TTF2="SDL2_ttf-$TTF2_VER"
 MIX2_VER="2.8.2"
@@ -15,7 +15,7 @@ MIX2="SDL2_mixer-$MIX2_VER"
 
 # Download
 curl -sL --retry 10 https://github.com/libsdl-org/SDL/releases/download/release-$SDL2_VER/$SDL2.tar.gz > ${SDL2}.tar.gz
-curl -sL --retry 10 https://github.com/libsdl-org/SDL_image/releases/download/release-$IMG2_VER/$IMG2.tar.gz > ${IMG2}.tar.gz
+curl -sL --retry 10 https://github.com/pygame-community/SDL_image/archive/refs/tags/$IMG2_VER.tar.gz > ${IMG2}.tar.gz
 curl -sL --retry 10 https://github.com/libsdl-org/SDL_mixer/releases/download/release-$MIX2_VER/$MIX2.tar.gz > ${MIX2}.tar.gz
 curl -sL --retry 10 https://github.com/libsdl-org/SDL_ttf/releases/download/release-$TTF2_VER/$TTF2.tar.gz > ${TTF2}.tar.gz
 sha512sum -c sdl2.sha512

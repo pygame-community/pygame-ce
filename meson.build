@@ -214,7 +214,7 @@ if plat == 'win'
         warning('Missing windows prebuilts. Falling back to legacy prebuilts')
 
         sdl_ver = (sdl_api == 3) ? '3.4.0' : '2.32.10'
-        sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.12'
+        sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.13'
         sdl_mixer_ver = (sdl_api == 3) ? '3.2.2' : '2.8.2'
         sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
 
@@ -266,7 +266,7 @@ if plat == 'win'
             pg_lib_dirs += sdl_image_lib_dir
             dlls += [
                 sdl_image_lib_dir / '@0@.dll'.format(sdl_image),
-                sdl_image_lib_dir / 'optional' / (sdl_api == 3 ? 'libtiff-6.dll' : 'libtiff-5.dll'),
+                sdl_image_lib_dir / 'optional' / 'libtiff-6.dll',
                 sdl_image_lib_dir / 'optional' / 'libwebp-7.dll',
                 sdl_image_lib_dir / 'optional' / 'libwebpdemux-2.dll',
             ]
