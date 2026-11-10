@@ -630,21 +630,25 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     if (!SDL_SetPointerProperty(create_props,
                                 SDL_PROP_RENDERER_CREATE_WINDOW_POINTER,
                                 window->_win)) {
+        SDL_DestroyProperties(create_props);
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     if (!SDL_SetStringProperty(create_props,
                                SDL_PROP_RENDERER_CREATE_NAME_STRING, name)) {
+        SDL_DestroyProperties(create_props);
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     if (vsync) {
         if (!SDL_SetNumberProperty(
                 create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER,
                 1)) {
+            SDL_DestroyProperties(create_props);
             RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
         }
     }
 
     renderer = SDL_CreateRendererWithProperties(create_props);
+    SDL_DestroyProperties(create_props);
 #else
     Uint32 flags = 0;
     if (accelerated >= 0) {
