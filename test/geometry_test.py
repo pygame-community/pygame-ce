@@ -631,6 +631,15 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(repr(circle), c_repr)
         self.assertEqual(circle.__repr__(), c_repr)
 
+    def test_subclass_repr_uses_runtime_type_name(self):
+        class CustomCircle(Circle):
+            pass
+
+        self.assertEqual(
+            repr(CustomCircle((10.3, 3.2), 4.3)),
+            "CustomCircle((10.3, 3.2), 4.3)",
+        )
+
     def test_copy(self):
         c = Circle(10, 10, 4)
         # check 1 arg passed
@@ -2247,6 +2256,15 @@ class LineTypeTest(unittest.TestCase):
         line = Line(10.1, 10.2, 4.3, 56.4)
         self.assertEqual(repr(line), l_repr)
         self.assertEqual(line.__repr__(), l_repr)
+
+    def test_subclass_repr_uses_runtime_type_name(self):
+        class CustomLine(Line):
+            pass
+
+        self.assertEqual(
+            repr(CustomLine(10.1, 10.2, 4.3, 56.4)),
+            "CustomLine((10.1, 10.2), (4.3, 56.4))",
+        )
 
 
 if __name__ == "__main__":
