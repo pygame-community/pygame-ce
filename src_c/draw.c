@@ -1334,7 +1334,7 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
     if (pgSurface_Check(colorobj)) {
         pat_surfobj = ((pgSurfaceObject *)colorobj);
 
-        pattern = PG_ConvertSurface(pat_surfobj->surf, surf->format);
+        pattern = PG_ConvertSurface(pat_surfobj->surf, surf);
 
         if (pattern == NULL) {
             return RAISE(PyExc_RuntimeError, "error converting pattern surf");
