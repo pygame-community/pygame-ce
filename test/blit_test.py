@@ -32,6 +32,37 @@ class BlitTest(unittest.TestCase):
         # blend(255, sA, 255) = 255
         # blend(s, sA, d) <= 255
 
+    def test_SRCALPHA_onto_alpha_format_without_SRCALPHA(self):
+        """A per pixel alpha blit onto a 32 bit surface whose format has an
+        alpha channel but no SRCALPHA flag keeps the destination's alpha.
+
+        On macOS the display format has an alpha channel, so a plain
+        pygame.Surface made after set_mode is such a surface (issue #3796).
+        """
+        masks = (0xFF0000, 0xFF00, 0xFF, 0xFF000000)
+        # 21 pixels wide: the SIMD blitters' vector loops and their leftovers
+        dest = pygame.Surface((21, 3), 0, 32, masks)
+        self.assertFalse(dest.get_flags() & SRCALPHA)
+        dest.fill((255, 0, 0))
+        src = pygame.Surface((21, 3), SRCALPHA, 32)
+        src.fill((0, 0, 255, 100))
+
+        dest.blit(src, (0, 0))
+
+        for x in range(21):
+            self.assertEqual(dest.get_at((x, 1)), (155, 0, 100, 255))
+
+        # what the issue saw: a fully transparent blit on top then wiped
+        # those pixels to (0, 0, 0, 0)
+        screen = pygame.Surface((21, 3), SRCALPHA, 32)
+        screen.fill((255, 255, 255))
+        screen.blit(dest, (0, 0))
+        clear = pygame.Surface((21, 3), SRCALPHA, 32)
+        clear.fill((0, 0, 0, 0))
+        screen.blit(clear, (0, 0))
+        for x in range(21):
+            self.assertEqual(screen.get_at((x, 1)), (155, 0, 100, 255))
+
     def test_BLEND(self):
         """BLEND_ tests."""
 

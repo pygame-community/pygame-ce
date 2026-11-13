@@ -199,12 +199,16 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
     SETUP_16BIT_SHUFFLE_OUT
     ADD_SHUFFLE_OUT_ALPHA_CONTROL
 
-    __m256i src_alpha, temp;
+    __m256i src_alpha, temp, orig_dst;
 
     /* The location of the destination's missing alpha channel can be masked
      * out by composing all the other channels' masks. */
     __m256i mask_out_alpha = _mm256_set1_epi32(
         (info->dst->Rmask | info->dst->Gmask | info->dst->Bmask));
+
+    /* The destination's own alpha bits, kept through the blend: zero when it
+     * has no alpha channel (RGBX), so that case is unchanged. */
+    __m256i keep_dst_alpha = _mm256_set1_epi32((int)info->dst->Amask);
 
     /* Original 'Straight Alpha' blending equation:
         --------------------------------------------
@@ -243,6 +247,8 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
         */
 
     RUN_AVX2_BLITTER(
+        orig_dst = pixels_dst;
+
         RUN_16BIT_SHUFFLE_OUT(
             src_alpha = _mm256_shuffle_epi8(shuff_src, shuff_out_alpha);
             temp = _mm256_sub_epi16(shuff_src, shuff_dst);
@@ -252,11 +258,14 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
             shuff_dst = _mm256_add_epi16(shuff_dst, shuff_src);
             shuff_dst = _mm256_srli_epi16(shuff_dst, 8););
 
-        /* It seems like the destination pixel alpha shouldn't matter, since
-         * it is RGBX, but it has to be zero. I suspect this is a weak spot
-         * in the other blitting routines, that they need alpha 0 from these
-         * surfaces. */
-        pixels_dst = _mm256_and_si256(pixels_dst, mask_out_alpha);)
+        /* For an RGBX destination the alpha byte has to stay zero (other
+         * blitters expect alpha 0 from these surfaces); a destination with an
+         * alpha channel but no blending (a 32 bit surface without SRCALPHA in
+         * the display format, which has alpha on macOS) keeps its own alpha.
+         * Clearing it there left those pixels transparent (issue #3796). */
+        pixels_dst =
+            _mm256_or_si256(_mm256_and_si256(pixels_dst, mask_out_alpha),
+                            _mm256_and_si256(orig_dst, keep_dst_alpha));)
 }
 #else
 void
