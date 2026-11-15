@@ -186,11 +186,21 @@ draw = py.extension_module(
     subdir: pg,
 )
 
+# SDL_image 3.4.0+ ships a TGA writer; when building against SDL3 with it
+# available, link it into the image module so pygame.image.save() can use it
+# instead of the built-in implementation.
+image_c_args = []
+image_deps = pg_base_deps
+if sdl_api == 3 and sdl_image_dep.found()
+    image_c_args += ['-DPG_IMG_USE_SDL_IMAGE_TGA=1']
+    image_deps += sdl_image_dep
+endif
+
 image = py.extension_module(
     'image',
     'image.c',
-    c_args: warnings_error,
-    dependencies: pg_base_deps,
+    c_args: warnings_error + image_c_args,
+    dependencies: image_deps,
     install: true,
     subdir: pg,
 )
