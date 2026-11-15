@@ -2629,7 +2629,10 @@ PyInit_pygame_static()
 
     // base, color, rect, surflock, surface, window
     load_submodule("pygame", PyInit_display(), "display");
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
     load_submodule("pygame", PyInit__render(), "_render");
+#endif
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
@@ -2697,7 +2700,11 @@ PyInit_pygame_static()
 #include "rwobject.c"
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
 #include "render.c"
+#endif
+
 #include "image.c"
 
 #include "imageext.c"
