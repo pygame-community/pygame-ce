@@ -1074,9 +1074,9 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 
     char *keywords[] = {"renderer",  "size",   "depth",         "static",
                         "streaming", "target", "scale_quality", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|ipppi", keywords,
-                                     &renderer, &sizeobj, &depth, &staticc,
-                                     &streaming, &target, &scale_quality)) {
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "O!O|ipppi", keywords, &pgRenderer_Type, &renderer,
+            &sizeobj, &depth, &staticc, &streaming, &target, &scale_quality)) {
         return -1;
     }
     if (depth == 0 || depth == 32) {
