@@ -5,7 +5,18 @@ import unittest
 import weakref
 
 import pygame
-import pygame._render as _render
+from pygame.version import SDL
+
+if SDL >= (3, 0, 0):
+    import pygame._render as _render
+else:
+    _render = None
+
+
+def setUpModule():
+    if SDL < (3, 0, 0):
+        raise unittest.SkipTest("SDL2 support for pygame._render is discontinued")
+
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
