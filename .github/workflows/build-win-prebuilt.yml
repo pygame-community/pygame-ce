@@ -146,13 +146,7 @@ jobs:
           cmake --build build/portmidi --config Release
           cmake --install build/portmidi --config Release
 
-      - name: Build SDL2_mixer
-        run: |
-          msbuild src/SDL_mixer/VisualC/SDL_mixer.vcxproj -m -nologo \
-            -p:Configuration=Release -p:Platform=${{ matrix.vs-platform }} \
-            "-p:SolutionDir=$(cygpath -w "$PWD/src/SDL_mixer/VisualC")\\"
-
-      - name: Build SDL2_ttf
+      - name: Patch SDL2_ttf
         run: |
           # The SDL2 branch vcxproj misses a harfbuzz source file, which fails
           # the link with an unresolved iup_delta_optimize. Add it next to its
@@ -173,9 +167,17 @@ jobs:
               print('patched')
           EOF
 
-          msbuild src/SDL_ttf/VisualC/SDL_ttf.vcxproj -m -nologo \
-            -p:Configuration=Release -p:Platform=${{ matrix.vs-platform }} \
-            "-p:SolutionDir=$(cygpath -w "$PWD/src/SDL_ttf/VisualC")\\"
+      # pwsh, because bash doesn't see the PATH that setup-msvc-dev sets
+      - name: Build SDL2_mixer and SDL2_ttf
+        shell: pwsh
+        run: |
+          # SolutionDir needs the trailing backslash, the projects append to it
+          foreach ($proj in 'SDL_mixer', 'SDL_ttf') {
+            msbuild "src/$proj/VisualC/$proj.vcxproj" -m -nologo `
+              -p:Configuration=Release -p:Platform=${{ matrix.vs-platform }} `
+              "-p:SolutionDir=$PWD\src\$proj\VisualC\\"
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
 
       - name: Assemble
         run: |
@@ -222,11 +224,14 @@ jobs:
           } > out/sources-$A.txt
 
       - name: Show DLL dependencies
+        shell: pwsh
         run: |
-          for dll in $(find out -name '*.dll' -not -path '*/optional/*'); do
-            echo "== $dll"
-            dumpbin -nologo -dependents "$(cygpath -w "$dll")" | grep -i '\.dll$'
-          done
+          Get-ChildItem out -Recurse -Filter *.dll |
+            Where-Object { $_.FullName -notmatch '\\optional\\' } |
+            ForEach-Object {
+              "== $($_.FullName)"
+              dumpbin -nologo -dependents $_.FullName | Select-String '\.dll$'
+            }
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -257,7 +262,7 @@ jobs:
 
           Built by the \`${{ github.workflow }}\` workflow in
           ${{ github.repository }}, run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }},
-          from commit ${{ github.sha }}. MSVC $msvc, x86 and x64, Release.
+          from commit ${{ github.event.pull_request.head.sha || github.sha }}. MSVC $msvc, x86 and x64, Release.
 
           | Folder | Contents | Source |
           |---|---|---|
