@@ -722,10 +722,17 @@ The following file formats are supported
       after the current Sound is finished. Each channel can only have a single
       Sound queued at a time. The queued Sound will only play if the current
       playback finished automatically. It is cleared on any other call to
-      ``Channel.stop()`` or ``Channel.play()``.
+      ``Channel.play()``, ``Channel.stop()``, as well as if the channel is
+      stopped indirectly by :meth:`Sound.stop` or :func:`pygame.mixer.stop`.
 
       If there is no sound actively playing on the Channel then the Sound will
       begin playing immediately.
+
+      .. note:: Due to a change in SDL_mixer 2.8.0 (starting in pygame-ce 2.4.1
+         in the standard build), the queued Sound was also played after
+         ``Channel.stop()``, the opposite of the documented behavior.
+         Pygame-ce 2.5.9 restores the historical behavior of discarding
+         the queued Sound on ``Channel.stop()``.
 
       .. ## Channel.queue ##
 
