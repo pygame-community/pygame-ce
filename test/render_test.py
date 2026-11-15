@@ -13,11 +13,6 @@ else:
     _render = None
 
 
-def setUpModule():
-    if SDL < (3, 0, 0):
-        raise unittest.SkipTest("SDL2 support for pygame._render is discontinued")
-
-
 IS_PYPY = "PyPy" == platform.python_implementation()
 
 
@@ -33,6 +28,7 @@ class DrawableObject:
         self.dest = dest
 
 
+@unittest.skipIf(SDL < (3, 0, 0), "SDL2 support for pygame._render is discontinued")
 class RendererTest(unittest.TestCase):
     def setUp(self):
         self.window = pygame.Window(size=(100, 100))
@@ -256,6 +252,7 @@ class RendererTest(unittest.TestCase):
             self.assertEqual(sys.getrefcount(r), 1)
 
 
+@unittest.skipIf(SDL < (3, 0, 0), "SDL2 support for pygame._render is discontinued")
 class TextureTest(unittest.TestCase):
     def setUp(self):
         self.window = pygame.Window(size=(100, 100))
