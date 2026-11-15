@@ -94,32 +94,20 @@ def get_urls(x86=True, x64=True):
         'f4e077729ee5d1277bf961d78d49d4ae3b9308b6'
         ],
         [
-        'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.24.0/SDL2_ttf-devel-2.24.0-VC.zip',
-        '2d18b9a4fc2ec0eee80de2a946b088d4e6efd0ee'
-        ],
-        [
         'https://github.com/libsdl-org/SDL_ttf/releases/download/release-3.2.2/SDL3_ttf-devel-3.2.2-VC.zip',
         '3786bc016d89ca4cf9739e4d342ca29e3e29c137'
         ],
         [
-        'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.2/SDL2_mixer-devel-2.8.2-VC.zip',
-        '7e01cc961326ec44a61009c61a409310489aee6b',
-        ],
-        [
         'https://github.com/libsdl-org/SDL_mixer/releases/download/release-3.2.2/SDL3_mixer-devel-3.2.2-VC.zip',
         '08f249449d89eda826db548fcefcba759d97245d'
-        ]
+        ],
+        # freetype, portmidi, SDL2_mixer and SDL2_ttf for both x86 and x64,
+        # built by .github/workflows/build-win-prebuilt.yml
+        [
+        'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-pygame-ce-sdl2-20261115.zip',
+        'c796aaa270eede013f5b9d49bb72dca91d0c50e2'
+        ],
     ])
-    if x86:
-        url_sha1.append([
-         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x86-pygame-2.1.4-20220319_2.zip',
-         '6970a35c62fa517e9782dc92299201bf2a0ec917'
-        ])
-    if x64:
-        url_sha1.append([
-         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x64-pygame-2.1.4-20220319_2.zip',
-         '3aaacd02f0c2ed497e2615d3a1f89c250a32f1fa'
-        ])
     return url_sha1
 
 def download_prebuilts(temp_dir, x86=True, x64=True):
@@ -182,16 +170,9 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
 
     Leaves the files in temp_dir. copies to move_to_dir
     """
-    prebuilt_x64 = os.path.join(
-        temp_dir,
-        'prebuilt-x64-pygame-2.1.4-20220319_2',
-        'prebuilt-x64'
-    )
-    prebuilt_x86 = os.path.join(
-        temp_dir,
-        'prebuilt-x86-pygame-2.1.4-20220319_2',
-        'prebuilt-x86'
-    )
+    bundle_dir = os.path.join(temp_dir, 'prebuilt-pygame-ce-sdl2-20261115')
+    prebuilt_x64 = os.path.join(bundle_dir, 'prebuilt-x64')
+    prebuilt_x86 = os.path.join(bundle_dir, 'prebuilt-x86')
 
     ignore = None
     def copy(src, dst):
@@ -238,8 +219,8 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         )
         copy(
             os.path.join(
-                temp_dir,
-                'SDL2_mixer-devel-2.8.2-VC/SDL2_mixer-2.8.2'
+                bundle_dir,
+                'SDL2_mixer-2.8.2'
             ),
             os.path.join(
                 move_to_dir,
@@ -260,13 +241,13 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         )
         copy(
             os.path.join(
-                temp_dir,
-                'SDL2_ttf-devel-2.24.0-VC/SDL2_ttf-2.24.0'
+                bundle_dir,
+                'SDL2_ttf-2.25.0'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_ttf-2.24.0'
+                'SDL2_ttf-2.25.0'
             )
         )
         copy(
