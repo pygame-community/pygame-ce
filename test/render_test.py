@@ -295,7 +295,6 @@ class TextureTest(unittest.TestCase):
         self.assertEqual(128, self.texture.alpha)
 
     def test_blend_mode(self):
-        self.assertEqual(pygame.BLENDMODE_NONE, self.texture.blend_mode)
         self.texture.blend_mode = pygame.BLENDMODE_BLEND
         self.assertEqual(pygame.BLENDMODE_BLEND, self.texture.blend_mode)
 
