@@ -194,7 +194,7 @@ image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
             result = (ret == NULL ? -2 : 0);
         }
         else if (oencoded == Py_None) {
-            SDL_RWops *rw = pgRWops_FromFileObject(obj);
+            SDL_RWops *rw = pgRWops_FromFileObjectNoClose(obj);
             if (rw != NULL) {
                 if (!strcasecmp(ext, "bmp")) {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -209,6 +209,8 @@ image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
                 else {
                     result = SaveTGA_RW(surf, rw, 1);
                 }
+                /* release the references to obj, this does not close obj */
+                SDL_RWclose(rw);
             }
             else {
                 result = -2;
