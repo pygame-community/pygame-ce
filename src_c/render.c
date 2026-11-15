@@ -1238,6 +1238,8 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     RENDERER_PROPERTY_ERROR_CHECK(
         SDL_SetTextureBlendMode(self->texture, SDL_BLENDMODE_NONE))
 #if !SDL_VERSION_ATLEAST(3, 4, 0)
+    /* retain the default scale mode when
+       SDL_SetDefaultTextureScaleMode isn't available */
     RENDERER_PROPERTY_ERROR_CHECK(
         SDL_SetTextureScaleMode(self->texture, SDL_ScaleModeNearest))
 #endif
