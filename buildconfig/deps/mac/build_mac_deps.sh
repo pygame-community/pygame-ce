@@ -66,7 +66,7 @@ else
     export PG_BASE_MESON_FLAGS="$PG_BASE_MESON_FLAGS --cross-file $(pwd)/macos_x86_64.ini"
 fi
 
-cd ../manylinux-build/docker_base
+cd ../base
 
 # Now start installing dependencies
 # ---------------------------------

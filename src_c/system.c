@@ -36,17 +36,8 @@ pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
     INSERT_INSTRUCTIONSET_INFO("AVX512F", SDL_HasAVX512F);
     INSERT_INSTRUCTIONSET_INFO("NEON", SDL_HasNEON);
     INSERT_INSTRUCTIONSET_INFO("ARMSIMD", SDL_HasARMSIMD);
-#if SDL_VERSION_ATLEAST(2, 24, 0)
     INSERT_INSTRUCTIONSET_INFO("LSX", SDL_HasLSX);
     INSERT_INSTRUCTIONSET_INFO("LASX", SDL_HasLASX);
-#else
-    if (PyDict_SetItemString(instruction_sets, "LSX", Py_False)) {
-        goto error;
-    }
-    if (PyDict_SetItemString(instruction_sets, "LASX", Py_False)) {
-        goto error;
-    }
-#endif
 
 #undef INSERT_INSTRUCTIONSET_INFO
 

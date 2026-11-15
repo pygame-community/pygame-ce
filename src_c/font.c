@@ -511,13 +511,9 @@ font_getter_align(PyObject *self, void *closure)
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_GetFontWrapAlignment(font));
-#elif SDL_TTF_VERSION_ATLEAST(2, 20, 0)
+#else
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_GetFontWrappedAlign(font));
-#else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.20.0 or above.");
 #endif
 }
 
@@ -529,7 +525,6 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
         RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("align", value);
@@ -556,12 +551,6 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
     TTF_SetFontWrappedAlign(font, val);
 #endif
     return 0;
-#else
-    PyErr_SetString(pgExc_SDLError,
-                    "pygame.font not compiled with a new enough SDL_ttf "
-                    "version. Needs SDL_ttf 2.20.0 or above.");
-    return -1;
-#endif
 }
 
 /* Implements get_strikethrough() */
@@ -1041,7 +1030,6 @@ font_set_script(PyObject *self, PyObject *arg)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     Py_ssize_t size;
     const char *script_code;
@@ -1066,11 +1054,6 @@ font_set_script(PyObject *self, PyObject *arg)
     {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-#else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.20.0 or above.");
-#endif
     Py_RETURN_NONE;
 }
 
@@ -1081,7 +1064,6 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     int direction;
     char *kwds[] = {"direction", NULL};
@@ -1150,11 +1132,6 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-#else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.20.0 or above.");
-#endif
     Py_RETURN_NONE;
 }
 

@@ -58,7 +58,7 @@ export PG_BASE_MESON_FLAGS="--prefix=$PG_DEP_PREFIX \
 # clean msys versions of dependencies we are about to build
 bash ./clean_sys_deps.sh
 
-cd ../manylinux-build/docker_base
+cd ../base
 
 # Now start installing dependencies
 # ---------------------------------
@@ -124,4 +124,4 @@ done
 
 # Finally, clean the deps folder to only include required stuff
 cd $BASE_DIR
-python3 buildconfig/windependencies/clean_windows_deps.py $PG_DEP_PREFIX
+python3 buildconfig/deps/win/clean_windows_deps.py $PG_DEP_PREFIX

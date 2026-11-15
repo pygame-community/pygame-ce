@@ -14,13 +14,6 @@ import pygame.image
 import pygame.pkgdata
 from pygame.tests.test_utils import example_path, png, tostring
 
-sdl_image_svg_jpeg_save_bug = False
-_sdl_image_ver = pygame.image.get_sdl_image_version()
-if _sdl_image_ver is not None:
-    sdl_image_svg_jpeg_save_bug = (
-        _sdl_image_ver <= (2, 0, 5) and pygame.get_sdl_byteorder() == pygame.BIG_ENDIAN
-    )
-
 PG_DEPS_FROM_SYSTEM = "PG_DEPS_FROM_SYSTEM" in os.environ
 
 
@@ -105,10 +98,6 @@ class ImageModuleTest(unittest.TestCase):
                     img_file = io.BytesIO(img_bytes)
                     image = pygame.image.load(img_file)
 
-    @unittest.skipIf(
-        sdl_image_svg_jpeg_save_bug,
-        "SDL_image 2.0.5 and older has a big endian bug in jpeg saving",
-    )
     def testSaveJPG(self):
         """JPG equivalent to pygame-ce issue #226 - color channel swapping
 
@@ -202,10 +191,6 @@ class ImageModuleTest(unittest.TestCase):
             del reader
             os.remove(f_path)
 
-    @unittest.skipIf(
-        pygame.image.get_sdl_image_version() == (2, 0, 5),
-        "SDL image 2.0.5 png saving will save this 24 bit as RGBA, causing reader.asRGB8 to fail",
-    )
     @unittest.skipIf(
         PG_DEPS_FROM_SYSTEM,
         "If we are using system dependencies, we don't know the backend used "
@@ -486,34 +471,23 @@ class ImageModuleTest(unittest.TestCase):
         # uppercase too... JPG
         formats = formats + [x.upper() for x in formats]
 
-        SDL_Im_version = pygame.image.get_sdl_image_version()
-        # We assume here that minor version and patch level of SDL_Image
-        # never goes above 99
-        isAtLeastSDL_image_2_0_2 = (SDL_Im_version is not None) and (
-            SDL_Im_version[0] * 10000 + SDL_Im_version[1] * 100 + SDL_Im_version[2]
-        ) >= 20002
         for fmt in formats:
             tmp_file, tmp_filename = tempfile.mkstemp(suffix=f".{fmt}")
-            if not isAtLeastSDL_image_2_0_2 and fmt.lower() == "jpg":
-                with os.fdopen(tmp_file, "wb") as handle:
-                    with self.assertRaises(pygame.error):
-                        pygame.image.save(s, handle, tmp_filename)
-            else:
-                with os.fdopen(tmp_file, "r+b") as handle:
-                    pygame.image.save(s, handle, tmp_filename)
+            with os.fdopen(tmp_file, "r+b") as handle:
+                pygame.image.save(s, handle, tmp_filename)
 
-                    if fmt.lower() in magic_hex:
-                        # Test the magic numbers at the start of the file to
-                        # ensure they are saved as the correct file type.
-                        handle.seek(0)
-                        self.assertEqual(
-                            (1, fmt), (check_magic(handle, magic_hex[fmt.lower()]), fmt)
-                        )
-                    # load the file to make sure it was saved correctly.
-                    handle.flush()
+                if fmt.lower() in magic_hex:
+                    # Test the magic numbers at the start of the file to
+                    # ensure they are saved as the correct file type.
                     handle.seek(0)
-                    s2 = pygame.image.load(handle, tmp_filename)
-                    self.assertEqual(s2.get_at((0, 0)), s.get_at((0, 0)))
+                    self.assertEqual(
+                        (1, fmt), (check_magic(handle, magic_hex[fmt.lower()]), fmt)
+                    )
+                # load the file to make sure it was saved correctly.
+                handle.flush()
+                handle.seek(0)
+                s2 = pygame.image.load(handle, tmp_filename)
+                self.assertEqual(s2.get_at((0, 0)), s.get_at((0, 0)))
             os.remove(tmp_filename)
 
     def test_save_colorkey(self):
@@ -1295,21 +1269,14 @@ class ImageModuleTest(unittest.TestCase):
             ("crimson.pnm", (220, 20, 60, 255)),
             ("scarlet.webp", (252, 14, 53, 255)),
             ("tomato.xcf", (255, 99, 71, 255)),
+            ("purple.qoi", (159, 38, 240, 255)),
         ]
-
-        if pygame.image.get_sdl_image_version() > (2, 0, 5):
-            filename_expected_color.append(("purple.qoi", (159, 38, 240, 255)))
 
         # SDL_image 2.8.0 and 2.8.1 have an LBM file loading regression
         if not (2, 8, 0) <= pygame.image.get_sdl_image_version() < (2, 8, 2):
             filename_expected_color.append(("magenta.lbm", (255, 0, 255, 255)))
 
         for filename, expected_color in filename_expected_color:
-            if filename.endswith("svg") and sdl_image_svg_jpeg_save_bug:
-                # SDL_image 2.0.5 and older has an svg loading bug on big
-                # endian platforms
-                continue
-
             with self.subTest(
                 f'Test loading a {filename.split(".")[-1]}',
                 filename="examples/data/" + filename,
@@ -1318,10 +1285,6 @@ class ImageModuleTest(unittest.TestCase):
                 surf = pygame.image.load_extended(example_path("data/" + filename))
                 self.assertEqual(surf.get_at((0, 0)), expected_color)
 
-    @unittest.skipIf(
-        pygame.image.get_sdl_image_version() < (2, 6, 0),
-        "load_sized_svg requires SDL_image 2.6.0+",
-    )
     def test_load_sized_svg(self):
         EXPECTED_COLOR = (0, 128, 128, 255)
         EXPECTED_ASPECT_RATIO = pygame.Vector2(1, 1).normalize()
@@ -1358,10 +1321,6 @@ class ImageModuleTest(unittest.TestCase):
                     pygame.Vector2(ret_size).normalize(), EXPECTED_ASPECT_RATIO
                 )
 
-    @unittest.skipIf(
-        pygame.image.get_sdl_image_version() < (2, 6, 0),
-        "load_sized_svg requires SDL_image 2.6.0+",
-    )
     def test_load_sized_svg_erroring(self):
         for type_error_size in (
             [100],
@@ -1397,10 +1356,6 @@ class ImageModuleTest(unittest.TestCase):
                     value_error_size,
                 )
 
-    @unittest.skipIf(
-        pygame.image.get_sdl_image_version() < (2, 6, 0),
-        "load_animation requires SDL_image 2.6.0+",
-    )
     def test_load_animation(self):
         # test loading from a file
         SAMPLE_FRAMES = 10

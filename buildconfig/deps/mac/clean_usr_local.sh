@@ -4,8 +4,8 @@
 # First clean up some homebrew stuff we don't want linked in
 # ----------------------------------------------------------
 
-rm -rf /usr/local/bin/curl /usr/local/opt/curl /opt/homebrew/bin/curl
-rm -rf /usr/local/bin/git /usr/local/opt/git /opt/homebrew/bin/git
+rm -rf /usr/local/bin/curl /usr/local/opt/curl /opt/homebrew/bin/curl /opt/homebrew/opt/curl
+rm -rf /usr/local/bin/git /usr/local/opt/git /opt/homebrew/bin/git /opt/homebrew/opt/git
 # Use the apple provided curl, and git.
 #     The homebrew ones depend on libs we don't want to include.
 # ln -s /usr/bin/curl /usr/local/bin/curl

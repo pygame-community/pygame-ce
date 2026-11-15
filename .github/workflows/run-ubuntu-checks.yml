@@ -62,8 +62,8 @@ jobs:
         os: [ ubuntu-24.04 ]
         # check our min python (minor) version and our max python (minor) version
         python: [
-          3.10.17,
-          3.14.0,
+          3.11.17,
+          3.15.0,
         ]
 
     env:
@@ -133,7 +133,7 @@ jobs:
     - name: Upload coverage html
       # want to continue only if the coverage generation was successful
       if: ${{ steps.gen-coverage.conclusion == 'success' && !cancelled() }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: pygame-coverage-${{ matrix.os }}-${{ matrix.python }}
         path: ./out

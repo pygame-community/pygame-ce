@@ -84,9 +84,8 @@ class MixerMusicModuleTest(unittest.TestCase):
             "house_lo.flac",
             "house_lo.opus",
             "surfonasinewave.xm",
+            "house_lo.mp3",
         ]
-        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
-            filenames.append("house_lo.mp3")
 
         if (
             pygame.mixer.get_sdl_mixer_version() >= (2, 8, 0)
@@ -115,9 +114,8 @@ class MixerMusicModuleTest(unittest.TestCase):
             "house_lo.flac",
             "house_lo.opus",
             "surfonasinewave.xm",
+            "house_lo.mp3",
         ]
-        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
-            filenames.append("house_lo.mp3")
 
         if (
             pygame.mixer.get_sdl_mixer_version() >= (2, 8, 0)
@@ -308,20 +306,12 @@ class MixerMusicModuleTest(unittest.TestCase):
         path = os.path.join(file_dir, "metadata.mp3")
         pygame.mixer.music.load(path)
 
-        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
-            file_metadata = {
-                "title": "Small Tone",
-                "album": "Tones",
-                "artist": "Audacity Generator",
-                "copyright": "2023 Nobody",
-            }
-        else:
-            file_metadata = {
-                "title": "",
-                "album": "",
-                "artist": "",
-                "copyright": "",
-            }
+        file_metadata = {
+            "title": "Small Tone",
+            "album": "Tones",
+            "artist": "Audacity Generator",
+            "copyright": "2023 Nobody",
+        }
 
         retrieved_metadata = pygame.mixer.music.get_metadata()
         self.assertDictEqual(file_metadata, retrieved_metadata)
