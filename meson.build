@@ -216,7 +216,7 @@ if plat == 'win'
         sdl_ver = (sdl_api == 3) ? '3.4.0' : '2.32.10'
         sdl_image_ver = (sdl_api == 3) ? '3.4.0' : '2.8.13'
         sdl_mixer_ver = (sdl_api == 3) ? '3.2.2' : '2.8.2'
-        sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.24.0'
+        sdl_ttf_ver = (sdl_api == 3) ? '3.2.2' : '2.25.0'
 
         arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
         prebuilt_dir = base_dir / 'prebuilt-' + arch_suffix
