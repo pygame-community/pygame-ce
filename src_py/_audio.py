@@ -8,13 +8,12 @@ from pygame.typing import FileLike
 
 # TODO: top level details docstring describing the whole flow and mojo
 # TODO: Tests
-# TODO: make it safe to quit the audio subsystem (e.g. what happens with
-# the objects that are now invalid in SDL's eyes.)
 # TODO: needs something for SDL_GetAudioDeviceFormat
 # TODO: needs something for SDL_OpenAudioDeviceStream
 # TODO: ability to create an audiostream with NULL src or dst spec
 # TODO: do we need the ability to bind/unbind multiple streams at once
 # atomically like SDL_BindAudioStreams
+# TODO: hook up auto-init, auto-quit with pygame main
 
 
 class AudioFormat:
@@ -204,6 +203,18 @@ class AudioDevice:
     # def __repr__(self) -> str:
     #    return f"AudioDevice with name {self.name}"
 
+    def _destroy(self) -> None:
+        """Private function for cleaning up references before quitting SDL audio subsystem.
+
+        Otherwise the destructors can segfault.
+        """
+
+        self._state = None
+
+    def _check_valid(self) -> None:
+        if self._state is None:
+            raise pygame.error("Dead AudioDevice, audio subsystem was quit.")
+
     def open(self, spec: AudioSpec | None = None) -> "LogicalAudioDevice":
         """Get an independent LogicalAudioDevice that can be bound to an AudioStream.
 
@@ -220,6 +231,8 @@ class AudioDevice:
         :class:`LogicalAudioDevice`'s will not conflict with each other.
         """
 
+        self._check_valid()
+
         if spec is None:
             dev_state = _base_audio.open_audio_device(self._state)
         elif isinstance(spec, AudioSpec):
@@ -234,12 +247,14 @@ class AudioDevice:
 
         device = object.__new__(LogicalAudioDevice)
         device._state = dev_state
+        _internals.add_logical_device_ref(device)
         return device
 
     @property
     def is_playback(self) -> bool:
         """Whether the AudioDevice is a playback device (e.g. a speaker) or not."""
 
+        self._check_valid()
         return _base_audio.is_audio_device_playback(self._state)
 
     @property
@@ -251,6 +266,7 @@ class AudioDevice:
             devices will not be stable, since the underlying device can change.
         """
 
+        self._check_valid()
         return _base_audio.get_audio_device_name(self._state)
 
     @property
@@ -261,6 +277,7 @@ class AudioDevice:
         a channel map.
         """
 
+        self._check_valid()
         return _base_audio.get_audio_device_channel_map(self._state)
 
 
@@ -286,17 +303,20 @@ class LogicalAudioDevice(AudioDevice):
         LogicalAudioDevices start un-paused.
         """
 
+        self._check_valid()
         _base_audio.pause_audio_device(self._state)
 
     def resume(self) -> None:
         """Resumes all audio processing through this logical device."""
 
+        self._check_valid()
         _base_audio.resume_audio_device(self._state)
 
     @property
     def paused(self) -> bool:
         """Whether the logical device is paused or not."""
 
+        self._check_valid()
         return _base_audio.audio_device_paused(self._state)
 
     @property
@@ -307,10 +327,13 @@ class LogicalAudioDevice(AudioDevice):
         1.0 (no change in output).
         """
 
+        self._check_valid()
         return _base_audio.get_audio_device_gain(self._state)
 
     @gain.setter
     def gain(self, value: float) -> None:
+        self._check_valid()
+
         if value < 0:
             raise ValueError("Gain must be >= 0.")
         _base_audio.set_audio_device_gain(self._state, value)
@@ -349,6 +372,9 @@ class AudioStream:
     """
 
     def __init__(self, src_spec: AudioSpec, dst_spec: AudioSpec) -> None:
+        if getattr(self, "_state", None) is not None:
+            raise RuntimeError("Object of type AudioStream cannot be reinitialized")
+
         if not isinstance(src_spec, AudioSpec):
             raise TypeError(
                 f"AudioStream src_spec must be an AudioSpec, received {type(src_spec)}"
@@ -368,6 +394,21 @@ class AudioStream:
         )
         self._device: LogicalAudioDevice | None = None
 
+        _internals.add_stream_ref(self)
+
+    def _destroy(self) -> None:
+        """Private function for cleaning up references before quitting SDL audio subsystem.
+
+        Otherwise the destructors can segfault.
+        """
+
+        self._state = None
+        self._device = None
+
+    def _check_valid(self) -> None:
+        if self._state is None:
+            raise pygame.error("Dead AudioStream, audio subsystem was quit.")
+
     def bind(self, device: LogicalAudioDevice) -> None:
         """Connect a stream to a LogicalAudioDevice for recording/playback.
 
@@ -384,6 +425,8 @@ class AudioStream:
         device's settings. The caller is welcome to change the other end of the
         stream's format at any time with :attr:`dst_spec` or :attr:`src_spec`.
         """
+
+        self._check_valid()
 
         # Not yet relevant bit from SDL docs:
         # If the other end of the stream's format has never been set (the audio stream was created
@@ -404,6 +447,7 @@ class AudioStream:
         If the stream is not bound, this does nothing.
         """
 
+        self._check_valid()
         _base_audio.unbind_audio_stream(self._state)
         self._device = None
 
@@ -414,6 +458,7 @@ class AudioStream:
         the stream until more is added.
         """
 
+        self._check_valid()
         _base_audio.clear_audio_stream(self._state)
 
     def flush(self) -> None:
@@ -427,6 +472,7 @@ class AudioStream:
         end of input, so the complete output becomes available.
         """
 
+        self._check_valid()
         _base_audio.flush_audio_stream(self._state)
 
     @property
@@ -444,6 +490,7 @@ class AudioStream:
         of it with :meth:`get_data()` before this value is no longer clamped.
         """
 
+        self._check_valid()
         return _base_audio.get_audio_stream_available(self._state)
 
     @property
@@ -465,6 +512,7 @@ class AudioStream:
             available.
         """
 
+        self._check_valid()
         return _base_audio.get_audio_stream_queued(self._state)
 
     def get_data(self, size: int) -> bytes:
@@ -476,6 +524,7 @@ class AudioStream:
         .. seealso:: :meth:`put_data()`
         """
 
+        self._check_valid()
         return _base_audio.get_audio_stream_data(self._state, size)
 
     # TODO: replace bytes | bytearray | memoryview with collections.abc.Buffer
@@ -491,6 +540,7 @@ class AudioStream:
         to the destination AudioSpec is done in :meth:`get_data()`.
         """
 
+        self._check_valid()
         _base_audio.put_audio_stream_data(self._state, data)
 
     def pause_device(self) -> None:
@@ -499,6 +549,7 @@ class AudioStream:
         If there is no bound device, this will raise :exc:`pygame.error`.
         """
 
+        self._check_valid()
         _base_audio.pause_audio_stream_device(self._state)
 
     def resume_device(self) -> None:
@@ -507,6 +558,7 @@ class AudioStream:
         If there is no bound device, this will raise :exc:`pygame.error`.
         """
 
+        self._check_valid()
         _base_audio.resume_audio_stream_device(self._state)
 
     @property
@@ -516,12 +568,14 @@ class AudioStream:
         If there is no bound device, this will return ``False``.
         """
 
+        self._check_valid()
         return _base_audio.audio_stream_device_paused(self._state)
 
     @property
     def device(self) -> LogicalAudioDevice | None:
         """Gets the stream's bound LogicalAudioDevice (or None if not bound)."""
 
+        self._check_valid()
         return self._device
 
     @property
@@ -533,12 +587,16 @@ class AudioStream:
         If this stream is bound to a recording logical audio device, the src_spec
         cannot be changed. This will raise a :exc:`pygame.error`.
         """
+
+        self._check_valid()
         return _internals.audio_spec_from_ints(
             *_base_audio.get_audio_stream_format(self._state)[0:3]
         )
 
     @src_spec.setter
     def src_spec(self, value: AudioSpec) -> None:
+        self._check_valid()
+
         if not isinstance(value, AudioSpec):
             raise TypeError(
                 f"AudioStream src_spec must be an AudioSpec, received {type(value)}"
@@ -566,6 +624,8 @@ class AudioStream:
         cannot be changed. This will raise a :exc:`pygame.error`.
         """
 
+        self._check_valid()
+
         # My first impulse here was to store the Python dst_spec AudioSpec
         # object and just return it here. BUT, SDL can change the output
         # format of the stream internally-
@@ -579,6 +639,8 @@ class AudioStream:
 
     @dst_spec.setter
     def dst_spec(self, value: AudioSpec) -> None:
+        self._check_valid()
+
         if not isinstance(value, AudioSpec):
             raise TypeError(
                 f"AudioStream dst_spec must be an AudioSpec, received {type(value)}"
@@ -604,10 +666,14 @@ class AudioStream:
         1.0 (no change in output).
         """
 
+        self._check_valid()
+
         return _base_audio.get_audio_stream_gain(self._state)
 
     @gain.setter
     def gain(self, value: float) -> None:
+        self._check_valid()
+
         if value < 0:
             raise ValueError("Gain must be >= 0.")
 
@@ -626,10 +692,13 @@ class AudioStream:
         changed to create various effects.
         """
 
+        self._check_valid()
         return _base_audio.get_audio_stream_frequency_ratio(self._state)
 
     @frequency_ratio.setter
     def frequency_ratio(self, value: float) -> None:
+
+        self._check_valid()
         if value <= 0 or value > 10:
             raise ValueError(
                 "Frequency ratio must be between 0 and 10. (0 < ratio <= 10)"
@@ -640,14 +709,19 @@ class AudioStream:
     def lock(self) -> None:
         # TODO: document. Seems only relevant during callbacks, which aren't implemented yet.
 
+        self._check_valid()
         _base_audio.lock_audio_stream(self._state)
 
     def unlock(self) -> None:
         # TODO: document. Seems only relevant during callbacks, which aren't implemented yet.
 
+        self._check_valid()
         _base_audio.unlock_audio_stream(self._state)
 
     def __repr__(self) -> str:
+        if self._state is None:
+            return f"<{self.__class__.__name__}(Dead, audio system was quit)>"
+
         audio_format_ints = _base_audio.get_audio_stream_format(self._state)
         src_spec = _internals.audio_spec_from_ints(*audio_format_ints[0:3])
         dst_spec = _internals.audio_spec_from_ints(*audio_format_ints[3:6])
@@ -658,7 +732,17 @@ class AudioStream:
 class AudioInternals:
     def __init__(self) -> None:
         self._int_to_format: dict[int, AudioFormat] = {}
+
+        # Makes sure that the same SDL_AudioDeviceID points to the same
+        # Python object, if one already exists.
+        # Also used as a global store of AudioDevices for cleanup purposes
+        # when quit() is called.
         self._id_to_device = weakref.WeakValueDictionary()
+
+        # Exclusively used for AudioStream cleanup when quit() is called.
+        self._audio_streams = weakref.WeakSet()
+        # Or for LogicalAudioDevice cleanup.
+        self._logical_devices = weakref.WeakSet()
 
     def create_format(self, name: str, value: int) -> AudioFormat:
         audio_format = object.__new__(AudioFormat)
@@ -687,6 +771,44 @@ class AudioInternals:
             device._state = dev_state
             self._id_to_device[dev_state.id] = device
         return device
+
+    def add_stream_ref(self, stream: AudioStream) -> None:
+        self._audio_streams.add(stream)
+
+    def add_logical_device_ref(self, device: AudioDevice) -> None:
+        self._logical_devices.add(device)
+
+    def destroy_all_dynamic_objects(self) -> None:
+        """Before quitting the SDL audio subsystem, we need to invalidate our
+        references to it so that objects created before and used after do not
+        segfault or violate any SDL assumptions.
+
+        So we go through all the objects that need this, the ones with dynamic
+        handles, and we call destroy() on them to tell them to let go.
+
+        The objects are responsible for marking themselves as invalid upon any
+        attempted uses.
+        """
+
+        for stream in self._audio_streams:
+            stream._destroy()
+
+        for device in self._id_to_device.values():
+            # These DEFAULT_ handles do not need to be cleaned up,
+            # because they are not dynamic
+            if device not in (DEFAULT_PLAYBACK_DEVICE, DEFAULT_RECORDING_DEVICE):
+                device._destroy()
+
+        for device in self._logical_devices:
+            device._destroy()
+
+        self._id_to_device.clear()
+        self._id_to_device[DEFAULT_PLAYBACK_DEVICE._state.id] = DEFAULT_PLAYBACK_DEVICE
+        self._id_to_device[DEFAULT_RECORDING_DEVICE._state.id] = (
+            DEFAULT_RECORDING_DEVICE
+        )
+        self._audio_streams.clear()
+        self._logical_devices.clear()
 
 
 _internals = AudioInternals()
@@ -718,9 +840,11 @@ def init() -> None:
     _base_audio.init()
 
 
-# See TODO above, this is currently not safe to offer
-# def quit() -> None:
-#    _base_audio.quit()
+def quit() -> None:
+    """Quit the audio subsystem. This invalidates all audio objects."""
+
+    _internals.destroy_all_dynamic_objects()
+    _base_audio.quit()
 
 
 def get_init() -> bool:
