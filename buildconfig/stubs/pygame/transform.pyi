@@ -15,10 +15,12 @@ Instead, always begin with the original image and scale to the desired size.)
 .. versionchangedold:: 2.0.2 transform functions now support keyword arguments.
 """
 
-from typing import Literal
+from typing import Literal, TypeAlias
 
 from pygame.surface import Surface
 from pygame.typing import ColorLike, Point, RectLike, SequenceLike
+
+_SmoothscaleBackend: TypeAlias = Literal["GENERIC", "MMX", "SSE", "SSE2", "NEON"]
 
 def flip(surface: Surface, flip_x: bool, flip_y: bool) -> Surface:
     """Flip vertically and horizontally.
@@ -154,7 +156,7 @@ def smoothscale_by(
     .. versionadded:: 2.1.3
     """
 
-def get_smoothscale_backend() -> Literal["GENERIC", "SSE2", "NEON"]:
+def get_smoothscale_backend() -> _SmoothscaleBackend:
     """Return smoothscale filter version in use: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'.
 
     Shows whether or not smoothscale is using SIMD acceleration.
@@ -166,7 +168,7 @@ def get_smoothscale_backend() -> Literal["GENERIC", "SSE2", "NEON"]:
     .. versionchanged:: 2.4.0 Added SSE2 and NEON backends, MMX and SSE are deprecated.
     """
 
-def set_smoothscale_backend(backend: Literal["GENERIC", "SSE2", "NEON"]) -> None:
+def set_smoothscale_backend(backend: _SmoothscaleBackend) -> None:
     """Set smoothscale filter version to one of: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'.
 
     Sets smoothscale acceleration. Takes a string argument. A value of 'GENERIC'
