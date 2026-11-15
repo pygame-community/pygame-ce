@@ -152,10 +152,12 @@ jobs:
         run: |
           $PSNativeCommandUseErrorActionPreference = $true  # stop if msbuild fails
           $opts = '-m', '-nologo', '-p:Configuration=Release'
-          msbuild src/SDL_mixer/VisualC/SDL_mixer.vcxproj @opts -p:Platform=x64 "-p:SolutionDir=$PWD/src/SDL_mixer/VisualC/"
-          msbuild src/SDL_mixer/VisualC/SDL_mixer.vcxproj @opts -p:Platform=Win32 "-p:SolutionDir=$PWD/src/SDL_mixer/VisualC/"
-          msbuild src/SDL_ttf/VisualC/SDL_ttf.vcxproj @opts -p:Platform=x64 "-p:SolutionDir=$PWD/src/SDL_ttf/VisualC/"
-          msbuild src/SDL_ttf/VisualC/SDL_ttf.vcxproj @opts -p:Platform=Win32 "-p:SolutionDir=$PWD/src/SDL_ttf/VisualC/"
+          # SolutionDir needs backslashes and a trailing one: the projects
+          # append to it, and SDL_mixer passes it to cmd's copy
+          msbuild src/SDL_mixer/VisualC/SDL_mixer.vcxproj @opts -p:Platform=x64 "-p:SolutionDir=$PWD\src\SDL_mixer\VisualC\"
+          msbuild src/SDL_mixer/VisualC/SDL_mixer.vcxproj @opts -p:Platform=Win32 "-p:SolutionDir=$PWD\src\SDL_mixer\VisualC\"
+          msbuild src/SDL_ttf/VisualC/SDL_ttf.vcxproj @opts -p:Platform=x64 "-p:SolutionDir=$PWD\src\SDL_ttf\VisualC\"
+          msbuild src/SDL_ttf/VisualC/SDL_ttf.vcxproj @opts -p:Platform=Win32 "-p:SolutionDir=$PWD\src\SDL_ttf\VisualC\"
 
       - name: Package
         run: |
