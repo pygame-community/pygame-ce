@@ -7,8 +7,9 @@ SDL2_VER="2.32.10"
 SDL2="SDL2-$SDL2_VER"
 IMG2_VER="2.8.13-pgce"
 IMG2="SDL_image-$IMG2_VER"
-TTF2_VER="2.24.0"
-TTF2="SDL2_ttf-$TTF2_VER"
+# SDL2_ttf: SDL2 branch, to match the Windows prebuilt bundle (reports 2.25.0)
+TTF2_VER="f7bde1e428c787287a8e3d9d57af52d2e7b3aadd"
+TTF2="SDL_ttf-$TTF2_VER"
 # SDL2_mixer has no release with the fix for pygame-ce#4028 (libsdl-org/SDL_mixer#911)
 # so build from a release-2.8.x commit instead
 MIX2_VER="6581297b7b09b2fa0228501ae1c4cbdc073b1f2c"
@@ -19,7 +20,7 @@ MIX2="SDL_mixer-$MIX2_VER"
 curl -sL --retry 10 https://github.com/libsdl-org/SDL/releases/download/release-$SDL2_VER/$SDL2.tar.gz > ${SDL2}.tar.gz
 curl -sL --retry 10 https://github.com/pygame-community/SDL_image/archive/refs/tags/$IMG2_VER.tar.gz > ${IMG2}.tar.gz
 curl -sL --retry 10 https://github.com/libsdl-org/SDL_mixer/archive/$MIX2_VER.tar.gz > ${MIX2}.tar.gz
-curl -sL --retry 10 https://github.com/libsdl-org/SDL_ttf/releases/download/release-$TTF2_VER/$TTF2.tar.gz > ${TTF2}.tar.gz
+curl -sL --retry 10 https://github.com/libsdl-org/SDL_ttf/archive/$TTF2_VER.tar.gz > ${TTF2}.tar.gz
 sha512sum -c sdl2.sha512
 
 # On mac/manylinux we have to make use of standard dynamic linking rather than

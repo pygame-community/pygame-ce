@@ -1,0 +1,296 @@
+# Builds the Windows x86/x64 prebuilt dependency bundle used by the legacy
+# (non-ARM) Windows build: freetype, portmidi, SDL2_mixer and SDL2_ttf.
+# SDL2 itself comes from the official release zip, and SDL2_image is built
+# separately in the pygame-community/SDL_image fork.
+#
+# The bundle is published by hand as a release asset, and
+# buildconfig/download_win_prebuilt.py downloads it from there. This is a
+# stopgap until the unified dependency build system replaces it in 3.0.
+name: Windows prebuilt bundle
+
+on:
+  workflow_dispatch:
+
+  # also run when this file changes, so edits get tested
+  pull_request:
+    branches: [main, main-2.x]
+    paths:
+      - '.github/workflows/build-win-prebuilt.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Must match the versions in buildconfig/deps/base, the tarballs are checked
+  # against the sha512 files there.
+  FREETYPE_VER: '2.15.0'
+  PORTMIDI_VER: '2.0.8'
+
+  # Only used for its headers and import libraries.
+  SDL2_VER: '2.32.10'
+  SDL2_ZIP_SHA1: '27f5179346a0b0db80c4dd1769c7c9d62b9a91f3'
+
+  # SDL2_mixer: release-2.8.x, which has the fix for pygame-ce#4028 but no
+  # release yet. Its vendored libraries match the SDL2 branch, which otherwise
+  # only adds unreleased 2.9.0 features.
+  MIXER_COMMIT: '6581297b7b09b2fa0228501ae1c4cbdc073b1f2c'
+  MIXER_VER: '2.8.2'  # what SDL_mixer.h reports at that commit
+
+  # SDL2_ttf: SDL2 branch, which has the vendored freetype CVE-2026-95512 fix.
+  # SDL_ttf.c/h only differ from release-2.24.x by the version number.
+  TTF_COMMIT: 'f7bde1e428c787287a8e3d9d57af52d2e7b3aadd'
+  TTF_VER: '2.25.0'  # what SDL_ttf.h reports at that commit
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: ${{ matrix.arch }}
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x64, msvc-dev-arch: x86_amd64, cmake-arch: x64, vs-platform: x64 }
+          - { arch: x86, msvc-dev-arch: x86, cmake-arch: Win32, vs-platform: Win32 }
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # puts msbuild and dumpbin on PATH
+      - uses: TheMrMilchmann/setup-msvc-dev@368ef7d1ee4d1171b31d4a7f67f4d954f903f5a9 # v4.1.0
+        with:
+          arch: ${{ matrix.msvc-dev-arch }}
+
+      - name: Download sources
+        run: |
+          mkdir -p src && cd src
+
+          # checkout gives the sha512 files CRLF line endings on Windows
+          check() {  # file sha512-file
+            tr -d '\r' < "$2" | grep " $1$" | sha512sum -c -
+          }
+
+          curl -sfL --retry 10 -o freetype-$FREETYPE_VER.tar.gz \
+            https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE_VER.tar.gz
+          check freetype-$FREETYPE_VER.tar.gz ../buildconfig/deps/base/freetype/freetype.sha512
+
+          curl -sfL --retry 10 -o portmidi-$PORTMIDI_VER.tar.gz \
+            https://github.com/PortMidi/portmidi/archive/refs/tags/v$PORTMIDI_VER.tar.gz
+          check portmidi-$PORTMIDI_VER.tar.gz ../buildconfig/deps/base/portmidi/portmidi.sha512
+
+          curl -sfL --retry 10 -o SDL2-devel-$SDL2_VER-VC.zip \
+            https://github.com/libsdl-org/SDL/releases/download/release-$SDL2_VER/SDL2-devel-$SDL2_VER-VC.zip
+          echo "$SDL2_ZIP_SHA1  SDL2-devel-$SDL2_VER-VC.zip" | sha1sum -c -
+
+          tar xzf freetype-$FREETYPE_VER.tar.gz
+          tar xzf portmidi-$PORTMIDI_VER.tar.gz
+          python -m zipfile -e SDL2-devel-$SDL2_VER-VC.zip .
+
+          # The SDL_mixer/SDL_ttf VC projects look for SDL in
+          # $(SolutionDir)..\..\SDL, laid out like an SDL source build
+          mkdir -p SDL/VisualC/${{ matrix.vs-platform }}/Release
+          cp -r SDL2-$SDL2_VER/include SDL/include
+          cp SDL2-$SDL2_VER/lib/${{ matrix.arch }}/SDL2.lib SDL/VisualC/${{ matrix.vs-platform }}/Release/
+
+          # harfbuzz has test files with paths over 260 characters
+          git config --global core.longpaths true
+          clone() {  # repo commit
+            git init -q "$1"
+            git -C "$1" fetch -q --depth 1 "https://github.com/libsdl-org/$1.git" "$2"
+            git -C "$1" -c advice.detachedHead=false checkout -q FETCH_HEAD
+          }
+          clone SDL_mixer "$MIXER_COMMIT"
+          clone SDL_ttf "$TTF_COMMIT"
+          git -C SDL_ttf submodule update -q --init --depth 1 -- external/freetype external/harfbuzz
+
+      - name: Check versions
+        run: |
+          cd src
+          ver() {  # header prefix
+            for part in MAJOR_VERSION MINOR_VERSION PATCHLEVEL; do
+              grep -E "#define $2_$part " "$1" | awk '{print $3}'
+            done | paste -sd.
+          }
+          test "$(ver SDL_mixer/include/SDL_mixer.h SDL_MIXER)" = "$MIXER_VER"
+          test "$(ver SDL_ttf/SDL_ttf.h SDL_TTF)" = "$TTF_VER"
+          git -C SDL_ttf submodule status
+
+      - name: Build freetype
+        run: |
+          # No optional dependencies, like the previous bundle. freetype uses
+          # its internal zlib copy for gzip support.
+          cmake -S src/freetype-$FREETYPE_VER -B build/freetype \
+            -G "Visual Studio 17 2022" -A ${{ matrix.cmake-arch }} \
+            -DBUILD_SHARED_LIBS=ON \
+            -DFT_DISABLE_ZLIB=ON -DFT_DISABLE_BZIP2=ON -DFT_DISABLE_PNG=ON \
+            -DFT_DISABLE_HARFBUZZ=ON -DFT_DISABLE_BROTLI=ON \
+            -DCMAKE_INSTALL_PREFIX="$PWD/install/freetype"
+          cmake --build build/freetype --config Release
+          cmake --install build/freetype --config Release
+
+      - name: Build portmidi
+        run: |
+          cmake -S src/portmidi-$PORTMIDI_VER -B build/portmidi \
+            -G "Visual Studio 17 2022" -A ${{ matrix.cmake-arch }} \
+            -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_INSTALL_PREFIX="$PWD/install/portmidi"
+          cmake --build build/portmidi --config Release
+          cmake --install build/portmidi --config Release
+
+      - name: Build SDL2_mixer
+        run: |
+          msbuild src/SDL_mixer/VisualC/SDL_mixer.vcxproj -m -nologo \
+            -p:Configuration=Release -p:Platform=${{ matrix.vs-platform }} \
+            "-p:SolutionDir=$(cygpath -w "$PWD/src/SDL_mixer/VisualC")\\"
+
+      - name: Build SDL2_ttf
+        run: |
+          # The SDL2 branch vcxproj misses a harfbuzz source file, which fails
+          # the link with an unresolved iup_delta_optimize. Add it next to its
+          # sibling, unless upstream has fixed it.
+          python - <<'EOF'
+          path = 'src/SDL_ttf/VisualC/SDL_ttf.vcxproj'
+          data = open(path, 'rb').read()
+          anchor = b'..\\external\\harfbuzz\\src\\hb-subset-instancer-solver.cc'
+          missing = b'..\\external\\harfbuzz\\src\\hb-subset-instancer-iup.cc'
+          if missing in data:
+              print('already present, not patching')
+          else:
+              i = data.index(anchor)
+              start = data.rindex(b'\n', 0, i) + 1
+              end = data.index(b'\n', i) + 1
+              line = data[start:end].replace(anchor, missing)
+              open(path, 'wb').write(data[:end] + line + data[end:])
+              print('patched')
+          EOF
+
+          msbuild src/SDL_ttf/VisualC/SDL_ttf.vcxproj -m -nologo \
+            -p:Configuration=Release -p:Platform=${{ matrix.vs-platform }} \
+            "-p:SolutionDir=$(cygpath -w "$PWD/src/SDL_ttf/VisualC")\\"
+
+      - name: Assemble
+        run: |
+          A=${{ matrix.arch }}
+          VSP=${{ matrix.vs-platform }}
+
+          # freetype and portmidi, same layout as the previous bundle
+          P=out/prebuilt-$A
+          mkdir -p $P/include $P/lib
+          cp -r install/freetype/include/freetype2/* $P/include/
+          cp install/freetype/bin/freetype.dll install/freetype/lib/freetype.lib $P/lib/
+          cp install/portmidi/include/*.h $P/include/
+          cp install/portmidi/bin/portmidi.dll install/portmidi/lib/portmidi.lib $P/lib/
+          mkdir -p $P/licenses
+          cp src/freetype-$FREETYPE_VER/LICENSE.TXT $P/licenses/LICENSE.freetype.txt
+          cp src/freetype-$FREETYPE_VER/docs/FTL.TXT $P/licenses/FTL.freetype.txt
+          cp src/portmidi-$PORTMIDI_VER/license.txt $P/licenses/LICENSE.portmidi.txt
+
+          # SDL2_mixer and SDL2_ttf, same layout as the official -VC zips
+          M=out/SDL2_mixer-$MIXER_VER
+          mkdir -p $M/include $M/lib/$A
+          cp src/SDL_mixer/include/SDL_mixer.h $M/include/
+          cp src/SDL_mixer/{CHANGES.txt,LICENSE.txt,README.txt} $M/
+          cp src/SDL_mixer/VisualC/$VSP/Release/SDL2_mixer.{dll,lib} $M/lib/$A/
+          cp -r src/SDL_mixer/VisualC/external/optional/$A $M/lib/$A/optional
+
+          T=out/SDL2_ttf-$TTF_VER
+          mkdir -p $T/include $T/lib/$A
+          cp src/SDL_ttf/SDL_ttf.h $T/include/
+          cp src/SDL_ttf/{CHANGES.txt,LICENSE.txt,README.txt} $T/
+          cp src/SDL_ttf/VisualC/$VSP/Release/SDL2_ttf.dll src/SDL_ttf/VisualC/$VSP/Release/SDL2_ttf.lib $T/lib/$A/
+          # licenses of the libraries built into SDL2_ttf.dll
+          mkdir -p $T/licenses
+          cp src/SDL_ttf/VisualC/external/lib/$A/LICENSE.*.txt $T/licenses/
+
+          # record the exact sources for the README
+          {
+            echo "freetype_sha512=$(sha512sum src/freetype-$FREETYPE_VER.tar.gz | cut -d' ' -f1)"
+            echo "portmidi_sha512=$(sha512sum src/portmidi-$PORTMIDI_VER.tar.gz | cut -d' ' -f1)"
+            echo "ttf_commit=$(git -C src/SDL_ttf rev-parse HEAD)"
+            echo "ttf_freetype=$(git -C src/SDL_ttf rev-parse HEAD:external/freetype)"
+            echo "ttf_harfbuzz=$(git -C src/SDL_ttf rev-parse HEAD:external/harfbuzz)"
+            echo "msvc=$VCToolsVersion"
+          } > out/sources-$A.txt
+
+      - name: Show DLL dependencies
+        run: |
+          for dll in $(find out -name '*.dll' -not -path '*/optional/*'); do
+            echo "== $dll"
+            dumpbin -nologo -dependents "$(cygpath -w "$dll")" | grep -i '\.dll$'
+          done
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: prebuilt-${{ matrix.arch }}
+          path: out/
+
+  package:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: prebuilt-*
+          path: bundle
+          merge-multiple: true
+
+      - name: Write README and zip
+        run: |
+          NAME=prebuilt-pygame-ce-sdl2-$(date -u +%Y%m%d)
+          cd bundle
+          # both arches must agree on the sources
+          diff <(grep -v '^msvc=' sources-x64.txt) <(grep -v '^msvc=' sources-x86.txt)
+          . ./sources-x64.txt
+          rm sources-*.txt
+
+          cat > README.md <<EOF
+          # pygame-ce Windows prebuilt bundle
+
+          Built by the \`${{ github.workflow }}\` workflow in
+          ${{ github.repository }}, run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }},
+          from commit ${{ github.sha }}. MSVC $msvc, x86 and x64, Release.
+
+          | Folder | Contents | Source |
+          |---|---|---|
+          | \`prebuilt-x64\`, \`prebuilt-x86\` | freetype $FREETYPE_VER | https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE_VER.tar.gz (sha512 \`$freetype_sha512\`), CMake, shared, no optional dependencies |
+          | | portmidi $PORTMIDI_VER | https://github.com/PortMidi/portmidi/archive/refs/tags/v$PORTMIDI_VER.tar.gz (sha512 \`$portmidi_sha512\`), CMake, shared |
+          | \`SDL2_mixer-$MIXER_VER\` | SDL2_mixer | https://github.com/libsdl-org/SDL_mixer commit \`$MIXER_COMMIT\` (release-2.8.x), \`VisualC/SDL_mixer.vcxproj\`. \`optional/\` DLLs are the prebuilt ones from that commit. |
+          | \`SDL2_ttf-$TTF_VER\` | SDL2_ttf | https://github.com/libsdl-org/SDL_ttf commit \`$ttf_commit\` (SDL2 branch), \`VisualC/SDL_ttf.vcxproj\`, with vendored freetype \`$ttf_freetype\` and harfbuzz \`$ttf_harfbuzz\` built in |
+
+          SDL2_mixer and SDL2_ttf were built against the official SDL2 $SDL2_VER VC
+          development zip.
+
+          Changes from upstream:
+          - SDL2_ttf: added \`hb-subset-instancer-iup.cc\` to \`VisualC/SDL_ttf.vcxproj\`,
+            which the project is missing, causing an unresolved \`iup_delta_optimize\`.
+
+          Notes:
+          - SDL2_mixer reports version $MIXER_VER, and SDL2_ttf reports $TTF_VER, a version
+            upstream has not released. Both include fixes made after their last releases.
+          - SDL2_ttf's built-in freetype reports 2.13.3: it is upstream's 2.13.3
+            branch with security fixes backported, including CVE-2026-95512.
+          - freetype and portmidi use the shared MSVC runtime (VCRUNTIME140.dll),
+            which CPython ships. SDL2_mixer and SDL2_ttf link it statically.
+          - Licenses: \`prebuilt-*/licenses\`, \`SDL2_*/LICENSE.txt\`, \`SDL2_ttf-*/licenses\`
+            and \`SDL2_mixer-*/lib/*/optional/LICENSE.*\`.
+          EOF
+
+          zip -qr9 ../$NAME.zip .
+          cd ..
+          sha1sum $NAME.zip
+          echo "NAME=$NAME" >> $GITHUB_ENV
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ env.NAME }}
+          path: ${{ env.NAME }}.zip
+          compression-level: 0  # already a zip
