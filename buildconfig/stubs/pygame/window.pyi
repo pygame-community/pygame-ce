@@ -511,4 +511,22 @@ class Window:
 
         .. versionadded:: 2.5.2
         """
+
+    def show_system_menu(self, position: Point, /) -> bool:
+        """Show the system's default window menu at the given position in pixels.
+
+        The system's window menu is a context menu provided and rendered by
+        the window manager. It lists available default operations that manage
+        the window like dragging, resizing, minimizing, maximizing, restoring,
+        and closing it.
+
+        The position is relative to the origin (top left) of the drawable area of
+        the window (on borderless windows, it corresponds to the whole window).
+
+        Returns ``True`` if the operation succeeded and ``False`` if it's
+        not supported.
+
+        .. versionadded:: 3.0.0
+        """
+
     relative_mouse: bool
