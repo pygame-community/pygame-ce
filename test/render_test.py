@@ -285,6 +285,10 @@ class TextureTest(unittest.TestCase):
             _render.Texture(
                 self.renderer, (100, 100), depth=32, static=True, streaming=True
             )
+        # Regression test for missing Renderer type check in issue #3745
+        # (https://github.com/pygame-community/pygame-ce/issues/3745)
+        with self.assertRaises(TypeError):
+            _render.Texture("renderer", (100, 100))
 
     def test_alpha(self):
         self.assertEqual(255, self.texture.alpha)
@@ -292,8 +296,10 @@ class TextureTest(unittest.TestCase):
         self.assertEqual(128, self.texture.alpha)
 
     def test_blend_mode(self):
-        self.texture.blend_mode = pygame.BLENDMODE_BLEND
         self.assertEqual(pygame.BLENDMODE_BLEND, self.texture.blend_mode)
+        self.texture.blend_mode = pygame.BLENDMODE_NONE
+        self.assertEqual(pygame.BLENDMODE_NONE, self.texture.blend_mode)
+        self.texture.blend_mode = pygame.BLENDMODE_BLEND
 
     def test_color(self):
         self.assertEqual(pygame.Color(255, 255, 255, 255), self.texture.color)
@@ -504,3 +510,17 @@ class TextureTest(unittest.TestCase):
         result = self.renderer.to_surface()
         for x in range(25, 75):
             self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 50)))
+
+    def test_renderer_refcount_on_texture_dealloc(self):
+        # Regression test for https://github.com/pygame-community/pygame-ce/pull/4038#pullrequestreview-5916322289
+        # Previously, texture_dealloc didn't decref the renderer that it had incref'd during initialization.
+        initial_refcount = sys.getrefcount(self.renderer)
+        _textures = [
+            _render.Texture(self.renderer, (10, 10)),
+            _render.Texture(self.renderer, (10, 10)),
+            _render.Texture(self.renderer, (10, 10)),
+        ]
+        self.assertGreater(sys.getrefcount(self.renderer), initial_refcount)
+        _textures.clear()
+        gc.collect()
+        self.assertEqual(sys.getrefcount(self.renderer), initial_refcount)

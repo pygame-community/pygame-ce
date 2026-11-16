@@ -323,11 +323,10 @@ renderer_to_surface(pgRendererObject *self, PyObject *args, PyObject *kwargs)
             return RAISE(PyExc_TypeError, "area must be None or a rect");
         }
         SDL_GetRenderViewport(self->renderer, &viewport);
-        SDL_IntersectRect(rect, &viewport, rect);
+        SDL_GetRectIntersection(rect, &viewport, rect);
         areaparam = rect;
     }
     else {
-        SDL_GetRenderViewport(self->renderer, rect);
         areaparam = NULL;
     }
 
@@ -336,6 +335,10 @@ renderer_to_surface(pgRendererObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     surface = pgSurface_New(surf);
+    if (surface == NULL) {
+        SDL_DestroySurface(surf);
+        return NULL;
+    }
     return (PyObject *)surface;
 }
 
@@ -1084,6 +1087,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         Gmask = 0xFF << 8;
         Bmask = 0xFF;
         Amask = 0xFF << 24;
+        depth = 32;  // normalized to ensure consistent behavior
     }
     else if (depth == 16) {
         Rmask = 0xF << 8;
@@ -1150,6 +1154,9 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 static void
 texture_dealloc(pgTextureObject *self, PyObject *_null)
 {
+    if (self->renderer) {
+        Py_DECREF(self->renderer);
+    }
     if (self->texture) {
         SDL_DestroyTexture(self->texture);
     }
