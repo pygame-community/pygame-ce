@@ -33,7 +33,7 @@ jobs:
           persist-credentials: false
 
       - name: Create backport pull requests
-        uses: korthout/backport-action@2e830a1d0b8269505846ddd407a70876913ad1f8 # v4.6.0
+        uses: korthout/backport-action@0ebd44f9c79a4a0a171200dcdcceec3ed9ca732f # v4.7.1
         with:
           target_branches: 'main-2.x'
           label_pattern: '^needs\-backport$'
