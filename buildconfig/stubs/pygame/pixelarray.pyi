@@ -7,8 +7,8 @@ from pygame.surface import Surface
 from pygame.typing import SequenceLike
 
 _PixelColor: TypeAlias = int | Color | tuple[int, int, int] | tuple[int, int, int, int]
-_ArrayIndexAny: TypeAlias = int | slice | None | EllipsisType
-_ArrayIndexNoInt: TypeAlias = slice | None | EllipsisType
+_ArrayIndexAny: TypeAlias = int | slice | EllipsisType
+_ArrayIndexNoInt: TypeAlias = slice | EllipsisType
 
 class PixelArray:
     @property
