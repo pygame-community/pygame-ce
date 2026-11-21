@@ -705,6 +705,12 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertEqual(repr(v), "Vector2(1.2, 3.4)")
         self.assertEqual(v, Vector2(repr(v)))
 
+    def test_subclass_repr_uses_runtime_type_name(self):
+        class CustomVector2(Vector2):
+            pass
+
+        self.assertEqual(repr(CustomVector2(1.2, 3.4)), "CustomVector2(1.2, 3.4)")
+
     def testIter(self):
         it = self.v1.__iter__()
         next_ = it.__next__
@@ -1873,6 +1879,15 @@ class Vector3TypeTest(unittest.TestCase):
         v = Vector3(1.2, 3.4, -9.6)
         self.assertEqual(repr(v), "Vector3(1.2, 3.4, -9.6)")
         self.assertEqual(v, Vector3(repr(v)))
+
+    def test_subclass_repr_uses_runtime_type_name(self):
+        class CustomVector3(Vector3):
+            pass
+
+        self.assertEqual(
+            repr(CustomVector3(1.2, 3.4, -9.6)),
+            "CustomVector3(1.2, 3.4, -9.6)",
+        )
 
     def testIter(self):
         it = self.v1.__iter__()
