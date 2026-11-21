@@ -171,6 +171,6 @@ jobs:
       if: steps.check-changes.outputs.skip != 'true'
       run: cppcheck src_c --enable=performance,portability,warning \
         --suppress=*:src_c/freetype/ft_cache.c --suppress=*:src_c/scrap* \
-        --suppress=*:src_c/scale_mmx*.c --suppress=*:src_c/SDL_gfx/* \
+        --suppress=*:src_c/transform/scale_mmx*.c --suppress=*:src_c/SDL_gfx/* \
         --suppress=missingReturn --suppress=syntaxError -DWITH_THREAD -j $(nproc) \
         -DPG_MAJOR_VERSION -DPG_MINOR_VERSION -DPG_PATCH_VERSION -DPG_VERSION_TAG
