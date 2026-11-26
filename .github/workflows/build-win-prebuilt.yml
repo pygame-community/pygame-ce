@@ -34,11 +34,10 @@ env:
   SDL2_VER: '2.32.10'
   SDL2_ZIP_SHA1: '27f5179346a0b0db80c4dd1769c7c9d62b9a91f3'
 
-  # SDL2_mixer: release-2.8.x, for its vendored library updates since 2.8.2.
-  # The SDL2 branch has the same ones, but also unreleased 2.9.0 features.
-  # This is just before the pygame-ce#4028 fix, which overflows the heap when
-  # converting WAVs.
-  MIXER_COMMIT: '5c8af4d5b62c3d248b757eb932146a0a56b38587'
+  # SDL2_mixer: SDL2 branch, for its vendored library updates since 2.8.2 and
+  # the complete pygame-ce#4028 fix, which release-2.8.x only half has (its
+  # version overflows the heap when converting WAVs).
+  MIXER_COMMIT: '14c5755bc282d3a4fd1f12d82c59dcb1b441302d'
 
   # SDL2_ttf: SDL2 branch, which has the vendored freetype CVE-2026-95512 fix.
   # SDL_ttf.c/h only differ from release-2.24.x by the version number.
@@ -161,6 +160,8 @@ jobs:
           msbuild src/SDL_ttf/VisualC/SDL_ttf.vcxproj @opts -p:Platform=Win32 "-p:SolutionDir=$PWD\src\SDL_ttf\VisualC\"
 
       - name: Package
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           ver() {  # header prefix
             for part in MAJOR_VERSION MINOR_VERSION PATCHLEVEL; do
@@ -206,15 +207,15 @@ jobs:
           cat > out/README.md <<EOF
           # pygame-ce Windows prebuilt bundle
 
-          Built by the \`${{ github.workflow }}\` workflow in
-          ${{ github.repository }}, run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }},
-          from commit ${{ github.event.pull_request.head.sha || github.sha }}. MSVC $VCToolsVersion, x86 and x64, Release.
+          Built by the \`$GITHUB_WORKFLOW\` workflow in
+          $GITHUB_REPOSITORY, run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID,
+          from commit $HEAD_SHA. MSVC $VCToolsVersion, x86 and x64, Release.
 
           | Folder | Contents | Source |
           |---|---|---|
           | \`prebuilt-x64\`, \`prebuilt-x86\` | freetype $FREETYPE_VER | https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE_VER.tar.gz (sha512 \`$(sha512sum src/freetype-$FREETYPE_VER.tar.gz | cut -d' ' -f1)\`), CMake, shared, no optional dependencies |
           | | portmidi $PORTMIDI_VER | https://github.com/PortMidi/portmidi/archive/refs/tags/v$PORTMIDI_VER.tar.gz (sha512 \`$(sha512sum src/portmidi-$PORTMIDI_VER.tar.gz | cut -d' ' -f1)\`), CMake, shared |
-          | \`SDL2_mixer-$MIXER_VER\` | SDL2_mixer | https://github.com/libsdl-org/SDL_mixer commit \`$MIXER_COMMIT\` (release-2.8.x), \`VisualC/SDL_mixer.vcxproj\`. \`optional/\` DLLs are the prebuilt ones from that commit. |
+          | \`SDL2_mixer-$MIXER_VER\` | SDL2_mixer | https://github.com/libsdl-org/SDL_mixer commit \`$MIXER_COMMIT\` (SDL2 branch), \`VisualC/SDL_mixer.vcxproj\`. \`optional/\` DLLs are the prebuilt ones from that commit. |
           | \`SDL2_ttf-$TTF_VER\` | SDL2_ttf | https://github.com/libsdl-org/SDL_ttf commit \`$TTF_COMMIT\` (SDL2 branch), \`VisualC/SDL_ttf.vcxproj\`, with vendored freetype \`$(git -C src/SDL_ttf rev-parse HEAD:external/freetype)\` and harfbuzz \`$(git -C src/SDL_ttf rev-parse HEAD:external/harfbuzz)\` built in |
 
           SDL2_mixer and SDL2_ttf were built against the official SDL2 $SDL2_VER VC
@@ -225,7 +226,7 @@ jobs:
             which the project is missing, causing an unresolved \`iup_delta_optimize\`.
 
           Notes:
-          - SDL2_mixer reports version $MIXER_VER, and SDL2_ttf reports $TTF_VER, a version
+          - SDL2_mixer reports version $MIXER_VER and SDL2_ttf reports $TTF_VER, versions
             upstream has not released. Both include fixes made after their last releases.
           - SDL2_ttf's built-in freetype reports 2.13.3: it is upstream's 2.13.3
             branch with security fixes backported, including CVE-2026-95512.

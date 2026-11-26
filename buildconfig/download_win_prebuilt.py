@@ -104,8 +104,8 @@ def get_urls(x86=True, x64=True):
         # freetype, portmidi, SDL2_mixer and SDL2_ttf for both x86 and x64,
         # built by .github/workflows/build-win-prebuilt.yml
         [
-        'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-pygame-ce-sdl2-20261115.zip',
-        'c796aaa270eede013f5b9d49bb72dca91d0c50e2'
+        'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-pygame-ce-sdl2-20261126.zip',
+        '6d07e41d576f510f4a70a0fd5cebb9f8f8e5456d'
         ],
     ])
     return url_sha1
@@ -170,7 +170,7 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
 
     Leaves the files in temp_dir. copies to move_to_dir
     """
-    bundle_dir = os.path.join(temp_dir, 'prebuilt-pygame-ce-sdl2-20261115')
+    bundle_dir = os.path.join(temp_dir, 'prebuilt-pygame-ce-sdl2-20261126')
     prebuilt_x64 = os.path.join(bundle_dir, 'prebuilt-x64')
     prebuilt_x86 = os.path.join(bundle_dir, 'prebuilt-x86')
 
@@ -220,12 +220,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 bundle_dir,
-                'SDL2_mixer-2.8.2'
+                'SDL2_mixer-2.9.0'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_mixer-2.8.2'
+                'SDL2_mixer-2.9.0'
             )
         )
         copy(

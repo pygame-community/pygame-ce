@@ -11,9 +11,9 @@ IMG2="SDL_image-$IMG2_VER"
 # and fixes (reports 2.25.0)
 TTF2_VER="f7bde1e428c787287a8e3d9d57af52d2e7b3aadd"
 TTF2="SDL_ttf-$TTF2_VER"
-# SDL2_mixer: release-2.8.x, most updated deps (for Windows prebuilts)
-# and fixes (reports 2.8.2 still)
-MIX2_VER="5c8af4d5b62c3d248b757eb932146a0a56b38587"
+# SDL2_mixer: SDL2 branch, most updated deps (for Windows prebuilts)
+# and fixes, including the pygame-ce#4028 fix (reports 2.9.0)
+MIX2_VER="14c5755bc282d3a4fd1f12d82c59dcb1b441302d"
 MIX2="SDL_mixer-$MIX2_VER"
 
 
