@@ -833,6 +833,12 @@ Sprites are not thread safe. So lock them yourself if using threads.
    sprites must have a "rect" value, which is a rectangle of the sprite area,
    which will be used to calculate the collision.
 
+   .. note::
+      When collided is not passed, the "rect" values of group2 may be read
+      once at the start of the call, so sprites should not replace their
+      "rect" while ``groupcollide`` is running (for example, from an
+      overridden ``kill()``).
+
    .. ## pygame.sprite.groupcollide ##
 
 .. function:: spritecollideany

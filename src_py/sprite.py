@@ -1743,23 +1743,41 @@ def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
     """
     collided_sprites = {}
     if collided is None:
-        # snapshot groupb's rects once so that each groupa sprite is tested
-        # with a single collidelistall call instead of a python loop
+        # Snapshot groupb's rects once so that each groupa sprite is tested
+        # with a single collidelistall call instead of a python loop. This
+        # assumes sprite rects are not reassigned during the call.
         group_b_sprites = list(groupb)
         group_b_rects = [group_b_sprite.rect for group_b_sprite in group_b_sprites]
+        if dokillb:
+            group_b_has = groupb.has_internal
+            dead = 0
         for group_a_sprite in groupa:
             indices = group_a_sprite.rect.collidelistall(group_b_rects)
-            if indices:
-                collisions = [group_b_sprites[i] for i in indices]
-                collided_sprites[group_a_sprite] = collisions
-                if dokillb:
-                    for group_b_sprite in collisions:
-                        group_b_sprite.kill()
-                    # killed sprites must not collide with later groupa sprites
+            if not indices:
+                continue
+            if dokillb:
+                # skip sprites killed by earlier groupa sprites
+                collisions = [
+                    group_b_sprites[i]
+                    for i in indices
+                    if group_b_has(group_b_sprites[i])
+                ]
+                if not collisions:
+                    continue
+                for group_b_sprite in collisions:
+                    group_b_sprite.kill()
+                dead += len(collisions)
+                # rebuild once the snapshot is mostly dead, so later lookups
+                # stay proportional to the sprites still in groupb
+                if dead * 2 > len(group_b_sprites):
                     group_b_sprites = list(groupb)
                     group_b_rects = [
                         group_b_sprite.rect for group_b_sprite in group_b_sprites
                     ]
+                    dead = 0
+            else:
+                collisions = [group_b_sprites[i] for i in indices]
+            collided_sprites[group_a_sprite] = collisions
     else:
         # pull the collision function in as a local variable outside
         # the loop as this makes the loop run faster
