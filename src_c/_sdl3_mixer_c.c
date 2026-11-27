@@ -161,6 +161,7 @@ pg_mixer_obj_play_audio(PGMixerObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     Py_DECREF(audio_type);
+    CHECK_AUDIO_OBJ_VALID(audio, NULL);
 
     bool success;
     PG_NOGIL(success = MIX_PlayAudio(self->mixer, audio->audio));
@@ -575,15 +576,20 @@ pg_audio_obj_init(PGAudioObject *self, PyObject *args, PyObject *kwargs)
     }
 
     MIX_Mixer *mixer = NULL;
-    if (PyObject_IsInstance(mixer_or_none, mixer_type)) {
+    int obj_is_mixer = PyObject_IsInstance(mixer_or_none, mixer_type);
+    Py_DECREF(mixer_type);
+    if (obj_is_mixer < 0) {
+        return -1;
+    }
+
+    if (obj_is_mixer) {
+        CHECK_MIXER_OBJ_VALID((PGMixerObject *)mixer_or_none, -1);
         mixer = ((PGMixerObject *)mixer_or_none)->mixer;
     }
     else if (!Py_IsNone(mixer_or_none)) {  // not mixer, not none
-        Py_DECREF(mixer_type);
         PyErr_SetString(PyExc_TypeError, "argument 3 must be Mixer or None");
         return -1;
     }
-    Py_DECREF(mixer_type);
 
     SDL_IOStream *io = pgRWops_FromObject(file, NULL);
     if (io == NULL) {
@@ -709,14 +715,19 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
     }
 
     MIX_Mixer *mixer = NULL;
-    if (PyObject_IsInstance(mixer_or_none, mixer_type)) {
+    int obj_is_mixer = PyObject_IsInstance(mixer_or_none, mixer_type);
+    Py_DECREF(mixer_type);
+    if (obj_is_mixer < 0) {
+        return NULL;
+    }
+
+    if (obj_is_mixer) {
+        CHECK_MIXER_OBJ_VALID((PGMixerObject *)mixer_or_none, NULL);
         mixer = ((PGMixerObject *)mixer_or_none)->mixer;
     }
     else if (!Py_IsNone(mixer_or_none)) {  // not mixer, not none
-        Py_DECREF(mixer_type);
         return RAISE(PyExc_TypeError, "argument 3 must be Mixer or None");
     }
-    Py_DECREF(mixer_type);
 
     PyObject *bytes = PyBytes_FromObject(buffer);
     if (bytes == NULL) {
@@ -772,14 +783,19 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
     }
 
     MIX_Mixer *mixer = NULL;
-    if (PyObject_IsInstance(mixer_or_none, mixer_type)) {
+    int obj_is_mixer = PyObject_IsInstance(mixer_or_none, mixer_type);
+    Py_DECREF(mixer_type);
+    if (obj_is_mixer < 0) {
+        return NULL;
+    }
+
+    if (obj_is_mixer) {
+        CHECK_MIXER_OBJ_VALID((PGMixerObject *)mixer_or_none, NULL);
         mixer = ((PGMixerObject *)mixer_or_none)->mixer;
     }
     else if (!Py_IsNone(mixer_or_none)) {  // not mixer, not none
-        Py_DECREF(mixer_type);
         return RAISE(PyExc_TypeError, "argument 3 must be Mixer or None");
     }
-    Py_DECREF(mixer_type);
 
     PGAudioObject *self = (PGAudioObject *)cls->tp_alloc(cls, 0);
     if (self == NULL) {
@@ -975,6 +991,7 @@ pg_track_obj_init(PGTrackObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &mixer)) {
         return -1;
     }
+    CHECK_MIXER_OBJ_VALID(mixer, -1);
 
     MIX_Track *track;
     PG_NOGIL(track = MIX_CreateTrack(mixer->mixer));
@@ -1028,14 +1045,19 @@ pg_track_obj_destroy(PGTrackObject *self, PyObject *_null)
     // whole) is destroyed/quit. Otherwise this can run after the
     // underlying MIX_Track has already been freed, causing a double free.
     //
-    // Unlike dealloc, this does NOT clear mixer_obj/source_obj, since the
-    // Python Track object itself is still alive and those references are
-    // otherwise still meaningful (e.g. .mixer stays queryable).
+    // Unlike dealloc, this does NOT clear mixer_obj, since the Python Track
+    // object itself is still alive and .mixer stays queryable.
     MIX_Track *track = self->track;
     self->track = NULL;
     if (track != NULL) {
         PG_NOGIL(MIX_DestroyTrack(track));
     }
+
+    // But it does clear source_obj, which nothing can query once the track
+    // is dead. If it held onto an AudioStream's state past the SDL audio
+    // subsystem quitting, SDL would destroy the stream on quit, and the
+    // state would then destroy it again when it is deallocated.
+    Py_CLEAR(self->source_obj);
     Py_RETURN_NONE;
 }
 
@@ -1159,14 +1181,21 @@ pg_track_obj_set_audio(PGTrackObject *self, PyObject *args, PyObject *kwargs)
     }
 
     MIX_Audio *audio = NULL;
-    if (PyObject_IsInstance(audio_or_none, audio_type)) {  // audio
+    int obj_is_audio = PyObject_IsInstance(audio_or_none, audio_type);
+    Py_DECREF(audio_type);
+    if (obj_is_audio < 0) {
+        return NULL;
+    }
+
+    if (obj_is_audio) {  // audio
+        // A destroyed Audio has a NULL handle, which SDL would take to mean
+        // "remove the track's input" rather than an error.
+        CHECK_AUDIO_OBJ_VALID((PGAudioObject *)audio_or_none, NULL);
         audio = ((PGAudioObject *)audio_or_none)->audio;
     }
     else if (!Py_IsNone(audio_or_none)) {  // not audio, not none
-        Py_DECREF(audio_type);
         return RAISE(PyExc_TypeError, "argument 1 must be Audio or None");
     }
-    Py_DECREF(audio_type);
 
     bool success;
     PG_NOGIL(success = MIX_SetTrackAudio(self->track, audio));
@@ -1208,29 +1237,20 @@ pg_track_obj_set_audiostream(PGTrackObject *self, PyObject *args,
 {
     CHECK_TRACK_OBJ_VALID(self, NULL);
 
-    PyObject *audiostream_or_none = NULL;
-    char *keywords[] = {"audiostream", NULL};
+    PyObject *state_or_none = NULL;
+    char *keywords[] = {"audiostream_state", NULL};
 
-    // This function relies on Python level type checking to remove values
-    // that are not AudioStream objects or None.
+    // This function relies on the Python layer to pass an AudioStream's
+    // _state object, or None. The Python layer keeps track of the AudioStream
+    // itself, for get_audiostream.
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords,
-                                     &audiostream_or_none)) {
+                                     &state_or_none)) {
         return NULL;
     }
 
     SDL_AudioStream *stream = NULL;
-    if (audiostream_or_none != Py_None) {
-        // audiostream._state to get at internals
-        PGAudioStreamStateObject *as_state =
-            (PGAudioStreamStateObject *)PyObject_GetAttrString(
-                audiostream_or_none, "_state");
-        if (as_state == NULL) {
-            return RAISE(pgExc_SDLError,
-                         "Unexpected internal error getting SDL audio stream "
-                         "from Python object");
-        }
-        stream = as_state->stream;
-        Py_DECREF(as_state);  // PyObject_GetAttrString gives new ref
+    if (!Py_IsNone(state_or_none)) {
+        stream = ((PGAudioStreamStateObject *)state_or_none)->stream;
     }
 
     bool success;
@@ -1244,8 +1264,10 @@ pg_track_obj_set_audiostream(PGTrackObject *self, PyObject *args,
     Py_CLEAR(self->source_obj);
 
     if (stream != NULL) {
-        // We've successfully added an audio object, yay!
-        self->source_obj = Py_NewRef(audiostream_or_none);
+        // The state object owns the SDL stream, so holding it keeps the
+        // stream alive for as long as SDL_mixer may be reading from it, even
+        // if the AudioStream lets go of it (e.g. through audio.quit()).
+        self->source_obj = Py_NewRef(state_or_none);
     }
 
     Py_RETURN_NONE;
@@ -1259,8 +1281,9 @@ pg_track_obj_get_audiostream(PGTrackObject *self, PyObject *_null)
     SDL_AudioStream *stream;
     PG_NOGIL(stream = MIX_GetTrackAudioStream(self->track));
     if (stream != NULL) {
-        // This track object owns an audio, therefore our source object must
-        // be non-null, and an audio object.
+        // This track has an audio stream input, therefore our source object
+        // must be non-null, and an AudioStream's state object. The Python
+        // layer maps it back to the AudioStream.
         return Py_NewRef(self->source_obj);
     }
 
@@ -1712,9 +1735,10 @@ static int
 pg_track_obj_clear(PyObject *op)
 {
     PGTrackObject *self = (PGTrackObject *)op;
-    // Do not clear mixer_obj here, we need it to be alive though
-    // the lifespan of the MIX_Track.
-    Py_CLEAR(self->source_obj);
+    // Do not clear mixer_obj or source_obj here, we need them to be alive
+    // through the lifespan of the MIX_Track. (The track may be reading from
+    // an AudioStream that source_obj keeps alive.) Cycles through them are
+    // still broken by the other objects in the cycle clearing themselves.
     Py_CLEAR(self->stopped_callback_obj);
     return 0;
 }

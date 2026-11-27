@@ -207,13 +207,26 @@ class Track(_sdl3_mixer_c.Track):
         _sdl3_mixer_c.Track.__init__(self, mixer)
         _internals.add_track_ref(self)
 
+        # The C layer holds the AudioStream's _state (which owns the SDL
+        # stream, so it has to stay alive while the track reads from it),
+        # and this maps it back to the AudioStream for get_audiostream.
+        self._audiostream: audio.AudioStream | None = None
+
+    def _destroy(self) -> None:
+        _sdl3_mixer_c.Track._destroy(self)
+        self._audiostream = None
+
+    def set_audio(self, audio: Audio | None) -> None:
+        _sdl3_mixer_c.Track.set_audio(self, audio)
+        self._audiostream = None
+
     def set_audiostream(self, audiostream: audio.AudioStream | None) -> None:
         if not self._valid:
             raise pygame.error("Dead Track, the track was destroyed")
 
         if isinstance(audiostream, audio.AudioStream):
             audiostream._check_valid()
-            _sdl3_mixer_c.Track.set_audiostream(self, audiostream)
+            _sdl3_mixer_c.Track.set_audiostream(self, audiostream._state)
         elif audiostream is None:
             _sdl3_mixer_c.Track.set_audiostream(self, None)
         else:
@@ -221,6 +234,17 @@ class Track(_sdl3_mixer_c.Track):
                 "audiostream argument must be an AudioStream or None, "
                 f"received {type(audiostream)}"
             )
+
+        self._audiostream = audiostream
+
+    def get_audiostream(self) -> audio.AudioStream | None:
+        if _sdl3_mixer_c.Track.get_audiostream(self) is None:
+            return None
+        return self._audiostream
+
+    def set_filestream(self, file) -> None:
+        _sdl3_mixer_c.Track.set_filestream(self, file)
+        self._audiostream = None
 
 
 class AudioDecoder(_sdl3_mixer_c.AudioDecoder):
