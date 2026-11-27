@@ -23,11 +23,6 @@ python_sources = files(
 )
 py.install_sources(python_sources, subdir: pg)
 
-# if not building font, install use ftfont for font.py
-if not sdl_ttf_dep.found() and freetype_dep.found()
-    py.install_sources('ftfont.py', subdir: pg, rename: 'font.py')
-endif
-
 if sdl_api == 3
     py.install_sources('_sdl3_mixer.py', subdir: pg)
     py.install_sources('_audio.py', subdir: pg)

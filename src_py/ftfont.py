@@ -12,15 +12,22 @@ __all__ = [
 ]
 
 from pygame import draw, encode_file_path
-from pygame._freetype import (
-    Font as _Font,
-    _internal_mod_init,
-    get_default_font,
-    get_default_resolution,
-    get_init as _get_init,
-    init,
-    quit,
-)
+
+try:
+    from pygame._freetype import (
+        Font as _Font,
+        _internal_mod_init,
+        get_default_font,
+        get_default_resolution,
+        get_init as _get_init,
+        init,
+        quit,
+    )
+except ImportError as e:
+    raise ImportError(
+        "pygame.ftfont is not available because pygame was built without freetype "
+        "support (the freetype build option was disabled or freetype was not found)"
+    ) from e
 from pygame.sysfont import SysFont as _SysFont, get_fonts, match_font
 
 
