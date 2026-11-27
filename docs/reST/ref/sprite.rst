@@ -60,27 +60,28 @@ Sprites are not thread safe. So lock them yourself if using threads.
    ``Sprite.rect`` attributes. The initializer can accept any number of Group
    instances to be added to.
 
-   When subclassing the Sprite, be sure to call the base initializer before
-   adding the Sprite to Groups. For example:
+   When subclassing the Sprite, be sure to call the super's constructor.
+   This is required for the Sprite to be able to be added to Groups.
+   For example:
 
    .. code-block:: python
 
        class Block(pygame.sprite.Sprite):
 
-           # Constructor. Pass in the color of the block,
-           # and its x and y position
-           def __init__(self, color, width, height):
-              # Call the parent class (Sprite) constructor
-              pygame.sprite.Sprite.__init__(self)
+           # Constructor. Pass in the position, size, and color.
+           def __init__(self, x, y, width, height, color):
+              # Call the parent class (Sprite) constructor.
+              # Required for groups to work properly.
+              super().__init__()
 
               # Create an image of the block, and fill it with a color.
               # This could also be an image loaded from the disk.
-              self.image = pygame.Surface([width, height])
+              self.image = pygame.Surface((width, height))
               self.image.fill(color)
 
-              # Fetch the rectangle object that has the dimensions of the image
-              # Update the position of this object by setting the values of rect.x and rect.y
-              self.rect = self.image.get_rect()
+              # Fetch the rectangle object that has the dimensions of the image.
+              # Set the position of the rect using keyword arguments.
+              self.rect = self.image.get_rect(x=x, y=y)
 
    .. method:: update
 
