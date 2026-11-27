@@ -5,7 +5,7 @@
 
 from typing import TypedDict
 
-from pygame._data_classes import PowerState
+from pygame._data_classes import PowerState as PowerState
 
 class _InstructionSets(TypedDict):
     ALTIVEC: bool

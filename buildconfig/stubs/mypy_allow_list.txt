@@ -32,3 +32,6 @@ pygame\.docs.*
 pygame\._audio
 pygame\._sdl3_mixer
 pygame\._render
+
+# undocumented submodules without an underscore prefix
+pygame\.colordict
