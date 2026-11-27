@@ -3,12 +3,25 @@
 import sys
 import os
 import subprocess
+import glob
 
 rst_dir = 'docs'
 rst_source_dir = os.path.join(rst_dir, 'reST')
 rst_build_dir = os.path.join('docs', 'generated')
 rst_doctree_dir = os.path.join(rst_build_dir, 'doctrees')
 c_header_dir = os.path.join('src_c', 'doc')
+
+ignore_dirs = ["freetype"]
+
+def move_doc_headers():
+    for file in glob.glob(f'{c_header_dir}/*.h'):
+        file_name = os.path.basename(file)
+        module_name = file_name.replace('_doc.h', '')
+        if module_name in ignore_dirs:
+            continue
+        dest_dir = os.path.join('src_c', module_name)
+        if os.path.isdir(dest_dir):
+            os.replace(file, os.path.join(dest_dir, file_name))
 
 
 def run():
@@ -27,7 +40,11 @@ def run():
         if full_generation_flag:
             subprocess_args.append('-E')
         print("Executing sphinx in subprocess with args:", subprocess_args)
-        return subprocess.run(subprocess_args).returncode
+        returncode = subprocess.run(subprocess_args).returncode
+        if returncode != 0:
+            return returncode
+        move_doc_headers()
+        return 0
     except Exception:
         print('---')
         print('Have you installed sphinx?')
