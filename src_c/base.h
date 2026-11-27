@@ -25,12 +25,6 @@ extern int
 SDL_RegisterApp(const char *, Uint32, void *);
 #endif
 
-#if defined(macintosh)
-#if (!defined(__MWERKS__) && !TARGET_API_MAC_CARBON)
-QDGlobals pg_qd;
-#endif
-#endif
-
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define PAI_MY_ENDIAN '<'
 #define PAI_OTHER_ENDIAN '>'
@@ -45,13 +39,13 @@ QDGlobals pg_qd;
 /* Extended array struct */
 typedef struct pg_capsule_interface_s {
     PyArrayInterface inter;
-    Py_intptr_t imem[1];
+    Py_intptr_t imem[];
 } pgCapsuleInterface;
 
 /* Py_buffer internal data for an array interface/struct */
 typedef struct pg_view_internals_s {
     char format[4]; /* make 4 byte word sized */
-    Py_ssize_t imem[1];
+    Py_ssize_t imem[];
 } pgViewInternals;
 
 extern PG_PixelFormatEnum pg_default_convert_format;

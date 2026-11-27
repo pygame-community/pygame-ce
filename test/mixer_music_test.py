@@ -3,6 +3,7 @@ import platform
 import sys
 import time
 import unittest
+from tempfile import TemporaryDirectory
 
 import pygame
 from pygame.tests.test_utils import example_path
@@ -83,9 +84,8 @@ class MixerMusicModuleTest(unittest.TestCase):
             "house_lo.flac",
             "house_lo.opus",
             "surfonasinewave.xm",
+            "house_lo.mp3",
         ]
-        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
-            filenames.append("house_lo.mp3")
 
         if (
             pygame.mixer.get_sdl_mixer_version() >= (2, 8, 0)
@@ -114,9 +114,8 @@ class MixerMusicModuleTest(unittest.TestCase):
             "house_lo.flac",
             "house_lo.opus",
             "surfonasinewave.xm",
+            "house_lo.mp3",
         ]
-        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
-            filenames.append("house_lo.mp3")
 
         if (
             pygame.mixer.get_sdl_mixer_version() >= (2, 8, 0)
@@ -154,20 +153,13 @@ class MixerMusicModuleTest(unittest.TestCase):
         import shutil
 
         ep = example_path("data")
-        temp_file = os.path.join(ep, "你好.wav")
-        org_file = os.path.join(ep, "house_lo.wav")
-        try:
-            with open(temp_file, "w") as f:
-                pass
-            os.remove(temp_file)
-        except OSError:
-            raise unittest.SkipTest("the path cannot be opened")
-        shutil.copy(org_file, temp_file)
-        try:
+
+        with TemporaryDirectory() as tmpdir:
+            temp_file = os.path.join(tmpdir, "你好.wav")
+            org_file = os.path.join(ep, "house_lo.wav")
+            shutil.copy(org_file, temp_file)
             pygame.mixer.music.load(temp_file)
             pygame.mixer.music.load(org_file)  # unload
-        finally:
-            os.remove(temp_file)
 
     def test_unload(self):
         import shutil
@@ -314,20 +306,12 @@ class MixerMusicModuleTest(unittest.TestCase):
         path = os.path.join(file_dir, "metadata.mp3")
         pygame.mixer.music.load(path)
 
-        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
-            file_metadata = {
-                "title": "Small Tone",
-                "album": "Tones",
-                "artist": "Audacity Generator",
-                "copyright": "2023 Nobody",
-            }
-        else:
-            file_metadata = {
-                "title": "",
-                "album": "",
-                "artist": "",
-                "copyright": "",
-            }
+        file_metadata = {
+            "title": "Small Tone",
+            "album": "Tones",
+            "artist": "Audacity Generator",
+            "copyright": "2023 Nobody",
+        }
 
         retrieved_metadata = pygame.mixer.music.get_metadata()
         self.assertDictEqual(file_metadata, retrieved_metadata)

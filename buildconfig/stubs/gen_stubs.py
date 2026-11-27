@@ -65,7 +65,6 @@ PG_AUTOIMPORT_CLASSES = {
     "cursors": ["Cursor"],
     "bufferproxy": ["BufferProxy"],
     "mask": ["Mask"],
-    "_debug": ["print_debug_info"],
     "event": ["Event"],
     "font": ["Font"],
     "mixer": ["Sound", "Channel"],
@@ -76,6 +75,12 @@ PG_AUTOIMPORT_CLASSES = {
     # uncomment below line if Circle is added to the base namespace later
     # "geometry": ["Circle"],
 }
+
+# These are things in the pygame.* namespace, but we don't want to stub the entire source
+ADDITIONAL_STUBS = [
+    "def print_debug_info() -> None: ...",
+    "def get_debug_info() -> str: ..."
+]
 
 # pygame modules from which __init__.py does the equivalent of
 # from submod import *
@@ -153,6 +158,10 @@ with open(init_file, "w") as f:
         for item in items:
             f.write(f"    {item} as {item},\n")
         f.write(")\n")
+
+    f.write("\n")
+    for stub in ADDITIONAL_STUBS:
+        f.write(f"{stub}\n")
 
 # write locals.pyi file
 locals_file = pathlib.Path(__file__).parent / "pygame" / "locals.pyi"

@@ -76,6 +76,33 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(len(c), 4)
         self.assertEqual(c, (100, 110, 120, 128))
 
+    def test_copy(self):
+        import copy
+
+        # test color.copy()
+        c = pygame.Color(10, 20, 30, 40)
+        c_copy = c.copy()
+        self.assertIs(type(c_copy), pygame.Color)
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+
+        # test color.__copy__()
+        c = pygame.Color(10, 20, 30, 40)
+        c_copy = c.__copy__()
+        self.assertIs(type(c_copy), pygame.Color)
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+
+        # test copy.copy()
+        c = pygame.Color(10, 20, 30, 40)
+        c_copy = copy.copy(c)
+        self.assertIs(type(c_copy), pygame.Color)
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+
     def test_invalid_html_hex_codes(self):
         # This was a problem with the way 2 digit hex numbers were
         # calculated. The test_hex_digits test is related to the fix.
@@ -787,11 +814,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_from_cmy(self):
         cmy = pygame.Color.from_cmy(0.5, 0.5, 0.5)
         cmy_tuple = pygame.Color.from_cmy((0.5, 0.5, 0.5))
+        cmy_instance = pygame.Color(0, 0, 0, 0).from_cmy(0.5, 0.5, 0.5)
 
         expected_cmy = (127, 127, 127)
 
         self.assertEqual(expected_cmy, cmy)
         self.assertEqual(expected_cmy, cmy_tuple)
+        self.assertEqual(expected_cmy, cmy_instance)
 
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_cmy(0.5, 0.5, 0.5, "lel", "foo")
@@ -803,11 +832,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_from_hsva(self):
         hsva = pygame.Color.from_hsva(0, 100, 100, 100)
         hsva_tuple = pygame.Color.from_hsva((0, 100, 100, 100))
+        hsva_instance = pygame.Color(0, 0, 0, 0).from_hsva(0, 100, 100, 100)
 
         expected_hsva = (255, 0, 0)
 
         self.assertEqual(expected_hsva, hsva)
         self.assertEqual(expected_hsva, hsva_tuple)
+        self.assertEqual(expected_hsva, hsva_instance)
 
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_hsva(0, 100, 100, 100, "lel", "foo")
@@ -819,11 +850,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_from_hsla(self):
         hsla = pygame.Color.from_hsla(0, 100, 100, 100)
         hsla_tuple = pygame.Color.from_hsla((0, 100, 100, 100))
+        hsla_instance = pygame.Color(0, 0, 0, 0).from_hsla(0, 100, 100, 100)
 
         expected_hsla = (255, 255, 255)
 
         self.assertEqual(expected_hsla, hsla)
         self.assertEqual(expected_hsla, hsla_tuple)
+        self.assertEqual(expected_hsla, hsla_instance)
 
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_hsla(0, 100, 100, 100, "lel")
@@ -835,11 +868,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_from_i1i2i3(self):
         i1i2i3 = pygame.Color.from_i1i2i3(0, 0, 0)
         i1i2i3_tuple = pygame.Color.from_i1i2i3((0, 0, 0))
+        i1i2i3_instance = pygame.Color(0, 0, 0, 0).from_i1i2i3(0, 0, 0)
 
         expected_i1i2i3 = (0, 0, 0)
 
         self.assertEqual(expected_i1i2i3, i1i2i3)
         self.assertEqual(expected_i1i2i3, i1i2i3_tuple)
+        self.assertEqual(expected_i1i2i3, i1i2i3_instance)
 
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_i1i2i3(0, 0, 0, "lel", "foo")
@@ -849,11 +884,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_from_normalized(self):
         normal = pygame.Color.from_normalized(1, 1, 1, 1)
         normal_tuple = pygame.Color.from_normalized((1, 1, 1, 1))
+        normal_instance = pygame.Color(0, 0, 0, 0).from_normalized(1, 1, 1, 1)
 
         expected_normal = (255, 255, 255, 255)
 
         self.assertEqual(expected_normal, normal)
         self.assertEqual(expected_normal, normal_tuple)
+        self.assertEqual(expected_normal, normal_instance)
 
         self.assertRaises(
             ValueError, lambda: pygame.Color.from_normalized(1, 1, 1, 1, "lel")
@@ -865,6 +902,11 @@ class ColorTypeTest(unittest.TestCase):
         color3 = pygame.Color.from_hex("#AAFF00")  # Random
         color4 = pygame.Color.from_hex("#FF000080")  # Red (50% opacity)
 
+        color_instance1 = pygame.Color(0, 0, 0, 0).from_hex("#FFFFFF")
+        color_instance2 = pygame.Color(63, 12, 83).from_hex("#000000")
+        color_instance3 = pygame.Color(52, 31, 8, 255).from_hex("#AAFF00")
+        color_instance4 = pygame.Color("#E4A010").from_hex("#FF000080")
+
         expected_color1 = (255, 255, 255, 255)
         expected_color2 = (0, 0, 0, 255)
         expected_color3 = (170, 255, 0, 255)
@@ -874,6 +916,11 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(color2, expected_color2)
         self.assertEqual(color3, expected_color3)
         self.assertEqual(color4, expected_color4)
+
+        self.assertEqual(color_instance1, expected_color1)
+        self.assertEqual(color_instance2, expected_color2)
+        self.assertEqual(color_instance3, expected_color3)
+        self.assertEqual(color_instance4, expected_color4)
 
         self.assertRaises(ValueError, lambda: pygame.Color.from_hex("#FFFFFG"))
         self.assertRaises(ValueError, lambda: pygame.Color.from_hex("#FFFFFFF"))
@@ -1494,8 +1541,41 @@ class ColorTypeTest(unittest.TestCase):
 class SubclassTest(unittest.TestCase):
     class MyColor(pygame.Color):
         def __init__(self, *args, **kwds):
-            super(SubclassTest.MyColor, self).__init__(*args, **kwds)
+            super().__init__(*args, **kwds)
             self.an_attribute = True
+            self.copy_dunder_called = False
+
+        def __copy__(self):
+            self.copy_dunder_called = True
+            return super().__copy__()
+
+    def test_copy(self):
+        import copy
+
+        # test color.copy()
+        c = self.MyColor(10, 20, 30, 40)
+        c_copy = c.copy()
+        self.assertIs(type(c_copy), type(c))
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+
+        # test color.__copy__()
+        c = self.MyColor(10, 20, 30, 40)
+        c_copy = c.__copy__()
+        self.assertIs(type(c_copy), type(c))
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+
+        # test copy.copy()
+        c = self.MyColor(10, 20, 30, 40)
+        c_copy = copy.copy(c)
+        self.assertIs(type(c_copy), type(c))
+        self.assertEqual(c_copy, c)
+        self.assertIsNot(c_copy, c)
+        self.assertEqual(len(c_copy), len(c))
+        self.assertTrue(c.copy_dunder_called)
 
     def test_add(self):
         mc1 = self.MyColor(128, 128, 128, 255)

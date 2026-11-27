@@ -7,18 +7,14 @@ import pygame
 
 class DebugTest(unittest.TestCase):
     @unittest.mock.patch("sys.stdout", new_callable=io.StringIO)
-    def assert_stdout(self, expected_output, mock_stdout):
+    def assert_stdout_equal(self, expected_output, mock_stdout):
         pygame.print_debug_info()
-        self.assertEqual(mock_stdout.getvalue(), expected_output)
+        # print_debug_info adds a newline when sending to stdout, so capture that
+        self.assertEqual(mock_stdout.getvalue(), expected_output + "\n")
 
-    def test_print_debug(self):
-        import os
-
-        pygame.print_debug_info("temp_file.txt")
-        with open("temp_file.txt", "r") as temp_file:
-            text = temp_file.read()
+    def test_print_debug_info(self):
+        self.maxDiff = None
+        text = pygame.get_debug_info()
 
         self.assertNotEqual(text, "")
-        self.assert_stdout(text + "\n")
-
-        os.remove("temp_file.txt")
+        self.assert_stdout_equal(text)

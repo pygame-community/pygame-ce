@@ -9,6 +9,7 @@ test_files = files(
     'color_test.py',
     'constants_test.py',
     'controller_test.py',
+    'ctest_test.py',
     'cursors_test.py',
     'debug_test.py',
     'display_test.py',

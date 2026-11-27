@@ -9,10 +9,6 @@ from libc.stdlib cimport free, malloc
 WINDOWPOS_UNDEFINED = _SDL_WINDOWPOS_UNDEFINED
 WINDOWPOS_CENTERED = _SDL_WINDOWPOS_CENTERED
 
-MESSAGEBOX_ERROR = _SDL_MESSAGEBOX_ERROR
-MESSAGEBOX_WARNING = _SDL_MESSAGEBOX_WARNING
-MESSAGEBOX_INFORMATION = _SDL_MESSAGEBOX_INFORMATION
-
 SCALEQUALITY_NEAREST=SDL_ScaleMode.SDL_ScaleModeNearest
 SCALEQUALITY_LINEAR=SDL_ScaleMode.SDL_ScaleModeLinear
 SCALEQUALITY_BEST=SDL_ScaleMode.SDL_ScaleModeBest
@@ -65,86 +61,6 @@ def get_grabbed_window():
             return None
         return <object>ptr
     return None
-
-def messagebox(title, message,
-               Window window=None,
-               bint info=False,
-               bint warn=False,
-               bint error=False,
-               buttons=('OK', ),
-               return_button=0,
-               escape_button=0):
-    """Create a native GUI message box
-
-    Creates a native GUI message box.
-
-    :param str title: A title string, or ``None`` to omit a title.
-    :param str message: A message string.
-    :param bool info: If ``True``, display an info message.
-    :param bool warn: If ``True``, display a warning message.
-    :param bool error: If ``True``, display an error message.
-    :param tuple buttons: An optional sequence of button name strings to show to the user.
-    :param int return_button: Button index to use if the return key is hit (``-1`` for none).
-    :param int escape_button: Button index to use if the escape key is hit (``-1`` for none).
-    :return: The index of the button that was pushed.
-    """
-    # TODO: type check
-    # TODO: color scheme
-    cdef SDL_MessageBoxButtonData* c_buttons = NULL
-
-    cdef SDL_MessageBoxData data
-    data.flags = 0
-    if warn:
-        data.flags |= _SDL_MESSAGEBOX_WARNING
-    if error:
-        data.flags |= _SDL_MESSAGEBOX_ERROR
-    if info:
-        data.flags |= _SDL_MESSAGEBOX_INFORMATION
-    if not window:
-        data.window = NULL
-    else:
-        data.window = window._win
-    if title is not None:
-        title = title.encode('utf8')
-        data.title = title
-    else:
-        data.title = NULL
-    message = message.encode('utf8')
-    data.message = message
-    data.colorScheme = NULL
-
-    cdef SDL_MessageBoxButtonData button
-    if not buttons:
-        button.flags = _SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT |\
-                       _SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT
-        button.buttonid = 0
-        button.text = "OK"
-        data.buttons = &button
-        data.numbuttons = 1
-    else:
-        buttons_utf8 = [s.encode('utf8') for s in buttons]
-        data.numbuttons = <int>len(buttons)
-        c_buttons =\
-            <SDL_MessageBoxButtonData*>malloc(data.numbuttons * sizeof(SDL_MessageBoxButtonData))
-        if not c_buttons:
-            raise MemoryError()
-        for i, but in enumerate(reversed(buttons_utf8)):
-            c_buttons[i].flags = 0
-            c_buttons[i].buttonid = data.numbuttons - i - 1
-            if c_buttons[i].buttonid == return_button:
-                c_buttons[i].flags |= _SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT
-            if c_buttons[i].buttonid == escape_button:
-                c_buttons[i].flags |= _SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT
-            c_buttons[i].text = but
-        data.buttons = c_buttons
-
-    cdef int buttonid
-    if SDL_ShowMessageBox(&data, &buttonid):
-        free(c_buttons)
-        raise errorfnc()
-
-    free(c_buttons)
-    return buttonid
 
 globals()["Window"] = Window
 _Window = Window
@@ -258,15 +174,8 @@ cdef class Texture:
         if not self._tex:
             raise error()
 
-        if not scale_quality is None:
-            if SDL_VERSION_ATLEAST(2,0,12):
-                SDL_SetTextureScaleMode(self._tex,scale_quality)
-            else:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,{
-                    0: b'nearest',
-                    1: b'linear',
-                    2: b'best'
-                }[scale_quality])
+        if scale_quality is not None:
+            SDL_SetTextureScaleMode(self._tex, scale_quality)
 
         self.width, self.height = width, height
 
@@ -457,8 +366,7 @@ cdef class Texture:
         :param p2_mod: The second vertex color modulation.
         :param p3_mod: The third vertex color modulation.
         """
-        if not SDL_VERSION_ATLEAST(2, 0, 18):
-            raise error("draw_triangle requires SDL 2.0.18 or newer")
+
 
         cdef Uint8 _r_mod, _g_mod, _b_mod, _a_mod
         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
@@ -507,8 +415,6 @@ cdef class Texture:
         :param p3_mod: The third vertex color modulation.
         :param p4_mod: The fourth vertex color modulation.
         """
-        if not SDL_VERSION_ATLEAST(2, 0, 18):
-            raise error("draw_quad requires SDL 2.0.18 or newer")
 
         cdef Uint8 _r_mod, _g_mod, _b_mod, _a_mod
         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
@@ -1132,8 +1038,6 @@ cdef class Renderer:
 
     def fill_triangle(self, p1, p2, p3):
         # https://wiki.libsdl.org/SDL_RenderGeometry
-        if not SDL_VERSION_ATLEAST(2, 0, 18):
-            raise error("fill_triangle requires SDL 2.0.18 or newer")
 
         cdef Uint8[4] rgba
 
@@ -1173,8 +1077,6 @@ cdef class Renderer:
 
     def fill_quad(self, p1, p2, p3, p4):
         # https://wiki.libsdl.org/SDL_RenderGeometry
-        if not SDL_VERSION_ATLEAST(2, 0, 18):
-            raise error("fill_quad requires SDL 2.0.18 or newer")
 
         cdef Uint8[4] rgba
 

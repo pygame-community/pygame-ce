@@ -232,8 +232,8 @@ def get_device_info(an_id):
                                                 input, output,
                                                 opened)
 
-    interf - a text string describing the device interface, eg 'ALSA'.
-    name - a text string for the name of the device, eg 'Midi Through Port-0'
+    interf - a byte string describing the device interface, eg b'ALSA'.
+    name - a byte string for the name of the device, eg b'Midi Through Port-0'
     input - 0, or 1 if the device is an input device.
     output - 0, or 1 if the device is an output device.
     opened - 0, or 1 if the device is opened.
@@ -518,11 +518,11 @@ class Output:
         """writes a timestamped system-exclusive midi message.
         Output.write_sys_ex(when, msg)
 
-        msg - can be a *list* or a *string*
+        msg - can be a *list* or a *bytes*
         when - a timestamp in milliseconds
         example:
           (assuming o is an onput MIDI stream)
-            o.write_sys_ex(0,'\\xF0\\x7D\\x10\\x11\\x12\\x13\\xF7')
+            o.write_sys_ex(0, b'\\xF0\\x7D\\x10\\x11\\x12\\x13\\xF7')
           is equivalent to
             o.write_sys_ex(pygame.midi.time(),
                            [0xF0,0x7D,0x10,0x11,0x12,0x13,0xF7])

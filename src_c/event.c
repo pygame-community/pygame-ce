@@ -25,6 +25,11 @@
  */
 #define PYGAMEAPI_EVENT_INTERNAL
 
+/* We include SDL_gesture.h in _pygame.h. That header defines the
+ * implementation when this macro is set. So this macro needs to be set in only
+ * one source file (and not any header) and we set it here because its API is
+ * used here */
+#define SDL_GESTURE_IMPLEMENTATION 1
 #include "pygame.h"
 
 #include "pgcompat.h"
@@ -401,10 +406,8 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY(CONTROLLERTOUCHPADMOTION);
         _PG_HANDLE_PROXIFY(CONTROLLERTOUCHPADUP);
         _PG_HANDLE_PROXIFY(CONTROLLERSENSORUPDATE);
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         _PG_HANDLE_PROXIFY(DOLLARGESTURE);
         _PG_HANDLE_PROXIFY(DOLLARRECORD);
-#endif
         _PG_HANDLE_PROXIFY(DROPFILE);
         _PG_HANDLE_PROXIFY(DROPTEXT);
         _PG_HANDLE_PROXIFY(DROPBEGIN);
@@ -427,9 +430,7 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY(MOUSEBUTTONDOWN);
         _PG_HANDLE_PROXIFY(MOUSEBUTTONUP);
         _PG_HANDLE_PROXIFY(MOUSEWHEEL);
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         _PG_HANDLE_PROXIFY(MULTIGESTURE);
-#endif
         _PG_HANDLE_PROXIFY(NOEVENT);
         _PG_HANDLE_PROXIFY(QUIT);
         _PG_HANDLE_PROXIFY(RENDER_TARGETS_RESET);
@@ -493,12 +494,8 @@ _pg_pgevent_type(SDL_Event *event)
  * Currently this only includes WINDOWEVENT, but can be expanded in the
  * future.
  */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-static bool SDLCALL
-#else
-static int SDLCALL
-#endif
-_pg_filter_blocked_events(void *_, SDL_Event *event)
+static bool
+_pg_event_psuedo_block(SDL_Event *event)
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
     if (event->type >= SDL_EVENT_WINDOW_FIRST &&
@@ -506,6 +503,19 @@ _pg_filter_blocked_events(void *_, SDL_Event *event)
 #else
     if (event->type == SDL_WINDOWEVENT) {
 #endif
+        return true;
+    }
+    return false;
+}
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static bool SDLCALL
+#else
+static int SDLCALL
+#endif
+_pg_filter_blocked_events(void *_, SDL_Event *event)
+{
+    if (_pg_event_psuedo_block(event)) {
         return PG_EventEnabled(_pg_pgevent_proxify(_pg_pgevent_type(event)));
     }
     return 1;
@@ -732,14 +742,15 @@ pg_event_filter(void *_, SDL_Event *event)
             return RAISE(pgExc_SDLError, SDL_GetError()), 0;
         */
     }
-    /* TODO:
+    /*
      * Any event that gets blocked here will not be visible to the event
      * watchers. So things like WINDOWEVENT should never be blocked here.
-     * This is taken care of in SDL2 codepaths already but needs to also
-     * be verified in SDL3 porting.
      * If the user requests a block on WINDOWEVENTs we are going to handle
      * it specially and call it a "pseudo-block", where the filtering will
      * happen in a _pg_filter_blocked_events call. */
+    if (_pg_event_psuedo_block(event)) {
+        return 1;
+    }
     return PG_EventEnabled(_pg_pgevent_proxify(event->type));
 }
 
@@ -773,6 +784,9 @@ static PyObject *
 pgEvent_AutoQuit(PyObject *self, PyObject *_null)
 {
     if (_pg_event_is_init) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        Gesture_Quit();
+#endif
         PG_LOCK_EVFILTER_MUTEX
         if (_pg_repeat_timer) {
             SDL_RemoveTimer(_pg_repeat_timer);
@@ -805,6 +819,11 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
         }
 #endif
         SDL_SetEventFilter(pg_event_filter, NULL);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (Gesture_Init() != 0) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+#endif
     }
     _pg_event_is_init = 1;
     Py_RETURN_NONE;
@@ -856,8 +875,7 @@ pg_post_event(Uint32 type, PyObject *dict)
         return SDL_SetError("insufficient memory (internal malloc failed)");
     }
 
-    Py_INCREF(dict);
-    dict_proxy->dict = dict;
+    dict_proxy->dict = Py_NewRef(dict);
     /* initially set to 0 - unlocked state */
     dict_proxy->lock = 0;
     dict_proxy->num_on_queue = 0;
@@ -936,10 +954,8 @@ _pg_name_from_eventtype(int type)
             return "FingerDown";
         case SDL_FINGERUP:
             return "FingerUp";
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         case SDL_MULTIGESTURE:
             return "MultiGesture";
-#endif
         case SDL_MOUSEWHEEL:
             return "MouseWheel";
         case SDL_TEXTINPUT:
@@ -1142,7 +1158,6 @@ dict_from_event(SDL_Event *event)
                     state = SDL_APPACTIVE;
                     break;
                 default:
-                    assert(event->window.event == SDL_WINDOWEVENT_RESTORED);
                     gain = 1;
                     state = SDL_APPACTIVE;
             }
@@ -1195,6 +1210,7 @@ dict_from_event(SDL_Event *event)
                                                   (int)event->button.y);
             _pg_insobj(dict, "pos", obj);
             _pg_insobj(dict, "button", PyLong_FromLong(event->button.button));
+            _pg_insobj(dict, "clicks", PyLong_FromLong(event->button.clicks));
             _pg_insobj(
                 dict, "touch",
                 PyBool_FromLong((event->button.which == SDL_TOUCH_MOUSEID)));
@@ -1292,11 +1308,29 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "dx", PyFloat_FromDouble(event->tfinger.dx));
             _pg_insobj(dict, "dy", PyFloat_FromDouble(event->tfinger.dy));
             _pg_insobj(dict, "pressure",
-                       PyFloat_FromDouble(event->tfinger.dy));
+                       PyFloat_FromDouble(event->tfinger.pressure));
             break;
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
         case SDL_MULTIGESTURE:
-            /* https://wiki.libsdl.org/SDL_MultiGestureEvent */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            _pg_insobj(dict, "touch_id",
+                       PyLong_FromLongLong(
+                           ((Gesture_MultiGestureEvent *)event)->touchID));
+            _pg_insobj(
+                dict, "x",
+                PyFloat_FromDouble(((Gesture_MultiGestureEvent *)event)->x));
+            _pg_insobj(
+                dict, "y",
+                PyFloat_FromDouble(((Gesture_MultiGestureEvent *)event)->y));
+            _pg_insobj(dict, "rotated",
+                       PyFloat_FromDouble(
+                           ((Gesture_MultiGestureEvent *)event)->dTheta));
+            _pg_insobj(dict, "pinched",
+                       PyFloat_FromDouble(
+                           ((Gesture_MultiGestureEvent *)event)->dDist));
+            _pg_insobj(dict, "num_fingers",
+                       PyLong_FromLong(
+                           ((Gesture_MultiGestureEvent *)event)->numFingers));
+#else
             _pg_insobj(dict, "touch_id",
                        PyLong_FromLongLong(event->mgesture.touchId));
             _pg_insobj(dict, "x", PyFloat_FromDouble(event->mgesture.x));
@@ -1307,17 +1341,13 @@ dict_from_event(SDL_Event *event)
                        PyFloat_FromDouble(event->mgesture.dDist));
             _pg_insobj(dict, "num_fingers",
                        PyLong_FromLong(event->mgesture.numFingers));
-            break;
 #endif
+            break;
         case SDL_MOUSEWHEEL:
             /* https://wiki.libsdl.org/SDL_MouseWheelEvent */
-#ifndef NO_SDL_MOUSEWHEEL_FLIPPED
             _pg_insobj(dict, "flipped",
                        PyBool_FromLong(event->wheel.direction ==
                                        SDL_MOUSEWHEEL_FLIPPED));
-#else
-            _pg_insobj(dict, "flipped", PyBool_FromLong(0));
-#endif
             _pg_insobj(dict, "x", PyLong_FromLong((long)event->wheel.x));
             _pg_insobj(dict, "y", PyLong_FromLong((long)event->wheel.y));
 
@@ -1326,24 +1356,24 @@ dict_from_event(SDL_Event *event)
                        PyFloat_FromDouble((double)event->wheel.x));
             _pg_insobj(dict, "precise_y",
                        PyFloat_FromDouble((double)event->wheel.y));
-#elif SDL_VERSION_ATLEAST(2, 0, 18)
+#else
             _pg_insobj(dict, "precise_x",
                        PyFloat_FromDouble((double)event->wheel.preciseX));
             _pg_insobj(dict, "precise_y",
                        PyFloat_FromDouble((double)event->wheel.preciseY));
-
-#else /* ~SDL_VERSION_ATLEAST(2, 0, 18) */
-        /* fallback to regular x and y when SDL version used does not
-         * support precise fields */
-        _pg_insobj(dict, "precise_x",
-                   PyFloat_FromDouble((double)event->wheel.x));
-        _pg_insobj(dict, "precise_y",
-                   PyFloat_FromDouble((double)event->wheel.y));
-
-#endif /* ~SDL_VERSION_ATLEAST(2, 0, 18) */
+#endif
             _pg_insobj(
                 dict, "touch",
                 PyBool_FromLong((event->wheel.which == SDL_TOUCH_MOUSEID)));
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            obj = pg_tuple_couple_from_values_int((int)event->wheel.mouse_x,
+                                                  (int)event->wheel.mouse_y);
+#else
+            obj = pg_tuple_couple_from_values_int((int)event->wheel.mouseX,
+                                                  (int)event->wheel.mouseY);
+#endif
+            _pg_insobj(dict, "pos", obj);
 
             break;
         case SDL_TEXTINPUT:
@@ -1572,8 +1602,7 @@ dict_from_event(SDL_Event *event)
 #endif
         pgWindow = Py_None;
     }
-    Py_INCREF(pgWindow);
-    _pg_insobj(dict, "window", pgWindow);
+    _pg_insobj(dict, "window", Py_NewRef(pgWindow));
     return dict;
 }
 
@@ -1693,8 +1722,7 @@ pg_event_richcompare(PyObject *o1, PyObject *o2, int opid)
     }
 
 Unimplemented:
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
+    return Py_NewRef(Py_NotImplemented);
 }
 
 static int
@@ -1714,8 +1742,7 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
 
     if (!dict) {
         if (kwargs) {
-            dict = kwargs;
-            Py_INCREF(dict);
+            dict = Py_NewRef(kwargs);
         }
         else {
             dict = PyDict_New();
@@ -1982,8 +2009,7 @@ _pg_eventtype_as_seq(PyObject *obj, Py_ssize_t *len)
     if (PySequence_Check(obj)) {
         *len = PySequence_Size(obj);
         /* The returned object gets decref'd later, so incref now */
-        Py_INCREF(obj);
-        return obj;
+        return Py_NewRef(obj);
     }
     else if (PyLong_Check(obj)) {
         return Py_BuildValue("(O)", obj);

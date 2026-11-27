@@ -5,3 +5,10 @@ updates:
     schedule:
       # Check for updates to GitHub Actions every week
       interval: "weekly"
+    cooldown:
+      default-days: 7
+    # Group all updates into a single PR, if there are multiple updates found
+    groups:
+      all-deps:
+        patterns:
+          - "*"

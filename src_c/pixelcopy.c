@@ -22,6 +22,8 @@
 
 #include <stddef.h>
 
+#include "pygame.h"
+
 #include "palette.h"
 
 #include "pgcompat.h"
@@ -38,8 +40,6 @@ typedef enum {
 } _pc_view_kind_t;
 
 #if !defined(BUILD_STATIC)
-
-#include "pygame.h"
 
 static int
 _validate_view_format(const char *format)
@@ -275,6 +275,12 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
     PG_PixelFormat *format;
     SDL_Palette *palette;
 
+    if (pixelsize > 4 || pixelsize <= 0) {
+        PyErr_Format(PyExc_ValueError, "Unsupported bytes per pixel: %d",
+                     pixelsize);
+        return -1;
+    }
+
     if (view_p->shape[0] != w || view_p->shape[1] != h) {
         PyErr_Format(PyExc_ValueError,
                      "Expected a (%d, %d) target: got (%d, %d)", w, h,
@@ -390,6 +396,12 @@ _copy_unmapped(Py_buffer *view_p, SDL_Surface *surf)
     Py_intptr_t x, y, z;
     _pc_pixel_t pixel = {0};
     Uint8 r, g, b;
+
+    if (pixelsize > 4 || pixelsize <= 0) {
+        PyErr_Format(PyExc_ValueError, "Unsupported bytes per pixel: %d",
+                     pixelsize);
+        return -1;
+    }
 
     if (view_p->shape[0] != w || view_p->shape[1] != h ||
         view_p->shape[2] != 3) {
@@ -1197,11 +1209,7 @@ make_surface(PyObject *self, PyObject *arg)
         pgBuffer_Release(&pg_view);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    SDL_Palette *palette = SDL_GetSurfacePalette(surf);
-#else
-    SDL_Palette *palette = surf->format->palette;
-#endif
+    SDL_Palette *palette = PG_GetSurfacePalette(surf);
     if (SDL_ISPIXELFORMAT_INDEXED(PG_SURF_FORMATENUM(surf))) {
         /* Give the surface something other than an all white palette.
          *          */

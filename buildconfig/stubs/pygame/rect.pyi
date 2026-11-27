@@ -1,8 +1,9 @@
-import sys
 from collections.abc import Callable, Collection, Iterator
+from types import EllipsisType
 from typing import (
     ClassVar,
     Literal,
+    Self,
     SupportsIndex,
     TypeVar,
     overload,
@@ -10,13 +11,6 @@ from typing import (
 
 from pygame.typing import Point, RectLike, SequenceLike
 from typing_extensions import deprecated  # added in 3.13
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
-
-from types import EllipsisType
 
 _N = TypeVar("_N", int, float)
 _K = TypeVar("_K")
@@ -121,16 +115,14 @@ class _GenericRect(Collection[_N]):
     @h.setter
     def h(self, value: float) -> None: ...
     __hash__: ClassVar[None]  # type: ignore[assignment]
-    @property
-    def __safe_for_unpickling__(self) -> Literal[True]: ...
     @overload
     def __init__(
-        self, left: float, top: float, width: float, height: float
+        self, left: float, top: float, width: float, height: float, /
     ) -> None: ...
     @overload
-    def __init__(self, left_top: Point, width_height: Point) -> None: ...
+    def __init__(self, left_top: Point, width_height: Point, /) -> None: ...
     @overload
-    def __init__(self, single_arg: RectLike) -> None: ...
+    def __init__(self, single_arg: RectLike, /) -> None: ...
     @overload
     def __init__(self) -> None: ...
     def __len__(self) -> Literal[4]: ...
@@ -241,7 +233,7 @@ class _GenericRect(Collection[_N]):
     @overload
     def fit(self, left: float, top: float, width: float, height: float, /) -> Self: ...
     def normalize(self) -> None: ...
-    def __contains__(self, rect: RectLike | _N, /) -> bool: ...  # type: ignore[override]
+    def __contains__(self, value: int | float, /) -> bool: ...  # type: ignore[override]
     @overload
     def contains(self, rect: RectLike, /) -> bool: ...
     @overload

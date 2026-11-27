@@ -5,6 +5,7 @@ import pathlib
 import platform
 import sys
 import unittest
+from tempfile import TemporaryDirectory
 
 import pygame
 from pygame import font as pygame_font  # So font can be replaced with ftfont
@@ -299,11 +300,6 @@ class FontTest(unittest.TestCase):
         if pygame_font.__name__ == "pygame.ftfont":
             return
 
-        if pygame.font.get_sdl_ttf_version() < (2, 0, 18):
-            # When the SDL_TTF version is too low, it just ignores the
-            # line wrap parameter and newlines
-            return
-
         f = pygame_font.Font(None, 20)
         one_line = f.render("hello", True, "black", "white", 200)
         two_lines = f.render("hello\nworld", True, "black", "white", 200)
@@ -445,10 +441,7 @@ class FontTypeTest(unittest.TestCase):
         bm = f.metrics(u)
 
         self.assertEqual(len(bm), 1)
-        if (
-            pygame.font.get_sdl_ttf_version() >= (2, 0, 18)
-            and pygame_font.__name__ != "pygame.ftfont"
-        ):
+        if pygame_font.__name__ != "pygame.ftfont":
             self.assertIsNotNone(bm[0])
         else:
             self.assertIsNone(bm[0])
@@ -555,6 +548,11 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(f.get_strikethrough())
         f.set_strikethrough(False)
         self.assertFalse(f.get_strikethrough())
+        # a non-bool value is coerced to a bool
+        f.set_strikethrough(1)
+        self.assertIs(f.get_strikethrough(), True)
+        f.set_strikethrough(0)
+        self.assertIs(f.get_strikethrough(), False)
 
     def test_bold_attr(self):
         f = pygame_font.Font(None, 20)
@@ -587,17 +585,17 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(f.strikethrough)
         f.strikethrough = False
         self.assertFalse(f.strikethrough)
+        # a non-bool value is coerced to a bool
+        f.strikethrough = 4
+        self.assertIs(f.strikethrough, True)
+        f.strikethrough = 0
+        self.assertIs(f.strikethrough, False)
 
     def test_set_align_property(self):
         if pygame_font.__name__ == "pygame.ftfont":
             return
 
         f = pygame_font.Font(None, 20)
-
-        if pygame.font.get_sdl_ttf_version() < (2, 20, 0):
-            with self.assertRaises(pygame.error):
-                f.align = pygame.FONT_CENTER
-            return
 
         self.assertEqual(f.align, pygame.FONT_LEFT)
         f.align = pygame.FONT_CENTER
@@ -639,15 +637,6 @@ class FontTypeTest(unittest.TestCase):
             os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
         )
         f = pygame_font.Font(pathlib.Path(font_path), 25)
-
-        ttf_version = pygame_font.get_sdl_ttf_version()
-        if ttf_version < (2, 0, 18):
-            with self.assertRaises(pygame.error):
-                f.point_size = 25
-            with self.assertRaises(pygame.error):
-                f.point_size
-            return
-
         self.assertEqual(25, f.point_size)
         f.point_size = 10
         self.assertEqual(10, f.point_size)
@@ -675,18 +664,43 @@ class FontTypeTest(unittest.TestCase):
         )
         f = pygame_font.Font(pathlib.Path(font_path), 25)
 
-        ttf_version = pygame_font.get_sdl_ttf_version()
-        if ttf_version < (2, 0, 18):
-            self.assertRaises(pygame.error, f.get_point_size)
-            self.assertRaises(pygame.error, f.set_point_size, 25)
-            return
-
         self.assertEqual(25, f.get_point_size())
         f = pygame_font.Font(None, 25)
         f.set_point_size(10)
         self.assertEqual(10, f.get_point_size())
         self.assertRaises(ValueError, f.set_point_size, -500)
         self.assertRaises(TypeError, f.set_point_size, "15")
+
+    def test_outline_property(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont feature
+
+        pygame_font.init()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(pathlib.Path(font_path), 25)
+
+        # Default outline should be an integer >= 0 (typically 0)
+        self.assertIsInstance(f.outline, int)
+        self.assertGreaterEqual(f.outline, 0)
+
+        orig = f.outline
+        f.outline = orig + 1
+        self.assertEqual(orig + 1, f.outline)
+        f.outline += 2
+        self.assertEqual(orig + 3, f.outline)
+        f.outline -= 1
+        self.assertEqual(orig + 2, f.outline)
+
+        def test_neg():
+            f.outline = -1
+
+        def test_incorrect_type():
+            f.outline = "2"
+
+        self.assertRaises(ValueError, test_neg)
+        self.assertRaises(TypeError, test_incorrect_type)
 
     def test_font_name(self):
         f = pygame_font.Font(None, 20)
@@ -784,19 +798,12 @@ class FontTypeTest(unittest.TestCase):
     def _load_unicode(self, path):
         import shutil
 
-        fdir = str(FONTDIR)
-        temp = os.path.join(fdir, path)
-        pgfont = os.path.join(fdir, "test_sans.ttf")
-        shutil.copy(pgfont, temp)
-        try:
-            with open(temp, "rb") as f:
-                pass
-        except FileNotFoundError:
-            raise unittest.SkipTest("the path cannot be opened")
-        try:
+        with TemporaryDirectory() as tmpdir:
+            fdir = str(FONTDIR)
+            temp = os.path.join(tmpdir, path)
+            pgfont = os.path.join(fdir, "test_sans.ttf")
+            shutil.copy(pgfont, temp)
             pygame_font.Font(temp, 20)
-        finally:
-            os.remove(temp)
 
     def test_load_from_file_unicode_0(self):
         """ASCII string as a unicode object"""
@@ -833,21 +840,17 @@ class FontTypeTest(unittest.TestCase):
 
         font = pygame_font.Font(None, 16)
 
-        ttf_version = pygame_font.get_sdl_ttf_version()
-        if ttf_version >= (2, 20, 0):
-            self.assertRaises(TypeError, pygame.font.Font.set_script)
-            self.assertRaises(TypeError, pygame.font.Font.set_script, font)
-            self.assertRaises(TypeError, pygame.font.Font.set_script, "hey", "Deva")
-            self.assertRaises(TypeError, font.set_script, 1)
-            self.assertRaises(TypeError, font.set_script, ["D", "e", "v", "a"])
+        self.assertRaises(TypeError, pygame.font.Font.set_script)
+        self.assertRaises(TypeError, pygame.font.Font.set_script, font)
+        self.assertRaises(TypeError, pygame.font.Font.set_script, "hey", "Deva")
+        self.assertRaises(TypeError, font.set_script, 1)
+        self.assertRaises(TypeError, font.set_script, ["D", "e", "v", "a"])
 
-            self.assertRaises(ValueError, font.set_script, "too long by far")
-            self.assertRaises(ValueError, font.set_script, "")
-            self.assertRaises(ValueError, font.set_script, "a")
+        self.assertRaises(ValueError, font.set_script, "too long by far")
+        self.assertRaises(ValueError, font.set_script, "")
+        self.assertRaises(ValueError, font.set_script, "a")
 
-            font.set_script("Deva")
-        else:
-            self.assertRaises(pygame.error, font.set_script, "Deva")
+        font.set_script("Deva")
 
     def test_font_set_direction(self):
         if pygame_font.__name__ == "pygame.ftfont":
@@ -855,21 +858,16 @@ class FontTypeTest(unittest.TestCase):
 
         font = pygame_font.Font(None, 16)
 
-        ttf_version = pygame.font.get_sdl_ttf_version()
-        if ttf_version >= (2, 20, 0):
-            self.assertRaises(TypeError, pygame.font.Font.set_direction)
-            self.assertRaises(TypeError, pygame.font.Font.set_direction, font)
-            self.assertRaises(TypeError, pygame.font.Font.set_direction, "font")
-            self.assertRaises(TypeError, font.set_direction, [1, 1])
-            self.assertRaises(TypeError, font.set_direction, "string1", "string2")
+        self.assertRaises(TypeError, pygame.font.Font.set_direction)
+        self.assertRaises(TypeError, pygame.font.Font.set_direction, font)
+        self.assertRaises(TypeError, pygame.font.Font.set_direction, "font")
+        self.assertRaises(TypeError, font.set_direction, [1, 1])
+        self.assertRaises(TypeError, font.set_direction, "string1", "string2")
 
-            self.assertRaises(ValueError, font.set_direction, -1)
-            self.assertRaises(ValueError, font.set_direction, 4)
+        self.assertRaises(ValueError, font.set_direction, -1)
+        self.assertRaises(ValueError, font.set_direction, 4)
 
-            font.set_direction(pygame.DIRECTION_RTL)
-
-        else:
-            self.assertRaises(pygame.error, font.set_direction, pygame.DIRECTION_RTL)
+        font.set_direction(pygame.DIRECTION_RTL)
 
     def test_font_method_should_raise_exception_after_quit(self):
         # arrange
@@ -933,24 +931,16 @@ class FontTypeTest(unittest.TestCase):
                 ("size", ("any text",)),
                 ("set_script", ("is it other text",)),
                 ("set_direction", ("is it text",)),
+                ("get_point_size", ()),
+                ("set_point_size", (34,)),
             ]
             skip_methods = set()
             version = pygame.font.get_sdl_ttf_version()
-            if version >= (2, 0, 18):
-                methods.append(("get_point_size", ()))
-                methods.append(("set_point_size", (34,)))
-            else:
-                skip_methods.add("get_point_size")
-                skip_methods.add("set_point_size")
-                skip_methods.add("point_size")
 
             if version >= (2, 24, 0):
                 methods.append(("set_linesize", (2,)))
             else:
                 skip_methods.add("set_linesize")
-
-            if version < (2, 20, 0):
-                skip_methods.add("align")
 
         font = pygame_font.Font(None, 10)
         actual_names = []
@@ -1023,17 +1013,11 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("underline", True),
                 ("strikethrough", True),
+                ("outline", 1),
+                ("point_size", 1),
+                ("align", 1),
             ]
             skip_properties = set()
-            version = pygame.font.get_sdl_ttf_version()
-            if version >= (2, 20, 0):
-                properties.append(("align", 1))
-            else:
-                skip_properties.add("align")
-            if version >= (2, 0, 18):
-                properties.append(("point_size", 1))
-            else:
-                skip_properties.add("point_size")
 
         font = pygame_font.Font(None, 10)
         actual_names = []
@@ -1099,6 +1083,7 @@ class VisualTestsInteractive(unittest.TestCase):
         underline=False,
         strikethrough=False,
         antialiase=False,
+        outline=0,
     ):
         if self.aborted:
             return False
@@ -1109,7 +1094,7 @@ class VisualTestsInteractive(unittest.TestCase):
         screen = self.screen
         screen.fill((255, 255, 255))
         pygame.display.flip()
-        if not (bold or italic or underline or strikethrough or antialiase):
+        if not (bold or italic or underline or strikethrough or antialiase or outline):
             text = "normal"
         else:
             modes = []
@@ -1123,11 +1108,14 @@ class VisualTestsInteractive(unittest.TestCase):
                 modes.append("strikethrough")
             if antialiase:
                 modes.append("antialiased")
+            if outline:
+                modes.append("outlined")
             text = f"{'-'.join(modes)} (y/n):"
         f.set_bold(bold)
         f.set_italic(italic)
         f.set_underline(underline)
         f.set_strikethrough(strikethrough)
+        f.outline = outline
         s = f.render(text, antialiase, (0, 0, 0))
         screen.blit(s, (offset, y))
         y += s.get_size()[1] + spacing
@@ -1135,6 +1123,7 @@ class VisualTestsInteractive(unittest.TestCase):
         f.set_italic(False)
         f.set_underline(False)
         f.set_strikethrough(False)
+        f.outline = 0
         s = f.render("(some comparison text)", False, (0, 0, 0))
         screen.blit(s, (offset, y))
         pygame.display.flip()
@@ -1175,6 +1164,9 @@ class VisualTestsInteractive(unittest.TestCase):
 
     def test_bold_strikethrough(self):
         self.assertTrue(self.query(bold=True, strikethrough=True))
+
+    def test_outline(self):
+        self.assertTrue(self.query(outline=1))
 
 
 if __name__ == "__main__":

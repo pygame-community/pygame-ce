@@ -17,6 +17,9 @@ class Window:
     window class will continue to be developed, and we're excited to share
     the new functionality this class offers.
 
+    .. note:: You can only interact with a Window (get/set properties,
+        call methods, etc.) from your application's main thread.
+
     :param str title: The title of the window.
     :param (int, int) size: The size of the window, in screen coordinates.
     :param (int, int) or int position: A tuple specifying the window position, or
@@ -318,6 +321,19 @@ class Window:
         ``True`` if the ``Window`` has an OpenGL context associated with it, ``False`` otherwise
 
         .. versionadded:: 2.5.0
+        """
+
+    @property
+    def handle(self) -> int:
+        """Get the window handle provided by the window manager if supported otherwise 0
+
+        Returns the window handle provided by the window manager as an integer. If the operating
+        system is not supported or the window manager hides the handle the sentinel ``0`` is returned.
+
+        The handle is generally available with Windows, X11 (Linux), Cocoa (MacOS), UIKit (iOS),
+        Android and Vivante while unavailable under Wayland and everything else.
+
+        .. versionadded:: 2.5.8
         """
 
     @property

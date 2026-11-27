@@ -1572,8 +1572,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     surfobj = (pgSurfaceObject *)pgSurface_New(surf);
-    Py_INCREF(buffer);
-    surfobj->dependency = buffer;
+    surfobj->dependency = Py_NewRef(buffer);
     return (PyObject *)surfobj;
 }
 

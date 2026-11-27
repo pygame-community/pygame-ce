@@ -21,14 +21,20 @@ static PyTypeObject pgImage_Type;
 #define pgImage_Check(x) (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
 
 #define RENDERER_ERROR_CHECK(x)                       \
-    if (x < 0) {                                      \
+    if (!(x)) {                                       \
         return RAISE(pgExc_SDLError, SDL_GetError()); \
     }
 
 #define RENDERER_PROPERTY_ERROR_CHECK(x)                 \
-    if (x < 0) {                                         \
+    if (!(x)) {                                          \
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1); \
     }
+
+#define SET_VERTEX_COLOR(vertex, texture_mods, vertex_mods)         \
+    vertex.color.r = (texture_mods[0] * (vertex_mods[0] / 255.0f)); \
+    vertex.color.g = (texture_mods[1] * (vertex_mods[1] / 255.0f)); \
+    vertex.color.b = (texture_mods[2] * (vertex_mods[2] / 255.0f)); \
+    vertex.color.a = (texture_mods[3] * (vertex_mods[3] / 255.0f));
 
 #define PARSE_POINT(obj, x, y, name)                                 \
     if (!pg_TwoFloatsFromObj(obj, &x, &y)) {                         \
@@ -48,12 +54,6 @@ static PyTypeObject pgImage_Type;
         }                                                        \
     }
 
-#define SET_VERTEX_COLOR(vertex, texture_mods, vertex_mods)     \
-    vertex.color.r = (Uint8)(texture_mods[0] * vertex_mods[0]); \
-    vertex.color.g = (Uint8)(texture_mods[1] * vertex_mods[1]); \
-    vertex.color.b = (Uint8)(texture_mods[2] * vertex_mods[2]); \
-    vertex.color.a = (Uint8)(texture_mods[3] * vertex_mods[3]);
-
 static int
 texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest);
 
@@ -72,20 +72,24 @@ renderer_from_window(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
     }
     pgRendererObject *self =
         (pgRendererObject *)(cls->tp_new(cls, NULL, NULL));
+    if (!self) {
+        return NULL;
+    }
     self->window = (pgWindowObject *)window;
     if (self->window->_is_borrowed) {
-        self->_is_borrowed = SDL_TRUE;
+        self->_is_borrowed = true;
     }
     else {
+        Py_DECREF(self);
         return RAISE(pgExc_SDLError,
                      "Window is not created from display module");
     }
     self->renderer = SDL_GetRenderer(self->window->_win);
     if (!self->renderer) {
+        Py_DECREF(self);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     self->target = NULL;
-    Py_INCREF(self);
     return (PyObject *)self;
 }
 
@@ -134,7 +138,7 @@ renderer_draw_rect(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     if (!(rect = pgFRect_FromObject(rectobj, &temp))) {
         return RAISE(PyExc_TypeError, "rect argument is invalid");
     }
-    RENDERER_ERROR_CHECK(SDL_RenderDrawRectF(self->renderer, rect))
+    RENDERER_ERROR_CHECK(SDL_RenderRect(self->renderer, rect))
     Py_RETURN_NONE;
 }
 
@@ -150,7 +154,7 @@ renderer_fill_rect(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     if (!(rect = pgFRect_FromObject(rectobj, &temp))) {
         return RAISE(PyExc_TypeError, "rect argument is invalid");
     }
-    RENDERER_ERROR_CHECK(SDL_RenderFillRectF(self->renderer, rect))
+    RENDERER_ERROR_CHECK(SDL_RenderFillRect(self->renderer, rect))
     Py_RETURN_NONE;
 }
 
@@ -169,7 +173,7 @@ renderer_draw_triangle(pgRendererObject *self, PyObject *args,
     PARSE_POINT(p2, points[1].x, points[1].y, "p2")
     PARSE_POINT(p3, points[2].x, points[2].y, "p3")
     points[3] = points[0];
-    RENDERER_ERROR_CHECK(SDL_RenderDrawLinesF(self->renderer, points, 4))
+    RENDERER_ERROR_CHECK(SDL_RenderLines(self->renderer, points, 4))
     Py_RETURN_NONE;
 }
 
@@ -177,7 +181,6 @@ static PyObject *
 renderer_fill_triangle(pgRendererObject *self, PyObject *args,
                        PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1, *p2, *p3;
     SDL_Vertex vertices[3];
     static char *keywords[] = {"p1", "p2", "p3", NULL};
@@ -188,7 +191,7 @@ renderer_fill_triangle(pgRendererObject *self, PyObject *args,
     PARSE_POINT(p1, vertices[0].position.x, vertices[0].position.y, "p1")
     PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, "p2")
     PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, "p3")
-    RENDERER_ERROR_CHECK(SDL_GetRenderDrawColor(
+    RENDERER_ERROR_CHECK(SDL_GetRenderDrawColorFloat(
         self->renderer, &vertices[0].color.r, &vertices[0].color.g,
         &vertices[0].color.b, &vertices[0].color.a))
     vertices[1].color = vertices[0].color;
@@ -196,10 +199,6 @@ renderer_fill_triangle(pgRendererObject *self, PyObject *args,
     RENDERER_ERROR_CHECK(
         SDL_RenderGeometry(self->renderer, NULL, vertices, 3, NULL, 0))
     Py_RETURN_NONE;
-#else
-    RAISE(PyExc_TypeError, "fill_triangle() requires SDL 2.0.18 or newer");
-    Py_RETURN_NONE;
-#endif
 }
 
 static PyObject *
@@ -217,14 +216,13 @@ renderer_draw_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     PARSE_POINT(p3, points[2].x, points[2].y, "p3")
     PARSE_POINT(p4, points[3].x, points[3].y, "p4")
     points[4] = points[0];
-    RENDERER_ERROR_CHECK(SDL_RenderDrawLinesF(self->renderer, points, 5))
+    RENDERER_ERROR_CHECK(SDL_RenderLines(self->renderer, points, 5))
     Py_RETURN_NONE;
 }
 
 static PyObject *
 renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1, *p2, *p3, *p4;
     SDL_Vertex vertices[4];
     static char *keywords[] = {"p1", "p2", "p3", "p4", NULL};
@@ -236,7 +234,7 @@ renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     PARSE_POINT(p2, vertices[1].position.x, vertices[1].position.y, "p2")
     PARSE_POINT(p3, vertices[2].position.x, vertices[2].position.y, "p3")
     PARSE_POINT(p4, vertices[3].position.x, vertices[3].position.y, "p4")
-    RENDERER_ERROR_CHECK(SDL_GetRenderDrawColor(
+    RENDERER_ERROR_CHECK(SDL_GetRenderDrawColorFloat(
         self->renderer, &vertices[0].color.r, &vertices[0].color.g,
         &vertices[0].color.b, &vertices[0].color.a))
     for (int i = 1; i < 4; i++) {
@@ -246,10 +244,6 @@ renderer_fill_quad(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     RENDERER_ERROR_CHECK(
         SDL_RenderGeometry(self->renderer, NULL, vertices, 4, indices, 6))
     Py_RETURN_NONE;
-#else
-    RAISE(PyExc_TypeError, "fill_quad() requires SDL 2.0.18 or newer");
-    Py_RETURN_NONE;
-#endif
 }
 
 static PyObject *
@@ -270,7 +264,7 @@ static PyObject *
 renderer_get_viewport(pgRendererObject *self, PyObject *_null)
 {
     SDL_Rect rect;
-    SDL_RenderGetViewport(self->renderer, &rect);
+    SDL_GetRenderViewport(self->renderer, &rect);
     return pgRect_New(&rect);
 }
 
@@ -284,13 +278,13 @@ renderer_set_viewport(pgRendererObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     if (rectobj == Py_None) {
-        RENDERER_ERROR_CHECK(SDL_RenderSetViewport(self->renderer, NULL))
+        RENDERER_ERROR_CHECK(SDL_SetRenderViewport(self->renderer, NULL))
     }
     else {
         if (!(rect = pgRect_FromObject(rectobj, &temp))) {
             return RAISE(PyExc_TypeError, "area must be rectangle or None");
         }
-        RENDERER_ERROR_CHECK(SDL_RenderSetViewport(self->renderer, rect))
+        RENDERER_ERROR_CHECK(SDL_SetRenderViewport(self->renderer, rect))
     }
     Py_RETURN_NONE;
 }
@@ -315,54 +309,36 @@ renderer_compose_custom_blend_mode(PyObject *self, PyObject *args,
 static PyObject *
 renderer_to_surface(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *surfobj = Py_None, *rectobj = Py_None;
+    PyObject *rectobj = Py_None;
     SDL_Surface *surf;
     pgSurfaceObject *surface;
     SDL_Rect viewport, *areaparam, temp, *rect = &temp;
-    Uint32 format;
-    static char *keywords[] = {"surface", "area", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", keywords, &surfobj,
-                                     &rectobj)) {
+    static char *keywords[] = {"area", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", keywords, &rectobj)) {
         return NULL;
     }
+
     if (!Py_IsNone(rectobj)) {
         if (!(rect = pgRect_FromObject(rectobj, &temp))) {
             return RAISE(PyExc_TypeError, "area must be None or a rect");
         }
-        SDL_RenderGetViewport(self->renderer, &viewport);
-        SDL_IntersectRect(rect, &viewport, rect);
+        SDL_GetRenderViewport(self->renderer, &viewport);
+        SDL_GetRectIntersection(rect, &viewport, rect);
         areaparam = rect;
     }
     else {
-        SDL_RenderGetViewport(self->renderer, rect);
         areaparam = NULL;
     }
-    if (!Py_IsNone(surfobj)) {
-        if (!(pgSurface_Check(surfobj))) {
-            return RAISE(PyExc_TypeError, "surface must be None or a Surface");
-        }
-        surface = (pgSurfaceObject *)surfobj;
-        Py_INCREF(surface);
-        surf = surface->surf;
-        if (surf->w < rect->w || surf->h < rect->h) {
-            return RAISE(PyExc_ValueError, "the surface is too small");
-        }
-        format = surf->format->format;
+
+    surf = SDL_RenderReadPixels(self->renderer, areaparam);
+    if (surf == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    else {
-        format = SDL_GetWindowPixelFormat(self->window->_win);
-        if (format == SDL_PIXELFORMAT_UNKNOWN) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
-        }
-        surf = SDL_CreateRGBSurfaceWithFormat(
-            0, rect->w, rect->h, SDL_BITSPERPIXEL(format), format);
-        if (surf == NULL) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
-        }
-        surface = pgSurface_New(surf);
+    surface = pgSurface_New(surf);
+    if (surface == NULL) {
+        SDL_DestroySurface(surf);
+        return NULL;
     }
-    RENDERER_ERROR_CHECK(SDL_RenderReadPixels(
-        self->renderer, areaparam, format, surf->pixels, surf->pitch));
     return (PyObject *)surface;
 }
 
@@ -402,8 +378,7 @@ renderer_blit(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     if (Py_IsNone(destobj)) {
         return renderer_get_viewport(self, NULL);
     }
-    Py_INCREF(destobj);
-    return destobj;
+    return Py_NewRef(destobj);
 }
 
 static PyObject *
@@ -452,7 +427,9 @@ static PyObject *
 renderer_get_logical_size(pgRendererObject *self, void *closure)
 {
     int w, h;
-    SDL_RenderGetLogicalSize(self->renderer, &w, &h);
+    SDL_RendererLogicalPresentation mode;
+    RENDERER_ERROR_CHECK(
+        SDL_GetRenderLogicalPresentation(self->renderer, &w, &h, &mode))
     return pg_tuple_couple_from_values_int(w, h);
 }
 
@@ -463,8 +440,11 @@ renderer_set_logical_size(pgRendererObject *self, PyObject *arg, void *closure)
     if (!pg_TwoIntsFromObj(arg, &w, &h)) {
         RAISERETURN(PyExc_TypeError, "invalid logical size", -1);
     }
+    SDL_RendererLogicalPresentation mode =
+        (w == 0 || h == 0) ? SDL_LOGICAL_PRESENTATION_DISABLED
+                           : SDL_LOGICAL_PRESENTATION_LETTERBOX;
     RENDERER_PROPERTY_ERROR_CHECK(
-        SDL_RenderSetLogicalSize(self->renderer, w, h))
+        SDL_SetRenderLogicalPresentation(self->renderer, w, h, mode))
     return 0;
 }
 
@@ -484,17 +464,11 @@ renderer_coordinates_to_window(pgRendererObject *self, PyObject *args,
                      "point must be a sequence of two numbers");
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
     float wx, wy;
-    SDL_RenderCoordinatesToWindow(self->renderer, lx, ly, &wx, &wy);
+    RENDERER_ERROR_CHECK(
+        SDL_RenderCoordinatesToWindow(self->renderer, lx, ly, &wx, &wy))
 
     return pg_tuple_couple_from_values_double(wx, wy);
-#else
-    int wx, wy;
-    SDL_RenderLogicalToWindow(self->renderer, lx, ly, &wx, &wy);
-
-    return pg_tuple_couple_from_values_double((float)wx, (float)wy);
-#endif
 }
 
 static PyObject *
@@ -514,11 +488,8 @@ renderer_coordinates_from_window(pgRendererObject *self, PyObject *args,
                      "point must be a sequence of two numbers");
     }
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    SDL_RenderCoordinatesFromWindow(self->renderer, wx, wy, &lx, &ly);
-#else
-    SDL_RenderWindowToLogical(self->renderer, (int)wx, (int)wy, &lx, &ly);
-#endif
+    RENDERER_ERROR_CHECK(
+        SDL_RenderCoordinatesFromWindow(self->renderer, wx, wy, &lx, &ly))
 
     return pg_tuple_couple_from_values_double(lx, ly);
 }
@@ -527,7 +498,7 @@ static PyObject *
 renderer_get_scale(pgRendererObject *self, void *closure)
 {
     float x, y;
-    SDL_RenderGetScale(self->renderer, &x, &y);
+    SDL_GetRenderScale(self->renderer, &x, &y);
     return pg_tuple_couple_from_values_double(x, y);
 }
 
@@ -538,7 +509,7 @@ renderer_set_scale(pgRendererObject *self, PyObject *arg, void *closure)
     if (!pg_TwoFloatsFromObj(arg, &x, &y)) {
         RAISERETURN(PyExc_TypeError, "invalid scale", -1);
     }
-    RENDERER_PROPERTY_ERROR_CHECK(SDL_RenderSetScale(self->renderer, x, y))
+    RENDERER_PROPERTY_ERROR_CHECK(SDL_SetRenderScale(self->renderer, x, y))
     return 0;
 }
 
@@ -548,8 +519,7 @@ renderer_get_target(pgRendererObject *self, void *closure)
     if (self->target == NULL) {
         Py_RETURN_NONE;
     }
-    Py_INCREF(self->target);
-    return (PyObject *)self->target;
+    return Py_NewRef(self->target);
 }
 
 static int
@@ -570,7 +540,7 @@ renderer_set_target(pgRendererObject *self, PyObject *arg, void *closure)
         return 0;
     }
     else {
-        RAISERETURN(PyExc_TypeError, "target must be Texture object or None",
+        RAISERETURN(PyExc_TypeError, "target must be a Texture object or None",
                     -1);
     }
 }
@@ -584,7 +554,6 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
     int accelerated = -1;
     int vsync = 0;
     int target_texture = 0;
-    Uint32 flags = 0;
 
     char *keywords[] = {"window", "index",          "accelerated",
                         "vsync",  "target_texture", NULL};
@@ -593,25 +562,53 @@ renderer_init(pgRendererObject *self, PyObject *args, PyObject *kwargs)
                                      &accelerated, &vsync, &target_texture)) {
         return -1;
     }
-    if (accelerated >= 0) {
-        flags |=
-            accelerated ? SDL_RENDERER_ACCELERATED : SDL_RENDERER_SOFTWARE;
+
+    const char *name = NULL;
+    if (index != -1) {
+        name = SDL_GetRenderDriver(index);
+        if (name == NULL) {
+            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        }
+    }
+
+    SDL_PropertiesID create_props = SDL_CreateProperties();
+    if (create_props == 0) {
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+    }
+    if (!SDL_SetPointerProperty(create_props,
+                                SDL_PROP_RENDERER_CREATE_WINDOW_POINTER,
+                                window->_win)) {
+        SDL_DestroyProperties(create_props);
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+    }
+    if (!SDL_SetStringProperty(create_props,
+                               SDL_PROP_RENDERER_CREATE_NAME_STRING, name)) {
+        SDL_DestroyProperties(create_props);
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
     if (vsync) {
-        flags |= SDL_RENDERER_PRESENTVSYNC;
+        if (!SDL_SetNumberProperty(
+                create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER,
+                1)) {
+            SDL_DestroyProperties(create_props);
+            RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
+        }
     }
-    if (target_texture) {
-        flags |= SDL_RENDERER_TARGETTEXTURE;
-    }
-    renderer = SDL_CreateRenderer(window->_win, index, flags);
+
+    renderer = SDL_CreateRendererWithProperties(create_props);
+    SDL_DestroyProperties(create_props);
     if (!renderer) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), -1);
     }
+
+#if SDL_VERSION_ATLEAST(3, 4, 0)
+    SDL_SetDefaultTextureScaleMode(renderer, SDL_SCALEMODE_NEAREST);
+#endif
+
     self->renderer = renderer;
     self->window = window;
     self->target = NULL;
-    self->_is_borrowed = SDL_FALSE;
+    self->_is_borrowed = false;
     return 0;
 }
 
@@ -625,13 +622,14 @@ renderer_dealloc(pgRendererObject *self, PyObject *_null)
 }
 
 /* Texture implementation */
+
 static int
 texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
 {
-    SDL_Rect srcrect, *srcrectptr = NULL;
+    SDL_FRect srcrect, *srcrectptr = NULL;
     SDL_FRect dstrect, *dstrectptr = NULL;
     if (!Py_IsNone(area)) {
-        if (!(srcrectptr = pgRect_FromObject(area, &srcrect))) {
+        if (!(srcrectptr = pgFRect_FromObject(area, &srcrect))) {
             PyErr_SetString(PyExc_ValueError,
                             "srcrect must be a Rect or None");
             return 0;
@@ -648,10 +646,10 @@ texture_renderer_draw(pgTextureObject *self, PyObject *area, PyObject *dest)
             dstrect.h = (float)self->height;
         }
     }
-    if (SDL_RenderCopyExF(self->renderer->renderer, self->texture, srcrectptr,
-                          dstrectptr, 0, NULL, SDL_FLIP_NONE) < 0) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return 0;
+
+    if (!SDL_RenderTexture(self->renderer->renderer, self->texture, srcrectptr,
+                           dstrectptr)) {
+        RAISERETURN(pgExc_SDLError, SDL_GetError(), 0);
     }
     return 1;
 }
@@ -665,7 +663,8 @@ texture_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_Texture *texture;
     SDL_Surface *surf = NULL;
     static char *keywords[] = {"renderer", "surface", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", keywords, &renderer,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", keywords,
+                                     &pgRenderer_Type, &renderer,
                                      &pgSurface_Type, &surfobj)) {
         return NULL; /* Exception already set. */
     }
@@ -699,13 +698,14 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *srcrectobj = Py_None, *dstrectobj = Py_None,
              *originobj = Py_None;
-    SDL_Rect srcrect, *srcrectptr = NULL;
+    SDL_FRect srcrect, *srcrectptr = NULL;
     SDL_FRect dstrect, *dstrectptr = NULL;
     SDL_FPoint origin, *originptr = NULL;
     double angle = 0;
     int flip_x = 0;
     int flip_y = 0;
-    SDL_RendererFlip flip = SDL_FLIP_NONE;
+    SDL_FlipMode flip = SDL_FLIP_NONE;
+
     static char *keywords[] = {"srcrect", "dstrect", "angle", "origin",
                                "flip_x",  "flip_y",  NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OOdOpp", keywords,
@@ -714,7 +714,7 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         return NULL; /* Exception already set. */
     }
     if (!Py_IsNone(srcrectobj)) {
-        if (!(srcrectptr = pgRect_FromObject(srcrectobj, &srcrect))) {
+        if (!(srcrectptr = pgFRect_FromObject(srcrectobj, &srcrect))) {
             return RAISE(PyExc_ValueError, "srcrect must be a Rect or None");
         }
     }
@@ -740,16 +740,16 @@ texture_draw(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     if (flip_y) {
         flip |= SDL_FLIP_VERTICAL;
     }
-    RENDERER_ERROR_CHECK(SDL_RenderCopyExF(self->renderer->renderer,
-                                           self->texture, srcrectptr,
-                                           dstrectptr, angle, originptr, flip))
+
+    RENDERER_ERROR_CHECK(SDL_RenderTextureRotated(
+        self->renderer->renderer, self->texture, srcrectptr, dstrectptr, angle,
+        originptr, flip))
     Py_RETURN_NONE;
 }
 
 static PyObject *
 texture_draw_triangle(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1_xyobj, *p2_xyobj, *p3_xyobj,
         *p1_uvobj = Py_None, *p2_uvobj = Py_None, *p3_uvobj = Py_None,
         *p1_modobj = Py_None, *p2_modobj = Py_None, *p3_modobj = Py_None;
@@ -815,16 +815,11 @@ texture_draw_triangle(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     RENDERER_ERROR_CHECK(SDL_RenderGeometry(
         self->renderer->renderer, self->texture, vertices, 3, NULL, 0))
     Py_RETURN_NONE;
-#else
-    RAISE(PyExc_TypeError, "draw_triangle() requires SDL 2.0.18 or newer");
-    Py_RETURN_NONE;
-#endif
 }
 
 static PyObject *
 texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 18)
     PyObject *p1_xyobj, *p2_xyobj, *p3_xyobj, *p4_xyobj,
         *p1_uvobj = Py_None, *p2_uvobj = Py_None, *p3_uvobj = Py_None,
         *p4_uvobj = Py_None, *p1_modobj = Py_None, *p2_modobj = Py_None,
@@ -910,10 +905,6 @@ texture_draw_quad(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     RENDERER_ERROR_CHECK(SDL_RenderGeometry(
         self->renderer->renderer, self->texture, vertices, 6, NULL, 0))
     Py_RETURN_NONE;
-#else
-    RAISE(PyExc_TypeError, "draw_triangle() requires SDL 2.0.18 or newer");
-    Py_RETURN_NONE;
-#endif
 }
 
 static PyObject *
@@ -922,13 +913,13 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     pgSurfaceObject *surfobj;
     PyObject *rectobj = Py_None;
     SDL_Surface *surf = NULL;
-    SDL_Rect area, *areaptr = NULL;
     SDL_Surface *converted_surf = NULL;
-    SDL_PixelFormat *pixel_format = NULL;
+    SDL_Rect area, *areaptr = NULL;
     SDL_BlendMode blend;
-    Uint32 format;
-    int res;
+    SDL_PixelFormat texture_format;
+    SDL_PixelFormat surf_format;
     int dst_width, dst_height;
+
     static char *keywords[] = {"surface", "area", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O", keywords,
                                      &pgSurface_Type, &surfobj, &rectobj)) {
@@ -956,32 +947,35 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         area.w = surf->w;
         area.h = surf->h;
     }
-    RENDERER_ERROR_CHECK(
-        SDL_QueryTexture(self->texture, &format, NULL, NULL, NULL))
-    if (format != surf->format->format) {
-        RENDERER_ERROR_CHECK(SDL_GetSurfaceBlendMode(surf, &blend))
-        pixel_format = SDL_AllocFormat(format);
-        if (pixel_format == NULL) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
-        }
-        converted_surf = SDL_ConvertSurface(surf, pixel_format, 0);
-        if (SDL_SetSurfaceBlendMode(converted_surf, blend) < 0) {
-            SDL_FreeSurface(converted_surf);
-            SDL_FreeFormat(pixel_format);
-            return RAISE(pgExc_SDLError, SDL_GetError());
-        }
+    surf_format = surf->format;
 
-        res = SDL_UpdateTexture(self->texture, areaptr, converted_surf->pixels,
-                                converted_surf->pitch);
-        SDL_FreeSurface(converted_surf);
-        SDL_FreeFormat(pixel_format);
+    SDL_PropertiesID texture_props = SDL_GetTextureProperties(self->texture);
+    if (texture_props == 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    texture_format = (SDL_PixelFormat)SDL_GetNumberProperty(
+        texture_props, SDL_PROP_TEXTURE_FORMAT_NUMBER, 0);
+
+    if (texture_format != surf_format) {
+        RENDERER_ERROR_CHECK(SDL_GetSurfaceBlendMode(surf, &blend))
+        converted_surf = SDL_ConvertSurface(surf, texture_format);
+        if (converted_surf == NULL) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+        if (!SDL_SetSurfaceBlendMode(converted_surf, blend)) {
+            SDL_DestroySurface(converted_surf);
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+        if (!SDL_UpdateTexture(self->texture, areaptr, converted_surf->pixels,
+                               converted_surf->pitch)) {
+            SDL_DestroySurface(converted_surf);
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+        SDL_DestroySurface(converted_surf);
     }
     else {
-        res = SDL_UpdateTexture(self->texture, areaptr, surf->pixels,
-                                surf->pitch);
-    }
-    if (res < 0) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        RENDERER_ERROR_CHECK(SDL_UpdateTexture(self->texture, areaptr,
+                                               surf->pixels, surf->pitch))
     }
     Py_RETURN_NONE;
 }
@@ -989,8 +983,7 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 texture_get_renderer(pgTextureObject *self, void *closure)
 {
-    Py_INCREF(self->renderer);
-    return (PyObject *)self->renderer;
+    return Py_NewRef(self->renderer);
 }
 
 static PyObject *
@@ -1081,13 +1074,13 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
     int scale_quality = -1;
     int access = SDL_TEXTUREACCESS_STATIC;
     Uint32 Rmask, Gmask, Bmask, Amask;
-    Uint32 format;
+    SDL_PixelFormat format;
 
     char *keywords[] = {"renderer",  "size",   "depth",         "static",
                         "streaming", "target", "scale_quality", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|ipppi", keywords,
-                                     &renderer, &sizeobj, &depth, &staticc,
-                                     &streaming, &target, &scale_quality)) {
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "O!O|ipppi", keywords, &pgRenderer_Type, &renderer,
+            &sizeobj, &depth, &staticc, &streaming, &target, &scale_quality)) {
         return -1;
     }
     if (depth == 0 || depth == 32) {
@@ -1095,6 +1088,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         Gmask = 0xFF << 8;
         Bmask = 0xFF;
         Amask = 0xFF << 24;
+        depth = 32;  // normalized to ensure consistent behavior
     }
     else if (depth == 16) {
         Rmask = 0xF << 8;
@@ -1107,7 +1101,7 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
                     "no standard masks exist for given bitdepth with alpha",
                     -1)
     }
-    format = SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask);
+    format = SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask);
     if (!pg_TwoIntsFromObj(sizeobj, &width, &height)) {
         RAISERETURN(PyExc_TypeError, "invalid size argument", -1)
     }
@@ -1142,21 +1136,15 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
         RAISERETURN(pgExc_SDLError, SDL_GetError(), -1)
     }
     if (scale_quality != -1) {
-#if SDL_VERSION_ATLEAST(2, 0, 12)
         RENDERER_PROPERTY_ERROR_CHECK(
             SDL_SetTextureScaleMode(self->texture, scale_quality))
-#else
-        switch (scale_quality) {
-            case 0:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-                break;
-            case 1:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-                break;
-            case 2:
-                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
-                break;
-        }
+    }
+    else {
+#if !SDL_VERSION_ATLEAST(3, 4, 0)
+        /* retain the default scale mode when
+        SDL_SetDefaultTextureScaleMode isn't available */
+        RENDERER_PROPERTY_ERROR_CHECK(
+            SDL_SetTextureScaleMode(self->texture, SDL_SCALEMODE_NEAREST))
 #endif
     }
     self->width = width;
@@ -1170,6 +1158,7 @@ texture_dealloc(pgTextureObject *self, PyObject *_null)
     if (self->texture) {
         SDL_DestroyTexture(self->texture);
     }
+    Py_CLEAR(self->renderer);
     if (self->weakreflist) {
         PyObject_ClearWeakRefs((PyObject *)self);
     }

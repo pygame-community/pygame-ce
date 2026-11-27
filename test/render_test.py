@@ -1,9 +1,19 @@
 import gc
+import platform
+import sys
 import unittest
 import weakref
 
 import pygame
-import pygame._render as _render
+from pygame.version import SDL
+
+if SDL >= (3, 0, 0):
+    import pygame._render as _render
+else:
+    _render = None
+
+
+IS_PYPY = "PyPy" == platform.python_implementation()
 
 
 class DrawableObject:
@@ -18,33 +28,28 @@ class DrawableObject:
         self.dest = dest
 
 
+@unittest.skipIf(SDL < (3, 0, 0), "SDL2 support for pygame._render is discontinued")
 class RendererTest(unittest.TestCase):
     def setUp(self):
         self.window = pygame.Window(size=(100, 100))
         self.renderer = _render.Renderer(self.window)
 
+        init_draw_color = self.renderer.draw_color
+        self.renderer.draw_color = "BLACK"
+        self.renderer.clear()
+        self.renderer.draw_color = init_draw_color
+
     def test_to_surface(self):
         self.renderer.draw_color = "YELLOW"
         self.renderer.draw_point((10, 10))  # assumes Renderer.draw_point works
+
         surf1 = self.renderer.to_surface()
         self.assertEqual(surf1.get_at((10, 10)), pygame.Color(255, 255, 0, 255))
         self.assertEqual(surf1.size, (100, 100))
 
-        surf2 = pygame.Surface((150, 150))
-        self.renderer.to_surface(surf2)
-        self.assertEqual(surf2.get_at((10, 10)), pygame.Color(255, 255, 0, 255))
-
         surf3 = self.renderer.to_surface(area=pygame.Rect(5, 5, 20, 20))
         self.assertEqual(surf3.get_at((5, 5)), pygame.Color(255, 255, 0, 255))
         self.assertEqual(surf3.size, (20, 20))
-
-        surf4 = pygame.Surface((150, 150))
-        self.renderer.to_surface(surf4, pygame.Rect(7, 7, 40, 40))
-        self.assertEqual(surf4.get_at((3, 3)), pygame.Color(255, 255, 0, 255))
-
-        small_surf = pygame.Surface((50, 50))
-        with self.assertRaises(ValueError):
-            self.renderer.to_surface(small_surf)
 
     def test_blit(self):
         surface = pygame.Surface((10, 10))
@@ -230,11 +235,29 @@ class RendererTest(unittest.TestCase):
         self.renderer.draw_color = "YELLOW"
         self.assertEqual(self.renderer.draw_color, pygame.Color(255, 255, 0, 255))
 
+    @unittest.skipIf(IS_PYPY, "PyPy doesn't have sys.getrefcount")
+    def test_refcount_from_window(self):
+        # Regression test for a reference leak in Renderer.from_window when
+        # the window is borrowed from the display module (issue #3799): tp_new
+        # already returns a new reference, so the function must NOT Py_NewRef
+        # it again. With the leak getrefcount(r) returned 3; the correct count
+        # is 2 (the local `r` plus the temporary arg to sys.getrefcount).
+        _ = pygame.display.set_mode((500, 500), pygame.SCALED)
+        w = pygame.Window.from_display_module()
+        r = _render.Renderer.from_window(w)
 
+        if sys.version_info < (3, 14):
+            self.assertEqual(sys.getrefcount(r), 2)
+        else:
+            self.assertEqual(sys.getrefcount(r), 1)
+
+
+@unittest.skipIf(SDL < (3, 0, 0), "SDL2 support for pygame._render is discontinued")
 class TextureTest(unittest.TestCase):
     def setUp(self):
         self.window = pygame.Window(size=(100, 100))
         self.renderer = _render.Renderer(self.window)
+        self.renderer.clear()
         self.texture = _render.Texture(self.renderer, (80, 60))
 
     def create_texture_from_surface(self):
@@ -262,6 +285,10 @@ class TextureTest(unittest.TestCase):
             _render.Texture(
                 self.renderer, (100, 100), depth=32, static=True, streaming=True
             )
+        # Regression test for missing Renderer type check in issue #3745
+        # (https://github.com/pygame-community/pygame-ce/issues/3745)
+        with self.assertRaises(TypeError):
+            _render.Texture("renderer", (100, 100))
 
     def test_alpha(self):
         self.assertEqual(255, self.texture.alpha)
@@ -269,9 +296,10 @@ class TextureTest(unittest.TestCase):
         self.assertEqual(128, self.texture.alpha)
 
     def test_blend_mode(self):
+        self.assertEqual(pygame.BLENDMODE_BLEND, self.texture.blend_mode)
+        self.texture.blend_mode = pygame.BLENDMODE_NONE
         self.assertEqual(pygame.BLENDMODE_NONE, self.texture.blend_mode)
         self.texture.blend_mode = pygame.BLENDMODE_BLEND
-        self.assertEqual(pygame.BLENDMODE_BLEND, self.texture.blend_mode)
 
     def test_color(self):
         self.assertEqual(pygame.Color(255, 255, 255, 255), self.texture.color)
@@ -306,6 +334,9 @@ class TextureTest(unittest.TestCase):
         surface = pygame.Surface(surf_size)
         texture2 = _render.Texture.from_surface(self.renderer, surface)
         self.assertEqual(surf_size, (texture2.width, texture2.height))
+        # Same missing Renderer type check as issue #3745
+        with self.assertRaises(TypeError):
+            _render.Texture.from_surface("renderer", surface)
 
     def test_draw_triangle(self):
         texture2 = self.create_texture_from_surface()
@@ -482,3 +513,18 @@ class TextureTest(unittest.TestCase):
         result = self.renderer.to_surface()
         for x in range(25, 75):
             self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 50)))
+
+    @unittest.skipIf(IS_PYPY, "PyPy doesn't have sys.getrefcount")
+    def test_renderer_refcount_on_texture_dealloc(self):
+        # Regression test for https://github.com/pygame-community/pygame-ce/pull/4038#pullrequestreview-5916322289
+        # Previously, texture_dealloc didn't decref the renderer that it had incref'd during initialization.
+        initial_refcount = sys.getrefcount(self.renderer)
+        _textures = [
+            _render.Texture(self.renderer, (10, 10)),
+            _render.Texture(self.renderer, (10, 10)),
+            _render.Texture(self.renderer, (10, 10)),
+        ]
+        self.assertGreater(sys.getrefcount(self.renderer), initial_refcount)
+        _textures.clear()
+        gc.collect()
+        self.assertEqual(sys.getrefcount(self.renderer), initial_refcount)

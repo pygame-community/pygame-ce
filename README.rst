@@ -7,8 +7,8 @@
 |DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
+|DiscordBadge|
 
-**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_ `Ελληνικά`_ `Português (Brasil)`_
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Pygame_ is a free and open-source cross-platform library
@@ -102,68 +102,13 @@ or you want to contribute to pygame-ce, you will need to build pygame-ce
 locally from its source code, rather than pip installing it.
 
 Installing from source is fairly automated. The most work will
-involve compiling and installing all the pygame dependencies.  Once
-that is done, run the ``setup.py`` script which will attempt to
+involve compiling and installing all the pygame dependencies. Once
+that is done, run ``pip install .``, which will attempt to
 auto-configure, build, and install pygame.
 
 Much more information about installing and compiling is available
 on the `Compilation wiki page`_.
 
-
-Credits
--------
-
-Thanks to everyone who has helped contribute to this library.
-Special thanks are also in order.
-
-* Marcus Von Appen: many changes, and fixes, 1.7.1+ freebsd maintainer
-* Lenard Lindstrom: the 1.8+ windows maintainer, many changes, and fixes
-* Brian Fisher for svn auto builder, bug tracker and many contributions
-* Rene Dudfield: many changes, and fixes, 1.7+ release manager/maintainer
-* Phil Hassey for his work on the pygame.org website
-* DR0ID for his work on the sprite module
-* Richard Goedeken for his smoothscale function
-* Ulf Ekström for his pixel perfect collision detection code
-* Pete Shinners: original author
-* David Clark for filling the right-hand-man position
-* Ed Boraas and Francis Irving: Debian packages
-* Maxim Sobolev: FreeBSD packaging
-* Bob Ippolito: macOS and OS X porting (much work!)
-* Jan Ekhol, Ray Kelm, and Peter Nicolai: putting up with early design ideas
-* Nat Pryce for starting our unit tests
-* Dan Richter for documentation work
-* TheCorruptor for his incredible logos and graphics
-* Nicholas Dudfield: many test improvements
-* Alex Folkner for pygame-ctypes
-
-Thanks to those sending in patches and fixes: Niki Spahiev, Gordon
-Tyler, Nathaniel Pryce, Dave Wallace, John Popplewell, Michael Urman,
-Andrew Straw, Michael Hudson, Ole Martin Bjoerndalen, Herve Cauwelier,
-James Mazer, Lalo Martins, Timothy Stranex, Chad Lester, Matthias
-Spiller, Bo Jangeborg, Dmitry Borisov, Campbell Barton, Diego Essaya,
-Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber,
-Matthew L Daniel, Nirav Patel, Forrest Voight, Charlie Nolan,
-Frankie Robertson, John Krukoff, Lorenz Quack, Nick Irvine,
-Michael George, Saul Spatz, Thomas Ibbotson, Tom Rothamel, Evan Kroske,
-Cambell Barton.
-
-And our bug hunters above and beyond: Angus, Guillaume Proux, Frank
-Raiser, Austin Henry, Kaweh Kazemi, Arturo Aldama, Mike Mulcheck,
-Michael Benfield, David Lau
-
-There's many more folks out there who've submitted helpful ideas, kept
-this project going, and basically made our life easier.  Thanks!
-
-Many thank you's for people making documentation comments, and adding to the
-`pygame documentation`_ and the `pygame-ce documentation`_.
-
-Also many thanks for people creating games and putting them on the
-pygame.org website for others to learn from and enjoy.
-
-Lots of thanks to James Paige for hosting the pygame bugzilla.
-
-Also a big thanks to Roger Dingledine and the crew at SEUL.ORG for our
-excellent hosting.
 
 Dependencies
 ------------
@@ -178,15 +123,15 @@ Dependency versions:
 
 
 +----------+------------------------+
-| CPython  | >= 3.10 (Or use PyPy3) |
+| CPython  | >= 3.11 (Or use PyPy3) |
 +----------+------------------------+
-| SDL      | >= 2.0.14              |
+| SDL      | >= 2.26.5              |
 +----------+------------------------+
-| SDL_mixer| >= 2.0.4               |
+| SDL_mixer| >= 2.6.2               |
 +----------+------------------------+
-| SDL_image| >= 2.0.4               |
+| SDL_image| >= 2.6.3               |
 +----------+------------------------+
-| SDL_ttf  | >= 2.0.15              |
+| SDL_ttf  | >= 2.20.1              |
 +----------+------------------------+
 
 How to Contribute
@@ -228,8 +173,8 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.6.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.6...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.8.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.8...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -237,9 +182,10 @@ See docs/licenses for licenses of dependencies.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
+.. |DiscordBadge| image:: https://discord.com/api/guilds/772505616680878080/widget.png
+   :target: https://pyga.me/discord
+
 .. _Pygame: https://pyga.me
-.. _pygame-ce documentation: https://pyga.me/docs/
-.. _pygame documentation: https://www.pygame.org/docs/
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
@@ -250,16 +196,5 @@ See docs/licenses for licenses of dependencies.
 .. _Opening a Great Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
 .. _issue tracker: https://github.com/pygame-community/pygame-ce/issues
 .. _label and link reported issues: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
-.. _Pygame Community Discord Server: https://discord.gg/pygame
+.. _Pygame Community Discord Server: https://pyga.me/discord
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
-
-.. _简体中文: ./docs/readmes/README.zh-cn.rst
-.. _繁體中文: ./docs/readmes/README.zh-tw.rst
-.. _Français: ./docs/readmes/README.fr.rst
-.. _فارسی: ./docs/readmes/README.fa.rst
-.. _Español: ./docs/readmes/README.es.rst
-.. _日本語: ./docs/readmes/README.ja.rst
-.. _Italiano: ./docs/readmes/README.it.rst
-.. _Русский: ./docs/readmes/README.ru.rst
-.. _Ελληνικά: ./docs/readmes/README.gr.rst
-.. _Português (Brasil): ./docs/readmes/README.pt-br.rst

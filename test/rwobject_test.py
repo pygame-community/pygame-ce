@@ -76,7 +76,7 @@ class RWopsEncodeStringTest(unittest.TestCase):
         upath = bpath.decode("ascii")
         before = sys.getrefcount(bpath)
         bpath = encode_string(bpath)
-        self.assertEqual(sys.getrefcount(bpath), before)
+        self.assertEqual(sys.getrefcount(bpath), 2)
         bpath = encode_string(upath)
         self.assertIn(sys.getrefcount(bpath), (before, before - 1))
 

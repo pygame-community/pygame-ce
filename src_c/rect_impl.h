@@ -140,9 +140,6 @@
 #ifndef RectExport_Normalize
 #error RectExport_Normalize needs to be defined
 #endif
-#ifndef RectExport_contains_internal
-#error RectExport_contains_internal needs to be defined
-#endif
 #ifndef RectExport_contains
 #error RectExport_contains needs to be defined
 #endif
@@ -324,13 +321,16 @@
 #error RectImport_OtherRectCheck needs to be defined
 #endif
 #ifndef RectImport_RectCheckExact
-#error RectImport_RectCheckExact needs to be Defined
+#error RectImport_RectCheckExact needs to be defined
 #endif
 #ifndef RectImport_OtherRectCheckExact
 #error RectImport_OtherRectCheckExact needs to be Defined
 #endif
 #ifndef RectImport_primitiveType
 #error RectImport_primitiveType needs to be defined
+#endif
+#ifndef RectImport_PrimitiveTypeName
+#error RectImport_PrimitiveTypeName needs to be defined
 #endif
 #ifndef RectImport_innerRectStruct
 #error RectImport_innerRectStruct needs to be defined
@@ -513,9 +513,6 @@ static PyObject *
 RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
 RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
-static int
-RectExport_contains_internal(RectObject *self, PyObject *const *args,
-                             Py_ssize_t nargs);
 static PyObject *
 RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static int
@@ -1972,47 +1969,47 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     return tup;
 }
 
-static int
-RectExport_contains_internal(RectObject *self, PyObject *const *args,
-                             Py_ssize_t nargs)
-{
-    InnerRect *argrect, temp_arg;
-    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp_arg))) {
-        return -1;
-    }
-
-    return (self->r.x <= argrect->x) && (self->r.y <= argrect->y) &&
-           (self->r.x + self->r.w >= argrect->x + argrect->w) &&
-           (self->r.y + self->r.h >= argrect->y + argrect->h) &&
-           (self->r.x + self->r.w > argrect->x) &&
-           (self->r.y + self->r.h > argrect->y);
-}
-
 static PyObject *
 RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    int result = RectExport_contains_internal(self, args, nargs);
-    if (result == -1) {
+    InnerRect *argrect, temp;
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
+
+    int result = (self->r.x <= argrect->x) && (self->r.y <= argrect->y) &&
+                 (self->r.x + self->r.w >= argrect->x + argrect->w) &&
+                 (self->r.y + self->r.h >= argrect->y + argrect->h) &&
+                 (self->r.x + self->r.w > argrect->x) &&
+                 (self->r.y + self->r.h > argrect->y);
     return PyBool_FromLong(result);
 }
 
 static int
 RectExport_containsSeq(RectObject *self, PyObject *arg)
 {
+    /* Use same primitive type if possible. */
     if (PythonNumberCheck(arg)) {
-        PrimitiveType coord = (PrimitiveType)PythonNumberAsPrimitiveType(arg);
-        return coord == self->r.x || coord == self->r.y ||
-               coord == self->r.w || coord == self->r.h;
+        PrimitiveType value = (PrimitiveType)PythonNumberAsPrimitiveType(arg);
+        if (PyErr_Occurred()) {
+            PyErr_Clear();
+            return 0;
+        }
+        return value == self->r.x || value == self->r.y ||
+               value == self->r.w || value == self->r.h;
     }
-    int ret = RectExport_contains_internal(self, (PyObject *const *)&arg, 1);
-    if (ret < 0) {
-        PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
-                                         ">' requires rect style object"
-                                         " or int as left operand");
+
+    /* Allow FRect to accept int and Rect to accept float. */
+    float value;
+    if (pg_FloatFromObj(arg, &value)) {
+        return value == self->r.x || value == self->r.y ||
+               value == self->r.w || value == self->r.h;
     }
-    return ret;
+
+    PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
+                                     ">' requires number"
+                                     " as left operand");
+    return -1;
 }
 
 static PyObject *
@@ -2397,8 +2394,7 @@ RectExport_richcompare(PyObject *o1, PyObject *o2, int opid)
     }
 
 Unimplemented:
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
+    return Py_NewRef(Py_NotImplemented);
 }
 
 /*width*/
@@ -2969,7 +2965,6 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_RectNew
 #undef RectExport_RectNew4
 #undef RectExport_Normalize
-#undef RectExport_contains_internal
 #undef RectExport_contains
 #undef RectExport_containsSeq
 #undef RectExport_clamp
@@ -3027,6 +3022,7 @@ RectExport_iterator(RectObject *self)
 #undef RectImport_PythonNumberAsPrimitiveType
 #undef RectImport_PrimitiveTypeAsPythonNumber
 #undef RectImport_primitiveType
+#undef RectImport_PrimitiveTypeName
 #undef RectImport_RectCheck
 #undef RectImport_OtherRectCheck
 #undef RectImport_RectCheckExact

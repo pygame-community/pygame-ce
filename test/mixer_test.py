@@ -1,10 +1,13 @@
 import copy
+import io
 import os
 import pathlib
 import platform
 import sys
 import time
 import unittest
+import wave
+from tempfile import TemporaryDirectory
 
 import pygame
 from pygame import mixer
@@ -278,20 +281,12 @@ class MixerModuleTest(unittest.TestCase):
         import shutil
 
         ep = example_path("data")
-        temp_file = os.path.join(ep, "你好.wav")
-        org_file = os.path.join(ep, "house_lo.wav")
-        shutil.copy(org_file, temp_file)
-        try:
-            with open(temp_file, "rb") as f:
-                pass
-        except OSError:
-            raise unittest.SkipTest("the path cannot be opened")
-
-        try:
+        with TemporaryDirectory() as tmpdir:
+            temp_file = os.path.join(tmpdir, "你好.wav")
+            org_file = os.path.join(ep, "house_lo.wav")
+            shutil.copy(org_file, temp_file)
             sound = mixer.Sound(temp_file)
             del sound
-        finally:
-            os.remove(temp_file)
 
     @unittest.skipIf(
         os.environ.get("SDL_AUDIODRIVER") == "disk",
@@ -1079,6 +1074,31 @@ class SoundTypeTest(unittest.TestCase):
         self.assertRaises(
             FileNotFoundError, mixer.Sound, pathlib.Path("/aWH8ryIyWt5BL7xf327e")
         )  # this path should not exist on any system really
+
+    def test_sound__zero_length_wav(self):
+        """Ensure a WAV with no frames loads and frees without crashing.
+
+        Regression test for https://github.com/pygame-community/pygame-ce/issues/4028
+        """
+        # SDL_mixer 2.8.0 to 2.8.2 double free zero-length converted chunks,
+        # which aborts the whole test run (libsdl-org/SDL_mixer#911)
+        if (2, 8, 0) <= mixer.get_sdl_mixer_version(linked=True) <= (2, 8, 2):
+            self.skipTest("SDL_mixer 2.8.0-2.8.2 double free zero-length sounds")
+
+        frequency = mixer.get_init()[0]
+        data = io.BytesIO()
+        with wave.open(data, "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            # differ from the mixer frequency, so SDL_mixer converts it
+            w.setframerate(frequency // 2 if frequency > 11025 else frequency * 2)
+            w.writeframes(b"")
+
+        for _ in range(2):
+            sound = mixer.Sound(file=io.BytesIO(data.getvalue()))
+            self.assertEqual(sound.get_length(), 0)
+            self.assertEqual(sound.get_raw(), b"")
+            del sound  # double freed here before the fix
 
     def todo_test_sound__from_buffer(self):
         """Ensure Sound() creation with a buffer works."""

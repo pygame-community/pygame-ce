@@ -10,10 +10,6 @@ from pygame.window import Window as Window
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
 
-MESSAGEBOX_ERROR: int
-MESSAGEBOX_WARNING: int
-MESSAGEBOX_INFORMATION: int
-
 SCALEQUALITY_NEAREST: int
 SCALEQUALITY_LINEAR: int
 SCALEQUALITY_BEST: int
@@ -27,17 +23,6 @@ class RendererDriverInfo:
 
 def get_drivers() -> Generator[RendererDriverInfo, None, None]: ...
 def get_grabbed_window() -> Window | None: ...
-def messagebox(
-    title: str,
-    message: str,
-    window: Window | None = None,
-    info: bool = False,
-    warn: bool = False,
-    error: bool = False,
-    buttons: tuple[str, ...] = ("OK",),
-    return_button: int = 0,
-    escape_button: int = 0,
-) -> int: ...
 
 class Texture:
     def __init__(

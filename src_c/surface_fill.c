@@ -906,6 +906,9 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
     PG_PixelFormat *fmt;
     SDL_Palette *palette;
     if (!PG_GetSurfaceDetails(surface, &fmt, &palette)) {
+        if (locked) {
+            SDL_UnlockSurface(surface);
+        }
         return -1;
     }
 
@@ -1143,7 +1146,8 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         }
 
         default: {
-            result = SDL_SetError("invalid blend flag for this operation");
+            SDL_SetError("invalid blend flag for this operation");
+            result = -1;
             break;
         }
     }

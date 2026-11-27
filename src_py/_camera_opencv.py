@@ -33,6 +33,8 @@ def list_cameras_darwin():
 
 
 class Camera:
+    # device should not have a default argument!!
+    # leaving here for compatibility, but I fixed the stubs.
     def __init__(self, device=0, size=(640, 480), mode="RGB"):
         self._device_index = device
         self._size = size

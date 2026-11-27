@@ -46,43 +46,9 @@ cdef extern from "SDL.h" nogil:
 
     cdef extern from *:
         """
-        #if SDL_VERSION_ATLEAST(2, 0, 18)
-            typedef SDL_FPoint _pgsdlFPoint;
-            typedef SDL_Vertex _pgsdlVertex;
-        #else
-            typedef struct {
-                float x;
-                float y;
-            } _pgsdlFPoint;
-
-            typedef struct {
-                _pgsdlFPoint position;
-                SDL_Color color;
-                _pgsdlFPoint tex_coord;
-            } _pgsdlVertex;
-
-            int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
-                  const _pgsdlVertex *vertices, int num_vertices,
-                  const int *indices, int num_indices)
-            {
-                SDL_SetError("Needs SDL 2.0.18");
-                return -1;
-            }
-        #endif
-
-        #if SDL_VERSION_ATLEAST(2,0,12)
-            typedef SDL_ScaleMode _pgsdlScaleMode;
-        #else
-            typedef enum {
-                SDL_ScaleModeNearest,
-                SDL_ScaleModeLinear,
-                SDL_ScaleModeBest,
-            } _pgsdlScaleMode;
-
-            int SDL_SetTextureScaleMode(SDL_Texture * texture, _pgsdlScaleMode scaleMode){
-                return 0;
-            }
-        #endif
+        typedef SDL_FPoint _pgsdlFPoint;
+        typedef SDL_Vertex _pgsdlVertex;
+        typedef SDL_ScaleMode _pgsdlScaleMode;
         """
     ctypedef struct SDL_FPoint "_pgsdlFPoint":
         float x, y
@@ -109,31 +75,6 @@ cdef extern from "SDL.h" nogil:
         SDL_BLENDMODE_MOD = 0x00000004,
         SDL_BLENDMODE_MUL = 0x00000008,
         SDL_BLENDMODE_INVALID = 0x7FFFFFFF
-
-    # https://wiki.libsdl.org/SDL_MessageBoxData
-    # https://wiki.libsdl.org/SDL_ShowMessageBox
-    cdef Uint32 _SDL_MESSAGEBOX_ERROR "SDL_MESSAGEBOX_ERROR"
-    cdef Uint32 _SDL_MESSAGEBOX_WARNING "SDL_MESSAGEBOX_WARNING"
-    cdef Uint32 _SDL_MESSAGEBOX_INFORMATION "SDL_MESSAGEBOX_INFORMATION"
-
-    cdef Uint32 _SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT "SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT"
-    cdef Uint32 _SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT "SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT"
-
-    ctypedef struct SDL_MessageBoxData:
-        Uint32 flags
-        SDL_Window* window
-        const char* title
-        const char* message
-        int numbuttons
-        const SDL_MessageBoxButtonData* buttons
-        const SDL_MessageBoxColorScheme* colorScheme
-    ctypedef struct SDL_MessageBoxButtonData:
-        Uint32 flags
-        int buttonid
-        const char *text
-    ctypedef struct SDL_MessageBoxColorScheme
-    int SDL_ShowMessageBox(const SDL_MessageBoxData* messageboxdata,
-                           int*                      buttonid)
 
     # RENDERER
     cdef Uint32 _SDL_RENDERER_SOFTWARE "SDL_RENDERER_SOFTWARE"
@@ -398,6 +339,7 @@ cdef extern from "SDL.h" nogil:
                                    int wy,
                                    float *lx,
                                    float *ly);
+
 
     int SDL_VERSION_ATLEAST(int major, int minor, int patch)
 

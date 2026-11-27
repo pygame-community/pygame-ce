@@ -752,6 +752,12 @@ int
 windows_process_image(pgCameraObject *self, BYTE *data, DWORD length,
                       SDL_Surface *surf)
 {
+    PG_PixelFormat *format = PG_GetSurfaceFormat(surf);
+    if (format == NULL) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return 0;
+    }
+
     SDL_LockSurface(surf);
 
     int size = self->width * self->height;
@@ -763,15 +769,15 @@ windows_process_image(pgCameraObject *self, BYTE *data, DWORD length,
                 /* optimized version for 32 bit output surfaces*/
                 /* memcpy(surf->pixels, data, length); */
 
-                bgr32_to_rgb(data, surf->pixels, size, surf->format);
+                bgr32_to_rgb(data, surf->pixels, size, format);
                 break;
             case YUV_OUT:
                 rgb_to_yuv(data, surf->pixels, size, V4L2_PIX_FMT_XBGR32,
-                           surf->format);
+                           format);
                 break;
             case HSV_OUT:
                 rgb_to_hsv(data, surf->pixels, size, V4L2_PIX_FMT_XBGR32,
-                           surf->format);
+                           format);
                 break;
         }
     }
@@ -779,15 +785,15 @@ windows_process_image(pgCameraObject *self, BYTE *data, DWORD length,
     if (self->pixelformat == MFVideoFormat_YUY2.Data1) {
         switch (self->color_out) {
             case YUV_OUT:
-                yuyv_to_yuv(data, surf->pixels, size, surf->format);
+                yuyv_to_yuv(data, surf->pixels, size, format);
                 break;
             case RGB_OUT:
-                yuyv_to_rgb(data, surf->pixels, size, surf->format);
+                yuyv_to_rgb(data, surf->pixels, size, format);
                 break;
             case HSV_OUT:
-                yuyv_to_rgb(data, surf->pixels, size, surf->format);
+                yuyv_to_rgb(data, surf->pixels, size, format);
                 rgb_to_hsv(surf->pixels, surf->pixels, size, V4L2_PIX_FMT_YUYV,
-                           surf->format);
+                           format);
                 break;
         }
     }

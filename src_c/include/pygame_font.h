@@ -20,7 +20,6 @@
     pete@shinners.org
 */
 
-#include <Python.h>
 #include "pgplatform.h"
 
 struct TTF_Font;

@@ -511,13 +511,9 @@ font_getter_align(PyObject *self, void *closure)
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_GetFontWrapAlignment(font));
-#elif SDL_TTF_VERSION_ATLEAST(2, 20, 0)
+#else
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_GetFontWrappedAlign(font));
-#else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.20.0 or above.");
 #endif
 }
 
@@ -529,7 +525,6 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
         RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("align", value);
@@ -556,12 +551,6 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
     TTF_SetFontWrappedAlign(font, val);
 #endif
     return 0;
-#else
-    PyErr_SetString(pgExc_SDLError,
-                    "pygame.font not compiled with a new enough SDL_ttf "
-                    "version. Needs SDL_ttf 2.20.0 or above.");
-    return -1;
-#endif
 }
 
 /* Implements get_strikethrough() */
@@ -685,43 +674,33 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
             surf = TTF_RenderText_Blended_Wrapped(font, astring, 0, foreg,
                                                   wraplength);
-#elif SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+#else
             surf = TTF_RenderUTF8_Blended_Wrapped(font, astring, foreg,
                                                   wraplength);
-#else
-            surf = TTF_RenderUTF8_Blended(font, astring, foreg);
 #endif
         }
         else if (antialias) {
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
             surf = TTF_RenderText_Shaded_Wrapped(font, astring, 0, foreg,
                                                  backg, wraplength);
-#elif SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+#else
             surf = TTF_RenderUTF8_Shaded_Wrapped(font, astring, foreg, backg,
                                                  wraplength);
-#else
-            surf = TTF_RenderUTF8_Shaded(font, astring, foreg, backg);
 #endif
         }
         else {
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
             surf = TTF_RenderText_Solid_Wrapped(font, astring, 0, foreg,
                                                 wraplength);
-#elif SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+#else
             surf =
                 TTF_RenderUTF8_Solid_Wrapped(font, astring, foreg, wraplength);
-#else
-            surf = TTF_RenderUTF8_Solid(font, astring, foreg);
 #endif
             /* If an explicit background was provided and the rendering options
             resolve to Render_Solid, that needs to be explicitly handled. */
             if (surf != NULL && bg_rgba_obj != Py_None) {
                 SDL_SetColorKey(surf, 0, 0);
-#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
-                SDL_Palette *palette = SDL_GetSurfacePalette(surf);
-#else
-                SDL_Palette *palette = surf->format->palette;
-#endif
+                SDL_Palette *palette = PG_GetSurfacePalette(surf);
                 if (palette) {
                     palette->colors[0].r = backg.r;
                     palette->colors[0].g = backg.g;
@@ -799,12 +778,7 @@ font_getter_point_size(PyFontObject *self, void *closure)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(self->ptsize);
-#else
-    return RAISE(pgExc_SDLError,
-                 "Incorrect SDL_TTF version (requires 2.0.18)");
-#endif
 }
 
 static int
@@ -814,7 +788,6 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
         RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyLong_AsLong(value);
 
@@ -841,11 +814,6 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
     self->ptsize = val;
 
     return 0;
-#else
-    PyErr_SetString(pgExc_SDLError,
-                    "Incorrect SDL_TTF version (requires 2.0.18)");
-    return -1;
-#endif
 }
 
 static PyObject *
@@ -855,12 +823,7 @@ font_get_ptsize(PyObject *self, PyObject *args)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(((PyFontObject *)self)->ptsize);
-#else
-    return RAISE(pgExc_SDLError,
-                 "Incorrect SDL_TTF version (requires 2.0.18)");
-#endif
 }
 
 static PyObject *
@@ -870,7 +833,6 @@ font_set_ptsize(PyObject *self, PyObject *arg)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyLong_AsLong(arg);
 
@@ -895,10 +857,47 @@ font_set_ptsize(PyObject *self, PyObject *arg)
     ((PyFontObject *)self)->ptsize = val;
 
     Py_RETURN_NONE;
+}
+
+static PyObject *
+font_getter_outline(PyObject *self, void *closure)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
+    TTF_Font *font = PyFont_AsFont(self);
+    return PyLong_FromLong(TTF_GetFontOutline(font));
+}
+
+static int
+font_setter_outline(PyObject *self, PyObject *value, void *closure)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
+    }
+    TTF_Font *font = PyFont_AsFont(self);
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK("outline", value);
+
+    long val = PyLong_AsLong(value);
+    if (val == -1 && PyErr_Occurred()) {
+        return -1;
+    }
+    if (val < 0) {
+        PyErr_SetString(PyExc_ValueError, "outline must be >= 0");
+        return -1;
+    }
+
+#if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
+    if (!TTF_SetFontOutline(font, (int)val)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
 #else
-    return RAISE(pgExc_SDLError,
-                 "Incorrect SDL_TTF version (requires 2.0.18)");
+    TTF_SetFontOutline(font, (int)val);
 #endif
+    return 0;
 }
 
 static PyObject *
@@ -987,13 +986,9 @@ font_metrics(PyObject *self, PyObject *textobj)
 #if SDL_TTF_VERSION_ATLEAST(3, 0, 0)
         if (TTF_GetGlyphMetrics(font, ch, &minx, &maxx, &miny, &maxy,
                                 &advance))
-#elif SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+#else
         if (!TTF_GlyphMetrics32(font, ch, &minx, &maxx, &miny, &maxy,
                                 &advance))
-#else
-        if (ch <= 0xFFFF && /* conditional and */
-            !TTF_GlyphMetrics(font, (Uint16)ch, &minx, &maxx, &miny, &maxy,
-                              &advance))
 #endif
         {
             listitem =
@@ -1006,8 +1001,7 @@ font_metrics(PyObject *self, PyObject *textobj)
         }
         else {
             /* Not UCS-2 (and old SDL) or no matching metrics. */
-            Py_INCREF(Py_None);
-            listitem = Py_None;
+            listitem = Py_NewRef(Py_None);
         }
         if (0 != PyList_Append(list, listitem)) {
             Py_DECREF(list);
@@ -1036,7 +1030,6 @@ font_set_script(PyObject *self, PyObject *arg)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     Py_ssize_t size;
     const char *script_code;
@@ -1061,11 +1054,6 @@ font_set_script(PyObject *self, PyObject *arg)
     {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-#else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.20.0 or above.");
-#endif
     Py_RETURN_NONE;
 }
 
@@ -1076,7 +1064,6 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     int direction;
     char *kwds[] = {"direction", NULL};
@@ -1145,11 +1132,6 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-#else
-    return RAISE(pgExc_SDLError,
-                 "pygame.font not compiled with a new enough SDL_ttf version. "
-                 "Needs SDL_ttf 2.20.0 or above.");
-#endif
     Py_RETURN_NONE;
 }
 
@@ -1168,6 +1150,8 @@ static PyGetSetDef font_getsets[] = {
      DOC_FONT_FONT_UNDERLINE, NULL},
     {"strikethrough", (getter)font_getter_strikethrough,
      (setter)font_setter_strikethrough, DOC_FONT_FONT_STRIKETHROUGH, NULL},
+    {"outline", (getter)font_getter_outline, (setter)font_setter_outline,
+     DOC_FONT_FONT_OUTLINE, NULL},
     {"align", (getter)font_getter_align, (setter)font_setter_align,
      DOC_FONT_FONT_ALIGN, NULL},
     {"point_size", (getter)font_getter_point_size,
@@ -1354,6 +1338,7 @@ static PyTypeObject PyFont_Type = {
     .tp_methods = font_methods,
     .tp_getset = font_getsets,
     .tp_init = (initproc)font_init,
+    .tp_new = PyType_GenericNew,
 };
 
 /*font module methods*/
@@ -1460,7 +1445,6 @@ MODINIT_DEFINE(font)
     if (PyType_Ready(&PyFont_Type) < 0) {
         return NULL;
     }
-    PyFont_Type.tp_new = PyType_GenericNew;
 
     module = PyModule_Create(&_module);
     if (module == NULL) {
@@ -1477,13 +1461,11 @@ MODINIT_DEFINE(font)
         return NULL;
     }
 
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 15)
     /* So people can check for UCS4 support. */
     if (PyModule_AddIntConstant(module, "UCS4", 1)) {
         Py_DECREF(module);
         return NULL;
     }
-#endif
 
     /* export the c api */
     c_api[0] = &PyFont_Type;

@@ -146,8 +146,7 @@ surf_colorspace(PyObject *self, PyObject *arg)
     SDL_UnlockSurface(newsurf);
 
     if (surfobj2) {
-        Py_INCREF(surfobj2);
-        return (PyObject *)surfobj2;
+        return Py_NewRef(surfobj2);
     }
     else {
         return (PyObject *)pgSurface_New(newsurf);
@@ -432,8 +431,7 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
     }
 
     if (surfobj) {
-        Py_INCREF(surfobj);
-        return (PyObject *)surfobj;
+        return Py_NewRef(surfobj);
     }
     else {
         return (PyObject *)pgSurface_New(surf);
@@ -470,8 +468,7 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
     }
 
     if (surfobj) {
-        Py_INCREF(surfobj);
-        return (PyObject *)surfobj;
+        return Py_NewRef(surfobj);
     }
     else {
         return (PyObject *)pgSurface_New(surf);
@@ -1886,6 +1883,9 @@ camera_init(pgCameraObject *self, PyObject *arg, PyObject *kwargs)
 
     /* needs to be freed with PyMem_Free later */
     dev_name = PyUnicode_AsWideCharString(name_obj, NULL);
+    if (dev_name == NULL) {
+        return -1;
+    }
 
     p = windows_device_from_name(dev_name);
 
@@ -1976,24 +1976,13 @@ MODINIT_DEFINE(_camera)
         return NULL;
     }
 
-    /* type preparation */
-    pgCamera_Type.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&pgCamera_Type) < 0) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
         return NULL;
     }
 
-    if (PyModule_AddObjectRef(module, "CameraType",
-                              (PyObject *)&pgCamera_Type)) {
-        Py_DECREF(module);
-        return NULL;
-    }
-    if (PyModule_AddObjectRef(module, "Camera", (PyObject *)&pgCamera_Type)) {
+    if (PyModule_AddType(module, &pgCamera_Type)) {
         Py_DECREF(module);
         return NULL;
     }

@@ -202,22 +202,6 @@ static PyMethodDef _pxarray_methods[] = {
      DOC_PIXELARRAY_TRANSPOSE},
     {NULL, NULL, 0, NULL}};
 
-static void
-Text_ConcatAndDel(PyObject **string, PyObject *newpart)
-{
-    PyObject *result = 0;
-    if (*string && newpart) {
-        result = PyUnicode_Concat(*string, newpart);
-        Py_DECREF(*string);
-        Py_DECREF(newpart);
-    }
-    else {
-        Py_XDECREF(*string);
-        Py_XDECREF(newpart);
-    }
-    *string = result;
-}
-
 /**
  * Getters and setters for the pgPixelArrayObject.
  */
@@ -416,8 +400,7 @@ _pxarray_get_dict(pgPixelArrayObject *self, void *closure)
         }
         self->dict = dict;
     }
-    Py_INCREF(dict);
-    return dict;
+    return Py_NewRef(dict);
 }
 
 /**
@@ -521,13 +504,7 @@ _pxarray_get_arrayinterface(pgPixelArrayObject *self, void *closure)
 static PyObject *
 _pxarray_get_pixelsaddress(pgPixelArrayObject *self, void *closure)
 {
-    void *address = self->pixels;
-
-#if SIZEOF_VOID_P > SIZEOF_LONG
-    return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG)address);
-#else
-    return PyLong_FromUnsignedLong((unsigned long)address);
-#endif
+    return PyLong_FromVoidPtr(self->pixels);
 }
 
 static int
@@ -620,8 +597,7 @@ _pxarray_getbuffer(pgPixelArrayObject *self, Py_buffer *view_p, int flags)
     else {
         view_p->format = 0;
     }
-    Py_INCREF(self);
-    view_p->obj = (PyObject *)self;
+    view_p->obj = Py_NewRef(self);
     view_p->buf = self->pixels;
     view_p->len = len;
     view_p->readonly = 0;
@@ -637,13 +613,32 @@ _pxarray_getbuffer(pgPixelArrayObject *self, Py_buffer *view_p, int flags)
 /**** Methods ****/
 
 /**
+ * Internal helper function to append an item to a list.
+ * Return 0 on failure, 1 on success. Decrements reference count of item.
+ */
+static int
+_append_and_free_helper(PyObject *list, PyObject *item)
+{
+    if (item == NULL) {
+        return 0;
+    }
+    if (PyList_Append(list, item) == -1) {
+        Py_DECREF(item);
+        return 0;
+    }
+    Py_DECREF(item);
+    return 1;
+}
+
+/**
  * repr(PixelArray)
  */
 static PyObject *
 _pxarray_repr(pgPixelArrayObject *array)
 {
+    /* Use python's str.join with list to avoid quadratic concatentation. */
+    PyObject *str_list;
     SDL_Surface *surf;
-    PyObject *string;
     int bpp;
     Uint8 *pixels = array->pixels;
     int ndim = array->shape[1] ? 2 : 1;
@@ -664,71 +659,77 @@ _pxarray_repr(pgPixelArrayObject *array)
     surf = pgSurface_AsSurface(array->surface);
     bpp = PG_SURF_BytesPerPixel(surf);
 
-    string = PyUnicode_FromString("PixelArray(");
-    if (!string) {
-        return 0;
+    str_list = PyList_New(0);
+    if (str_list == NULL) {
+        return NULL;
     }
 
-    pixelrow = pixels;
+    if (!_append_and_free_helper(str_list,
+                                 PyUnicode_FromString("PixelArray("))) {
+        goto error;
+    }
+
     if (ndim == 2) {
-        Text_ConcatAndDel(&string, PyUnicode_FromString("["));
-        if (!string) {
-            return 0;
+        if (!_append_and_free_helper(str_list, PyUnicode_FromString("["))) {
+            goto error;
         }
     }
 
+    pixelrow = pixels;
     switch (bpp) {
         case 1:
             for (y = 0; y < dim1; ++y) {
-                Text_ConcatAndDel(&string, PyUnicode_FromString("\n  ["));
-                if (!string) {
-                    return 0;
+                if (!_append_and_free_helper(str_list,
+                                             PyUnicode_FromString("\n  ["))) {
+                    goto error;
                 }
                 pixel_p = pixelrow;
                 for (x = 0; x < dim0 - 1; ++x) {
-                    Text_ConcatAndDel(&string, PyUnicode_FromFormat(
-                                                   "%ld, ", (long)*pixel_p));
-                    if (!string) {
-                        return 0;
+                    if (!_append_and_free_helper(
+                            str_list,
+                            PyUnicode_FromFormat("%ld, ", (long)*pixel_p))) {
+                        goto error;
                     }
                     pixel_p += stride0;
                 }
-                Text_ConcatAndDel(
-                    &string, PyUnicode_FromFormat("%ld]", (long)*pixel_p));
-                if (!string) {
-                    return 0;
+                if (!_append_and_free_helper(
+                        str_list,
+                        PyUnicode_FromFormat("%ld]", (long)*pixel_p))) {
+                    goto error;
                 }
                 pixelrow += stride1;
             }
             break;
         case 2:
             for (y = 0; y < dim1; ++y) {
-                Text_ConcatAndDel(&string, PyUnicode_FromString("\n  ["));
-                if (!string) {
-                    return 0;
+                if (!_append_and_free_helper(str_list,
+                                             PyUnicode_FromString("\n  ["))) {
+                    goto error;
                 }
                 pixel_p = pixelrow;
                 for (x = 0; x < dim0 - 1; ++x) {
-                    Text_ConcatAndDel(&string,
-                                      PyUnicode_FromFormat(
-                                          "%ld, ", (long)*(Uint16 *)pixel_p));
-                    if (!string) {
-                        return 0;
+                    if (!_append_and_free_helper(
+                            str_list,
+                            PyUnicode_FromFormat("%ld, ",
+                                                 (long)*(Uint16 *)pixel_p))) {
+                        goto error;
                     }
                     pixel_p += stride0;
                 }
-                Text_ConcatAndDel(
-                    &string,
-                    PyUnicode_FromFormat("%ld]", (long)*(Uint16 *)pixel_p));
-                if (string == NULL) {
-                    return NULL;
+                if (!_append_and_free_helper(
+                        str_list, PyUnicode_FromFormat(
+                                      "%ld]", (long)*(Uint16 *)pixel_p))) {
+                    goto error;
                 }
                 pixelrow += stride1;
             }
             break;
         case 3:
             for (y = 0; y < dim1; ++y) {
-                Text_ConcatAndDel(&string, PyUnicode_FromString("\n  ["));
+                if (!_append_and_free_helper(str_list,
+                                             PyUnicode_FromString("\n  ["))) {
+                    goto error;
+                }
                 pixel_p = pixelrow;
                 for (x = 0; x < dim0 - 1; ++x) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
@@ -738,10 +739,10 @@ _pxarray_repr(pgPixelArrayObject *array)
                     pixel =
                         (pixel_p[2]) + (pixel_p[1] << 8) + (pixel_p[0] << 16);
 #endif
-                    Text_ConcatAndDel(
-                        &string, PyUnicode_FromFormat("%ld, ", (long)pixel));
-                    if (!string) {
-                        return 0;
+                    if (!_append_and_free_helper(
+                            str_list,
+                            PyUnicode_FromFormat("%ld, ", (long)pixel))) {
+                        goto error;
                     }
                     pixel_p += stride0;
                 }
@@ -750,48 +751,57 @@ _pxarray_repr(pgPixelArrayObject *array)
 #else
                 pixel = (pixel_p[2]) + (pixel_p[1] << 8) + (pixel_p[0] << 16);
 #endif
-                Text_ConcatAndDel(&string,
-                                  PyUnicode_FromFormat("%ld]", (long)pixel));
-                if (!string) {
-                    return 0;
+                if (!_append_and_free_helper(
+                        str_list, PyUnicode_FromFormat("%ld]", (long)pixel))) {
+                    goto error;
                 }
                 pixelrow += stride1;
             }
             break;
         default: /* case 4: */
             for (y = 0; y < dim1; ++y) {
-                Text_ConcatAndDel(&string, PyUnicode_FromString("\n  ["));
-                if (!string) {
-                    return 0;
+                if (!_append_and_free_helper(str_list,
+                                             PyUnicode_FromString("\n  ["))) {
+                    goto error;
                 }
                 pixel_p = pixelrow;
                 for (x = 0; x < dim0 - 1; ++x) {
-                    Text_ConcatAndDel(&string,
-                                      PyUnicode_FromFormat(
-                                          "%ld, ", (long)*(Uint32 *)pixel_p));
-                    if (!string) {
-                        return 0;
+                    if (!_append_and_free_helper(
+                            str_list,
+                            PyUnicode_FromFormat("%ld, ",
+                                                 (long)*(Uint32 *)pixel_p))) {
+                        goto error;
                     }
                     pixel_p += stride0;
                 }
-                Text_ConcatAndDel(
-                    &string,
-                    PyUnicode_FromFormat("%ld]", (long)*(Uint32 *)pixel_p));
-                if (string == NULL) {
-                    return NULL;
+                if (!_append_and_free_helper(
+                        str_list, PyUnicode_FromFormat(
+                                      "%ld]", (long)*(Uint32 *)pixel_p))) {
+                    goto error;
                 }
                 pixelrow += stride1;
             }
             break;
     }
 
-    if (ndim == 2) {
-        Text_ConcatAndDel(&string, PyUnicode_FromString("]\n)"));
+    if (!_append_and_free_helper(
+            str_list, PyUnicode_FromString(ndim == 2 ? "]\n)" : "\n)"))) {
+        goto error;
     }
-    else {
-        Text_ConcatAndDel(&string, PyUnicode_FromString("\n)"));
+
+    PyObject *separator = PyUnicode_FromString("");
+    if (separator == NULL) {
+        goto error;
     }
+
+    PyObject *string = PyUnicode_Join(separator, str_list);
+    Py_DECREF(separator);
+    Py_DECREF(str_list);
     return string;
+
+error:
+    Py_DECREF(str_list);
+    return NULL;
 }
 
 static PyObject *
@@ -1164,22 +1174,19 @@ _array_assign_sequence(pgPixelArrayObject *array, Py_ssize_t low,
             }
             break;
         case 3: {
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            Uint32 Roffset = surf_format->Rshift >> 3;
-            Uint32 Goffset = surf_format->Gshift >> 3;
-            Uint32 Boffset = surf_format->Bshift >> 3;
-#else
-            Uint32 Roffset = 2 - (surf_format->Rshift >> 3);
-            Uint32 Goffset = 2 - (surf_format->Gshift >> 3);
-            Uint32 Boffset = 2 - (surf_format->Bshift >> 3);
-#endif
             for (y = 0; y < dim1; ++y) {
                 pixel_p = pixelrow;
                 val_color_p = val_colors;
                 for (x = 0; x < dim0; ++x) {
-                    pixel_p[Roffset] = (Uint8)(*val_color_p >> 16);
-                    pixel_p[Goffset] = (Uint8)(*val_color_p >> 8);
-                    pixel_p[Boffset] = (Uint8)*val_color_p;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                    pixel_p[0] = (Uint8)*val_color_p;
+                    pixel_p[1] = (Uint8)(*val_color_p >> 8);
+                    pixel_p[2] = (Uint8)(*val_color_p >> 16);
+#else
+                    pixel_p[0] = (Uint8)(*val_color_p >> 16);
+                    pixel_p[1] = (Uint8)(*val_color_p >> 8);
+                    pixel_p[2] = (Uint8)*val_color_p;
+#endif
                     pixel_p += stride0;
                     ++val_color_p;
                 }
@@ -1261,25 +1268,18 @@ _array_assign_slice(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
             }
         } break;
         case 3: {
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            Uint32 Roffset = surf_format->Rshift >> 3;
-            Uint32 Goffset = surf_format->Gshift >> 3;
-            Uint32 Boffset = surf_format->Bshift >> 3;
-#else
-            Uint32 Roffset = 2 - (surf_format->Rshift >> 3);
-            Uint32 Goffset = 2 - (surf_format->Gshift >> 3);
-            Uint32 Boffset = 2 - (surf_format->Bshift >> 3);
-#endif
-            Uint8 r = (Uint8)(color >> 16);
-            Uint8 g = (Uint8)(color >> 8);
-            Uint8 b = (Uint8)(color);
-
             for (y = 0; y < dim1; ++y) {
                 pixel_p = pixelrow;
                 for (x = 0; x < dim0; ++x) {
-                    pixel_p[Roffset] = r;
-                    pixel_p[Goffset] = g;
-                    pixel_p[Boffset] = b;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                    pixel_p[0] = (Uint8)color;
+                    pixel_p[1] = (Uint8)(color >> 8);
+                    pixel_p[2] = (Uint8)(color >> 16);
+#else
+                    pixel_p[0] = (Uint8)(color >> 16);
+                    pixel_p[1] = (Uint8)(color >> 8);
+                    pixel_p[2] = (Uint8)color;
+#endif
                     pixel_p += stride0;
                 }
                 pixelrow += stride1;
@@ -1395,19 +1395,16 @@ _pxarray_ass_item(pgPixelArrayObject *array, Py_ssize_t index, PyObject *value)
             }
             break;
         case 3: {
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            Uint32 Roffset = surf_format->Rshift >> 3;
-            Uint32 Goffset = surf_format->Gshift >> 3;
-            Uint32 Boffset = surf_format->Bshift >> 3;
-#else
-            Uint32 Roffset = 2 - (surf_format->Rshift >> 3);
-            Uint32 Goffset = 2 - (surf_format->Gshift >> 3);
-            Uint32 Boffset = 2 - (surf_format->Bshift >> 3);
-#endif
             for (y = 0; y < dim1; ++y) {
-                pixel_p[Roffset] = (Uint8)(color >> 16);
-                pixel_p[Goffset] = (Uint8)(color >> 8);
-                pixel_p[Boffset] = (Uint8)color;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                pixel_p[0] = (Uint8)color;
+                pixel_p[1] = (Uint8)(color >> 8);
+                pixel_p[2] = (Uint8)(color >> 16);
+#else
+                pixel_p[0] = (Uint8)(color >> 16);
+                pixel_p[1] = (Uint8)(color >> 8);
+                pixel_p[2] = (Uint8)color;
+#endif
                 pixel_p += stride1;
             }
             break;
@@ -1620,8 +1617,7 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
 
         if (size == 0) {
             /* array[,], array[()] ... */
-            Py_INCREF(array);
-            return (PyObject *)array;
+            return Py_NewRef(array);
         }
         if (size > 2 || (size == 2 && !dim1)) {
             return RAISE(PyExc_IndexError, "too many indices for the array");
@@ -1671,8 +1667,7 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
                                            ystop, ystep);
     }
     else if (op == Py_Ellipsis) {
-        Py_INCREF(array);
-        return (PyObject *)array;
+        return Py_NewRef(array);
     }
     else if (PySlice_Check(op)) {
         /* A slice */
