@@ -32,3 +32,9 @@ Removed the `filename` argument and added `get_debug_info` to get the raw string
 
 ### `__contains__` (`value in rect`)
 Removed the undocumented `__contains__` functionality to check if one rect is completely inside another rect. Use the `contains()` method instead. (The original behavior of checking if the value is a coordinate or dimension is preserved.)
+
+## `pygame.sprite`
+
+### `Sprite`
+Removed property getters and setters of `Sprite.image` and `Sprite.rect`. \
+`Sprite.image` and `Sprite.rect` are no longer initialized to and typed as `None`.
