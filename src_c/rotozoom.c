@@ -28,9 +28,6 @@ typedef struct tColorRGBA {
 #ifndef MAX
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
-#ifndef M_PI
-#define M_PI 3.141592654
-#endif
 
 /*
 
@@ -428,7 +425,7 @@ rotozoomSurfaceSizeTrig(int width, int height, double angle, double zoom,
     /*
      * Determine destination width and height by rotating a centered source box
      */
-    radangle = angle * (M_PI / 180.0);
+    radangle = DEG2RAD(angle);
     *sanglezoom = sin(radangle);
     *canglezoom = cos(radangle);
     *sanglezoom *= zoom;
