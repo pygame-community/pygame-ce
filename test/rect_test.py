@@ -30,6 +30,13 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(3, r.width)
         self.assertEqual(4, r.height)
 
+    def testConstructionNoKwarg(self):
+        with self.assertRaises(TypeError) as ctx:
+            Rect(left=1, top=2, width=3, height=4)
+        self.assertEqual(
+            str(ctx.exception), "Rect init does not accept keyword arguments"
+        )
+
     def testCalculatedAttributes(self):
         r = Rect(1, 2, 3, 4)
 
