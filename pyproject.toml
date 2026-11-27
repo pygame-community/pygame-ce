@@ -127,6 +127,7 @@ repair-wheel-command = ""
 exclude = [
   "buildconfig/*.py",
   "buildconfig/stubs/pygame/typing.pyi",
+  "buildconfig/stubs/pygame/_data_classes.pyi",
   "docs/reST/",
 ]
 

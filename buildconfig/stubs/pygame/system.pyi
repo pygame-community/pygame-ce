@@ -3,19 +3,9 @@
 .. versionadded:: 2.2.0
 """
 
-from dataclasses import dataclass
 from typing import TypedDict
 
-@dataclass(frozen=True)
-class PowerState:
-    battery_percent: int | None
-    battery_seconds: int | None
-    on_battery: bool
-    no_battery: bool
-    charging: bool
-    charged: bool
-    plugged_in: bool
-    has_battery: bool
+from pygame._data_classes import PowerState as PowerState
 
 class _InstructionSets(TypedDict):
     ALTIVEC: bool
