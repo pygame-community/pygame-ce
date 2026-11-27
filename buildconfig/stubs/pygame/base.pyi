@@ -2,6 +2,9 @@ from collections.abc import Callable
 from typing import Any
 
 __version__: str
+__branch_name__: str
+__built_on_ci__: bool
+__commit_hash__: str
 
 class error(RuntimeError): ...
 class BufferError(Exception): ...
