@@ -63,10 +63,14 @@ jobs:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
         include:
-          # for now, the x86 and x86_64 deps produced here are not used in our
-          # release wheels that the above build step produces.
-          - { winarch: x86_64, march: x86_64, msystem: MINGW64, os: windows-2022 }
-          - { winarch: x86, march: i686, msystem: MINGW32, os: windows-2022 }
+          # Previously this block had mingw64 and mingw32 msystem builds to prepare
+          # for unified dep build system, even though the deps produced for them
+          # were not used in our release wheels. Mingw64 and mingw32 were deprecated
+          # and starting to break,
+          # (https://www.msys2.org/news/#2026-10-24-mingw64-deprecation-update)
+          # So we've moved over to UCRT64 for 64 bit. There is no replacement for
+          # 32 bit.
+          - { winarch: x86_64, march: ucrt-x86_64, msystem: UCRT64, os: windows-2022 }
           - { winarch: aarch64, march: clang-aarch64, msystem: CLANGARM64, os: windows-11-arm }
 
     steps:
@@ -173,7 +177,6 @@ jobs:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
         include:
-          - { winarch: x86_64, sys: mingw64, env: x86_64, os: windows-latest }
           - { winarch: x86_64, sys: ucrt64,  env: ucrt-x86_64, os: windows-latest }
           - { winarch: x86_64, sys: clang64, env: clang-x86_64, os: windows-latest }
           - { winarch: aarch64, sys: clangarm64, env: clang-aarch64, os: windows-11-arm }

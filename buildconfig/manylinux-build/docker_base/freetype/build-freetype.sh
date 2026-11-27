@@ -3,14 +3,11 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-FREETYPE="freetype-2.14.3"
-HARFBUZZ_VER=14.3.0
+FREETYPE="freetype-2.15.0"
+HARFBUZZ_VER=15.1.0
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
-# Savannah seems to be broken right now
-#curl -sL --retry 10 https://download.savannah.gnu.org/releases/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
-# Replacing temporarily with an artifact hosted on our end
-curl -sL --retry 10 https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/freetype-2.14.3.tar.gz > freetype-2.14.3.tar.gz
+curl -sL --retry 10 https://download.savannah.gnu.org/releases/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
 
 curl -sL --retry 10 https://github.com/harfbuzz/harfbuzz/releases/download/${HARFBUZZ_VER}/${HARFBUZZ_NAME}.tar.xz > ${HARFBUZZ_NAME}.tar.xz
 sha512sum -c freetype.sha512
