@@ -453,6 +453,41 @@ class WindowTypeTest(unittest.TestCase):
         window = pygame.Window()
         self.assertIsInstance(window.handle, int)
 
+    @unittest.skipIf(
+        SDL < (3, 4, 0), "progress_state and progress_value require SDL 3.4.0+"
+    )
+    def test_progress_state_and_value(self):
+        window = pygame.Window()
+        self.assertIsInstance(window.progress_state, int)
+        self.assertIsInstance(window.progress_value, float)
+
+        self.assertEqual(window.progress_state, pygame.PROGRESS_STATE_NONE)
+        self.assertEqual(window.progress_value, 0.0)
+
+        try:
+            window.progress_state = pygame.PROGRESS_STATE_INDETERMINATE
+            self.assertEqual(window.progress_state, pygame.PROGRESS_STATE_INDETERMINATE)
+
+            window.progress_value = 0.5
+            self.assertEqual(window.progress_value, 0.5)
+
+            window.progress_state = pygame.PROGRESS_STATE_NONE
+            window.progress_value = 0.2
+
+            window.progress_value = 1.5
+            self.assertEqual(window.progress_value, 1.0)
+        except pygame.error:
+            ...
+
+        with self.assertRaises(TypeError):
+            window.progress_state = "paused"
+        with self.assertRaises(TypeError):
+            window.progress_state = 1.5
+        with self.assertRaises(TypeError):
+            window.progress_value = "100%"
+        with self.assertRaises(pygame.error):
+            window.progress_state = -1
+
     def tearDown(self):
         self.win.destroy()
 
