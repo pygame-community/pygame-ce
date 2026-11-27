@@ -788,18 +788,30 @@ class AudioInternals:
 
         The objects are responsible for marking themselves as invalid upon any
         attempted uses.
+
+        Like in _sdl3_mixer, the weak collections are drained or snapshotted
+        rather than iterated directly, since another thread (such as a mixer
+        Track's stopped callback) could add to them meanwhile.
         """
 
-        for stream in self._audio_streams:
+        while True:
+            try:
+                stream = self._audio_streams.pop()
+            except KeyError:  # empty
+                break
             stream._destroy()
 
-        for device in self._id_to_device.values():
+        for device in list(self._id_to_device.values()):
             # These DEFAULT_ handles do not need to be cleaned up,
             # because they are not dynamic
             if device not in (DEFAULT_PLAYBACK_DEVICE, DEFAULT_RECORDING_DEVICE):
                 device._destroy()
 
-        for device in self._logical_devices:
+        while True:
+            try:
+                device = self._logical_devices.pop()
+            except KeyError:  # empty
+                break
             device._destroy()
 
         self._id_to_device.clear()
@@ -807,8 +819,6 @@ class AudioInternals:
         self._id_to_device[DEFAULT_RECORDING_DEVICE._state.id] = (
             DEFAULT_RECORDING_DEVICE
         )
-        self._audio_streams.clear()
-        self._logical_devices.clear()
 
 
 _internals = AudioInternals()

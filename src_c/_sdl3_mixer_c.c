@@ -1029,8 +1029,12 @@ pg_track_obj_dealloc(PGTrackObject *self)
         // return, so self stays valid for it.
         PG_NOGIL(MIX_DestroyTrack(track));
     }
-    Py_CLEAR(self->mixer_obj);
+    // source_obj must go before mixer_obj. Releasing the Mixer can shut down
+    // the SDL audio subsystem (if audio.quit() was already called), which
+    // destroys any SDL stream still held by an AudioStream state in
+    // source_obj. Releasing the state afterwards would then destroy it again.
     Py_CLEAR(self->source_obj);
+    Py_CLEAR(self->mixer_obj);
     PyTypeObject *tp = Py_TYPE(self);
     freefunc free = PyType_GetSlot(tp, Py_tp_free);
     free(self);

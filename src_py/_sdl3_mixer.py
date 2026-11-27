@@ -62,24 +62,27 @@ class _MixerInternals:
         destroys all of its own tracks internally (and, unlike MIX_Audio,
         tracks are not reference-counted), so destroying a Track after its
         Mixer is already gone would double free it.
+
+        Destroying a Track releases the GIL, so other Tracks' stopped callbacks
+        can run meanwhile and create new objects. So each set is drained
+        until empty, rather than iterated directly (which raises if the set
+        changes size) or iterated over a snapshot (which would miss a new
+        Track, leaving MIX_DestroyMixer to free it out from under its Python
+        object).
         """
 
-        for track in self._tracks:
-            track._destroy()
-
-        for audio_obj in self._audios:
-            audio_obj._destroy()
-
-        for decoder in self._audio_decoders:
-            decoder._destroy()
-
-        for mixer in self._mixers:
-            mixer._destroy()
-
-        self._tracks.clear()
-        self._audios.clear()
-        self._audio_decoders.clear()
-        self._mixers.clear()
+        for objects in (
+            self._tracks,
+            self._audios,
+            self._audio_decoders,
+            self._mixers,
+        ):
+            while True:
+                try:
+                    obj = objects.pop()
+                except KeyError:  # empty
+                    break
+                obj._destroy()
 
 
 _internals = _MixerInternals()
