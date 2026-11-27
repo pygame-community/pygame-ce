@@ -663,7 +663,8 @@ texture_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_Texture *texture;
     SDL_Surface *surf = NULL;
     static char *keywords[] = {"renderer", "surface", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", keywords, &renderer,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", keywords,
+                                     &pgRenderer_Type, &renderer,
                                      &pgSurface_Type, &surfobj)) {
         return NULL; /* Exception already set. */
     }
@@ -1154,12 +1155,10 @@ texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs)
 static void
 texture_dealloc(pgTextureObject *self, PyObject *_null)
 {
-    if (self->renderer) {
-        Py_DECREF(self->renderer);
-    }
     if (self->texture) {
         SDL_DestroyTexture(self->texture);
     }
+    Py_CLEAR(self->renderer);
     if (self->weakreflist) {
         PyObject_ClearWeakRefs((PyObject *)self);
     }

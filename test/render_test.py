@@ -334,6 +334,9 @@ class TextureTest(unittest.TestCase):
         surface = pygame.Surface(surf_size)
         texture2 = _render.Texture.from_surface(self.renderer, surface)
         self.assertEqual(surf_size, (texture2.width, texture2.height))
+        # Same missing Renderer type check as issue #3745
+        with self.assertRaises(TypeError):
+            _render.Texture.from_surface("renderer", surface)
 
     def test_draw_triangle(self):
         texture2 = self.create_texture_from_surface()
@@ -511,6 +514,7 @@ class TextureTest(unittest.TestCase):
         for x in range(25, 75):
             self.assertEqual(pygame.Color(80, 120, 160, 255), result.get_at((x, 50)))
 
+    @unittest.skipIf(IS_PYPY, "PyPy doesn't have sys.getrefcount")
     def test_renderer_refcount_on_texture_dealloc(self):
         # Regression test for https://github.com/pygame-community/pygame-ce/pull/4038#pullrequestreview-5916322289
         # Previously, texture_dealloc didn't decref the renderer that it had incref'd during initialization.
