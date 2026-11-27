@@ -1,6 +1,7 @@
 #################################### IMPORTS ###################################
 
 
+import random
 import types
 import typing
 import unittest
@@ -386,6 +387,69 @@ class SpriteCollideTest(unittest.TestCase):
         crashed = pygame.sprite.groupcollide(self.ag, self.ag2, False, False)
 
         self.assertDictEqual(expected_dict, crashed)
+
+    def test_groupcollide__dokillb_skips_killed_sprites(self):
+        # A sprite killed by an earlier groupa sprite must not be reported
+        # as colliding with later groupa sprites.
+        s4 = sprite.Sprite(self.ag)
+        s4.image = pygame.Surface((50, 10), pygame.SRCALPHA, 32)
+        s4.rect = s4.image.get_rect()
+
+        crashed = pygame.sprite.groupcollide(self.ag, self.ag2, False, True)
+
+        self.assertDictEqual({self.s1: [self.s2]}, crashed)
+        self.assertNotIn(self.s2, self.ag2)
+        self.assertIn(self.s3, self.ag2)
+
+    def test_groupcollide__matches_collide_rect_callback(self):
+        # The default (no callback) path must give the same result as
+        # explicitly passing collide_rect, for random layouts mixing Rect and
+        # FRect, zero-sized rects, dense overlaps and groupa being groupb.
+        rng = random.Random(0)
+
+        def make_groups(seed, same_group):
+            r = random.Random(seed)
+            groups = []
+            for _ in range(1 if same_group else 2):
+                group = sprite.Group()
+                for _ in range(r.randrange(1, 40)):
+                    spr = sprite.Sprite(group)
+                    rect_type = r.choice((pygame.Rect, pygame.FRect))
+                    spr.rect = rect_type(
+                        r.randrange(150),
+                        r.randrange(150),
+                        r.randrange(40),
+                        r.randrange(40),
+                    )
+                groups.append(group)
+            if same_group:
+                groups.append(groups[0])
+            return groups
+
+        for _ in range(100):
+            seed = rng.random()
+            for dokilla in (False, True):
+                for dokillb in (False, True):
+                    for same_group in (False, True):
+                        results = []
+                        for collided in (None, sprite.collide_rect):
+                            ga, gb = make_groups(seed, same_group)
+                            index_a = {s: i for i, s in enumerate(ga.sprites())}
+                            index_b = {s: i for i, s in enumerate(gb.sprites())}
+                            crashed = sprite.groupcollide(
+                                ga, gb, dokilla, dokillb, collided
+                            )
+                            results.append(
+                                (
+                                    {
+                                        index_a[k]: [index_b[s] for s in v]
+                                        for k, v in crashed.items()
+                                    },
+                                    sorted(index_a[s] for s in ga),
+                                    sorted(index_b[s] for s in gb),
+                                )
+                            )
+                        self.assertEqual(results[0], results[1])
 
     def test_groupcollide__with_collided_callback(self):
         collided_callback_true = lambda spr_a, spr_b: True
