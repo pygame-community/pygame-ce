@@ -457,6 +457,10 @@ from collections.abc import Container, Collection
 
 Container.register(Color)
 Collection.register(Color)
+Container.register(Vector2)
+Collection.register(Vector2)
+Container.register(Vector3)
+Collection.register(Vector3)
 
 # cleanup namespace
-del pygame, os, sys, MissingModule, copyreg, packager_imports
+del pygame, os, sys, MissingModule, copyreg, packager_imports, Collection, Container
