@@ -583,6 +583,9 @@ alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
     __m128i unpacked_alpha, pixels_src, pixels_dst, batch_a_dst;
     __m128i *srcp128, *dstp128;
     __m128i mm_rgb_mask = _mm_set1_epi32(0x00FFFFFF);
+    /* The destination's own alpha bits, kept through the blend: zero when it
+     * has no alpha channel (RGBX), so that case is unchanged. */
+    __m128i mm_dst_alpha_mask = _mm_set1_epi32((int)info->dst->Amask);
     __m128i mm_zero = _mm_setzero_si128();
 
     while (height--) {
@@ -657,8 +660,10 @@ alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
                     /* ==== combine batches and store ==== */
 
                     sub_dst = _mm_packus_epi16(batch_a_dst, sub_dst);
-                    /* zero out alpha */
-                    sub_dst = _mm_and_si128(sub_dst, mm_rgb_mask);
+                    /* keep the destination's alpha (zero for RGBX) */
+                    sub_dst = _mm_or_si128(
+                        _mm_and_si128(sub_dst, mm_rgb_mask),
+                        _mm_and_si128(pixels_dst, mm_dst_alpha_mask));
                     _mm_storeu_si128(dstp128, sub_dst);
 
                     srcp128++;
@@ -697,8 +702,9 @@ alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
             /* pack everything back into a pixel */
             sub_dst = _mm_packus_epi16(sub_dst, mm_zero);
             sub_dst = _mm_and_si128(sub_dst, mm_rgb_mask);
-            /* reset alpha to 0 */
-            *dstp32 = _mm_cvtsi128_si32(sub_dst);
+            /* keep the destination's alpha (zero for RGBX) */
+            *dstp32 = (Uint32)_mm_cvtsi128_si32(sub_dst) |
+                      (*dstp32 & info->dst->Amask);
 
             srcp32++;
             dstp32++;
