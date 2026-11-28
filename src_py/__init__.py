@@ -455,16 +455,19 @@ copyreg.pickle(Color, __color_reduce, __color_constructor)
 # register ABCs when using Python's default __contains__ via __iter__
 from collections.abc import Container, Collection
 
-Container.register(Color)
-Collection.register(Color)
-Container.register(Vector2)
-Collection.register(Vector2)
-Container.register(Vector3)
-Collection.register(Vector3)
-Container.register(Rect)
-Collection.register(Rect)
-Container.register(FRect)
-Collection.register(FRect)
+for cls in Color, Vector2, Vector3, Rect, FRect:
+    Container.register(cls)
+    Collection.register(cls)
 
 # cleanup namespace
-del pygame, os, sys, MissingModule, copyreg, packager_imports, Collection, Container
+del (
+    pygame,
+    os,
+    sys,
+    MissingModule,
+    copyreg,
+    packager_imports,
+    Collection,
+    Container,
+    cls,
+)
