@@ -33,23 +33,25 @@ get_decoders = _sdl3_mixer_c.get_decoders
 
 class _MixerInternals:
     def __init__(self) -> None:
-        # Used for object cleanup when quit() is called.
-        self._mixers = weakref.WeakSet()
-        self._tracks = weakref.WeakSet()
-        self._audios = weakref.WeakSet()
-        self._audio_decoders = weakref.WeakSet()
+        # Used for object cleanup when quit() is called. Keyed by id() rather
+        # than WeakSets, so objects are tracked by identity even if a subclass
+        # defines __eq__ (or is unhashable).
+        self._mixers = weakref.WeakValueDictionary()
+        self._tracks = weakref.WeakValueDictionary()
+        self._audios = weakref.WeakValueDictionary()
+        self._audio_decoders = weakref.WeakValueDictionary()
 
     def add_mixer_ref(self, mixer: "Mixer") -> None:
-        self._mixers.add(mixer)
+        self._mixers[id(mixer)] = mixer
 
     def add_track_ref(self, track: "Track") -> None:
-        self._tracks.add(track)
+        self._tracks[id(track)] = track
 
     def add_audio_ref(self, audio_obj: "Audio") -> None:
-        self._audios.add(audio_obj)
+        self._audios[id(audio_obj)] = audio_obj
 
     def add_audio_decoder_ref(self, decoder: "AudioDecoder") -> None:
-        self._audio_decoders.add(decoder)
+        self._audio_decoders[id(decoder)] = decoder
 
     def destroy_all_dynamic_objects(self) -> None:
         """Before quitting the mixer subsystem, we need to invalidate our
@@ -64,9 +66,9 @@ class _MixerInternals:
         Mixer is already gone would double free it.
 
         Destroying a Track releases the GIL, so other Tracks' stopped callbacks
-        can run meanwhile and create new objects. So each set is drained
-        until empty, rather than iterated directly (which raises if the set
-        changes size) or iterated over a snapshot (which would miss a new
+        can run meanwhile and create new objects. So each collection is
+        drained until empty, rather than iterated directly (which raises if
+        it changes size) or iterated over a snapshot (which would miss a new
         Track, leaving MIX_DestroyMixer to free it out from under its Python
         object).
         """
@@ -79,7 +81,7 @@ class _MixerInternals:
         ):
             while True:
                 try:
-                    obj = objects.pop()
+                    _, obj = objects.popitem()
                 except KeyError:  # empty
                     break
                 obj._destroy()

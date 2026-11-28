@@ -741,9 +741,11 @@ class AudioInternals:
         self._id_to_device = weakref.WeakValueDictionary()
 
         # Exclusively used for AudioStream cleanup when quit() is called.
-        self._audio_streams = weakref.WeakSet()
+        # Keyed by id() rather than WeakSets, so objects are tracked by
+        # identity even if a subclass defines __eq__ (or is unhashable).
+        self._audio_streams = weakref.WeakValueDictionary()
         # Or for LogicalAudioDevice cleanup.
-        self._logical_devices = weakref.WeakSet()
+        self._logical_devices = weakref.WeakValueDictionary()
 
     def create_format(self, name: str, value: int) -> AudioFormat:
         audio_format = object.__new__(AudioFormat)
@@ -774,10 +776,10 @@ class AudioInternals:
         return device
 
     def add_stream_ref(self, stream: AudioStream) -> None:
-        self._audio_streams.add(stream)
+        self._audio_streams[id(stream)] = stream
 
     def add_logical_device_ref(self, device: AudioDevice) -> None:
-        self._logical_devices.add(device)
+        self._logical_devices[id(device)] = device
 
     def destroy_all_dynamic_objects(self) -> None:
         """Before quitting the SDL audio subsystem, we need to invalidate our
@@ -797,7 +799,7 @@ class AudioInternals:
 
         while True:
             try:
-                stream = self._audio_streams.pop()
+                _, stream = self._audio_streams.popitem()
             except KeyError:  # empty
                 break
             stream._destroy()
@@ -810,7 +812,7 @@ class AudioInternals:
 
         while True:
             try:
-                device = self._logical_devices.pop()
+                _, device = self._logical_devices.popitem()
             except KeyError:  # empty
                 break
             device._destroy()
