@@ -437,6 +437,7 @@ class AudioStream:
             raise TypeError(
                 f"AudioStream bind argument must be LogicalAudioDevice, received {type(device)}"
             )
+        device._check_valid()
 
         _base_audio.bind_audio_stream(device._state, self._state)
         self._device = device

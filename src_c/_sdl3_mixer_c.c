@@ -624,13 +624,13 @@ pg_audio_obj_dealloc(PGAudioObject *self)
 static PyObject *
 pg_audio_obj_destroy(PGAudioObject *self, PyObject *_null)
 {
-    // Private function for explicitly cleaning up the audio's native
-    // resources before the mixer subsystem is quit. Otherwise the
-    // destructor can run after the underlying MIX_Audio has already been
-    // freed by MIX_Quit(), causing a double free.
-    if (self->audio != NULL) {
-        MIX_DestroyAudio(self->audio);
-        self->audio = NULL;
+    // Explicitly frees the native audio before the mixer subsystem quits,
+    // since MIX_Quit() frees it too. Cleared first so reentrant access fails
+    // the validity check.
+    MIX_Audio *audio = self->audio;
+    self->audio = NULL;
+    if (audio != NULL) {
+        MIX_DestroyAudio(audio);
     }
     Py_RETURN_NONE;
 }
@@ -1869,13 +1869,13 @@ pg_audio_decoder_obj_dealloc(PGAudioDecoderObject *self)
 static PyObject *
 pg_audio_decoder_obj_destroy(PGAudioDecoderObject *self, PyObject *_null)
 {
-    // Private function for explicitly cleaning up the audio decoder's
-    // native resources before the mixer subsystem is quit. Otherwise the
-    // destructor can run after the underlying MIX_AudioDecoder has already
-    // been freed by MIX_Quit(), causing a double free.
-    if (self->audio_decoder != NULL) {
-        MIX_DestroyAudioDecoder(self->audio_decoder);
-        self->audio_decoder = NULL;
+    // Explicitly frees the native decoder before the mixer subsystem quits,
+    // since MIX_Quit() frees it too. Cleared first, since destroying it can
+    // call back into Python (closing a Python file object).
+    MIX_AudioDecoder *audio_decoder = self->audio_decoder;
+    self->audio_decoder = NULL;
+    if (audio_decoder != NULL) {
+        MIX_DestroyAudioDecoder(audio_decoder);
     }
     Py_RETURN_NONE;
 }
