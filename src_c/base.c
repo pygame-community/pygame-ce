@@ -2695,6 +2695,7 @@ PyInit_pygame_static()
 #undef pgRWops_IsFileObject
 #undef pgRWops_GetFileExtension
 #undef pgRWops_FromFileObject
+#undef pgRWops_FromFileObjectNoClose
 #undef pgRWops_FromObject
 
 #include "rwobject.c"

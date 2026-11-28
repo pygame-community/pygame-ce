@@ -111,7 +111,7 @@ _pg_is_exception_class(PyObject *obj, void **optr)
 }
 
 static int
-fetch_object_methods(pgRWHelper *helper, PyObject *obj)
+fetch_object_methods(pgRWHelper *helper, PyObject *obj, int fetch_close)
 {
     helper->read = helper->write = helper->seek = helper->tell =
         helper->close = NULL;
@@ -144,7 +144,7 @@ fetch_object_methods(pgRWHelper *helper, PyObject *obj)
             Py_CLEAR(helper->tell);
         }
     }
-    if (PyObject_HasAttrString(obj, "close")) {
+    if (fetch_close && PyObject_HasAttrString(obj, "close")) {
         helper->close = PyObject_GetAttrString(obj, "close");
         if (!PyCallable_Check(helper->close)) {
             Py_CLEAR(helper->close);
@@ -473,7 +473,7 @@ _pg_rw_close(SDL_RWops *context)
 }
 
 static SDL_RWops *
-pgRWops_FromFileObject(PyObject *obj)
+_pg_rwops_from_file_object(PyObject *obj, int fetch_close)
 {
     SDL_RWops *rw;
     pgRWHelper *helper;
@@ -486,7 +486,7 @@ pgRWops_FromFileObject(PyObject *obj)
     if (helper == NULL) {
         return (SDL_RWops *)PyErr_NoMemory();
     }
-    if (fetch_object_methods(helper, obj)) {
+    if (fetch_object_methods(helper, obj, fetch_close)) {
         PyMem_Free(helper);
         return NULL;
     }
@@ -541,6 +541,20 @@ pgRWops_FromFileObject(PyObject *obj)
 #endif
 
     return rw;
+}
+
+static SDL_RWops *
+pgRWops_FromFileObject(PyObject *obj)
+{
+    return _pg_rwops_from_file_object(obj, 1);
+}
+
+/* Like pgRWops_FromFileObject, but closing the returned RWops does not call
+ * close() on obj. Closing it still releases the references held to obj. */
+static SDL_RWops *
+pgRWops_FromFileObjectNoClose(PyObject *obj)
+{
+    return _pg_rwops_from_file_object(obj, 0);
 }
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -869,6 +883,7 @@ MODINIT_DEFINE(rwobject)
     c_api[2] = pg_EncodeFilePath;
     c_api[3] = pg_EncodeString;
     c_api[4] = pgRWops_FromFileObject;
+    c_api[5] = pgRWops_FromFileObjectNoClose;
     apiobj = encapsulate_api(c_api, "rwobject");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);
