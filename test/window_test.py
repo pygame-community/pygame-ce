@@ -453,6 +453,44 @@ class WindowTypeTest(unittest.TestCase):
         window = pygame.Window()
         self.assertIsInstance(window.handle, int)
 
+    @unittest.skipIf(SDL < (3, 0, 0), "(minimum|maximum)_aspect_ratio requires SDL3")
+    def test_aspect_ratio(self):
+        self.win = Window()
+
+        self.assertIsInstance(self.win.minimum_aspect_ratio, float)
+        self.assertIsInstance(self.win.maximum_aspect_ratio, float)
+
+        self.assertEqual(self.win.minimum_aspect_ratio, 0.0)
+        self.assertEqual(self.win.maximum_aspect_ratio, 0.0)
+
+        self.win.minimum_aspect_ratio = 1
+        self.win.maximum_aspect_ratio = 2.5
+        self.assertEqual(self.win.minimum_aspect_ratio, 1.0)
+        self.assertEqual(self.win.maximum_aspect_ratio, 2.5)
+
+        for kind in ("minimum", "maximum"):
+            attr_name = f"{kind}_aspect_ratio"
+            with self.assertRaises(TypeError):
+                setattr(self.win, attr_name, None)
+            with self.assertRaises(TypeError):
+                setattr(self.win, attr_name, "unlimited")
+            with self.assertRaises(ValueError):
+                setattr(self.win, attr_name, -1)
+            with self.assertRaises(ValueError):
+                setattr(self.win, attr_name, float("nan"))
+            with self.assertRaises(ValueError):
+                setattr(self.win, attr_name, float("inf"))
+            with self.assertRaises(ValueError):
+                setattr(self.win, attr_name, float("-inf"))
+
+        self.win.minimum_aspect_ratio = 1
+        with self.assertRaises(ValueError):
+            self.win.maximum_aspect_ratio = 0.5
+
+        self.win.maximum_aspect_ratio = 2
+        with self.assertRaises(ValueError):
+            self.win.minimum_aspect_ratio = 2.5
+
     def tearDown(self):
         self.win.destroy()
 
