@@ -1,7 +1,7 @@
 import math
 import platform
 import unittest
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Container, Hashable, Iterable, Sequence
 
 import pygame.math
 from pygame.math import Vector2, Vector3
@@ -588,15 +588,12 @@ class Vector2TypeTest(unittest.TestCase):
     def test_contains(self):
         c = Vector2(0, 1)
 
-        # call __contains__ explicitly to test that it is defined
-        self.assertTrue(c.__contains__(0))
         self.assertTrue(0 in c)
         self.assertTrue(1 in c)
         self.assertTrue(2 not in c)
-        self.assertFalse(c.__contains__(2))
 
-        self.assertRaises(TypeError, lambda: "string" in c)
-        self.assertRaises(TypeError, lambda: 3 + 4j in c)
+        self.assertFalse("string" in c)
+        self.assertFalse(3 + 4j in c)
 
     def testAdd(self):
         v3 = self.v1 + self.v2
@@ -1278,9 +1275,11 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertRaises(TypeError, v.project, other)
 
     def test_collection_abc(self):
-        v = Vector2(3, 4)
-        self.assertTrue(isinstance(v, Collection))
-        self.assertFalse(isinstance(v, Sequence))
+        self.assertTrue(issubclass(Vector2, Container))
+        self.assertTrue(issubclass(Vector2, Collection))
+        self.assertTrue(issubclass(Vector2, Iterable))
+        self.assertFalse(issubclass(Vector2, Sequence))
+        self.assertFalse(issubclass(Vector2, Hashable))
 
     def test_clamp_mag_v2_max(self):
         v1 = Vector2(7, 2)
@@ -1740,16 +1739,13 @@ class Vector3TypeTest(unittest.TestCase):
     def test_contains(self):
         c = Vector3(0, 1, 2)
 
-        # call __contains__ explicitly to test that it is defined
-        self.assertTrue(c.__contains__(0))
         self.assertTrue(0 in c)
         self.assertTrue(1 in c)
         self.assertTrue(2 in c)
         self.assertTrue(3 not in c)
-        self.assertFalse(c.__contains__(10))
 
-        self.assertRaises(TypeError, lambda: "string" in c)
-        self.assertRaises(TypeError, lambda: 3 + 4j in c)
+        self.assertFalse("string" in c)
+        self.assertFalse(3 + 4j in c)
 
     def testAdd(self):
         v3 = self.v1 + self.v2
@@ -3133,9 +3129,11 @@ class Vector3TypeTest(unittest.TestCase):
         self.assertRaises(TypeError, v.project, other)
 
     def test_collection_abc(self):
-        v = Vector3(3, 4, 5)
-        self.assertTrue(isinstance(v, Collection))
-        self.assertFalse(isinstance(v, Sequence))
+        self.assertTrue(issubclass(Vector3, Container))
+        self.assertTrue(issubclass(Vector3, Collection))
+        self.assertTrue(issubclass(Vector3, Iterable))
+        self.assertFalse(issubclass(Vector3, Sequence))
+        self.assertFalse(issubclass(Vector3, Hashable))
 
     def test_clamp_mag_v3_max(self):
         v1 = Vector3(7, 2, 2)

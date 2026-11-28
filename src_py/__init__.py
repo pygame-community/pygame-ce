@@ -451,5 +451,23 @@ def __color_reduce(c):
 
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
+
+# register ABCs when using Python's default __contains__ via __iter__
+from collections.abc import Container, Collection
+
+for cls in Color, Vector2, Vector3, Rect, FRect:
+    Container.register(cls)
+    Collection.register(cls)
+
 # cleanup namespace
-del pygame, os, sys, MissingModule, copyreg, packager_imports
+del (
+    pygame,
+    os,
+    sys,
+    MissingModule,
+    copyreg,
+    packager_imports,
+    Collection,
+    Container,
+    cls,
+)

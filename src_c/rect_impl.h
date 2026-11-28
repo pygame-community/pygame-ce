@@ -143,9 +143,6 @@
 #ifndef RectExport_contains
 #error RectExport_contains needs to be defined
 #endif
-#ifndef RectExport_containsSeq
-#error RectExport_containsSeq needs to be defined
-#endif
 #ifndef RectExport_clamp
 #error RectExport_clamp needs to be defined
 #endif
@@ -515,8 +512,6 @@ static PyObject *
 RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
 RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
-static int
-RectExport_containsSeq(RectObject *self, PyObject *arg);
 static PyObject *
 RectExport_clamp(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
@@ -1985,33 +1980,6 @@ RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     return PyBool_FromLong(result);
 }
 
-static int
-RectExport_containsSeq(RectObject *self, PyObject *arg)
-{
-    /* Use same primitive type if possible. */
-    if (PythonNumberCheck(arg)) {
-        PrimitiveType value = (PrimitiveType)PythonNumberAsPrimitiveType(arg);
-        if (PyErr_Occurred()) {
-            PyErr_Clear();
-            return 0;
-        }
-        return value == self->r.x || value == self->r.y ||
-               value == self->r.w || value == self->r.h;
-    }
-
-    /* Allow FRect to accept int and Rect to accept float. */
-    float value;
-    if (pg_FloatFromObj(arg, &value)) {
-        return value == self->r.x || value == self->r.y ||
-               value == self->r.w || value == self->r.h;
-    }
-
-    PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
-                                     ">' requires number"
-                                     " as left operand");
-    return -1;
-}
-
 static PyObject *
 RectExport_clamp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
@@ -2966,7 +2934,6 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_RectNew4
 #undef RectExport_Normalize
 #undef RectExport_contains
-#undef RectExport_containsSeq
 #undef RectExport_clamp
 #undef RectExport_fit
 #undef RectExport_clampIp

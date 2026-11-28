@@ -2,7 +2,7 @@ import math
 import operator
 import platform
 import unittest
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Container, Hashable, Iterable, Sequence, Sized
 
 import pygame
 from pygame.colordict import THECOLORS
@@ -1315,15 +1315,13 @@ class ColorTypeTest(unittest.TestCase):
     def test_color_contains(self):
         c = pygame.Color(50, 60, 70)
 
-        # call __contains__ explicitly to test that it is defined
-        self.assertTrue(c.__contains__(50))
         self.assertTrue(60 in c)
         self.assertTrue(70 in c)
         self.assertFalse(100 in c)
-        self.assertFalse(c.__contains__(10))
 
-        self.assertRaises(TypeError, lambda: "string" in c)
-        self.assertRaises(TypeError, lambda: 3.14159 in c)
+        # See https://github.com/pygame-community/pygame-ce/issues/3981
+        self.assertFalse("string" in c)
+        self.assertFalse(3.14159 in c)
 
     def test_grayscale(self):
         Color = pygame.color.Color
@@ -1533,9 +1531,11 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(len(c), 4)
 
     def test_collection_abc(self):
-        c = pygame.Color(64, 70, 75, 255)
-        self.assertTrue(isinstance(c, Collection))
-        self.assertFalse(isinstance(c, Sequence))
+        self.assertTrue(issubclass(pygame.color.Color, Collection))
+        self.assertTrue(issubclass(pygame.color.Color, Container))
+        self.assertTrue(issubclass(pygame.color.Color, Iterable))
+        self.assertFalse(issubclass(pygame.color.Color, Sequence))
+        self.assertFalse(issubclass(pygame.color.Color, Hashable))
 
 
 class SubclassTest(unittest.TestCase):
@@ -1642,9 +1642,11 @@ class SubclassTest(unittest.TestCase):
         self.assertRaises(AttributeError, getattr, mc2, "an_attribute")
 
     def test_collection_abc(self):
-        mc1 = self.MyColor(64, 70, 75, 255)
-        self.assertTrue(isinstance(mc1, Collection))
-        self.assertFalse(isinstance(mc1, Sequence))
+        self.assertTrue(issubclass(self.MyColor, Collection))
+        self.assertTrue(issubclass(self.MyColor, Container))
+        self.assertTrue(issubclass(self.MyColor, Iterable))
+        self.assertFalse(issubclass(self.MyColor, Sequence))
+        self.assertFalse(issubclass(self.MyColor, Hashable))
 
 
 ################################################################################

@@ -32,3 +32,9 @@ Removed the `filename` argument and added `get_debug_info` to get the raw string
 
 ### `__contains__` (`value in rect`)
 Removed the undocumented `__contains__` functionality to check if one rect is completely inside another rect. Use the `contains()` method instead. (The original behavior of checking if the value is a coordinate or dimension is preserved.)
+
+## `__contains__` of `Color`, `Vector2`, `Vector3`, `Rect`, `FRect`
+Removed the explicit `__contains__` methods; Python will now fall back to using `__iter__` when using the `in` operator on these. \
+`__contains__` can no longer be accessed directly as a method. \
+The membership operation for these classes will no longer raise `TypeError` on objects of unexpected types. \
+Certain equivalencies such as between whole number floats and integers now result in `True` for membership checking.

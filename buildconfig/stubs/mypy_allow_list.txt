@@ -28,6 +28,11 @@ pygame\._sdl2\.mixer
 pygame\.sysfont.*
 pygame\.docs.*
 
+# __contains__ uses fallback via __iter__
+pygame\.color\.Color\.__contains__
+pygame\.Color\.__contains__
+# note: stubtest does not catch inherited _GenericVector __contains__
+
 # Remove me when we're checking stubs for SDL3!
 pygame\._audio
 pygame\._sdl3_mixer
