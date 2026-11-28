@@ -1,6 +1,6 @@
 import math
 import unittest
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Container, Hashable, Iterable, Sequence
 
 from pygame import FRect, Rect as IRect, Vector2
 from pygame.tests import test_utils
@@ -810,11 +810,19 @@ class RectTypeTest(unittest.TestCase):
 
         rect = Rect(16777217, 0, 1, 1)
         self.assertTrue(16777217 in rect, "r does not contain 16777217")
+        self.assertTrue(16777217.0 in rect, "r does not contain 16777217.0")
         self.assertFalse(16777216 in rect, "r contains 16777216")
+        self.assertFalse(16777216.0 in rect, "r contains 16777216.0")
 
-        self.assertRaises(TypeError, lambda: Rect(0, 0, 1, 2) in Rect(1, 2, 3, 4))
-        self.assertRaises(TypeError, lambda: "string" in Rect(0, 0, 1, 2))
-        self.assertRaises(TypeError, lambda: 4 + 3j in Rect(0, 0, 1, 2))
+        rect = Rect(16777216, 0, 1, 1)
+        self.assertTrue(16777216 in rect, "r does not contain 16777216")
+        self.assertTrue(16777216.0 in rect, "r does not contain 16777216.0")
+        self.assertFalse(16777217 in rect, "r contains 16777217")
+        self.assertFalse(16777217.0 in rect, "r contains 16777217.0")
+
+        self.assertFalse(Rect(0, 0, 1, 2) in Rect(1, 2, 3, 4))
+        self.assertFalse("string" in Rect(0, 0, 1, 2))
+        self.assertFalse(4 + 3j in Rect(0, 0, 1, 2))
 
     def test_collidepoint(self):
         r = Rect(1, 2, 3, 4)
@@ -1856,7 +1864,12 @@ class RectTypeTest(unittest.TestCase):
 
         # Dict to check collisions with values.
         rect_values = dict(
-            (collide_item1, collide_item2, no_collide_item1, no_collide_item2)
+            (
+                collide_item1,
+                collide_item2,
+                no_collide_item1,
+                no_collide_item2,
+            )
         )
         value_collide_items = (collide_item1, collide_item2)
 
@@ -1911,7 +1924,11 @@ class RectTypeTest(unittest.TestCase):
 
         # Dict to check collisions with values.
         no_collide_rect_values = dict(
-            (no_collide_item1, no_collide_item2, no_collide_item3)
+            (
+                no_collide_item1,
+                no_collide_item2,
+                no_collide_item3,
+            )
         )
 
         # Dict to check collisions with keys.
@@ -2117,7 +2134,12 @@ class RectTypeTest(unittest.TestCase):
 
         # Dict to check collisions with values.
         rect_values = dict(
-            (collide_item1, collide_item2, no_collide_item1, no_collide_item2)
+            (
+                collide_item1,
+                collide_item2,
+                no_collide_item1,
+                no_collide_item2,
+            )
         )
         value_collide_items = [collide_item1, collide_item2]
 
@@ -2173,7 +2195,11 @@ class RectTypeTest(unittest.TestCase):
 
         # Dict to check collisions with values.
         no_collide_rect_values = dict(
-            (no_collide_item1, no_collide_item2, no_collide_item3)
+            (
+                no_collide_item1,
+                no_collide_item2,
+                no_collide_item3,
+            )
         )
 
         # Dict to check collisions with keys.
@@ -2971,9 +2997,11 @@ class RectTypeTest(unittest.TestCase):
             del r[...]
 
     def test_collection_abc(self):
-        r = Rect(64, 70, 75, 30)
-        self.assertTrue(isinstance(r, Collection))
-        self.assertFalse(isinstance(r, Sequence))
+        self.assertTrue(issubclass(Rect, Container))
+        self.assertTrue(issubclass(Rect, Collection))
+        self.assertTrue(issubclass(Rect, Iterable))
+        self.assertFalse(issubclass(Rect, Sequence))
+        self.assertFalse(issubclass(Rect, Hashable))
 
     def test_construction_no_args(self):
         r = Rect()
@@ -3106,9 +3134,15 @@ class FRectTypeTest(RectTypeTest):
         self.assertTrue(2.0 in FRect(0, 0, 1, 2), "r does not contain 2.0")
         self.assertFalse(1.5 in FRect(0, 0, 1, 2), "r contains 1.5")
 
-        self.assertRaises(TypeError, lambda: FRect(0, 0, 1, 2) in FRect(1, 2, 3, 4))
-        self.assertRaises(TypeError, lambda: "string" in FRect(0, 0, 1, 2))
-        self.assertRaises(TypeError, lambda: 4 + 3j in FRect(0, 0, 1, 2))
+        rect = FRect(16777216.0, 0, 1, 1)
+        self.assertTrue(16777216 in rect, "r does not contain 16777216")
+        self.assertTrue(16777216.0 in rect, "r does not contain 16777216.0")
+        self.assertFalse(16777217 in rect, "r contains 16777217")
+        self.assertFalse(16777217.0 in rect, "r contains 16777217.0")
+
+        self.assertFalse(FRect(0, 0, 1, 2) in FRect(1, 2, 3, 4))
+        self.assertFalse("string" in FRect(0, 0, 1, 2))
+        self.assertFalse(4 + 3j in FRect(0, 0, 1, 2))
 
     def testCalculatedAttributes(self):
         r = FRect(1.0, 2.0, 3.0, 4.0)
@@ -3551,9 +3585,11 @@ class SubclassTest(unittest.TestCase):
         self.assertRaises(AttributeError, getattr, mr2, "an_attribute")
 
     def test_collection_abc(self):
-        mr1 = self.MyRect(64, 70, 75, 30)
-        self.assertTrue(isinstance(mr1, Collection))
-        self.assertFalse(isinstance(mr1, Sequence))
+        self.assertTrue(issubclass(self.MyRect, Container))
+        self.assertTrue(issubclass(self.MyRect, Collection))
+        self.assertTrue(issubclass(self.MyRect, Iterable))
+        self.assertFalse(issubclass(self.MyRect, Sequence))
+        self.assertFalse(issubclass(self.MyRect, Hashable))
 
     def test_construction_no_args(self):
         mr = self.MyRect()

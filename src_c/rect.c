@@ -85,7 +85,6 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_RectNew4 pgRect_New4
 #define RectExport_Normalize pgRect_Normalize
 #define RectExport_contains pg_rect_contains
-#define RectExport_containsSeq pg_rect_contains_seq
 #define RectExport_clamp pg_rect_clamp
 #define RectExport_fit pg_rect_fit
 #define RectExport_clampIp pg_rect_clamp_ip
@@ -204,7 +203,6 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_RectNew4 pgFRect_New4
 #define RectExport_Normalize pgFRect_Normalize
 #define RectExport_contains pg_frect_contains
-#define RectExport_containsSeq pg_frect_contains_seq
 #define RectExport_clamp pg_frect_clamp
 #define RectExport_fit pg_frect_fit
 #define RectExport_clampIp pg_frect_clamp_ip
@@ -578,14 +576,12 @@ static PySequenceMethods pg_rect_as_sequence = {
     .sq_length = pg_rect_length,
     .sq_item = (ssizeargfunc)pg_rect_item,
     .sq_ass_item = (ssizeobjargproc)pg_rect_ass_item,
-    .sq_contains = (objobjproc)pg_rect_contains_seq,
 };
 
 static PySequenceMethods pg_frect_as_sequence = {
     .sq_length = pg_rect_length,
     .sq_item = (ssizeargfunc)pg_frect_item,
     .sq_ass_item = (ssizeobjargproc)pg_frect_ass_item,
-    .sq_contains = (objobjproc)pg_frect_contains_seq,
 };
 
 static PyMappingMethods pg_rect_as_mapping = {

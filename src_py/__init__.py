@@ -461,6 +461,10 @@ Container.register(Vector2)
 Collection.register(Vector2)
 Container.register(Vector3)
 Collection.register(Vector3)
+Container.register(Rect)
+Collection.register(Rect)
+Container.register(FRect)
+Collection.register(FRect)
 
 # cleanup namespace
 del pygame, os, sys, MissingModule, copyreg, packager_imports, Collection, Container
