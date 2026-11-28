@@ -1,9 +1,11 @@
 """
-binaries hook for pygame seems to be required for pygame 2.0 Windows.
-Otherwise, some essential DLLs will not be transferred to the exe.
+This controls how PyInstaller interacts with pygame-ce when
+freezing a project.
 
-And also put hooks for datas, resources that pygame uses, to work
-correctly with pyinstaller
+See https://pyinstaller.org/en/stable/hooks.html
+
+This hook adds necessary icon/font files to the bundle, and makes
+sure all our needed DLLs are included on Windows.
 """
 
 import os
@@ -35,11 +37,8 @@ else:
 if platform.system() == "Windows":
     from PyInstaller.utils.hooks import collect_dynamic_libs
 
-    pre_binaries = collect_dynamic_libs("pygame")
-    binaries = []
-
-    for b in pre_binaries:
-        binary, location = b
-        # settles all the DLLs into the top level folder, which prevents duplication
-        # with the DLLs already being put there.
-        binaries.append((binary, "."))
+    # In our Windows builds, some C libraries are loaded at runtime
+    # as optional extras to SDL_image or SDL_mixer, rather than
+    # declaring the load statically. Therefore, we need to collect
+    # all binaries, not just the ones that PyInstaller thinks are used.
+    binaries = collect_dynamic_libs("pygame")
