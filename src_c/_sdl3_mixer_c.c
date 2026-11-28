@@ -32,6 +32,7 @@ typedef struct {
     PyObject_HEAD MIX_Track *track;
     PyObject *mixer_obj;
     PyObject *source_obj;
+    PyObject *stopped_callback_obj;
 } PGTrackObject;
 
 typedef struct {
@@ -47,6 +48,52 @@ typedef struct {
     if (value != default) {                                           \
         success &= SDL_SetNumberProperty(props, property, value);     \
     }
+
+// self->mixer/audio/track/audio_decoder is set to NULL once destroyed
+// (either explicitly or because the mixer subsystem was quit), so every
+// function touching it needs to check first, or it dereferences a dangling
+// pointer. `ret` is what to return from the current function on failure
+// (NULL for PyObject*-returning functions, -1 for setters/int-returning ones).
+#define CHECK_MIXER_OBJ_VALID(self, ret)                        \
+    if ((self)->mixer == NULL) {                                \
+        PyErr_SetString(pgExc_SDLError,                         \
+                        "Dead Mixer, the mixer was destroyed"); \
+        return ret;                                             \
+    }
+
+#define CHECK_AUDIO_OBJ_VALID(self, ret)                        \
+    if ((self)->audio == NULL) {                                \
+        PyErr_SetString(pgExc_SDLError,                         \
+                        "Dead Audio, the audio was destroyed"); \
+        return ret;                                             \
+    }
+
+#define CHECK_TRACK_OBJ_VALID(self, ret)                        \
+    if ((self)->track == NULL) {                                \
+        PyErr_SetString(pgExc_SDLError,                         \
+                        "Dead Track, the track was destroyed"); \
+        return ret;                                             \
+    }
+
+#define CHECK_AUDIO_DECODER_OBJ_VALID(self, ret)                    \
+    if ((self)->audio_decoder == NULL) {                            \
+        PyErr_SetString(pgExc_SDLError,                             \
+                        "Dead AudioDecoder, the audio decoder was " \
+                        "destroyed");                               \
+        return ret;                                                 \
+    }
+
+// The audio thread holds SDL_mixer's locks (the mixer's, the track's, and
+// the device's) while it runs callbacks that need the GIL: the track stopped
+// callback, and the reads of Python-backed IOStreams from rwobject. So the
+// lock order is always SDL lock -> GIL, and we must never wait on an SDL_mixer
+// lock while holding the GIL. Any MIX_ call taking a MIX_Mixer* or MIX_Track*
+// goes through this.
+#define PG_NOGIL(stmt)               \
+    do {                             \
+        Py_BEGIN_ALLOW_THREADS stmt; \
+        Py_END_ALLOW_THREADS         \
+    } while (0)
 
 static bool
 pg_populate_play_props(SDL_PropertiesID options, int64_t loops,
@@ -98,6 +145,8 @@ pg_populate_play_props(SDL_PropertiesID options, int64_t loops,
 static PyObject *
 pg_mixer_obj_play_audio(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+
     PGAudioObject *audio;
     char *keywords[] = {"audio", NULL};
     PyObject *audio_type =
@@ -112,8 +161,11 @@ pg_mixer_obj_play_audio(PGMixerObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     Py_DECREF(audio_type);
+    CHECK_AUDIO_OBJ_VALID(audio, NULL);
 
-    if (!MIX_PlayAudio(self->mixer, audio->audio)) {
+    bool success;
+    PG_NOGIL(success = MIX_PlayAudio(self->mixer, audio->audio));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -122,6 +174,8 @@ pg_mixer_obj_play_audio(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_mixer_obj_play_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+
     char *tag;
     int64_t loops = 0;
     int64_t max_ms = -1;
@@ -154,7 +208,11 @@ pg_mixer_obj_play_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
                                           start_ms, 0, loop_start_ms, 0,
                                           fadein_ms, 0, append_silence_ms);
 
-    if (!success || !MIX_PlayTag(self->mixer, tag, options)) {
+    if (success) {
+        PG_NOGIL(success = MIX_PlayTag(self->mixer, tag, options));
+    }
+
+    if (!success) {
         SDL_DestroyProperties(options);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -166,6 +224,8 @@ pg_mixer_obj_play_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_mixer_obj_stop_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+
     char *tag;
     int64_t fade_out_ms = 0;
     char *keywords[] = {"tag", "fade_out_ms", NULL};
@@ -175,7 +235,9 @@ pg_mixer_obj_stop_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (!MIX_StopTag(self->mixer, tag, fade_out_ms)) {
+    bool success;
+    PG_NOGIL(success = MIX_StopTag(self->mixer, tag, fade_out_ms));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -185,6 +247,8 @@ pg_mixer_obj_stop_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_mixer_obj_pause_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+
     char *tag;
     char *keywords[] = {"tag", NULL};
 
@@ -192,7 +256,9 @@ pg_mixer_obj_pause_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (!MIX_PauseTag(self->mixer, tag)) {
+    bool success;
+    PG_NOGIL(success = MIX_PauseTag(self->mixer, tag));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -202,6 +268,8 @@ pg_mixer_obj_pause_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_mixer_obj_resume_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+
     char *tag;
     char *keywords[] = {"tag", NULL};
 
@@ -209,7 +277,9 @@ pg_mixer_obj_resume_tag(PGMixerObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (!MIX_ResumeTag(self->mixer, tag)) {
+    bool success;
+    PG_NOGIL(success = MIX_ResumeTag(self->mixer, tag));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -220,6 +290,8 @@ static PyObject *
 pg_mixer_obj_set_tag_gain(PGMixerObject *self, PyObject *args,
                           PyObject *kwargs)
 {
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+
     char *tag;
     float gain;
     char *keywords[] = {"tag", "gain", NULL};
@@ -229,7 +301,9 @@ pg_mixer_obj_set_tag_gain(PGMixerObject *self, PyObject *args,
         return NULL;
     }
 
-    if (!MIX_SetTagGain(self->mixer, tag, gain)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTagGain(self->mixer, tag, gain));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -240,6 +314,8 @@ static PyObject *
 pg_mixer_obj_stop_all_tracks(PGMixerObject *self, PyObject *args,
                              PyObject *kwargs)
 {
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+
     int64_t fade_out_ms = 0;
     char *keywords[] = {"fade_out_ms", NULL};
 
@@ -248,7 +324,9 @@ pg_mixer_obj_stop_all_tracks(PGMixerObject *self, PyObject *args,
         return NULL;
     }
 
-    if (!MIX_StopAllTracks(self->mixer, fade_out_ms)) {
+    bool success;
+    PG_NOGIL(success = MIX_StopAllTracks(self->mixer, fade_out_ms));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -258,7 +336,11 @@ pg_mixer_obj_stop_all_tracks(PGMixerObject *self, PyObject *args,
 static PyObject *
 pg_mixer_obj_pause_all_tracks(PGMixerObject *self, PyObject *_null)
 {
-    if (!MIX_PauseAllTracks(self->mixer)) {
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+
+    bool success;
+    PG_NOGIL(success = MIX_PauseAllTracks(self->mixer));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -267,7 +349,11 @@ pg_mixer_obj_pause_all_tracks(PGMixerObject *self, PyObject *_null)
 static PyObject *
 pg_mixer_obj_resume_all_tracks(PGMixerObject *self, PyObject *_null)
 {
-    if (!MIX_ResumeAllTracks(self->mixer)) {
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+
+    bool success;
+    PG_NOGIL(success = MIX_ResumeAllTracks(self->mixer));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -276,8 +362,12 @@ pg_mixer_obj_resume_all_tracks(PGMixerObject *self, PyObject *_null)
 static PyObject *
 pg_mixer_obj_get_spec(PGMixerObject *self, PyObject *_null)
 {
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+
     SDL_AudioSpec spec;
-    if (!MIX_GetMixerFormat(self->mixer, &spec)) {
+    bool success;
+    PG_NOGIL(success = MIX_GetMixerFormat(self->mixer, &spec));
+    if (!success) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return NULL;
     }
@@ -288,6 +378,12 @@ pg_mixer_obj_get_spec(PGMixerObject *self, PyObject *_null)
 static int
 pg_mixer_obj_init(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 {
+    if (self->mixer != NULL) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Object of type Mixer cannot be reinitialized");
+        return -1;
+    }
+
     PyObject *device_obj;
     PyObject *spec_obj = Py_None;
 
@@ -316,12 +412,14 @@ pg_mixer_obj_init(PGMixerObject *self, PyObject *args, PyObject *kwargs)
         spec_p = &spec;
     }
 
-    self->mixer = MIX_CreateMixerDevice(
-        ((PGAudioDeviceStateObject *)device_obj)->devid, spec_p);
-    if (self->mixer == NULL) {
+    SDL_AudioDeviceID devid = ((PGAudioDeviceStateObject *)device_obj)->devid;
+    MIX_Mixer *mixer;
+    PG_NOGIL(mixer = MIX_CreateMixerDevice(devid, spec_p));
+    if (mixer == NULL) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
+    self->mixer = mixer;
 
     return 0;
 }
@@ -329,9 +427,15 @@ pg_mixer_obj_init(PGMixerObject *self, PyObject *args, PyObject *kwargs)
 static void
 pg_mixer_obj_dealloc(PGMixerObject *self)
 {
-    MIX_DestroyMixer(self->mixer);
-    self->mixer = NULL;
     PyObject_GC_UnTrack(self);
+
+    // self->mixer may already be NULL if _destroy() was called explicitly
+    // (e.g. by the Python layer, before quitting the mixer subsystem).
+    MIX_Mixer *mixer = self->mixer;
+    self->mixer = NULL;
+    if (mixer != NULL) {
+        PG_NOGIL(MIX_DestroyMixer(mixer));
+    }
     PyTypeObject *tp = Py_TYPE(self);
     freefunc free = PyType_GetSlot(tp, Py_tp_free);
     free(self);
@@ -339,19 +443,50 @@ pg_mixer_obj_dealloc(PGMixerObject *self)
 }
 
 static PyObject *
+pg_mixer_obj_destroy(PGMixerObject *self, PyObject *_null)
+{
+    // Private function for explicitly cleaning up the mixer's native
+    // resources before the mixer subsystem is quit. Otherwise the
+    // destructor can run after the underlying MIX_Mixer has already been
+    // freed by MIX_Quit(), causing a double free.
+    MIX_Mixer *mixer = self->mixer;
+    self->mixer = NULL;
+    if (mixer != NULL) {
+        PG_NOGIL(MIX_DestroyMixer(mixer));
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pg_mixer_obj_get_valid(PGMixerObject *self, void *_null)
+{
+    if (self->mixer != NULL) {
+        Py_RETURN_TRUE;
+    }
+    Py_RETURN_FALSE;
+}
+
+static PyObject *
 pg_mixer_obj_get_gain(PGMixerObject *self, void *_null)
 {
-    return PyFloat_FromDouble(MIX_GetMixerGain(self->mixer));
+    CHECK_MIXER_OBJ_VALID(self, NULL);
+    float gain;
+    PG_NOGIL(gain = MIX_GetMixerGain(self->mixer));
+    return PyFloat_FromDouble(gain);
 }
 
 static int
 pg_mixer_obj_set_gain(PGMixerObject *self, PyObject *value, void *_null)
 {
+    CHECK_MIXER_OBJ_VALID(self, -1);
+
     double gain = PyFloat_AsDouble(value);
     if (gain == -1.0 && PyErr_Occurred()) {
         return -1;
     }
-    if (!MIX_SetMixerGain(self->mixer, (float)gain)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetMixerGain(self->mixer, (float)gain));
+    if (!success) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
@@ -371,9 +506,11 @@ pg_mixer_obj_traverse(PyObject *op, visitproc visit, void *arg)
 static PyGetSetDef mixer_obj_getsets[] = {
     {"gain", (getter)pg_mixer_obj_get_gain, (setter)pg_mixer_obj_set_gain,
      "TODO", NULL},
+    {"_valid", (getter)pg_mixer_obj_get_valid, NULL, "TODO", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef mixer_obj_methods[] = {
+    {"_destroy", (PyCFunction)pg_mixer_obj_destroy, METH_NOARGS, "TODO"},
     {"play_tag", (PyCFunction)pg_mixer_obj_play_tag,
      METH_VARARGS | METH_KEYWORDS, "TODO"},
     {"stop_tag", (PyCFunction)pg_mixer_obj_stop_tag,
@@ -416,6 +553,12 @@ static PyType_Spec mixer_spec = {
 static int
 pg_audio_obj_init(PGAudioObject *self, PyObject *args, PyObject *kwargs)
 {
+    if (self->audio != NULL) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Object of type Audio cannot be reinitialized");
+        return -1;
+    }
+
     int predecode = 0;
     PyObject *file = NULL;
     PyObject *mixer_or_none = Py_None;
@@ -433,15 +576,20 @@ pg_audio_obj_init(PGAudioObject *self, PyObject *args, PyObject *kwargs)
     }
 
     MIX_Mixer *mixer = NULL;
-    if (PyObject_IsInstance(mixer_or_none, mixer_type)) {
+    int obj_is_mixer = PyObject_IsInstance(mixer_or_none, mixer_type);
+    Py_DECREF(mixer_type);
+    if (obj_is_mixer < 0) {
+        return -1;
+    }
+
+    if (obj_is_mixer) {
+        CHECK_MIXER_OBJ_VALID((PGMixerObject *)mixer_or_none, -1);
         mixer = ((PGMixerObject *)mixer_or_none)->mixer;
     }
     else if (!Py_IsNone(mixer_or_none)) {  // not mixer, not none
-        Py_DECREF(mixer_type);
         PyErr_SetString(PyExc_TypeError, "argument 3 must be Mixer or None");
         return -1;
     }
-    Py_DECREF(mixer_type);
 
     SDL_IOStream *io = pgRWops_FromObject(file, NULL);
     if (io == NULL) {
@@ -460,8 +608,12 @@ pg_audio_obj_init(PGAudioObject *self, PyObject *args, PyObject *kwargs)
 static void
 pg_audio_obj_dealloc(PGAudioObject *self)
 {
-    MIX_DestroyAudio(self->audio);
-    self->audio = NULL;
+    // self->audio may already be NULL if _destroy() was called explicitly
+    // (e.g. by the Python layer, before quitting the mixer subsystem).
+    if (self->audio != NULL) {
+        MIX_DestroyAudio(self->audio);
+        self->audio = NULL;
+    }
     PyObject_GC_UnTrack(self);
     PyTypeObject *tp = Py_TYPE(self);
     freefunc free = PyType_GetSlot(tp, Py_tp_free);
@@ -470,8 +622,33 @@ pg_audio_obj_dealloc(PGAudioObject *self)
 }
 
 static PyObject *
+pg_audio_obj_destroy(PGAudioObject *self, PyObject *_null)
+{
+    // Explicitly frees the native audio before the mixer subsystem quits,
+    // since MIX_Quit() frees it too. Cleared first so reentrant access fails
+    // the validity check.
+    MIX_Audio *audio = self->audio;
+    self->audio = NULL;
+    if (audio != NULL) {
+        MIX_DestroyAudio(audio);
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pg_audio_obj_get_valid(PGAudioObject *self, void *_null)
+{
+    if (self->audio != NULL) {
+        Py_RETURN_TRUE;
+    }
+    Py_RETURN_FALSE;
+}
+
+static PyObject *
 pg_audio_obj_get_duration_frames(PGAudioObject *self, void *_null)
 {
+    CHECK_AUDIO_OBJ_VALID(self, NULL);
+
     int64_t duration_frames = MIX_GetAudioDuration(self->audio);
     if (duration_frames < 0) {
         Py_RETURN_NONE;  // infinite / unknown
@@ -482,6 +659,8 @@ pg_audio_obj_get_duration_frames(PGAudioObject *self, void *_null)
 static PyObject *
 pg_audio_obj_get_duration_ms(PGAudioObject *self, void *_null)
 {
+    CHECK_AUDIO_OBJ_VALID(self, NULL);
+
     int64_t duration_frames = MIX_GetAudioDuration(self->audio);
     if (duration_frames < 0) {
         Py_RETURN_NONE;  // infinite / unknown
@@ -493,6 +672,8 @@ pg_audio_obj_get_duration_ms(PGAudioObject *self, void *_null)
 static PyObject *
 pg_audio_obj_get_infinite(PGAudioObject *self, void *_null)
 {
+    CHECK_AUDIO_OBJ_VALID(self, NULL);
+
     int64_t duration_frames = MIX_GetAudioDuration(self->audio);
     if (duration_frames == MIX_DURATION_INFINITE) {
         Py_RETURN_TRUE;
@@ -534,14 +715,19 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
     }
 
     MIX_Mixer *mixer = NULL;
-    if (PyObject_IsInstance(mixer_or_none, mixer_type)) {
+    int obj_is_mixer = PyObject_IsInstance(mixer_or_none, mixer_type);
+    Py_DECREF(mixer_type);
+    if (obj_is_mixer < 0) {
+        return NULL;
+    }
+
+    if (obj_is_mixer) {
+        CHECK_MIXER_OBJ_VALID((PGMixerObject *)mixer_or_none, NULL);
         mixer = ((PGMixerObject *)mixer_or_none)->mixer;
     }
     else if (!Py_IsNone(mixer_or_none)) {  // not mixer, not none
-        Py_DECREF(mixer_type);
         return RAISE(PyExc_TypeError, "argument 3 must be Mixer or None");
     }
-    Py_DECREF(mixer_type);
 
     PyObject *bytes = PyBytes_FromObject(buffer);
     if (bytes == NULL) {
@@ -563,7 +749,8 @@ pg_audio_obj_from_raw(PyTypeObject *cls, PyObject *args, PyObject *kwargs)
 
     // LoadRawAudio does a copy (unlike LoadRawAudioNoCopy), so it is not
     // necessary to keep any references to the buffer.
-    MIX_Audio *raw_audio = MIX_LoadRawAudio(mixer, buf, (size_t)len, &spec);
+    MIX_Audio *raw_audio;
+    PG_NOGIL(raw_audio = MIX_LoadRawAudio(mixer, buf, (size_t)len, &spec));
     if (raw_audio == NULL) {
         Py_DECREF(bytes);
         Py_DECREF(self);
@@ -596,22 +783,28 @@ pg_audio_obj_from_sine_wave(PyTypeObject *cls, PyObject *args,
     }
 
     MIX_Mixer *mixer = NULL;
-    if (PyObject_IsInstance(mixer_or_none, mixer_type)) {
+    int obj_is_mixer = PyObject_IsInstance(mixer_or_none, mixer_type);
+    Py_DECREF(mixer_type);
+    if (obj_is_mixer < 0) {
+        return NULL;
+    }
+
+    if (obj_is_mixer) {
+        CHECK_MIXER_OBJ_VALID((PGMixerObject *)mixer_or_none, NULL);
         mixer = ((PGMixerObject *)mixer_or_none)->mixer;
     }
     else if (!Py_IsNone(mixer_or_none)) {  // not mixer, not none
-        Py_DECREF(mixer_type);
         return RAISE(PyExc_TypeError, "argument 3 must be Mixer or None");
     }
-    Py_DECREF(mixer_type);
 
     PGAudioObject *self = (PGAudioObject *)cls->tp_alloc(cls, 0);
     if (self == NULL) {
         return NULL;
     }
 
-    MIX_Audio *sine_wave_audio =
-        MIX_CreateSineWaveAudio(mixer, hz, amplitude, ms);
+    MIX_Audio *sine_wave_audio;
+    PG_NOGIL(sine_wave_audio =
+                 MIX_CreateSineWaveAudio(mixer, hz, amplitude, ms));
     if (sine_wave_audio == NULL) {
         Py_DECREF(self);
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -625,6 +818,8 @@ static PyObject *
 pg_audio_obj_ms_to_frames(PGAudioObject *self, PyObject *args,
                           PyObject *kwargs)
 {
+    CHECK_AUDIO_OBJ_VALID(self, NULL);
+
     int64_t ms;
     char *keywords[] = {"ms", NULL};
 
@@ -644,6 +839,8 @@ static PyObject *
 pg_audio_obj_frames_to_ms(PGAudioObject *self, PyObject *args,
                           PyObject *kwargs)
 {
+    CHECK_AUDIO_OBJ_VALID(self, NULL);
+
     int64_t frames;
     char *keywords[] = {"frames", NULL};
 
@@ -662,6 +859,8 @@ pg_audio_obj_frames_to_ms(PGAudioObject *self, PyObject *args,
 static PyObject *
 pg_audio_obj_get_metadata(PGAudioObject *self, PyObject *_null)
 {
+    CHECK_AUDIO_OBJ_VALID(self, NULL);
+
     SDL_PropertiesID props = MIX_GetAudioProperties(self->audio);
     if (props == 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -716,6 +915,8 @@ pg_audio_obj_get_metadata(PGAudioObject *self, PyObject *_null)
 static PyObject *
 pg_audio_obj_get_spec(PGAudioObject *self, PyObject *_null)
 {
+    CHECK_AUDIO_OBJ_VALID(self, NULL);
+
     SDL_AudioSpec spec;
     if (!MIX_GetAudioFormat(self->audio, &spec)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
@@ -738,9 +939,11 @@ static PyGetSetDef audio_obj_getsets[] = {
      NULL},
     {"duration_ms", (getter)pg_audio_obj_get_duration_ms, NULL, "TODO", NULL},
     {"infinite", (getter)pg_audio_obj_get_infinite, NULL, "TODO", NULL},
+    {"_valid", (getter)pg_audio_obj_get_valid, NULL, "TODO", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef audio_obj_methods[] = {
+    {"_destroy", (PyCFunction)pg_audio_obj_destroy, METH_NOARGS, "TODO"},
     {"from_sine_wave", (PyCFunction)pg_audio_obj_from_sine_wave,
      METH_CLASS | METH_VARARGS | METH_KEYWORDS, "TODO"},
     {"from_raw", (PyCFunction)pg_audio_obj_from_raw,
@@ -775,6 +978,12 @@ static PyType_Spec audio_spec = {
 static int
 pg_track_obj_init(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 {
+    if (self->track != NULL || self->mixer_obj != NULL) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Object of type Track cannot be reinitialized");
+        return -1;
+    }
+
     PGMixerObject *mixer = NULL;
     char *keywords[] = {"mixer", NULL};
 
@@ -782,12 +991,15 @@ pg_track_obj_init(PGTrackObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &mixer)) {
         return -1;
     }
+    CHECK_MIXER_OBJ_VALID(mixer, -1);
 
-    self->track = MIX_CreateTrack(mixer->mixer);
-    if (self->track == NULL) {
+    MIX_Track *track;
+    PG_NOGIL(track = MIX_CreateTrack(mixer->mixer));
+    if (track == NULL) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
+    self->track = track;
 
     // Mixers own Tracks. When the Mixer is deallocated, the tracks become
     // invalid. So we need to hold a reference to prevent Mixer deallocating
@@ -800,15 +1012,66 @@ pg_track_obj_init(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 static void
 pg_track_obj_dealloc(PGTrackObject *self)
 {
-    MIX_DestroyTrack(self->track);
-    self->track = NULL;
     PyObject_GC_UnTrack(self);
-    Py_CLEAR(self->mixer_obj);
+
+    // Must happen before the GIL is released below. A stopped callback in
+    // flight on another thread checks this with the GIL held, and bails out
+    // instead of touching a Track whose refcount is already 0.
+    Py_CLEAR(self->stopped_callback_obj);
+
+    // self->track may already be NULL if _destroy() was called explicitly
+    // (e.g. by the Python layer, before quitting the mixer subsystem, or
+    // before its owning Mixer is destroyed).
+    MIX_Track *track = self->track;
+    self->track = NULL;
+    if (track != NULL) {
+        // Waits on the mixer lock for any in-flight stopped callback to
+        // return, so self stays valid for it.
+        PG_NOGIL(MIX_DestroyTrack(track));
+    }
+    // source_obj must go before mixer_obj. Releasing the Mixer can shut down
+    // the SDL audio subsystem (if audio.quit() was already called), which
+    // destroys any SDL stream still held by an AudioStream state in
+    // source_obj. Releasing the state afterwards would then destroy it again.
     Py_CLEAR(self->source_obj);
+    Py_CLEAR(self->mixer_obj);
     PyTypeObject *tp = Py_TYPE(self);
     freefunc free = PyType_GetSlot(tp, Py_tp_free);
     free(self);
     Py_DECREF(tp);
+}
+
+static PyObject *
+pg_track_obj_destroy(PGTrackObject *self, PyObject *_null)
+{
+    // Private function for explicitly cleaning up the track's native
+    // resources before its owning Mixer (or the mixer subsystem as a
+    // whole) is destroyed/quit. Otherwise this can run after the
+    // underlying MIX_Track has already been freed, causing a double free.
+    //
+    // Unlike dealloc, this does NOT clear mixer_obj, since the Python Track
+    // object itself is still alive and .mixer stays queryable.
+    MIX_Track *track = self->track;
+    self->track = NULL;
+    if (track != NULL) {
+        PG_NOGIL(MIX_DestroyTrack(track));
+    }
+
+    // But it does clear source_obj, which nothing can query once the track
+    // is dead. If it held onto an AudioStream's state past the SDL audio
+    // subsystem quitting, SDL would destroy the stream on quit, and the
+    // state would then destroy it again when it is deallocated.
+    Py_CLEAR(self->source_obj);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pg_track_obj_get_valid(PGTrackObject *self, void *_null)
+{
+    if (self->track != NULL) {
+        Py_RETURN_TRUE;
+    }
+    Py_RETURN_FALSE;
 }
 
 static PyObject *
@@ -820,35 +1083,51 @@ pg_track_obj_get_mixer(PGTrackObject *self, PyObject *_null)
 static PyObject *
 pg_track_obj_get_playing(PGTrackObject *self, PyObject *_null)
 {
-    return PyBool_FromLong(MIX_TrackPlaying(self->track));
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+    bool playing;
+    PG_NOGIL(playing = MIX_TrackPlaying(self->track));
+    return PyBool_FromLong(playing);
 }
 
 static PyObject *
 pg_track_obj_get_paused(PGTrackObject *self, PyObject *_null)
 {
-    return PyBool_FromLong(MIX_TrackPaused(self->track));
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+    bool paused;
+    PG_NOGIL(paused = MIX_TrackPaused(self->track));
+    return PyBool_FromLong(paused);
 }
 
 static PyObject *
 pg_track_obj_get_loops(PGTrackObject *self, PyObject *_null)
 {
-    return PyLong_FromLong(MIX_GetTrackLoops(self->track));
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+    int loops;
+    PG_NOGIL(loops = MIX_GetTrackLoops(self->track));
+    return PyLong_FromLong(loops);
 }
 
 static PyObject *
 pg_track_obj_get_gain(PGTrackObject *self, PyObject *_null)
 {
-    return PyFloat_FromDouble(MIX_GetTrackGain(self->track));
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+    float gain;
+    PG_NOGIL(gain = MIX_GetTrackGain(self->track));
+    return PyFloat_FromDouble(gain);
 }
 
 static int
 pg_track_obj_set_gain(PGTrackObject *self, PyObject *value, void *_null)
 {
+    CHECK_TRACK_OBJ_VALID(self, -1);
+
     double gain = PyFloat_AsDouble(value);
     if (gain == -1.0 && PyErr_Occurred()) {
         return -1;
     }
-    if (!MIX_SetTrackGain(self->track, (float)gain)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackGain(self->track, (float)gain));
+    if (!success) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
@@ -858,7 +1137,10 @@ pg_track_obj_set_gain(PGTrackObject *self, PyObject *value, void *_null)
 static PyObject *
 pg_track_obj_get_freq_ratio(PGTrackObject *self, PyObject *_null)
 {
-    float ratio = MIX_GetTrackFrequencyRatio(self->track);
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
+    float ratio;
+    PG_NOGIL(ratio = MIX_GetTrackFrequencyRatio(self->track));
     if (ratio == 0.0f) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -868,11 +1150,15 @@ pg_track_obj_get_freq_ratio(PGTrackObject *self, PyObject *_null)
 static int
 pg_track_obj_set_freq_ratio(PGTrackObject *self, PyObject *value, void *_null)
 {
+    CHECK_TRACK_OBJ_VALID(self, -1);
+
     double ratio = PyFloat_AsDouble(value);
     if (ratio == -1.0 && PyErr_Occurred()) {
         return -1;
     }
-    if (!MIX_SetTrackFrequencyRatio(self->track, (float)ratio)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackFrequencyRatio(self->track, (float)ratio));
+    if (!success) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
@@ -882,6 +1168,8 @@ pg_track_obj_set_freq_ratio(PGTrackObject *self, PyObject *value, void *_null)
 static PyObject *
 pg_track_obj_set_audio(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     PyObject *audio_or_none = NULL;
     char *keywords[] = {"audio", NULL};
     PyObject *audio_type =
@@ -897,16 +1185,25 @@ pg_track_obj_set_audio(PGTrackObject *self, PyObject *args, PyObject *kwargs)
     }
 
     MIX_Audio *audio = NULL;
-    if (PyObject_IsInstance(audio_or_none, audio_type)) {  // audio
+    int obj_is_audio = PyObject_IsInstance(audio_or_none, audio_type);
+    Py_DECREF(audio_type);
+    if (obj_is_audio < 0) {
+        return NULL;
+    }
+
+    if (obj_is_audio) {  // audio
+        // A destroyed Audio has a NULL handle, which SDL would take to mean
+        // "remove the track's input" rather than an error.
+        CHECK_AUDIO_OBJ_VALID((PGAudioObject *)audio_or_none, NULL);
         audio = ((PGAudioObject *)audio_or_none)->audio;
     }
     else if (!Py_IsNone(audio_or_none)) {  // not audio, not none
-        Py_DECREF(audio_type);
         return RAISE(PyExc_TypeError, "argument 1 must be Audio or None");
     }
-    Py_DECREF(audio_type);
 
-    if (!MIX_SetTrackAudio(self->track, audio)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackAudio(self->track, audio));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -925,7 +1222,11 @@ pg_track_obj_set_audio(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_track_obj_get_audio(PGTrackObject *self, PyObject *_null)
 {
-    if (MIX_GetTrackAudio(self->track) != NULL) {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
+    MIX_Audio *audio;
+    PG_NOGIL(audio = MIX_GetTrackAudio(self->track));
+    if (audio != NULL) {
         // This track object owns an audio, therefore our source object must
         // be non-null, and an audio object.
         return Py_NewRef(self->source_obj);
@@ -938,32 +1239,27 @@ static PyObject *
 pg_track_obj_set_audiostream(PGTrackObject *self, PyObject *args,
                              PyObject *kwargs)
 {
-    PyObject *audiostream_or_none = NULL;
-    char *keywords[] = {"audiostream", NULL};
+    CHECK_TRACK_OBJ_VALID(self, NULL);
 
-    // This function relies on Python level type checking to remove values
-    // that are not AudioStream objects or None.
+    PyObject *state_or_none = NULL;
+    char *keywords[] = {"audiostream_state", NULL};
+
+    // This function relies on the Python layer to pass an AudioStream's
+    // _state object, or None. The Python layer keeps track of the AudioStream
+    // itself, for get_audiostream.
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords,
-                                     &audiostream_or_none)) {
+                                     &state_or_none)) {
         return NULL;
     }
 
     SDL_AudioStream *stream = NULL;
-    if (audiostream_or_none != Py_None) {
-        // audiostream._state to get at internals
-        PGAudioStreamStateObject *as_state =
-            (PGAudioStreamStateObject *)PyObject_GetAttrString(
-                audiostream_or_none, "_state");
-        if (as_state == NULL) {
-            return RAISE(pgExc_SDLError,
-                         "Unexpected internal error getting SDL audio stream "
-                         "from Python object");
-        }
-        stream = as_state->stream;
-        Py_DECREF(as_state);  // PyObject_GetAttrString gives new ref
+    if (!Py_IsNone(state_or_none)) {
+        stream = ((PGAudioStreamStateObject *)state_or_none)->stream;
     }
 
-    if (!MIX_SetTrackAudioStream(self->track, stream)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackAudioStream(self->track, stream));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -972,8 +1268,10 @@ pg_track_obj_set_audiostream(PGTrackObject *self, PyObject *args,
     Py_CLEAR(self->source_obj);
 
     if (stream != NULL) {
-        // We've successfully added an audio object, yay!
-        self->source_obj = Py_NewRef(audiostream_or_none);
+        // The state object owns the SDL stream, so holding it keeps the
+        // stream alive for as long as SDL_mixer may be reading from it, even
+        // if the AudioStream lets go of it (e.g. through audio.quit()).
+        self->source_obj = Py_NewRef(state_or_none);
     }
 
     Py_RETURN_NONE;
@@ -982,9 +1280,14 @@ pg_track_obj_set_audiostream(PGTrackObject *self, PyObject *args,
 static PyObject *
 pg_track_obj_get_audiostream(PGTrackObject *self, PyObject *_null)
 {
-    if (MIX_GetTrackAudioStream(self->track) != NULL) {
-        // This track object owns an audio, therefore our source object must
-        // be non-null, and an audio object.
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
+    SDL_AudioStream *stream;
+    PG_NOGIL(stream = MIX_GetTrackAudioStream(self->track));
+    if (stream != NULL) {
+        // This track has an audio stream input, therefore our source object
+        // must be non-null, and an AudioStream's state object. The Python
+        // layer maps it back to the AudioStream.
         return Py_NewRef(self->source_obj);
     }
 
@@ -995,6 +1298,8 @@ static PyObject *
 pg_track_obj_set_filestream(PGTrackObject *self, PyObject *args,
                             PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     PyObject *file_obj = NULL;
     char *keywords[] = {"file", NULL};
 
@@ -1007,8 +1312,11 @@ pg_track_obj_set_filestream(PGTrackObject *self, PyObject *args,
         return NULL;
     }
 
-    if (!MIX_SetTrackIOStream(self->track, io, true)) {
-        SDL_CloseIO(io);
+    // Given closeio=true, SDL_mixer is responsible for closing the iostream
+    // on error.
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackIOStream(self->track, io, true));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1028,6 +1336,8 @@ pg_track_obj_set_filestream(PGTrackObject *self, PyObject *args,
 static PyObject *
 pg_track_obj_play(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     int64_t loops = 0;
     int64_t max_frame = -1, max_ms = -1;
     int64_t start_frame = 0, start_ms = 0;
@@ -1065,7 +1375,11 @@ pg_track_obj_play(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         loop_start_frame, loop_start_ms, fadein_frames, fadein_ms,
         append_silence_frames, append_silence_ms);
 
-    if (!success || !MIX_PlayTrack(self->track, options)) {
+    if (success) {
+        PG_NOGIL(success = MIX_PlayTrack(self->track, options));
+    }
+
+    if (!success) {
         SDL_DestroyProperties(options);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -1077,6 +1391,8 @@ pg_track_obj_play(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_track_obj_add_tag(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     char *tag;
     char *keywords[] = {"tag", NULL};
 
@@ -1084,7 +1400,9 @@ pg_track_obj_add_tag(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (!MIX_TagTrack(self->track, tag)) {
+    bool success;
+    PG_NOGIL(success = MIX_TagTrack(self->track, tag));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -1093,6 +1411,8 @@ pg_track_obj_add_tag(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_track_obj_remove_tag(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     char *tag;
     char *keywords[] = {"tag", NULL};
 
@@ -1100,7 +1420,7 @@ pg_track_obj_remove_tag(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    MIX_UntagTrack(self->track, tag);  // no error return!
+    PG_NOGIL(MIX_UntagTrack(self->track, tag));  // no error return!
     Py_RETURN_NONE;
 }
 
@@ -1108,6 +1428,8 @@ static PyObject *
 pg_track_obj_set_playback_position(PGTrackObject *self, PyObject *args,
                                    PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     int64_t frame_position;
     char *keywords[] = {"frames", NULL};
 
@@ -1116,7 +1438,10 @@ pg_track_obj_set_playback_position(PGTrackObject *self, PyObject *args,
         return NULL;
     }
 
-    if (!MIX_SetTrackPlaybackPosition(self->track, frame_position)) {
+    bool success;
+    PG_NOGIL(success =
+                 MIX_SetTrackPlaybackPosition(self->track, frame_position));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1126,7 +1451,10 @@ pg_track_obj_set_playback_position(PGTrackObject *self, PyObject *args,
 static PyObject *
 pg_track_obj_get_playback_position(PGTrackObject *self, PyObject *null)
 {
-    int64_t frame_position = MIX_GetTrackPlaybackPosition(self->track);
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
+    int64_t frame_position;
+    PG_NOGIL(frame_position = MIX_GetTrackPlaybackPosition(self->track));
     if (frame_position == -1) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -1137,7 +1465,10 @@ pg_track_obj_get_playback_position(PGTrackObject *self, PyObject *null)
 static PyObject *
 pg_track_obj_get_remaining_frames(PGTrackObject *self, PyObject *null)
 {
-    int64_t remaining = MIX_GetTrackRemaining(self->track);
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
+    int64_t remaining;
+    PG_NOGIL(remaining = MIX_GetTrackRemaining(self->track));
 
     // If unknown, return None
     if (remaining == -1) {
@@ -1151,6 +1482,8 @@ static PyObject *
 pg_track_obj_ms_to_frames(PGTrackObject *self, PyObject *args,
                           PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     int64_t ms;
     char *keywords[] = {"ms", NULL};
 
@@ -1158,7 +1491,8 @@ pg_track_obj_ms_to_frames(PGTrackObject *self, PyObject *args,
         return NULL;
     }
 
-    int64_t frames = MIX_TrackMSToFrames(self->track, ms);
+    int64_t frames;
+    PG_NOGIL(frames = MIX_TrackMSToFrames(self->track, ms));
     if (frames == -1 && ms >= 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -1170,6 +1504,8 @@ static PyObject *
 pg_track_obj_frames_to_ms(PGTrackObject *self, PyObject *args,
                           PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     int64_t frames;
     char *keywords[] = {"frames", NULL};
 
@@ -1177,7 +1513,8 @@ pg_track_obj_frames_to_ms(PGTrackObject *self, PyObject *args,
         return NULL;
     }
 
-    int64_t ms = MIX_TrackFramesToMS(self->track, frames);
+    int64_t ms;
+    PG_NOGIL(ms = MIX_TrackFramesToMS(self->track, frames));
     if (ms == -1 && frames >= 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -1188,6 +1525,8 @@ pg_track_obj_frames_to_ms(PGTrackObject *self, PyObject *args,
 static PyObject *
 pg_track_obj_stop(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     int64_t fade_out_frames = 0;
     char *keywords[] = {"fade_out_frames", NULL};
 
@@ -1196,7 +1535,9 @@ pg_track_obj_stop(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (!MIX_StopTrack(self->track, fade_out_frames)) {
+    bool success;
+    PG_NOGIL(success = MIX_StopTrack(self->track, fade_out_frames));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -1205,7 +1546,11 @@ pg_track_obj_stop(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_track_obj_pause(PGTrackObject *self, PyObject *null)
 {
-    if (!MIX_PauseTrack(self->track)) {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
+    bool success;
+    PG_NOGIL(success = MIX_PauseTrack(self->track));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -1214,7 +1559,11 @@ pg_track_obj_pause(PGTrackObject *self, PyObject *null)
 static PyObject *
 pg_track_obj_resume(PGTrackObject *self, PyObject *null)
 {
-    if (!MIX_ResumeTrack(self->track)) {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
+    bool success;
+    PG_NOGIL(success = MIX_ResumeTrack(self->track));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -1223,6 +1572,8 @@ pg_track_obj_resume(PGTrackObject *self, PyObject *null)
 static PyObject *
 pg_track_obj_set_stereo(PGTrackObject *self, PyObject *args, PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     PyObject *gains_or_none_obj = NULL;
     char *keywords[] = {"gains", NULL};
 
@@ -1242,7 +1593,9 @@ pg_track_obj_set_stereo(PGTrackObject *self, PyObject *args, PyObject *kwargs)
         gains_p = &gains;
     }
 
-    if (!MIX_SetTrackStereo(self->track, gains_p)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackStereo(self->track, gains_p));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1253,6 +1606,8 @@ static PyObject *
 pg_track_obj_set_3d_position(PGTrackObject *self, PyObject *args,
                              PyObject *kwargs)
 {
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
     PyObject *position_or_none_obj = NULL;
     char *keywords[] = {"position", NULL};
 
@@ -1272,7 +1627,9 @@ pg_track_obj_set_3d_position(PGTrackObject *self, PyObject *args,
         point_p = &point;
     }
 
-    if (!MIX_SetTrack3DPosition(self->track, point_p)) {
+    bool success;
+    PG_NOGIL(success = MIX_SetTrack3DPosition(self->track, point_p));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
@@ -1282,13 +1639,86 @@ pg_track_obj_set_3d_position(PGTrackObject *self, PyObject *args,
 static PyObject *
 pg_track_obj_get_3d_position(PGTrackObject *self, PyObject *null)
 {
-    MIX_Point3D point;
+    CHECK_TRACK_OBJ_VALID(self, NULL);
 
-    if (!MIX_GetTrack3DPosition(self->track, &point)) {
+    MIX_Point3D point;
+    bool success;
+    PG_NOGIL(success = MIX_GetTrack3DPosition(self->track, &point));
+    if (!success) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     return Py_BuildValue("fff", point.x, point.y, point.z);
+}
+
+static void SDLCALL
+pg_track_internal_stopped_callback(void *userdata, MIX_Track *track)
+{
+    // Called with SDL_mixer's track lock (and often the mixer lock) held,
+    // possibly on the audio thread. Taking the GIL here is safe because no
+    // thread holding the GIL ever waits on those locks, see PG_NOGIL.
+    PGTrackObject *track_obj = (PGTrackObject *)userdata;
+    PyGILState_STATE state = PyGILState_Ensure();
+
+    // NULL if the Track is being deallocated (or was GC cleared). In the
+    // dealloc case track_obj's memory is still valid here, because dealloc
+    // is blocked in MIX_DestroyTrack until this callback returns.
+    PyObject *callback = track_obj->stopped_callback_obj;
+    if (callback != NULL) {
+        // The callback may drop the last outside references to either.
+        Py_INCREF(track_obj);
+        Py_INCREF(callback);
+        PyObject *result =
+            PyObject_CallOneArg(callback, (PyObject *)track_obj);
+        if (result == NULL) {
+            PyErr_WriteUnraisable(callback);
+        }
+        Py_XDECREF(result);
+        Py_DECREF(callback);
+        Py_DECREF(track_obj);
+    }
+
+    PyGILState_Release(state);
+}
+
+static PyObject *
+pg_track_obj_set_stopped_callback(PGTrackObject *self, PyObject *args,
+                                  PyObject *kwargs)
+{
+    CHECK_TRACK_OBJ_VALID(self, NULL);
+
+    PyObject *callback_or_none_obj = NULL;
+    char *keywords[] = {"callback", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords,
+                                     &callback_or_none_obj)) {
+        return NULL;
+    }
+
+    MIX_TrackStoppedCallback cb = NULL;
+    void *userdata = NULL;
+    PyObject *new_callback = NULL;
+    if (callback_or_none_obj != Py_None) {
+        if (!PyCallable_Check(callback_or_none_obj)) {
+            return RAISE(PyExc_TypeError, "callback must be callable or None");
+        }
+        cb = pg_track_internal_stopped_callback;
+        userdata = self;
+        new_callback = Py_NewRef(callback_or_none_obj);
+    }
+
+    // Change SDL's side first, so a failure leaves the old callback intact.
+    // A stop in between sees either the old Python callback or NULL, both
+    // of which the internal callback handles.
+    bool success;
+    PG_NOGIL(success = MIX_SetTrackStoppedCallback(self->track, cb, userdata));
+    if (!success) {
+        Py_XDECREF(new_callback);
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    Py_XSETREF(self->stopped_callback_obj, new_callback);
+    Py_RETURN_NONE;
 }
 
 // traverse: Visit all references from an object, including its type
@@ -1301,6 +1731,7 @@ pg_track_obj_traverse(PyObject *op, visitproc visit, void *arg)
     PGTrackObject *self = (PGTrackObject *)op;
     Py_VISIT(self->mixer_obj);
     Py_VISIT(self->source_obj);
+    Py_VISIT(self->stopped_callback_obj);
     return 0;
 }
 
@@ -1308,8 +1739,11 @@ static int
 pg_track_obj_clear(PyObject *op)
 {
     PGTrackObject *self = (PGTrackObject *)op;
-    Py_CLEAR(self->mixer_obj);
-    Py_CLEAR(self->source_obj);
+    // Do not clear mixer_obj or source_obj here, we need them to be alive
+    // through the lifespan of the MIX_Track. (The track may be reading from
+    // an AudioStream that source_obj keeps alive.) Cycles through them are
+    // still broken by the other objects in the cycle clearing themselves.
+    Py_CLEAR(self->stopped_callback_obj);
     return 0;
 }
 
@@ -1322,9 +1756,11 @@ static PyGetSetDef track_obj_getsets[] = {
      "TODO", NULL},
     {"frequency_ratio", (getter)pg_track_obj_get_freq_ratio,
      (setter)pg_track_obj_set_freq_ratio, "TODO", NULL},
+    {"_valid", (getter)pg_track_obj_get_valid, NULL, "TODO", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef track_obj_methods[] = {
+    {"_destroy", (PyCFunction)pg_track_obj_destroy, METH_NOARGS, "TODO"},
     {"set_audio", (PyCFunction)pg_track_obj_set_audio,
      METH_VARARGS | METH_KEYWORDS, "TODO"},
     {"get_audio", (PyCFunction)pg_track_obj_get_audio, METH_NOARGS, "TODO"},
@@ -1360,6 +1796,8 @@ static PyMethodDef track_obj_methods[] = {
      METH_VARARGS | METH_KEYWORDS, "TODO"},
     {"get_3d_position", (PyCFunction)pg_track_obj_get_3d_position, METH_NOARGS,
      "TODO"},
+    {"set_stopped_callback", (PyCFunction)pg_track_obj_set_stopped_callback,
+     METH_VARARGS | METH_KEYWORDS, "TODO"},
     {NULL, NULL, 0, NULL}};
 
 static PyType_Slot track_slots[] = {{Py_tp_init, pg_track_obj_init},
@@ -1385,6 +1823,12 @@ static int
 pg_audio_decoder_obj_init(PGAudioDecoderObject *self, PyObject *args,
                           PyObject *kwargs)
 {
+    if (self->audio_decoder != NULL) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Object of type AudioDecoder cannot be reinitialized");
+        return -1;
+    }
+
     PyObject *file = NULL;
     char *keywords[] = {"file", NULL};
 
@@ -1409,12 +1853,40 @@ static void
 pg_audio_decoder_obj_dealloc(PGAudioDecoderObject *self)
 {
     PyObject_GC_UnTrack(self);
-    MIX_DestroyAudioDecoder(self->audio_decoder);
-    self->audio_decoder = NULL;
+    // self->audio_decoder may already be NULL if _destroy() was called
+    // explicitly (e.g. by the Python layer, before quitting the mixer
+    // subsystem).
+    if (self->audio_decoder != NULL) {
+        MIX_DestroyAudioDecoder(self->audio_decoder);
+        self->audio_decoder = NULL;
+    }
     PyTypeObject *tp = Py_TYPE(self);
     freefunc free = PyType_GetSlot(tp, Py_tp_free);
     free(self);
     Py_DECREF(tp);
+}
+
+static PyObject *
+pg_audio_decoder_obj_destroy(PGAudioDecoderObject *self, PyObject *_null)
+{
+    // Explicitly frees the native decoder before the mixer subsystem quits,
+    // since MIX_Quit() frees it too. Cleared first, since destroying it can
+    // call back into Python (closing a Python file object).
+    MIX_AudioDecoder *audio_decoder = self->audio_decoder;
+    self->audio_decoder = NULL;
+    if (audio_decoder != NULL) {
+        MIX_DestroyAudioDecoder(audio_decoder);
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pg_audio_decoder_obj_get_valid(PGAudioDecoderObject *self, void *_null)
+{
+    if (self->audio_decoder != NULL) {
+        Py_RETURN_TRUE;
+    }
+    Py_RETURN_FALSE;
 }
 
 static PyObject *
@@ -1424,6 +1896,8 @@ pg_audio_decoder_obj_decode(PGAudioDecoderObject *self, PyObject *args,
     // TODO for free threading: This object is not thread safe, so releasing
     // the GIL has not been implemented because multiple threads could call
     // into the same object and cause races even in a non free threaded build.
+
+    CHECK_AUDIO_DECODER_OBJ_VALID(self, NULL);
 
     PyObject *spec_obj, *size_obj = Py_None;
     char *keywords[] = {"spec", "size", NULL};
@@ -1517,6 +1991,8 @@ pg_audio_decoder_obj_decode(PGAudioDecoderObject *self, PyObject *args,
 static PyObject *
 pg_audio_decoder_obj_get_spec(PGAudioDecoderObject *self, PyObject *_null)
 {
+    CHECK_AUDIO_DECODER_OBJ_VALID(self, NULL);
+
     SDL_AudioSpec spec;
     if (!MIX_GetAudioDecoderFormat(self->audio_decoder, &spec)) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
@@ -1534,7 +2010,12 @@ pg_audio_decoder_obj_traverse(PyObject *op, visitproc visit, void *arg)
     return 0;
 }
 
+static PyGetSetDef audio_decoder_obj_getsets[] = {
+    {"_valid", (getter)pg_audio_decoder_obj_get_valid, NULL, "TODO", NULL},
+    {NULL, NULL, NULL, NULL, NULL}};
+
 static PyMethodDef audio_decoder_obj_methods[] = {
+    {"_destroy", (PyCFunction)pg_audio_decoder_obj_destroy, METH_NOARGS, NULL},
     {"decode", (PyCFunction)pg_audio_decoder_obj_decode,
      METH_VARARGS | METH_KEYWORDS, NULL},
     {"_get_spec", (PyCFunction)pg_audio_decoder_obj_get_spec, METH_NOARGS,
@@ -1544,6 +2025,7 @@ static PyMethodDef audio_decoder_obj_methods[] = {
 static PyType_Slot audio_decoder_slots[] = {
     {Py_tp_init, pg_audio_decoder_obj_init},
     {Py_tp_methods, audio_decoder_obj_methods},
+    {Py_tp_getset, audio_decoder_obj_getsets},
     {Py_tp_dealloc, pg_audio_decoder_obj_dealloc},
     {Py_tp_traverse, pg_audio_decoder_obj_traverse},
     {0, NULL}};
